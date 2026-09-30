@@ -1,7 +1,7 @@
 'use client';
 
 // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): the few most-used style choices for
-// the selected shapes and arrows, on the right edge of the canvas. The context
+// the selected shapes and arrows, on the left edge of the canvas. The context
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
@@ -32,6 +32,15 @@ import {
 } from '@livediagram/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
+import { QuickPenRows } from './QuickPenRows';
+import {
+  QUICK_BORDER_PX,
+  QUICK_COMPACT_PADDING_PX,
+  QUICK_FLOATING_GAP_PX,
+  QUICK_FLOATING_PADDING_PX,
+  QUICK_ROW_TARGETS,
+  QUICK_TARGET_PX,
+} from './quick-style-metrics';
 import {
   ClearStylesGlyph,
   FlowingLineGlyph,
@@ -113,10 +122,14 @@ export function QuickStylePanel({
   hidden,
   layout,
   showTitles,
+  powerUser = false,
 }: {
   quickStyle: QuickStyleApi;
-  // Floating docks it under the Palette in the Palette's own panel dress;
-  // Toolbar and Minimal keep it compact on the right edge.
+  // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
+  // or strokes a whiteboard's pen rows style.
+  powerUser?: boolean;
+  // Floating wears the Palette's own panel dress; Toolbar and Minimal keep it
+  // compact. Always on the left edge.
   layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
@@ -141,6 +154,7 @@ export function QuickStylePanel({
   if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
+  const frame = panelFrame(docked, !!spot?.width, !!view.pen);
   const editedSwatch = editing
     ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
@@ -162,19 +176,16 @@ export function QuickStylePanel({
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={
-        spot
-          ? {
-              left: spot.left,
-              top: spot.top,
-              ...(spot.width ? { width: spot.width } : {}),
-              ...(spot.maxHeight ? { maxHeight: spot.maxHeight } : {}),
-            }
+      style={{
+        width: frame.width,
+        padding: frame.padding,
+        ...(spot
+          ? { left: spot.left, top: spot.top, ...(spot.width ? { width: spot.width } : {}) }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
-            { left: 0, top: 0, visibility: 'hidden' }
-      }
-      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-46 gap-2.5 p-2'}`}
+            { left: 0, top: 0, visibility: 'hidden' as const }),
+      }}
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${frame.className}`}
     >
       {docked && !minimalChrome ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
@@ -190,37 +201,41 @@ export function QuickStylePanel({
       <div
         data-quick-style-body=""
         className={
-          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'
+          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto' : 'contents'
         }
+        style={docked ? { padding: QUICK_FLOATING_PADDING_PX } : undefined}
       >
         <QuickStyleSections
           view={view}
           quickStyle={quickStyle}
           showTitles={titles}
+          showSubject={!powerUser}
           density={docked ? 'roomy' : 'compact'}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
-        <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
-          {titles ? (
-            <span
-              aria-hidden
-              className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-            >
-              Actions
-            </span>
-          ) : null}
-          <div role="group" aria-label="Actions">
-            <button
-              type="button"
-              onClick={quickStyle.clearStyles}
-              data-testid="quick-style-clear"
-              className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              <ClearStylesGlyph />
-              Clear styles
-            </button>
+        {view.targetIds.length > 0 ? (
+          <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
+            {titles ? (
+              <span
+                aria-hidden
+                className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Actions
+              </span>
+            ) : null}
+            <div role="group" aria-label="Actions">
+              <button
+                type="button"
+                onClick={quickStyle.clearStyles}
+                data-testid="quick-style-clear"
+                className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <ClearStylesGlyph />
+                Clear styles
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
       {editing && editedSwatch ? (
         <SwatchOverridePopover
@@ -239,16 +254,42 @@ export function QuickStylePanel({
   );
 }
 
+// A fixed width, never the content's (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
+// switching between a one-colour and a seven-colour row must not resize the panel, and a swatch row
+// never wraps and is never clipped, so the width counts the targets, their gaps, the padding and
+// the border exactly. Compact rows put their targets side by side, touching; Floating spreads them
+// with a gap, and takes the Palette's width when a Palette is on screen.
+export function panelFrame(
+  docked: boolean,
+  paletteWidth: boolean,
+  penRows: boolean,
+): { className: string; width?: number; padding?: number } {
+  const targets = penRows ? QUICK_ROW_TARGETS.pen : QUICK_ROW_TARGETS.swatches;
+  const border = 2 * QUICK_BORDER_PX;
+  if (docked) {
+    if (paletteWidth) return { className: '' };
+    const row = targets * QUICK_TARGET_PX + (targets - 1) * QUICK_FLOATING_GAP_PX;
+    return { className: '', width: row + 2 * QUICK_FLOATING_PADDING_PX + border };
+  }
+  return {
+    className: 'gap-2.5',
+    width: targets * QUICK_TARGET_PX + 2 * QUICK_COMPACT_PADDING_PX + border,
+    padding: QUICK_COMPACT_PADDING_PX,
+  };
+}
+
 function QuickStyleSections({
   view,
   quickStyle,
   showTitles,
+  showSubject,
   density,
   onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
+  showSubject: boolean;
   density: QuickRowDensity;
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
@@ -257,8 +298,22 @@ function QuickStyleSections({
     if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
   };
   const { width, style, textAlign, iconAlign } = view.sections;
+  // Whose style this is when it is not plainly the selection: the pen in hand,
+  // the selected strokes, or a tool's next mark. Power user mode leaves it out.
+  const caption = view.caption ?? view.pen?.subject.name;
   return (
     <>
+      {showSubject && caption ? (
+        <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">{caption}</p>
+      ) : null}
+      {view.pen ? (
+        <QuickPenRows
+          pen={view.pen}
+          quickStyle={quickStyle}
+          showTitles={showTitles}
+          density={density}
+        />
+      ) : null}
       {COLOUR_ROWS.map((row) => {
         const colours = view.sections[row.section];
         return colours ? (

@@ -16,7 +16,7 @@ export type GalleryTemplate = TemplateDescriptor & {
   categoryLabel: string;
 };
 
-// Every listed template but Blank: Blank is what the hero's "Just Draw"
+// Every listed template but Blank: Blank is what the header's "Start Blank"
 // already offers, and a "what will you draw first" card for an empty canvas
 // answers nothing. Hidden templates never appear in a listing (docs/specs/008-canvas/canvas-and-palette.md).
 export function galleryTemplates(): GalleryTemplate[] {

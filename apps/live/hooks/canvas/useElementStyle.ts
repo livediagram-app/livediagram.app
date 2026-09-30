@@ -164,7 +164,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, selectedId });
 
   const { setTextSizeSelected, setFontSelected, setTextAlignSelected, toggleTextStyleSelected } =
-    useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit });
+    useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit, activeTab });
 
   // The debounced colour / opacity policy + Reset-to-theme — see
   // useColorStyleSetters (the fifth setter sibling).

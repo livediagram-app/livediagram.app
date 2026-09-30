@@ -43,7 +43,12 @@ import {
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { WIZARD_BYPASS_PARAMS, wantsWelcome, wizardBypassKind } from '@/lib/new-document-params';
+import {
+  WIZARD_BYPASS_PARAMS,
+  wantsWelcome,
+  wizardBrowseCollection,
+  wizardBypassKind,
+} from '@/lib/new-document-params';
 import { markQuietLanding } from '@/lib/quiet-landing';
 import { QUIET_LANDING_ATTR, QUIET_LANDING_LOADER_CLASS } from '@/lib/quiet-landing-boot';
 import { CanvasLoader } from '@livediagram/ui';
@@ -66,6 +71,9 @@ const EditorPage = dynamic(loadEditor, {
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
+// The collection the wizard opens on (`?browse=`), read the same way.
+const browseFromUrl = () => wizardBrowseCollection(window.location.search);
+const noBrowse = () => null;
 const isBypassUrl = () => bypassKindFromUrl() !== null;
 const welcomeFromUrl = () => wantsWelcome(window.location.search);
 const noWelcome = () => false;
@@ -151,7 +159,7 @@ export default function NewDocumentPage() {
     return 'unsorted';
   });
 
-  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Just Draw") and
+  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard
   // entirely — the page commits that template (Default theme, the template's
   // default name) the moment it mounts and lands on the editor. The ?folder /
@@ -187,6 +195,16 @@ export default function NewDocumentPage() {
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
+  // `?browse=<collection>` (docs/specs/007-editor/new-document-route.md): the same external-store read,
+  // and the same guard: the prerendered step is the category overview, so the
+  // wizard card stays hidden until the render that shows the collection (or,
+  // for an unknown one, at once), so the author never sees it swap.
+  const browseShelf = useSyncExternalStore(subscribeNever, browseFromUrl, noBrowse);
+  useLayoutEffect(() => {
+    if (browseFromUrl() === browseShelf) {
+      document.documentElement.removeAttribute('data-wizard-browse');
+    }
+  }, [browseShelf]);
 
   useEffect(() => {
     document.title = 'New document | livediagram';
@@ -348,6 +366,8 @@ export default function NewDocumentPage() {
     track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
+    // A whiteboard tab born from the wizard (docs/specs/023-whiteboard/whiteboard.md "Telemetry").
+    if (templateKind === 'whiteboard') track('Whiteboard', 'Created', 'Template');
     cta.trackCreated();
     // Placement. The Settings step's picker (docs/specs/006-document/offline-mode.md) is authoritative: the
     // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
@@ -390,7 +410,7 @@ export default function NewDocumentPage() {
     setOpenedId(documentId);
   };
 
-  // Just-Draw fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
+  // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
   // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
   // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue
@@ -463,10 +483,10 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('browse'))document.documentElement.setAttribute('data-wizard-browse','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
+      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-browse] [data-wizard-only]{visibility:hidden}`}</style>
       {/* The quiet landing's loader, prerendered so it paints from the first frame on the
           hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
       <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
@@ -504,6 +524,7 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}

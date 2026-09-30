@@ -242,13 +242,15 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  const baseSize = fontSizeFor(el.textSize, multiline);
+  // A Shift-resized text box draws its text scaled (docs/specs/023-whiteboard/whiteboard.md).
+  const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
+  const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
         text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
-        size: run.size ? fontSizeFor(run.size, multiline) : baseSize,
+        size: run.size ? fontSizeFor(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
       }))

@@ -19,6 +19,7 @@ import {
   lucideFileDown,
   lucideFileUp,
   lucideLightbulb,
+  lucidePenTool,
   lucideScanEye,
   lucideSpade,
   lucideThermometer,
@@ -85,6 +86,31 @@ export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="pan" size={size} />;
+}
+
+// The Shape Pen (docs/specs/008-canvas/two-pens.md): its palette tile and the whiteboard dock's Path
+// tool (docs/specs/023-whiteboard/path-tool.md "Where it lives") wear this one icon, each at its size.
+export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <Prims prims={lucidePenTool} />
+    </Glyph>
+  );
+}
+
+// Edit points (docs/specs/023-whiteboard/path-tool.md "Editing"): a curve through a corner node
+// (square, selected) and another, with one handle. On the selection toolbar and on the dock's
+// Select while a path is in its edit mode.
+export function EditPointsIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4.5 19.5 C4.5 9 19.5 15 19.5 4.5" />
+      <path d="M4.5 19.5 V10" strokeWidth={1} />
+      <circle cx="4.5" cy="10" r="1.3" fill="currentColor" stroke="none" />
+      <rect x="2.7" y="17.7" width="3.6" height="3.6" fill="currentColor" />
+      <rect x="17.7" y="2.7" width="3.6" height="3.6" />
+    </Glyph>
+  );
 }
 
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {

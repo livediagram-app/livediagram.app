@@ -1,7 +1,6 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
-import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
@@ -10,14 +9,13 @@ import {
   alignmentCoordinates,
   buildElementIndex,
   isBoxed,
-  isRailShape,
-  canAppendWebRow,
   isVotableInVote,
   layerBands,
   laneSeamCoordinates,
   layerOpacityOf,
   snapSeamCoordinate,
   arrowRoutePoints,
+  type ElementIndex,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -25,10 +23,17 @@ import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
+import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
-import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
+import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
+import {
+  BoxGripsPortal,
+  SelectionGripsContext,
+  SelectionGripsLayer,
+  type SelectionGripHosts,
+} from '@/components/canvas/SelectionGripsLayer';
 import { NextNoteButtons } from '@/components/canvas/NextNoteButtons';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
@@ -41,11 +46,16 @@ type Bounds = { x: number; y: number; width: number; height: number };
 // (very common) "no remote participants have this element selected"
 // path, so BoxedElementView's memo isn't invalidated by a fresh [] per
 // render.
+// What a drawn arrow resolves its ends against on a board with no arrows yet.
+const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
+
 const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = [];
 
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
 type ElementsExtras = {
+  // The draw gesture in flight (canvas coords), for the line or arrow it would land.
+  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
@@ -58,7 +68,8 @@ type ElementsExtras = {
   unionResizeBounds: Bounds | null;
   unionResizePrimaryId: string | null;
   isPaintMode: boolean;
-  handleArrowSelect: (id: string, e: ReactPointerEvent) => void;
+  handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
+  handleElementClick: (id: string) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
   // Which quick-connect ring is open (lifted to Canvas so only one opens
   // at a time and the toolbar can dodge the top ring). null = all closed.
@@ -68,18 +79,12 @@ type ElementsExtras = {
 
 type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
-// The ring action each row-carrying web component offers (docs/specs/009-elements/web-components-and-no-groups.md).
-const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
-  'stat-row': { label: 'Add stat', description: 'Add another KPI card to the row.' },
-  process: { label: 'Add step', description: 'Add another step to the end of the process.' },
-  'site-header': { label: 'Add link', description: 'Add another link to the header.' },
-};
-
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,
-// the laser overlay, the union resize handles, and the duplicate-connect
-// plus buttons. Rendered inside Canvas's viewport-transformed wrapper.
-// Extracted from Canvas.tsx verbatim.
+// the laser overlay, and the grips layer on top of them all: the union resize
+// handles, the quick-connect plus buttons, and every element's own grips,
+// portalled in (SelectionGripsLayer). Rendered inside Canvas's
+// viewport-transformed wrapper.
 export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const {
     badgeColor,
@@ -89,9 +94,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     tabLayers,
     layerPreviewId,
     handleArrowSelect,
+    handleElementClick,
     handleElementContextSelect,
     hasArrows,
     arrowLabels,
+    drawDrag,
     imageContext,
     isPaintMode,
     laserTrails,
@@ -199,6 +206,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // presence/absence so children still branch on them.
   const h = useStableHandlers({
     handleArrowSelect,
+    handleElementClick,
     handleElementContextSelect,
     onBeginEndpointDrag,
     onBeginEdit,
@@ -300,24 +308,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);
-  // Whether the single selected element is a timeline rail — gates the rail's
-  // "Add point" action on the quick-connect "+" (docs/specs/009-elements/timeline-rail.md).
-  const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
-  const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
-  const selectedIsTable = selectedElement?.type === 'table';
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the ring's "Add stat / step / link", while
-  // there is room for one more.
-  const webRow =
-    selectedElement?.type === 'shape' && onAppendWebRow && canAppendWebRow(selectedElement)
-      ? {
-          ...WEB_ROW_ACTION[selectedElement.shape]!,
-          onAdd: () => onAppendWebRow(selectedElement.id),
-        }
-      : undefined;
-  const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
-  const growMind = useMindGrow();
+  // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
+  // it mounts; every element view portals its grips into them.
+  const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
   return (
-    <>
+    <SelectionGripsContext.Provider value={gripHosts}>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
             all reference url(#arrowhead) — defs are document-scoped
             in SVG so a single defs node lets every arrow render
@@ -413,13 +408,15 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 />
               </svg>
               {framed ? (
-                <FreeArrowSelection
-                  arrowId={element.id}
-                  points={arrowRoutePoints(element, elements)}
-                  zoom={viewportZoom}
-                  onBeginMove={(e) => h.onBeginArrowTranslate(element.id, e)}
-                  onBeginScale={(handle, e) => h.onBeginArrowScale(element.id, handle, e)}
-                />
+                <BoxGripsPortal>
+                  <FreeArrowSelection
+                    arrowId={element.id}
+                    points={arrowRoutePoints(element, elements)}
+                    zoom={viewportZoom}
+                    onBeginMove={(e) => h.onBeginArrowTranslate(element.id, e)}
+                    onBeginScale={(handle, e) => h.onBeginArrowScale(element.id, handle, e)}
+                  />
+                </BoxGripsPortal>
               ) : null}
             </Fragment>
           );
@@ -447,7 +444,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             photoReadAs={draftView?.differences.get(element.id)}
             isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
-            multiSelectActive={multiSelectedIds.size > 0}
+            onPlainClick={h.handleElementClick}
             remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
             isEditing={element.id === editingId}
             editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
@@ -553,6 +550,25 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         );
       })}
 
+      {/* The line or arrow being drawn (docs/specs/023-whiteboard/whiteboard.md "Shapes"): the
+          element the release lands, after every element, where it will land. */}
+      {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+        <DrawnArrowPreview
+          arrow={props.previewDrawnArrow(
+            props.pendingDraw,
+            drawDrag.startX,
+            drawDrag.startY,
+            drawDrag.currentX,
+            drawDrag.currentY,
+          )}
+          elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+          occluders={drawnElements}
+          draftLayout={arrowLabels.draftLayout}
+          fontFamily={tabFontStack}
+          withDefs={!hasArrows}
+        />
+      ) : null}
+
       {remoteCursors.map((c) => (
         <RemoteCursor key={c.id} cursor={c} zoom={viewportZoom} />
       ))}
@@ -563,105 +579,65 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             and only runs while there's at least one active trail. */}
       <LaserOverlay trails={laserTrails} zoom={viewportZoom} />
 
-      {/* Dotted border around the whole multi-selection / group, so it reads
-          as one unit. Outset a touch from the union bounds; sits in the world
-          transform so it pans + zooms with the elements. */}
-      {showUnionResize && unionResizeBounds ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute rounded-md border border-dashed border-brand-400/80 dark:border-brand-300/70"
-          style={{
-            left: unionResizeBounds.x - 6,
-            top: unionResizeBounds.y - 6,
-            width: unionResizeBounds.width + 12,
-            height: unionResizeBounds.height + 12,
-          }}
-        />
-      ) : null}
+      {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
+          no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
+      <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+        {/* The next-note buttons on the note you are pointing at or have
+            selected (docs/specs/021-event-storming/event-storming.md Phase 7). They stand down while any drag is in
+            hand: the board is the drag's for the duration. */}
+        {props.esBoard && props.onAddNextNote ? (
+          <NextNoteButtons
+            elements={elements}
+            selectedId={selectedId}
+            editingId={editingId}
+            blocked={readOnly || tabLocked || props.createBlocked === true || insertShift.animates}
+            zoom={viewportZoom}
+            onAdd={props.onAddNextNote}
+          />
+        ) : null}
 
-      {showUnionResize && unionResizeBounds && unionResizePrimaryId ? (
-        <UnionResizeHandles
-          bounds={unionResizeBounds}
-          primaryId={unionResizePrimaryId}
-          zoom={viewportZoom}
-          onBeginDrag={onBeginDrag}
-        />
-      ) : null}
+        {showPlus && selectionBounds ? (
+          <QuickConnectPluses
+            selectedElement={selectedId ? elements.find((e) => e.id === selectedId) : undefined}
+            bounds={selectionBounds}
+            zoom={viewportZoom}
+            quickRingOpen={quickRingOpen}
+            setQuickRingOpen={setQuickRingOpen}
+            openOnHover={settings.quickAddOnHover === true}
+            onSpawnConnect={onSpawnConnect}
+            onStartArrow={onStartArrow}
+            onStartPencil={onStartPencil}
+            onAddRailPoint={onAddRailPoint}
+            onAddTableRow={onAddTableRow}
+            onAddTableColumn={onAddTableColumn}
+            onAppendWebRow={onAppendWebRow}
+          />
+        ) : null}
 
-      {/* The next-note buttons on the note you are pointing at or have
-          selected (docs/specs/021-event-storming/event-storming.md Phase 7). They stand down while any drag is in
-          hand: the board is the drag's for the duration. */}
-      {props.esBoard && props.onAddNextNote ? (
-        <NextNoteButtons
-          elements={elements}
-          selectedId={selectedId}
-          editingId={editingId}
-          blocked={readOnly || tabLocked || props.createBlocked === true || insertShift.animates}
-          zoom={viewportZoom}
-          onAdd={props.onAddNextNote}
-        />
-      ) : null}
+        {/* Dotted border around the whole multi-selection / group, so it reads
+            as one unit. Outset a touch from the union bounds. */}
+        {showUnionResize && unionResizeBounds ? (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute rounded-md border border-dashed border-brand-400/80 dark:border-brand-300/70"
+            style={{
+              left: unionResizeBounds.x - 6,
+              top: unionResizeBounds.y - 6,
+              width: unionResizeBounds.width + 12,
+              height: unionResizeBounds.height + 12,
+            }}
+          />
+        ) : null}
 
-      {showPlus && selectionBounds
-        ? (
-            [
-              {
-                placement: 'right' as const,
-                x: selectionBounds.x + selectionBounds.width,
-                y: selectionBounds.y + selectionBounds.height / 2,
-              },
-              {
-                placement: 'below' as const,
-                x: selectionBounds.x + selectionBounds.width / 2,
-                y: selectionBounds.y + selectionBounds.height,
-              },
-              {
-                placement: 'left' as const,
-                x: selectionBounds.x,
-                y: selectionBounds.y + selectionBounds.height / 2,
-              },
-              {
-                placement: 'above' as const,
-                x: selectionBounds.x + selectionBounds.width / 2,
-                y: selectionBounds.y,
-              },
-            ] as const
-          ).map(({ placement, x, y }) => (
-            <QuickConnectRing
-              key={placement}
-              x={x}
-              y={y}
-              placement={placement}
-              zoom={viewportZoom}
-              open={quickRingOpen === placement}
-              openOnHover={settings.quickAddOnHover === true}
-              onToggle={() => setQuickRingOpen(quickRingOpen === placement ? null : placement)}
-              onOpen={() => setQuickRingOpen(placement)}
-              onClose={() => setQuickRingOpen(null)}
-              onSpawn={(kind) => onSpawnConnect(placement, kind)}
-              onArrowPointerDown={(e) => onStartArrow(placement, e)}
-              onPencil={onStartPencil}
-              // Timeline rail (docs/specs/009-elements/timeline-rail.md): the standard "+" gains an "Add point"
-              // action instead of the rail drawing its own competing button.
-              onAddRailPoint={selectedIsRail ? onAddRailPoint : undefined}
-              webRow={webRow}
-              // Table ring (docs/specs/008-canvas/canvas-and-palette.md): Arrow + this side's structural add.
-              variant={selectedIsTable ? 'table' : 'default'}
-              onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}
-              onAddTableColumn={
-                selectedIsTable && placement === 'right' ? onAddTableColumn : undefined
-              }
-              // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, each naming its
-              // shortcut in the hover card. Only on a mind node, and only where
-              // there is a grower (not the share view, embed, or exports).
-              onGrowMind={
-                selectedIsMind && growMind
-                  ? (relation) => growMind.grow(selectedElement.id, relation)
-                  : undefined
-              }
-            />
-          ))
-        : null}
-    </>
+        {showUnionResize && unionResizeBounds && unionResizePrimaryId ? (
+          <UnionResizeHandles
+            bounds={unionResizeBounds}
+            primaryId={unionResizePrimaryId}
+            zoom={viewportZoom}
+            onBeginDrag={onBeginDrag}
+          />
+        ) : null}
+      </SelectionGripsLayer>
+    </SelectionGripsContext.Provider>
   );
 }

@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While one or more shapes, arrows and / or text elements are selected, a small panel on the right
+While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
 background, text colour (for text elements), stroke width, stroke style, text alignment and icon
 alignment, plus a Clear styles action. What you choose there
@@ -41,71 +41,38 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-The panel is **docked to the right side**, and each panel layout gives it the home that layout's
-chrome already implies.
+The panel sits **on the left edge of the canvas, vertically centred**, in every layout: one gap
+(12 px) in from the canvas's left. The left is out of the way of the Palette, which lives on the
+right.
 
-### Floating: the next panel under the Palette
-
-In the Floating layout the Palette is the right-hand floating panel, so the quick style panel
-joins it: **right beneath the Palette**, left edges aligned, the Palette's width, one corner-stack
-gap (16 px, [Panel corner docking](../007-editor/panel-docking.md)) below it. It wears the Palette's
-panel dress: the same surface, border, radius and shadow, a header with its title
-("Quick style") and a help link, and the panel-opacity preference
-([User preferences](../007-editor/user-preferences.md)). It is not draggable and has no collapse
-button of its own: it follows the Palette rather than being placed, and it leaves when the
-selection does.
-
-Reading it as the Palette's companion is the point: the place you pick a thing to draw and the
-place you dress what you drew sit together, and nothing new appears somewhere else on the canvas.
-
-- **The Palette collapses** to its banner: the panel rises with it, staying one gap below.
-- **The Palette moves**, docked to another corner or dragged free: the panel follows, live during
-  the drag, under wherever the Palette now is.
-- **Something is already stacked under the Palette** (Comments, AI): the panel steps down past it,
-  one gap below the lowest panel in the Palette's column.
-- **No room beneath** (a Palette docked at the bottom, or a short window): directly above the Palette
-  if it fits there whole; else it **stays docked and scrolls**: beneath the Palette with its height
-  capped to the room there and its body scrolling, as long as at least 96 px (the header and one
-  row) is free. Only below that does it fall back to the right-edge placement.
-
-  Staying docked is the decision, not a compromise: the panel's place is the Palette's stack, and a
-  panel that jumps into the middle of the canvas when the window is a little short covers the very
-  diagram it is styling and is no longer where the eye left it. A common case is a 900 px window
-  with the Palette open on Favourites, where the last row (Actions) scrolls into view; collapsing
-  the Palette gives the panel its full height back.
-
-- **No Palette on screen**: the right-edge placement below.
-
-### Toolbar and Minimal: the right edge
-
-In the Toolbar layout ([Toolbar layout](../007-editor/toolbar-layout.md)) the Palette is a strip
-across the top, so there is no panel to dock under. The quick style panel sits **on the right edge,
-vertically centred**, in its compact form (no header). Minimal does the same: its Palette is a
-popover that comes and goes, not a resting panel. The compact form is still a panel, so the
-panel-opacity preference ([User preferences](../007-editor/user-preferences.md)) fades it too.
-
-The compact form is **narrow** (184 px, against the Floating panel's Palette width), because on
-the right edge it stands alone over the canvas rather than inside a column of chrome, and a wide
-block there reads as a second sidebar. The colour swatches draw a little smaller (20 px) but each
+Each layout keeps its dress. In the Floating layout the panel wears the Palette's panel dress: the
+same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
+header with its title ("Quick style") and a help link. It is not draggable and has no collapse
+button of its own; it leaves when the selection does. In the Toolbar and Minimal layouts it is
+**compact** (no header, 186 px wide): the colour swatches draw a little smaller (20 px) but each
 still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), seven to a row with the
-targets touching, so the row is exactly seven targets wide. The three-option rows share the same
-width.
+targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
+rows change: a row of swatches never wraps and is never clipped (the width counts the swatches, their gaps, the padding and the border exactly), and a whiteboard's pen rows (up to eight colours: the ink
+and seven) use a compact width of eight targets (210 px) for every pen, even the main pen with its
+one. In the Floating layout with no Palette on screen (a whiteboard) it is 242 px, room for eight
+swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
+Floating, and a 1 px border a side.) The panel-opacity preference
+([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
 
 ### Collisions
 
 Never over the Palette or the other floating chrome (panels, dock popovers, the Toolbar strip and
-its More popover, the bottom-right cluster). The right-edge placement tries fixed candidate spots in
-order and takes the first that overlaps none of them:
+its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
+takes the first that overlaps none of them:
 
-1. the right edge, centred;
-2. the right edge, just below an obstacle on that edge, the highest spot first;
-3. the right edge, just above an obstacle on that edge, the lowest spot first;
-4. directly left of the obstacles on the right edge, centred;
-5. the left edge, centred.
+1. the left edge, centred;
+2. the left edge, just below an obstacle on that edge (the Explorer), the highest spot first;
+3. the left edge, just above an obstacle on that edge, the lowest spot first;
+4. directly right of the obstacles on the left edge, centred;
+5. the right edge, centred.
 
-If none is clear, the first is used. The orders are fixed so the panel always lands in the same place
-for the same chrome, and the right edge is preferred because that is where people look for it.
-Placement is recomputed when the chrome moves or resizes, never on a timer.
+If none is clear, the first is used. The order is fixed so the panel always lands in the same place
+for the same chrome. Placement is recomputed when the chrome moves or resizes, never on a timer.
 
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.

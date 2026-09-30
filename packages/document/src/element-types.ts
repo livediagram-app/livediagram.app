@@ -10,6 +10,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
@@ -150,6 +151,9 @@ export type ShapeElement = {
   font?: string;
   fillColor?: string;
   strokeColor?: string;
+  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
@@ -504,6 +508,13 @@ export type TextElement = {
   padding?: Padding;
   // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
+  // A whiteboard text box placed with a click (docs/specs/023-whiteboard/whiteboard.md "Text
+  // boxes"): its width follows its text up to the wrap width. Absent = the width is set, and
+  // the text wraps inside it.
+  autoWidth?: boolean;
+  // Multiplier on the label size, set by a Shift resize of a whiteboard text box
+  // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"). Absent = 1.
+  textScale?: number;
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -868,6 +879,15 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
+  // A whiteboard pen stroke's ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): one pressure
+  // per point, 0 to 1, when the pen reported one (absent: a constant width), and the
+  // perfect-freehand streamline it was drawn with (absent: a stroke stored before either was
+  // recorded, drawn with none). A pen stroke's points are its raw samples.
+  pressures?: number[];
+  streamline?: number;
+  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter
@@ -927,6 +947,75 @@ export type FreehandElement = {
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
+  noteRich?: TextRun[];
+};
+
+// --- Paths -----------------------------------------------------------------
+
+// A path's node (docs/specs/023-whiteboard/path-tool.md "The path element"): corner (no handles, or
+// independent ones), mirrored (collinear, equal length) or aligned (collinear, own lengths).
+export type PathHandleMode = 'corner' | 'mirrored' | 'aligned';
+
+// A position normalised to the element's box, like a freehand point. May lie outside 0 to 1: a
+// handle can reach beyond the drawn curve the box wraps.
+export type PathPoint = { nx: number; ny: number };
+
+// An anchor point and its optional handles, stored as absolute normalised positions so a resize
+// scales the whole path, handles included.
+export type PathNode = PathPoint & {
+  mode: PathHandleMode;
+  handleIn?: PathPoint;
+  handleOut?: PathPoint;
+};
+
+// The Path tool's element (docs/specs/023-whiteboard/path-tool.md): an ordered list of nodes joined
+// by cubic Béziers, open or closed, editable point by point. The box wraps the drawn curve. Styled
+// like a shape: stroke, fill (drawn only when closed), border width and style. A path takes no
+// typed label; the label fields stay declared for the union code paths, as on a freehand.
+export type PathElement = {
+  id: ElementId;
+  type: 'path';
+  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
+  layerId?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  nodes: PathNode[];
+  closed: boolean;
+  fillColor?: string;
+  strokeColor?: string;
+  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.
+  strokeSwatch?: QuickSwatchSlot;
+  fillSwatch?: QuickSwatchSlot;
+  strokeWidth?: BorderStroke;
+  strokeStyle?: BorderStyle;
+  label?: string;
+  textSize?: TextSize;
+  textAlignX?: TextAlignX;
+  textAlignY?: TextAlignY;
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
+  font?: string;
+  textColor?: string;
+  borderRadius?: BorderRadius;
+  padding?: Padding;
+  locked?: boolean;
+  aspectLocked?: boolean;
+  opacity?: number;
+  // Clockwise rotation in degrees about the element's centre. Absent or 0 means unrotated.
+  rotation?: number;
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements").
+  animation?: ElementAnimation;
+  animationSpeed?: AnimationSpeed;
+  animationRepeat?: boolean;
+  link?: ElementLink;
+  commentThread?: CommentThread;
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md).
+  action?: ElementAction;
+  note?: string;
   noteRich?: TextRun[];
 };
 

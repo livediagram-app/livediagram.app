@@ -174,30 +174,22 @@ export function createImage(x: number, y: number): ImageElement {
   };
 }
 
-// Mints a freehand element from raw canvas-coord points. Caller is
-// responsible for the simplification + smoothing decision (see
-// `simplifyPolyline` and `catmullRomToBezierPath` below); this just
-// computes the bounding box and normalises the points into [0..1]
-// inside it so the saved element resizes proportionally without the
-// renderer needing the original canvas coords back. A degenerate
-// (single-point) gesture returns a 1x1 box with one normalised point
-// at the origin, which the caller can detect and reject.
-export function createFreehand(
-  rawPoints: { x: number; y: number }[],
-  closed: boolean,
-): FreehandElement {
-  if (rawPoints.length === 0) {
-    return {
-      id: crypto.randomUUID(),
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 1,
-      height: 1,
-      points: [],
-      closed,
-    };
-  }
+export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height' | 'points'>;
+
+// A freehand's box and normalised points for raw canvas-coord points: the
+// bounds padded by a pixel on each side (so a perfectly straight line still has
+// a dimension to normalise against; dividing by 0 would make NaN points), grown
+// outwards to whole canvas px, and every point normalised into [0..1] inside it,
+// so the saved element resizes proportionally. No points: a 1x1 box at the
+// origin. Shared with the whiteboard pen's live ink, which lays itself out as
+// exactly the stroke it lands as (docs/specs/023-whiteboard/whiteboard.md
+// "Pens"). The whole-px box is what keeps drawn ink still while the stroke
+// grows: layout snaps a positioned box and its svg to the pixel grid, so a
+// fractional origin that moved with every sample re-rasterised the whole path
+// at a new sub-pixel offset; a box on whole px moves by whole px only, which
+// the path's coordinates absorb exactly.
+export function freehandGeometry(rawPoints: readonly { x: number; y: number }[]): FreehandGeometry {
+  if (rawPoints.length === 0) return { x: 0, y: 0, width: 1, height: 1, points: [] };
   let minX = rawPoints[0]!.x;
   let maxX = rawPoints[0]!.x;
   let minY = rawPoints[0]!.y;
@@ -208,29 +200,24 @@ export function createFreehand(
     if (p.y < minY) minY = p.y;
     if (p.y > maxY) maxY = p.y;
   }
-  // Pad the box by a single pixel on each side so a perfectly
-  // straight line (zero width OR zero height) still has a non-zero
-  // dimension to normalise against. Without this, dividing by 0
-  // produces NaN points and the renderer breaks.
   const PAD = 1;
-  const width = Math.max(1, maxX - minX + PAD * 2);
-  const height = Math.max(1, maxY - minY + PAD * 2);
-  const ox = minX - PAD;
-  const oy = minY - PAD;
-  const points = rawPoints.map((p) => ({
-    nx: (p.x - ox) / width,
-    ny: (p.y - oy) / height,
-  }));
-  return {
-    id: crypto.randomUUID(),
-    type: 'freehand',
-    x: ox,
-    y: oy,
-    width,
-    height,
-    points,
-    closed,
-  };
+  const x = Math.floor(minX - PAD);
+  const y = Math.floor(minY - PAD);
+  const width = Math.ceil(maxX + PAD) - x;
+  const height = Math.ceil(maxY + PAD) - y;
+  const points = rawPoints.map((p) => ({ nx: (p.x - x) / width, ny: (p.y - y) / height }));
+  return { x, y, width, height, points };
+}
+
+// Mints a freehand element from raw canvas-coord points (freehandGeometry). The
+// caller decides the simplification and smoothing (see `simplifyPolyline` and
+// `catmullRomToBezierPath`). A degenerate (single-point) gesture returns a box
+// with one normalised point, which the caller can detect and reject.
+export function createFreehand(
+  rawPoints: { x: number; y: number }[],
+  closed: boolean,
+): FreehandElement {
+  return { id: crypto.randomUUID(), type: 'freehand', ...freehandGeometry(rawPoints), closed };
 }
 
 export function createArrow(fromX: number, fromY: number, toX: number, toY: number): ArrowElement {

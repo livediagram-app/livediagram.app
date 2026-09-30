@@ -227,6 +227,29 @@ describe('border field setters', () => {
     expect(applyBorderStyleToEl(el('shape'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
   });
 
+  it('lets a border width replace the pen width a stroke recorded', () => {
+    const pen = applyBorderStrokeToEl(el('freehand', { penWidth: 8 }), 'thin');
+    expect(pen).toMatchObject({ strokeWidth: 'thin' });
+    expect('penWidth' in pen).toBe(false);
+  });
+
+  it('drops a pen stroke\u2019s pressures and streamline with its pen width', () => {
+    const pen = applyBorderStrokeToEl(
+      el('freehand', { penWidth: 2.5, pressures: [0.2, 0.9], streamline: 0.2 }),
+      'thin',
+    );
+    expect('pressures' in pen).toBe(false);
+    expect('streamline' in pen).toBe(false);
+  });
+
+  it('keeps the width of a highlighter stroke, which the preset never drew', () => {
+    const marker = applyBorderStrokeToEl(
+      el('freehand', { pen: 'highlighter', penWidth: 20 }),
+      'thin',
+    );
+    expect(marker).toMatchObject({ penWidth: 20 });
+  });
+
   it('radius is shape-only', () => {
     expect(applyBorderRadiusToEl(el('shape'), 'full')).toMatchObject({ borderRadius: 'full' });
     const fh = el('freehand');

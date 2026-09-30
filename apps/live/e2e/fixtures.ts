@@ -167,9 +167,9 @@ export async function dismissQuickTour(page: Page): Promise<void> {
   await decline.waitFor({ state: 'detached' });
 }
 
-// A blank canvas straight away: /new?blank=1, the wizard bypass the landing
-// page's Just Draw links to (docs/specs/007-editor/new-document-route.md).
-export async function openJustDraw(page: Page): Promise<void> {
+// A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
+// links to (docs/specs/007-editor/new-document-route.md).
+export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

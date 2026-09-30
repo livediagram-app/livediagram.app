@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { catmullRomToBezierPath, createFreehand, simplifyPolyline } from './index';
+import {
+  catmullRomToBezierPath,
+  createFreehand,
+  freehandGeometry,
+  simplifyPolyline,
+} from './index';
 
 // Three pure helpers underpin the pencil tool (docs/specs/008-canvas/canvas-and-palette.md Pencil
 // (freehand) subsection):
@@ -177,6 +182,34 @@ describe('createFreehand', () => {
     expect(el.height).toBe(42); // 60 - 20 + 2px pad
   });
 
+  // Drawn ink stays still while a whiteboard pen stroke grows
+  // (docs/specs/023-whiteboard/whiteboard.md "Pens"): the box sits on whole canvas px, so layout
+  // never snaps it to a different sub-pixel offset as a sample moves its bounds.
+  it('grows the padded box outwards to whole canvas px, however fractional the samples', () => {
+    const raw = [
+      { x: 10.3, y: 20.7 },
+      { x: 25.55, y: 12.2 },
+      { x: 40.01, y: 33.99 },
+    ];
+    const g = freehandGeometry(raw);
+    expect(g).toMatchObject({ x: 9, y: 11, width: 33, height: 24 });
+    for (const n of [g.x, g.y, g.width, g.height]) expect(Number.isInteger(n)).toBe(true);
+    for (const [i, p] of g.points.entries()) {
+      expect(g.x + p.nx * g.width).toBeCloseTo(raw[i]!.x, 9);
+      expect(g.y + p.ny * g.height).toBeCloseTo(raw[i]!.y, 9);
+    }
+  });
+
+  it('keeps the origin where it was while a growing stroke stays inside its pixel', () => {
+    const raw = [
+      { x: 100.4, y: 100.4 },
+      { x: 110.2, y: 99.9 },
+    ];
+    const before = freehandGeometry(raw);
+    const after = freehandGeometry([...raw, { x: 120.8, y: 99.6 }]);
+    expect([after.x, after.y]).toEqual([before.x, before.y]);
+  });
+
   it('normalises every point into [0..1] across the bounding box', () => {
     const el = createFreehand(
       [
@@ -256,5 +289,21 @@ describe('createFreehand', () => {
       false,
     );
     expect(a.id).not.toBe(b.id);
+  });
+});
+
+describe('freehandGeometry', () => {
+  it('is the geometry createFreehand gives the same points', () => {
+    const points = [
+      { x: 10.25, y: 20.5 },
+      { x: 40.75, y: 20.5 },
+      { x: 33.1, y: 60.9 },
+    ];
+    const { x, y, width, height, points: normalised } = createFreehand(points, false);
+    expect(freehandGeometry(points)).toEqual({ x, y, width, height, points: normalised });
+  });
+
+  it('gives no points a 1x1 box at the origin', () => {
+    expect(freehandGeometry([])).toEqual({ x: 0, y: 0, width: 1, height: 1, points: [] });
   });
 });

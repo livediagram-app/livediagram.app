@@ -1,4 +1,4 @@
-import { ES_LANES } from '@livediagram/document';
+import { ES_LANES, isWhiteboardTab } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -44,6 +44,7 @@ import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
+import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -307,12 +308,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: honoured on a phone too, where it
   // replaces the dock's Palette + Explorer buttons.
   const toolbarActive = toolbarLayout === true;
-  // The strip only renders for an editor (not read-only) with the chrome up.
-  const stripShown = toolbarActive && !readOnly && !chromeHidden;
+  // A whiteboard trades the palette, the strip and the theme controls for its
+  // dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
+  const whiteboard = isWhiteboardTab({ kind: props.tabKind });
+  // The strip only renders for an editor (not read-only) with the chrome up,
+  // and never on a whiteboard.
+  const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
-  // strip, so it keeps the corner there.
-  const menuInStrip = isMobile && !readOnly;
+  // strip, and nor does a whiteboard, so it keeps the corner there.
+  const menuInStrip = isMobile && !readOnly && !whiteboard;
   const explorerMenuButton = (
     <ToolbarExplorerButton
       open={activeMobilePanel === 'explorer'}
@@ -444,6 +449,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         highlighterWidth={highlighterWidth}
         pendingDraw={pendingDraw}
         stamp={stamp}
+        whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
       />
@@ -468,7 +474,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           positions against the canvas, so it renders outside the corner
           layer, as Toolbar's cluster popovers do. */}
       {zenMode ? null : collaborateEl}
-      {toolbarActive && !readOnly ? (
+      {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
@@ -488,6 +494,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
+      {/* The whiteboard's dock (docs/specs/023-whiteboard/whiteboard.md): bottom centre, in place of the
+          palette. Absent for a view-role visitor, who has nothing to draw with. */}
+      {whiteboard && props.whiteboardDock && !readOnly && !chromeHidden ? (
+        <WhiteboardDock
+          model={props.whiteboardDock}
+          ink={props.whiteboardInk ?? '#1c1917'}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={onUndo}
+          onRedo={onRedo}
+        />
+      ) : null}
+
       <CanvasMobileDock
         welcomeOpen={chromeHidden}
         minimalPanels={minimalPanels}
@@ -499,9 +518,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasAvatar={props.canvasTool === 'avatar'}
         hasLaser={props.canvasTool === 'laser'}
         hasSpotlight={props.canvasTool === 'spotlight'}
-        hasEraser={props.canvasTool === 'eraser'}
-        hasFormat={props.canvasTool === 'format'}
-        hasHighlighter={props.canvasTool === 'highlighter'}
+        hasEraser={props.canvasTool === 'eraser' && !whiteboard}
+        hasFormat={props.canvasTool === 'format' && !whiteboard}
+        hasHighlighter={props.canvasTool === 'highlighter' && !whiteboard}
         hasSlideDeck={props.canvasTool === 'slide-deck'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
@@ -613,7 +632,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 chrome. All viewports, mobile included — the canvas menu's
                 long-press entry isn't discoverable there (read-only
                 sessions pass no handler). */}
-            {!zenMode && onOpenCanvasTheme ? (
+            {!zenMode && onOpenCanvasTheme && !whiteboard ? (
               <div
                 data-tour-id="canvas-theme"
                 onContextMenu={(e) => {

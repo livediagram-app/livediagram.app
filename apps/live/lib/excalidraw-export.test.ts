@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { tabToExcalidrawText } from './excalidraw-export';
 import type { Element, Tab } from '@livediagram/document';
+import { createPath } from '@livediagram/document';
 
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
   id: 'tab-1',
@@ -201,6 +202,55 @@ describe('boxed element degradation', () => {
     expect(scene.elements[1]!.strokeColor).toBe('transparent');
   });
 
+  it('exports a whiteboard pen stroke\u2019s real pressures', () => {
+    const scene = parse(
+      tabToExcalidrawText(
+        tab([
+          {
+            id: 'f1',
+            type: 'freehand',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 50,
+            closed: false,
+            penWidth: 1.5,
+            pressures: [0.2, 0.9],
+            streamline: 0.2,
+            points: [
+              { nx: 0, ny: 0 },
+              { nx: 1, ny: 1 },
+            ],
+          },
+        ]),
+      ),
+    );
+    expect(scene.elements[0]).toMatchObject({ pressures: [0.2, 0.9], simulatePressure: false });
+  });
+
+  it('exports a path as a line sampled along its curve (docs/specs/023-whiteboard/path-tool.md)', () => {
+    const path = createPath(
+      [
+        { x: 0, y: 0, mode: 'corner', handleOut: { x: 0, y: -40 } },
+        { x: 100, y: 0, mode: 'corner', handleIn: { x: 100, y: -40 } },
+        { x: 100, y: 50, mode: 'corner' },
+      ],
+      true,
+    );
+    const scene = parse(tabToExcalidrawText(tab([{ ...path, fillColor: '#ffec99' }])));
+    const [line] = scene.elements;
+    expect(line!.type).toBe('line');
+    // 16 samples along the curve, one per straight segment, back to the start.
+    expect(line!.points).toHaveLength(1 + 16 + 1 + 1);
+    const [first] = line!.points!;
+    const last = line!.points![line!.points!.length - 1]!;
+    expect(last[0]).toBeCloseTo(first![0]);
+    expect(last[1]).toBeCloseTo(first![1]);
+    expect(line!.backgroundColor).toBe('#ffec99');
+    // The top of the arch is inside the box: the box wraps the curve.
+    expect(Math.min(...line!.points!.map((p) => p[1]))).toBeCloseTo(0);
+  });
+
   it('exports freehand strokes as freedraw and polygons as closed lines', () => {
     const scene = parse(
       tabToExcalidrawText(
@@ -248,6 +298,8 @@ describe('boxed element degradation', () => {
     expect(poly!.type).toBe('line');
     expect(poly!.points).toHaveLength(4); // re-appends the first point to close
     expect(poly!.points![3]).toEqual([0, 0]);
+    // Without recorded pressure, Excalidraw simulates it.
+    expect(draw).toMatchObject({ pressures: [], simulatePressure: true });
     expect(poly!.backgroundColor).toBe('#b2f2bb');
   });
 });

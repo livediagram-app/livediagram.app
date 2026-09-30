@@ -1,5 +1,6 @@
 import {
   THEMES,
+  createPath,
   quickSwatchColor,
   shapeColorPresets,
   type ArrowElement,
@@ -193,5 +194,70 @@ describe('text elements', () => {
   it('survive a parse round trip', () => {
     const memory = { text: { textColor: '#aa0000' } };
     expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a whiteboard keeps its own
+// memory, so a board's styles never dress a diagram tab's next shape, nor the other way round.
+describe('the board scope', () => {
+  it('keys a whiteboard element apart from a diagram one', () => {
+    expect(styleKindOf(shape('a', 'square'), true)).toBe('board:shape:square');
+    expect(styleKindOf(arrow('a'), true)).toBe('board:arrow');
+  });
+
+  it('records and applies within its own scope only', () => {
+    const board = recordStyleEdit(
+      {},
+      [shape('a', 'square')],
+      [shape('a', 'square', { strokeColor: '#ff0000' })],
+      forest,
+      true,
+    );
+    expect(board).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+    expect(applyStyleMemory(shape('n', 'square'), board, forest, true).strokeColor).toBe('#ff0000');
+    expect(applyStyleMemory(shape('n', 'square'), board, forest).strokeColor).toBeUndefined();
+  });
+
+  it('survives a round trip through storage', () => {
+    const raw = JSON.stringify({ 'board:shape:square': { strokeColor: '#ff0000' } });
+    expect(parseStyleMemory(raw)).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+  });
+});
+
+describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+  const path = createPath(
+    [
+      { x: 0, y: 0, mode: 'corner' },
+      { x: 40, y: 0, mode: 'corner' },
+    ],
+    false,
+  );
+
+  it('is its own kind, scoped on a board', () => {
+    expect(styleKindOf(path)).toBe('path');
+    expect(styleKindOf(path, true)).toBe('board:path');
+  });
+
+  it('remembers and applies its line style', () => {
+    const m = recordStyleEdit(
+      {},
+      [path],
+      [{ ...path, strokeColor: '#ff0000', strokeWidth: 'thick' }],
+      forest,
+      true,
+    );
+    expect(m).toEqual({ 'board:path': { strokeColor: '#ff0000', strokeWidth: 'thick' } });
+    const next = createPath(
+      [
+        { x: 5, y: 5, mode: 'corner' },
+        { x: 9, y: 9, mode: 'corner' },
+      ],
+      false,
+    );
+    expect(applyStyleMemory(next, m, forest, true)).toMatchObject({
+      strokeColor: '#ff0000',
+      strokeWidth: 'thick',
+    });
+    expect(parseStyleMemory(JSON.stringify(m))).toEqual(m);
   });
 });

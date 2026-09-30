@@ -259,6 +259,17 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
+  // The whiteboard dock (../023-whiteboard/whiteboard.md "Shape slots"): up to
+  // seven pinned shape keys (unset is the default pins, an empty list an
+  // emptied side), and per shape key [times picked, last picked ms] for the
+  // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
+  // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
+  whiteboardPinnedShapes?: string[];
+  whiteboardShapePicks?: Record<string, [number, number]>;
+  // The whiteboard markers' Your colours (../023-whiteboard/whiteboard.md "The
+  // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
+  // takes one out. Junk is dropped on read (lib/pen-colour-memory).
+  whiteboardYourColours?: string[];
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.

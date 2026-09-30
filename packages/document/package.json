@@ -10,7 +10,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@livediagram/icons": "workspace:*"
+    "@livediagram/icons": "workspace:*",
+    "perfect-freehand": "^1.2.3"
   },
   "scripts": {
     "lint": "eslint .",

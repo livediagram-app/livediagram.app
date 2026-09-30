@@ -14,8 +14,13 @@ import { safeJson } from './local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
 // `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every
-// text element.
-export type StyleKindKey = `shape:${string}` | 'arrow' | 'text';
+// text element; `board:` before any of them on a whiteboard, which keeps a memory
+// of its own (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays").
+type BaseKindKey = `shape:${string}` | 'arrow' | 'text' | 'path';
+export type StyleKindKey = BaseKindKey | `board:${BaseKindKey}`;
+const BOARD_PREFIX = 'board:';
+const baseOf = (kind: string): string =>
+  kind.startsWith(BOARD_PREFIX) ? kind.slice(BOARD_PREFIX.length) : kind;
 export type RememberedStyle = Record<string, string | number>;
 export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 
@@ -41,6 +46,15 @@ const ARROW_MEMORY_FIELDS = {
   strokeStyle: 'string',
   flow: 'string',
 } as const;
+// A path (docs/specs/023-whiteboard/path-tool.md "Style"): its line and its fill.
+const PATH_MEMORY_FIELDS = {
+  strokeColor: 'string',
+  strokeSwatch: 'number',
+  fillColor: 'string',
+  fillSwatch: 'number',
+  strokeWidth: 'string',
+  strokeStyle: 'string',
+} as const;
 const TEXT_MEMORY_FIELDS = {
   textColor: 'string',
   textSwatch: 'number',
@@ -57,20 +71,30 @@ const THEME_VALUE_OF: Readonly<Record<string, 'elementFill' | 'elementStroke' | 
 const STORAGE_PREFIX = 'livediagram:v2:style-memory:';
 export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
 
-export function styleKindOf(el: Element): StyleKindKey | null {
-  if (el.type === 'arrow') return 'arrow';
-  if (el.type === 'text') return 'text';
-  if (el.type === 'shape') return `shape:${el.shape}`;
-  return null;
+export function styleKindOf(el: Element, board = false): StyleKindKey | null {
+  const base: BaseKindKey | null =
+    el.type === 'arrow'
+      ? 'arrow'
+      : el.type === 'text'
+        ? 'text'
+        : el.type === 'path'
+          ? 'path'
+          : el.type === 'shape'
+            ? `shape:${el.shape}`
+            : null;
+  return base && board ? `${BOARD_PREFIX}${base}` : base;
 }
 
-function fieldsFor(kind: StyleKindKey): FieldTypes {
+function fieldsFor(scoped: StyleKindKey): FieldTypes {
+  const kind = baseOf(scoped);
   if (kind === 'arrow') return ARROW_MEMORY_FIELDS;
+  if (kind === 'path') return PATH_MEMORY_FIELDS;
   return kind === 'text' ? TEXT_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
 }
 
-function isKnownKind(key: string): key is StyleKindKey {
-  if (key === 'arrow' || key === 'text') return true;
+function isKnownKind(scoped: string): scoped is StyleKindKey {
+  const key = baseOf(scoped);
+  if (key === 'arrow' || key === 'text' || key === 'path') return true;
   return key.startsWith('shape:') && SHAPE_KINDS.has(key.slice('shape:'.length));
 }
 
@@ -88,13 +112,14 @@ export function recordStyleEdit(
   before: readonly Element[],
   after: readonly Element[],
   theme: ThemeDefinition,
+  board = false,
 ): StyleMemory {
   const previous = new Map(before.map((el) => [el.id, el]));
   let next: StyleMemory | null = null;
   for (const el of after) {
     const was = previous.get(el.id);
     if (!was || !isQuickStyleTarget(el)) continue;
-    const kind = styleKindOf(el)!;
+    const kind = styleKindOf(el, board)!;
     for (const field of Object.keys(fieldsFor(kind))) {
       const value = (el as unknown as Record<string, unknown>)[field];
       if (value === (was as unknown as Record<string, unknown>)[field]) continue;
@@ -115,8 +140,9 @@ export function applyStyleMemory<T extends Element>(
   el: T,
   memory: StyleMemory,
   theme: ThemeDefinition,
+  board = false,
 ): T {
-  const kind = styleKindOf(el);
+  const kind = styleKindOf(el, board);
   const entry = kind ? memory[kind] : undefined;
   if (!entry) return el;
   let dressed: Element = { ...el, ...entry } as Element;

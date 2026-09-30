@@ -1,5 +1,5 @@
 import { lucidePencilLine } from '@livediagram/icons/lucide';
-import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
+import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
 import { participantKey } from '@/lib/identity';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
@@ -137,7 +137,7 @@ export function TopCenterChrome({
             a mode does not need telling you it is on every time you look up,
             and its colour + strength moved off this bar into the Highlighter
             Panel, where every other tool keeps its settings. */}
-        {pendingDraw && !isMarkerIntent(pendingDraw) ? (
+        {pendingDraw && !isHeldPenIntent(pendingDraw) ? (
           <ModeBanner
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync())}

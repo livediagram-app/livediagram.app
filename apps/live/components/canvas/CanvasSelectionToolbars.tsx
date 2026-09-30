@@ -110,6 +110,16 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
+            // A path's points (docs/specs/023-whiteboard/path-tool.md "Editing"): its edit mode, the
+            // Path tool put down first when it is still in hand.
+            onEditPoints={
+              !readOnly && !selectedLocked && selected?.type === 'path'
+                ? () => {
+                    if (props.pendingDraw) props.onCancelDraw();
+                    props.onBeginEdit(selected.id);
+                  }
+                : undefined
+            }
             // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
             // for Tab / Enter. Not on a locked node: growing re-lays the map.
             {...(!readOnly && !selectedLocked && selected && isMindNode(selected)

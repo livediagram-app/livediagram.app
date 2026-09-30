@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
   TEMPLATES,
+  TEMPLATE_COLLECTIONS,
+  isTemplateCollection,
+  templateBrowseHref,
+  templateShelfLabel,
+  templateShelfTemplates,
   TEMPLATE_CATEGORIES,
   TEMPLATE_CONTENT_LAYER_ID,
   TEMPLATE_SCAFFOLD_LAYER_ID,
@@ -23,7 +28,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "62 templates (10 default + 52 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "63 templates (11 default + 52 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -95,23 +100,24 @@ describe('TEMPLATES catalogue', () => {
     'meeting-agenda',
     'objectives-planner',
     'floor-plan',
+    'whiteboard',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "62 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "63 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 62 templates (10 default + 52 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(62);
+  it('lists exactly 63 templates (11 default + 52 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(63);
   });
 
-  it('splits cleanly into 10 default + 52 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 52 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
-    expect(defaults).toHaveLength(10);
+    expect(defaults).toHaveLength(11);
     expect(extras).toHaveLength(52);
   });
 
@@ -142,14 +148,25 @@ describe('TEMPLATES catalogue', () => {
   it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      // 'blank' is intentionally empty (docs/specs/007-editor/new-document-route.md); every other kind seeds
-      // content. Either way the switch must handle the union member.
-      expect(tab.elements.length).toBeGreaterThan(kind === 'blank' ? -1 : 0);
+      // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
+      // docs/specs/023-whiteboard/whiteboard.md); every other kind seeds content. Either way the
+      // switch must handle the union member.
+      const empty = kind === 'blank' || kind === 'whiteboard';
+      expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
 });
 
 describe('templateCanvasOverrides', () => {
+  it('makes a whiteboard tab on a Grid board', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Board background": the kind and the Grid land on
+    // every creation path through here (the template, a new tab, Quick Start, the MCP worker).
+    expect(templateCanvasOverrides('whiteboard')).toEqual({
+      kind: 'whiteboard',
+      backgroundPattern: 'graph',
+    });
+  });
+
   it('makes an event-storming board already settled on its lanes', () => {
     // docs/specs/021-event-storming/event-storming.md "Always on a lane": the seed note is built on lane 0,
     // so a new board never needs the one-time settle.
@@ -892,5 +909,57 @@ describe('untitledNameForTemplate', () => {
   it('keeps "Untitled document" for blank or no template', () => {
     expect(untitledNameForTemplate('blank')).toBe('Untitled document');
     expect(untitledNameForTemplate(null)).toBe('Untitled document');
+  });
+});
+
+describe('TEMPLATE_COLLECTIONS', () => {
+  it('holds the brainstorming formats, mind maps first', () => {
+    // docs/specs/007-editor/new-document-route.md "?browse=<collection>".
+    const brainstorm = TEMPLATE_COLLECTIONS.find((c) => c.id === 'brainstorm')!;
+    expect(brainstorm.label).toBe('Brainstorm');
+    expect(brainstorm.kinds).toEqual([
+      'mindmap',
+      'mindmap-tree',
+      'mindmap-bubble',
+      'affinity-map',
+      'fishbone',
+      'event-storming',
+    ]);
+  });
+
+  it('names only listed templates', () => {
+    const listed = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));
+    for (const c of TEMPLATE_COLLECTIONS) for (const k of c.kinds) expect(listed.has(k)).toBe(true);
+  });
+
+  it('never shares an id with a category, so one view id names either', () => {
+    const categories = new Set<string>(TEMPLATE_CATEGORIES.map((c) => c.id));
+    for (const c of TEMPLATE_COLLECTIONS) expect(categories.has(c.id)).toBe(false);
+  });
+
+  it('links a collection into the wizard', () => {
+    expect(templateBrowseHref('brainstorm')).toBe('/new?browse=brainstorm');
+    expect(isTemplateCollection('brainstorm')).toBe(true);
+    expect(isTemplateCollection('mindmaps')).toBe(false);
+  });
+});
+
+describe('templateShelfTemplates', () => {
+  const listed = TEMPLATES.filter((t) => !t.hidden);
+  it('lists a collection in its own order', () => {
+    expect(templateShelfTemplates('brainstorm', listed).map((t) => t.kind)).toEqual(
+      TEMPLATE_COLLECTIONS[0]!.kinds,
+    );
+  });
+
+  it('lists a category in the given order, without the quick-picks', () => {
+    const kinds = templateShelfTemplates('flowcharts', listed).map((t) => t.kind);
+    expect(kinds).toContain('flowchart');
+    expect(kinds).not.toContain('blank');
+  });
+
+  it('names a shelf', () => {
+    expect(templateShelfLabel('brainstorm')).toBe('Brainstorm');
+    expect(templateShelfLabel('planning')).toBe('Agile');
   });
 });

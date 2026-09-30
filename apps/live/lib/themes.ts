@@ -14,7 +14,11 @@ import {
   deriveShapeColours,
   deriveTextColorForBg,
   isDefaultSchemeBackdrop,
+  isWhiteboardTab,
   schemeBackdrop,
+  WHITEBOARD_BOARD,
+  WHITEBOARD_UNSET_PATTERN,
+  WHITEBOARD_PATTERN,
   type Appearance,
   type BackgroundPattern,
   type BoxedElement,
@@ -107,9 +111,21 @@ export function resolveTabBackdrop(
   tab: Pick<
     Tab,
     'theme' | 'backgroundColor' | 'backgroundPattern' | 'patternColor' | 'backgroundOpacity'
-  >,
+  > &
+    Partial<Pick<Tab, 'kind'>>,
   appearance: Appearance = getResolvedAppearance(),
 ): ResolvedBackdrop {
+  // A whiteboard (docs/specs/023-whiteboard/whiteboard.md "Appearance") has no theme: it is always the
+  // Default scheme's board for the viewer's appearance. Only its pattern
+  // (Plain / Dots / Grid) is the board's own.
+  if (isWhiteboardTab(tab)) {
+    return {
+      backgroundColor: WHITEBOARD_BOARD[appearance],
+      patternColor: WHITEBOARD_PATTERN[appearance],
+      backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
+      backgroundOpacity: 1,
+    };
+  }
   const stored = {
     backgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
     patternColor: tab.patternColor ?? DEFAULT_PATTERN_COLOR,

@@ -14,6 +14,8 @@ import {
   defaultTextColor,
   endpointPosition,
   isBoxed,
+  pathAnchors,
+  samplePath,
   type ArrowElement,
   type ArrowheadShape,
   type BoxedElement,
@@ -123,6 +125,23 @@ export function tabToExcalidrawText(tab: Tab): string {
       strokeStyle: strokeStyleOut(borderStyle),
     };
 
+    // A path (docs/specs/023-whiteboard/path-tool.md "Export"): a line sampled along its curve.
+    if (el.type === 'path') {
+      const pts = samplePath(pathAnchors(el, { x: 0, y: 0 }), el.closed).map(
+        (p): [number, number] => [p.x, p.y],
+      );
+      out.push(
+        chassis(el, seq++, {
+          ...base,
+          type: 'line',
+          backgroundColor: el.closed ? fill : 'transparent',
+          points: pts,
+          lastCommittedPoint: null,
+        }),
+      );
+      continue;
+    }
+
     // Freehand strokes keep their real geometry as freedraw / line points.
     if (el.type === 'freehand') {
       const pts: [number, number][] = el.points.map((p) => [p.nx * el.width, p.ny * el.height]);
@@ -133,8 +152,9 @@ export function tabToExcalidrawText(tab: Tab): string {
           type: el.straightEdges ? 'line' : 'freedraw',
           backgroundColor: el.closed ? fill : 'transparent',
           points: pts,
-          pressures: [],
-          simulatePressure: true,
+          // A whiteboard pen stroke's real pressures travel; without them Excalidraw simulates.
+          pressures: el.pressures ?? [],
+          simulatePressure: !el.pressures,
           lastCommittedPoint: null,
         }),
       );

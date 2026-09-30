@@ -4,7 +4,9 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE } from '@livediagram/document';
+import { DEFAULT_BUTTON_MODE, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { createInkProjector } from '@/lib/whiteboard-ink';
+import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -175,6 +177,9 @@ export function EditorCanvasHost() {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitPath,
+    commitPathEdit,
+    styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,
@@ -342,6 +347,7 @@ export function EditorCanvasHost() {
     viewportOffset,
     viewportZoom,
     zenMode,
+    whiteboardDock,
   } = useEditorContext();
 
   // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
@@ -391,6 +397,14 @@ export function EditorCanvasHost() {
     return true;
   };
   const backdrop = resolveTabBackdrop(activeTab, appearance);
+  // A whiteboard draws every unpainted element in its ink (docs/specs/023-whiteboard/whiteboard.md
+  // "Appearance"). Display only: the projector caches per element, so an
+  // unchanged element keeps its identity and the memoised views stay quiet.
+  const [projectInk] = useState(createInkProjector);
+  const shownElements = presentingElements ?? activeTab.elements;
+  const canvasElements = isWhiteboardTab(activeTab)
+    ? projectInk(shownElements, appearance)
+    : shownElements;
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
@@ -411,6 +425,7 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
+    whiteboard: isWhiteboardTab(activeTab),
     setContextMenu,
   });
 
@@ -460,9 +475,20 @@ export function EditorCanvasHost() {
         // real canvas still draws them — a slide has to respond to clicks and
         // carry live element state, and there is then exactly one thing that
         // knows how an element looks.
-        elements={presentingElements ?? activeTab.elements}
+        elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
+        whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
+        whiteboardInk={WHITEBOARD_INK[appearance]}
+        previewDrawnArrow={(intent, startX, startY, endX, endY) =>
+          drawnArrowAsShown(intent, startX, startY, endX, endY, {
+            elements: activeTab.elements,
+            theme: getTheme(activeTab.theme),
+            whiteboard: isWhiteboardTab(activeTab),
+            styleNewElement,
+            ink: WHITEBOARD_INK[appearance],
+          })
+        }
         layerInertIds={layerInertIds}
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuides={snapGuides}
@@ -680,6 +706,9 @@ export function EditorCanvasHost() {
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}
         onCommitPolygon={commitPolygon}
+        onCommitPath={commitPath}
+        onCommitPathEdit={commitPathEdit}
+        onDressPath={styleNewElement}
         settings={userPreferences}
         onChangeSettings={onChangeSettings}
         // Only Minimal docks the panels. Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's

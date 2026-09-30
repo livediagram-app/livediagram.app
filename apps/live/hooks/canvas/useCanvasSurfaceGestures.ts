@@ -7,8 +7,11 @@ import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarqu
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
-import type { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { isHeldPenIntent } from '@/lib/draw-mode';
+import { markPenSeen, penSeen } from '@/lib/pen-seen';
+import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -25,6 +28,7 @@ export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
   pendingDraw,
+  whiteboard = false,
   viewportOffset,
   viewportZoom,
   mainRef,
@@ -37,16 +41,19 @@ export function useCanvasSurfaceGestures({
   peerAvatars,
   onPushPeer,
   isoCamera,
-  canvasLongPress,
   beginPendingDrawGesture,
+  interceptPress,
   onEraseStart,
   onCanvasContextMenu,
+  onDeselect,
   onCanvasDoubleClick,
 }: {
   canvasTool: CanvasProps['canvasTool'];
   // Settings › Controls: middle-button drag pans the canvas (default on).
   middleMousePan: boolean;
   pendingDraw: CanvasProps['pendingDraw'];
+  // The active tab is a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input").
+  whiteboard?: boolean;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
@@ -61,12 +68,15 @@ export function useCanvasSurfaceGestures({
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   isoCamera: ReturnType<typeof useIsometricCamera>;
-  canvasLongPress: ReturnType<typeof useLongPress>;
   // Starts the queued draw-to-size / freehand gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
-  onEraseStart?: (x: number, y: number) => void;
+  // A mode that owns every primary press on the canvas while it is open (a path's edit mode,
+  // docs/specs/023-whiteboard/path-tool.md "Editing"); true when it claimed the press.
+  interceptPress?: (e: ReactPointerEvent) => boolean;
+  onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
+  onDeselect: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
 }) {
   // Which peer's character a click landed on, plus where to stand and which way
@@ -158,6 +168,39 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
+    // Whiteboard (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input"): once a pen has been
+    // used, a single finger pans instead of inking, so a resting palm never
+    // draws. The pen itself, and a mouse, always ink.
+    if (whiteboard && e.button === 0) {
+      if (e.pointerType === 'pen') markPenSeen();
+      const inking =
+        canvasTool === 'eraser' || canvasTool === 'highlighter' || isHeldPenIntent(pendingDraw);
+      const route = whiteboardPointerRoute({
+        pointerType: e.pointerType,
+        penSeen: penSeen(),
+        inking,
+      });
+      if (route === 'pan') {
+        e.preventDefault();
+        e.stopPropagation();
+        setPan({
+          startClientX: e.clientX,
+          startClientY: e.clientY,
+          startOffsetX: viewportOffset.x,
+          startOffsetY: viewportOffset.y,
+          movedRef: { current: false },
+        });
+        return;
+      }
+    }
+    // A path's edit mode keeps the rest of the canvas inert: its presses are all its own. Held
+    // Space still pans, and the other buttons keep their meaning.
+    if (e.button === 0 && !spaceHeldRef.current && interceptPress?.(e)) {
+      focusCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a non-editing presenter mode. Left-click
     // grows the light; right-click shrinks it (the shrink itself runs in
     // onContextMenuCapture below). Handled in the capture phase so it
@@ -220,8 +263,41 @@ export function useCanvasSurfaceGestures({
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();
-      onEraseStart?.(e.clientX, e.clientY);
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      onEraseStart?.(
+        e.clientX,
+        e.clientY,
+        rect ? { left: rect.left, top: rect.top, zoom: viewportZoom } : undefined,
+      );
       return;
+    }
+    // Whiteboard, Select in hand (docs/specs/023-whiteboard/whiteboard.md "Selecting"): Shift + press always
+    // drags a selection box that adds to the selection, even when it starts on an element, and a
+    // Shift-click on an element toggles it. A handle keeps its own Shift behaviour.
+    if (
+      whiteboard &&
+      e.button === 0 &&
+      e.shiftKey &&
+      canvasTool === 'select' &&
+      !pendingDraw &&
+      !spaceHeldRef.current
+    ) {
+      const target = e.target as HTMLElement;
+      const onCanvas = target === e.currentTarget || !!wrapperRef.current?.contains(target);
+      if (onCanvas && !target.closest('[data-canvas-handle]')) {
+        focusCanvas();
+        e.preventDefault();
+        e.stopPropagation();
+        setMarquee({
+          startX: e.clientX,
+          startY: e.clientY,
+          currentX: e.clientX,
+          currentY: e.clientY,
+          additive: true,
+          clickTarget: target.closest('[data-element-id]')?.getAttribute('data-element-id') ?? null,
+        });
+        return;
+      }
     }
     // Middle-mouse drag pans from anywhere on the canvas — empty
     // space OR over elements — regardless of the active tool. The
@@ -268,11 +344,35 @@ export function useCanvasSurfaceGestures({
     spotlight.shrink();
   };
 
+  // Right-clicking (or long-pressing) the empty canvas deselects, then opens
+  // the canvas menu (docs/specs/008-canvas/canvas-and-palette.md "Selection"). The
+  // deselect lands first: it closes any open menu, and the canvas menu then opens.
+  const openCanvasMenu = (x: number, y: number) => {
+    console.debug('[canvas-menu] deselect + open', x, y);
+    onDeselect();
+    onCanvasContextMenu?.(x, y);
+  };
+
+  // Touch has no right-click, so a press-and-hold on the empty canvas opens
+  // the tab / canvas context menu (the same one desktop reaches via
+  // right-click). Element presses stopPropagation in their own pointerdown,
+  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
+  //
+  // The same press also armed a marquee (or a pan), still live under the
+  // finger when the hold fires. Its release reads as a sub-4px "drag", which
+  // deselects, and deselecting closes the context menu: the menu flashed
+  // open on the hold and vanished on the lift (iPhone / iPad). The hold has
+  // claimed the press, so drop whatever the press started.
+  const canvasLongPress = useLongPress((x, y) => {
+    cancelPressGesture();
+    openCanvasMenu(x, y);
+  });
+
   // The tab menu opens on RELEASE, like an element's, through the same hook:
   // it copes with contextmenu arriving before the release (macOS / X11) OR
   // after it (Windows), which the old arm-then-wait ref here did not.
   const rightClick = useRightClickRelease(
-    (e) => onCanvasContextMenu?.(e.clientX, e.clientY),
+    (e) => openCanvasMenu(e.clientX, e.clientY),
     // The canvas is the last stop for a right-click; nothing above it cares.
     { stopPropagation: false },
   );
@@ -394,6 +494,7 @@ export function useCanvasSurfaceGestures({
   };
 
   return {
+    canvasLongPress,
     onPointerDownCapture,
     onContextMenuCapture,
     onContextMenu,

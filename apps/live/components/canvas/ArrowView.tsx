@@ -23,6 +23,7 @@ import { elementAriaLabel } from '@/lib/element-names';
 import { ArrowHeadMarker, arrowheadMarkerId } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
+import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
@@ -75,7 +76,8 @@ type ArrowViewProps = {
   // wrapper around the export viable: with pre-bound callbacks,
   // every parent render would invalidate the memo via fresh
   // function identities.
-  onSelect: (id: string, e: ReactPointerEvent) => void;
+  // `paired`: the press is the second of a double-click, which always selects.
+  onSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   // Right-click: select the arrow + open its context menu at the cursor.
   onContextSelect: (id: string, screenX: number, screenY: number) => void;
   onBeginEndpointDrag: (id: string, end: ArrowEnd, e: ReactPointerEvent) => void;
@@ -412,7 +414,7 @@ function ArrowViewImpl({
           if (e.button !== 0) return;
           e.stopPropagation();
           const doubled = pairsWithLast(e);
-          onSelect(arrow.id, e);
+          onSelect(arrow.id, e, doubled);
           // Select first: selecting resets the edit state, so the editor opens after.
           if (doubled) openEditor();
           // Pressing the line bends it once the pointer travels
@@ -462,22 +464,26 @@ function ArrowViewImpl({
         />
       ) : null}
 
+      {/* The grips draw in the canvas grips layer, above every element (docs/specs/008-canvas/canvas-and-palette.md
+          "Resize"), while their presses keep this view's React event path. */}
       {isSelected && !isPaintMode && !readOnly ? (
-        <SelectedArrowHandles
-          arrow={arrow}
-          from={from}
-          to={to}
-          curveControl={curveControl}
-          curveAnchors={curveAnchors}
-          elbowPoint={elbowPoint}
-          isLocked={isLocked}
-          guardPress={guardPress}
-          onBeginEndpointDrag={onBeginEndpointDrag}
-          onBeginCurveDrag={onBeginCurveDrag}
-          onBeginCurvePointDrag={onBeginCurvePointDrag}
-          onDeleteCurvePoint={onDeleteCurvePoint}
-          onBeginElbowDrag={onBeginElbowDrag}
-        />
+        <ArrowGripsPortal arrowId={arrow.id}>
+          <SelectedArrowHandles
+            arrow={arrow}
+            from={from}
+            to={to}
+            curveControl={curveControl}
+            curveAnchors={curveAnchors}
+            elbowPoint={elbowPoint}
+            isLocked={isLocked}
+            guardPress={guardPress}
+            onBeginEndpointDrag={onBeginEndpointDrag}
+            onBeginCurveDrag={onBeginCurveDrag}
+            onBeginCurvePointDrag={onBeginCurvePointDrag}
+            onDeleteCurvePoint={onDeleteCurvePoint}
+            onBeginElbowDrag={onBeginElbowDrag}
+          />
+        </ArrowGripsPortal>
       ) : null}
     </g>
   );

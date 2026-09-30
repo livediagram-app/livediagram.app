@@ -22,11 +22,11 @@ export type BoxedElementViewProps = {
   // it's obvious which elements are bundled into a multi-action like
   // Delete or Duplicate.
   isMultiSelected?: boolean;
-  // True when *any* marquee multi-selection is currently active (size > 0).
-  // While active, plain clicks on a non-member promote it into the
-  // multi-set instead of replacing the selection — that's the "drag a
-  // box, then click a few more" flow users expect.
-  multiSelectActive?: boolean;
+  // A plain click (press and release, no drag) on this element while it is
+  // selected, and the second press of a double-click that first deselected it:
+  // the host applies the click rules (docs/specs/008-canvas/canvas-and-palette.md
+  // "Selection", "Marquee box-select") against the whole selection.
+  onPlainClick?: (id: string) => void;
   isEditing: boolean;
   // When the current edit session began via type-to-edit (docs/specs/008-canvas/canvas-and-palette.md), the
   // label was seeded with the first typed char and the editor should

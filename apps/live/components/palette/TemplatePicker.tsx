@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { CloseIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
-import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
+import type { TemplateCategory, TemplateCollection, TemplateKind } from '@livediagram/templates';
 import {
   TEMPLATE_CATEGORIES,
   TEMPLATES,
@@ -82,6 +82,9 @@ type TemplatePickerProps = {
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Pre-selected placement (the /new URL's folder / team context).
   initialPlacement?: string;
+  // The collection the template step opens on (the /new URL's `?browse=`),
+  // or null for the category overview.
+  initialShelf?: TemplateCollection | null;
   // Inline folder creation from the placement browser (name popover). Creates
   // in the given scope and returns the new folder (null on failure).
   onCreateFolder?: (
@@ -132,6 +135,7 @@ export function TemplatePicker({
   teams = [],
   teamFolders = {},
   initialPlacement,
+  initialShelf = null,
   onCreateFolder,
   onCreateTeam,
 }: TemplatePickerProps) {
@@ -184,7 +188,11 @@ export function TemplatePicker({
   // default (Popular). Held here, not in the browse, so it survives a peek
   // at the location step. A non-empty search query overrides the shelf and
   // shows flat results.
-  const [openCategory, setOpenCategory] = useState<ShelfCategory | null>(null);
+  // Undefined until the author opens a shelf: until then a `?browse=<collection>` link's
+  // collection is the open one (docs/specs/007-editor/new-document-route.md). Read at render, not as a
+  // useState seed, because the URL only arrives after hydration.
+  const [chosenCategory, setOpenCategory] = useState<ShelfCategory | null | undefined>(undefined);
+  const openCategory = chosenCategory === undefined ? initialShelf : chosenCategory;
   // The theme is whatever the caller hands us, unchanged: the /new flow
   // passes 'brand' (Default), a new tab its source tab's theme.
   const themeId = currentThemeId;
@@ -287,6 +295,9 @@ export function TemplatePicker({
   // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
+  // Whiteboard is not a template shelf: its own tile closes the category grid
+  // (docs/specs/023-whiteboard/whiteboard.md "Creating one").
+  const whiteboardTemplate = TEMPLATES.find((t) => t.kind === 'whiteboard');
   // Picking a template: the welcome wizard moves on to where the document
   // lives; Quick Start applies it straight away.
   const onTemplateCommit = (kind: TemplateKind) => {
@@ -404,6 +415,7 @@ export function TemplatePicker({
                 setOpenCategory={setOpenCategory}
                 popularTemplates={popularTemplates}
                 categoryTemplates={categoryTemplates}
+                whiteboardTemplate={whiteboardTemplate}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
               />

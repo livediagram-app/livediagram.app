@@ -1,4 +1,8 @@
-import type { BackgroundPattern, Tab } from '@livediagram/document';
+import {
+  WHITEBOARD_DEFAULT_PATTERN,
+  type BackgroundPattern,
+  type Tab,
+} from '@livediagram/document';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -155,7 +159,11 @@ export type TemplateKind =
   | 'meeting-agenda'
   // Personal objectives, written with a sentence formula and a SMART check,
   // balanced across life areas, with key results and a check-in rhythm.
-  | 'objectives-planner';
+  | 'objectives-planner'
+  // Whiteboard (docs/specs/023-whiteboard/whiteboard.md): a blank tab of the whiteboard KIND, drawn on
+  // with a dock of pens rather than the palette. Shown beside Blank as a
+  // quick-pick, never inside a category grid.
+  | 'whiteboard';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -183,6 +191,11 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank',
     title: 'Blank Canvas',
     description: 'An empty canvas to start with whatever you like.',
+  },
+  {
+    kind: 'whiteboard',
+    title: 'Whiteboard',
+    description: 'Free drawing without distractions',
   },
   {
     kind: 'mindmap',
@@ -729,9 +742,74 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'uml-class': 'technical',
   'state-machine': 'technical',
   'event-storming': 'technical',
+  // Nominal, like Blank: the picker shows Whiteboard only as a quick-pick.
+  whiteboard: 'design',
   'incident-postmortem': 'technical',
 };
 
+// Collections (docs/specs/007-editor/new-document-route.md "?browse=<collection>"): cross-category
+// shortlists a link can open the wizard on, shown as a drilled-in view with no
+// overview card of their own. Ids never collide with a category id, so one
+// view id names either. The order is the order the cards show in.
+export type TemplateCollection = 'brainstorm';
+
+export const TEMPLATE_COLLECTIONS: {
+  id: TemplateCollection;
+  label: string;
+  description: string;
+  kinds: readonly TemplateKind[];
+}[] = [
+  {
+    id: 'brainstorm',
+    label: 'Brainstorm',
+    description: 'Mind maps, affinity maps, fishbones and event storming.',
+    kinds: [
+      'mindmap',
+      'mindmap-tree',
+      'mindmap-bubble',
+      'affinity-map',
+      'fishbone',
+      'event-storming',
+    ],
+  },
+];
+
+export function isTemplateCollection(value: unknown): value is TemplateCollection {
+  return typeof value === 'string' && TEMPLATE_COLLECTIONS.some((c) => c.id === value);
+}
+
+// The editor URL that opens the wizard on a collection: what the marketing
+// hero's Brainstorm button links to.
+export function templateBrowseHref(collection: TemplateCollection): string {
+  return `/new?browse=${encodeURIComponent(collection)}`;
+}
+
+// What the template step can be drilled into: a category or a collection.
+export type TemplateShelf = TemplateCategory | TemplateCollection;
+
+export function templateShelfLabel(shelf: TemplateShelf): string {
+  return (
+    TEMPLATE_COLLECTIONS.find((c) => c.id === shelf)?.label ??
+    TEMPLATE_CATEGORIES.find((c) => c.id === shelf)?.label ??
+    shelf
+  );
+}
+
+// A shelf's cards from `templates` (the picker's shuffled, listed catalogue):
+// a collection in its own order, a category in the order given. Blank and
+// Whiteboard are quick-picks, never on a category shelf.
+export function templateShelfTemplates(
+  shelf: TemplateShelf,
+  templates: readonly TemplateDescriptor[],
+): TemplateDescriptor[] {
+  const collection = TEMPLATE_COLLECTIONS.find((c) => c.id === shelf);
+  if (collection) {
+    return collection.kinds.flatMap((kind) => templates.find((t) => t.kind === kind) ?? []);
+  }
+  return templates.filter(
+    (t) => t.kind !== 'blank' && t.kind !== 'whiteboard' && templateCategory(t.kind) === shelf,
+  );
+}
 // The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
 // most people start, open by default above the categories. Not a category of
 // its own (every kind here still lives in its real one); Blank Canvas leads it,
@@ -856,6 +934,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   storyboard: 'crosshatch',
+  // A new whiteboard starts on Grid (docs/specs/023-whiteboard/whiteboard.md "Board background").
+  whiteboard: WHITEBOARD_DEFAULT_PATTERN,
   // The twelve-starter batch follows the same split: the retro formats,
   // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
   // boards on the dot grid, as is the postmortem (a dense written report,
@@ -908,7 +988,9 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
   // a few radial / stage layouts soften further still, and the lower of the
   // two wins.
-  const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  // A whiteboard draws its own quiet board pattern (docs/specs/023-whiteboard/whiteboard.md "Board
+  // background"), so it never takes a template's dimming.
+  const quiet = pattern && kind !== 'whiteboard' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
   const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
@@ -924,6 +1006,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
+  if (kind === 'whiteboard') overrides.kind = 'whiteboard';
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

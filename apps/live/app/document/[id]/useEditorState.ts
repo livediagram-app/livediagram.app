@@ -26,6 +26,9 @@ import {
   type Tab,
 } from '@livediagram/document';
 
+import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
+import { isPathEditing } from '@/lib/path-edit';
+import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -38,7 +41,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, isWhiteboardTab } from '@livediagram/document';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1701,7 +1704,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // chose per element kind, applied to the next element the user draws. The
   // style hooks below get `commit` / `tickTabs` wrapped to record into it.
   const activeTheme = getTheme(activeTab.theme);
-  const styleMemory = useStyleMemory({ documentId, theme: activeTheme });
+  const styleMemory = useStyleMemory({
+    documentId,
+    theme: activeTheme,
+    board: isWhiteboardTab(activeTab),
+  });
   const liveActiveElements = () =>
     (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
   const rememberingCommit = (mapElements: (els: Element[]) => Element[]) => {
@@ -2309,6 +2316,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
   });
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn path, a continued one, an edit.
+  const { commitPath, commitPathEdit } = usePathCommits({
+    editsBlocked: createBlocked,
+    commit,
+    styleNewElement: styleMemory.styleNewElement,
+    setSelectedId,
+  });
 
   // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
   const { canGrowMindNode, growMindNode, abandonMindNode } = useMindGrowth({
@@ -2406,11 +2420,32 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   });
 
+  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md): device-local pens, recognition and
+  // eraser mode, and the dock presses turned into ordinary editor calls.
+  const whiteboardDock = useWhiteboard({
+    activeTab,
+    canvasTool,
+    pendingDraw,
+    editsBlocked: createBlocked,
+    setCanvasTool,
+    selectCanvasTool,
+    beginDraw,
+    cancelDraw: cancelDrawShape,
+    setBackgroundPattern,
+    pathEditing: isPathEditing(activeTab.elements, editingId),
+    leavePathEdit: () => setEditingId(null),
+    userPreferences,
+    setUserPreferences,
+    writeUserPreferences,
+    ownerId: selfParticipant.id,
+  });
+
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
   // pointer touches, as a single-undo gesture. Canvas calls beginErase
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
     config: eraserSettings.config,
+    whiteboard: whiteboardDock.whiteboard ? { mode: whiteboardDock.prefs.eraserMode } : null,
     editsBlocked,
     layerInertIds,
     activeId,
@@ -2554,6 +2589,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
     memory: styleMemory,
     swatchOverrides,
+    pen: {
+      held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
+      update: whiteboardDock.updatePen,
+      colours: whiteboardDock.colourMemory,
+    },
+    toolIntent: pendingDraw,
   });
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
@@ -2956,9 +2997,23 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onOpenSearch: () => dialogs.setSearchOpen(true),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
+    // A whiteboard's keys are its dock's (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    whiteboard: whiteboardDock.whiteboard
+      ? {
+          pickSelect: whiteboardDock.pickSelect,
+          pickPen: whiteboardDock.pickPen,
+          pickEraser: whiteboardDock.pickEraser,
+          pickSticky: whiteboardDock.pickSticky,
+          pickText: whiteboardDock.pickText,
+          pickShape: whiteboardDock.pickShape,
+          pickPath: whiteboardDock.pickPath,
+          openShapes: whiteboardDock.openShapes,
+        }
+      : null,
   });
 
   return {
+    whiteboardDock,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,
@@ -3143,6 +3198,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitPath,
+    commitPathEdit,
+    styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,

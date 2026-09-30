@@ -12,6 +12,7 @@ import {
   Glyph,
   LinkIcon,
   lucideGlyph,
+  MindmapIcon,
   NoteIcon,
   SparkleIcon,
   TrashIcon,
@@ -149,18 +150,9 @@ export function TreeMenuIcon() {
   );
 }
 
-// Hub with four spokes - the Mindmap (radial) layout style.
+// Hub with four spokes - the Mindmap (radial) layout style, the shared mind map glyph.
 export function MindmapMenuIcon() {
-  return (
-    <LayoutPreview>
-      <circle cx="8" cy="8" r="2.2" />
-      <circle cx="2.8" cy="3" r="1.4" />
-      <circle cx="13.2" cy="3" r="1.4" />
-      <circle cx="2.8" cy="13" r="1.4" />
-      <circle cx="13.2" cy="13" r="1.4" />
-      <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
-    </LayoutPreview>
-  );
+  return <MindmapIcon size={MENU_ICON_PX} />;
 }
 
 // A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the

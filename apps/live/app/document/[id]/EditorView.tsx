@@ -1,6 +1,6 @@
 'use client';
 
-import { truncateName } from '@livediagram/document';
+import { isWhiteboardTab, truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { canvasSurface } from '@livediagram/document';
@@ -173,7 +173,9 @@ export function EditorView() {
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  useEditorAccent(activeTab.theme);
+  // A whiteboard has no theme (docs/specs/023-whiteboard/whiteboard.md "Appearance"): Default chrome.
+  const whiteboard = isWhiteboardTab(activeTab);
+  useEditorAccent(whiteboard ? undefined : activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
@@ -199,6 +201,8 @@ export function EditorView() {
     !showSignInBanner &&
     !templateGridOpen &&
     !pendingDraw &&
+    // A whiteboard's dock is its own hint (docs/specs/023-whiteboard/whiteboard.md).
+    !whiteboard &&
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
@@ -446,6 +450,7 @@ export function EditorView() {
               }
               // Phones never show it, so the desktop layout is the one that counts.
               layout={resolvePanelLayout(userPreferences)}
+              powerUser={isPowerUserMode(userPreferences)}
             />
           </AreaErrorBoundary>
           <AreaErrorBoundary area="Search">
@@ -518,6 +523,7 @@ export function EditorView() {
           {zenMode ||
           embedMode ||
           minimalChrome ||
+          whiteboard ||
           showSignInBanner ||
           showEmptyCanvasBanner ? null : (
             <ThemeModeBanner themeId={activeTab.theme} />

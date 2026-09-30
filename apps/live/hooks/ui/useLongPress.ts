@@ -15,7 +15,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // Movement cancels it (the press became a drag), as does lifting early, so
 // it composes with the existing drag handlers: spread this BEFORE the
 // element's own onPointerDown and both run.
-const LONG_PRESS_MS = 500;
+export const LONG_PRESS_MS = 500;
 const MOVE_SLOP_PX = 10;
 // Hold this long before the "hold" indicator appears, so a quick tap never
 // flashes it — only a deliberate press shows the ring, which then completes as

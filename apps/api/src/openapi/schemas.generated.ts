@@ -617,6 +617,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opacity": {
         "type": "number"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "routeBehind": {
         "type": "boolean"
       },
@@ -795,6 +798,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/FreehandElement"
+      },
+      {
+        "$ref": "#/components/schemas/PathElement"
       },
       {
         "$ref": "#/components/schemas/TableElement"
@@ -2914,6 +2920,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "highlighter",
         "type": "string"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "penWidth": {
         "type": "number"
       },
@@ -2936,11 +2945,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "pressures": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
       "rotation": {
         "type": "number"
       },
       "straightEdges": {
         "type": "boolean"
+      },
+      "streamline": {
+        "type": "number"
       },
       "strokeColor": {
         "type": "string"
@@ -3603,6 +3621,208 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PathElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "closed": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/components/schemas/PathNode"
+        },
+        "type": "array"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "path",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "nodes",
+      "closed"
+    ],
+    "type": "object"
+  },
+  "PathHandleMode": {
+    "enum": [
+      "corner",
+      "mirrored",
+      "aligned"
+    ],
+    "type": "string"
+  },
+  "PathNode": {
+    "additionalProperties": false,
+    "properties": {
+      "handleIn": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "handleOut": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/PathHandleMode"
+      },
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "mode",
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PathPoint": {
+    "additionalProperties": false,
+    "properties": {
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PenColourName": {
+    "enum": [
+      "blue",
+      "red",
+      "orange",
+      "green",
+      "teal",
+      "violet",
+      "pink"
+    ],
+    "type": "string"
+  },
   "PickerSource": {
     "enum": [
       "participants",
@@ -4083,6 +4303,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pageTitle": {
         "type": "string"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "pickerOptions": {
         "items": {
@@ -4730,7 +4953,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming"
+      "event-storming",
+      "whiteboard"
     ],
     "type": "string"
   },
@@ -5350,6 +5574,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Page",
       "Cta",
       "Trash",
+      "Whiteboard",
       "Drive"
     ],
     "type": "string"
@@ -5558,6 +5783,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
+      "autoWidth": {
+        "type": "boolean"
+      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
@@ -5629,6 +5857,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textItalic": {
         "type": "boolean"
+      },
+      "textScale": {
+        "type": "number"
       },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"

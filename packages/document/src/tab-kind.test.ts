@@ -13,6 +13,14 @@ describe('tabKindOf', () => {
     expect(tabKindOf(tab({ kind: 'event-storming' }))).toBe('event-storming');
   });
 
+  it('reads a whiteboard', () => {
+    expect(tabKindOf(tab({ kind: 'whiteboard' }))).toBe('whiteboard');
+  });
+
+  it('reads an unknown kind as an ordinary diagram', () => {
+    expect(tabKindOf({ kind: 'sketchpad' })).toBe('diagram');
+  });
+
   it('treats a tab written before the field as an ordinary diagram', () => {
     expect(tabKindOf(tab({ kind: undefined }))).toBe('diagram');
   });
@@ -25,6 +33,11 @@ describe('stampTabKind', () => {
 
   it('leaves a specialised kind alone', () => {
     expect(stampTabKind(tab({ kind: 'event-storming' })).kind).toBe('event-storming');
+  });
+
+  it('leaves a whiteboard alone', () => {
+    const wb = tab({ kind: 'whiteboard' });
+    expect(stampTabKind(wb)).toBe(wb);
   });
 
   it('returns the SAME object when nothing needs stamping', () => {

@@ -192,11 +192,16 @@ export type DragMode =
 import type { ShapeBounds } from './resize-geometry';
 
 export {
+  constrainedBounds,
   cornerOf,
+  leadingAxis,
   MIN_SIZE,
+  minUniformScale,
   nextBounds,
+  snapLeadingAxis,
   snapModeOf,
   unionResizeMember,
+  type ResizeAxis,
   type ResizeSnapMode,
   type ShapeBounds,
 } from './resize-geometry';

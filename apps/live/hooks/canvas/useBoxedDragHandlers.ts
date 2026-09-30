@@ -59,6 +59,11 @@ export function useBoxedDragHandlers({
     // press on one doesn't even land a selection.
     if (d.layerInertIds.has(elementId)) return;
     d.setSelectedId(elementId);
+    // Only Shift adds to a selection (docs/specs/008-canvas/canvas-and-palette.md "Marquee
+    // box-select"): a press outside the multi-selection selects this element alone.
+    if (d.multiSelectedIds.size > 0 && !d.multiSelectedIds.has(elementId)) {
+      d.setMultiSelectedIds(new Set());
+    }
     // Selection above still lands so viewers can inspect; the drag
     // itself is blocked for a locked element or a read-only session.
     if (element.locked === true || d.isReadOnly) return;

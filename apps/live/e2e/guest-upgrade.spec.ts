@@ -15,7 +15,7 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
     await route.fetch();
     moved();
   });
-  // Straight to a blank canvas (the landing page's Just Draw link).
+  // Straight to a blank canvas (the Start Blank link).
   await page.goto('/new?blank=1');
   await page.waitForURL(/\/document\//);
   const id = /\/document\/([^/?#]+)/.exec(page.url())![1];

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ImageElement, ShapeElement, Tab } from './index';
+import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
+import { freehandPenStroke, penStrokePath } from './pen-stroke';
+import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
 import { arrowLabelFontStack } from './svg-render-arrows';
 import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
@@ -310,6 +312,31 @@ describe('renderElementsToSvg', () => {
   });
 
   describe('freehand + silhouettes + rotation', () => {
+    it('exports a whiteboard pen stroke as the canvas draws it: the filled pressure outline', () => {
+      // docs/specs/023-whiteboard/whiteboard.md "Pens": the same function as FreehandSvg.
+      const el = {
+        id: 'pen',
+        type: 'freehand',
+        x: 10,
+        y: 10,
+        width: 100,
+        height: 50,
+        closed: false,
+        points: [
+          { nx: 0, ny: 0 },
+          { nx: 0.5, ny: 1 },
+          { nx: 1, ny: 0.5 },
+        ],
+        penWidth: 2.5,
+        pressures: [0.2, 0.8, 0.5],
+        streamline: 0.2,
+        strokeColor: '#e5484d',
+      } as FreehandElement;
+      const svg = renderElementsToSvg(tab([el]));
+      const d = penStrokePath(freehandPenStroke(el, { x: 10, y: 10 }), r2);
+      expect(svg).toContain(`<path d="${d}" fill="#e5484d" stroke="none"/>`);
+    });
+
     it('renders a freehand sketch as the canvas smooth curve, not a box', () => {
       const el = {
         id: 'fh',

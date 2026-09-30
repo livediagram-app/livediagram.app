@@ -3,6 +3,8 @@ import {
   BORDER_STROKE_PX,
   BROWSER_CHROME,
   catmullRomToBezierPath,
+  isPenStroke,
+  penStrokeSvg,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   type FreehandElement,
@@ -89,20 +91,59 @@ export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: n
 // curve when the user resizes. The stroke colour comes from theme
 // (with the per-element override), matching how other boxed elements
 // pick their accent.
+// The svg a freehand stroke draws in, shared with the whiteboard pen's live ink
+// (whiteboard/LiveInk.tsx), which lays itself out exactly like the stroke it lands as.
+export const FREEHAND_SVG_CLASS =
+  'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
+
 export function FreehandSvg({
   element,
   fill,
   stroke,
+  hitWidth,
 }: {
   element: FreehandElement;
   fill: string;
   stroke: string;
+  // Set when only the drawn line picks the stroke (a whiteboard pen stroke not
+  // yet selected): an invisible line this wide, in canvas px, catches pointers.
+  hitWidth?: number;
 }) {
   // Map normalised points to the 100x100 viewBox before threading
   // them through the smoothing helper. `points.length < 2` collapses
   // to an empty path; the renderer then draws nothing, which is the
   // right behaviour for a degenerate single-click "stroke".
-  const vbPoints = element.points.map((p) => ({ x: p.nx * 100, y: p.ny * 100 }));
+  // A whiteboard pen stroke (docs/specs/023-whiteboard/whiteboard.md "Pens") is ink on the board:
+  // the filled perfect-freehand outline of its raw points and pressures (pen-stroke.ts), in canvas
+  // coordinates in a viewBox on the element's own box (penStrokeSvg), so the canvas zoom scales it
+  // like everything else, identically in every browser, and the outline's numbers never depend on
+  // where the box is. The stroke being drawn (whiteboard/LiveInk.tsx) is this same svg in the same
+  // layer, so its settled ink stays still as it grows and release changes no pixel.
+  if (isPenStroke(element)) {
+    const { viewBox, d: outline } = penStrokeSvg(element);
+    return (
+      <svg className={FREEHAND_SVG_CLASS} viewBox={viewBox} preserveAspectRatio="none" aria-hidden>
+        <path d={outline} fill={stroke} stroke="none" />
+        {hitWidth !== undefined ? (
+          // Only the drawn line picks the stroke (docs/specs/023-whiteboard/whiteboard.md "Selecting"):
+          // the outline, grown by the margin either side, catches pointers.
+          <path
+            data-stroke-hit=""
+            d={outline}
+            fill="transparent"
+            stroke="transparent"
+            strokeWidth={Math.max(0, hitWidth - (element.penWidth ?? 0))}
+            strokeLinejoin="round"
+            style={{ pointerEvents: 'all' }}
+          />
+        ) : null}
+      </svg>
+    );
+  }
+  // Every other stroke keeps a 100-unit viewBox and its non-scaling preset.
+  const vbW = 100;
+  const vbH = 100;
+  const vbPoints = element.points.map((p) => ({ x: p.nx * vbW, y: p.ny * vbH }));
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md) keep their deliberate corners:
   // straight M/L segments instead of the Catmull-Rom smoothing the
   // sampled pencil strokes want.
@@ -114,7 +155,9 @@ export function FreehandSvg({
           (element.closed ? ' Z' : '')
         : catmullRomToBezierPath(vbPoints, element.closed);
   const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
-  const widthPx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+  // A recorded pen width (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) wins over the preset.
+  const widthPx =
+    element.penWidth ?? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
   // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
   // (fixed wide round stroke, multiply blend, never filled) so the
   // border-preset widths and dash styles don't apply. Kept in sync
@@ -122,8 +165,8 @@ export function FreehandSvg({
   const isHighlighter = element.pen === 'highlighter';
   return (
     <svg
-      className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-      viewBox="0 0 100 100"
+      className={FREEHAND_SVG_CLASS}
+      viewBox={`0 0 ${vbW} ${vbH}`}
       preserveAspectRatio="none"
       aria-hidden
     >
@@ -141,6 +184,18 @@ export function FreehandSvg({
           strokeLinejoin="round"
           strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
           vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
+      {d && hitWidth !== undefined ? (
+        <path
+          data-stroke-hit=""
+          d={d}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={hitWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'stroke' }}
         />
       ) : null}
     </svg>

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livediagram/document';
+import { WHITEBOARD_BOARD, WHITEBOARD_PATTERN, createShape, type Tab } from '@livediagram/document';
 import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
@@ -48,6 +48,34 @@ describe('getTheme under an appearance', () => {
 });
 
 describe('resolveTabBackdrop', () => {
+  it('paints a whiteboard board in both appearances, ignoring the stored theme', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Appearance": the board ignores any stored theme or colour.
+    const t = tab({
+      kind: 'whiteboard',
+      theme: 'midnight',
+      backgroundColor: '#fde68a',
+      patternColor: '#f59e0b',
+      backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
+    });
+    setAppearance('light');
+    expect(resolveTabBackdrop(t)).toEqual({
+      backgroundColor: WHITEBOARD_BOARD.light,
+      patternColor: WHITEBOARD_PATTERN.light,
+      backgroundPattern: 'graph',
+      backgroundOpacity: 1,
+    });
+    setAppearance('dark');
+    expect(resolveTabBackdrop(t)).toMatchObject({
+      backgroundColor: WHITEBOARD_BOARD.dark,
+      patternColor: WHITEBOARD_PATTERN.dark,
+    });
+  });
+
+  it('keeps a whiteboard stored without a pattern on Plain, as it always showed', () => {
+    expect(resolveTabBackdrop(tab({ kind: 'whiteboard' })).backgroundPattern).toBe('blank');
+  });
+
   it('paints a Default tab in the viewer’s appearance', () => {
     const t = tab({ theme: 'brand', backgroundColor: '#ffffff', patternColor: '#cbd5e1' });
     setAppearance('dark');

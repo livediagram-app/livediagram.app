@@ -9,6 +9,8 @@ import type {
   EsSide,
   EventStormingNoteKind,
   FrameHandle,
+  FreehandElement,
+  RecognisedShape,
 } from '@livediagram/document';
 import type {
   AlignmentGuide,
@@ -72,6 +74,10 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The whiteboard dock's model and the board's ink for this appearance
+  // (docs/specs/023-whiteboard/whiteboard.md), present on a whiteboard tab.
+  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
+  whiteboardInk?: string;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
   // undefined: a note dragged in from the palette snaps onto it, and the
   // overlay lights the lane it is landing on.
@@ -379,12 +385,38 @@ export type CanvasProps = {
   // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
   // through recogniseShape and may mint a real shape primitive instead of a
   // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone.
-  onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
+  // preference — the toggle that used to set it is gone. A whiteboard pen's points are its raw
+  // samples, landed as they are with their `ink` (pressures, streamline; lib/live-stroke).
+  onCommitFreehand: (
+    points: { x: number; y: number }[],
+    recogniseShapes: boolean,
+    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke).
+    ink?: Pick<FreehandElement, 'pressures' | 'streamline'> & { snapped?: RecognisedShape },
+  ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn or continued path lands, an
+  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
+  // drawn shows the style it will land with.
+  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
+  onCommitPathEdit: (
+    id: string,
+    next: { anchors: import('@livediagram/document').PathAnchor[]; closed: boolean },
+    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
+  ) => void;
+  onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
+  // The line or arrow a draw would land if released now, as the canvas would show it
+  // (docs/specs/023-whiteboard/whiteboard.md "Shapes"), drawn in place of a stand-in while the drag
+  // is in flight. From lib/drawn-arrow-preview.
+  previewDrawnArrow?: (
+    intent: Extract<PendingDraw, { type: 'arrow' }>,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+  ) => import('@livediagram/document').ArrowElement;
   // Minimal panel layout preference (docs/specs/007-editor/user-preferences.md). When true, the floating
   // panels render as dock popovers on desktop too (always on mobile).
   minimalPanels?: boolean;
@@ -571,7 +603,13 @@ export type CanvasProps = {
   // active. The canvas intercepts it in the capture phase (before element
   // select/drag) and hands the screen coords here to start an erase
   // gesture; the gesture's move/release are tracked by useCanvasEraser.
-  onEraseStart?: (clientX: number, clientY: number) => void;
+  // `frame`: where the canvas sits on screen at the press (the whiteboard's
+  // geometric erase, docs/specs/023-whiteboard/whiteboard.md).
+  onEraseStart?: (
+    clientX: number,
+    clientY: number,
+    frame?: { left: number; top: number; zoom: number },
+  ) => void;
   // Right-click on an element. Forwarded from BoxedElementView's
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.

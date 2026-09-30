@@ -74,6 +74,7 @@ type ElementItem = {
     | 'sticky'
     | 'image'
     | 'freehand'
+    | 'path'
     | 'table'
     | 'annotation'
     | 'link-card'
@@ -251,7 +252,8 @@ export function matches(needle: string, hay: string): boolean {
 }
 
 // 0 exact name, 1 name prefix, 2 name substring, 3 keyword only, 4 no match.
-function paletteRank(q: string, item: PaletteSearchItem): number {
+// Shared with the whiteboard's More shapes search, which ranks the same way.
+export function paletteRank(q: string, item: Pick<PaletteSearchItem, 'name' | 'keywords'>): number {
   const needle = q.toLowerCase();
   const name = item.name.toLowerCase();
   if (name === needle) return 0;

@@ -1,13 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
-import type { TemplateDescriptor, TemplateCategory, TemplateKind } from '@livediagram/templates';
-import { TEMPLATE_CATEGORIES, TEMPLATES, templateCategory } from '@livediagram/templates';
+import type {
+  TemplateCategory,
+  TemplateCollection,
+  TemplateDescriptor,
+  TemplateKind,
+} from '@livediagram/templates';
+import {
+  TEMPLATE_CATEGORIES,
+  TEMPLATE_COLLECTIONS,
+  TEMPLATES,
+  templateCategory,
+  templateShelfTemplates,
+} from '@livediagram/templates';
 import { CloseIcon, SearchIcon, SnapCarousel } from '@livediagram/ui';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
+import { BackBar } from '@/components/primitives/BackBar';
 import { CategoryTile, TemplateCard } from '@/components/palette/template-picker-cards';
 
 // A shelf the picker can open: a real template category, or the curated
 // Popular set (POPULAR_TEMPLATE_KINDS) that leads it.
-export type ShelfCategory = TemplateCategory | 'popular';
+// A collection (`?browse=<collection>`, docs/specs/007-editor/new-document-route.md) is a shelf too:
+// shown only while it is the open one, with no folded tile of its own.
+export type ShelfCategory = TemplateCategory | 'popular' | TemplateCollection;
+
+// Whiteboard is a different activity from the diagram templates: never on a shelf, its own tile
+// closes the category grid (docs/specs/023-whiteboard/whiteboard.md "Creating one").
+const onShelf = (t: TemplateDescriptor) => t.kind !== 'whiteboard';
 
 type Shelf = {
   id: ShelfCategory;
@@ -25,7 +43,7 @@ function fanKinds(shelf: Shelf): TemplateKind[] {
   if (shelf.id === 'popular')
     return shelf.items.filter((t) => t.kind !== 'blank').map((t) => t.kind);
   return TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== 'blank' && templateCategory(t.kind) === shelf.id,
+    (t) => !t.hidden && t.kind !== 'blank' && onShelf(t) && templateCategory(t.kind) === shelf.id,
   ).map((t) => t.kind);
 }
 
@@ -51,6 +69,7 @@ export function TemplatePickerBrowse({
   setOpenCategory,
   popularTemplates,
   categoryTemplates,
+  whiteboardTemplate,
   templateKind,
   onTemplateCommit,
 }: {
@@ -66,6 +85,7 @@ export function TemplatePickerBrowse({
   setOpenCategory: (c: ShelfCategory | null) => void;
   popularTemplates: TemplateDescriptor[];
   categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
+  whiteboardTemplate?: TemplateDescriptor;
   templateKind: TemplateKind;
   // Single-click a template card: select it AND move on (the welcome wizard to Location, Quick Start applies it)
   // (docs/specs/006-document/offline-mode.md). The same handler backs double-click, so either gesture works.
@@ -78,11 +98,26 @@ export function TemplatePickerBrowse({
       description: 'Where most people start.',
       items: popularTemplates,
     },
-    ...TEMPLATE_CATEGORIES.map((c): Shelf => ({ ...c, items: categoryTemplates(c.id) })),
-  ].filter((shelf) => shelf.items.length > 0);
+    ...TEMPLATE_COLLECTIONS.filter((c) => c.id === openCategory).map((c): Shelf => ({
+      ...c,
+      items: templateShelfTemplates(c.id, TEMPLATES),
+    })),
+    ...TEMPLATE_CATEGORIES.map((c): Shelf => ({
+      ...c,
+      items: categoryTemplates(c.id).filter(onShelf),
+    })),
+  ]
+    .map((shelf) => ({ ...shelf, items: shelf.items.filter(onShelf) }))
+    .filter((shelf) => shelf.items.length > 0);
   const openId = openCategory ?? 'popular';
   const open = shelves.find((shelf) => shelf.id === openId) ?? shelves[0];
-  const folded = shelves.filter((shelf) => shelf !== open);
+  // A collection is never a folded tile: it leaves once another shelf opens.
+  // A `?browse=` collection opens drilled in, as it always has: every card of it at once under a
+  // back bar, the shelf and the other categories out of the way (docs/specs/007-editor/new-document-route.md).
+  const collection = open && TEMPLATE_COLLECTIONS.some((c) => c.id === open.id) ? open : undefined;
+  const folded = shelves.filter(
+    (shelf) => shelf !== open && !TEMPLATE_COLLECTIONS.some((c) => c.id === shelf.id),
+  );
   // Popular only repeats templates the categories already hold, so it is left
   // out of the "more templates" sum.
   const foldedCount = folded
@@ -139,7 +174,10 @@ export function TemplatePickerBrowse({
           the whole catalogue. Blank is special-cased out of the category
           grouping (it's a "start from scratch", not a category template) and
           leads the Popular shelf instead. */}
-      <AnimatedHeightBox viewKey={templateFilter ? 'search' : 'shelf'} className="mt-4">
+      <AnimatedHeightBox
+        viewKey={templateFilter ? 'search' : collection ? 'collection' : 'shelf'}
+        className="mt-4"
+      >
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
             <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-400">
@@ -158,6 +196,25 @@ export function TemplatePickerBrowse({
               ))}
             </div>
           )
+        ) : collection ? (
+          <>
+            <BackBar
+              label="All templates"
+              current={collection.label}
+              onClick={() => setOpenCategory('popular')}
+            />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {collection.items.map((t) => (
+                <TemplateCard
+                  key={t.kind}
+                  template={t}
+                  active={templateKind === t.kind}
+                  onSelect={() => onTemplateCommit(t.kind)}
+                  onCommit={() => onTemplateCommit(t.kind)}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div>
             {open ? (
@@ -221,7 +278,8 @@ export function TemplatePickerBrowse({
                 {folded.length} more categories, {foldedCount} more templates
               </p>
             </div>
-            <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {/* Three across, so the eight categories and Whiteboard fill three even rows. */}
+            <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {folded.map((shelf) => (
                 <li key={shelf.id}>
                   <CategoryTile
@@ -233,6 +291,17 @@ export function TemplatePickerBrowse({
                   />
                 </li>
               ))}
+              {whiteboardTemplate ? (
+                <li>
+                  <CategoryTile
+                    label={whiteboardTemplate.title}
+                    ariaLabel={`Start a whiteboard: ${whiteboardTemplate.description}`}
+                    description={whiteboardTemplate.description}
+                    kinds={['whiteboard']}
+                    onOpen={() => onTemplateCommit('whiteboard')}
+                  />
+                </li>
+              ) : null}
             </ul>
           </div>
         )}

@@ -41,7 +41,7 @@ const RENDER_NEWLINE_ATTR = 'data-rt-render-nl';
 // the editor's text ends in a newline. Caret-safe: the sentinel always sits
 // at the very end (after any caret), so adding/removing it never moves the
 // selection. Call after any edit that may change the trailing character.
-export function reconcileTrailingNewline(editorEl: HTMLElement): void {
+export function reconcileTrailingNewline(editorEl: HTMLElement): boolean {
   const last = editorEl.lastChild;
   const isSentinel =
     last instanceof HTMLElement && last.tagName === 'BR' && last.hasAttribute(RENDER_NEWLINE_ATTR);
@@ -50,9 +50,19 @@ export function reconcileTrailingNewline(editorEl: HTMLElement): void {
     const br = document.createElement('br');
     br.setAttribute(RENDER_NEWLINE_ATTR, '');
     editorEl.appendChild(br);
-  } else if (!endsWithNewline && isSentinel) {
-    editorEl.removeChild(last);
+    return true;
   }
+  if (!endsWithNewline && isSentinel) editorEl.removeChild(last);
+  return false;
+}
+
+/** Set the live selection again, so the browser re-settles it against the current DOM. */
+export function reassertSelection(): void {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0).cloneRange();
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 /** React props (data-* attrs) describing a run's deltas, for the editor to spread onto its span. */

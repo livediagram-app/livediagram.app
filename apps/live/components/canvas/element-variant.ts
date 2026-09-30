@@ -208,7 +208,8 @@ export function describeVariant(
         },
       };
     }
-    case 'freehand': {
+    case 'freehand':
+    case 'path': {
       // The freehand element renders its SVG path as the child
       // content. The wrapper here just contributes the selection
       // ring + remote-selector outline, with a transparent
@@ -290,4 +291,15 @@ export function describeVariant(
       };
     }
   }
+}
+
+// How an element in its edit mode sits on the canvas. A label being typed rises above its
+// neighbours and wears the text cursor; a path in its edit mode (docs/specs/023-whiteboard/path-tool.md
+// "Editing") does neither: its points are edited, never typed, and its nodes must stay above it.
+export function editingLook(
+  element: { type: string },
+  isEditing: boolean,
+): { raise: boolean; textCursor: boolean } {
+  const typing = isEditing && element.type !== 'path';
+  return { raise: typing, textCursor: typing };
 }

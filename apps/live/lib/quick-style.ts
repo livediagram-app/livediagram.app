@@ -15,6 +15,7 @@ import {
   supportsFillColor,
   type ArrowElement,
   type Element,
+  type PathElement,
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type ShapeElement,
@@ -23,8 +24,9 @@ import {
   type ThemeDefinition,
 } from '@livediagram/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import type { QuickPenStyle } from './quick-style-pen';
 
-export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;
+export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
 export type QuickSectionId =
   'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
@@ -50,24 +52,40 @@ export type QuickStyleView = {
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
   };
+  // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
+  pen?: QuickPenStyle;
+  // Names whose style this is when it is not a selection: a tool's next mark.
+  caption?: string;
 };
 
-// An unlocked shape, arrow or text element: the only elements the panel styles.
+// An unlocked shape, arrow, text element or path (docs/specs/023-whiteboard/path-tool.md "Style"):
+// the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
-  return (el.type === 'shape' || el.type === 'arrow' || el.type === 'text') && el.locked !== true;
+  return (
+    (el.type === 'shape' || el.type === 'arrow' || el.type === 'text' || el.type === 'path') &&
+    el.locked !== true
+  );
 }
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {
   switch (section) {
     case 'stroke':
-      return el.type === 'arrow' || (el.type === 'shape' && supportsColours(el));
+      return (
+        el.type === 'arrow' || el.type === 'path' || (el.type === 'shape' && supportsColours(el))
+      );
     case 'background':
+      // A path fills only when closed.
+      if (el.type === 'path') return el.closed;
       return el.type === 'shape' && supportsFillColor(el);
     case 'textColour':
       return el.type === 'text';
     case 'width':
     case 'style':
-      return el.type === 'arrow' || (el.type === 'shape' && supportsBorderControls(el));
+      return (
+        el.type === 'arrow' ||
+        el.type === 'path' ||
+        (el.type === 'shape' && supportsBorderControls(el))
+      );
     case 'textAlign':
       return el.type === 'shape' && supportsTextAlign(el.shape);
     case 'iconAlign':
@@ -80,7 +98,7 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
 function isLinedTarget(
   el: Element,
   section: 'stroke' | 'width' | 'style',
-): el is ShapeElement | ArrowElement {
+): el is ShapeElement | ArrowElement | PathElement {
   return isQuickStyleTarget(el) && el.type !== 'text' && supportsQuickSection(el, section);
 }
 
@@ -125,12 +143,12 @@ function swatchValue(
   return shown && shown.slot !== 0 ? shown.slot : null;
 }
 
-function widthOf(el: ShapeElement | ArrowElement): QuickWidth | null {
+function widthOf(el: ShapeElement | ArrowElement | PathElement): QuickWidth | null {
   const w = el.type === 'arrow' ? arrowThicknessOf(el) : (el.strokeWidth ?? 'medium');
   return (QUICK_WIDTHS as readonly string[]).includes(w) ? (w as QuickWidth) : null;
 }
 
-function styleOf(el: ShapeElement | ArrowElement): QuickStrokeStyle | null {
+function styleOf(el: ShapeElement | ArrowElement | PathElement): QuickStrokeStyle | null {
   const style = el.strokeStyle ?? 'solid';
   if (el.type === 'arrow' && el.flow)
     return el.flow === 'dashes' && style === 'dashed' ? 'flowing' : null;
@@ -245,10 +263,16 @@ export function applyQuickFill(
   slot: QuickSwatchValue,
   overrides: SwatchOverrides = {},
 ): Element {
-  if (el.type !== 'shape' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'background'))
+  if (
+    (el.type !== 'shape' && el.type !== 'path') ||
+    !isQuickStyleTarget(el) ||
+    !supportsQuickSection(el, 'background')
+  )
     return el;
   const { colour, bind } = pickFor(theme, 'fill', slot, overrides);
-  return { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
+  return el.type === 'path'
+    ? { ...el, fillColor: colour, fillSwatch: bind }
+    : { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
 }
 
 export function applyQuickTextColour(
@@ -272,7 +296,8 @@ export function applyQuickWidth(el: Element, width: QuickWidth): Element {
 
 export function applyQuickStrokeStyle(el: Element, style: QuickStrokeStyle): Element {
   if (!isLinedTarget(el, 'style')) return el;
-  if (el.type === 'shape') return { ...el, strokeStyle: style === 'flowing' ? 'dashed' : style };
+  if (el.type === 'shape' || el.type === 'path')
+    return { ...el, strokeStyle: style === 'flowing' ? 'dashed' : style };
   if (style === 'flowing') {
     return {
       ...el,
@@ -312,6 +337,19 @@ export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
       flow: _f,
       flowSpeed: _fs,
       strokeColor: _c,
+      ...rest
+    } = el;
+    return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;
+  }
+  if (el.type === 'path') {
+    // Back to plain ink: a path takes the theme's line, never a fill (path-tool.md "Style").
+    const {
+      strokeSwatch: _sw,
+      fillSwatch: _fw,
+      strokeWidth: _w,
+      strokeStyle: _st,
+      strokeColor: _sc,
+      fillColor: _fc,
       ...rest
     } = el;
     return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;

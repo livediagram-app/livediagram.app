@@ -14,7 +14,7 @@ const header = (page: Page) => page.locator('header');
 
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
-  // Straight to a blank canvas: the /new?blank=1 bypass (the landing page's Just Draw).
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
@@ -132,7 +132,8 @@ test.describe('Power user mode', () => {
     await page.mouse.click(640, 420);
     const shape = page.locator('[data-element-id]').first();
     await expect(shape).toBeVisible();
-    await shape.click();
+    // Placing selects the square; a click on it now would deselect it
+    // (docs/specs/008-canvas/canvas-and-palette.md "Click the selected element again").
     const toolbar = page.getByRole('toolbar', { name: 'Selected Square' });
     await expect(toolbar).toBeVisible();
     await expect(page.getByText('Selected Square', { exact: true })).toHaveCount(0);

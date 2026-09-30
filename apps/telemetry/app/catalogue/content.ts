@@ -16,8 +16,8 @@ const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type 
 export const JUST_DRAW = chart(
   'UI',
   'Used',
-  'Just Draw',
-  'Straight to a blank canvas, skipping the wizard: the Just Draw shortcut into /new, or Just Draw in the template picker.',
+  'Start Blank',
+  'Straight to a blank canvas, skipping the wizard: the Start Blank shortcut into /new, or Start Blank in the template picker.',
   { types: ['JustDraw'] },
 );
 
@@ -227,7 +227,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Documents Created.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline. Those three are part of Documents Created.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,

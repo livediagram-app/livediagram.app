@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createAnnotation,
   createFreehand,
+  createPath,
   createShape,
   createSticky,
   createText,
@@ -66,5 +67,15 @@ describe('elementAriaLabel', () => {
     expect(elementAriaLabel(square('  '))).toBe('Square');
     expect(elementAriaLabel(arrow('yes'))).toBe('Arrow "yes"');
     expect(elementAriaLabel(createSticky(0, 0))).toBe('Sticky note');
+  });
+});
+
+describe('a path (docs/specs/023-whiteboard/path-tool.md "Accessibility")', () => {
+  const corner = (x: number, y: number) => ({ x, y, mode: 'corner' as const });
+  it('is named by its points, open or closed', () => {
+    const open = createPath([corner(0, 0), corner(10, 0), corner(10, 10)], false);
+    expect(kindLabel(open)).toBe('Path');
+    expect(elementAriaLabel(open)).toBe('Path, 3 points');
+    expect(elementAriaLabel({ ...open, closed: true })).toBe('Closed path, 3 points');
   });
 });

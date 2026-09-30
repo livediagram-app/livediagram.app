@@ -23,6 +23,8 @@ import {
   EDIT_KEYS,
   runModShortcut,
   VIEW_TOOL_KEYS,
+  WHITEBOARD_EDIT_KEYS,
+  WHITEBOARD_VIEW_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -36,6 +38,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // callback. This is the React canon for "I want fresh references
   // but I don't want to re-attach the listener on every render."
   const liveRef = useLatest(deps);
+  // Re-arms the Escape listener when the tab turns into (or out of) a whiteboard.
+  const onWhiteboard = deps.whiteboard !== null;
 
   // Escape cancels whichever transient editor mode is active:
   // format-painter, or a pending draw-to-size shape.
@@ -45,12 +49,16 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   useEffect(() => {
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
+    // A whiteboard's eraser is a held tool too: Escape puts it down
+    // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    const whiteboardEraser = liveRef.current.whiteboard !== null && canvasTool === 'eraser';
     if (
       formatSourceId === null &&
       pendingDraw === null &&
       canvasTool !== 'format' &&
       canvasTool !== 'isometric' &&
-      canvasTool !== 'avatar'
+      canvasTool !== 'avatar' &&
+      !whiteboardEraser
     )
       return;
     const onKey = (e: KeyboardEvent) => {
@@ -69,9 +77,15 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
           live.canvasTool === 'isometric' ||
-          live.canvasTool === 'avatar'
+          live.canvasTool === 'avatar' ||
+          (live.whiteboard !== null && live.canvasTool === 'eraser')
         ) {
           e.preventDefault();
+        }
+        // Whiteboard: back to Select from any tool in hand.
+        if (live.whiteboard !== null && live.canvasTool === 'eraser') {
+          live.whiteboard.pickSelect();
+          return;
         }
         liveRef.current.setFormatSourceId(null);
         // Persistent Format tool: Escape exits the tool entirely (back to
@@ -95,7 +109,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
+  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, onWhiteboard, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -173,6 +187,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
+        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         live.selectedId === null &&
         live.multiSelectedIds.size === 0
       ) {
@@ -197,6 +212,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
+        // A whiteboard eraser in hand is put down first (the narrow listener).
+        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
         (live.selectedId !== null || live.multiSelectedIds.size > 0)
       ) {
         e.preventDefault();
@@ -298,6 +315,20 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           e.preventDefault();
           return;
         }
+      }
+
+      // A whiteboard's keys are its dock's, and only these
+      // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the diagram tab's element and
+      // mode keys have no palette to mirror there.
+      if (live.whiteboard) {
+        const action =
+          WHITEBOARD_VIEW_KEYS[lower] ??
+          (live.isReadOnly ? undefined : WHITEBOARD_EDIT_KEYS[lower]);
+        if (action) {
+          e.preventDefault();
+          action(live);
+        }
+        return;
       }
 
       // Non-mutating view tools (Select / Hand / Laser / Isometric /

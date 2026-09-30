@@ -85,14 +85,16 @@ export default defineConfig({
         ]
       : []),
     // Opt-in (E2E_WEBKIT=1, after `playwright install webkit`): the image import
-    // pipeline's Safari path (docs/specs/020-import-export/import-image-pipeline.md). Kept
-    // out of CI's default run to spare its minutes; the same specs run in Chromium.
+    // pipeline's Safari path (docs/specs/020-import-export/import-image-pipeline.md) and the quick
+    // style panel's swatch rows, which fit or wrap by the engine's layout
+    // (docs/specs/008-canvas/quick-style-panel.md). Kept out of CI's default run to spare its
+    // minutes; the same specs run in Chromium.
     ...(process.env.E2E_WEBKIT === '1'
       ? [
           {
             name: 'webkit',
             use: { ...devices['Desktop Safari'] },
-            testMatch: /import-images\.spec\.ts/,
+            testMatch: /(import-images|quick-style-swatch-rows)\.spec\.ts/,
           },
         ]
       : []),

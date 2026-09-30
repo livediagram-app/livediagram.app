@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, openJustDraw } from './fixtures';
+import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
 // once, when its content has loaded; what the user then adds, the first element on an empty tab
@@ -8,13 +8,13 @@ import { expect, test, expectNoPageErrors, openJustDraw } from './fixtures';
 const CANVAS = '[data-canvas-a11y-root]';
 
 // The Toolbar layout keeps the canvas clear of floating panels, which refuse a drop.
-async function justDraw(page: Page): Promise<void> {
+async function startBlank(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
     localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
   });
-  await openJustDraw(page);
+  await openStartBlank(page);
 }
 
 const centre = (b: { x: number; y: number; width: number; height: number }) => ({
@@ -27,7 +27,7 @@ test.describe('Viewport on add', () => {
     page,
     pageErrors,
   }) => {
-    await justDraw(page);
+    await startBlank(page);
     const canvas = page.locator(CANVAS);
     const box = (await canvas.boundingBox())!;
     const drop = { x: 200, y: 260 };
@@ -46,7 +46,7 @@ test.describe('Viewport on add', () => {
   });
 
   test('a reloaded tab is framed on its content', async ({ page, pageErrors }) => {
-    await justDraw(page);
+    await startBlank(page);
     const canvas = page.locator(CANVAS);
     // Dropped at the far corner, so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;

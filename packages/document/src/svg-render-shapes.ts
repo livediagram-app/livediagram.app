@@ -6,10 +6,13 @@
 // `meet` for the proportional actor), so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
-import type { BoxedElement, FreehandElement, ShapeKind } from './index';
+import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
+import { pathAnchors } from './path-element';
+import { pathD } from './path-geometry';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
+import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { codeTheme } from './code-themes';
 import { chartPaletteColors } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
@@ -141,6 +144,12 @@ export function svgShapeSilhouette(
 // open ones render stroke-only.
 export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
   if (el.points.length < 2) return '';
+  // A whiteboard pen stroke (docs/specs/023-whiteboard/whiteboard.md "Pens"): the filled
+  // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
+  if (isPenStroke(el)) {
+    const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
+    return `<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
+  }
   const pts = el.points.map((p) => ({ x: el.x + p.nx * el.width, y: el.y + p.ny * el.height }));
   const d = el.straightEdges
     ? pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r2(p.x)} ${r2(p.y)}`).join(' ') +
@@ -157,10 +166,13 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );
   }
+  // A recorded pen width (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) wins over the preset.
   const strokeWidth =
-    BORDER_STROKE_PX[
+    el.penWidth ??
+    (BORDER_STROKE_PX[
       (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
-    ] || 2;
+    ] ||
+      2);
   const dash =
     BORDER_DASH_ARRAY[
       (el as { strokeStyle?: keyof typeof BORDER_DASH_ARRAY }).strokeStyle ?? 'solid'
@@ -168,6 +180,20 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
   return (
     `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${strokeWidth}"` +
+    `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
+  );
+}
+
+// A path (docs/specs/023-whiteboard/path-tool.md): the headless twin of the canvas PathSvg, the same
+// curve from the same function at the border preset width, filled only when closed.
+export function svgPathElementShape(el: PathElement, stroke: string, fill: string): string {
+  if (el.nodes.length < 2) return '';
+  const d = pathD(pathAnchors(el), el.closed, r2);
+  const width = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'];
+  const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
+  const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
+  return (
+    `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
   );
 }

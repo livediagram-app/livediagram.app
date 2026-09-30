@@ -14,6 +14,48 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Whiteboard|Created|Template':
+    'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
+  'Whiteboard|Created|NewTab':
+    'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
+  'Whiteboard|Selected|Main':
+    "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
+  'Whiteboard|Selected|Path':
+    "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
+  'Whiteboard|Selected|ShapeSearch':
+    "Someone picked a shape they searched for in a whiteboard's Shapes flyout, which finds any of the palette's shapes by name.",
+  'Whiteboard|Selected|Second':
+    "Someone picked up a whiteboard's second pen (blue unless they changed it).",
+  'Whiteboard|Selected|Third':
+    "Someone picked up a whiteboard's third pen (red unless they changed it).",
+  'Whiteboard|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
+  'Whiteboard|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
+  'Whiteboard|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
+  'Whiteboard|Changed|CursorCrosshair':
+    "Someone chose the crosshair with a nib as a whiteboard's pen cursor.",
+  'Whiteboard|Changed|PenReset':
+    "Someone reset one of a whiteboard's pens to its starting colour and width.",
+  'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
+  'Whiteboard|Changed|EraserPartial':
+    "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
+  'Whiteboard|Changed|ShapePinned':
+    'Someone pinned a shape to their whiteboard dock, so it stays there beside the shapes they use most.',
+  'Whiteboard|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
+  'Whiteboard|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
+  'Whiteboard|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
+  'Whiteboard|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
+  'Whiteboard|Toggled|RecognitionOn':
+    'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
+  'Whiteboard|Toggled|RecognitionOff':
+    'Someone turned off shape recognition on a whiteboard, so strokes stay as drawn.',
+  'Whiteboard|Toggled|RecogniseOnceKey':
+    'Someone pressed Alt (Option) while drawing on a whiteboard to turn that one stroke into a clean shape at once.',
+  'Whiteboard|Toggled|RecogniseOnceChip':
+    "Someone tapped a whiteboard's Make shape chip while drawing to turn that one stroke into a clean shape at once.",
+  'Whiteboard|Toggled|BreakShapeKey':
+    'Someone pressed Alt (Option) while drawing on a whiteboard to turn a recognised shape back into the ink they drew.',
+  'Whiteboard|Toggled|BreakShapeChip':
+    "Someone tapped a whiteboard's Keep drawing chip while drawing to turn a recognised shape back into the ink they drew.",
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
@@ -202,6 +244,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Nudge':
     'Someone nudged a selected element with the arrow keys. Counted once per burst of presses, not once per key press.',
   'Element|Changed|Padding': "Someone changed a selected element's internal padding.",
+  'Element|Changed|PathEdit':
+    'Someone reshaped a path in its edit mode: moved, added, removed or smoothed a point, or bent a curve. Counted once per change.',
+  'Element|Changed|PathJoin':
+    'Someone closed an open path in its edit mode by joining its two ends.',
   'Element|Changed|Picker':
     'Someone rolled a Picker element, landing on a participant or option from its list, shared with everyone in the room.',
   'Element|Changed|Portal':
@@ -818,6 +864,13 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Whiteboard|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
+  'Whiteboard|Selected':
+    'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
+  'Whiteboard|Changed':
+    "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background or its pinned shapes.",
+  'Whiteboard|Toggled':
+    'Someone switched shape recognition on a whiteboard on or off, or flipped the stroke they were drawing between ink and a shape.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':

@@ -27,12 +27,15 @@ import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
+import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
+import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
-import { describeVariant } from '@/components/canvas/element-variant';
+import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
@@ -64,7 +67,7 @@ function BoxedElementViewImpl({
   element,
   isSelected,
   isMultiSelected = false,
-  multiSelectActive = false,
+  onPlainClick,
   isEditing,
   editCursorAtEnd = false,
   isPaintMode,
@@ -202,13 +205,14 @@ function BoxedElementViewImpl({
       isEditing,
       remotelyLocked,
       isAnnotation,
-      multiSelectActive,
       isMultiSelected,
       isSelected,
+      isPaintMode,
       vote,
       votableInVote,
       onCastVote,
       onShiftSelect,
+      onPlainClick,
       onBeginDrag,
       onBeginEdit,
       onEditLink,
@@ -218,11 +222,13 @@ function BoxedElementViewImpl({
       onContextSelect,
     });
 
+  // A label being typed wears the text cursor and rises; a path in its edit mode does neither.
+  const editLook = editingLook(element, isEditing);
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
     : isPaintMode
       ? 'cursor-copy'
-      : isEditing
+      : editLook.textCursor
         ? 'cursor-text'
         : isLocked
           ? 'cursor-default'
@@ -243,7 +249,22 @@ function BoxedElementViewImpl({
   // the theme default stroke. Shared by the ProgressView / RailView / RatingView
   // branches below so they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
-  const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
+  // A path in its edit mode shows its nodes, not its box (docs/specs/023-whiteboard/path-tool.md).
+  const ringed = isSelected && !(element.type === 'path' && isEditing);
+  const variant = describeVariant(element, ringed, isMultiSelected, remoteBorderColor, surface);
+  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
+  // (docs/specs/023-whiteboard/whiteboard.md "Selecting", path-tool.md "Selecting and erasing");
+  // once selected, the box drags either as any element.
+  const lineHit =
+    ((element.type === 'freehand' &&
+      element.penWidth !== undefined &&
+      element.pen !== 'highlighter') ||
+      element.type === 'path') &&
+    !isSelected &&
+    !isMultiSelected;
+  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
+  const onWhiteboard = useCanvasPicksByOutline();
+  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
@@ -292,6 +313,9 @@ function BoxedElementViewImpl({
   const iconCaptionBand =
     element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
 
+  // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
+  const textHug = useTextHug(element, isEditing, fontFamily);
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -315,6 +339,7 @@ function BoxedElementViewImpl({
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
     labelAnimClass,
+    textHug.label,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -369,8 +394,8 @@ function BoxedElementViewImpl({
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
-        width: element.width,
-        height: element.height,
+        width: textHug.box?.width ?? element.width,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what
@@ -382,7 +407,7 @@ function BoxedElementViewImpl({
         ...variant.style,
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
-        // Handles + anchors are children, so they rotate with the box.
+        // The handles' frame in the grips layer turns by the same angle.
         //
         // The angle is ALSO published as --lvd-enter-rot, which the pop-in
         // entry keyframe multiplies into its scale. A keyframe that touches
@@ -403,8 +428,11 @@ function BoxedElementViewImpl({
         // it — users resize containers against their visible content.
         // While EDITING the label, though, raise it so the text the user
         // is typing isn't hidden behind elements painted above it. (The
-        // selection handles get lifted separately via SelectionHandles.)
-        ...(isEditing ? { zIndex: 10 } : {}),
+        // selection handles live in the grips layer, SelectionChromeLayer.)
+        ...(editLook.raise ? { zIndex: 10 } : {}),
+        // Only the drawn line picks a pen stroke not yet selected (its hit
+        // line, in FreehandSvg); the rest of its box lets pointers through.
+        ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -503,6 +531,7 @@ function BoxedElementViewImpl({
       {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
       <ElementFaceRouter
+        lineHit={lineHit}
         element={element}
         isEditing={isEditing}
         isSelected={isSelected}
@@ -549,6 +578,14 @@ function BoxedElementViewImpl({
         marker={marker}
         iconCaptionBand={iconCaptionBand}
       />
+
+      {shapeHit ? (
+        <ShapeHitOutline
+          element={element}
+          zoom={zoom}
+          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
+        />
+      ) : null}
 
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will
@@ -661,13 +698,15 @@ function BoxedElementViewImpl({
         </Tooltip>
       ) : null}
 
-      {/* Selection chrome (resize / edge-grip handles) rides in its own
-          layer ABOVE the elements — see SelectionChromeLayer for the
+      {/* Selection chrome (resize / edge-grip handles), portalled into the
+          grips layer above every element — see SelectionChromeLayer for the
           stacking rationale. */}
       <SelectionChromeLayer
         elementId={element.id}
+        box={element}
         zoom={zoom}
         rotation={rotation}
+        shiftX={insertShiftX}
         showHandles={showHandles}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}

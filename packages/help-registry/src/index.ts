@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 21,
+    articleCount: 22,
     kind: 'feature',
   },
   {
@@ -1236,6 +1236,16 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     parentSlug: 'templates',
+  },
+  {
+    slug: 'whiteboards',
+    title: 'Whiteboards',
+    description:
+      'A tab for freehand drawing: a dock of pens, a Path tool, erasers, stickies and shapes.',
+    keywords:
+      'whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast',
+    category: 'Canvas',
+    categorySlug: 'canvas',
   },
   {
     slug: 'using-tabs',

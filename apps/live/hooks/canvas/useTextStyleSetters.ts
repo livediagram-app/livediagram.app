@@ -1,16 +1,23 @@
 import {
   isBoxed,
+  isWhiteboardTab,
   type Element,
+  type Tab,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { hugsText, hugTextSize } from '@/lib/text-hug';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 
 type TextStyleSetterDeps = {
   currentSelectionIds: () => Set<string>;
   selectionPrimary: () => Element | null;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The tab being edited: on a whiteboard a text box hugs its text through every change to how
+  // it is drawn (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+  activeTab: Pick<Tab, 'kind' | 'font'>;
 };
 
 // The selection-wide label text setters (size / font / alignment + the
@@ -22,14 +29,36 @@ export function useTextStyleSetters({
   currentSelectionIds,
   selectionPrimary,
   commit,
+  activeTab,
 }: TextStyleSetterDeps) {
+  // A text-metrics change, committed with every whiteboard text box it touched re-hugged to its
+  // text in the same step.
+  const commitHugging = (ids: Set<string>, map: (els: Element[]) => Element[]) => {
+    const whiteboard = isWhiteboardTab(activeTab);
+    const measure = measureDrawnText(activeTab.font);
+    commit((els) =>
+      map(els).map((el) =>
+        ids.has(el.id) && hugsText(el, whiteboard)
+          ? { ...el, ...hugTextSize(el, measure(el)) }
+          : el,
+      ),
+    );
+  };
+
   const setTextSizeSelected = (size: TextSize) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && (isBoxed(el) || el.type === 'arrow') ? { ...el, textSize: size } : el,
-      ),
+    commitHugging(ids, (els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
+        // A picked size is the size: it replaces a Shift-resize scale.
+        if (el.type === 'text') {
+          const { textScale: _scale, ...rest } = el;
+          void _scale;
+          return { ...rest, textSize: size };
+        }
+        return { ...el, textSize: size };
+      }),
     );
     track('Element', 'Changed', 'TextSize');
   };
@@ -40,7 +69,7 @@ export function useTextStyleSetters({
   const setFontSelected = (font: string | null) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
+    commitHugging(ids, (els) =>
       els.map((el) => {
         if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
         if (!font) {
@@ -76,7 +105,7 @@ export function useTextStyleSetters({
     if (!primary || !(isBoxed(primary) || primary.type === 'arrow')) return;
     const next = !(primary[field] ?? false);
     const ids = currentSelectionIds();
-    commit((els) =>
+    commitHugging(ids, (els) =>
       els.map((el) =>
         ids.has(el.id) && (isBoxed(el) || el.type === 'arrow') ? { ...el, [field]: next } : el,
       ),

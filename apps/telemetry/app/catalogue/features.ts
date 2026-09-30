@@ -210,6 +210,45 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
+// Whiteboards (docs/specs/023-whiteboard/whiteboard.md): boards made, and which of the dock's
+// choices people reach for. Headed by the boards made; the rest are settings.
+export const WHITEBOARDS_CREATED = chart(
+  'Whiteboard',
+  'Created',
+  'Whiteboards Created',
+  'A whiteboard tab made, from the New Document wizard or as a new tab.',
+);
+
+export const WHITEBOARD_PENS = chart(
+  'Whiteboard',
+  'Selected',
+  'Pens Picked',
+  'A whiteboard pen picked up: the main, second or third pen.',
+);
+
+export const WHITEBOARD_SETTINGS = chart(
+  'Whiteboard',
+  'Changed',
+  'Pens, Eraser and Background',
+  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
+);
+
+export const WHITEBOARD_RECOGNITION = chart(
+  'Whiteboard',
+  'Toggled',
+  'Shape Recognition',
+  'Shape recognition switched on or off on a whiteboard.',
+);
+
+export const WHITEBOARDS: MetricStack = {
+  stack: true,
+  title: 'Whiteboards',
+  blurb:
+    'Whiteboard tabs made, and the pens, erasers, backgrounds and recognition people use on them.',
+  members: [WHITEBOARDS_CREATED, WHITEBOARD_PENS, WHITEBOARD_SETTINGS, WHITEBOARD_RECOGNITION],
+  headline: WHITEBOARDS_CREATED,
+};
+
 // Layers (docs/specs/006-document/layers.md): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
   category: 'Layer',

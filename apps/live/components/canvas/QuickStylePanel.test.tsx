@@ -1,13 +1,20 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import type { QuickStyleView } from '@/lib/quick-style';
+import { heldPenStyle } from '@/lib/quick-style-pen';
+import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
-import { QuickStylePanel } from './QuickStylePanel';
+import { QuickStylePanel, panelFrame } from './QuickStylePanel';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+// Nor a canvas to place it on: a measured spot, so the panel is visible to role queries.
+vi.mock('@/hooks/ui/useQuickStylePlacement', () => ({
+  useQuickStylePlacement: () => ({ left: 12, top: 12, width: null }),
+}));
 
 // docs/specs/008-canvas/quick-style-panel.md "Accessibility": each row is a named radio group; arrows
 // move and choose; one tab stop per row; titles are separate from the names.
@@ -205,6 +212,8 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
     setTextColour: vi.fn(),
+    setPenColour: vi.fn(),
+    setPenWidth: vi.fn(),
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
@@ -232,5 +241,146 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
   it('shows the header with its help link otherwise', () => {
     renderPanel(false);
     expect(screen.getByLabelText('Learn about the quick style panel')).toBeTruthy();
+  });
+});
+
+const PALETTE = { board: 'light' as const, ink: '#1c1917', custom: [] };
+
+describe('QuickStylePanel on a whiteboard: the marker rows', () => {
+  const api = (pen: QuickStyleView['pen'], targetIds: string[] = []) => ({
+    view: { targetIds, sections: {}, pen },
+    setStroke: vi.fn(),
+    setBackground: vi.fn(),
+    setWidth: vi.fn(),
+    setStrokeStyle: vi.fn(),
+    setTextAlign: vi.fn(),
+    setIconAlign: vi.fn(),
+    setTextColour: vi.fn(),
+    setPenColour: vi.fn(),
+    setPenWidth: vi.fn(),
+    clearStyles: vi.fn(),
+    setSwatchOverride: vi.fn(),
+    clearSwatchOverride: vi.fn(),
+  });
+  const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, PALETTE);
+
+  it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
+    const quickStyle = api(second);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    expect(screen.getByText('Marker 2')).toBeTruthy();
+    const colour = screen.getByRole('radiogroup', { name: 'Marker colour' });
+    expect(within(colour).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(within(colour).getByRole('radio', { name: 'Red' }));
+    expect(quickStyle.setPenColour).toHaveBeenCalledWith('red');
+    const width = screen.getByRole('radiogroup', { name: 'Marker width' });
+    fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
+    expect(quickStyle.setPenWidth).toHaveBeenCalledWith('bold');
+    expect(screen.queryByTestId('quick-style-clear')).toBeNull();
+  });
+
+  it('drops the pen name in power user mode', () => {
+    render(<QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" powerUser />);
+    expect(screen.queryByText('Marker 2')).toBeNull();
+    expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
+  });
+
+  it('offers the eight stock colours, and Custom colours only when the tab uses some', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": quick choices only.
+    const { unmount } = render(
+      <QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" />,
+    );
+    const colour = screen.getByRole('radiogroup', { name: 'Marker colour' });
+    expect(
+      within(colour)
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('aria-label')),
+    ).toEqual(['Ink', 'Blue', 'Red', 'Orange', 'Green', 'Teal', 'Violet', 'Pink']);
+    expect(screen.queryByRole('radiogroup', { name: 'Custom colours' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /more colours/i })).toBeNull();
+    unmount();
+    const withCustom = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, {
+      ...PALETTE,
+      custom: ['#ff6b00', '#00a39b'],
+    });
+    const quickStyle = api(withCustom);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    const custom = screen.getByRole('radiogroup', { name: 'Custom colours' });
+    expect(
+      within(custom)
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('aria-label')),
+    ).toEqual(['Custom #ff6b00', 'Custom #00a39b']);
+    fireEvent.click(within(custom).getByRole('radio', { name: 'Custom #00a39b' }));
+    expect(quickStyle.setPenColour).toHaveBeenCalledWith('#00a39b');
+  });
+
+  it('gives Marker 1 its one colour, the ink', () => {
+    render(
+      <QuickStylePanel
+        quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[0]!, PALETTE))}
+        hidden={false}
+        layout="toolbar"
+      />,
+    );
+    expect(
+      within(screen.getByRole('radiogroup', { name: 'Marker colour' })).getAllByRole('radio'),
+    ).toHaveLength(1);
+  });
+
+  it('keeps one width for every pen, whatever its colour row holds', () => {
+    const widthOf = (i: number) => {
+      const { unmount } = render(
+        <QuickStylePanel
+          quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
+          hidden={false}
+          layout="toolbar"
+        />,
+      );
+      const width = screen.getByTestId('quick-style-panel').style.width;
+      unmount();
+      return width;
+    };
+    expect(widthOf(0)).toBe('210px');
+    expect(widthOf(1)).toBe('210px');
+  });
+
+  it('keeps Marker width at the same height for every pen', () => {
+    const rowsBefore = (i: number) => {
+      const { container, unmount } = render(
+        <QuickStylePanel
+          quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
+          hidden={false}
+          layout="toolbar"
+        />,
+      );
+      const width = container.querySelector('[data-testid="quick-style-marker-width"]')!;
+      const body = container.querySelector('[data-quick-style-body]')!;
+      const index = [...body.children].findIndex((el) => el.contains(width));
+      unmount();
+      return index;
+    };
+    expect(new Set([0, 1, 2].map(rowsBefore)).size).toBe(1);
+  });
+});
+
+// docs/specs/008-canvas/quick-style-panel.md "Where it sits": a swatch row never wraps and is never
+// clipped, so the width counts the targets, their gaps, the padding and the border exactly.
+describe('panelFrame', () => {
+  it('is fixed in every form: compact, pen rows, Floating with or without a Palette', () => {
+    // Seven touching 24 px targets, 8 px padding and a 1 px border each side.
+    expect(panelFrame(false, false, false).width).toBe(7 * 24 + 2 * 8 + 2 * 1);
+    // Eight for a whiteboard's pen rows: the ink and seven colours, or the opener.
+    expect(panelFrame(false, false, true).width).toBe(8 * 24 + 2 * 8 + 2 * 1);
+    // Floating spreads eight with 4 px gaps inside 10 px padding.
+    expect(panelFrame(true, false, true).width).toBe(8 * 24 + 7 * 4 + 2 * 10 + 2 * 1);
+    // With a Palette on screen the Palette's width is the panel's.
+    expect(panelFrame(true, true, true).width).toBeUndefined();
+  });
+
+  it('pads the compact panel by the padding the width counts', () => {
+    expect(panelFrame(false, false, true).padding).toBe(8);
+    expect(panelFrame(true, false, true).padding).toBeUndefined();
   });
 });

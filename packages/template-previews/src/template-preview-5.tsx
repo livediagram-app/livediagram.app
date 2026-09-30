@@ -788,6 +788,61 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
           ))}
         </svg>
       );
+    case 'whiteboard':
+      // A whiteboard (docs/specs/023-whiteboard/whiteboard.md): a plain board with a marker scribble,
+      // a red underline and a sticky. Hover story: a blue pen writes a new line.
+      return (
+        <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>
+          <rect
+            x="3"
+            y="3"
+            width="74"
+            height="38"
+            rx="3"
+            fill="rgb(251 250 247)"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1"
+          />
+          <path
+            d="M10 17 C13 10 17 10 18 16 S23 22 26 14 S31 9 33 15 S38 20 41 13"
+            fill="none"
+            stroke="rgb(28 25 23)"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M10 22 Q25 24.5 41 21.5"
+            fill="none"
+            stroke="rgb(225 29 72)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+          <rect
+            x="52"
+            y="9"
+            width="17"
+            height="17"
+            rx="1.5"
+            fill="rgb(254 243 199)"
+            stroke="rgb(253 230 138)"
+            strokeWidth="0.9"
+            transform="rotate(3 60 17)"
+          />
+          <path
+            className="pv-draw"
+            pathLength="1"
+            strokeDasharray="0 1"
+            d="M10 33 C14 28 17 29 19 33 S25 37 28 31 S34 28 36 33 S43 36 47 30"
+            fill="none"
+            stroke="rgb(37 99 235)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={pv({ '--pv-at': '500ms', '--pv-dur': '1300ms' })}
+          />
+        </svg>
+      );
     default:
       return null;
   }

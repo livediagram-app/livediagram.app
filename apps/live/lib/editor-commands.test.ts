@@ -389,3 +389,12 @@ describe('the photo-import command', () => {
     expect(h.openPhotoImport).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('tool commands on a whiteboard (docs/specs/023-whiteboard/whiteboard.md)', () => {
+  it('offers neither the highlighter nor the format painter', () => {
+    const onBoard = ids({ ...base, whiteboard: true });
+    expect(onBoard).not.toContain('tool:highlighter');
+    expect(onBoard).not.toContain('tool:format');
+    expect(ids(base)).toContain('tool:highlighter');
+  });
+});

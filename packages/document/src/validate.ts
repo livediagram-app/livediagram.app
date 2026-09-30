@@ -25,6 +25,7 @@ import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
 import { COLLAB_ROUND_MAX } from './element-deltas';
 import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
+import { isPenColourName } from './pen-colours';
 import {
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
@@ -59,6 +60,15 @@ import { isQuickSwatchSlot } from './quick-swatches';
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
 export const MAX_FREEHAND_POINTS = 20_000;
+// A path (docs/specs/023-whiteboard/path-tool.md): a drawn one rarely passes 50 nodes.
+export const MAX_PATH_NODES = 5_000;
+// A normalised path coordinate: handles may reach beyond the box, never absurdly far.
+export const PATH_COORD_MAX = 1e6;
+// A Shift-resized text box's scale on its label (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+// a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
+export const TEXT_SCALE_MIN = 0.1;
+export const TEXT_SCALE_MAX = 40;
+const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
 const MAX_TABLE_ROWS = 1_000;
 const MAX_TABLE_COLS = 1_000;
 const MAX_TABLE_CELLS = 50_000;
@@ -73,6 +83,7 @@ export const ELEMENT_TYPES = new Set([
   'sticky',
   'image',
   'freehand',
+  'path',
   'annotation',
   'link-card',
   'video',
@@ -233,6 +244,8 @@ export function isValidElement(el: unknown): el is Element {
   if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
   if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
   if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
+  // A marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): one of the 60.
+  if (el.penColour !== undefined && !isPenColourName(el.penColour)) return false;
 
   if (t === 'arrow') {
     return isValidEndpoint(el.from) && isValidEndpoint(el.to);
@@ -503,10 +516,59 @@ export function isValidElement(el: unknown): el is Element {
     if (el.penWidth !== undefined && (!isNum(el.penWidth) || el.penWidth < 1 || el.penWidth > 100))
       return false;
     if (el.straightEdges !== undefined && typeof el.straightEdges !== 'boolean') return false;
+    // Whiteboard pen ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): a pressure per point.
+    if (el.pressures !== undefined) {
+      if (!Array.isArray(el.pressures) || el.pressures.length !== el.points.length) return false;
+      for (const p of el.pressures) if (!isNum(p) || p < 0 || p > 1) return false;
+    }
+    if (
+      el.streamline !== undefined &&
+      (!isNum(el.streamline) || el.streamline < 0 || el.streamline > 1)
+    )
+      return false;
     return true;
   }
-  // text / sticky / annotation / link-card carry no extra required fields.
+  if (t === 'path') return isValidPath(el);
+  // A whiteboard text box's hug fields (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+  if (t === 'text') {
+    if (el.autoWidth !== undefined && typeof el.autoWidth !== 'boolean') return false;
+    if (
+      el.textScale !== undefined &&
+      (!isNum(el.textScale) || el.textScale < TEXT_SCALE_MIN || el.textScale > TEXT_SCALE_MAX)
+    )
+      return false;
+    return true;
+  }
+  // sticky / annotation / link-card carry no extra required fields.
   return true;
+}
+
+// A path's normalised coordinate pair: finite, and never absurdly far outside its box.
+function isPathPoint(p: unknown): boolean {
+  return (
+    isObj(p) &&
+    isNum(p.nx) &&
+    isNum(p.ny) &&
+    Math.abs(p.nx) <= PATH_COORD_MAX &&
+    Math.abs(p.ny) <= PATH_COORD_MAX
+  );
+}
+
+// A path (docs/specs/023-whiteboard/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
+// known mode with optional handles; a closed pair needs a handle to be more than a line.
+function isValidPath(el: Record<string, unknown>): boolean {
+  if (typeof el.closed !== 'boolean' || !boundedArray(el.nodes, MAX_PATH_NODES)) return false;
+  if (el.nodes.length < 2) return false;
+  let handles = false;
+  for (const n of el.nodes) {
+    if (!isPathPoint(n) || !PATH_HANDLE_MODES.has((n as Record<string, unknown>).mode as string))
+      return false;
+    const { handleIn, handleOut } = n as Record<string, unknown>;
+    if (handleIn !== undefined && !isPathPoint(handleIn)) return false;
+    if (handleOut !== undefined && !isPathPoint(handleOut)) return false;
+    if (handleIn !== undefined || handleOut !== undefined) handles = true;
+  }
+  return !el.closed || el.nodes.length >= 3 || handles;
 }
 
 // Structural validity of a tab: id + name + a bounded `elements` array of

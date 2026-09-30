@@ -359,7 +359,11 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 `pointer-events-none` / `aria-hidden`, and stands down under
 `prefers-reduced-motion`.
 
-## Just Draw (skip the wizard)
+## Start Blank (skip the wizard)
+
+**Start Blank** is the name on every surface (the site header, and the `?blank=1` bypass it links to); it was
+"Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
+`JustDraw`, so the funnel's history reads on unbroken.
 
 Some users don't want a template, a theme, or a settings step — they want
 an empty canvas right now. Two affordances serve them, both committing the
@@ -373,10 +377,10 @@ default document name) without walking the wizard:
   truthy presence of `blank` counts.
   The placement context params compose with it
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
-  Just Draw straight into a folder or team library. A failed create shows
+  Start Blank straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL that
-  outside surfaces link to (the marketing header + hero "Just Draw"
-  buttons, see [Marketing site](../019-marketing/marketing-site.md)).
+  outside surfaces link to (the site header's "Start Blank" button on
+  marketing and the telemetry dashboard, see [Marketing site](../019-marketing/marketing-site.md)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -387,7 +391,7 @@ default document name) without walking the wizard:
     navigates forward again.
   - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is not queued on
     this path: the create fires before the document count resolves, and a
-    "just draw" user has asked to get straight to the canvas. The hero's
+    Start Blank user has asked to get straight to the canvas. The hero's
     `?welcome=1` variant (below) is the one exception.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
@@ -413,7 +417,23 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
-- **`/new?blank=1&welcome=1`**: Just Draw from the marketing hero's **launch
+- **`/new?browse=<collection>`**: opens the wizard on a template
+  **collection** instead of the category overview: the template step opens
+  **drilled in** on the collection: every one of its cards at once in a grid
+  under a `← All templates` back bar, and nothing else (no shelf, no other
+  category tiles). The back bar returns to the shelf with Popular open; the
+  collection has no tile of its own. Collections are cross-category shortlists
+  (`TEMPLATE_COLLECTIONS` in `packages/templates`); today there is one,
+  **Brainstorm** (`brainstorm`): Mind map, Tree mind map, Bubble map,
+  Affinity map, Fishbone and Event storming, in that order. It is not a
+  bypass: nothing is committed until the author picks. Placement params
+  compose with it. An unknown collection is ignored and the overview shows.
+  The static page's HTML is the overview, so the same pre-paint guard as the
+  bypass hides the wizard card (`visibility`, so nothing moves) until React
+  has rendered the collection. Read by `wizardBrowseCollection` in
+  `apps/live/lib/new-document-params.ts`. The marketing hero's Brainstorm
+  button links here.
+- **`/new?blank=1&welcome=1`**: The marketing hero's **launch
   window** ([Marketing site](../019-marketing/marketing-site.md)), which grows
   into a full-screen blank canvas before navigating here. It commits the blank
   document exactly as `?blank=1` does, with two differences:
@@ -466,9 +486,9 @@ default document name) without walking the wizard:
   can't count the arrival twice. Whichever path commits the document (Create,
   Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
-- **No "Just Draw" button inside the wizard.** It used to sit on the step
+- **No "Start Blank" button inside the wizard.** It used to sit on the step
   rail; the footer's **Skip** already commits the same blank defaults, and
-  Just Draw now lives only on the outside surfaces that link to
+  Start Blank now lives only on the outside surfaces that link to
   `/new?blank=1`.
 
 ### In-place handoff to the editor
@@ -542,7 +562,7 @@ Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's
 picker would have defaulted, not silently into personal Unsorted.
 
-Telemetry: the Just Draw bypass (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
+Telemetry: the Start Blank bypass (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so wizard-bypass adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
@@ -578,6 +598,11 @@ theme for a new tab.
 - `/new?template=kanban` → no wizard; a Kanban diagram created and the
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` → the plain wizard.
+- `/new?template=whiteboard` → no wizard; a whiteboard document created and
+  the editor loads with the Ink pen in hand.
+- `/new?browse=brainstorm` → the wizard, its template step showing the
+  Brainstorm collection.
+- `/new?browse=not-a-collection` → the plain wizard.
 
 ## Out of scope for V1
 

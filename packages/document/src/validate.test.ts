@@ -5,6 +5,10 @@ import {
   isValidTab,
   MAX_ELEMENTS_PER_TAB,
   MAX_FREEHAND_POINTS,
+  MAX_PATH_NODES,
+  PATH_COORD_MAX,
+  TEXT_SCALE_MAX,
+  TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
 
@@ -64,6 +68,43 @@ describe('isValidElement', () => {
     expect(isValidElement({ ...freehand, pen: 'highlighter', penWidth: 22 })).toBe(true);
     expect(isValidElement({ ...freehand, penWidth: 0 })).toBe(false);
     expect(isValidElement({ ...freehand, penWidth: 101 })).toBe(false);
+  });
+
+  it('accepts a whiteboard pen stroke\u2019s pressures and streamline, rejects junk', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pressure per point, 0 to 1.
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
+    const pen = { id: 'f', type: 'freehand', closed: false, points, penWidth: 1.5, ...box };
+    expect(isValidElement({ ...pen, pressures: [0, 1], streamline: 0.2 })).toBe(true);
+    expect(isValidElement({ ...pen, pressures: [0.5] })).toBe(false);
+    expect(isValidElement({ ...pen, pressures: [0.5, 1.2] })).toBe(false);
+    expect(isValidElement({ ...pen, pressures: [0.5, 'hard'] })).toBe(false);
+    expect(isValidElement({ ...pen, pressures: 'firm' })).toBe(false);
+    expect(isValidElement({ ...pen, streamline: -0.1 })).toBe(false);
+    expect(isValidElement({ ...pen, streamline: 2 })).toBe(false);
+  });
+
+  it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": stored by name.
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
+    const pen = { id: 'f', type: 'freehand', closed: false, points, penWidth: 1.5, ...box };
+    const shape = { id: 's', type: 'shape', shape: 'circle', ...box };
+    const line = {
+      id: 'l',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 9, y: 9 },
+    };
+    for (const el of [pen, shape, line]) {
+      expect(isValidElement({ ...el, penColour: 'blue' })).toBe(true);
+      expect(isValidElement({ ...el, penColour: 'blue-3' })).toBe(false);
+      expect(isValidElement({ ...el, penColour: '#1d7afc' })).toBe(false);
+    }
   });
 
   it('rejects a non-object / missing id / unknown type', () => {
@@ -131,6 +172,66 @@ describe('isValidElement', () => {
     expect(isValidElement({ id: 'f', type: 'freehand', closed: false, points, ...box })).toBe(
       false,
     );
+  });
+});
+
+describe('path validation (docs/specs/023-whiteboard/path-tool.md)', () => {
+  const node = (nx: number, ny: number) => ({ nx, ny, mode: 'corner' });
+  const path = (extra: Record<string, unknown> = {}) => ({
+    id: 'p',
+    type: 'path',
+    closed: false,
+    nodes: [node(0, 0), node(1, 1)],
+    ...box,
+    ...extra,
+  });
+
+  it('accepts an open path, a closed one, and handles in every mode', () => {
+    expect(isValidElement(path())).toBe(true);
+    expect(
+      isValidElement(path({ closed: true, nodes: [node(0, 0), node(1, 0), node(0, 1)] })),
+    ).toBe(true);
+    const smooth = {
+      nx: 0.5,
+      ny: 0.5,
+      mode: 'mirrored',
+      handleIn: { nx: -0.2, ny: 0.5 },
+      handleOut: { nx: 1.2, ny: 0.5 },
+    };
+    expect(
+      isValidElement(path({ nodes: [node(0, 0), smooth, { ...smooth, mode: 'aligned' }] })),
+    ).toBe(true);
+    expect(
+      isValidElement(path({ strokeWidth: 'thick', strokeStyle: 'dashed', strokeSwatch: 2 })),
+    ).toBe(true);
+  });
+
+  it('rejects too few nodes, and a closed pair with no handle', () => {
+    expect(isValidElement(path({ nodes: [node(0, 0)] }))).toBe(false);
+    expect(isValidElement(path({ closed: true }))).toBe(false);
+    const bent = { ...node(0, 0), handleOut: { nx: 0.5, ny: -1 } };
+    expect(isValidElement(path({ closed: true, nodes: [bent, node(1, 1)] }))).toBe(true);
+  });
+
+  it('rejects malformed nodes, modes, handles and flags', () => {
+    expect(isValidElement(path({ closed: 'no' }))).toBe(false);
+    expect(isValidElement(path({ nodes: 'nope' }))).toBe(false);
+    expect(isValidElement(path({ nodes: [node(0, 0), { nx: 1, ny: 1, mode: 'smooth' }] }))).toBe(
+      false,
+    );
+    expect(isValidElement(path({ nodes: [node(0, 0), { nx: 1, mode: 'corner' }] }))).toBe(false);
+    expect(
+      isValidElement(path({ nodes: [node(0, 0), { ...node(1, 1), handleIn: { nx: 1 } }] })),
+    ).toBe(false);
+    expect(isValidElement(path({ nodes: [node(0, 0), { ...node(1, 1), handleOut: 3 }] }))).toBe(
+      false,
+    );
+    expect(isValidElement(path({ nodes: [node(0, 0), node(PATH_COORD_MAX * 2, 0)] }))).toBe(false);
+  });
+
+  it('rejects more than MAX_PATH_NODES nodes', () => {
+    const nodes = Array.from({ length: MAX_PATH_NODES + 1 }, () => node(0, 0));
+    expect(isValidElement(path({ nodes }))).toBe(false);
   });
 });
 
@@ -237,5 +338,23 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
     expect(isValidElement({ ...shape, fillSwatch: 0 })).toBe(false);
     expect(isValidElement({ ...shape, strokeSwatch: '2' })).toBe(false);
     expect(isValidElement({ ...arrow, strokeSwatch: 7 })).toBe(false);
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box's hug fields.
+describe('text box validation', () => {
+  const text = { id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi' };
+
+  it('takes an auto width and a Shift scale in range', () => {
+    expect(isValidElement({ ...text, autoWidth: true, textScale: 2.5 })).toBe(true);
+    expect(isValidElement({ ...text, textScale: TEXT_SCALE_MIN })).toBe(true);
+    expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX })).toBe(true);
+  });
+
+  it('refuses a scale out of range and a non-boolean auto width', () => {
+    expect(isValidElement({ ...text, textScale: 0 })).toBe(false);
+    expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX + 1 })).toBe(false);
+    expect(isValidElement({ ...text, textScale: Number.NaN })).toBe(false);
+    expect(isValidElement({ ...text, autoWidth: 'yes' })).toBe(false);
   });
 });
