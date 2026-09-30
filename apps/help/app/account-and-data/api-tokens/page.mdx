@@ -25,9 +25,11 @@ API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time 
 
 ## Creating a token
 
-Open **Settings** (the gear at the end of the bottom bar, in the editor or the Explorer) and choose the **API Tokens** category, between Account and Privacy. Give the token a name (for example, "CI bot") and choose **Create Token**. You can also get there from **Manage API Tokens** in the AI Tools category.
+Open **Settings** (the gear at the end of the bottom bar, in the editor or the Explorer) and choose the **API Tokens** category, between Account and Privacy. You can also get there from **Manage API Tokens** in the AI Tools category.
 
-The token's secret is shown **once**, right after you create it. Copy it then (the **Copy** button), and choose **Done** when you have it, because for your security it is never displayed again, here or anywhere else. If you lose it, revoke it and create a new one.
+Choose **New Token**, name it (or pick one of the suggestions, like "CI Bot" or "Claude"), and choose **Create Token**. The form shows the date the token will expire before you create it. The meter at the top shows how many of your ten slots are in use.
+
+The token's secret is shown **once**, right after you create it. Copy it then with the copy button at the end of the field, because for your security it is never displayed again, here or anywhere else. Under it, **Try It** gives you a ready-to-run `curl` command with the new token already filled in, so you can check it works straight away. Choose **Done** when you have it. If you lose the secret, revoke the token and create a new one.
 
 ## What a token can do, and for how long
 
@@ -51,7 +53,7 @@ For what you can call and how, see the [Developers](/help/developers/api-overvie
 
 ## Viewing and revoking tokens
 
-Every live token is listed in the same **API Tokens** category, with when it was created, when it was last used, and when it expires. Choose **Revoke** on one to revoke it; you are asked to confirm first. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.
+Every live token is listed in the same **API Tokens** category, newest first, with when it was created and when it was last used (a green dot means in the last day). A bar under each one shows how much of its six months has passed, turning amber when it expires within two weeks. Choose **Revoke** on one to revoke it; you are asked to confirm first. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.
 
 <Tip>
   Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create

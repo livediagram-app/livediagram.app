@@ -1,154 +1,88 @@
 'use client';
 
-// The token manager's list (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
-// Signed-in only. Creation is the form above it (SettingsTokenCreate); this is
-// the list of existing tokens with a per-row revoke that confirms in a popover
-// first. One column, because it sits in the Settings pane, not a full page.
+// The token manager's list (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
+// newest first, one card each, and a revoke that confirms in a popover
+// before anything breaks. With none yet, an empty state that shows what a
+// token is FOR (a command using one) rather than just saying there are none.
 import { useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';
+import { Button } from '@livediagram/ui';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { Tooltip, Glyph } from '@livediagram/ui';
-import { TOKEN_REVOKE_MESSAGE } from './token-copy';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useRelativeNow } from '@/lib/relative-time';
-
-const DAY = 86_400_000;
-const EXPIRES_SOON = 14 * DAY;
-
-function fmtDate(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-// Compact relative time: "2 days ago" (past) / "in 5 months" (future).
-function relative(ms: number): string {
-  const diff = ms - Date.now();
-  const abs = Math.abs(diff);
-  const units: [number, string][] = [
-    [365 * DAY, 'year'],
-    [30 * DAY, 'month'],
-    [7 * DAY, 'week'],
-    [DAY, 'day'],
-    [3_600_000, 'hour'],
-    [60_000, 'minute'],
-  ];
-  for (const [size, name] of units) {
-    if (abs >= size) {
-      const n = Math.round(abs / size);
-      const label = `${n} ${name}${n !== 1 ? 's' : ''}`;
-      return diff < 0 ? `${label} ago` : `in ${label}`;
-    }
-  }
-  return diff < 0 ? 'just now' : 'in a moment';
-}
-
-type Status = { label: string; className: string };
-function tokenStatus(t: ApiToken): Status {
-  const left = t.expiresAt - Date.now();
-  if (left <= 0)
-    return {
-      label: 'Expired',
-      className: 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400',
-    };
-  if (left < EXPIRES_SOON)
-    return {
-      label: 'Expires soon',
-      className: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400',
-    };
-  return {
-    label: 'Active',
-    className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400',
-  };
-}
+import { SettingsTokenCard } from './SettingsTokenCard';
+import { TOKEN_REVOKE_MESSAGE } from './token-copy';
+import { sortTokens } from './token-status';
 
 export function SettingsTokenList({
   tokens,
   onRevoke,
+  onCreateFirst,
 }: {
   tokens: ApiToken[] | null;
   onRevoke: (id: string) => void;
+  // Absent while the composer or a reveal is already showing.
+  onCreateFirst?: () => void;
 }) {
   const now = useRelativeNow();
   const [confirm, setConfirm] = useState<{ id: string; anchor: HTMLElement } | null>(null);
 
+  if (tokens === null) {
+    return (
+      <ul aria-busy className="flex flex-col gap-2.5" aria-label="Loading tokens">
+        {[0, 1].map((i) => (
+          <li
+            key={i}
+            className="h-[5.5rem] rounded-xl border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/40"
+          />
+        ))}
+      </ul>
+    );
+  }
+
+  if (tokens.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 px-4 py-5 text-center dark:border-slate-700">
+        <pre
+          aria-hidden
+          className="w-full max-w-xs overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-mono text-[10px] leading-relaxed text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400"
+        >
+          <span className="text-slate-400 dark:text-slate-600">$ </span>curl …/api/documents \{'\n'}
+          {'  '}-H &quot;Authorization: Bearer{' '}
+          <span className="text-emerald-600 dark:text-emerald-400">lvd_</span>
+          <span className="text-slate-400 dark:text-slate-600">••••••</span>&quot;
+        </pre>
+        <div>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">No Tokens Yet</p>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            Create one to let a script or an AI tool work with your documents.
+          </p>
+        </div>
+        {onCreateFirst ? (
+          <Button size="xs" onClick={onCreateFirst}>
+            Create Your First Token
+          </Button>
+        ) : null}
+        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+          Connecting Claude or another AI tool?{' '}
+          <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
-      {tokens === null ? (
-        <p className="text-xs text-slate-400 dark:text-slate-400">Loading…</p>
-      ) : tokens.length === 0 ? (
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          No API tokens yet. Create one above to call the livediagram API from your own scripts or
-          AI tools.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2.5">
-          {tokens.map((t) => {
-            const status = tokenStatus(t);
-            const expired = t.expiresAt - now <= 0;
-            const rows: [string, string][] = [
-              ['Created', fmtDate(t.createdAt)],
-              ['Last used', t.lastUsedAt ? relative(t.lastUsedAt) : 'Never'],
-              [
-                expired ? 'Expired' : 'Expires',
-                expired ? fmtDate(t.expiresAt) : relative(t.expiresAt),
-              ],
-            ];
-            return (
-              <li
-                key={t.id}
-                className="flex flex-col rounded-lg border border-slate-200 p-3 dark:border-slate-700"
-              >
-                <div className="flex items-start gap-2.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
-                    <KeyIcon />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    {/* The name truncates; the Tooltip gives it whole. */}
-                    <Tooltip label={t.name || 'Untitled token'}>
-                      <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        {t.name || 'Untitled token'}
-                      </p>
-                    </Tooltip>
-                    <span className="mt-1 inline-flex flex-wrap items-center gap-1">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}
-                      >
-                        {status.label}
-                      </span>
-                      {t.readOnly ? (
-                        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                          Read-only
-                        </span>
-                      ) : null}
-                    </span>
-                  </div>
-                </div>
-                <dl className="mt-3 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-700/60">
-                  {rows.map(([label, value]) => (
-                    <div key={label} className="flex items-baseline justify-between gap-2">
-                      <dt className="text-slate-400">{label}</dt>
-                      <dd className="truncate font-medium text-slate-600 dark:text-slate-300">
-                        {value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                <button
-                  type="button"
-                  onClick={(e) => setConfirm({ id: t.id, anchor: e.currentTarget })}
-                  aria-label={`Revoke ${t.name || 'Untitled token'}`}
-                  className="mt-2 self-end rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-                >
-                  Revoke
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
+      <ul className="flex flex-col gap-2.5" aria-label="Your API tokens">
+        {sortTokens(tokens).map((token) => (
+          <SettingsTokenCard
+            key={token.id}
+            token={token}
+            now={now}
+            onRevoke={(anchor) => setConfirm({ id: token.id, anchor })}
+          />
+        ))}
+      </ul>
       {confirm ? (
         <ConfirmPopover
           anchor={confirm.anchor}
@@ -162,14 +96,5 @@ export function SettingsTokenList({
         />
       ) : null}
     </>
-  );
-}
-
-function KeyIcon() {
-  return (
-    <Glyph size={16} units={16}>
-      <circle cx="5.5" cy="5.5" r="3" />
-      <path d="M7.6 7.6 L13 13 M11 11l1.5-1.5M10 13l1.5-1.5" />
-    </Glyph>
   );
 }

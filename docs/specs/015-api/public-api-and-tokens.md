@@ -212,19 +212,39 @@ from both the Explorer and the editor, so the tokens are too. There is no
 Explorer page for them: the former `/explorer/tokens` route and its sidebar
 entry are gone, with no redirect (few people had used it).
 
-The category holds one row, the **token manager** (`kind: 'tokens'`):
+The category holds one row, the **token manager** (`kind: 'tokens'`), laid
+out top to bottom:
 
-- A **create form**: an optional name (up to 60 characters, placeholder
-  "e.g. CI bot") and a **Create Token** button. Enter submits. At the cap the
-  form is disabled and says why.
-- After a create, the **one-time secret reveal** replaces the form: the secret,
-  a **Copy** button (it says "Copied" only once the clipboard write resolves),
-  and **Done**, which drops the secret for good.
-- The **list** of the user's live tokens, each with its name ("Untitled token"
-  when unnamed), a status (Active / Expires soon inside 14 days / Expired), a
-  Read-only badge where set, and its created, last-used and expiry dates.
-- A **Revoke** per token, confirmed in a popover with the revoke warning
-  first.
+- **Overview.** A key tile, the title, one line on what tokens are for, and the
+  **capacity meter**: "3 of 10" over ten pips, one per slot, filled for each
+  live token (brand; amber from 8; rose at the cap). A **New Token** button
+  opens the composer; at the cap it is disabled and the meter says to revoke
+  one first.
+- **Composer.** Opens in place under the overview. A name field (optional, up
+  to 60 characters, focused on open) with **suggestion chips** that fill it
+  ("Claude", "Cursor", "CI Bot", "Local Script"), a live line saying when the
+  token will expire (six months from today, as a date), then **Cancel** and
+  **Create Token**. Enter submits, Escape cancels.
+- **Reveal.** After a create, the composer becomes an emerald-edged "Token
+  Created" card that follows the theme (light in light mode): a "Shown once"
+  label and the secret in a monospace field with its `lvd_` prefix picked out.
+  Under it a **Try It** snippet, a `curl` that lists your documents with the
+  new token already filled in. Each field copies the way the Share dialog's
+  pass link does: an icon-only copy button inside the field's right edge, with
+  a tooltip, that turns into a check once the clipboard write resolves.
+  **Done** drops the secret for good; it becomes the primary action once the
+  secret has been copied.
+- **Token cards**, newest first. Each has a key tile tinted by status, the
+  name ("Untitled token" when unnamed), a Read-only badge where set, a meta
+  line (created date; last used, with a green dot when used in the last 24
+  hours, or "Never used"), and a **lifetime bar**: how much of the six months
+  has passed, tinted by status (Active / Expires soon inside 14 days /
+  Expired), labelled with the time left. A **Revoke** control per card opens
+  a confirmation popover with the revoke warning first.
+- **Empty state.** When there are none: a small terminal sketch of a token in
+  use, "No tokens yet", a **Create Your First Token** button that opens the
+  composer, and a link to the Connect an AI Tool help article for readers who
+  want MCP rather than a script.
 
 "Edit" is exactly what the API supports: create and revoke. There is no rename
 or scope change; a token is replaced by creating a new one and revoking the old.

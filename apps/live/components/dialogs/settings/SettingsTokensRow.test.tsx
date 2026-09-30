@@ -62,14 +62,33 @@ describe('SettingsTokensRow', () => {
     api.apiListTokens.mockResolvedValue([]);
     api.apiCreateToken.mockResolvedValue({ token: 'lvd_secret', id: 'tok1' });
     render(<SettingsTokensRow row={ROW} />);
-    await screen.findByText(/No API tokens yet/);
-    fireEvent.change(screen.getByLabelText('New Token'), { target: { value: 'CI bot' } });
+    await screen.findByText('No Tokens Yet');
+    expect(
+      screen.getByRole('meter', { name: 'Token slots used' }).getAttribute('aria-valuetext'),
+    ).toBe('0 of 10');
+    fireEvent.click(screen.getByRole('button', { name: 'New Token' }));
+    // A chip fills the name; the field stays editable.
+    fireEvent.click(screen.getByRole('button', { name: 'CI Bot' }));
+    expect((screen.getByLabelText('What Is It For?') as HTMLInputElement).value).toBe('CI Bot');
     fireEvent.click(screen.getByRole('button', { name: 'Create Token' }));
-    expect(await screen.findByText('lvd_secret')).toBeTruthy();
-    expect(api.apiCreateToken).toHaveBeenCalledWith('user_1', 'CI bot');
+    const reveal = await screen.findByRole('status', { name: 'New token created' });
+    expect(reveal.textContent).toContain('lvd_secret');
+    // The Try It command carries the new token.
+    expect(reveal.textContent).toContain('Authorization: Bearer lvd_secret');
+    expect(api.apiCreateToken).toHaveBeenCalledWith('user_1', 'CI Bot');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(screen.queryByText('lvd_secret')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Create Token' })).toBeTruthy();
+    expect(screen.queryByText(/lvd_secret/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'New Token' })).toBeTruthy();
+  });
+
+  it('closes the composer on Escape without creating anything', async () => {
+    api.apiListTokens.mockResolvedValue([]);
+    render(<SettingsTokensRow row={ROW} />);
+    await screen.findByText('No Tokens Yet');
+    fireEvent.click(screen.getByRole('button', { name: 'Create Your First Token' }));
+    fireEvent.keyDown(screen.getByLabelText('What Is It For?'), { key: 'Escape' });
+    expect(screen.queryByLabelText('What Is It For?')).toBeNull();
+    expect(api.apiCreateToken).not.toHaveBeenCalled();
   });
 
   it('lists tokens and revokes one only after confirming', async () => {
