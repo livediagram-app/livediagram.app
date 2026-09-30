@@ -35,5 +35,15 @@ describe('googleOAuthBase', () => {
     expect(googleOAuthBase(env({ GOOGLE_OAUTH_BASE_URL: 'http://127.0.0.1:9000/' }))).toBe(
       'http://127.0.0.1:9000',
     );
+    expect(googleOAuthBase(env({ GOOGLE_OAUTH_BASE_URL: 'http://127.0.0.1:9000///' }))).toBe(
+      'http://127.0.0.1:9000',
+    );
+  });
+
+  it('trims trailing slashes in linear time, whatever the value holds', () => {
+    const long = `http://h/${'/'.repeat(200_000)}x`;
+    const start = performance.now();
+    expect(googleOAuthBase(env({ GOOGLE_OAUTH_BASE_URL: long }))).toBe(long);
+    expect(performance.now() - start).toBeLessThan(50);
   });
 });

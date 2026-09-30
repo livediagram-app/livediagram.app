@@ -27,5 +27,13 @@ export function driveMode(env: Env): DriveMode {
 }
 
 export function googleOAuthBase(env: Env): string {
-  return (env.GOOGLE_OAUTH_BASE_URL || GOOGLE_OAUTH_ORIGIN).replace(/\/+$/, '');
+  return withoutTrailingSlashes(env.GOOGLE_OAUTH_BASE_URL || GOOGLE_OAUTH_ORIGIN);
+}
+
+// A loop, not /\/+$/: that pattern backtracks on every run of slashes, so a
+// long value costs quadratic time.
+function withoutTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 0x2f) end--;
+  return value.slice(0, end);
 }

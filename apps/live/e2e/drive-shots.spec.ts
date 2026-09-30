@@ -24,7 +24,7 @@ test.use({
 });
 
 const OUT = process.env.E2E_DRIVE_PR_SHOTS ?? '/tmp/ld-drive-pr-shots';
-const RUN = Math.random().toString(36).slice(2, 8);
+const RUN = crypto.randomUUID().slice(0, 6);
 const EMAIL = 'alex@example.com';
 const THEMES = ['light', 'dark'] as const;
 

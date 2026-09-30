@@ -70,7 +70,7 @@ describe('safeReturnPath', () => {
       ' /explorer',
       '/explorer\n//evil.example',
       '/explorer\t',
-      '/%5C%5Cevil.example'.replace('%5C%5C', '\\\\'),
+      '/\\\\evil.example',
       '',
       'explorer',
       'http:/evil.example',

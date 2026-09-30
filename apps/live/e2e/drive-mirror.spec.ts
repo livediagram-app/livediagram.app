@@ -12,7 +12,7 @@ import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 test.describe.configure({ mode: 'serial' });
 
 // Fresh per run: the local D1 keeps what earlier runs made.
-const RUN = Math.random().toString(36).slice(2, 8);
+const RUN = crypto.randomUUID().slice(0, 6);
 const USER = `user_e2e_drive_${RUN}`;
 const FOLDER = `e2e-folder-${RUN}`;
 const PLAN = `e2e-plan-${RUN}`;

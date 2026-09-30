@@ -365,6 +365,21 @@ describe('changes', () => {
 });
 
 describe('failures', () => {
+  it('answers a request it cannot handle with a Drive-shaped 400, without the thrown message', async () => {
+    const fake = new FakeGoogle({ now: () => 0 });
+    const token = fake.issueAccessToken('u');
+    const res = await fake.fetch(
+      'https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent('bogus query'),
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { message: string; errors: { reason: string }[] } };
+    expect(body.error.errors[0]!.reason).toBe('badRequest');
+    expect(body.error.message).toBe('Bad request');
+  });
+
   it('injects rate limits with Drive-shaped bodies, once', async () => {
     const { fake, call } = setup();
     fake.fail({ status: 403, reason: 'userRateLimitExceeded' });

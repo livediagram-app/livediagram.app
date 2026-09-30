@@ -15,21 +15,38 @@ type Clause = (f: QueryFile) => boolean;
 
 const unquote = (s: string) => s.replace(/\\'/g, "'");
 
+const isSpace = (c: string | undefined) => c === ' ' || c === '\t' || c === '\n' || c === '\r';
+
+// Split on `and` between whitespace, outside `{ ... }` (an `and` inside the
+// braces belongs to an appProperties clause). A single pass, each whitespace
+// run read once: a regular expression over runs of whitespace backtracks, so a
+// long run cost quadratic time.
 function splitAnd(q: string): string[] {
-  // `and` inside `{ ... }` belongs to an appProperties clause.
   const parts: string[] = [];
   let depth = 0;
   let current = '';
-  const tokens = q.split(/(\{|\}|\s+and\s+)/i);
-  for (const t of tokens) {
-    if (t === '{') depth++;
-    if (t === '}') depth--;
-    if (depth === 0 && /^\s+and\s+$/i.test(t)) {
-      parts.push(current.trim());
-      current = '';
-    } else {
-      current += t;
+  let i = 0;
+  while (i < q.length) {
+    const c = q[i]!;
+    if (depth === 0 && isSpace(c)) {
+      let end = i;
+      while (isSpace(q[end])) end++;
+      if (q.slice(end, end + 3).toLowerCase() === 'and' && isSpace(q[end + 3])) {
+        let after = end + 3;
+        while (isSpace(q[after])) after++;
+        parts.push(current.trim());
+        current = '';
+        i = after;
+        continue;
+      }
+      current += q.slice(i, end);
+      i = end;
+      continue;
     }
+    if (c === '{') depth++;
+    if (c === '}') depth--;
+    current += c;
+    i++;
   }
   if (current.trim()) parts.push(current.trim());
   return parts;

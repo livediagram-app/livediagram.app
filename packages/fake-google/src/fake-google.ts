@@ -289,7 +289,9 @@ export class FakeGoogle {
     try {
       return await this.drive(request, url, method, user);
     } catch (err) {
-      return driveError(400, 'badRequest', err instanceof Error ? err.message : String(err));
+      // Said in the log, not the response: a reply never carries an exception.
+      console.warn('fake-google: bad request', method, url.pathname, err);
+      return driveError(400, 'badRequest', 'Bad request');
     }
   }
 
