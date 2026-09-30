@@ -21,6 +21,7 @@ import {
 import { WHITEBOARD_SHAPES } from '@/lib/whiteboard-tool';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutOption, WhiteboardFlyout } from './WhiteboardFlyout';
+import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import {
   BackgroundGlyph,
   DOCK_ICON_PX,
@@ -118,6 +119,8 @@ export function WhiteboardDock({
     pressed?: boolean;
     flyoutKind?: Flyout['kind'];
     disabled?: boolean;
+    // The key that picks this tool (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    shortcut?: string;
   }) => (
     <Tooltip label={o.label}>
       <button
@@ -125,6 +128,7 @@ export function WhiteboardDock({
         data-dock-item={o.key}
         aria-label={o.label}
         aria-pressed={o.pressed}
+        aria-keyshortcuts={o.shortcut}
         aria-expanded={o.flyoutKind ? flyout?.kind === o.flyoutKind : undefined}
         aria-controls={o.flyoutKind ? `whiteboard-flyout-${o.flyoutKind}` : undefined}
         aria-haspopup={o.flyoutKind ? 'true' : undefined}
@@ -132,13 +136,23 @@ export function WhiteboardDock({
         tabIndex={focusKey === o.key ? 0 : -1}
         onFocus={() => setFocusKey(o.key)}
         onClick={(e) => o.onPress(e.currentTarget)}
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${
+        className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white ${
           o.pressed
             ? 'bg-brand-50 text-brand-700 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
             : ''
         }`}
       >
         {o.icon}
+        {o.shortcut ? (
+          // Shown the whole time, as the Toolbar layout's strip does: a tool
+          // bar is where people learn the keys. Slate-500 / -400 keep 4.5:1.
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400"
+          >
+            {o.shortcut}
+          </span>
+        ) : null}
       </button>
     </Tooltip>
   );
@@ -158,6 +172,7 @@ export function WhiteboardDock({
         {item({
           key: pen.id,
           label: penLabel(pen),
+          shortcut: WHITEBOARD_TOOL_KEYS[pen.id],
           icon: <PenGlyph colour={pen.colour ?? ink} width={pen.width} />,
           pressed: inHand,
           flyoutKind: pen.id,
@@ -312,6 +327,7 @@ export function WhiteboardDock({
         {item({
           key: 'select',
           label: 'Select',
+          shortcut: WHITEBOARD_TOOL_KEYS.select,
           icon: <SelectIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'select',
           onPress: () => pickAndClose(model.pickSelect),
@@ -322,6 +338,7 @@ export function WhiteboardDock({
         {item({
           key: 'eraser',
           label: 'Eraser',
+          shortcut: WHITEBOARD_TOOL_KEYS.eraser,
           icon: <EraserIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'eraser',
           flyoutKind: 'eraser',

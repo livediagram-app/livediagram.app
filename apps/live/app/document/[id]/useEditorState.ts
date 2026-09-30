@@ -2952,6 +2952,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onOpenSearch: () => dialogs.setSearchOpen(true),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
+    // A whiteboard's keys are its dock's (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    whiteboard: whiteboardDock.whiteboard
+      ? {
+          pickSelect: whiteboardDock.pickSelect,
+          pickPen: whiteboardDock.pickPen,
+          pickEraser: whiteboardDock.pickEraser,
+        }
+      : null,
   });
 
   return {

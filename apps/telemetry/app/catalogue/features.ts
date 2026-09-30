@@ -223,7 +223,7 @@ export const WHITEBOARD_PENS = chart(
   'Whiteboard',
   'Selected',
   'Pens Picked',
-  'A whiteboard pen picked up: the main pen, or the first or second colour pen.',
+  'A whiteboard pen picked up: the main, second or third pen.',
 );
 
 export const WHITEBOARD_SETTINGS = chart(

@@ -20,11 +20,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
   'Whiteboard|Selected|Main':
     "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
-  'Whiteboard|Selected|FirstColour':
-    "Someone picked up a whiteboard's first colour pen (blue unless they changed it).",
-  'Whiteboard|Selected|SecondColour':
-    "Someone picked up a whiteboard's second colour pen (red unless they changed it).",
-  'Whiteboard|Changed|PenColour': "Someone gave one of a whiteboard's colour pens a new colour.",
+  'Whiteboard|Selected|Second':
+    "Someone picked up a whiteboard's second pen (blue unless they changed it).",
+  'Whiteboard|Selected|Third':
+    "Someone picked up a whiteboard's third pen (red unless they changed it).",
+  'Whiteboard|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
   'Whiteboard|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
   'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
   'Whiteboard|Changed|EraserPartial':

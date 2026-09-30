@@ -90,16 +90,16 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 ## Pens
 
 - A whiteboard offers **three pens**, left to right: the **main pen**, the
-  **first colour pen** and the **second colour pen**, all Medium width.
-  Picking a pen button selects it; picking the active pen again opens its
-  flyout. The pens are named by their place, never by a colour, because the
-  colour pens can be any colour.
+  **second pen** and the **third pen**, all Medium width. Picking a pen
+  button selects it; picking the active pen again opens its flyout. The pens
+  are named by their place, never by a colour, because the second and third
+  pens can be any colour.
 - **The main pen always draws in the default colour**: the adaptive ink of
   the board (see [Appearance](#appearance)); its width is adjustable like any
   pen's, so its flyout offers the width only.
-- **The colour pens are adjustable**: their flyouts change both colour and
-  width. They start as **blue** (first) and **red** (second), and keep their
-  place and name whatever colour they are given.
+- **The second and third pens are adjustable**: their flyouts change both
+  colour and width. They start as **blue** (second) and **red** (third), and
+  keep their place and name whatever colour they are given.
 - **Widths**, on every pen including the main pen: **Fine** (1 px),
   **Medium** (1.5 px, the default) and **Bold** (2.5 px),
   `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip. (Tuned with
@@ -220,7 +220,7 @@ which already follows the reader's light or dark appearance
   Not a literal green chalkboard: the board belongs to the app it sits in.
 - Only colours change. Pens behave identically in both; the **main pen** and
   any unpainted element simply render in the appearance's ink colour. The
-  colour pens keep the colour they drew with.
+  second and third pens keep the colour they drew with.
 - The board and ink colours are two named tokens of the Default theme's
   whiteboard variant (`WHITEBOARD_BOARD`, `WHITEBOARD_INK`, one value per
   appearance), tuned with the operator; the light and dark pairs must meet
@@ -236,6 +236,27 @@ which already follows the reader's light or dark appearance
   Unpainted shapes are drawn without a fill, as marker on a board.
 - A document's theme applies to its diagram tabs only; a whiteboard tab in a
   themed document still shows the whiteboard look.
+
+## Keyboard shortcuts
+
+On a whiteboard the plain-key shortcuts are the dock's, and only these
+(the diagram tab's element and mode keys, rectangle on R, the laser on K and
+so on, do not apply: a whiteboard has no palette to mirror):
+
+| Key | Tool       |
+| --- | ---------- |
+| V   | Select     |
+| 1   | Main pen   |
+| 2   | Second pen |
+| 3   | Third pen  |
+| E   | Eraser     |
+
+H (hand) and Z (zen) keep working as on any tab, and every modifier shortcut
+(undo, copy, delete and the rest) is unchanged. With a single note or text
+box selected, typing a character still edits it rather than switching tool.
+View-role visitors get V only. Each of these dock buttons shows its key small
+in its bottom-right corner, as the Toolbar layout's strip does (a tool bar is
+where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 ## Accessibility
 
@@ -256,7 +277,7 @@ Preset-enum events only, never content, under a `Whiteboard` category:
 | Event                     | Action     | Type                                                  |
 | ------------------------- | ---------- | ----------------------------------------------------- |
 | A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`               |
-| A pen picked              | `Selected` | `Main`, `FirstColour`, `SecondColour`                 |
+| A pen picked              | `Selected` | `Main`, `Second`, `Third`                             |
 | A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen)          |
 | Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                       |
 | Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                     |

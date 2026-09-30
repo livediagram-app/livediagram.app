@@ -38,15 +38,13 @@ describe('activeWhiteboardTool', () => {
 
 describe('whiteboardPenIntent', () => {
   it('carries the pen colour, width and recognition', () => {
-    expect(whiteboardPenIntent({ id: 'second-colour', colour: '#e5484d', width: 8 }, true)).toEqual(
-      {
-        type: 'freehand',
-        variant: 'whiteboard',
-        colour: '#e5484d',
-        width: 8,
-        recognise: true,
-      },
-    );
+    expect(whiteboardPenIntent({ id: 'third', colour: '#e5484d', width: 8 }, true)).toEqual({
+      type: 'freehand',
+      variant: 'whiteboard',
+      colour: '#e5484d',
+      width: 8,
+      recognise: true,
+    });
   });
 });
 
@@ -100,7 +98,7 @@ describe('whiteboardPointerRoute', () => {
 
 describe('whiteboardShapeIntent', () => {
   it('draws a shape with the pen in hand', () => {
-    const pen = { id: 'second-colour' as const, colour: '#e5484d', width: 8 };
+    const pen = { id: 'third' as const, colour: '#e5484d', width: 8 };
     expect(whiteboardShapeIntent('ellipse', pen)).toEqual({
       type: 'shape',
       kind: 'circle',

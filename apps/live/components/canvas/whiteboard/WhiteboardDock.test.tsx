@@ -57,9 +57,7 @@ describe('WhiteboardDock', () => {
       screen.getByRole('button', { name: 'Main pen, medium' }).getAttribute('aria-pressed'),
     ).toBe('true');
     expect(
-      screen
-        .getByRole('button', { name: 'First colour pen, blue, medium' })
-        .getAttribute('aria-pressed'),
+      screen.getByRole('button', { name: 'Second pen, blue, medium' }).getAttribute('aria-pressed'),
     ).toBe('false');
   });
 
@@ -79,8 +77,8 @@ describe('WhiteboardDock', () => {
 
   it('picks a pen, and opens its flyout when it is already in hand', () => {
     const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'First colour pen, blue, medium' }));
-    expect(m.pickPen).toHaveBeenCalledWith('first-colour');
+    fireEvent.click(screen.getByRole('button', { name: 'Second pen, blue, medium' }));
+    expect(m.pickPen).toHaveBeenCalledWith('second');
     expect(screen.queryByRole('group', { name: 'Main pen' })).toBeNull();
     const ink = screen.getByRole('button', { name: 'Main pen, medium' });
     fireEvent.click(ink);
@@ -89,15 +87,15 @@ describe('WhiteboardDock', () => {
     expect(screen.getByRole('group', { name: 'Main pen' })).toBeTruthy();
   });
 
-  it('offers the main pen, then the first and second colour pens', () => {
+  it('offers the main pen, then the second and third pens', () => {
     renderDock();
     const pens = screen
       .getAllByRole('button', { name: / pen, / })
       .map((b) => b.getAttribute('aria-label'));
     expect(pens).toEqual([
       'Main pen, medium',
-      'First colour pen, blue, medium',
-      'Second colour pen, red, medium',
+      'Second pen, blue, medium',
+      'Third pen, red, medium',
     ]);
   });
 
@@ -111,13 +109,13 @@ describe('WhiteboardDock', () => {
 
   it('changes the colour and width of an adjustable pen from its flyout', () => {
     const { m } = renderDock(
-      model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'first-colour' } }),
+      model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'second' } }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'First colour pen, blue, medium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Second pen, blue, medium' }));
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
-    expect(m.updatePen).toHaveBeenCalledWith('first-colour', { colour: '#9061f9' });
+    expect(m.updatePen).toHaveBeenCalledWith('second', { colour: '#9061f9' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
-    expect(m.updatePen).toHaveBeenCalledWith('first-colour', { width: 1 });
+    expect(m.updatePen).toHaveBeenCalledWith('second', { width: 1 });
   });
 
   it('closes a flyout on Escape and hands focus back to its opener', () => {
@@ -177,5 +175,18 @@ describe('WhiteboardDock', () => {
   it('disables Undo when there is nothing to undo', () => {
     renderDock(model(), { canUndo: false });
     expect((screen.getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+describe('WhiteboardDock keys', () => {
+  it('names each tool key in aria-keyshortcuts', () => {
+    renderDock();
+    const keyOf = (name: RegExp) =>
+      screen.getByRole('button', { name }).getAttribute('aria-keyshortcuts');
+    expect(keyOf(/^Select/)).toBe('V');
+    expect(keyOf(/^Main pen/)).toBe('1');
+    expect(keyOf(/^Second pen/)).toBe('2');
+    expect(keyOf(/^Third pen/)).toBe('3');
+    expect(keyOf(/^Eraser/)).toBe('E');
   });
 });

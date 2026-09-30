@@ -1,11 +1,11 @@
-// The whiteboard's device-local tool settings (docs/specs/023-whiteboard/whiteboard.md "Pens"): the main
-// pen and the two colour pens, which one is in hand, shape recognition and the eraser mode. The user's,
+// The whiteboard's device-local tool settings (docs/specs/023-whiteboard/whiteboard.md "Pens"): the main,
+// second and third pens, which one is in hand, shape recognition and the eraser mode. The user's,
 // not the board's: stored in this browser, never sent with the document.
 
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
-// Named by their place in the dock, never by a colour: the colour pens can be any colour.
-export type WhiteboardPenId = 'main' | 'first-colour' | 'second-colour';
+// Named by their place in the dock, never by a colour: the second and third can be any colour.
+export type WhiteboardPenId = 'main' | 'second' | 'third';
 // `colour` null is the board's own ink, which follows the appearance; only the
 // main pen has it. `width` is in px, derived from a named preset.
 export type WhiteboardPen = { id: WhiteboardPenId; colour: string | null; width: number };
@@ -44,29 +44,29 @@ const colourHex = (label: string) => WHITEBOARD_PEN_COLOURS.find((c) => c.label 
 export const DEFAULT_WHITEBOARD_PREFS: WhiteboardPrefs = {
   pens: [
     { id: 'main', colour: null, width: MEDIUM_PX },
-    { id: 'first-colour', colour: colourHex('Blue'), width: MEDIUM_PX },
-    { id: 'second-colour', colour: colourHex('Red'), width: MEDIUM_PX },
+    { id: 'second', colour: colourHex('Blue'), width: MEDIUM_PX },
+    { id: 'third', colour: colourHex('Red'), width: MEDIUM_PX },
   ],
   activePenId: 'main',
   recognise: false,
   eraserMode: 'stroke',
 };
 
-const PEN_IDS: readonly WhiteboardPenId[] = ['main', 'first-colour', 'second-colour'];
+const PEN_IDS: readonly WhiteboardPenId[] = ['main', 'second', 'third'];
 
 // What each pen is called, in the dock and in its flyout.
 export const PEN_NAMES: Record<WhiteboardPenId, string> = {
   main: 'Main pen',
-  'first-colour': 'First colour pen',
-  'second-colour': 'Second colour pen',
+  second: 'Second pen',
+  third: 'Third pen',
 };
 const PEN_TELEMETRY: Record<WhiteboardPenId, string> = {
   main: 'Main',
-  'first-colour': 'FirstColour',
-  'second-colour': 'SecondColour',
+  second: 'Second',
+  third: 'Third',
 };
 
-/** The main pen always stays the board's ink; the colour pens take any named colour. */
+/** The main pen always stays the board's ink; the second and third take any named colour. */
 export function penAdjustsColour(pen: WhiteboardPen): boolean {
   return pen.id !== 'main';
 }
@@ -80,7 +80,7 @@ export function widthLabel(px: number): string {
   return WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.label ?? `${px}px`;
 }
 
-/** "First colour pen, blue, medium": the pen and what it draws, for its button's name. */
+/** "Second pen, blue, medium": the pen and what it draws, for its button's name. */
 export function penLabel(pen: WhiteboardPen): string {
   const width = widthLabel(pen.width).toLowerCase();
   if (!penAdjustsColour(pen)) return `${PEN_NAMES[pen.id]}, ${width}`;

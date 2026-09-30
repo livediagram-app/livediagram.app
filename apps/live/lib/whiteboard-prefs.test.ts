@@ -20,9 +20,9 @@ afterEach(() => {
 
 // docs/specs/023-whiteboard/whiteboard.md "Pens".
 describe('whiteboard pens', () => {
-  it('offers the main pen and two colour pens, blue then red, at medium width', () => {
+  it('offers the main pen and second and third pens, blue then red, at medium width', () => {
     const pens = DEFAULT_WHITEBOARD_PREFS.pens;
-    expect(pens.map((p) => p.id)).toEqual(['main', 'first-colour', 'second-colour']);
+    expect(pens.map((p) => p.id)).toEqual(['main', 'second', 'third']);
     expect(pens[0]!.colour).toBeNull();
     expect(new Set(pens.map((p) => p.width))).toEqual(new Set([1.5]));
   });
@@ -35,7 +35,7 @@ describe('whiteboard pens', () => {
     ]);
   });
 
-  it('lets only the colour pens change colour; the main pen stays the default', () => {
+  it('lets only the second and third pens change colour; the main pen stays the default', () => {
     expect(DEFAULT_WHITEBOARD_PREFS.pens.map(penAdjustsColour)).toEqual([false, true, true]);
     expect(WHITEBOARD_PEN_COLOURS.some((c) => c.hex === null)).toBe(false);
   });
@@ -48,15 +48,15 @@ describe('whiteboard pens', () => {
   it('names a pen by colour and width for assistive tech', () => {
     const [main, first] = DEFAULT_WHITEBOARD_PREFS.pens;
     expect(penLabel(main!)).toBe('Main pen, medium');
-    expect(penLabel({ ...first!, width: 2.5 })).toBe('First colour pen, blue, bold');
-    expect(penLabel({ ...first!, colour: '#9061f9' })).toBe('First colour pen, violet, medium');
+    expect(penLabel({ ...first!, width: 2.5 })).toBe('Second pen, blue, bold');
+    expect(penLabel({ ...first!, colour: '#9061f9' })).toBe('Second pen, violet, medium');
   });
 
   it('reports a pen by its place, never its colour', () => {
     const [main, first, second] = DEFAULT_WHITEBOARD_PREFS.pens;
     expect(penTelemetryType(main!)).toBe('Main');
-    expect(penTelemetryType({ ...first!, colour: '#9061f9' })).toBe('FirstColour');
-    expect(penTelemetryType(second!)).toBe('SecondColour');
+    expect(penTelemetryType({ ...first!, colour: '#9061f9' })).toBe('Second');
+    expect(penTelemetryType(second!)).toBe('Third');
   });
 });
 
@@ -70,20 +70,20 @@ describe('parseWhiteboardPrefs', () => {
   it('reads widths by preset name, never by px, so retuning the px keeps a choice', () => {
     const parsed = parseWhiteboardPrefs({
       pens: [
-        { id: 'first-colour', colour: '#9061f9', width: 'bold' },
+        { id: 'second', colour: '#9061f9', width: 'bold' },
         // A px width from before the presets were named: back to Medium.
-        { id: 'second-colour', colour: '#e5484d', width: 4 },
+        { id: 'third', colour: '#e5484d', width: 4 },
       ],
     });
-    expect(parsed.pens[1]).toEqual({ id: 'first-colour', colour: '#9061f9', width: 2.5 });
+    expect(parsed.pens[1]).toEqual({ id: 'second', colour: '#9061f9', width: 2.5 });
     expect(parsed.pens[2]).toEqual(DEFAULT_WHITEBOARD_PREFS.pens[2]);
   });
 
-  it('never gives the main pen a colour, nor a colour pen the ink', () => {
+  it('never gives the main pen a colour, nor the second or third pen the ink', () => {
     const parsed = parseWhiteboardPrefs({
       pens: [
         { id: 'main', colour: '#e5484d', width: 'fine' },
-        { id: 'first-colour', colour: null, width: 'medium' },
+        { id: 'second', colour: null, width: 'medium' },
       ],
     });
     expect(parsed.pens[0]).toEqual({ id: 'main', colour: null, width: 1 });
@@ -95,18 +95,18 @@ describe('parseWhiteboardPrefs', () => {
       pens: [{ id: 'red', colour: '#2f9e44', width: 'bold' }],
       activePenId: 'red',
     });
-    expect(parsed.pens.map((p) => p.id)).toEqual(['main', 'first-colour', 'second-colour']);
+    expect(parsed.pens.map((p) => p.id)).toEqual(['main', 'second', 'third']);
     expect(parsed.activePenId).toBe('main');
   });
 
   it('keeps valid choices and rejects unknown values', () => {
     const parsed = parseWhiteboardPrefs({
-      activePenId: 'second-colour',
+      activePenId: 'third',
       eraserMode: 'x',
       recognise: 'yes',
     });
     expect(parsed).toMatchObject({
-      activePenId: 'second-colour',
+      activePenId: 'third',
       eraserMode: 'stroke',
       recognise: false,
     });
@@ -118,9 +118,7 @@ describe('storage', () => {
     const prefs = {
       ...DEFAULT_WHITEBOARD_PREFS,
       recognise: true,
-      pens: DEFAULT_WHITEBOARD_PREFS.pens.map((p) =>
-        p.id === 'second-colour' ? { ...p, width: 2.5 } : p,
-      ),
+      pens: DEFAULT_WHITEBOARD_PREFS.pens.map((p) => (p.id === 'third' ? { ...p, width: 2.5 } : p)),
     };
     saveWhiteboardPrefs(prefs);
     const stored = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);

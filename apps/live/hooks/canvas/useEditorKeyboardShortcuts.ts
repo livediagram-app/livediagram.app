@@ -23,6 +23,8 @@ import {
   EDIT_KEYS,
   runModShortcut,
   VIEW_TOOL_KEYS,
+  WHITEBOARD_EDIT_KEYS,
+  WHITEBOARD_VIEW_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -298,6 +300,20 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           e.preventDefault();
           return;
         }
+      }
+
+      // A whiteboard's keys are its dock's, and only these
+      // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the diagram tab's element and
+      // mode keys have no palette to mirror there.
+      if (live.whiteboard) {
+        const action =
+          WHITEBOARD_VIEW_KEYS[lower] ??
+          (live.isReadOnly ? undefined : WHITEBOARD_EDIT_KEYS[lower]);
+        if (action) {
+          e.preventDefault();
+          action(live);
+        }
+        return;
       }
 
       // Non-mutating view tools (Select / Hand / Laser / Isometric /

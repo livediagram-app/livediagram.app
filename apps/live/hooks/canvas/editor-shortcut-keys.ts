@@ -6,6 +6,7 @@
 // these tables directly.
 
 import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, document,
@@ -141,6 +142,13 @@ export type EditorKeyboardShortcutsDeps = {
   // Cmd/Ctrl+. opens the global search panel. Allowed for view-role
   // too (search only navigates, never mutates).
   onOpenSearch: () => void;
+  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the dock's tools,
+  // which then own the plain keys. Null on every other tab.
+  whiteboard: {
+    pickSelect: () => void;
+    pickPen: (id: WhiteboardPenId) => void;
+    pickEraser: () => void;
+  } | null;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
   // checkbox lives in the keyboard-shortcuts modal; the storage
@@ -307,3 +315,27 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   }
   return false;
 }
+
+// A whiteboard's plain keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the dock's
+// tools, and only these. V is view-safe; the pens and the eraser mutate.
+export const WHITEBOARD_VIEW_KEYS: Record<string, ShortcutAction> = {
+  v: (l) => l.whiteboard?.pickSelect(),
+  h: (l) => l.setCanvasTool('pan'),
+  z: (l) => l.onToggleZen(),
+};
+
+export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
+  '1': (l) => l.whiteboard?.pickPen('main'),
+  '2': (l) => l.whiteboard?.pickPen('second'),
+  '3': (l) => l.whiteboard?.pickPen('third'),
+  e: (l) => l.whiteboard?.pickEraser(),
+};
+
+// The key each whiteboard dock tool shows (and announces in aria-keyshortcuts).
+export const WHITEBOARD_TOOL_KEYS = {
+  select: 'V',
+  main: '1',
+  second: '2',
+  third: '3',
+  eraser: 'E',
+} as const;

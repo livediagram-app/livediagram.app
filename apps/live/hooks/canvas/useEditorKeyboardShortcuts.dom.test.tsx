@@ -27,6 +27,8 @@ function deps(overrides: Partial<EditorKeyboardShortcutsDeps> = {}) {
       enabled: true,
       zenMode: false,
       canGrowMindNode: () => false,
+      // An ordinary diagram tab unless a test says otherwise.
+      whiteboard: null,
       ...spies,
       ...overrides,
     } as Record<string, unknown>,
@@ -95,5 +97,55 @@ describe('onShortcutUsed', () => {
     claimed.preventDefault();
     window.dispatchEvent(claimed);
     expect(spies.onShortcutUsed).not.toHaveBeenCalled();
+  });
+});
+
+describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts")', () => {
+  const board = () => {
+    const wb = { pickSelect: vi.fn(), pickPen: vi.fn(), pickEraser: vi.fn() };
+    const addShape = vi.fn();
+    const setCanvasTool = vi.fn();
+    const { bag } = deps({ selectedId: null, whiteboard: wb, addShape, setCanvasTool });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    return { wb, addShape, setCanvasTool };
+  };
+
+  it('picks the dock tools with V, 1, 2, 3 and E', () => {
+    const { wb } = board();
+    press('v');
+    press('1');
+    press('2');
+    press('3');
+    press('e');
+    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
+    expect(wb.pickPen.mock.calls.map((c) => c[0])).toEqual(['main', 'second', 'third']);
+    expect(wb.pickEraser).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the diagram tab keys out: no rectangle on R or 2, no laser on K', () => {
+    const { addShape, setCanvasTool } = board();
+    press('r');
+    press('2');
+    press('k');
+    expect(addShape).not.toHaveBeenCalled();
+    expect(setCanvasTool).not.toHaveBeenCalledWith('laser');
+  });
+
+  it('keeps hand on H', () => {
+    const { setCanvasTool } = board();
+    press('h');
+    expect(setCanvasTool).toHaveBeenCalledWith('pan');
+  });
+
+  it('gives a view-role visitor V only', () => {
+    const wb = { pickSelect: vi.fn(), pickPen: vi.fn(), pickEraser: vi.fn() };
+    const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('1');
+    press('e');
+    press('v');
+    expect(wb.pickPen).not.toHaveBeenCalled();
+    expect(wb.pickEraser).not.toHaveBeenCalled();
+    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
   });
 });
