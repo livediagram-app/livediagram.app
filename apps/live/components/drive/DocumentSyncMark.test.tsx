@@ -69,12 +69,29 @@ describe('DocumentSyncMark', () => {
     expect(screen.getByRole('img', { name: 'Syncing to Google Drive…' })).toBeTruthy();
   });
 
-  it('draws the synced check in green and the cloud in the quiet colour', () => {
-    show(status(), 100);
-    const paths = [...document.querySelectorAll('[data-document-sync="synced"] svg path')];
-    expect(paths).toHaveLength(2);
-    expect(paths[0]!.getAttribute('class') ?? '').not.toContain('emerald');
-    expect(paths[1]!.getAttribute('class')).toContain('text-emerald-600');
+  it('keeps every cloud quiet and colours only its symbol: the check green, the arrows blue', () => {
+    const parts = (state: string) =>
+      [...document.querySelectorAll(`[data-document-sync="${state}"] svg path`)].map((p) => ({
+        part: p.getAttribute('data-sync-part'),
+        cls: p.getAttribute('class') ?? '',
+      }));
+    for (const [s, savedAt, colour] of [
+      [status(), 100, 'emerald'],
+      [status(), 101, 'blue'],
+      [status({ state: 'syncing' }), 101, 'blue'],
+    ] as const) {
+      show(s, savedAt);
+      const state = document
+        .querySelector('[data-document-sync]')!
+        .getAttribute('data-document-sync')!;
+      const all = parts(state);
+      expect(all.filter((p) => p.part === 'cloud')).toHaveLength(1);
+      for (const p of all) {
+        if (p.part === 'cloud') expect(p.cls).toBe('');
+        else expect(p.cls).toContain(`text-${colour}-600`);
+      }
+      cleanup();
+    }
   });
 
   it('renders nothing for a document that is not mirrored', () => {
