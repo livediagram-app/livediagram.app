@@ -112,6 +112,19 @@ describe('GoogleDriveSyncRow', () => {
     expect(v.disconnect).toHaveBeenCalledOnce();
   });
 
+  it('moves from just now to < 1 min ago to 1 min ago on time, without the shared tick', () => {
+    show({ state: 'idle', lastSyncedAt: NOW });
+    expect(statusText().textContent).toBe('Last synced just now');
+    act(() => {
+      vi.advanceTimersByTime(15_000);
+    });
+    expect(statusText().textContent).toBe('Last synced < 1 min ago');
+    act(() => {
+      vi.advanceTimersByTime(45_000);
+    });
+    expect(statusText().textContent).toBe('Last synced 1 min ago');
+  });
+
   it('says Syncing only once a pass has lasted a moment', () => {
     show({ state: 'syncing', lastSyncedAt: NOW });
     expect(statusText().textContent).toBe('Last synced just now');

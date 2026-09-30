@@ -14,6 +14,7 @@ import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/set
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
 import {
   DRIVE_PROBLEM_LABELS,
+  DRIVE_SINCE_STEPS_MS,
   driveConnectedText,
   driveStatusOptions,
   driveSyncCopy,
@@ -80,10 +81,26 @@ function StatusText({
   );
 }
 
+// The shared clock ticks every 30 s; the first minute's wording changes at 15 s
+// and 60 s, so the row also wakes exactly then.
+function useSinceNow(lastSyncedAt: number | null): number {
+  const tick = useRelativeNow();
+  const [stepNow, setStepNow] = useState(0);
+  useEffect(() => {
+    if (lastSyncedAt === null) return;
+    const timers = DRIVE_SINCE_STEPS_MS.map((step) => {
+      const wait = lastSyncedAt + step - Date.now();
+      return wait > 0 ? window.setTimeout(() => setStepNow(Date.now()), wait) : null;
+    });
+    return () => timers.forEach((t) => (t === null ? undefined : window.clearTimeout(t)));
+  }, [lastSyncedAt]);
+  return Math.max(tick, stepNow);
+}
+
 export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const drive = useDriveMirror();
   const { status, connecting } = drive;
-  const now = useRelativeNow();
+  const now = useSinceNow(status.lastSyncedAt);
   const syncingLong = useSyncingLong(status);
   const [busy, setBusy] = useState<null | 'resume' | 'disconnect' | 'adopt'>(null);
   const run = (kind: NonNullable<typeof busy>, action: () => Promise<void> | void) => async () => {

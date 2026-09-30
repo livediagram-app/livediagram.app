@@ -15,6 +15,7 @@ export const DRIVE_NOT_SYNCED_YET = 'Not synced yet';
 // width while connected.
 export const DRIVE_SINCE_SAMPLES = [
   'just now',
+  '< 1 min ago',
   '59 mins ago',
   '23 hours ago',
   'yesterday',
@@ -35,13 +36,22 @@ export function driveConnectedText(rootName: string | null): string {
     : 'Your documents are synced to Google Drive.';
 }
 
-// How long ago the last sync was: "just now" for the whole first minute, so
-// the status does not count seconds; the usual wording after that.
-export const DRIVE_JUST_NOW_MS = 60_000;
+// How long ago the last sync was, without counting seconds: "just now" for
+// the first 15 seconds, "< 1 min ago" until a minute has passed, then the usual
+// wording. The row re-renders exactly at those two moments (driveSinceSteps).
+export const DRIVE_JUST_NOW_MS = 15_000;
+export const DRIVE_UNDER_A_MINUTE_MS = 60_000;
 
 export function driveSince(at: number, now: number): string {
-  return now - at < DRIVE_JUST_NOW_MS ? 'just now' : relativeSince(at, now);
+  const ago = now - at;
+  if (ago < DRIVE_JUST_NOW_MS) return 'just now';
+  if (ago < DRIVE_UNDER_A_MINUTE_MS) return '< 1 min ago';
+  return relativeSince(at, now);
 }
+
+// The moments after a sync at which its wording changes within the first
+// minute, for timers that land exactly on them.
+export const DRIVE_SINCE_STEPS_MS = [DRIVE_JUST_NOW_MS, DRIVE_UNDER_A_MINUTE_MS] as const;
 
 export type DriveSyncPhase = 'not-connected' | 'connected' | 'attention';
 
