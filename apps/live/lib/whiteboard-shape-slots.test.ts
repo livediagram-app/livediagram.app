@@ -27,8 +27,8 @@ const FULL: WhiteboardShapeKey[] = [
 ];
 
 describe('the pinned side', () => {
-  it('holds Arrow, Rectangle and Ellipse by default, of at most seven', () => {
-    expect(DEFAULT_PINNED_SHAPES).toEqual(['arrow', 'rectangle', 'ellipse']);
+  it('holds Arrow and Rectangle by default, of at most seven', () => {
+    expect(DEFAULT_PINNED_SHAPES).toEqual(['arrow', 'rectangle']);
     expect(PINNED_SHAPES_MAX).toBe(7);
   });
 });
@@ -36,8 +36,8 @@ describe('the pinned side', () => {
 describe('shapeSlots', () => {
   it('falls back down the Shapes flyout order past the default pins', () => {
     expect(shapeSlots({}, DEFAULT_PINNED_SHAPES)).toEqual({
-      mostUsed: ['diamond', 'cylinder', 'line'],
-      recent: ['parallelogram', 'hexagon', 'document'],
+      mostUsed: ['ellipse', 'diamond', 'cylinder'],
+      recent: ['line', 'parallelogram', 'hexagon'],
     });
   });
 
@@ -65,8 +65,8 @@ describe('shapeSlots', () => {
   it('leaves pinned kinds out of every slot, and never shows a kind twice', () => {
     const picks: ShapePicks = { arrow: [9, 9], star: [2, 1], cloud: [1, 8] };
     const { mostUsed, recent } = shapeSlots(picks, DEFAULT_PINNED_SHAPES);
-    expect(mostUsed).toEqual(['star', 'cloud', 'diamond']);
-    expect(recent).toEqual(['cylinder', 'line', 'parallelogram']);
+    expect(mostUsed).toEqual(['star', 'cloud', 'ellipse']);
+    expect(recent).toEqual(['diamond', 'cylinder', 'line']);
     const all = [...DEFAULT_PINNED_SHAPES, ...mostUsed, ...recent];
     expect(new Set(all).size).toBe(all.length);
   });

@@ -2,7 +2,7 @@
 
 Derived from [Whiteboard](../whiteboard.md) "What a whiteboard shows" and "Shape slots". The dock's
 tools, pens, eraser and backgrounds are in [whiteboard-round-one](whiteboard-round-one.md); this
-file owns the dock's layout (five groups), its modes, the Shapes flyout with its search and the
+file owns the dock's layout (four groups), its modes, the Shapes flyout with its search and the
 shape slots. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)
 as `Dn`.
 
@@ -12,8 +12,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | ---------------------------------------------------- | ---------------------------------------------------------------------- |
 | `components/canvas/whiteboard/WhiteboardDock.tsx`    | Orchestrates the groups, the one open flyout, the pins-full hint       |
 | `components/canvas/whiteboard/DockToolbar.tsx`       | `DockToolbar` (a group: pill, toolbar, roving tab stop), `DockButton`  |
-| `components/canvas/whiteboard/DrawingToolsGroup.tsx` | Select, Markers 1 to 3, Eraser                                         |
-| `components/canvas/whiteboard/ContentGroup.tsx`      | Text, Sticky note, Path tool                                           |
+| `components/canvas/whiteboard/DrawingToolsGroup.tsx` | Select, Markers 1 to 3, Text, Sticky note, Path tool, Eraser           |
 | `components/canvas/whiteboard/ShapesGroup.tsx`       | The pinned shapes, a separator, Shapes                                 |
 | `components/canvas/whiteboard/HistoryGroup.tsx`      | Undo, Redo                                                             |
 | `components/canvas/whiteboard/SettingsGroup.tsx`     | The cog, alone                                                         |
@@ -40,12 +39,12 @@ Scope, by file (all under `apps/live/` unless stated):
 
 | Term            | Identifier                                           | Meaning                                                             |
 | --------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| Group           | `DockToolbar`, `data-dock-group`                     | One pill: `drawing`, `content`, `shapes`, `history`, `settings`     |
+| Group           | `DockToolbar`, `data-dock-group`                     | One pill: `drawing`, `shapes`, `history`, `settings`                |
 | Dock mode       | `WhiteboardDockMode` (`simple` / `shapes`)           | Which groups show; Full drawing (`full`) is listed, not selectable  |
 | Shape catalogue | `WHITEBOARD_SHAPE_CATALOGUE`                         | Every shape a whiteboard arms, keyed by `WhiteboardShapeKey`        |
 | Shape key       | `WhiteboardShapeKey`                                 | A dock shape id, a shape kind, or `kind:choice`                     |
 | Pinned shape    | `pinnedShapes`, `data-pinned-slot`                   | A kind on the bar's pinned side, before the separator (up to seven) |
-| Default pins    | `DEFAULT_PINNED_SHAPES`                              | Arrow, Rectangle, Ellipse, until the user changes them              |
+| Default pins    | `DEFAULT_PINNED_SHAPES`                              | Arrow, Rectangle, until the user changes them                       |
 | Slot            | `slotShapes` (`mostUsed`, `recent`)                  | One of the Shapes flyout's six: three Most used, three Recent       |
 | Pick counts     | `ShapePicks`                                         | Per kind: `[count, lastPickedAt]`                                   |
 | Slot outcome    | `SlotOutcome` (`pin` / `unpin` / `refused` / `none`) | What a drop or a slot menu choice does to the pins                  |
@@ -59,11 +58,10 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 
 ### Groups and modes
 
-- Order: Drawing tools, Content, Shapes, History, Settings. `dockMode === 'simple'` renders
-  Drawing tools, History and Settings only.
-- **Drawing tools**: `select`, `main`, `second`, `third`, `eraser`, with dividers after Select and
-  after the markers.
-- **Content**: `text`, `sticky`, `path`.
+- Order: Drawing tools, Shapes, History, Settings. `dockMode === 'simple'` renders every group but
+  Shapes.
+- **Drawing tools**: `select`, `main`, `second`, `third`, `text`, `sticky`, `path`, `eraser`, with
+  dividers after Select, after the markers and before the eraser.
 - **Shapes**: `pinned:<key>` × 0 to 7, the separator (`data-pinned-separator`), `shapes`. The
   slots live in the Shapes flyout, not on the bar.
 - **History**: `undo`, `redo`; `aria-disabled` (not `disabled`) when `!canUndo` / `!canRedo`, a
@@ -75,10 +73,9 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 - Switching mode (Settings, Mode): `setDockMode(mode)`; the wrapper re-centres by itself (it is
   centred with `left: 50%` and `translate: -50%`); a flyout whose opener is in the Shapes group
   (`SHAPES_GROUP_FLYOUTS`: `shapes`, `slot`) closes when that group goes. The Settings flyout stays
-  open; its cog moves (Content and Shapes sat before it), so a layout effect on `dockMode` calls
+  open; its cog moves (Shapes sat before it), so a layout effect on `dockMode` calls
   `reanchor()`, which measures the opener again and moves the flyout's centre onto it before paint.
-- Content and shape keys (T, N, P, R, O, D, C, L, A) work in every mode (D15): the dock only hides
-  buttons.
+- The shape keys (R, O, D, C, L, A) work in every mode (D15): the dock only hides buttons.
 
 ### Flyouts
 
@@ -119,8 +116,8 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
   full list. The grid area has a fixed height (two rows) either way.
 - The active entry starts at 0 on every query change; every arrow key walks the grid (`gridStep`,
   `SHAPE_GRID_COLUMNS`, the two rows as two groups), clamped. The active entry has
-  `aria-selected`, `aria-activedescendant` on the field, and its name shows under the grid; each
-  entry also carries a Tooltip of its name.
+  `aria-selected`, `aria-activedescendant` on the field, and no name is written under the grid: an
+  entry's name is its accessible name and its Tooltip, as on every dock button.
 - Any key but Escape or Tab in the field, and any change to it, calls `stick()`: typing keeps a
   hover-opened flyout open until Escape, a pick or a press elsewhere.
 - Enter picks the active entry; a press on an entry picks it (pointerdown is prevented so focus
@@ -146,8 +143,7 @@ board: true }`. `armedWhiteboardShape(intent)` reads a board intent back to its 
 
 ### Shape slots
 
-- **Pinned side**: `readWhiteboardDockPrefs` gives `DEFAULT_PINNED_SHAPES` (Arrow, Rectangle,
-  Ellipse) until the user changes the pins; then the stored list, even empty.
+- **Pinned side**: `readWhiteboardDockPrefs` gives `DEFAULT_PINNED_SHAPES` (Arrow, Rectangle) until the user changes the pins; then the stored list, even empty.
 - `pickShape(key)` (a slot, a pinned shape, a shape key; `pickSearchedShape` for a result) arms the
   entry's intent and records a pick: `recordShapePick(picks, key, Date.now())` counts it and stamps
   it, keeping at most `SHAPE_PICKS_KEPT` kinds by evicting the least recent kind that is not among
@@ -156,8 +152,8 @@ board: true }`. `armedWhiteboardShape(intent)` reads a board intent back to its 
   recent); then **Recent**, the unpinned kinds not in Most used, newest first, so a kind that is both
   shows only in Most used (its icon stays put); three each, none twice across pins
   and slots; an empty slot takes the next fallback kind not already showing (the Shapes flyout
-  order, rectangle to arrow, then the catalogue). With the default pins: Most used Diamond,
-  Cylinder, Line; Recent Parallelogram, Hexagon, Document.
+  order, rectangle to arrow, then the catalogue). With the default pins: Most used Ellipse,
+  Diamond, Cylinder; Recent Line, Parallelogram, Hexagon.
 - Pressed state on the bar: a pinned shape when `armedShape` is its key; Shapes when a board shape
   is armed that is not pinned.
 - **Drag** (`useShapeSlotDrag`, one for both sources, hosted by the dock): pointerdown (primary
@@ -293,11 +289,12 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 - Flyouts sit above their opener in whichever group. The Shapes flyout is `8.5rem` wide with a
   fixed-height grid (two rows of three 40 px cells), so typing never resizes it.
 - Flyout previews: the tile icon (or the dock glyph for the six), 20 px box, in the board's ink.
-  Pinned shapes: the same preview in the dock's own text colour.
+  Pinned shapes: the same preview in the dock's own text colour; one with a shape key (A, R, O, D,
+  C, L) shows it bottom right and in `aria-keyshortcuts`, as every dock tool does.
 - Drag: the source fades to 40 %, a ghost follows the pointer (portalled to the body), a 2 px brand
   marker shows the insertion point (rose when the drop would be refused), a pinned shape a full
   side would replace is ringed instead; the body cursor is `grabbing` or `not-allowed`.
-- Copy: groups "Drawing tools", "Content", "Shapes", "History", "Settings"; buttons "Settings",
+- Copy: groups "Drawing tools", "Shapes", "History", "Settings"; buttons "Settings",
   "Undo", "Redo", "Text", "Sticky note", "Path tool", "Shapes", a shape by its label; flyout rows
   named (for screen readers only) "Recent shapes", "Most used shapes";
   Settings "Mode" with "Simple", "With shapes", "Full drawing" / "Coming soon"; search placeholder
@@ -306,8 +303,7 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 
 ## Accessibility
 
-- Five `role="toolbar"` groups ("Drawing tools", "Content", "Shapes", "History", "Settings"), each
-  labelled, horizontal, one tab stop, arrow keys within.
+- Four `role="toolbar"` groups ("Drawing tools", "Shapes", "History", "Settings"), each labelled, horizontal, one tab stop, arrow keys within.
 - Unavailable controls (Undo, Redo, Full drawing) use `aria-disabled` and stay focusable.
 - The Shapes flyout: `role="combobox"` field with `aria-controls` / `aria-expanded` /
   `aria-autocomplete="list"` / `aria-activedescendant`; a `role="listbox"` ("Shapes", or "Matching
@@ -354,7 +350,7 @@ to measure` (warn).
 | Constant                          | Value   | Provenance               | Safe range    |
 | --------------------------------- | ------- | ------------------------ | ------------- |
 | `PINNED_SHAPES_MAX`               | 7       | spec                     | 7             |
-| `DEFAULT_PINNED_SHAPES`           | 3 kinds | spec                     |               |
+| `DEFAULT_PINNED_SHAPES`           | 2 kinds | spec                     |               |
 | `MOST_USED_SLOTS`, `RECENT_SLOTS` | 3, 3    | spec                     | 3             |
 | `SHAPE_PICKS_PROTECTED`           | 5       | D16                      | 3 to 8        |
 | `SLOT_BAR_REACH_PX`               | 44      | D22                      | 24 to 64      |

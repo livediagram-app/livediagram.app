@@ -10,7 +10,7 @@ describe('readWhiteboardDockPrefs', () => {
   it('starts With shapes, the default pins and no history', () => {
     expect(readWhiteboardDockPrefs({})).toEqual({
       mode: DEFAULT_WHITEBOARD_DOCK_MODE,
-      pinned: ['arrow', 'rectangle', 'ellipse'],
+      pinned: ['arrow', 'rectangle'],
       picks: {},
     });
     expect(DEFAULT_WHITEBOARD_DOCK_MODE).toBe('shapes');
@@ -54,7 +54,6 @@ describe('readWhiteboardDockPrefs', () => {
     expect(readWhiteboardDockPrefs({ whiteboardPinnedShapes: 'star' } as never).pinned).toEqual([
       'arrow',
       'rectangle',
-      'ellipse',
     ]);
   });
 

@@ -27,10 +27,10 @@ const FULL: WhiteboardShapeKey[] = [
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('the Path tool in the Content group', () => {
+describe('the Path tool in the drawing tools', () => {
   it('follows the sticky note and presses while in hand', () => {
     const { m } = renderDock(model('path'));
-    const content = screen.getByRole('toolbar', { name: 'Content' });
+    const content = screen.getByRole('toolbar', { name: 'Drawing tools' });
     const button = within(content).getByRole('button', { name: 'Path tool' });
     expect(button.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(button);
@@ -54,6 +54,21 @@ describe('the pinned side', () => {
       ...shapesBar().querySelectorAll<HTMLElement>('[data-dock-item], [data-pinned-separator]'),
     ].map((el) => el.dataset.dockItem ?? '|');
     expect(items).toEqual(['pinned:arrow', 'pinned:rectangle', 'pinned:ellipse', '|', 'shapes']);
+  });
+
+  it('shows the key of every pinned shape that has one, like every dock tool', () => {
+    renderDock(model('select', { pinnedShapes: ['arrow', 'rectangle', 'star', 'line'] }));
+    const keys = [...shapesBar().querySelectorAll<HTMLElement>('[data-pinned-slot]')].map((b) => [
+      b.getAttribute('aria-label'),
+      b.getAttribute('aria-keyshortcuts'),
+      b.textContent,
+    ]);
+    expect(keys).toEqual([
+      ['Arrow', 'A', 'A'],
+      ['Rectangle', 'R', 'R'],
+      ['Star', null, ''],
+      ['Line', 'L', 'L'],
+    ]);
   });
 
   it('arms a pinned kind with a press', () => {

@@ -16,11 +16,7 @@ export type ShapePicks = Readonly<Partial<Record<WhiteboardShapeKey, readonly [n
 export const PINNED_SHAPES_MAX = 7;
 
 // The pinned side of a user who never changed it (docs/specs/023-whiteboard/whiteboard.md "Shape slots").
-export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = [
-  'arrow',
-  'rectangle',
-  'ellipse',
-];
+export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = ['arrow', 'rectangle'];
 
 // The Shapes flyout's two rows of slots.
 export const MOST_USED_SLOTS = 3;

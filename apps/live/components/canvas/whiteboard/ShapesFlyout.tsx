@@ -2,7 +2,8 @@
 
 // The Shapes flyout (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows", "Shape
 // slots"): a search field, focused as the flyout opens (hover included), over the six slots in two
-// unlabelled rows, Recent over Most used (each row named for screen readers only). Typing replaces them with at most six of the catalogue's
+// unlabelled rows, Recent over Most used (each row named for screen readers only). No name is
+// written under a shape: it is the entry's accessible name and its tooltip, as on every dock button. Typing replaces them with at most six of the catalogue's
 // shapes, best first; never the full list. Previews in the board's ink. A slot or a result can be
 // dragged onto the bar's pinned side, or pinned from its menu. Fixed size, so typing never resizes
 // the flyout; the slots are taken as it opens, so they never change under the pointer.
@@ -137,14 +138,6 @@ export function ShapesFlyout({
           ))
         )}
       </div>
-      {/* The reached shape's name: the grid shows pictures, and the arrows need a word. */}
-      <p
-        aria-hidden
-        data-shape-search-name=""
-        className="h-4 truncate text-xs text-slate-600 dark:text-slate-300"
-      >
-        {current?.label ?? ''}
-      </p>
       {menuFor ? (
         // The entry's menu, inside the flyout so it stays open: one choice.
         <button

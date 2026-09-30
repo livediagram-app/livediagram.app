@@ -1,8 +1,8 @@
 'use client';
 
 // The whiteboard's floating dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// five groups side by side at the bottom centre, in place of the palette: Drawing tools, Content
-// and Shapes (both only in the With shapes mode), History and Settings. Each group is its own
+// four groups side by side at the bottom centre, in place of the palette: Drawing tools, Shapes
+// (only in the With shapes mode), History and Settings. Each group is its own
 // toolbar with one Tab stop.
 // Flyouts open ABOVE the dock, one at a time, so nothing moves under the pointer when a tool is
 // picked; on a narrow screen the groups scroll sideways together.
@@ -25,7 +25,6 @@ import {
   SettingsFlyoutBody,
   SlotMenuBody,
 } from './dock-flyouts';
-import { ContentGroup } from './ContentGroup';
 import { DrawingToolsGroup } from './DrawingToolsGroup';
 import { HistoryGroup } from './HistoryGroup';
 import { SettingsGroup } from './SettingsGroup';
@@ -247,7 +246,6 @@ export function WhiteboardDock({
         className="-m-3 flex items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
       >
         <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
-        {showShapes ? <ContentGroup model={model} pickAndClose={pickAndClose} /> : null}
         {showShapes ? (
           <ShapesGroup
             model={model}

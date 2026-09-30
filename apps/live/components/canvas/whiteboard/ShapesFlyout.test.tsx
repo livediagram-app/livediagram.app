@@ -207,6 +207,14 @@ describe('the Shapes flyout', () => {
     }
   });
 
+  it('writes no name under the shapes: the name is the accessible name and the tooltip', () => {
+    renderDock();
+    openByPress();
+    expect(document.querySelector('[data-shape-search-name]')).toBeNull();
+    const option = screen.getByRole('option', { name: 'Hexagon' });
+    expect(option.textContent).toBe('');
+  });
+
   it('draws the previews in the board ink', () => {
     renderDock();
     openByPress();

@@ -13,12 +13,11 @@ const itemsOf = (group: string) =>
   ].map((el) => el.dataset.dockItem ?? '|');
 
 describe('WhiteboardDock groups', () => {
-  it('is five labelled horizontal toolbars, each one tab stop', () => {
+  it('is four labelled horizontal toolbars, each one tab stop', () => {
     renderDock();
     const bars = screen.getAllByRole('toolbar');
     expect(bars.map((b) => b.getAttribute('aria-label'))).toEqual([
       'Drawing tools',
-      'Content',
       'Shapes',
       'History',
       'Settings',
@@ -29,9 +28,18 @@ describe('WhiteboardDock groups', () => {
     }
   });
 
-  it('lays out Select, the markers and Eraser as the drawing tools', () => {
+  it('lays out Select, the markers, Text, Sticky note, Path tool and Eraser as the drawing tools', () => {
     renderDock();
-    expect(itemsOf('drawing')).toEqual(['select', 'main', 'second', 'third', 'eraser']);
+    expect(itemsOf('drawing')).toEqual([
+      'select',
+      'main',
+      'second',
+      'third',
+      'text',
+      'sticky',
+      'path',
+      'eraser',
+    ]);
   });
 
   it('gives the cog a group of its own, last', () => {
@@ -39,11 +47,6 @@ describe('WhiteboardDock groups', () => {
     expect(itemsOf('settings')).toEqual(['settings']);
     const bars = screen.getAllByRole('toolbar');
     expect(bars[bars.length - 1]!.getAttribute('aria-label')).toBe('Settings');
-  });
-
-  it('lays out Text, Sticky note and Path tool as the content', () => {
-    renderDock();
-    expect(itemsOf('content')).toEqual(['text', 'sticky', 'path']);
   });
 
   it('lays out the shapes bar as the pinned shapes, a separator and Shapes', () => {
@@ -74,7 +77,8 @@ describe('WhiteboardDock groups', () => {
     expect(sticky.getAttribute('tabindex')).toBe('0');
     expect(screen.getByRole('button', { name: 'Text' }).getAttribute('tabindex')).toBe('-1');
     // The other groups keep their own stops.
-    expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('0');
+    expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('-1');
+    expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('tabindex')).toBe('0');
   });
 
   it('shows every group but Shapes in Simple mode', () => {
@@ -84,9 +88,11 @@ describe('WhiteboardDock groups', () => {
       'History',
       'Settings',
     ]);
-    expect(screen.queryByRole('button', { name: 'Sticky note' })).toBeNull();
-    // Content goes with Shapes, so Simple has no Text button (its key still works).
-    expect(screen.queryByRole('button', { name: 'Text' })).toBeNull();
+    // Text, Sticky note and Path tool are drawing tools, so Simple keeps them.
+    for (const name of ['Text', 'Sticky note', 'Path tool']) {
+      expect(screen.getByRole('button', { name })).toBeTruthy();
+    }
+    expect(screen.queryByRole('button', { name: 'Shapes' })).toBeNull();
   });
 
   it('closes a Shapes-group flyout when the group goes, and keeps the others alone', () => {
@@ -265,11 +271,14 @@ describe('WhiteboardDock drawing tools', () => {
     expect(m.setEraserMode).toHaveBeenCalledWith('partial');
   });
 
-  it('picks Text, the first of the Content bar', () => {
+  it('picks Text from the drawing tools', () => {
     const { m } = renderDock();
-    const text = within(screen.getByRole('toolbar', { name: 'Content' })).getByRole('button', {
-      name: 'Text',
-    });
+    const text = within(screen.getByRole('toolbar', { name: 'Drawing tools' })).getByRole(
+      'button',
+      {
+        name: 'Text',
+      },
+    );
     fireEvent.click(text);
     expect(m.pickText).toHaveBeenCalled();
   });

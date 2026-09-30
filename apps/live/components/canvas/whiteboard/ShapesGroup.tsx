@@ -7,6 +7,7 @@
 // flyout land here, with a drop marker while they travel.
 
 import { useRef } from 'react';
+import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry, type WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
@@ -133,6 +134,8 @@ function PinnedShape({
       itemKey={`pinned:${shape}`}
       label={entry.label}
       icon={<ShapePreview entry={entry} />}
+      // A pinned kind with a shape key shows it, as every dock tool does.
+      shortcut={entry.dockShape ? WHITEBOARD_TOOL_KEYS[entry.dockShape] : undefined}
       pressed={pressed}
       onPress={() => {
         // The release that ends a long-press opened the menu; it is not a pick.

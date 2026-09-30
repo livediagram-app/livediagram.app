@@ -203,11 +203,11 @@ describe('shapes from the catalogue', () => {
 
   it('counts every pick towards the frequent slots, in the synced preferences', () => {
     const { hook } = setup(board());
-    // The default pins (Arrow, Rectangle, Ellipse) stay off the slots.
-    expect(hook.result.current.pinnedShapes).toEqual(['arrow', 'rectangle', 'ellipse']);
+    // The default pins (Arrow, Rectangle) stay off the slots.
+    expect(hook.result.current.pinnedShapes).toEqual(['arrow', 'rectangle']);
     expect(hook.result.current.slotShapes).toEqual({
-      mostUsed: ['diamond', 'cylinder', 'line'],
-      recent: ['parallelogram', 'hexagon', 'document'],
+      mostUsed: ['ellipse', 'diamond', 'cylinder'],
+      recent: ['line', 'parallelogram', 'hexagon'],
     });
     act(() => hook.result.current.pickShape('triangle'));
     act(() => hook.result.current.pickShape('triangle'));

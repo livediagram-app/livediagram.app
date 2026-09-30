@@ -716,7 +716,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   objects on first sight (cache).
 - Eraser: per pointer sample, O(strokes) bbox rejects plus O(points) for the survivors; Partial
   densifies only touched strokes. A 2,000-stroke board stays within a frame on the samples tried.
-- Dock: fixed-size buttons in five groups; see [whiteboard-dock](whiteboard-dock.md).
+- Dock: fixed-size buttons in four groups; see [whiteboard-dock](whiteboard-dock.md).
 - Live stroke, per input event: one rect read, one sample pushed, and the whole outline rebuilt
   (`freehandGeometry`, perfect-freehand, the path string): O(samples), as Excalidraw does. No React
   render of the stroke. Measured with synthetic moves: Chromium p50 0.2 / 0.8 / 2.2 ms per event at
@@ -725,7 +725,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Presentation and UX
 
-- Dock: bottom centre, five groups; placement, separators and copy in
+- Dock: bottom centre, four groups; placement, separators and copy in
   [whiteboard-dock](whiteboard-dock.md). Buttons 44 × 44 px on the editor's panel surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
@@ -743,7 +743,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Accessibility
 
-- Each group a `role="toolbar"` ("Drawing tools", "Content", "Shapes", "History", "Settings"),
+- Each group a `role="toolbar"` ("Drawing tools", "Shapes", "History", "Settings"),
   `aria-orientation="horizontal"`; roving tabindex per group: one tab stop, ArrowLeft / ArrowRight
   move (wrapping), Home / End jump ([whiteboard-dock](whiteboard-dock.md)).
 - Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");
