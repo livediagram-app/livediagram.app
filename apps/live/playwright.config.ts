@@ -29,10 +29,23 @@ export default defineConfig({
   workers: isCI ? CI_WORKERS : undefined,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  reporter: isCI ? [['github'], ['list'], ['html', { open: 'never' }]] : [['list']],
+  // Each invocation keeps its own report, so the signed-in run never overwrites the smoke suite's.
+  reporter: isCI
+    ? [
+        ['github'],
+        ['list'],
+        [
+          'html',
+          {
+            open: 'never',
+            outputFolder: clerkStub ? 'playwright-report-clerk-stub' : 'playwright-report',
+          },
+        ],
+      ]
+    : [['list']],
   use: {
     baseURL: BASE_URL,
-    trace: 'on-first-retry',
+    trace: isCI ? 'retain-on-first-failure' : 'on-first-retry',
   },
   projects: [
     {

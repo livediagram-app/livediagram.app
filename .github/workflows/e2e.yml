@@ -83,10 +83,14 @@ jobs:
       - name: Run signed-in specs
         run: pnpm --filter @livediagram/live test:e2e:clerk-stub
 
-      - name: Upload report on failure
-        if: failure()
+      # A failure, or a flaky test that passed on retry: either leaves a trace of its failing attempt
+      # (retain-on-first-failure), and the reports carry it.
+      - name: Upload reports with traces
+        if: failure() || hashFiles('apps/live/playwright-report*/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
-          path: apps/live/playwright-report
+          path: |
+            apps/live/playwright-report
+            apps/live/playwright-report-clerk-stub
           retention-days: 7

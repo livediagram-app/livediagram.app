@@ -44,6 +44,11 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   context, so a fresh guest owner whose documents no other test sees.
 - `retries: 1` in CI, a 30-second per-test timeout and a 15-minute job timeout, so a hung run
   fails fast instead of burning minutes.
+- **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
+  on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
+  guessed at. Each invocation writes its own HTML report (`playwright-report`,
+  `playwright-report-clerk-stub`), and `e2e.yml` uploads both whenever the job fails or a report
+  holds a trace. Locally a trace is kept for a retry only.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
   weights over the wire.
