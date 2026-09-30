@@ -15,6 +15,7 @@ import {
 } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { rubberBand } from '@/lib/path-draw';
+import { sharedNodeType, toWorld } from '@/lib/path-edit';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -202,7 +203,30 @@ export function usePathTool({
       }
     : null;
 
+  // The edit toolbar: above the path, or above the node a long-press chose.
+  const toolbarAnchors = editing ? (editDraft ?? pathAnchors(editing)) : [];
+  const heldNode = editing && edit.toolbarAt !== null ? toolbarAnchors[edit.toolbarAt] : undefined;
+  const heldAt = editing && heldNode ? toWorld(editing, heldNode) : null;
+  const toolbar = editing
+    ? {
+        view: {
+          bounds: heldAt
+            ? { x: heldAt.x, y: heldAt.y, width: 0, height: 0 }
+            : { x: editing.x, y: editing.y, width: editing.width, height: editing.height },
+          type: sharedNodeType(toolbarAnchors, edit.selected),
+          hasSelection: edit.selected.size > 0,
+          closed: editing.closed,
+          canOpen: edit.selected.size === 1,
+        },
+        onSetType: edit.setNodeType,
+        onDelete: edit.deleteSelected,
+        onToggleClosed: edit.toggleClosed,
+        onDone: edit.done,
+      }
+    : null;
+
   return {
+    toolbar,
     beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
     beginEditPress: (e: React.PointerEvent) => !onToolbar(e) && edit.beginEditPress(e),
     handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,

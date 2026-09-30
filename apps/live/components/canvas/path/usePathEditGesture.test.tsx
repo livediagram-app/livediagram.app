@@ -266,6 +266,101 @@ describe('usePathEditGesture', () => {
     vi.useRealTimers();
   });
 
+  it('sets the node type of the selected nodes from the toolbar, as one step', () => {
+    const s = setup(open());
+    s.click(300, 100);
+    act(() => s.hook.result.current.setNodeType('mirrored'));
+    expect(s.commits[0]!.anchors[1]!.mode).toBe('mirrored');
+    expect(s.commits[0]!.kind).toBe('edit');
+    expect([...s.hook.result.current.selected]).toEqual([1]);
+  });
+
+  it('deletes, closes and opens from the toolbar, and Done leaves', () => {
+    const s = setup(open());
+    act(() => s.hook.result.current.toggleClosed());
+    expect(s.commits[0]).toMatchObject({ closed: true, kind: 'join' });
+    const closed = { ...open(), closed: true };
+    s.hook.rerender({ element: closed });
+    s.click(300, 100);
+    act(() => s.hook.result.current.toggleClosed());
+    expect(s.commits[1]).toMatchObject({ closed: false });
+    expect(s.commits[1]!.anchors.map((a) => [a.x, a.y])).toEqual([
+      [300, 100],
+      [300, 300],
+      [100, 100],
+      [300, 100],
+    ]);
+    s.click(300, 300);
+    act(() => s.hook.result.current.deleteSelected());
+    expect(s.commits[2]!.anchors).toHaveLength(2);
+    act(() => s.hook.result.current.done());
+    expect(s.onLeave).toHaveBeenCalled();
+  });
+
+  it('selects a node held under a finger and brings the toolbar to it', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const s = setup(open());
+    act(() => {
+      s.hook.result.current.beginEditPress({
+        button: 0,
+        clientX: 300,
+        clientY: 300,
+        pointerType: 'touch',
+      } as ReactPointerEvent);
+    });
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
+    expect([...s.hook.result.current.selected]).toEqual([2]);
+    expect(s.hook.result.current.toolbarAt).toBe(2);
+    s.up(300, 300);
+    expect(s.commits).toHaveLength(0);
+    vi.useRealTimers();
+  });
+
+  it('reaches a node 16 px from a finger, 12 px from a mouse', () => {
+    const s = setup(open());
+    const pressAs = (pointerType: string) => {
+      act(() => {
+        s.hook.result.current.beginEditPress({
+          button: 0,
+          clientX: 314,
+          clientY: 100,
+          pointerType,
+        } as ReactPointerEvent);
+      });
+      s.up(314, 100);
+      clock += 1_000;
+    };
+    pressAs('mouse');
+    expect(s.hook.result.current.selected.size).toBe(0);
+    pressAs('touch');
+    expect([...s.hook.result.current.selected]).toEqual([1]);
+  });
+
+  it('tabs past the last node into the edit toolbar, whose buttons keep their keys', () => {
+    const s = setup(open());
+    const bar = document.createElement('div');
+    bar.setAttribute('data-canvas-toolbar', '');
+    bar.setAttribute('data-path-edit-toolbar', '');
+    const button = document.createElement('button');
+    bar.appendChild(button);
+    document.body.appendChild(bar);
+    s.key('Tab');
+    s.key('Tab');
+    s.key('Tab');
+    expect([...s.hook.result.current.selected]).toEqual([2]);
+    s.key('Tab');
+    expect(document.activeElement).toBe(button);
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    act(() => {
+      button.dispatchEvent(enter);
+    });
+    expect(enter.defaultPrevented).toBe(false);
+    expect(s.onLeave).not.toHaveBeenCalled();
+    bar.remove();
+  });
+
   it('opens edit mode on Enter with one path selected', () => {
     const s = setup(null, 'p1');
     const e = s.key('Enter');

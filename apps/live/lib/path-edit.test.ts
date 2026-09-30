@@ -11,14 +11,19 @@ import {
   bendAt,
   canJoin,
   deleteNodes,
+  dragNodes,
   insertNodeAt,
   isPathEditing,
   moveHandle,
   moveNodes,
   nodesInBox,
+  openPathAt,
+  setNodeType,
+  sharedNodeType,
   pathEditHit,
   snapNodeDelta,
   toLocal,
+  toWorld,
   toggleSmooth,
   visibleHandles,
 } from './path-edit';
@@ -232,5 +237,108 @@ describe('handles that lie on their node', () => {
     const anchors = [corner(0, 0), smooth(200, 0, 40, 40)];
     const { anchors: out } = insertNodeAt(anchors, false, 0, 0.5);
     expect(out[0]!.handleOut).toBeUndefined();
+  });
+});
+
+describe('setNodeType and sharedNodeType (the edit toolbar)', () => {
+  // A node at the origin whose handles point out at different angles and lengths.
+  const skew: PathAnchor = {
+    x: 0,
+    y: 0,
+    mode: 'corner',
+    handleIn: { x: -10, y: 0 },
+    handleOut: { x: 0, y: 30 },
+  };
+  const three = [corner(-100, 0), skew, corner(100, 0)];
+
+  it('Corner removes the handles', () => {
+    expect(setNodeType(three, new Set([1]), 'corner', false)[1]).toEqual(corner(0, 0));
+  });
+
+  it('Mirrored averages the handles in angle and length', () => {
+    const n = setNodeType(three, new Set([1]), 'mirrored', false)[1]!;
+    expect(n.mode).toBe('mirrored');
+    // Directions (1, 0) and (0, 1) average to 45°; lengths 10 and 30 to 20.
+    const s = 20 / Math.SQRT2;
+    expect(n.handleOut!.x).toBeCloseTo(s);
+    expect(n.handleOut!.y).toBeCloseTo(s);
+    expect(n.handleIn!.x).toBeCloseTo(-s);
+    expect(n.handleIn!.y).toBeCloseTo(-s);
+  });
+
+  it('Aligned lines the handles up, each keeping its length', () => {
+    const n = setNodeType(three, new Set([1]), 'aligned', false)[1]!;
+    expect(n.mode).toBe('aligned');
+    expect(Math.hypot(n.handleIn!.x, n.handleIn!.y)).toBeCloseTo(10);
+    expect(Math.hypot(n.handleOut!.x, n.handleOut!.y)).toBeCloseTo(30);
+    expect(n.handleOut!.x / n.handleOut!.y).toBeCloseTo(n.handleIn!.x / n.handleIn!.y);
+  });
+
+  it('gives a node without handles auto ones, and mirrors a lone handle', () => {
+    const auto = setNodeType(
+      [corner(0, 0), corner(60, 30), corner(120, 0)],
+      new Set([1]),
+      'mirrored',
+      false,
+    )[1]!;
+    expect(auto.handleIn).toEqual({ x: 40, y: 30 });
+    const lone = setNodeType(
+      [{ x: 0, y: 0, mode: 'corner', handleOut: { x: 5, y: 5 } }, corner(50, 0)],
+      new Set([0]),
+      'mirrored',
+      false,
+    )[0]!;
+    expect(lone.handleIn).toEqual({ x: -5, y: -5 });
+  });
+
+  it('names the type every selected node shares, else none', () => {
+    const mixed = [corner(0, 0), smooth(50, 0, 10), smooth(100, 0, 10)];
+    expect(sharedNodeType(mixed, new Set([1, 2]))).toBe('mirrored');
+    expect(sharedNodeType(mixed, new Set([0, 1]))).toBeNull();
+    expect(sharedNodeType(mixed, new Set())).toBeNull();
+  });
+});
+
+describe('openPathAt', () => {
+  it('cuts a closed path at a node, which becomes both ends', () => {
+    const square = [smooth(0, 0, 10), corner(100, 0), corner(100, 100), corner(0, 100)];
+    const open = openPathAt(square, 0);
+    expect(open.map((a) => [a.x, a.y])).toEqual([
+      [0, 0],
+      [100, 0],
+      [100, 100],
+      [0, 100],
+      [0, 0],
+    ]);
+    expect(open[0]).toEqual({ x: 0, y: 0, mode: 'corner', handleOut: { x: 10, y: 0 } });
+    expect(open[4]).toEqual({ x: 0, y: 0, mode: 'corner', handleIn: { x: -10, y: 0 } });
+    expect(openPathAt(square, 2).map((a) => a.x)).toEqual([100, 0, 0, 100, 100]);
+  });
+});
+
+describe('toWorld', () => {
+  it('turns a point of the path’s own frame back to where it shows', () => {
+    const el = { ...createPath([corner(0, 0), corner(100, 0)], false), rotation: 90 };
+    const p = toWorld(el, { x: 0, y: 0 });
+    expect(p.x).toBeCloseTo(50);
+    expect(p.y).toBeCloseTo(-50);
+    const back = toLocal(el, p);
+    expect(back.x).toBeCloseTo(0);
+  });
+});
+
+describe('dragNodes', () => {
+  const anchors = [corner(0, 0), corner(100, 60), corner(200, 0)];
+  it('moves the nodes by the drag, snapped, with the guides', () => {
+    expect(dragNodes(anchors, new Set([1]), 1, { x: 12, y: -57 }, false, 8)).toEqual({
+      anchors: [corner(0, 0), corner(112, 0), corner(200, 0)],
+      guides: { y: 0 },
+    });
+  });
+
+  it('holds the drag to 45° with Shift, and shows no guide', () => {
+    const out = dragNodes(anchors, new Set([1]), 1, { x: 30, y: 2 }, true, 8);
+    expect(out.anchors[1]!.y).toBeCloseTo(60);
+    expect(out.guides).toBeNull();
   });
 });

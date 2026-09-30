@@ -21,6 +21,9 @@ export type HandleSide = 'in' | 'out';
 
 // Screen px around a node or a handle that catches a press: a 24 x 24 target.
 export const PATH_NODE_HIT_PX = 12;
+// A finger's reach (docs/specs/023-whiteboard/path-tool.md "Touch"): the nearest node or handle
+// within this many screen px.
+export const PATH_TOUCH_HIT_PX = 16;
 // Screen px within which a dragged node lines up with another node or its own start.
 export const PATH_SNAP_PX = 8;
 
@@ -75,8 +78,9 @@ export function pathEditHit(
   p: Point,
   zoom: number,
   strokePx: number,
+  radiusPx: number = PATH_NODE_HIT_PX,
 ): PathEditHit {
-  const radius = PATH_NODE_HIT_PX / (zoom || 1);
+  const radius = radiusPx / (zoom || 1);
   let best: PathEditHit = { kind: 'empty' };
   let bestD = radius;
   for (const h of visibleHandles(anchors, closed, selected)) {
@@ -292,5 +296,109 @@ export function toLocal(
   return {
     x: cx + (p.x - cx) * Math.cos(r) - (p.y - cy) * Math.sin(r),
     y: cy + (p.x - cx) * Math.sin(r) + (p.y - cy) * Math.cos(r),
+  };
+}
+
+const unit = (x: number, y: number): Point | null => {
+  const len = Math.hypot(x, y);
+  return len === 0 ? null : { x: x / len, y: y / len };
+};
+
+// The line a node's two handles average to: the curve's direction through the node.
+function averagedDirection(a: PathAnchor): Point | null {
+  const out = unit(a.handleOut!.x - a.x, a.handleOut!.y - a.y);
+  const into = unit(a.x - a.handleIn!.x, a.y - a.handleIn!.y);
+  if (!out || !into) return out ?? into;
+  return unit(out.x + into.x, out.y + into.y) ?? out;
+}
+
+/**
+ * The edit toolbar's node type, set on every selected node: corner drops the handles; mirrored
+ * averages them in angle and length (a lone handle is mirrored); aligned lines them up, each keeping
+ * its length; a node with no handles takes `smoothHandles` for either smooth type.
+ */
+export function setNodeType(
+  anchors: readonly PathAnchor[],
+  selected: ReadonlySet<number>,
+  type: PathAnchor['mode'],
+  closed: boolean,
+): PathAnchor[] {
+  return anchors.map((a, i) => {
+    if (!selected.has(i)) return a;
+    const node = { x: a.x, y: a.y };
+    if (type === 'corner') return { ...node, mode: 'corner' };
+    if (!a.handleIn && !a.handleOut)
+      return { ...node, mode: type, ...smoothHandles(anchors, i, closed) };
+    if (!a.handleIn || !a.handleOut) {
+      if (type === 'aligned') return { ...a, mode: 'aligned' };
+      const lone = (a.handleOut ?? a.handleIn)!;
+      const mirror = { x: 2 * a.x - lone.x, y: 2 * a.y - lone.y };
+      return a.handleOut
+        ? { ...node, mode: 'mirrored', handleIn: mirror, handleOut: { ...lone } }
+        : { ...node, mode: 'mirrored', handleIn: { ...lone }, handleOut: mirror };
+    }
+    const dir = averagedDirection(a);
+    if (!dir) return { ...a, mode: type };
+    const outLen = Math.hypot(a.handleOut.x - a.x, a.handleOut.y - a.y);
+    const inLen = Math.hypot(a.handleIn.x - a.x, a.handleIn.y - a.y);
+    const [o, n] =
+      type === 'mirrored' ? [(outLen + inLen) / 2, (outLen + inLen) / 2] : [outLen, inLen];
+    return {
+      ...node,
+      mode: type,
+      handleIn: { x: a.x - dir.x * n, y: a.y - dir.y * n },
+      handleOut: { x: a.x + dir.x * o, y: a.y + dir.y * o },
+    };
+  });
+}
+
+/** The node type every selected node shares, or null (none selected, or a mix). */
+export function sharedNodeType(
+  anchors: readonly PathAnchor[],
+  selected: ReadonlySet<number>,
+): PathAnchor['mode'] | null {
+  const modes = new Set([...selected].map((i) => anchors[i]?.mode).filter((m) => m !== undefined));
+  return modes.size === 1 ? [...modes][0]! : null;
+}
+
+/** A closed path cut at node `i`: it runs from `i` round to a copy of `i`, both corner ends. */
+export function openPathAt(anchors: readonly PathAnchor[], i: number): PathAnchor[] {
+  const a = anchors[i]!;
+  const start: PathAnchor = { x: a.x, y: a.y, mode: 'corner' };
+  if (a.handleOut) start.handleOut = { ...a.handleOut };
+  const end: PathAnchor = { x: a.x, y: a.y, mode: 'corner' };
+  if (a.handleIn) end.handleIn = { ...a.handleIn };
+  return [start, ...anchors.slice(i + 1), ...anchors.slice(0, i), end];
+}
+
+/** A point of the path's own unrotated frame, where it shows on the canvas. */
+export function toWorld(
+  el: Pick<PathElement, 'x' | 'y' | 'width' | 'height' | 'rotation'>,
+  p: Point,
+): Point {
+  return toLocal({ ...el, rotation: -(el.rotation ?? 0) }, p);
+}
+
+/**
+ * The selected nodes dragged by `delta` from where the drag began: Shift holds it to 45° steps;
+ * otherwise the pressed node snaps into line (snapNodeDelta) and the snapped axes show a guide.
+ */
+export function dragNodes(
+  base: readonly PathAnchor[],
+  moving: ReadonlySet<number>,
+  pressed: number,
+  delta: Point,
+  shift: boolean,
+  snapRadius: number,
+): { anchors: PathAnchor[]; guides: { x?: number; y?: number } | null } {
+  if (shift) {
+    const d = constrain45({ x: 0, y: 0 }, delta);
+    return { anchors: moveNodes(base, moving, d.x, d.y), guides: null };
+  }
+  const snap = snapNodeDelta(base, moving, pressed, delta.x, delta.y, snapRadius);
+  const snapped = snap.guides.x !== undefined || snap.guides.y !== undefined;
+  return {
+    anchors: moveNodes(base, moving, snap.dx, snap.dy),
+    guides: snapped ? snap.guides : null,
   };
 }

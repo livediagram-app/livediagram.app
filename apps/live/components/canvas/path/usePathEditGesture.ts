@@ -2,7 +2,6 @@ import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'rea
 import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
-  constrain45,
   isCommittablePath,
   pathAnchors,
   type PathAnchor,
@@ -11,22 +10,29 @@ import {
 import { pointerToCanvas } from '@/lib/canvas';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { PATH_DOUBLE_PRESS_MS, PATH_DRAG_THRESHOLD_PX } from '@/lib/path-draw';
+
+// How long a finger rests on a node before it is a long-press (the canvas long-press's own).
+export const PATH_LONG_PRESS_MS = 500;
 import {
+  PATH_NODE_HIT_PX,
   PATH_SNAP_PX,
+  PATH_TOUCH_HIT_PX,
+  openPathAt,
+  setNodeType as setTypeOf,
   bendAt,
-  canJoin,
   deleteNodes,
+  dragNodes,
   insertNodeAt,
   moveHandle,
-  moveNodes,
   nodesInBox,
   pathEditHit,
-  snapNodeDelta,
   toLocal,
+  toWorld,
   toggleSmooth,
   type HandleSide,
 } from '@/lib/path-edit';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
+import { pathEditKey } from '@/lib/path-edit-keys';
 
 type Point = { x: number; y: number };
 
@@ -43,6 +49,8 @@ type Gesture = Drag & {
   startWorld: Point;
   moved: boolean;
   alt: boolean;
+  // A finger held still on a node: the long-press took the press.
+  held: boolean;
   // The anchors the gesture holds now: what lands on release.
   draft: PathAnchor[] | null;
 };
@@ -90,6 +98,9 @@ export function usePathEditGesture({
   const [draft, setDraft] = useState<PathAnchor[] | null>(null);
   const [box, setBox] = useState<{ from: Point; to: Point } | null>(null);
   const [guides, setGuides] = useState<PathGuides | null>(null);
+  // The node a long-press chose: the toolbar comes to it (null: over the path).
+  const [toolbarAt, setToolbarAt] = useState<number | null>(null);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureRef = useRef<Gesture | null>(null);
   const lastNodePressRef = useRef<{ id: string; node: number; at: number } | null>(null);
   const endListenersRef = useRef<(() => void) | null>(null);
@@ -107,6 +118,7 @@ export function usePathEditGesture({
     setDraft(null);
     setBox(null);
     setGuides(null);
+    setToolbarAt(null);
   }
   const releaseGesture = useEffectEvent(() => {
     endListenersRef.current?.();
@@ -133,6 +145,8 @@ export function usePathEditGesture({
   };
 
   const clearGesture = () => {
+    if (longPressRef.current !== null) clearTimeout(longPressRef.current);
+    longPressRef.current = null;
     endListenersRef.current?.();
     endListenersRef.current = null;
     gestureRef.current = null;
@@ -154,33 +168,25 @@ export function usePathEditGesture({
     if (!g.moved) {
       const screen = Math.hypot(q.x - g.start.x, q.y - g.start.y) * zoomRef.current;
       if (screen < PATH_DRAG_THRESHOLD_PX) return;
+      if (g.held) return;
       g.moved = true;
+      if (longPressRef.current !== null) clearTimeout(longPressRef.current);
+      longPressRef.current = null;
     }
     g.alt = g.alt || ev.altKey;
     const closed = g.el.closed;
     switch (g.kind) {
       case 'nodes': {
-        let dx = q.x - g.start.x;
-        let dy = q.y - g.start.y;
-        const moving = selectedRef.current;
-        if (ev.shiftKey) {
-          ({ x: dx, y: dy } = constrain45({ x: 0, y: 0 }, { x: dx, y: dy }));
-          setGuides(null);
-        } else {
-          const snap = snapNodeDelta(
-            g.base,
-            moving,
-            g.pressed,
-            dx,
-            dy,
-            PATH_SNAP_PX / zoomRef.current,
-          );
-          ({ dx, dy } = snap);
-          setGuides(
-            snap.guides.x !== undefined || snap.guides.y !== undefined ? snap.guides : null,
-          );
-        }
-        hold(g, moveNodes(g.base, moving, dx, dy));
+        const step = dragNodes(
+          g.base,
+          selectedRef.current,
+          g.pressed,
+          { x: q.x - g.start.x, y: q.y - g.start.y },
+          ev.shiftKey,
+          PATH_SNAP_PX / zoomRef.current,
+        );
+        setGuides(step.guides);
+        hold(g, step.anchors);
         return;
       }
       case 'handle':
@@ -199,7 +205,7 @@ export function usePathEditGesture({
     const g = gestureRef.current;
     const world = toCanvas(ev.clientX, ev.clientY);
     clearGesture();
-    if (!g) return;
+    if (!g || g.held) return;
     const closed = g.el.closed;
     if (g.kind === 'box') {
       if (!g.moved || !world) {
@@ -215,7 +221,10 @@ export function usePathEditGesture({
         width: Math.abs(world.x - g.startWorld.x),
         height: Math.abs(world.y - g.startWorld.y),
       };
-      const inside = nodesInBox(worldPoints(g.el, g.base), rect);
+      const inside = nodesInBox(
+        g.base.map((a) => toWorld(g.el, a)),
+        rect,
+      );
       setSelected(new Set([...(g.additive ? selectedRef.current : []), ...inside]));
       return;
     }
@@ -243,7 +252,13 @@ export function usePathEditGesture({
       window.removeEventListener('pointercancel', cancel);
     };
   };
-  useEffect(() => () => endListenersRef.current?.(), []);
+  useEffect(
+    () => () => {
+      endListenersRef.current?.();
+      if (longPressRef.current !== null) clearTimeout(longPressRef.current);
+    },
+    [],
+  );
 
   /** A primary press while a path is in edit mode. True when it claimed the press (always). */
   const beginEditPress = (e: React.PointerEvent): boolean => {
@@ -254,7 +269,16 @@ export function usePathEditGesture({
     const p = toLocal(el, world);
     const base = pathAnchors(el);
     const strokePx = BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE];
-    const hit = pathEditHit(base, el.closed, selectedRef.current, p, viewportZoom, strokePx);
+    const radiusPx = e.pointerType === 'touch' ? PATH_TOUCH_HIT_PX : PATH_NODE_HIT_PX;
+    const hit = pathEditHit(
+      base,
+      el.closed,
+      selectedRef.current,
+      p,
+      viewportZoom,
+      strokePx,
+      radiusPx,
+    );
     const start = (drag: Drag) =>
       startGesture({
         ...drag,
@@ -264,6 +288,7 @@ export function usePathEditGesture({
         startWorld: world,
         moved: false,
         alt: e.altKey,
+        held: false,
         draft: null,
       });
     switch (hit.kind) {
@@ -290,6 +315,18 @@ export function usePathEditGesture({
           setSelected(new Set([hit.node]));
         }
         start({ kind: 'nodes', pressed: hit.node });
+        if (e.pointerType === 'touch') {
+          // A finger held still selects the node and brings the toolbar to it.
+          const node = hit.node;
+          longPressRef.current = setTimeout(() => {
+            longPressRef.current = null;
+            const g = gestureRef.current;
+            if (!g || g.moved) return;
+            g.held = true;
+            setSelected(new Set([node]));
+            setToolbarAt(node);
+          }, PATH_LONG_PRESS_MS);
+        }
         return true;
       }
       case 'handle':
@@ -313,62 +350,35 @@ export function usePathEditGesture({
   const onKey = useEffectEvent((e: KeyboardEvent) => {
     const el = element;
     if (!el || isTyping(e.target)) return;
-    const claim = () => {
+    // On the edit toolbar its buttons keep Tab, Enter and Space; Escape still leaves.
+    const onBar = (e.target as HTMLElement | null)?.closest?.('[data-canvas-toolbar]');
+    if (onBar && e.key !== 'Escape') return;
+    const out = pathEditKey(
+      { key: e.key, shiftKey: e.shiftKey, mod: e.metaKey || e.ctrlKey },
+      pathAnchors(el),
+      el.closed,
+      selectedRef.current,
+    );
+    if (out.claim) {
       e.preventDefault();
       e.stopImmediatePropagation();
-    };
-    const sel = selectedRef.current;
-    const anchors = pathAnchors(el);
-    const mod = e.metaKey || e.ctrlKey;
-    if (e.key === 'Escape') {
-      claim();
-      if (sel.size > 0) setSelected(NO_NODES);
-      else leave('escape');
-      return;
     }
-    if (e.key === 'Enter') {
-      claim();
-      leave('enter');
-      return;
+    if (out.focusToolbar) {
+      const first = document.querySelector<HTMLButtonElement>(
+        '[data-path-edit-toolbar] button:not([disabled])',
+      );
+      // No toolbar to move on to: wrap round to the first node.
+      if (first) first.focus();
+      else setSelected(new Set([0]));
     }
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      claim();
-      if (sel.size === 0) return;
-      setSelected(NO_NODES);
-      land(el, deleteNodes(anchors, sel), el.closed, 'edit');
-      return;
-    }
-    if (e.key.startsWith('Arrow')) {
-      claim();
-      if (sel.size === 0) return;
-      const step = e.shiftKey ? 10 : 1;
-      const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
-      const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-      land(el, moveNodes(anchors, sel, dx, dy), el.closed, 'edit');
-      return;
-    }
-    if (e.key === 'Tab') {
-      claim();
-      const n = anchors.length;
-      const current = sel.size > 0 ? Math.max(...sel) : e.shiftKey ? 0 : -1;
-      setSelected(new Set([(current + (e.shiftKey ? -1 : 1) + n) % n]));
-      return;
-    }
-    if (mod && (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
+    if (out.select) setSelected(out.select);
+    if (out.land) land(el, out.land.anchors, out.land.closed, out.land.kind);
+    if (out.leave) leave(out.leave);
+    if (out.reopen) {
       // Undo and redo stay in edit mode, as in Figma: the editor's own undo leaves every edit
       // mode, so the path's reopens once it has run (unless the step took the path away).
       const id = el.id;
       window.setTimeout(() => beginEditRef.current(id), 0);
-      return;
-    }
-    if (mod && e.key.toLowerCase() === 'a') {
-      claim();
-      setSelected(new Set(anchors.map((_, i) => i)));
-      return;
-    }
-    if (!mod && e.key.toLowerCase() === 'j') {
-      claim();
-      if (canJoin(anchors, el.closed, sel)) land(el, anchors, true, 'join');
     }
   });
   useEffect(() => {
@@ -393,27 +403,48 @@ export function usePathEditGesture({
     return () => window.removeEventListener('keydown', listener, { capture: true });
   }, [selectedPathId, editingId]);
 
+  // The edit toolbar's actions (docs/specs/023-whiteboard/path-tool.md "Editing").
+  const setNodeType = (type: PathAnchor['mode']) => {
+    const el = element;
+    const sel = selectedRef.current;
+    if (!el || sel.size === 0) return;
+    land(el, setTypeOf(pathAnchors(el), sel, type, el.closed), el.closed, 'edit');
+  };
+  const deleteSelected = () => {
+    const el = element;
+    const sel = selectedRef.current;
+    if (!el || sel.size === 0) return;
+    setSelected(NO_NODES);
+    land(el, deleteNodes(pathAnchors(el), sel), el.closed, 'edit');
+  };
+  const toggleClosed = () => {
+    const el = element;
+    if (!el) return;
+    const anchors = pathAnchors(el);
+    if (!el.closed) {
+      land(el, anchors, true, 'join');
+      return;
+    }
+    const sel = selectedRef.current;
+    if (sel.size !== 1) return;
+    land(el, openPathAt(anchors, [...sel][0]!), false, 'edit');
+    setSelected(new Set([0]));
+  };
+  const done = () => leave('done');
+
   return {
     editing: element !== null,
+    toolbarAt: element ? toolbarAt : null,
+    setNodeType,
+    deleteSelected,
+    toggleClosed,
+    done,
     selected: element ? selected : NO_NODES,
     draft: element ? draft : null,
     box: element ? box : null,
     guides: element ? guides : null,
     beginEditPress,
   };
-}
-
-// The path's nodes where they show: its own frame turned by its rotation.
-function worldPoints(el: PathElement, anchors: readonly PathAnchor[]): Point[] {
-  const rotation = el.rotation ?? 0;
-  if (rotation % 360 === 0) return anchors.map((a) => ({ x: a.x, y: a.y }));
-  const r = (rotation * Math.PI) / 180;
-  const cx = el.x + el.width / 2;
-  const cy = el.y + el.height / 2;
-  return anchors.map((a) => ({
-    x: cx + (a.x - cx) * Math.cos(r) - (a.y - cy) * Math.sin(r),
-    y: cy + (a.x - cx) * Math.sin(r) + (a.y - cy) * Math.cos(r),
-  }));
 }
 
 function isTyping(target: EventTarget | null): boolean {

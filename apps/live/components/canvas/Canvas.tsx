@@ -79,6 +79,7 @@ import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGes
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
+import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
@@ -875,6 +876,13 @@ export function Canvas(props: CanvasProps) {
         selection={canvasSelection}
         quickRingOpen={quickRingOpen !== null}
       />
+      {pathTool.toolbar ? (
+        <PathEditToolbar
+          {...pathTool.toolbar}
+          viewportOffset={viewportOffset}
+          zoom={viewportZoom}
+        />
+      ) : null}
 
       <CanvasChrome
         {...props}
