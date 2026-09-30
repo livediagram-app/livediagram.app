@@ -216,14 +216,14 @@ rect plus the padding within 1 px at every step of place, type, Enter, delete ba
 
 ## Constants and configuration
 
-| Constant             | Value | Where                  | Provenance                  |
-| -------------------- | ----- | ---------------------- | --------------------------- |
-| `TEXT_HUG_PAD_X`     | 4     | `lib/text-hug.ts`      | Spec                        |
-| `TEXT_HUG_PAD_Y`     | 2     | `lib/text-hug.ts`      | Spec                        |
-| `TEXT_HUG_MAX_WIDTH` | 480   | `lib/text-hug.ts`      | Spec                        |
-| `TEXT_HUG_LEADING`   | 1.25  | `lib/text-hug.ts`      | The label's `leading-tight` |
-| `TEXT_SCALE_MIN`     | 0.1   | `document/validate.ts` | T5: a 14 px label at 1.4 px |
-| `TEXT_SCALE_MAX`     | 40    | `document/validate.ts` | T5: a 14 px label at 560 px |
+| Constant             | Value | Where                               | Provenance                  |
+| -------------------- | ----- | ----------------------------------- | --------------------------- |
+| `TEXT_HUG_PAD_X`     | 4     | `lib/text-hug.ts`                   | Spec                        |
+| `TEXT_HUG_PAD_Y`     | 2     | `lib/text-hug.ts`                   | Spec                        |
+| `TEXT_HUG_MAX_WIDTH` | 480   | `lib/text-hug.ts`                   | Spec                        |
+| `TEXT_HUG_LEADING`   | 1.25  | `lib/text-hug.ts`                   | The label's `leading-tight` |
+| `TEXT_SCALE_MIN`     | 0.1   | `packages/document/src/validate.ts` | T5: a 14 px label at 1.4 px |
+| `TEXT_SCALE_MAX`     | 40    | `packages/document/src/validate.ts` | T5: a 14 px label at 560 px |
 
 ## Defaults ledger
 
