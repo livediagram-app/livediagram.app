@@ -11,11 +11,11 @@ import {
   createShape,
   createText,
   runsPlainText,
-  type Anchor,
   type Element,
   type ShapeElement,
   type TextRun,
 } from '@livediagram/document';
+import { BOTTOM_EXITS, rake } from './template-rake';
 
 export { buildSitemap } from './template-builders-sitemap';
 
@@ -79,24 +79,6 @@ const KEY_RESULTS: KeyResult[] = [
 const MUTED = '#64748b';
 // Goal-tree lines show what rolls up into what: no arrowheads.
 const LINE = { arrowEnds: 'none', arrowStyle: 'angled' } as const;
-// Each KR line leaves the objective from its own point on the bottom edge
-// (lines sharing one anchor are fanned apart at render time, which would
-// skew the rake's first leg).
-const OBJECTIVE_EXITS: [Anchor, number][] = [
-  ['ssw', 0.25],
-  ['s', 0.5],
-  ['sse', 0.75],
-];
-
-// Chord-midpoint-relative waypoints for a down-across-down rake, elbows on
-// the chord's mid-height, so the line arrives square on the child's top.
-const rake = (from: { x: number; y: number }, to: { x: number; y: number }) => {
-  const mx = (from.x + to.x) / 2;
-  return [
-    { dx: from.x - mx, dy: 0 },
-    { dx: to.x - mx, dy: 0 },
-  ];
-};
 
 export function buildOkrTree(cx: number, cy: number): Element[] {
   const objW = 520;
@@ -192,7 +174,7 @@ export function buildOkrTree(cx: number, cy: number): Element[] {
       textAlignX: 'left',
       textAlignY: 'middle',
     });
-    const [anchor, fx] = OBJECTIVE_EXITS[i]!;
+    const [anchor, fx] = BOTTOM_EXITS[i]!;
     arrows.push({
       ...createPinnedArrow(objective.id, anchor, card.id, 'n'),
       ...LINE,

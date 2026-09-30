@@ -11,6 +11,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livediagram/document';
+import { BOTTOM_EXITS, rake } from './template-rake';
 
 // Sitemap: a real product site's page tree, the way a web team plans one.
 // Home (bold, a house glyph) sits on top. The three top-nav sections hang
@@ -77,24 +78,6 @@ const UTILITY: [string, Page[]] = [
 const MUTED = '#64748b';
 // A sitemap shows structure: plain lines, no arrowheads.
 const LINE = { arrowEnds: 'none', arrowStyle: 'angled' } as const;
-// Each section line leaves Home from its own point on the bottom edge (lines
-// sharing one anchor are fanned apart at render time, which would skew the
-// rake's first leg).
-const HOME_EXITS: [Anchor, number][] = [
-  ['ssw', 0.25],
-  ['s', 0.5],
-  ['sse', 0.75],
-];
-
-// Chord-midpoint-relative waypoints for a down-across-down rake, elbows on
-// the chord's mid-height, so the line arrives square on the child's top.
-const rake = (from: { x: number; y: number }, to: { x: number; y: number }) => {
-  const mx = (from.x + to.x) / 2;
-  return [
-    { dx: from.x - mx, dy: 0 },
-    { dx: to.x - mx, dy: 0 },
-  ];
-};
 
 export function buildSitemap(cx: number, cy: number): Element[] {
   const homeW = 240;
@@ -251,7 +234,7 @@ export function buildSitemap(cx: number, cy: number): Element[] {
       strokeWidth: 'thick',
     };
     elements.push(sectionEl);
-    const [anchor, fx] = HOME_EXITS[i]!;
+    const [anchor, fx] = BOTTOM_EXITS[i]!;
     arrows.push({
       ...createPinnedArrow(home.id, anchor, sectionEl.id, 'n'),
       ...LINE,

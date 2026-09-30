@@ -9,12 +9,12 @@ import {
   createShape,
   createText,
   runsPlainText,
-  type Anchor,
   type ArrowElement,
   type Element,
   type ShapeElement,
   type TextRun,
 } from '@livediagram/document';
+import { BOTTOM_EXITS, rake, sideRake } from './template-rake';
 
 export { buildFlowchart } from './template-builders-flowchart';
 
@@ -98,11 +98,6 @@ const ORG_TEAMS: OrgTeam[] = [
 ];
 
 const MUTED = '#64748b';
-const CEO_EXITS: [Anchor, number][] = [
-  ['ssw', 0.25],
-  ['s', 0.5],
-  ['sse', 0.75],
-];
 // Org lines show belonging, not flow: no arrowheads.
 const LINE = { arrowEnds: 'none' } as const;
 
@@ -127,26 +122,6 @@ function personCard(
     ...look,
   };
 }
-
-// Chord-midpoint-relative waypoints (`curvePoints`) for two-elbow
-// connectors. `rake` is the vertical one (down, across, down) with its elbows
-// on the chord's mid-height, so it arrives square on the child's top;
-// `sideRake` is the horizontal one (across, up, across) through `atX`.
-const rake = (from: { x: number; y: number }, to: { x: number; y: number }) => {
-  const mx = (from.x + to.x) / 2;
-  return [
-    { dx: from.x - mx, dy: 0 },
-    { dx: to.x - mx, dy: 0 },
-  ];
-};
-const sideRake = (from: { x: number; y: number }, to: { x: number; y: number }, atX: number) => {
-  const mx = (from.x + to.x) / 2;
-  const my = (from.y + to.y) / 2;
-  return [
-    { dx: atX - mx, dy: from.y - my },
-    { dx: atX - mx, dy: to.y - my },
-  ];
-};
 
 export function buildOrgChart(cx: number, cy: number): Element[] {
   const colW = 320;
@@ -278,7 +253,7 @@ export function buildOrgChart(cx: number, cy: number): Element[] {
     // Each VP line leaves the CEO from its own point on the bottom edge
     // (quarter, middle, quarter): lines sharing one anchor are fanned apart
     // at render time, which would skew the rake's first leg.
-    const [anchor, fx] = CEO_EXITS[i]!;
+    const [anchor, fx] = BOTTOM_EXITS[i]!;
     arrows.push({
       ...createPinnedArrow(ceo.id, anchor, vp.id, 'n'),
       ...LINE,
