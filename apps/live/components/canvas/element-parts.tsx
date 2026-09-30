@@ -174,6 +174,9 @@ export function UnionResizeHandles({
       {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
+          // Marks a resize grip, so a whiteboard's Shift + press resizes here
+          // rather than dragging a selection box (useCanvasSurfaceGestures).
+          data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();
             onBeginDrag(primaryId, `resize-${pos}`, e);
@@ -283,6 +286,7 @@ export function EdgeResizeHandle({
     <div
       role="button"
       aria-label={`Resize ${vertical ? 'height' : 'width'}`}
+      data-canvas-handle=""
       onPointerDown={(e) => {
         e.stopPropagation();
         if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${anchor}`, e);

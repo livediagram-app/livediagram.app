@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/document';
-import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
+import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -207,8 +207,12 @@ export function useCanvasDrawGesture({
     // shift while drawing to get a perfect square / circle. Picks
     // the dominant axis (the one the user moved further) and
     // matches the other to it, preserving the drag's direction so
-    // the box still grows where the cursor is.
-    if (e.shiftKey) {
+    // the box still grows where the cursor is. Read on every move, so
+    // pressing or releasing Shift mid-drag lands on the next one.
+    const square = e.shiftKey;
+    const lead: 'x' | 'y' =
+      Math.abs(rawX - latest.startX) >= Math.abs(rawY - latest.startY) ? 'x' : 'y';
+    if (square) {
       const dx = endX - latest.startX;
       const dy = endY - latest.startY;
       const absMax = Math.max(Math.abs(dx), Math.abs(dy));
@@ -232,14 +236,14 @@ export function useCanvasDrawGesture({
           : endY >= latest.startY
             ? 'sw'
             : 'nw';
-      const snapped = snapResizeBounds(
-        { x, y, width, height },
-        mode,
-        elements,
-        EMPTY_ID_SET,
-        snapPx,
-        1,
-      );
+      // Square: the snap applies on the leading axis only and the other
+      // side follows, so it stays square (docs/specs/008-canvas/canvas-and-palette.md
+      // "Resize"). Free: each moving edge snaps on its own.
+      const snapped = square
+        ? snapLeadingAxis({ x, y, width, height }, mode, lead, (c, edge) =>
+            snapResizeBounds(c, edge, elements, EMPTY_ID_SET, snapPx, 1),
+          )
+        : snapResizeBounds({ x, y, width, height }, mode, elements, EMPTY_ID_SET, snapPx, 1);
       endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
       endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
     } else {

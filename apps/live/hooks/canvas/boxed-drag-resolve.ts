@@ -17,10 +17,14 @@ import {
 import type { LanePreview } from '@/lib/lane-preview';
 import {
   ALIGN_SNAP_THRESHOLD,
+  constrainedBounds,
   cornerOf,
+  leadingAxis,
   snapModeOf,
   MIN_SIZE,
+  minUniformScale,
   nextBounds,
+  snapLeadingAxis,
   unionResizeMember,
   type DragMode,
   type ShapeBounds,
@@ -265,6 +269,7 @@ export function resolveBoxedResize({
   dragAspectLocked: boolean;
   guidesOn: boolean;
 }): { boundsById: Map<string, ShapeBounds>; guides: AlignmentGuide[] | null } | null {
+  if (mode === 'move') return null;
   const corner = cornerOf(mode);
   // Corner OR single edge — so edge resizes snap + dimension-match on
   // their axis (multi-member scaling below stays corner-only).
@@ -313,14 +318,25 @@ export function resolveBoxedResize({
       return { boundsById: new Map([[primaryId, next]]), guides: [] };
     }
     const raw = nextBounds(start, mode, dx, dy, constrain);
-    const next =
-      !constrain && snapMode
-        ? snapResizeBounds(raw, snapMode, elements, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE)
-        : raw;
-    // Guide off the snapped bounds (same rationale as move). A
-    // constrained resize skips the snap, so guides only appear when an
-    // edge / centre genuinely lines up. Suppressed when the user has
-    // turned alignment guides off.
+    // A constrained resize snaps too, on the axis that leads it only: the
+    // other side is re-derived from the ratio, so the snap can't bend it
+    // (docs/specs/008-canvas/canvas-and-palette.md "Resize"). The floor stays the
+    // start box's, expressed relative to the candidate.
+    const next = !snapMode
+      ? raw
+      : constrain
+        ? snapLeadingAxis(
+            raw,
+            snapMode,
+            leadingAxis(mode, dx, dy),
+            (c, edge) =>
+              snapResizeBounds(c, edge, elements, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE),
+            (minUniformScale(start) * start.width) / raw.width,
+          )
+        : snapResizeBounds(raw, snapMode, elements, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE);
+    // Guide off the snapped bounds (same rationale as move), so guides
+    // only appear when an edge / centre genuinely lines up. Suppressed
+    // when the user has turned alignment guides off.
     const guides = guidesOn ? alignmentGuides(next, elements, memberIds) : [];
     return { boundsById: new Map([[primaryId, next]]), guides };
   }
@@ -342,13 +358,13 @@ export function resolveBoxedResize({
   // per-element flags. Any aspect-locked member already forces constrain
   // to avoid warping (e.g. an actor inside the selection) so this just
   // adds the user's modifier-key opt-in for unlocked selections.
-  const unionNext = nextBounds(
-    unionStart,
-    mode,
-    dx,
-    dy,
-    dragAspectLocked || anyAspectLocked || shiftHeld,
-  );
+  // Constrained, the union scales uniformly and stops where the first
+  // resizable member's shorter side meets the minimum, so every member
+  // keeps its ratio too (a per-member floor would bend it).
+  const unionNext =
+    dragAspectLocked || anyAspectLocked || shiftHeld
+      ? constrainedBounds(unionStart, mode, dx, dy, unionMinScale(elements, startBounds))
+      : nextBounds(unionStart, mode, dx, dy, false);
   const boundsById = new Map<string, ShapeBounds>();
   for (const el of elements) {
     if (!isBoxed(el)) continue;
@@ -365,4 +381,17 @@ export function resolveBoxedResize({
     boundsById.set(el.id, unionResizeMember(start, unionStart, unionNext, corner));
   }
   return { boundsById, guides: null };
+}
+
+// The smallest uniform scale a constrained multi-resize may reach: the
+// largest of its resizable members' own floors. Fixed-size members keep
+// their size whatever the union does, so they set no floor.
+function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, ShapeBounds>): number {
+  let floor = 0;
+  for (const el of elements) {
+    const start = startBounds.get(el.id);
+    if (!start || !isBoxed(el) || isFixedSizeElement(el)) continue;
+    floor = Math.max(floor, minUniformScale(start));
+  }
+  return floor;
 }
