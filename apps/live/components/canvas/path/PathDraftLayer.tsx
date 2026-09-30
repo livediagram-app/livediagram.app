@@ -23,6 +23,8 @@ export type PathDraftView = {
   anchors: readonly PathAnchor[];
   // The node whose handles show: the one being placed.
   active: number | null;
+  // Ctrl held (the edit pointer): every placed node's handles show.
+  allHandles?: boolean;
   band: { p0: Point; c1: Point; c2: Point; p3: Point } | null;
   ring: PathRing | null;
   zoom: number;
@@ -39,6 +41,7 @@ export function PathDraftLayer({
   fill,
   anchors,
   active,
+  allHandles = false,
   band,
   ring,
   zoom,
@@ -81,7 +84,11 @@ export function PathDraftLayer({
             opacity={0.6}
           />
         ) : null}
-        {activeAnchor ? <HandleMarker anchor={activeAnchor} zoom={zoom} /> : null}
+        {allHandles ? (
+          anchors.map((a, i) => <HandleMarker key={i} anchor={a} zoom={zoom} />)
+        ) : activeAnchor ? (
+          <HandleMarker anchor={activeAnchor} zoom={zoom} />
+        ) : null}
         {anchors.map((a, i) => (
           <NodeMarker
             key={i}

@@ -5,6 +5,14 @@ import { announce } from '@/lib/announcer';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { PendingDraw } from '@/lib/draw-mode';
 import {
+  PATH_NODE_HIT_PX,
+  PATH_TOUCH_HIT_PX,
+  moveHandle,
+  pathEditHit,
+  toggleSmooth,
+  type HandleSide,
+} from '@/lib/path-edit';
+import {
   PATH_CLOSE_PX,
   PATH_DRAG_THRESHOLD_PX,
   classifyPathPress,
@@ -33,7 +41,12 @@ export type PathRing = { kind: 'close' | 'continue'; point: Point };
 
 type Drag = {
   index: number;
-  kind: 'place' | 'close';
+  // place: shape the node just placed; close: shape the first node as it closes; move: move a
+  // placed node; handle: drag one of a placed node's handles (Ctrl held).
+  kind: 'place' | 'close' | 'move' | 'handle';
+  side?: HandleSide;
+  // The last node, pressed: a click (no drag) makes it a cusp.
+  cuspOnClick?: boolean;
   start: Point;
   last: Point;
   moved: boolean;
@@ -77,6 +90,8 @@ export function usePathDrawGesture({
   };
   const [cursor, setCursor] = useState<Point | null>(null);
   const [shift, setShift] = useState(false);
+  // Ctrl (Cmd) held: the edit pointer, on the path being drawn.
+  const [editPointer, setEditPointer] = useState(false);
   // The node a drag is shaping, for its handles to show.
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const dragRef = useRef<Drag | null>(null);
@@ -127,13 +142,19 @@ export function usePathDrawGesture({
     if (!anchor) return;
     // A press that became a drag was no click, so it cannot start a double-click.
     const base = d.lastPlacedAt === null ? d : { ...d, lastPlacedAt: null };
-    if (spaceRef.current) {
-      // Space moves the node being placed, its handles with it.
+    drag.alt = drag.alt || e.altKey;
+    if (drag.kind === 'handle' && drag.side) {
+      const anchors = moveHandle(base.anchors, drag.index, drag.side, q, {
+        alt: drag.alt,
+        shift: e.shiftKey,
+      });
+      setDraft({ ...base, anchors });
+    } else if (spaceRef.current || drag.kind === 'move') {
+      // Space moves the node being placed, and a placed node dragged moves too, handles with it.
       setDraft(
         withAnchor(base, drag.index, translateAnchor(anchor, q.x - drag.last.x, q.y - drag.last.y)),
       );
     } else {
-      drag.alt = drag.alt || e.altKey;
       setDraft(
         withAnchor(base, drag.index, shapeHandles(anchor, q, { alt: drag.alt, shift: e.shiftKey })),
       );
@@ -146,6 +167,7 @@ export function usePathDrawGesture({
     endDrag();
     const d = draftRef.current;
     if (!drag || !d) return;
+    if (drag.kind === 'move' && !drag.moved && drag.cuspOnClick) setDraft(cuspLast(d));
     // A close lands when the path it makes is whole (a click on the first of two corner nodes is
     // ignored; a drag there adds the handles that make it whole).
     if (drag.kind === 'close' && isCommittablePath(d.anchors, true)) land(true);
@@ -181,15 +203,45 @@ export function usePathDrawGesture({
     if (!p) return false;
     const d = draftRef.current;
     const now = performance.now();
-    const press = classifyPathPress(d, p, { zoom: viewportZoom, now, ends: d ? [] : ends });
-    const drag = (index: number, kind: Drag['kind'], at: Point) =>
-      startDrag({ index, kind, start: at, last: at, moved: false, alt: false });
+    const touch = e.pointerType === 'touch';
+    const drag = (index: number, kind: Drag['kind'], at: Point, extra: Partial<Drag> = {}) =>
+      startDrag({ index, kind, start: at, last: at, moved: false, alt: false, ...extra });
+    if (d && (e.ctrlKey || e.metaKey)) {
+      // The edit pointer: a placed node or handle drags; nothing is placed.
+      const all = new Set(d.anchors.map((_, i) => i));
+      const radiusPx = touch ? PATH_TOUCH_HIT_PX : PATH_NODE_HIT_PX;
+      const hit = pathEditHit(d.anchors, false, all, p, viewportZoom, 0, radiusPx);
+      if (hit.kind === 'node') drag(hit.node, 'move', p);
+      if (hit.kind === 'handle') drag(hit.node, 'handle', p, { side: hit.side });
+      return true;
+    }
+    const press = classifyPathPress(d, p, {
+      zoom: viewportZoom,
+      now,
+      ends: d ? [] : ends,
+      radiusPx: touch ? PATH_TOUCH_HIT_PX : undefined,
+    });
+    if (
+      d &&
+      e.altKey &&
+      (press.kind === 'node' || press.kind === 'cusp' || press.kind === 'close')
+    ) {
+      // Alt-click a placed node: corner and smooth trade places.
+      const index =
+        press.kind === 'node' ? press.index : press.kind === 'close' ? 0 : d.anchors.length - 1;
+      setDraft({ ...d, anchors: toggleSmooth(d.anchors, index, false), lastPlacedAt: null });
+      return true;
+    }
     switch (press.kind) {
       case 'finish':
         finish();
         return true;
       case 'cusp':
-        if (d) setDraft(cuspLast(d));
+        // The last node: a drag moves it, a click makes it a cusp.
+        if (d) drag(d.anchors.length - 1, 'move', p, { cuspOnClick: true });
+        return true;
+      case 'node':
+        drag(press.index, 'move', p);
         return true;
       case 'close':
         drag(0, 'close', p);
@@ -227,6 +279,7 @@ export function usePathDrawGesture({
       setDraftState(null);
       setDragIndex(null);
       setCursor(null);
+      setEditPointer(false);
     }
   }
   const releaseGesture = () => {
@@ -293,6 +346,7 @@ export function usePathDrawGesture({
       return;
     }
     if (e.key === 'Shift') setShift(down);
+    if (e.key === 'Control' || e.key === 'Meta') setEditPointer(down);
     if (!down || !draftRef.current) return;
     const claim = () => {
       e.preventDefault();
@@ -309,15 +363,24 @@ export function usePathDrawGesture({
       if (next) announce(`${next.anchors.length} points`);
     }
   });
+  const onBlur = useEffectEvent(() => {
+    spaceRef.current = false;
+    setShift(false);
+    setEditPointer(false);
+  });
   useEffect(() => {
     if (!armed) return;
     const down = (e: KeyboardEvent) => onKey(e, true);
     const up = (e: KeyboardEvent) => onKey(e, false);
     window.addEventListener('keydown', down, { capture: true });
     window.addEventListener('keyup', up, { capture: true });
+    // Keys let go while the window was away never report their release.
+    const blur = () => onBlur();
+    window.addEventListener('blur', blur);
     return () => {
       window.removeEventListener('keydown', down, { capture: true });
       window.removeEventListener('keyup', up, { capture: true });
+      window.removeEventListener('blur', blur);
       spaceRef.current = false;
     };
   }, [armed]);
@@ -342,6 +405,7 @@ export function usePathDrawGesture({
     cursor: armed ? cursor : null,
     shift,
     dragIndex,
+    editPointer: armed && editPointer,
     ring,
     beginPathPress,
     handlePathDoubleClick,

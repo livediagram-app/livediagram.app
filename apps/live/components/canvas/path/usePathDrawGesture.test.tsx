@@ -14,9 +14,15 @@ function pointer(
   type: string,
   x: number,
   y: number,
-  mods: { alt?: boolean; shift?: boolean } = {},
+  mods: { alt?: boolean; shift?: boolean; ctrl?: boolean } = {},
 ) {
-  return new MouseEvent(type, { clientX: x, clientY: y, altKey: mods.alt, shiftKey: mods.shift });
+  return new MouseEvent(type, {
+    clientX: x,
+    clientY: y,
+    altKey: mods.alt,
+    shiftKey: mods.shift,
+    ctrlKey: mods.ctrl,
+  });
 }
 
 let clock = 0;
@@ -46,7 +52,11 @@ function setup(elements: Element[] = [], zoom = 1) {
       }),
     { initialProps: { pendingDraw: PATH as PendingDraw | null, tab: 't' } },
   );
-  const press = (x: number, y: number, mods: { shift?: boolean } = {}) => {
+  const press = (
+    x: number,
+    y: number,
+    mods: { shift?: boolean; alt?: boolean; ctrl?: boolean } = {},
+  ) => {
     let claimed = false;
     act(() => {
       claimed = hook.result.current.beginPathPress({
@@ -54,11 +64,18 @@ function setup(elements: Element[] = [], zoom = 1) {
         clientX: x,
         clientY: y,
         shiftKey: !!mods.shift,
+        altKey: !!mods.alt,
+        ctrlKey: !!mods.ctrl,
+        metaKey: false,
       } as ReactPointerEvent);
     });
     return claimed;
   };
-  const move = (x: number, y: number, mods: { alt?: boolean; shift?: boolean } = {}) =>
+  const move = (
+    x: number,
+    y: number,
+    mods: { alt?: boolean; shift?: boolean; ctrl?: boolean } = {},
+  ) =>
     act(() => {
       window.dispatchEvent(pointer('pointermove', x, y, mods));
     });
@@ -72,7 +89,12 @@ function setup(elements: Element[] = [], zoom = 1) {
     clock += 1_000;
   };
   const key = (k: string, type: 'keydown' | 'keyup' = 'keydown') => {
-    const e = new KeyboardEvent(type, { key: k, code: k === ' ' ? 'Space' : k, cancelable: true });
+    const e = new KeyboardEvent(type, {
+      key: k,
+      code: k === ' ' ? 'Space' : k,
+      ctrlKey: k === 'Control' && type === 'keydown',
+      cancelable: true,
+    });
     act(() => {
       window.dispatchEvent(e);
     });
@@ -275,6 +297,75 @@ describe('usePathDrawGesture', () => {
     s.click(0, 0);
     s.click(50, 0);
     expect(s.onStartPath).toHaveBeenCalledTimes(1);
+  });
+
+  it('moves a placed node when it is dragged; a click on it adds nothing', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.click(100, 0);
+    s.click(100, 100);
+    s.click(101, 1);
+    expect(s.hook.result.current.draft!.anchors).toHaveLength(3);
+    s.press(100, 0);
+    s.move(120, 20);
+    s.up();
+    expect(s.hook.result.current.draft!.anchors[1]).toMatchObject({ x: 120, y: 20 });
+    expect(s.hook.result.current.draft!.anchors).toHaveLength(3);
+  });
+
+  it('moves the last node when it is dragged, and cusps it on a later click', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.click(100, 0);
+    s.press(100, 0);
+    s.move(100, 40);
+    s.up();
+    expect(s.hook.result.current.draft!.anchors[1]).toMatchObject({ x: 100, y: 40 });
+  });
+
+  it('converts a placed node on Alt-click', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.click(60, 30);
+    s.click(120, 0);
+    s.press(60, 30, { alt: true });
+    s.up();
+    expect(s.hook.result.current.draft!.anchors[1]!.mode).toBe('mirrored');
+    expect(s.hook.result.current.draft!.anchors).toHaveLength(3);
+  });
+
+  it('edits the path being drawn with Ctrl held: nodes and handles drag, nothing is placed', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.press(100, 0);
+    s.move(140, 0);
+    s.up();
+    clock += 1_000;
+    s.click(200, 100);
+    // A handle of node 1, at (140, 0).
+    s.press(140, 0, { ctrl: true });
+    s.move(140, 40, { ctrl: true });
+    s.up();
+    expect(s.hook.result.current.draft!.anchors[1]!.handleOut).toEqual({ x: 140, y: 40 });
+    // The first node, which a plain press would close on.
+    s.press(0, 0, { ctrl: true });
+    s.move(0, 30, { ctrl: true });
+    s.up();
+    expect(s.hook.result.current.draft!.anchors[0]).toMatchObject({ x: 0, y: 30 });
+    // Empty space: nothing placed.
+    s.press(300, 300, { ctrl: true });
+    s.up();
+    expect(s.hook.result.current.draft!.anchors).toHaveLength(3);
+    expect(s.commits).toHaveLength(0);
+  });
+
+  it('shows the edit pointer while Ctrl is held', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.key('Control');
+    expect(s.hook.result.current.editPointer).toBe(true);
+    s.key('Control', 'keyup');
+    expect(s.hook.result.current.editPointer).toBe(false);
   });
 
   it('claims nothing when the tool is not in hand', () => {

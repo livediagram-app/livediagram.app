@@ -36,6 +36,8 @@ export type PathPress =
   | { kind: 'close' }
   | { kind: 'cusp' }
   | { kind: 'continue'; end: PathEnd }
+  // A placed node other than the first and the last: a drag moves it, a click does nothing.
+  | { kind: 'node'; index: number }
   | { kind: 'place' };
 
 const near = (a: Point, b: Point, radius: number) => Math.hypot(a.x - b.x, a.y - b.y) <= radius;
@@ -44,9 +46,10 @@ const near = (a: Point, b: Point, radius: number) => Math.hypot(a.x - b.x, a.y -
 export function classifyPathPress(
   draft: PathDraft | null,
   p: Point,
-  opts: { zoom: number; now: number; ends: readonly PathEnd[] },
+  // A finger reaches further (PATH_TOUCH_HIT_PX); a mouse or pen PATH_CLOSE_PX.
+  opts: { zoom: number; now: number; ends: readonly PathEnd[]; radiusPx?: number },
 ): PathPress {
-  const radius = PATH_CLOSE_PX / (opts.zoom || 1);
+  const radius = (opts.radiusPx ?? PATH_CLOSE_PX) / (opts.zoom || 1);
   if (draft && draft.anchors.length > 0) {
     const last = draft.anchors[draft.anchors.length - 1]!;
     const onLast = near(p, last, radius);
@@ -55,6 +58,10 @@ export function classifyPathPress(
     if (onLast && recent) return { kind: 'finish' };
     if (draft.anchors.length >= 2 && near(p, draft.anchors[0]!, radius)) return { kind: 'close' };
     if (onLast) return { kind: 'cusp' };
+    const index = draft.anchors.findIndex(
+      (a, i) => i > 0 && i < draft.anchors.length - 1 && near(p, a, radius),
+    );
+    if (index > 0) return { kind: 'node', index };
     return { kind: 'place' };
   }
   const end = opts.ends.find((e) => near(p, e.point, radius));

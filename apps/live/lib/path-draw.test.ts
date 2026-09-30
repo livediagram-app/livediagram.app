@@ -168,3 +168,22 @@ describe('open path ends and continuing', () => {
     expect(fromStart.anchors[1]!.handleOut!.x).toBeCloseTo(40);
   });
 });
+
+describe('pressing placed nodes while drawing (docs/specs/023-whiteboard/path-tool.md "Editing while drawing")', () => {
+  const draft = draftOf([corner(0, 0), corner(100, 0), corner(100, 100)], 0);
+
+  it('takes a placed node that is neither the first nor the last', () => {
+    expect(classifyPathPress(draft, { x: 101, y: 2 }, opts())).toEqual({ kind: 'node', index: 1 });
+  });
+
+  it('takes the last node to move or cusp, unless it is a double-click', () => {
+    expect(classifyPathPress(draft, { x: 100, y: 99 }, opts())).toEqual({ kind: 'cusp' });
+  });
+
+  it('reaches 16 screen px for a finger', () => {
+    expect(classifyPathPress(draft, { x: 12, y: 0 }, opts())).toEqual({ kind: 'place' });
+    expect(classifyPathPress(draft, { x: 12, y: 0 }, opts({ radiusPx: 16 }))).toEqual({
+      kind: 'close',
+    });
+  });
+});

@@ -171,8 +171,9 @@ export function usePathTool({
           fill: element.fillColor ?? defaultFillColor(element, surface),
           anchors: draft.anchors,
           active: draw.dragIndex ?? draft.anchors.length - 1,
+          allHandles: draw.editPointer,
           band:
-            draw.dragIndex === null && draw.cursor
+            draw.dragIndex === null && !draw.editPointer && draw.cursor
               ? rubberBand(draft, draw.cursor, draw.shift)
               : null,
           ring: draw.ring,
@@ -228,7 +229,7 @@ export function usePathTool({
   return {
     toolbar,
     // The cursor a path in its edit mode owns (docs/specs/023-whiteboard/path-tool.md "Cursors in edit mode").
-    cursor: edit.cursor,
+    cursor: edit.cursor ?? (draw.editPointer ? 'default' : null),
     beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
     beginEditPress: (e: React.PointerEvent) => !onToolbar(e) && edit.beginEditPress(e),
     handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,
