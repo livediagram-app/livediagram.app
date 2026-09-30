@@ -2,6 +2,7 @@ import { ctaHref } from '@livediagram/api-schema';
 import { buttonClassName, ButtonContent } from '@livediagram/ui';
 import { HeroConnectors } from './HeroConnectors';
 import { HeroIllustration } from './HeroIllustration';
+import { HeroTitleLine } from './HeroRotatingWord';
 import { PROOF_POINTS } from '@/lib/proof-points';
 
 // The proof points live on the stage's launch window now (hero-launch.tsx); the stage is
@@ -27,13 +28,22 @@ export function Hero() {
         {/* An arrow from the headline to the illustration, drawn on load (HeroConnectors). */}
         <HeroConnectors />
         {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
-        <h1
-          data-hero-anchor="title"
-          className="mx-auto max-w-3xl text-balance text-5xl font-semibold tracking-tight text-slate-900 sm:text-7xl dark:text-slate-100"
-        >
-          Diagram together, <span className="text-brand-600 dark:text-brand-300">live</span>.
+        <h1 className="mx-auto whitespace-nowrap text-[clamp(1.5rem,7.6vw,4.5rem)] font-semibold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
+          {/* The rotating first word (HeroTitleLine) is decorative: the stable headline is what
+              screen readers and crawlers read. One line at every width: the size scales with the
+              viewport so the longest word still fits. */}
+          <span className="sr-only">Diagram together, live.</span>
+          <span aria-hidden>
+            <HeroTitleLine>
+              {' '}
+              together, <span className="text-brand-600 dark:text-brand-300">live</span>.
+            </HeroTitleLine>
+          </span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300">
+        <p
+          data-hero-anchor="lead"
+          className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300"
+        >
           Sketch an idea, start from a template, or map a whole system. Share a link and your team
           builds it with you in real time.
         </p>

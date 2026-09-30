@@ -1155,6 +1155,12 @@
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
 }
+/* The headline glides to a new centre as its word changes (HeroTitleLine); the line's start glides
+   with it, in step with the glide (a CSS d transition where supported; elsewhere it moves at once). */
+.hero-conn-line,
+.hero-conn-pulse {
+  transition: d 800ms cubic-bezier(0.65, 0, 0.35, 1);
+}
 .hero-conn-head,
 .hero-conn-ring {
   transform-box: fill-box;
@@ -1225,5 +1231,54 @@
   100% {
     opacity: 0;
     stroke-dashoffset: -1;
+  }
+}
+
+/* The headline's rotating first word (components/HeroRotatingWord.tsx), a quiet ticker: the slot
+   clips at the line (hero-word-slot, a clip-path, which unlike overflow keeps the word on the
+   headline's baseline; room above and below for accents and descenders), and the leaving word
+   slides up out of it as the next slides up into place. No fade, no blur. Content pacing, and
+   nothing moves on load. Both end on none, so the settled word renders sharp. */
+.hero-word-slot {
+  clip-path: inset(-0.08em -0.2em -0.28em -0.2em);
+}
+.hero-word-in {
+  animation: hero-word-in 800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.hero-word-out {
+  animation: hero-word-out 800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes hero-word-in {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes hero-word-out {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-110%);
+  }
+}
+/* The headline line glides to stay centred on the word it shows, in step with the swap. */
+.hero-title-line {
+  transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-title-line,
+  .hero-conn-line,
+  .hero-conn-pulse {
+    transition: none;
+  }
+  .hero-word-in,
+  .hero-word-out {
+    animation: none;
+  }
+  .hero-word-out {
+    visibility: hidden;
   }
 }

@@ -16,6 +16,7 @@
 // app/hero-animations.css (hero-conn-*).
 
 import { useLayoutEffect, useRef, useState } from 'react';
+import { HERO_TITLE_SHIFT_EVENT } from './HeroRotatingWord';
 
 type Point = [number, number];
 type Layout = {
@@ -33,6 +34,8 @@ const WINDOW_GAP = 10;
 const BOW = 110;
 const LAND = 0.43;
 const RING_PAD = 6;
+// How far the sweep's bow stays clear of the subhead's right edge.
+const LEAD_CLEAR = 60;
 
 // The loading animation's palette: sky out of the headline, violet into the window.
 const FROM = '#0ea5e9';
@@ -43,22 +46,25 @@ function measure(root: HTMLElement): Layout | null {
   const stage = root.querySelector<HTMLElement>('[data-hero-anchor="stage"]');
   const card = root.querySelector<HTMLElement>('[data-hero-anchor="window"]');
   if (!title || !stage || !card) return null;
-  const range = document.createRange();
-  range.selectNodeContents(title);
-  const lines = Array.from(range.getClientRects()).filter((r) => r.width > 0);
-  const last = lines.at(-1);
-  if (!last) return null;
-  // The line's full extent: a line spans several rects (one per text node).
-  const right = Math.max(
-    ...lines.filter((r) => Math.abs(r.top - last.top) < 2).map((r) => r.right),
-  );
+  // The headline is one line whose right end is the end of "live." (HeroTitleLine right-aligns
+  // its rotating word against the rest). The line glides with a transform to stay centred; read
+  // its resting edge (undoing whatever glide is mid-flight) plus the glide it is heading for, so
+  // the arrow's start lands where "live." will end.
+  const t = title.getBoundingClientRect();
+  const current = new DOMMatrixReadOnly(getComputedStyle(title).transform).m41;
+  const right = t.right - current + Number(title.dataset.shift ?? 0);
+  const lead = root
+    .querySelector<HTMLElement>('[data-hero-anchor="lead"]')
+    ?.getBoundingClientRect();
   const o = root.getBoundingClientRect();
   const s = stage.getBoundingClientRect();
   const c = card.getBoundingClientRect();
   // The centred window: every window is the same size, and the stage centres the active one.
   const cx = s.left + s.width / 2 - o.left;
   const top = s.top - o.top;
-  const start: Point = [right - o.left + TEXT_GAP, last.top + last.height * 0.6 - o.top];
+  const start: Point = [right - o.left + TEXT_GAP, t.top + t.height * 0.55 - o.top];
+  // The sweep bows out past the subhead, whatever the headline's length, so it never crosses copy.
+  const clear = lead ? lead.right - o.left + LEAD_CLEAR : 0;
   const end: Point = [cx + c.width * LAND, top - WINDOW_GAP];
   const drop = end[1] - start[1];
   return {
@@ -66,7 +72,7 @@ function measure(root: HTMLElement): Layout | null {
     h: o.height,
     p: [
       start,
-      [start[0] + BOW, start[1] + drop * 0.25],
+      [Math.max(start[0] + BOW, clear), start[1] + drop * 0.25],
       [end[0] + BOW * 0.15, end[1] - drop * 0.5],
       end,
     ],
@@ -92,7 +98,12 @@ export function HeroConnectors() {
     void document.fonts?.ready.then(update);
     const observer = new ResizeObserver(update);
     observer.observe(root);
-    return () => observer.disconnect();
+    // The headline glides to a new centre each time its word changes (HeroTitleLine).
+    window.addEventListener(HERO_TITLE_SHIFT_EVENT, update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener(HERO_TITLE_SHIFT_EVENT, update);
+    };
   }, []);
 
   if (!layout) {
@@ -133,6 +144,8 @@ export function HeroConnectors() {
         <path
           className="hero-conn-line"
           d={path}
+          // As a style too, so a moved start glides (CSS d transition) where supported.
+          style={{ d: `path("${path}")` }}
           pathLength={1}
           fill="none"
           stroke="url(#hero-conn-grad)"
@@ -142,6 +155,7 @@ export function HeroConnectors() {
         <path
           className="hero-conn-pulse"
           d={path}
+          style={{ d: `path("${path}")` }}
           pathLength={1}
           fill="none"
           stroke="white"
