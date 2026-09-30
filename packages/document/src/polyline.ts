@@ -70,11 +70,13 @@ export function simplifyPolyline(
 
 // A turn at least this sharp (degrees between the incoming and the outgoing
 // chord) is a corner: the curve breaks its tangent there instead of rounding
-// it. Above the turning of a small handwriting loop at the simplifier's
-// tolerance (about 66 degrees at 3 px radius), below a retrace cusp (150 to
-// 180). One value for every stroke: the renderer draws stored strokes, which
-// record no pointer (docs/research/stroke-smoothing.md "Parameters").
-export const CORNER_TURN_DEG = 100;
+// it. A loop of radius R turns 2 sqrt(2 tol / R) radians per kept point at the
+// simplifier's tolerance, so 80 keeps loops down to about 2 px round, while a
+// box corner (90) and a retrace cusp (150 to 180) stay sharp. Tuned from the
+// research's 100 (safe range 80 to 135, docs/research/stroke-smoothing.md): at
+// 100 a mouse-drawn box's corners bulged 3 px outside it. One value for every
+// stroke: the renderer draws stored strokes, which record no pointer.
+export const CORNER_TURN_DEG = 80;
 const CORNER_COS = Math.cos((CORNER_TURN_DEG * Math.PI) / 180);
 
 type Point = { x: number; y: number };

@@ -20,7 +20,7 @@ describe('isStrokeCorner', () => {
   };
 
   it('treats a turn of at least the corner angle as a corner', () => {
-    expect(CORNER_TURN_DEG).toBe(100);
+    expect(CORNER_TURN_DEG).toBe(80);
     expect(isStrokeCorner({ x: -10, y: 0 }, o, turn(CORNER_TURN_DEG + 0.5))).toBe(true);
     expect(isStrokeCorner({ x: -10, y: 0 }, o, turn(178))).toBe(true);
   });

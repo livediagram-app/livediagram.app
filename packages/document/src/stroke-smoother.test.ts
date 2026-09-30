@@ -297,6 +297,44 @@ describe('corners', () => {
     });
   }
 
+  it('keeps a mouse-drawn box\u2019s square corners sharp: no bump outside the box', () => {
+    // Straight edges at 1.1 px/ms sampled every 10 ms, a still pause at each corner, as a
+    // mouse draws a box (and as the browser proof drew one).
+    const trace: TraceSample[] = [];
+    const corners = [
+      [0, 0],
+      [220, 0],
+      [220, 220],
+      [0, 220],
+      [0, 2],
+    ] as const;
+    let t = 0;
+    trace.push({ x: 0, y: 0, t });
+    for (let c = 1; c < corners.length; c++) {
+      const [ax, ay] = corners[c - 1]!;
+      const [bx, by] = corners[c]!;
+      for (let i = 1; i <= 20; i++) {
+        t += 10;
+        trace.push({ x: ax + ((bx - ax) * i) / 20, y: ay + ((by - ay) * i) / 20, t });
+      }
+      t += 80;
+    }
+    const curve = curveOf(run(trace).points);
+    const outside = Math.max(...curve.map((p) => Math.max(-p.x, p.x - 220, -p.y, p.y - 220, 0)));
+    expect(outside).toBeLessThan(0.1);
+    for (const [cx, cy] of corners.slice(1, 4)) {
+      expect(Math.min(...curve.map((p) => Math.hypot(p.x - cx, p.y - cy)))).toBeLessThan(0.1);
+    }
+  });
+
+  it('keeps a small 3 px handwriting loop round: no corner on it', () => {
+    const trace = sampleTrace(circleAt(3, 150), (2 * Math.PI * 3 * 1000) / 150, 240);
+    const { points } = run(trace, STROKE_SMOOTHING.pen);
+    for (let i = 1; i < points.length - 1; i++) {
+      expect(isStrokeCorner(points[i - 1]!, points[i]!, points[i + 1]!)).toBe(false);
+    }
+  });
+
   it('turns a 180 degree retrace on a corner: a tangent break, no loop', () => {
     // Out to x = 100 and straight back along the same line.
     const at = (t: number) => ({ x: t <= 250 ? 0.4 * t : 200 - 0.4 * t, y: 0 });

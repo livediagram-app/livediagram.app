@@ -157,7 +157,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('drops the stroke when the pen is put down mid-stroke (Escape)', () => {
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
     s.send(pointer('pointermove', { x: 30, y: 20, t: 8 }));
@@ -165,6 +165,7 @@ describe('useWhiteboardPenGesture', () => {
     expect(s.hook.result.current.penStroke).toBeNull();
     s.send(pointer('pointerup', { x: 30, y: 20, t: 16 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
+    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke discarded: pen put down');
   });
 
   it('logs each committed stroke with its pointer and counts', () => {

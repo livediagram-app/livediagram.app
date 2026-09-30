@@ -104,6 +104,8 @@ export function createStrokeSmoother(smoothing: StrokeSmoothing, zoom: number): 
   const tol2 = (smoothing.simplifyTolPx / scale) ** 2;
   const maxChord2 = (smoothing.maxChordPx / scale) ** 2;
   const freezeLagMs = WINDOW_SIGMAS * sigmaMs;
+  // A gap longer than the widest window is a pause: the pen rested, reporting nothing.
+  const pauseMs = freezeLagMs;
 
   let raw = newBuffer(INITIAL_CAPACITY);
   let n = 0;
@@ -126,11 +128,32 @@ export function createStrokeSmoother(smoothing: StrokeSmoothing, zoom: number): 
     return speed > 0 ? Math.min(sigmaMs, capPx / speed) : sigmaMs;
   };
 
-  // The smoothed point of sample i given the samples so far (`count` of them).
+  // The smoothed point of sample i given the samples so far (`count` of them). The window is
+  // symmetric and never crosses an end: the stroke's first sample, its latest, or a pause (a gap
+  // longer than the window reaches, where the pen rested and reported nothing). A one-sided
+  // window would pull the sample back along its path, so a sample at an end is its raw self: the
+  // head stays on the pen, and a corner the pen stopped at keeps its point.
   const smoothAt = (i: number, count: number): Point => {
     const ti = raw.t[i]!;
     const sigma = sigmaAt(i, count);
-    const h = Math.min(WINDOW_SIGMAS * sigma, ti - raw.t[0]!, raw.t[count - 1]! - ti);
+    const reach = WINDOW_SIGMAS * sigma;
+    let back = reach;
+    for (let j = i; ; j--) {
+      if (j === 0 || raw.t[j]! - raw.t[j - 1]! > pauseMs) {
+        back = Math.min(back, ti - raw.t[j]!);
+        break;
+      }
+      if (ti - raw.t[j - 1]! > reach) break;
+    }
+    let ahead = reach;
+    for (let j = i; ; j++) {
+      if (j === count - 1 || raw.t[j + 1]! - raw.t[j]! > pauseMs) {
+        ahead = Math.min(ahead, raw.t[j]! - ti);
+        break;
+      }
+      if (raw.t[j + 1]! - ti > reach) break;
+    }
+    const h = Math.min(back, ahead);
     if (!(h > 0)) return { x: raw.x[i]!, y: raw.y[i]! };
     const k = -1 / (2 * sigma * sigma);
     let sw = 1;
