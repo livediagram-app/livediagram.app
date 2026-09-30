@@ -10,12 +10,12 @@ import {
 // "Deleting"), with a second line only when something applies.
 
 describe('deleteConfirmation', () => {
-  it('asks one question, titled Please confirm, with a button that is not red', () => {
+  it('asks one question, titled Please confirm, with the soft yellow caution button', () => {
     expect(deleteConfirmation({ name: 'Plan', hasShareLinks: false })).toEqual({
       title: DELETE_CONFIRM_TITLE,
       message: 'Delete "Plan"?',
       confirmLabel: DELETE_CONFIRM_LABEL,
-      variant: 'neutral',
+      variant: 'caution',
     });
     expect(DELETE_CONFIRM_TITLE).toBe('Please confirm');
   });

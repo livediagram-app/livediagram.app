@@ -5,7 +5,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 
 afterEach(cleanup);
 
-const show = (variant: 'danger' | 'neutral') =>
+const show = (variant: 'danger' | 'neutral' | 'caution') =>
   render(
     <ConfirmDialog
       open
@@ -25,5 +25,14 @@ describe('ConfirmDialog confirm button', () => {
     cleanup();
     show('neutral');
     expect(screen.getByRole('button', { name: 'Go' }).className).toContain('bg-brand-500');
+  });
+
+  it('is the soft yellow for caution: a tinted fill with a border, not a solid colour', () => {
+    show('caution');
+    const cls = screen.getByRole('button', { name: 'Go' }).className;
+    expect(cls).toContain('bg-amber-50');
+    expect(cls).toContain('border-amber-300');
+    expect(cls).toContain('text-amber-900');
+    expect(cls).not.toMatch(/rose|bg-brand/);
   });
 });
