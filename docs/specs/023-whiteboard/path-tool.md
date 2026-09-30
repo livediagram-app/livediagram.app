@@ -91,6 +91,9 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 - Edit mode shows every node; the handles of selected nodes and of their neighbours' facing sides.
   Corner nodes draw as squares, smooth ones (mirrored or aligned) as circles, so the kind of every
   node reads at a glance.
+- **The edit overlay is always on top:** nodes, handles, their lines and the edit toolbar draw
+  above the path itself and above every other element on the board, whatever the path's place in
+  the stacking order, its layer or its fill, so no node or handle is ever hidden or unreachable.
 - **An edit toolbar** floats above the path while in edit mode, with the selected nodes' **node
   type** as a three-way choice (**Corner**, **Mirrored**, **Aligned**, showing the shared type or
   none), **Delete point**, **Close path** / **Open path** (opening cuts the path at the selected
