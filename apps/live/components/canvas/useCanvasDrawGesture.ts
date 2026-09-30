@@ -3,6 +3,7 @@ import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagra
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
+import { isWhiteboardPenIntent } from '@/lib/draw-mode';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -100,7 +101,8 @@ export function useCanvasDrawGesture({
     if (pendingDraw.type === 'freehand') {
       // Snap the first stroke point to nearby alignments (same as a shape's
       // first corner) so the sketch can begin from an aligned start.
-      const start = snapDrawStart(sx, sy);
+      // A whiteboard pen starts where it touches (no guides for pens).
+      const start = isWhiteboardPenIntent(pendingDraw) ? { x: sx, y: sy } : snapDrawStart(sx, sy);
       setPenPoints([{ x: start.x, y: start.y }]);
     } else if (stampAt) {
       // A stamp presses where its ghost is: start and end are both the
@@ -125,7 +127,9 @@ export function useCanvasDrawGesture({
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // A stamp has its own ghost (useStampGhost); the corner-snap dot is for
   // shapes drawn to size. Out of that state, the dot goes at once.
-  const hoverSnaps = !!pendingDraw && !drawDrag && !penPoints && !stampAt;
+  // A whiteboard pen draws freely: no start snap, so no dot either.
+  const hoverSnaps =
+    !!pendingDraw && !drawDrag && !penPoints && !stampAt && !isWhiteboardPenIntent(pendingDraw);
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;

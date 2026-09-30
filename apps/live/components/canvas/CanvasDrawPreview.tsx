@@ -100,8 +100,8 @@ export function CanvasDrawPreview({
             // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
             // what you see while dragging is what lands.
             const isHighlighter = pendingDraw.variant === 'highlighter';
-            // A whiteboard pen: its own colour and width, in screen px like the
-            // committed stroke (non-scaling).
+            // A whiteboard pen: its own colour and its width in canvas px, so the
+            // stroke being drawn is exactly as thick as the one that lands.
             const wb = pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
             return (
               <svg
@@ -114,7 +114,8 @@ export function CanvasDrawPreview({
                   stroke={
                     wb ? inkOf(wb.colour) : isHighlighter ? highlighterColor : 'rgb(14, 165, 233)'
                   }
-                  strokeWidth={wb ? wb.width : isHighlighter ? highlighterWidth : 2}
+                  // A pen's width is canvas px: on screen, times the zoom, as it lands.
+                  strokeWidth={wb ? wb.width * viewportZoom : isHighlighter ? highlighterWidth : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
                   strokeLinecap="round"

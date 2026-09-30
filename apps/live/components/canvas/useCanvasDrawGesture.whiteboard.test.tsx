@@ -66,3 +66,46 @@ describe('the pen gesture under a pinch', () => {
     expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('a whiteboard pen draws freely (docs/specs/023-whiteboard/whiteboard.md "No guides for pens")', () => {
+  // A box whose left edge sits 3 px from where the stroke starts: close enough
+  // that a pencil's first point snaps onto it.
+  const box = {
+    id: 'b',
+    type: 'shape',
+    shape: 'square',
+    x: 103,
+    y: 0,
+    width: 50,
+    height: 50,
+  } as const;
+  const firstPoint = (pendingDraw: PendingDraw) => {
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
+    const { result } = renderHook(() =>
+      useCanvasDrawGesture({
+        pendingDraw,
+        elements: [box],
+        wrapperRef: { current: wrapper },
+        viewportZoom: 1,
+        isPinchingRef: { current: false },
+        onCommitDraw: vi.fn(),
+        onCommitFreehand: vi.fn(),
+        stampAt: null,
+        showStamp: vi.fn(),
+      }),
+    );
+    act(() => {
+      result.current.beginPendingDrawGesture({ clientX: 100, clientY: 25 } as ReactPointerEvent);
+    });
+    return result.current.penPoints![0]!;
+  };
+
+  it('starts where the pen touches, unsnapped', () => {
+    expect(firstPoint(WB_PEN)).toEqual({ x: 100, y: 25 });
+  });
+
+  it('still snaps a pencil on a diagram', () => {
+    expect(firstPoint({ type: 'freehand' }).x).toBe(103);
+  });
+});

@@ -115,8 +115,17 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   draws again, and the stroke just drawn is not selected. Select, Escape or
   another tool puts it down.
 - **What you draw is what lands.** While a stroke is being drawn it already
-  shows in the pen's colour and width (the main pen in the board's ink); on
-  release only the smoothing of the line may change.
+  shows in the pen's colour and **exact thickness** (the main pen in the
+  board's ink); on release only the smoothing of the line may change.
+- **A pen's width is ink on the board.** It is in canvas px, so a stroke
+  zooms with the board like everything drawn on it, the same in every
+  browser, and the in-flight stroke is drawn at that width times the zoom.
+  (Strokes are not drawn with a non-scaling stroke: browsers disagree about
+  whether that undoes a zoomed canvas, which made a finished stroke thinner
+  than the one being drawn in Safari.)
+- **No guides for pens.** A pen draws freely: no alignment guides while it
+  is drawn, and no snapping of the first point to a neighbour. Guides and
+  snapping stay for shapes and lines from the Shapes flyout.
 - **Strokes stay open.** A whiteboard stroke that ends near its start is not
   closed and filled, as a pencil sketch on a diagram tab is: an "o" written on
   a board is ink, not a shape.

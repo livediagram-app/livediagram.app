@@ -31,13 +31,14 @@ const pen = (colour: string | null, width: number): PendingDraw => ({
 });
 
 describe('CanvasDrawPreview on a whiteboard', () => {
-  it('previews a pen stroke in the pen colour at the pen width', () => {
+  it('previews a pen stroke in the pen colour at the width it will land at, zoom included', () => {
     const { container } = render(
       <CanvasDrawPreview {...base} penPoints={stroke} pendingDraw={pen('#e5484d', 8)} />,
     );
     const path = container.querySelector('path')!;
     expect(path.getAttribute('stroke')).toBe('#e5484d');
-    expect(path.getAttribute('stroke-width')).toBe('8');
+    // An 8 px pen at zoom 2: the finished stroke is 16 screen px wide.
+    expect(path.getAttribute('stroke-width')).toBe('16');
   });
 
   it('previews the main pen in the board ink', () => {

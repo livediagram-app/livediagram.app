@@ -218,6 +218,19 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   `width × zoom`; a pen shape solid and unfilled, SVG outlines at the border px, CSS-bordered ones
   at `px × zoom` (`PenShapePreview`).
 
+### Pen strokes: exact thickness, no guides
+
+- `FreehandSvg` draws a pen stroke (`penWidth` set, not a highlighter) in a viewBox the size of
+  the element, points at `nx × width`, `ny × height`, `stroke-width = penWidth`, no
+  `vector-effect`: canvas px, scaled by the canvas zoom in every engine. Other strokes keep the
+  100-unit viewBox and `non-scaling-stroke`.
+- `CanvasDrawPreview` draws the in-flight pen stroke at `width × zoom`.
+- `isWhiteboardPenIntent(intent)` (`draw-mode.ts`): `useCanvasDrawGesture` starts the stroke at the
+  raw pointer (no `snapDrawStart`) and shows no pre-press dot; `computeDrawGuides` returns no hover
+  or stroke guides.
+- Proven by a pixel-coverage probe (Chromium and WebKit, zoom 1 and 0.7): coverage during and
+  after a stroke is equal.
+
 ### Still canvas
 
 - `CanvasStillProvider` (`apps/live/components/canvas/CanvasStillContext.tsx`), provided by `Canvas` with

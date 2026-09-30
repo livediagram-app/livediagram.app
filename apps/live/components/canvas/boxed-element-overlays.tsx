@@ -102,7 +102,16 @@ export function FreehandSvg({
   // them through the smoothing helper. `points.length < 2` collapses
   // to an empty path; the renderer then draws nothing, which is the
   // right behaviour for a degenerate single-click "stroke".
-  const vbPoints = element.points.map((p) => ({ x: p.nx * 100, y: p.ny * 100 }));
+  // A pen stroke (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) is ink on the board: its
+  // width is canvas px, drawn in a viewBox the size of the element, so the
+  // canvas zoom scales it like everything else, identically in every browser.
+  // (non-scaling-stroke under a CSS-scaled ancestor is honoured by some
+  // engines and not others, which left a finished stroke thinner than the
+  // one being drawn.) Every other stroke keeps its non-scaling preset.
+  const isPenStroke = element.penWidth !== undefined && element.pen !== 'highlighter';
+  const vbW = isPenStroke ? Math.max(element.width, 1) : 100;
+  const vbH = isPenStroke ? Math.max(element.height, 1) : 100;
+  const vbPoints = element.points.map((p) => ({ x: p.nx * vbW, y: p.ny * vbH }));
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md) keep their deliberate corners:
   // straight M/L segments instead of the Catmull-Rom smoothing the
   // sampled pencil strokes want.
@@ -125,7 +134,7 @@ export function FreehandSvg({
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-      viewBox="0 0 100 100"
+      viewBox={`0 0 ${vbW} ${vbH}`}
       preserveAspectRatio="none"
       aria-hidden
     >
@@ -142,7 +151,7 @@ export function FreehandSvg({
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
-          vectorEffect="non-scaling-stroke"
+          vectorEffect={isPenStroke ? undefined : 'non-scaling-stroke'}
         />
       ) : null}
     </svg>
