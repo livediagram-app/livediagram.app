@@ -9,9 +9,6 @@
 import { relativeSince } from '../relative-time';
 import type { DriveMirrorStatus } from './engine';
 
-// Under the connected line. The exact rhythm is in the help article.
-export const DRIVE_RHYTHM = 'Syncs happen continuously while livediagram is open.';
-
 export const DRIVE_NOT_SYNCED_YET = 'Not synced yet';
 
 // The widest values the status's time realistically shows, so it keeps one
@@ -26,13 +23,9 @@ export const DRIVE_SINCE_SAMPLES = [
   DRIVE_NOT_SYNCED_YET,
 ] as const;
 
-export const DRIVE_INTRO = 'Keep a copy of your documents in your Google Drive.';
-export const DRIVE_CHECKING = 'Checking Google Drive…';
 export const DRIVE_CONNECT_FAILED = "Couldn't reach Google. Check your connection and try again.";
 export const DRIVE_CONNECT_CANCELLED = "Connection cancelled. Connect whenever you're ready.";
-export const DRIVE_RATE_LIMITED = "Syncing a little slower for now, at Google's request.";
 export const DRIVE_OFFLINE = "Can't reach Google Drive. Trying again automatically.";
-export const DRIVE_LEASE_ELSEWHERE = 'Another tab is syncing. This one stays up to date.';
 export const DRIVE_NEEDS_RECONNECT = 'Google Drive needs reconnecting. Your files are safe.';
 export const DRIVE_NEEDS_RESUME = 'Syncing paused in this browser. Resume to continue.';
 export const DRIVE_NOTICE_TEXT = "Moved to a Drive folder livediagram can't see.";
@@ -41,10 +34,6 @@ export function driveConnectedText(rootName: string | null): string {
   return rootName
     ? `Your documents are synced to “${rootName}” in Google Drive.`
     : 'Your documents are synced to Google Drive.';
-}
-
-export function driveCopyingText(progress: { done: number; total: number }): string {
-  return `Copying ${progress.done} of ${progress.total} documents…`;
 }
 
 export type DriveSyncPhase = 'not-connected' | 'connected' | 'attention';
@@ -81,7 +70,7 @@ export const DRIVE_STATUS = {
 } as const;
 
 const synced = (since: string): DriveStatusText =>
-  plain(since === DRIVE_NOT_SYNCED_YET ? since : `Synced ${since}`);
+  plain(since === DRIVE_NOT_SYNCED_YET ? since : `Last synced ${since}`);
 const copying = (p: { done: number; total: number }) => plain(`Copying ${p.done} of ${p.total}…`);
 
 // Every status a phase can show, times and counts at their widest: the status
@@ -109,23 +98,20 @@ export function driveStatusOptions(
   }
 }
 
-// The primary button's wordings per phase; connected has none (syncing is
-// automatic), only Disconnect.
-export const DRIVE_PHASE_PRIMARY = {
-  'not-connected': ['Connect Google Drive', 'Connecting…'],
-  connected: [],
-  attention: ['Reconnect', 'Resume', 'Connecting…'],
-} as const satisfies Record<DriveSyncPhase, readonly string[]>;
+// The Connect button's wordings, so it keeps one width while not connected.
+export const DRIVE_CONNECT_LABELS = ['Connect', 'Connecting…'] as const;
+// The problem line's action wordings, so it keeps one width while it shows.
+export const DRIVE_PROBLEM_LABELS = ['Reconnect', 'Resume', 'Connecting…'] as const;
 
-export type DriveSyncAction = 'connect' | 'reconnect' | 'resume' | null;
+export type DriveProblemAction = 'reconnect' | 'resume' | 'showFolder' | null;
+
+// The second line: only while something is wrong, with what to press.
+export type DriveProblem = { text: string; action: DriveProblemAction; failed?: true };
 
 export type DriveSyncCopy = {
   phase: DriveSyncPhase;
   status: DriveStatusText;
-  text: string;
-  action: DriveSyncAction;
-  // The text is why the last Connect could not start.
-  failed?: true;
+  problem: DriveProblem | null;
 };
 
 // Where a Connect stands: in flight, failed to start, or cancelled at Google.
@@ -140,7 +126,8 @@ export type DriveConnectState = {
 // `checking`: a check the row asked for is running.
 export type DriveStatusView = { now: number; syncingLong: boolean; checking?: boolean };
 
-// Where the mirror stands, in plain words, and the one thing to press.
+// Where the mirror stands: the status at the top right, and the problem line,
+// only while something needs the user.
 export function driveSyncCopy(
   status: DriveMirrorStatus,
   connect: DriveConnectState,
@@ -149,80 +136,59 @@ export function driveSyncCopy(
   const phase = driveSyncPhase(status);
   const failed = !!connect.connectError && !connect.connecting;
   if (phase === 'not-connected') {
-    if (status.state === 'starting' && !connect.connecting) {
-      return { phase, status: DRIVE_STATUS.checking, text: DRIVE_CHECKING, action: null };
-    }
-    const base = {
-      phase,
-      status: connect.connecting ? DRIVE_STATUS.connecting : DRIVE_STATUS.notConnected,
-      action: 'connect' as const,
-    };
-    if (failed) return { ...base, text: connect.connectError!, failed: true };
-    if (connect.connectNote === 'cancelled' && !connect.connecting) {
-      return { ...base, text: DRIVE_CONNECT_CANCELLED };
-    }
-    return { ...base, text: DRIVE_INTRO };
+    const statusText =
+      status.state === 'starting' && !connect.connecting
+        ? DRIVE_STATUS.checking
+        : connect.connecting
+          ? DRIVE_STATUS.connecting
+          : DRIVE_STATUS.notConnected;
+    const problem: DriveProblem | null = failed
+      ? { text: connect.connectError!, action: null, failed: true }
+      : connect.connectNote === 'cancelled' && !connect.connecting
+        ? { text: DRIVE_CONNECT_CANCELLED, action: null }
+        : null;
+    return { phase, status: statusText, problem };
   }
   if (phase === 'attention') {
     const reconnect = status.state === 'needs_reconnect';
-    const base = {
+    const action = reconnect ? ('reconnect' as const) : ('resume' as const);
+    return {
       phase,
       status: connect.connecting
         ? DRIVE_STATUS.connecting
         : reconnect
           ? DRIVE_STATUS.reconnect
           : DRIVE_STATUS.paused,
-      action: reconnect ? ('reconnect' as const) : ('resume' as const),
+      problem: failed
+        ? { text: connect.connectError!, action, failed: true }
+        : { text: reconnect ? DRIVE_NEEDS_RECONNECT : DRIVE_NEEDS_RESUME, action },
     };
-    if (failed) return { ...base, text: connect.connectError!, failed: true };
-    return { ...base, text: reconnect ? DRIVE_NEEDS_RECONNECT : DRIVE_NEEDS_RESUME };
   }
   const offline = status.error === 'offline' || status.error === 'failed';
   const since =
     status.lastSyncedAt === null
       ? DRIVE_NOT_SYNCED_YET
       : relativeSince(status.lastSyncedAt, view.now);
+  const notice = status.notices[0] ?? null;
   const statusText = offline
     ? DRIVE_STATUS.offline
     : status.progress
       ? copying(status.progress)
-      : status.notices.length > 0
+      : notice
         ? DRIVE_STATUS.notice
         : view.checking
           ? DRIVE_STATUS.checking
           : status.state === 'syncing' && (view.syncingLong || status.lastSyncedAt === null)
             ? DRIVE_STATUS.syncing
             : synced(since);
-  const text = offline
-    ? DRIVE_OFFLINE
-    : status.progress
-      ? driveCopyingText(status.progress)
-      : status.error === 'rate_limited'
-        ? DRIVE_RATE_LIMITED
-        : status.leaseHeldElsewhere
-          ? DRIVE_LEASE_ELSEWHERE
-          : driveConnectedText(status.rootName);
-  return { phase, status: statusText, text, action: null };
-}
-
-// Every text the row's line can show in this phase, for this root name and
-// progress: the line lays them all out, so it keeps one height within the
-// phase and reserves nothing for another.
-export function driveSyncTexts(status: DriveMirrorStatus, phase: DriveSyncPhase): string[] {
-  switch (phase) {
-    case 'not-connected':
-      return [DRIVE_INTRO, DRIVE_CHECKING, DRIVE_CONNECT_FAILED, DRIVE_CONNECT_CANCELLED];
-    case 'attention':
-      return [DRIVE_NEEDS_RECONNECT, DRIVE_NEEDS_RESUME, DRIVE_CONNECT_FAILED];
-    case 'connected': {
-      const total = status.progress?.total ?? 0;
-      return [
-        driveConnectedText(status.rootName),
-        driveCopyingText({ done: total, total }),
-        DRIVE_RATE_LIMITED,
-        DRIVE_OFFLINE,
-        DRIVE_LEASE_ELSEWHERE,
-      ];
-    }
-  }
+  const more = Math.max(0, status.notices.length - 1);
+  const problem: DriveProblem | null = offline
+    ? { text: DRIVE_OFFLINE, action: null }
+    : notice
+      ? {
+          text: `${notice.name}${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`,
+          action: 'showFolder',
+        }
+      : null;
+  return { phase, status: statusText, problem };
 }

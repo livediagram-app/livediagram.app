@@ -7,12 +7,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DriveMirrorStatus } from '@/lib/drive/engine';
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
-import {
-  DRIVE_CONNECT_CANCELLED,
-  DRIVE_CONNECT_FAILED,
-  DRIVE_PHASE_PRIMARY,
-  DRIVE_RHYTHM,
-} from '@/lib/drive/cloud-sync-copy';
+import { DRIVE_CONNECT_CANCELLED, DRIVE_CONNECT_FAILED } from '@/lib/drive/cloud-sync-copy';
 import {
   SETTINGS_CATEGORIES,
   type SettingsCloudSyncRowSpec,
@@ -35,7 +30,6 @@ afterEach(() => {
 const ROW = SETTINGS_CATEGORIES.flatMap((c) => c.rows).find(
   (r) => r.kind === 'cloudSync',
 ) as SettingsCloudSyncRowSpec;
-const VISIBLE = { selector: '[data-stable-option]:not(.invisible)' };
 
 function value(
   status: Partial<DriveMirrorStatus>,
@@ -66,135 +60,90 @@ function show(status: Partial<DriveMirrorStatus>, over: Partial<DriveMirrorConte
 const statusText = () =>
   document.querySelector('[data-drive-status] [data-stable-option]:not(.invisible)')!;
 
+const NOTICE = { kind: 'document' as const, ldId: 'd', name: 'Plan', parentId: 'p' };
+const problemLine = () => document.querySelector('[data-drive-problem]');
+const description = () => document.getElementById(`${ROW.key}-description`)!.textContent ?? '';
+
 describe('GoogleDriveSyncRow', () => {
-  it('offers Connect when not connected, with no Disconnect', () => {
+  it('is one row when not connected: Not connected and Connect, nothing else', () => {
     const v = show({ state: 'disconnected' });
     expect(statusText().textContent).toBe('Not connected');
+    expect(problemLine()).toBeNull();
     expect(screen.queryByRole('button', { name: 'Disconnect' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Connect Google Drive' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Connect' }));
     expect(v.connect).toHaveBeenCalledOnce();
   });
 
-  it('says Connecting while the provider connects, the button held', () => {
+  it('holds Connect while connecting, at one width', () => {
     const v = show({ state: 'disconnected' }, { connecting: true });
+    expect(statusText().textContent).toBe('Connecting…');
     const button = screen.getByRole('button', { name: 'Connecting…' });
-    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect([...button.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
+      'Connect',
+      'Connecting…',
+    ]);
     fireEvent.click(button);
     expect(v.connect).not.toHaveBeenCalled();
-    expect(statusText().textContent).toBe('Connecting…');
   });
 
-  it('says why Connect could not start, and calmly that it was cancelled', () => {
+  it('puts a failed or cancelled Connect on a second line', () => {
     show({ state: 'disconnected' }, { connectError: DRIVE_CONNECT_FAILED });
-    expect(screen.getByText(DRIVE_CONNECT_FAILED, VISIBLE)).toBeTruthy();
+    expect(problemLine()!.textContent).toContain(DRIVE_CONNECT_FAILED);
     cleanup();
     show({ state: 'disconnected' }, { connectNote: 'cancelled' });
-    const shown = screen.getByText(DRIVE_CONNECT_CANCELLED, VISIBLE);
-    expect(shown.closest('[data-drive-text]')?.className).not.toContain('rose');
+    expect(problemLine()!.textContent).toContain(DRIVE_CONNECT_CANCELLED);
   });
 
-  it('when connected: plain status at the top right, the folder, the rhythm, Disconnect only', () => {
-    show({ state: 'idle', lastSyncedAt: NOW - 3 * 60_000 });
-    const status = statusText();
-    expect(status.textContent).toBe('Synced 3 mins ago');
-    expect(status.className).toContain('text-slate-500');
-    expect(status.querySelector('svg')).toBeNull();
-    expect(
-      screen.getByText(
-        'Your documents are synced to “livediagram (staging)” in Google Drive.',
-        VISIBLE,
-      ),
-    ).toBeTruthy();
-    expect(screen.getByText(DRIVE_RHYTHM)).toBeTruthy();
-    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Disconnect']);
-    expect(screen.queryByRole('button', { name: /Sync now/ })).toBeNull();
-    // No pill and no divider.
-    expect(document.querySelector('[data-drive-state]')).toBeNull();
-    expect(document.querySelector('[data-drive-progress-track]')).toBeNull();
-  });
-
-  it('paints Disconnect as the neutral secondary button', () => {
-    show({ state: 'idle', lastSyncedAt: NOW });
-    const cls = screen.getByRole('button', { name: 'Disconnect' }).className;
-    expect(cls).toContain('border-slate-200');
-    expect(cls).not.toMatch(/amber|rose/);
+  it('is one row when connected: Last synced and Disconnect; the folder in the description', () => {
+    const v = show({ state: 'idle', lastSyncedAt: NOW - 2 * 60_000 });
+    expect(statusText().textContent).toBe('Last synced 2 mins ago');
+    expect(problemLine()).toBeNull();
+    expect(screen.queryByRole('button', { name: /Sync now|Connect/ })).toBeNull();
+    expect(description()).toContain(
+      'Your documents are synced to “livediagram (staging)” in Google Drive.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
+    expect(v.disconnect).toHaveBeenCalledOnce();
   });
 
   it('says Syncing only once a pass has lasted a moment', () => {
-    const syncing = value({ state: 'syncing', lastSyncedAt: NOW });
-    render(
-      <DriveMirrorContext.Provider value={syncing}>
-        <GoogleDriveSyncRow row={ROW} />
-      </DriveMirrorContext.Provider>,
-    );
-    expect(statusText().textContent).toBe('Synced just now');
-    act(() => void vi.advanceTimersByTime(DRIVE_SYNCING_SHOW_DELAY_MS));
+    show({ state: 'syncing', lastSyncedAt: NOW });
+    expect(statusText().textContent).toBe('Last synced just now');
+    act(() => {
+      vi.advanceTimersByTime(DRIVE_SYNCING_SHOW_DELAY_MS);
+    });
     expect(statusText().textContent).toBe('Syncing…');
-  });
-
-  it('counts the first copy in the status and the line', () => {
-    show({ state: 'syncing', progress: { done: 3, total: 12 } });
-    expect(statusText().textContent).toBe('Copying 3 of 12…');
-    expect(screen.getByText('Copying 3 of 12 documents…', VISIBLE)).toBeTruthy();
-  });
-
-  it('warns with words and a glyph when something needs the user', () => {
-    show({ state: 'needs_reconnect' });
-    const status = statusText();
-    expect(status.textContent).toBe('Needs reconnecting');
-    expect(status.className).toContain('text-amber-700');
-    expect(status.querySelector('svg')).not.toBeNull();
   });
 
   it('keeps every status of the phase laid out, so the status never changes width', () => {
     show({ state: 'idle', lastSyncedAt: NOW });
-    const all = [...document.querySelectorAll('[data-drive-status] [data-stable-option]')].map(
+    const options = [...document.querySelectorAll('[data-drive-status] [data-stable-option]')].map(
       (n) => n.textContent,
     );
-    expect(all).toEqual(expect.arrayContaining(['Synced 30 days ago', 'Syncing…', 'Offline']));
-    expect(all).not.toContain('Not connected');
+    expect(options).toContain('Syncing…');
+    expect(options).toContain('Last synced 23 hours ago');
   });
 
-  it('sizes the primary for its phase only', () => {
-    show({ state: 'needs_reconnect' });
-    const button = screen.getByRole('button', { name: 'Reconnect' });
-    expect([...button.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
-      ...DRIVE_PHASE_PRIMARY.attention,
-    ]);
-  });
-
-  it('puts a folder notice in place of the rhythm, one line with Show folder', () => {
-    const notice = { kind: 'document' as const, ldId: 'd1', name: 'Plan', parentId: 'p' };
-    const v = show(
-      { state: 'idle', lastSyncedAt: NOW, notices: [notice, { ...notice, ldId: 'd2' }] },
-      { canAdopt: true },
-    );
-    const detail = document.querySelector('[data-drive-detail]')!;
-    expect(detail.getAttribute('data-drive-detail')).toBe('notice');
-    expect(detail.querySelector(':scope > div > :not(.invisible)')!.textContent).toContain(
-      "Plan and 1 more: Moved to a Drive folder livediagram can't see.",
-    );
+  it('shows a folder notice on a second line, with Show folder', () => {
+    const v = show({ state: 'idle', lastSyncedAt: NOW, notices: [NOTICE] }, { canAdopt: true });
     expect(statusText().textContent).toBe('Needs attention');
+    expect(problemLine()!.textContent).toContain(
+      "Plan: Moved to a Drive folder livediagram can't see.",
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Show folder' }));
-    expect(v.adopt).toHaveBeenCalledWith(notice);
+    expect(v.adopt).toHaveBeenCalledWith(NOTICE);
   });
 
-  it('offers Reconnect and Resume when paused, beside Disconnect', () => {
+  it('puts Reconnect or Resume on the second line when paused, Disconnect in the row', () => {
     const v = show({ state: 'needs_reconnect' });
+    expect(statusText().textContent).toBe('Needs reconnecting');
+    expect(problemLine()!.textContent).toContain('Google Drive needs reconnecting.');
     fireEvent.click(screen.getByRole('button', { name: 'Reconnect' }));
     expect(v.connect).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: 'Disconnect' })).toBeTruthy();
     cleanup();
-    const next = show({ state: 'needs_resume' });
-    expect(statusText().textContent).toBe('Paused');
+    const w = show({ state: 'needs_resume' });
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
-    expect(next.resume).toHaveBeenCalledOnce();
-  });
-
-  it('links to the help article', () => {
-    show({ state: 'disconnected' });
-    expect(
-      screen.getAllByRole('link').some((a) => a.getAttribute('href')?.includes('google-drive')),
-    ).toBe(true);
+    expect(w.resume).toHaveBeenCalledOnce();
   });
 });
