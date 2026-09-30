@@ -258,8 +258,9 @@ type UserPreferences = {
   }[];
   // The whiteboard dock (../023-whiteboard/whiteboard.md "What a whiteboard
   // shows", "Shape slots"): its mode ('simple'; unset is With shapes), up to
-  // two pinned shape keys, and per shape key [times picked, last picked ms]
-  // for the frequent slots, at most 12 kept. Keys outside the whiteboard's
+  // seven pinned shape keys (unset is the default pins, an empty list an
+  // emptied side), and per shape key [times picked, last picked ms] for the
+  // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
   // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
   whiteboardDockMode?: 'simple' | 'shapes';
   whiteboardPinnedShapes?: string[];

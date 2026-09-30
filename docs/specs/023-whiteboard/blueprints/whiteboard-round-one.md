@@ -121,7 +121,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
     (`opensForTyping(intent, whiteboard)` in `draw-mode.ts`). A text box hugs its text:
     [text-boxes](text-boxes.md).
   - **Shapes**: toggle the shapes flyout; picking a shape arms its intent (one-shot) and closes it.
-    The pinned and frequent slots and More shapes are [whiteboard-dock](whiteboard-dock.md)'s.
+    The pinned and frequent slots and the Shapes search are [whiteboard-dock](whiteboard-dock.md)'s.
   - **Recognition**: flip `recognise`, re-arm the pen intent when a pen is held, track
     `RecognitionOn` / `RecognitionOff`.
   - **Undo / Redo**: the History group's `onUndo` / `onRedo`, unavailable by `canUndo` / `canRedo`.
@@ -249,8 +249,8 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 
 - The Shapes button opens its flyout on `pointerenter` (not touch) as a hover flyout; leaving the
   button or the flyout schedules a close after `HOVER_CLOSE_MS` (250 ms, `useHoverClose`), cancelled
-  by entering either. A press on a hover flyout makes it sticky. A hover flyout passes
-  `takeFocus={false}` so it never moves the keyboard focus.
+  by entering either. A press on a hover flyout makes it sticky. Its search field takes the focus
+  even on a hover, the one exception ([whiteboard-dock](whiteboard-dock.md) "Flyouts").
 - The Settings flyout (`hideTitle`, accessible name "Settings", opened by the cog on a press only)
   holds four headed sections, top to bottom: Background (Plain / Dots / Grid), Cursor (Crosshair +
   nib first, the default, then Dot), Drawing (Basic / Shape recognition, `setRecognition(on)`) and
@@ -716,7 +716,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   objects on first sight (cache).
 - Eraser: per pointer sample, O(strokes) bbox rejects plus O(points) for the survivors; Partial
   densifies only touched strokes. A 2,000-stroke board stays within a frame on the samples tried.
-- Dock: fixed-size buttons in three groups; see [whiteboard-dock](whiteboard-dock.md).
+- Dock: fixed-size buttons in five groups; see [whiteboard-dock](whiteboard-dock.md).
 - Live stroke, per input event: one rect read, one sample pushed, and the whole outline rebuilt
   (`freehandGeometry`, perfect-freehand, the path string): O(samples), as Excalidraw does. No React
   render of the stroke. Measured with synthetic moves: Chromium p50 0.2 / 0.8 / 2.2 ms per event at
@@ -725,7 +725,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Presentation and UX
 
-- Dock: bottom centre, three groups; placement, separators and copy in
+- Dock: bottom centre, five groups; placement, separators and copy in
   [whiteboard-dock](whiteboard-dock.md). Buttons 44 × 44 px on the editor's panel surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
@@ -743,7 +743,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Accessibility
 
-- Each group a `role="toolbar"` ("Drawing tools", "History", "Shapes"),
+- Each group a `role="toolbar"` ("Drawing tools", "Content", "Shapes", "History", "Settings"),
   `aria-orientation="horizontal"`; roving tabindex per group: one tab stop, ArrowLeft / ArrowRight
   move (wrapping), Home / End jump ([whiteboard-dock](whiteboard-dock.md)).
 - Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");

@@ -22,7 +22,7 @@ The dashboard's **Pages** tab opens with the funnel (see Dashboard below).
 Before this the marketing site reported page views and nothing else, so no
 change to the landing page could be judged. "Does the hero convert better
 than the closing CTA?", "do the template gallery's cards create documents?",
-"is Just Draw or Choose Template the stronger button?", "does anyone start
+"is Start Blank or Choose Template the stronger button?", "does anyone start
 from a comparison page?" had no answer. [Marketing site](marketing-site.md)'s landing page work (a new
 headline, fewer sections, a prompt in the hero) needs a number to move before
 any of it is worth doing.
@@ -44,7 +44,7 @@ The editor's `/new` page reads it once on arrival and then:
 - Sends `Cta·Opened·<source>` straight away.
 - Holds the source for the life of the page and sends `Cta·Created·<source>`
   beside the usual `Document·Created` when the document is committed, whichever
-  path committed it (the wizard's Create, its Skip, or a Just Draw / template
+  path committed it (the wizard's Create, its Skip, or a Start Blank / template
   bypass).
 
 So the marketing site still sends **only page views** ([Page view telemetry](../017-telemetry/page-view-telemetry.md)): no click
@@ -81,11 +81,11 @@ ingest drops.
 The slots:
 
 - `Header` / `HeaderDraw`: the shared `SiteHeader` pair, Choose Template
-  (`/new`) and Just Draw (`/new?blank=1`). The help centre's header has one
+  (`/new`) and Start Blank (`/new?blank=1`). The help centre's header has one
   Start drawing button, its `Header`.
 - `Hero` / `HeroDraw` / `HeroBrainstorm`: the landing hero's three, Diagram
   (`/new`), Draw (`/new?template=whiteboard`) and Brainstorm
-  (`/new?browse=brainstorm`). `HeroDraw` kept its slot when Just Draw's blank
+  (`/new?browse=brainstorm`). `HeroDraw` kept its slot when Start Blank's blank
   canvas became Draw's whiteboard: it is the same button in the same place,
   so its series carries on. On a feature page, `Hero` is the category hero's
   Start drawing.

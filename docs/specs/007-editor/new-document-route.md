@@ -346,7 +346,11 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 `pointer-events-none` / `aria-hidden`, and stands down under
 `prefers-reduced-motion`.
 
-## Just Draw (skip the wizard)
+## Start Blank (skip the wizard)
+
+**Start Blank** is the name on every surface (the site header and the wizard's step rail); it was
+"Just Draw" until the hero's **Draw** came to mean a whiteboard. Its telemetry token stays
+`JustDraw`, so the funnel's history reads on unbroken.
 
 Some users don't want a template, a theme, or a settings step — they want
 an empty canvas right now. Two affordances serve them, both committing the
@@ -360,9 +364,9 @@ default document name) without walking the wizard:
   truthy presence of `blank` counts.
   The placement context params compose with it
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
-  Just Draw straight into a folder or team library. A failed create shows
+  Start Blank straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL that
-  outside surfaces link to (the marketing header + hero "Just Draw"
+  outside surfaces link to (the marketing header + hero "Start Blank"
   buttons, see [Marketing site](../019-marketing/marketing-site.md)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
@@ -421,7 +425,7 @@ default document name) without walking the wizard:
   can't count the arrival twice. Whichever path commits the document (Create,
   Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
-- **A "Just Draw" button on the wizard's step rail** (welcome mode only):
+- **A "Start Blank" button on the wizard's step rail** (welcome mode only):
   far right on the same line as the Template / Theme / Settings chips,
   desktop (`sm+`) only — mobile keeps the footer Skip as the compact
   escape. One click commits the Skip defaults immediately (disabled while
@@ -429,7 +433,7 @@ default document name) without walking the wizard:
 
 ### In-place handoff to the editor
 
-Every commit from `/new` (Create, Skip, Just Draw, and both bypass URLs)
+Every commit from `/new` (Create, Skip, Start Blank, and both bypass URLs)
 opens the editor **without a page load**. Once the document is persisted and
 placed, the page rewrites the address bar to `/document/<id>` with
 `history.replaceState` and renders the editor component (`EditorPage`, the
@@ -494,11 +498,11 @@ document"**; everything else stays put.
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
 
-Skip and Just Draw honour the URL placement context (the `?folder` /
+Skip and Start Blank honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's
 picker would have defaulted, not silently into personal Unsorted.
 
-Telemetry: both Just Draw surfaces fire `UI / Used / JustDraw` alongside
+Telemetry: both Start Blank surfaces fire `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so wizard-bypass adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
@@ -547,7 +551,7 @@ to carry one. Custom theme cards show just the saved name.
 - `/new?browse=brainstorm` → the wizard, its template step showing the
   Brainstorm collection.
 - `/new?browse=not-a-collection` → the plain wizard.
-- "Just Draw" on the wizard's step rail → blank document created
+- "Start Blank" on the wizard's step rail → blank document created
   immediately, same as Skip.
 
 ## Out of scope for V1
