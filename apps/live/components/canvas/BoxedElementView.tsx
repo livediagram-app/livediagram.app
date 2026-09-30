@@ -27,8 +27,6 @@ import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
-import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
-import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
@@ -255,9 +253,6 @@ function BoxedElementViewImpl({
       element.type === 'path') &&
     !isSelected &&
     !isMultiSelected;
-  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
-  const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
@@ -396,7 +391,7 @@ function BoxedElementViewImpl({
         ...variant.style,
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
-        // The handles' frame in the grips layer turns by the same angle.
+        // Handles + anchors are children, so they rotate with the box.
         //
         // The angle is ALSO published as --lvd-enter-rot, which the pop-in
         // entry keyframe multiplies into its scale. A keyframe that touches
@@ -417,11 +412,11 @@ function BoxedElementViewImpl({
         // it — users resize containers against their visible content.
         // While EDITING the label, though, raise it so the text the user
         // is typing isn't hidden behind elements painted above it. (The
-        // selection handles live in the grips layer, SelectionChromeLayer.)
+        // selection handles get lifted separately via SelectionHandles.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
         // Only the drawn line picks a pen stroke not yet selected (its hit
         // line, in FreehandSvg); the rest of its box lets pointers through.
-        ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
+        ...(lineHit ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -568,14 +563,6 @@ function BoxedElementViewImpl({
         iconCaptionBand={iconCaptionBand}
       />
 
-      {shapeHit ? (
-        <ShapeHitOutline
-          element={element}
-          zoom={zoom}
-          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
-        />
-      ) : null}
-
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
@@ -687,15 +674,13 @@ function BoxedElementViewImpl({
         </Tooltip>
       ) : null}
 
-      {/* Selection chrome (resize / edge-grip handles), portalled into the
-          grips layer above every element — see SelectionChromeLayer for the
+      {/* Selection chrome (resize / edge-grip handles) rides in its own
+          layer ABOVE the elements — see SelectionChromeLayer for the
           stacking rationale. */}
       <SelectionChromeLayer
         elementId={element.id}
-        box={element}
         zoom={zoom}
         rotation={rotation}
-        shiftX={insertShiftX}
         showHandles={showHandles}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
