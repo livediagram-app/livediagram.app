@@ -126,7 +126,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   another tool puts it down.
 - **What you draw is what lands.** While a stroke is being drawn it already
   shows in the pen's colour and **exact thickness** (the main pen in the
-  board's ink); on release only the smoothing of the line may change.
+  board's ink) **and already smoothed**: the stroke being drawn and the
+  stroke that lands go through the same simplification and curve, so release
+  changes nothing.
 - **A pen's width is ink on the board.** It is in canvas px, so a stroke
   zooms with the board like everything drawn on it, the same in every
   browser, and the in-flight stroke is drawn at that width times the zoom.

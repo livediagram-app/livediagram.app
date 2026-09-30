@@ -242,7 +242,9 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   the element, points at `nx × width`, `ny × height`, `stroke-width = penWidth`, no
   `vector-effect`: canvas px, scaled by the canvas zoom in every engine. Other strokes keep the
   100-unit viewBox and `non-scaling-stroke`.
-- `CanvasDrawPreview` draws the in-flight pen stroke at `width × zoom`.
+- `CanvasDrawPreview` draws the in-flight pen stroke at `width × zoom`, through the same
+  `simplifyPenStroke` (RDP at `PEN_SIMPLIFY_SCREEN_PX` = 1.2 screen px, `apps/live/lib/pen-smoothing.ts`)
+  and `catmullRomToBezierPath` the committed stroke gets, so release reshapes nothing.
 - `isWhiteboardPenIntent(intent)` (`draw-mode.ts`): `useCanvasDrawGesture` starts the stroke at the
   raw pointer (no `snapDrawStart`) and shows no pre-press dot; `computeDrawGuides` returns no hover
   or stroke guides.

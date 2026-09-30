@@ -3,7 +3,6 @@ import {
   createShape,
   nearestBorderStroke,
   recogniseShape,
-  simplifyPolyline,
   snapToArrowPoint,
   type ArrowElement,
   type Element,
@@ -18,6 +17,7 @@ import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
+import { simplifyPenStroke } from '@/lib/pen-smoothing';
 
 // WHAT A PEN STROKE BECOMES (docs/specs/008-canvas/two-pens.md's two pens, docs/specs/008-canvas/highlighter.md's highlighter).
 //
@@ -96,8 +96,8 @@ export function makeCommitFreehand({
       return;
     }
     const zoom = zoomRef.current ?? 1;
-    const tolerance = 1.2 / zoom;
-    const simplified = simplifyPolyline(rawPoints, tolerance);
+    // The same smoothing the stroke being drawn shows (lib/pen-smoothing).
+    const simplified = simplifyPenStroke(rawPoints, zoom);
     if (simplified.length < 2) {
       disarm();
       return;

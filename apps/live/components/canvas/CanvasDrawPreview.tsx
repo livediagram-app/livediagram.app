@@ -4,8 +4,10 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_ARROW_THICKNESS,
   DEFAULT_BORDER_STROKE,
+  catmullRomToBezierPath,
   isSelfDrawingShape,
 } from '@livediagram/document';
+import { simplifyPenStroke } from '@/lib/pen-smoothing';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -94,14 +96,24 @@ export function CanvasDrawPreview({
             // coord points, converted to client coords via the
             // wrapper rect + zoom so the overlay aligns with the
             // canvas content.
-            const d = penPoints
-              .map(
-                (p, i) =>
-                  `${i === 0 ? 'M' : 'L'} ${rect.left + p.x * viewportZoom} ${
-                    rect.top + p.y * viewportZoom
-                  }`,
-              )
-              .join(' ');
+            const toScreen = (p: { x: number; y: number }) => ({
+              x: rect.left + p.x * viewportZoom,
+              y: rect.top + p.y * viewportZoom,
+            });
+            // A whiteboard pen shows the smoothing its stroke will land with,
+            // live, so releasing never reshapes the line.
+            const smooth = pendingDraw.variant === 'whiteboard';
+            const shown = smooth ? simplifyPenStroke(penPoints, viewportZoom).map(toScreen) : null;
+            const d = shown
+              ? shown.length < 2
+                ? ''
+                : catmullRomToBezierPath(shown, false)
+              : penPoints
+                  .map((p, i) => {
+                    const q = toScreen(p);
+                    return `${i === 0 ? 'M' : 'L'} ${q.x} ${q.y}`;
+                  })
+                  .join(' ');
             // The highlighter variant previews with the committed
             // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
             // what you see while dragging is what lands.

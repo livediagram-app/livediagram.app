@@ -91,3 +91,26 @@ describe('CanvasDrawPreview rectangle corners', () => {
     expect(box.style.borderRadius).toBe('16px');
   });
 });
+
+describe('the live pen stroke is already smoothed (docs/specs/023-whiteboard/whiteboard.md)', () => {
+  // A jittery horizontal line: the committed stroke simplifies and curves it,
+  // so the stroke being drawn must too, or it jumps on release.
+  const jitter = Array.from({ length: 20 }, (_, i) => ({ x: i * 10, y: i % 2 === 0 ? 0 : 0.3 }));
+
+  it('draws the smoothed curve, not the raw samples', () => {
+    const { container } = render(
+      <CanvasDrawPreview
+        {...base}
+        viewportZoom={1}
+        penPoints={jitter}
+        pendingDraw={pen(null, 2)}
+      />,
+    );
+    const d = container.querySelector('path')!.getAttribute('d')!;
+    // Simplified to its two ends and drawn as a curve: one cubic segment.
+    expect(d.startsWith('M')).toBe(true);
+    expect(d).toContain('C');
+    expect(d).not.toContain('L');
+    expect((d.match(/C/g) ?? []).length).toBe(1);
+  });
+});
