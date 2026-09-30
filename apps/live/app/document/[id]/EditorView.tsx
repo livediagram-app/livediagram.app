@@ -42,7 +42,7 @@ import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
-import { isMinimalChrome } from '@/lib/power-user-mode';
+import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStylePanel } from '@/components/canvas/QuickStylePanel';
@@ -320,6 +320,7 @@ export function EditorView() {
           {anyWelcomeOpen || zenMode || embedMode ? null : (
             <AreaErrorBoundary area="TabBar" fallback="panel">
               <TabBar
+                powerUser={isPowerUserMode(userPreferences)}
                 roleIcon={
                   minimalChrome ? (
                     <RoleStatusIcon role={role.role} onToggle={role.onToggle} />

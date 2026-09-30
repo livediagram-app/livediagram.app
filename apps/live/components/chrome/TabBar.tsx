@@ -67,6 +67,9 @@ type TabBarProps = {
   canvasActions?: CanvasMenuActions;
   // Minimal chrome's role icon (docs/specs/007-editor/power-user-mode.md), first in the bar.
   roleIcon?: ReactNode;
+  // Power user mode turns the Appearance control into a quick switch
+  // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
+  powerUser?: boolean;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
@@ -198,6 +201,7 @@ export function TabBar({
   onCloseCanvasMenu,
   canvasActions,
   roleIcon,
+  powerUser = false,
 }: TabBarProps) {
   const minimalChrome = useMinimalChrome();
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -395,6 +399,7 @@ export function TabBar({
           // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
           labelled={!minimalChrome}
           github={false}
+          powerUser={powerUser}
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (

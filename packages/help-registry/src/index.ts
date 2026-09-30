@@ -326,7 +326,7 @@ export const articles: Article[] = [
     title: 'Power User Mode',
     description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
     keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings',
+      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
