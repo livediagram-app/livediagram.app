@@ -659,12 +659,12 @@ outline is rebuilt per update, as Excalidraw does.
 
 ```ts
 // packages/document
-export type TabKind = "diagram" | "event-storming" | "whiteboard";
+export type TabKind = 'diagram' | 'event-storming' | 'whiteboard';
 export function isWhiteboardTab(tab: { kind?: string } | undefined): boolean;
 export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>>;
 export const WHITEBOARD_INK: Readonly<Record<Appearance, string>>;
 export const WHITEBOARD_PATTERN: Readonly<Record<Appearance, string>>;
-export type WhiteboardBackground = "plain" | "dots" | "grid";
+export type WhiteboardBackground = 'plain' | 'dots' | 'grid';
 export const WHITEBOARD_BACKGROUNDS: readonly {
   id: WhiteboardBackground;
   label: string;
@@ -674,12 +674,7 @@ export function whiteboardBackgroundOf(
   pattern: BackgroundPattern | undefined,
 ): WhiteboardBackground;
 export function inkWhiteboardElement<T extends Element>(el: T, ink: string): T;
-export function strokeTouchesBrush(
-  el: FreehandElement,
-  a: Point,
-  b: Point,
-  r: number,
-): boolean;
+export function strokeTouchesBrush(el: FreehandElement, a: Point, b: Point, r: number): boolean;
 export function eraseStrokePart(
   el: FreehandElement,
   a: Point,
@@ -689,12 +684,9 @@ export function eraseStrokePart(
 ): FreehandElement[] | null;
 export function nearestBorderStroke(px: number): BorderStroke;
 // FreehandElement gains `pressures?: number[]` (one per point, 0 to 1) and `streamline?: number` (0 to 1).
-export type FreehandGeometry = Pick<
-  FreehandElement,
-  "x" | "y" | "width" | "height" | "points"
->;
+export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height' | 'points'>;
 export function freehandGeometry(rawPoints: readonly Point[]): FreehandGeometry; // createFreehand's box, whole px
-export type PenPointerKind = "pen" | "mouse" | "touch";
+export type PenPointerKind = 'pen' | 'mouse' | 'touch';
 export const PEN_STREAMLINE: Readonly<Record<PenPointerKind, number>>;
 export const PEN_THINNING: number;
 export const PEN_SMOOTHING: number;
@@ -709,36 +701,28 @@ export type PenStroke = {
   streamline: number;
 };
 export function penStrokeOutline(stroke: PenStroke): Point[];
-export function penStrokePath(
-  stroke: PenStroke,
-  fmt?: (n: number) => number,
-): string;
+export function penStrokePath(stroke: PenStroke, fmt?: (n: number) => number): string;
 export function penStrokeCentreline(stroke: PenStroke): Point[];
 export function isPenStroke(el: FreehandElement): boolean;
 export type PenStrokeSource = Pick<
   FreehandElement,
-  "points" | "width" | "height" | "pressures" | "penWidth" | "streamline"
+  'points' | 'width' | 'height' | 'pressures' | 'penWidth' | 'streamline'
 >;
-export function freehandPenStroke(
-  el: PenStrokeSource,
-  origin?: Point,
-): PenStroke;
-export function penStrokeSvg(
-  el: PenStrokeSource & Pick<FreehandElement, "x" | "y">,
-): {
+export function freehandPenStroke(el: PenStrokeSource, origin?: Point): PenStroke;
+export function penStrokeSvg(el: PenStrokeSource & Pick<FreehandElement, 'x' | 'y'>): {
   viewBox: string;
   d: string;
 };
 export const PERFECT_FREEHAND_END_NOISE: number;
 
 // apps/live
-export type WhiteboardPenId = "main" | "second" | "third";
+export type WhiteboardPenId = 'main' | 'second' | 'third';
 export type WhiteboardPen = {
   id: WhiteboardPenId;
   colour: string | null;
   width: number;
 };
-export type WhiteboardEraserMode = "stroke" | "partial";
+export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
   pens: WhiteboardPen[];
   activePenId: WhiteboardPenId;
@@ -748,21 +732,17 @@ export type WhiteboardPrefs = {
 export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs;
 export function loadWhiteboardPrefs(): WhiteboardPrefs;
 export function saveWhiteboardPrefs(prefs: WhiteboardPrefs): void;
-export type WhiteboardTool =
-  "select" | "pen" | "eraser" | "sticky" | "text" | "shape";
+export type WhiteboardTool = 'select' | 'pen' | 'eraser' | 'sticky' | 'text' | 'shape';
 export function activeWhiteboardTool(
   canvasTool: CanvasTool,
   pendingDraw: PendingDraw | null,
 ): WhiteboardTool;
-export function whiteboardPenIntent(
-  pen: WhiteboardPen,
-  recognise: boolean,
-): PendingDraw;
+export function whiteboardPenIntent(pen: WhiteboardPen, recognise: boolean): PendingDraw;
 export function whiteboardPointerRoute(i: {
   pointerType: string;
   penSeen: boolean;
   inking: boolean;
-}): "ink" | "pan";
+}): 'ink' | 'pan';
 export type LiveStroke = {
   readonly pointer: PenPointerKind;
   readonly pointerId: number | undefined;
@@ -786,7 +766,7 @@ export function createLiveStroke(
   pointerId: number | undefined,
 ): LiveStroke;
 export function recogniseBoardStroke(stroke: PenStroke): RecognisedShape | null; // on its centre line
-export type RecognitionChipState = { action: "make" | "keep"; at: Point }; // at: canvas px
+export type RecognitionChipState = { action: 'make' | 'keep'; at: Point }; // at: canvas px
 export function useRecognitionPreview(
   stroke: LiveStroke | null,
   active: boolean,
@@ -796,12 +776,12 @@ export function useRecognitionPreview(
 export function flipRecognition(
   stroke: LiveStroke,
   penWidth: number,
-): "recognised" | "broken" | null;
+): 'recognised' | 'broken' | null;
 export function flipStrokeRecognition(
   stroke: LiveStroke,
   penWidth: number,
-  via: "key" | "chip",
-): "recognised" | "broken" | null; // + notify, telemetry, log
+  via: 'key' | 'chip',
+): 'recognised' | 'broken' | null; // + notify, telemetry, log
 // CanvasProps.onCommitFreehand(points, recogniseShapes, ink?: PenInk)
 // PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & { snapped?: RecognisedShape; keepInk?: true }
 export const FREEHAND_SVG_CLASS: string; // the svg a freehand stroke, live or landed, draws in
@@ -895,8 +875,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
-  "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "A plain board to draw on
-  with pens, stickies and shapes."
+  "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "Free drawing without distractions"
 - Recognition chip: a pill 44 px tall and at least 44 px wide, `px-4`, `text-sm` medium, full
   radius, `shadow-lg`; `bg-slate-900 text-white` in light, `bg-slate-100 text-slate-900` in dark
   (the dock hint's pair), so it stands off either board. Copy "Make shape" / "Keep drawing".
