@@ -69,6 +69,14 @@ describe('DocumentSyncMark', () => {
     expect(screen.getByRole('img', { name: 'Syncing to Google Drive…' })).toBeTruthy();
   });
 
+  it('draws the synced check in green and the cloud in the quiet colour', () => {
+    show(status(), 100);
+    const paths = [...document.querySelectorAll('[data-document-sync="synced"] svg path')];
+    expect(paths).toHaveLength(2);
+    expect(paths[0]!.getAttribute('class') ?? '').not.toContain('emerald');
+    expect(paths[1]!.getAttribute('class')).toContain('text-emerald-600');
+  });
+
   it('renders nothing for a document that is not mirrored', () => {
     show(status({ mirrored: {} }), 100);
     expect(document.querySelector('[data-document-sync]')).toBeNull();

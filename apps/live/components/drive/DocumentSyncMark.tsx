@@ -7,7 +7,8 @@
 // hover and focus. Nothing at all for a document that is not mirrored.
 
 import { lucideCloudCheck, lucideCloudSync, lucideCloudUpload } from '@livediagram/icons/lucide';
-import { Tooltip, lucideGlyph } from '@livediagram/ui';
+import type { ReactNode } from 'react';
+import { Glyph, Tooltip, lucideGlyph, type IconProps } from '@livediagram/ui';
 import { useDocumentSync, type DocumentSyncState } from './drive-mirror-context';
 
 export const DOCUMENT_SYNC_LABEL: Record<DocumentSyncState, string> = {
@@ -16,9 +17,25 @@ export const DOCUMENT_SYNC_LABEL: Record<DocumentSyncState, string> = {
   syncing: 'Syncing to Google Drive…',
 };
 
+// Lucide's cloud-check as vendored, drawn with its check in green: the cloud
+// stays as quiet as the metadata beside it, the check says "done". The check
+// is the glyph's first path, the cloud its second.
+const [CHECK, CLOUD] = lucideCloudCheck;
+
+function SyncedGlyph({ size = 14, ...rest }: IconProps) {
+  return (
+    <Glyph size={size} units={24} {...rest}>
+      {CLOUD?.t === 'path' ? <path d={CLOUD.d} /> : null}
+      {CHECK?.t === 'path' ? (
+        <path d={CHECK.d} className="text-emerald-600 dark:text-emerald-400" />
+      ) : null}
+    </Glyph>
+  );
+}
+
 // Vendored Lucide glyphs (docs/specs/004-interface-design/iconography.md).
-const MARK: Record<DocumentSyncState, ReturnType<typeof lucideGlyph>> = {
-  synced: lucideGlyph(lucideCloudCheck, 14),
+const MARK: Record<DocumentSyncState, (props: IconProps) => ReactNode> = {
+  synced: SyncedGlyph,
   waiting: lucideGlyph(lucideCloudUpload, 14),
   syncing: lucideGlyph(lucideCloudSync, 14),
 };
