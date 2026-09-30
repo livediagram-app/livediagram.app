@@ -184,54 +184,99 @@ open first; with fewer it is dropped. A tab switch drops the draft.
 
 **Editor side** (`usePathCommits.commitPath`): refused when `editsBlocked` or not committable. New:
 `styleNewElement(createPath(anchors, closed))` appended (one `commit`), track `Element·Added·Path`,
-nothing selected. Continuing: the element with that id is replaced by `reshapePath` of it with the new
+and selected (the tool stays in hand; the first node of the next path deselects it). Continuing: the element with that id is replaced by `reshapePath` of it with the new
 anchors (unrotated, `rotation` dropped), keeping every other field, one `commit`, track
 `Element·Added·Path` (P6). A continued id that no longer exists (deleted by a peer): committed as new.
 
 **Announcements** (`announce`): first node "Path started"; each later node "N points"; a close "Path
 closed"; a finish "Path finished".
 
-### Edit mode (`path-edit.ts`, `usePathEditGesture`)
+### Edit mode (`path-edit.ts`, `usePathEditGesture`, `PathEditToolbar`)
 
-- **In**: `beginEdit(id)` on a path sets `editingId` (double-click with Select, Space-tap) and `Enter`
-  with exactly one unlocked path selected and nothing editing (the gesture's own keydown listener).
-  **Out**: `Escape` with no nodes selected, `Enter`, a click (no drag) on empty space, the dock's
-  Select, a tool picked, the path deleted or locked, the tab switched: `onCancelEdit()`.
-- `PathEditState = { selected: ReadonlySet<number>, drag, draft }` where `draft` is the anchors while a
-  gesture is in flight (null otherwise). The canvas shows the edited element through
+- **In**: `beginEdit(id)` on a path sets `editingId`: a double-click (or double-tap: the element's
+  press ledger pairs two presses, `useBoxedElementGestures`) with Select, a Space-tap, **Edit
+  points** in the selection toolbar (`SelectionPopover.onEditPoints`, a path only), and `Enter`
+  with exactly one unlocked path selected and nothing editing (the gesture's own keydown
+  listener). A path that lands from the Path tool is selected (the tool stays in hand), so the
+  same ways reach it at once; `openPathEdit(id)` (editor side) puts a held Path tool down first.
+  **Out**: `Escape` with no nodes selected, `Enter`, **Done**, a click (no drag) on empty space
+  (which also deselects, P15), the dock's Select, a tool picked, the path deleted or locked, the tab
+  switched: `onCancelEdit()`. Undo and redo keep edit mode open (the path's reopens once the
+  editor's undo has run, P16).
+- `PathEditState = { selected: ReadonlySet<number>, drag, draft, toolbarAt }` where `draft` is the
+  anchors while a gesture is in flight (null otherwise) and `toolbarAt` the node a long-press chose
+  (null: the toolbar sits over the path). The canvas shows the edited element through
   `reshapePath(el, draft ?? anchors)`, so the element renders what the gesture holds.
-- **Hit test** (`pathEditHit(anchors, closed, selected, p, zoom)`), in the element's unrotated frame
-  (the pointer is rotated by `−rotation` about the box centre), in order: a **visible handle**
-  (`PATH_NODE_HIT_PX / zoom`), a **node**, a **segment** (within
-  `STROKE_HIT_SCREEN_PX / zoom + strokePx / 2`), else **empty**. Visible handles: both of each
-  selected node's, `handleOut` of its previous neighbour and `handleIn` of its next.
+- **Hit test** (`pathEditHit(anchors, closed, selected, p, zoom, strokePx, radiusPx)`), in the
+  element's unrotated frame (the pointer is rotated by `−rotation` about the box centre): the
+  nearest of the **visible handles** and the **nodes** within `radiusPx / zoom` (a node wins a tie,
+  so a handle lying on its node never hides it), else a **segment** (within
+  `STROKE_HIT_SCREEN_PX / zoom + strokePx / 2`), else **empty**. `radiusPx` is `PATH_NODE_HIT_PX`
+  (12, a 24 x 24 target) for a mouse or pen and `PATH_TOUCH_HIT_PX` (16) for a finger. Visible
+  handles: both of each selected node's, `handleOut` of its previous neighbour and `handleIn` of
+  its next.
 - **Press on a node**: Alt: toggle smooth (commit). A press within `PATH_DOUBLE_PRESS_MS` of a press
-  on the same node: toggle smooth (commit). Shift: toggle it in the selection. Otherwise, when not
-  selected, select only it. A drag then moves every selected node, handles with them (Shift:
-  `constrain45` of the delta); snapping applies to the pressed node (below).
+  on the same node (a double-click or double-tap): toggle smooth (commit). Shift: toggle it in the
+  selection. Otherwise, when not selected, select only it. A drag then moves every selected node,
+  handles with them (Shift: `constrain45` of the delta); snapping applies to the pressed node. A
+  finger held still on a node for `PATH_LONG_PRESS_MS` selects only it and brings the toolbar to it.
 - **Press on a handle**: drag it (Shift: `constrain45(node, pointer)`); the partner follows the
   node's mode; Alt at any move: the node becomes `corner` and the partner stays.
-- **Press on a segment**: release without a drag inserts a node there (`splitSegment` at the nearest
-  `t`) and selects it; a drag bends the segment through the pointer (`bendSegment` at the pressed
-  `t`); the end nodes' partner handles follow their modes.
+- **Press on a segment**: release without a drag inserts an `aligned` node there (`splitSegment` at
+  the nearest `t`; an end with no handle keeps none) and selects it; a drag bends the segment
+  through the pointer (`bendSegment` at the pressed `t`); the end nodes' partners follow their modes.
 - **Press on empty**: a drag draws the node box (Shift adds to the selection); a release without a
   drag leaves edit mode.
 - **Keys** (capture phase while editing): `Escape` clears selected nodes, else leaves; `Enter`
   leaves; `Backspace` / `Delete` delete the selected nodes; arrows nudge them 1 px (Shift 10 px);
   `J` with both end nodes of an open path selected closes it; `Tab` / `Shift+Tab` select the next /
-  previous node (P7); `Cmd/Ctrl+A` selects every node (P8).
+  previous node (P7); `Cmd/Ctrl+A` selects every node (P8); `Cmd/Ctrl+Z` / `Y` fall through to the
+  editor's undo and redo.
 - **Toggle smooth**: a `corner` node takes `smoothHandles` and `mirrored`; any other loses both
   handles and becomes `corner`.
+- **Set node type** (`setNodeType(anchors, selected, type, closed)`), from the toolbar:
+  - `corner`: both handles removed.
+  - `mirrored`: with both handles, the direction `normalise(normalise(out − node) +
+normalise(node − in))` (the handles' averaged angle) and the mean of their lengths, either
+    side; with one handle, it and its mirror; with none, `smoothHandles`.
+  - `aligned`: with both handles, that same direction, each handle keeping its length; with one,
+    the node only changes mode; with none, `smoothHandles`.
+    The toolbar shows the type every selected node shares (`sharedNodeType`), else none pressed.
 - **Delete nodes**: the selected nodes go; their neighbours join (a joining segment keeps the
   survivors' facing handles). Closed stays closed. Invalid afterwards: the element is deleted.
   Nothing selected: nothing happens (P9).
+- **Close / open** (toolbar): **Close path** closes an open path, joining its ends (with any
+  selection; `J` asks for both ends selected), kind `join`. **Open path** (a closed path, exactly
+  one node selected): `openPathAt(anchors, i)` runs `i, i+1, …, n−1, 0, …, i−1` then a copy of `i`;
+  the first keeps only its `handleOut`, the copy only its `handleIn`, both `corner`; kind `edit`.
 - **Snapping** (dragging nodes): per axis, the pressed node's candidate is the nearest `x` (and `y`)
   among the path's unmoved nodes and its own original position, within `PATH_SNAP_PX / zoom`; the
   delta shifts to match and a guide line is shown for each axis that snapped.
+- **The edit toolbar** (`PathEditToolbar`, `role="toolbar"`, "Edit path", `data-floating-panel`): in
+  screen space above the path's box (or just above the long-pressed node), clamped to the canvas;
+  a radio group "Node type" (Corner, Mirrored, Aligned; disabled with no node selected), **Delete
+  point** (disabled with none), **Close path** or **Open path** (disabled without exactly one node
+  selected), **Done**. Each button carries the house `Tooltip` and its key in `aria-keyshortcuts`
+  where it has one (Delete, J, Escape). Presses on it never reach the canvas.
 - **Commit**: every gesture ends in one `onCommitPathEdit(id, anchors, closed, kind)` → one `commit`
   of `reshapePath` (or the element removed when invalid), `kind` `edit` tracks
   `Element·Changed·PathEdit`, `join` tracks `Element·Changed·PathJoin`. A drag that moved nothing
-  commits nothing. Each arrow press is one commit (P10).
+  commits nothing. Each arrow press is one commit (P10). A toolbar type change tracks
+  `Element·Changed·PathEdit`.
+
+### Editing while drawing (`usePathDrawGesture`)
+
+With the Path tool in hand, the draft is editable (as in Figma):
+
+- **Ctrl (Cmd) held**: the edit pointer. The cursor is the arrow and every placed node's handles
+  show. A press hit-tests the draft (`pathEditHit` with all nodes selected, the pointer's radius): a
+  node drags (moving its handles), a handle drags (partner by mode, Alt breaks), anything else does
+  nothing. No node is placed. Releasing the key resumes drawing from the last node.
+- **Alt-press on a placed node**: toggles it corner ↔ smooth (`toggleSmooth` on the draft).
+- **Press on a placed node that is neither the first nor the last**: a drag moves it; a click does
+  nothing (never a node on top of a node).
+- **Press on the last node**: a double press finishes; a drag moves it; a click makes it a cusp.
+- A press that becomes a drag is never the first half of a double-click.
 
 ### Dock, keys and tool state
 
@@ -260,8 +305,8 @@ closed"; a finish "Path finished".
 - The draft (`PathDraftLayer`, inside the transformed layer after the elements) is a `div.absolute`
   at the draft element's box holding the same `PathSvg` for the same element (`createPath`, dressed by
   style memory, projected in the ink): release changes no pixel.
-- Nodes (`PATH_NODE_RADIUS_PX` screen, a filled square for the first node while drawing, circles
-  otherwise), handles (a line and a `PATH_HANDLE_RADIUS_PX` dot), rings, the node box and guides are
+- Nodes (`PATH_NODE_RADIUS_PX` screen): a corner node a square, a smooth one (mirrored or aligned) a
+  circle, filled when selected, while drawing and in edit mode alike; handles (a line and a `PATH_HANDLE_RADIUS_PX` dot), rings, the node box and guides are
   drawn in canvas px divided by zoom, in the brand colour with a board-coloured rim, never taking a
   pointer event.
 
@@ -427,22 +472,24 @@ numbers only).
 
 ## Constants and configuration
 
-| Constant                 | Value        | Provenance                    | Safe range |
-| ------------------------ | ------------ | ----------------------------- | ---------- |
-| `PATH_NODE_HIT_PX`       | 12           | spec (24 × 24 targets)        | 12 to 20   |
-| `PATH_CLOSE_PX`          | 8            | spec                          | 6 to 12    |
-| `PATH_SNAP_PX`           | 8            | spec                          | 4 to 12    |
-| `PATH_DRAG_THRESHOLD_PX` | 3            | P12                           | 2 to 6     |
-| `PATH_DOUBLE_PRESS_MS`   | 500          | P12 (OS double-click default) | 300 to 600 |
-| `PATH_NODE_RADIUS_PX`    | 4            | P13                           | 3 to 6     |
-| `PATH_HANDLE_RADIUS_PX`  | 3.5          | P13                           | 3 to 5     |
-| `PATH_RING_PX`           | 8            | spec                          | 6 to 12    |
-| `MAX_PATH_NODES`         | 5 000        | P14                           | ≥ 1 000    |
-| `PATH_COORD_MAX`         | 1e6          | P14                           |            |
-| Nearest search           | 24 + 12      | P14                           |            |
-| Bend `t` clamp           | 0.05 to 0.95 | P14                           |            |
-| Nudge                    | 1 / 10 px    | spec                          |            |
+| Constant                 | Value        | Provenance                             | Safe range |
+| ------------------------ | ------------ | -------------------------------------- | ---------- |
+| `PATH_NODE_HIT_PX`       | 12           | spec (24 × 24 targets)                 | 12 to 20   |
+| `PATH_TOUCH_HIT_PX`      | 16           | spec (a finger radius)                 | 16 to 24   |
+| `PATH_LONG_PRESS_MS`     | 500          | the canvas long-press (`useLongPress`) | 400 to 700 |
+| `PATH_CLOSE_PX`          | 8            | spec (a finger: `PATH_TOUCH_HIT_PX`)   | 6 to 12    |
+| `PATH_SNAP_PX`           | 8            | spec                                   | 4 to 12    |
+| `PATH_DRAG_THRESHOLD_PX` | 3            | P12                                    | 2 to 6     |
+| `PATH_DOUBLE_PRESS_MS`   | 500          | P12 (OS double-click default)          | 300 to 600 |
+| `PATH_NODE_RADIUS_PX`    | 4            | P13                                    | 3 to 6     |
+| `PATH_HANDLE_RADIUS_PX`  | 3.5          | P13                                    | 3 to 5     |
+| `PATH_RING_PX`           | 8            | spec                                   | 6 to 12    |
+| `MAX_PATH_NODES`         | 5 000        | P14                                    | ≥ 1 000    |
+| `PATH_COORD_MAX`         | 1e6          | P14                                    |            |
+| Nearest search           | 24 + 12      | P14                                    |            |
+| Bend `t` clamp           | 0.05 to 0.95 | P14                                    |            |
+| Nudge                    | 1 / 10 px    | spec                                   |            |
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows P1 to P14.
+See [DEFAULTS.md](DEFAULTS.md), rows P1 to P18.
