@@ -7,7 +7,9 @@ test('offline documents saved before the rename survive the store upgrade', asyn
   page,
   pageErrors,
 }) => {
-  await page.goto('/explorer/offline');
+  // Seed from a static file on the same origin: the app, once loaded, opens (and upgrades) the store
+  // itself, and would race the seed between its delete and its version-1 open.
+  await page.goto('/icon.svg');
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
@@ -36,7 +38,7 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  await page.reload();
+  await page.goto('/explorer/offline');
   await expect(page.getByText('Kept through the rename').first()).toBeVisible();
   const stores = await page.evaluate(
     () =>

@@ -324,9 +324,8 @@ test.describe('mobile', () => {
     pageErrors,
   }) => {
     await startBlankDocument(page);
-    // A fresh guest gets the tour offer over a scrim that eats taps.
-    const declineTour = page.getByRole('button', { name: /^no thanks$/i });
-    if (await declineTour.count()) await declineTour.tap();
+    // A fresh guest gets the tour offer over a scrim that eats taps, a beat after the canvas.
+    await dismissQuickTour(page);
 
     await page.getByRole('button', { name: 'Tab menu' }).tap();
     const collaborate = page.getByRole('button', { name: /collaborate/i });

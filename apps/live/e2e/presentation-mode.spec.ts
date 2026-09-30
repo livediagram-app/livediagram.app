@@ -1,4 +1,4 @@
-import { expect, expectNoPageErrors, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // Presentation mode (docs/specs/012-collaboration/presentation-mode.md): Present frames the first slide,
 // the arrow keys move the camera between slides, and leaving puts the editor's view back exactly where it
@@ -56,8 +56,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   }, owner);
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
-  const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
-  if (await decline.isVisible().catch(() => false)) await decline.click();
+  await dismissQuickTour(page);
 
   // The canvas camera, as its transform.
   const camera = () =>
