@@ -590,8 +590,8 @@ not apply: a whiteboard has no palette to mirror):
 | S      | Shapes: opens the Shapes flyout with its search focused |
 
 **S** opens the Shapes flyout as a hover would, with its search field focused, so
-the next letters search at once (S then "cyl" finds the cylinder); a second S, or
-Escape, closes it again and gives the focus back to the board. The shape keys
+the next letters search at once (S then "cyl" finds the cylinder); since S then types into
+the search, **Escape** closes it and gives the focus back to the board. The shape keys
 above still pick their shape directly.
 
 Escape first closes whatever is open (a flyout, a text edit); with nothing
