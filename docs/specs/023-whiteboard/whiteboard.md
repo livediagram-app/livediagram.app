@@ -87,8 +87,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
-  3. **Text**, unless turned off under Settings, Tools.
-  4. **Path tool** (see [Path tool](path-tool.md)), unless turned off there.
+  3. **Text**.
+  4. **Path tool** (see [Path tool](path-tool.md)).
   5. **Eraser**, with its mode (see [Eraser](#eraser)).
 - **Shapes, left to right:**
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
@@ -128,18 +128,11 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   picked, and pinnable to the shapes bar like any shape. Its key **N** still
   places one, from anywhere, and counts as a pick.
 - **Settings**, the last group: a **cog** that opens **on a press only**, never on hover; a
-  flyout with no title of its own and four sections, each headed in the
-  flyouts' small capitals and a row of buttons, top to bottom:
-  **Background** (Plain / Dots / Grid), **Cursor** (Crosshair + nib, the
-  default / Dot), **Drawing** (Basic / Shape recognition) and **Tools**.
-  The first three are switch buttons (one of several); **Tools** is two independent toggles, **Text** and **Path
-  tool**, each pressed while its button shows in the drawing tools bar. Both
-  are on by default. Turning one off removes its
-  button from the bar (the bar closes the gap; nothing else moves); its key
-  still picks it. The choice is the user's, kept in their synced preferences,
-  and applies to every whiteboard.
-  Telemetry: `Whiteboard` · `Toggled` · `TextShown` / `TextHidden`,
-  `PathShown` / `PathHidden`.
+  flyout with no title of its own and three sections, each headed in the
+  flyouts' small capitals and a row of the same switch buttons, top to
+  bottom: **Background** (Plain / Dots / Grid), **Cursor** (Crosshair + nib,
+  the default / Dot) and **Drawing** (Basic / Shape recognition). Text and
+  the Path tool are always in the drawing tools bar; nothing hides them.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
   diagram tab is put down on arriving at a whiteboard.
