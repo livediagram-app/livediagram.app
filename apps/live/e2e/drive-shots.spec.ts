@@ -73,8 +73,7 @@ async function syncNow(page: import('@playwright/test').Page) {
     channel.close();
   });
 }
-const detailOf = (row: import('@playwright/test').Locator) =>
-  row.locator('[data-drive-detail] > div > :not(.invisible)');
+const problemOf = (row: import('@playwright/test').Locator) => row.locator('[data-drive-problem]');
 
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -193,7 +192,7 @@ for (const theme of THEMES) {
 
       // Connecting: the state request held back, so the button says so.
       const releaseState = await slow(page, '**/api/drive/state', 2500);
-      await row.getByRole('button', { name: 'Connect Google Drive' }).click();
+      await row.getByRole('button', { name: 'Connect', exact: true }).click();
       await expect(row.getByRole('button', { name: 'Connecting…' })).toBeVisible();
       await shot(
         page,
@@ -216,11 +215,11 @@ for (const theme of THEMES) {
       await closeSettings(page);
       row = await openCloudSync(page);
       await releaseUploads();
-      await expect(pillOf(row)).toHaveText(/^Synced /, { timeout: 30_000 });
+      await expect(pillOf(row)).toHaveText(/^Last synced /, { timeout: 30_000 });
       await shot(
         page,
         'cloud-sync-4-synced',
-        'Cloud Sync once synced: the status at the top right, the folder, the rhythm, Disconnect',
+        'Cloud Sync once synced: one row, Last synced and Disconnect; the folder in the description',
       );
       await closeSettings(page);
 
@@ -235,7 +234,7 @@ for (const theme of THEMES) {
       await expect(pillOf(row)).toHaveText('Syncing…');
       await shot(page, 'cloud-sync-5-syncing', 'Cloud Sync while a sync runs');
       await releaseCheck();
-      await expect(pillOf(row)).toHaveText(/^Synced /, { timeout: 15_000 });
+      await expect(pillOf(row)).toHaveText(/^Last synced /, { timeout: 15_000 });
       await closeSettings(page);
 
       // The Explorer following a rename made in Drive.
@@ -250,7 +249,7 @@ for (const theme of THEMES) {
       );
       row = await openCloudSync(page);
       await syncNow(page);
-      await expect(pillOf(row)).toHaveText(/^Synced /);
+      await expect(pillOf(row)).toHaveText(/^Last synced /);
       await closeSettings(page);
       await expect(page.getByText('Standup notes', { exact: true }).first()).toBeVisible({
         timeout: 15_000,
@@ -270,11 +269,11 @@ for (const theme of THEMES) {
       google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
       row = await openCloudSync(page);
       await syncNow(page);
-      await expect(detailOf(row)).toContainText("can't see");
+      await expect(problemOf(row)).toContainText("can't see");
       await shot(
         page,
         'cloud-sync-6-needs-attention',
-        'Cloud Sync with a folder notice in place of the rhythm, and Show folder',
+        'Cloud Sync with a folder notice on the problem line, and Show folder',
       );
       await closeSettings(page);
 

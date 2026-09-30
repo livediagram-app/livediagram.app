@@ -102,16 +102,14 @@ async function syncNow(page: import('@playwright/test').Page) {
   });
 }
 
-// The row's visible text and detail: every wording is laid out, hidden but
-// for the current one (Layout stability), so assertions read the visible one.
-const textOf = (panel: import('@playwright/test').Locator) =>
-  panel.locator('[data-drive-text] [data-stable-option]:not(.invisible)');
-const detailOf = (panel: import('@playwright/test').Locator) =>
-  panel.locator('[data-drive-detail] > div > :not(.invisible)');
+// The second line, only while there is a problem.
+const problemOf = (panel: import('@playwright/test').Locator) =>
+  panel.locator('[data-drive-problem]');
 
-// The row's shape: its size, and where each part sits inside it. It holds
-// within each phase (docs/specs/022-drive-mirror/drive-mirror.md, "Nothing moves within a
-// phase"); a part a phase does not have is null.
+// The row's shape: its width, and where the status and the button sit in its
+// one row. It holds within each phase (docs/specs/022-drive-mirror/drive-mirror.md,
+// "Nothing moves within a phase"); the problem line below may come and go. A
+// part a phase does not have is null.
 type Loc = import('@playwright/test').Locator;
 async function shapeOf(panel: Loc) {
   const card = (await panel.boundingBox())!;
@@ -122,11 +120,10 @@ async function shapeOf(panel: Loc) {
     return { x: b.x - card.x, y: b.y - card.y, width: b.width, height: b.height };
   };
   return {
-    card: { width: card.width, height: card.height },
+    width: card.width,
+    row: await rel(':scope > div:first-child'),
     status: await rel('[data-drive-status]'),
-    text: await rel('[data-drive-text]'),
-    detail: await rel('[data-drive-detail]'),
-    buttons: await rel('[data-drive-actions]'),
+    actions: await rel('[data-drive-actions]'),
     primary: await rel('[data-drive-primary]'),
     disconnect: await rel('[data-drive-disconnect]'),
   };
@@ -143,15 +140,16 @@ async function expectStable(panel: Loc) {
   await expectNoOverlap(panel);
 }
 
-// No button covers anything above it, another button, or leaves the card.
+// No button covers the label, the status or the problem's words, another
+// button, or leaves the card.
 async function expectNoOverlap(panel: Loc) {
   const overlaps = await panel.evaluate((card) => {
-    const shown = (e: Element) => !e.closest('.invisible');
-    const buttons = [...card.querySelectorAll('[data-drive-actions] button')]
-      .filter(shown)
-      .map((e) => e.getBoundingClientRect());
-    const above = ['[data-drive-status]', '[data-drive-text]', '[data-drive-detail]']
-      .map((sel) => card.querySelector(sel))
+    const buttons = [...card.querySelectorAll('button')].map((e) => e.getBoundingClientRect());
+    const words = [
+      card.querySelector(':scope > div:first-child > span:first-child'),
+      card.querySelector('[data-drive-status] [data-stable-option]:not(.invisible)'),
+      card.querySelector('[data-drive-problem] p'),
+    ]
       .filter((e): e is Element => !!e)
       .map((e) => e.getBoundingClientRect());
     const hit = (p: DOMRect, q: DOMRect) =>
@@ -162,7 +160,7 @@ async function expectNoOverlap(panel: Loc) {
     const c = card.getBoundingClientRect();
     const out: string[] = [];
     buttons.forEach((p, i) => {
-      if (above.some((q) => hit(p, q))) out.push(`button ${i} covers text`);
+      if (words.some((q) => hit(p, q))) out.push(`button ${i} covers words`);
       if (buttons.slice(i + 1).some((q) => hit(p, q))) out.push(`button ${i} covers a button`);
       if (p.left < c.left - 0.5 || p.right > c.right + 0.5) out.push(`button ${i} leaves the card`);
     });
@@ -250,15 +248,15 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await page.goto('/explorer/recent');
   let panel = await openCloudSync(page);
   await expect(pillOf(panel)).toHaveText('Not connected');
-  await expect(textOf(panel)).toContainText('Keep a copy of your documents');
+  await expect(problemOf(panel)).toHaveCount(0);
   await page.screenshot({ path: `${SHOTS}/01-connect.png` });
   await settled(page);
   await expectStable(panel);
 
   // A Connect that cannot start says so, back at Not connected, and moves nothing.
   await page.route('**/api/drive/state', (route) => route.abort(), { times: 1 });
-  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
-  await expect(textOf(panel)).toHaveText(
+  await panel.getByRole('button', { name: 'Connect', exact: true }).click();
+  await expect(problemOf(panel)).toHaveText(
     "Couldn't reach Google. Check your connection and try again.",
   );
   await expect(pillOf(panel)).toHaveText('Not connected');
@@ -267,7 +265,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   // Connecting shows at once, and holds while the state is fetched and the
   // page leaves for Google.
   await slow(page, '**/api/drive/state', 1500);
-  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await panel.getByRole('button', { name: 'Connect', exact: true }).click();
   await expect(panel.getByRole('button', { name: 'Connecting…' })).toBeVisible({ timeout: 300 });
   await expect(pillOf(panel)).toHaveText('Connecting…');
   await expectStable(panel);
@@ -281,9 +279,8 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   await expect(pillOf(panel)).toHaveText(/^Copying \d+ of \d+…$/, { timeout: 15_000 });
   await settled(page);
   await expectStable(panel);
-  await expect(textOf(panel)).toHaveText(/^Copying \d+ of \d+ documents…$/);
   await releaseUploads();
-  await expect(pillOf(panel)).toHaveText(/^Synced /, { timeout: 20_000 });
+  await expect(pillOf(panel)).toHaveText(/^Last synced /, { timeout: 20_000 });
   await closeSettings(page);
   await expect.poll(() => fileNamed(ROOT_NAME)?.appProperties.ldRoot).toBeTruthy();
   await expect
@@ -301,11 +298,12 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
 
   // Sync status lives in Cloud Sync only.
   panel = await openCloudSync(page);
-  await expect(textOf(panel)).toHaveText(
-    `Your documents are synced to “${ROOT_NAME}” in Google Drive.`,
-  );
-  await expect(detailOf(panel)).toHaveText('Syncs happen continuously while livediagram is open.');
-  await expect(pillOf(panel)).toHaveText(/^Synced (just now|\d+ \w+ ago)$/);
+  // Connected: the description under the card says where, and no problem line.
+  await expect(
+    page.getByText(`Your documents are synced to “${ROOT_NAME}” in Google Drive.`),
+  ).toBeVisible();
+  await expect(problemOf(panel)).toHaveCount(0);
+  await expect(pillOf(panel)).toHaveText(/^Last synced (just now|\d+ \w+ ago)$/);
   await settled(page);
   await expectStable(panel);
   await page.screenshot({ path: `${SHOTS}/02-connected.png` });
@@ -318,7 +316,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
       panel.getByRole('button', { name: 'Disconnect' }).boundingBox(),
       panel.boundingBox(),
     ]);
-  await expect(pillOf(panel)).toHaveText(/^Synced /);
+  await expect(pillOf(panel)).toHaveText(/^Last synced /);
   await settled(page);
   // In view first: the click would otherwise scroll the pane to reach it.
   await panel.getByRole('button', { name: 'Disconnect' }).scrollIntoViewIfNeeded();
@@ -333,7 +331,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   expect(await boxes()).toEqual(synced);
   await expectStable(panel);
   await release();
-  await expect(pillOf(panel)).toHaveText(/^Synced /, { timeout: 15_000 });
+  await expect(pillOf(panel)).toHaveText(/^Last synced /, { timeout: 15_000 });
   expect(await boxes()).toEqual(synced);
 
   // A rename made in Drive reaches livediagram on the next pass.
@@ -342,7 +340,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed(ROOT_NAME)!.id);
   google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
   await syncNow(page);
-  await expect(detailOf(panel)).toContainText(
+  await expect(problemOf(panel)).toContainText(
     "Quarterly plan: Moved to a Drive folder livediagram can't see.",
   );
   await expect(pillOf(panel)).toHaveText('Needs attention');
@@ -371,7 +369,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
     hidden,
   );
   await panel.getByRole('button', { name: 'Show folder' }).click();
-  await expect(detailOf(panel)).not.toContainText("can't see", { timeout: 15_000 });
+  await expect(problemOf(panel)).toHaveCount(0, { timeout: 15_000 });
   const folders = (await api(page, 'GET', '/folders')) as {
     folders: { id: string; name: string }[];
   };
@@ -500,14 +498,14 @@ test('disconnect revokes and leaves the Drive files in place', async ({ page, pa
   await expectStable(panel);
   await page.route('**/api/drive/state', (route) => route.abort(), { times: 1 });
   await panel.getByRole('button', { name: 'Reconnect' }).click();
-  await expect(textOf(panel)).toHaveText(
+  await expect(problemOf(panel)).toContainText(
     "Couldn't reach Google. Check your connection and try again.",
   );
   await expectStable(panel);
 
   await panel.getByRole('button', { name: 'Disconnect' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Disconnect' }).last().click();
-  await expect(panel.getByRole('button', { name: 'Connect Google Drive' })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Connect', exact: true })).toBeVisible();
   await closeSettings(page);
   expect(await api(page, 'GET', '/drive/connection')).toEqual({ connection: null });
   expect(google.fake.appFiles(USER).length).toBe(before);
@@ -538,10 +536,10 @@ test('leaving for Google comes back to Cloud Sync: a cancel, and Back', async ({
     { times: 1 },
   );
   panel = await openCloudSync(page);
-  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await panel.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
   panel = page.locator('[data-cloud-sync="googleDrive"]');
-  await expect(textOf(panel)).toHaveText("Connection cancelled. Connect whenever you're ready.");
+  await expect(problemOf(panel)).toHaveText("Connection cancelled. Connect whenever you're ready.");
   await expect(pillOf(panel)).toHaveText('Not connected');
   await expect(page.getByRole('heading', { name: 'Cloud Sync' })).toBeFocused();
   await page.screenshot({ path: `${SHOTS}/07-cancelled.png` });
@@ -553,7 +551,7 @@ test('leaving for Google comes back to Cloud Sync: a cancel, and Back', async ({
       route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Google</title>Google' }),
     { times: 1 },
   );
-  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await panel.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.waitForURL(/accounts\.google\.com/);
   await page.goBack();
   await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
@@ -595,7 +593,7 @@ test('a connection made in one tab starts syncing at once while another tab runs
   await page.goto('/explorer/recent');
   const panel = await openCloudSync(page);
   await expect(pillOf(panel)).toHaveText('Not connected');
-  await panel.getByRole('button', { name: 'Connect Google Drive' }).click();
+  await panel.getByRole('button', { name: 'Connect', exact: true }).click();
   await page.waitForURL(/\/explorer\/recent\?settings=account&section=cloud-sync/);
   const row = page.locator('[data-cloud-sync="googleDrive"]');
   // Never "Not connected" once the connection exists: Connecting until the
@@ -647,14 +645,14 @@ test('a visible tab is never left unsynced while a hidden tab runs the mirror', 
   await checked;
   await focusDone;
 
-  // Opening Cloud Sync checks too, saying so, then Synced just now.
+  // Opening Cloud Sync checks too, saying so, then Last synced just now.
   await Promise.all([elected.clock.fastForward('00:40'), page.clock.fastForward('00:40')]);
   const viewed = elected.waitForRequest(/drive\/v3\/changes\/startPageToken/, { timeout: 5000 });
   const row = await openCloudSync(page);
   // The check is for the row coming into view.
   await row.scrollIntoViewIfNeeded();
   await viewed;
-  await expect(pillOf(row)).toHaveText('Synced just now', { timeout: 5000 });
+  await expect(pillOf(row)).toHaveText('Last synced just now', { timeout: 5000 });
   await elected.close();
   expectNoPageErrors(pageErrors);
 });
