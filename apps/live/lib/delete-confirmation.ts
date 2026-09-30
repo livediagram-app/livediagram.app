@@ -6,7 +6,7 @@
 // yellow caution, not red: nothing is lost for 30 days.
 import { apiListShareLinks } from '@/lib/api-client';
 
-export const DELETE_CONFIRM_TITLE = 'Please confirm';
+export const DELETE_CONFIRM_TITLE = 'Confirm';
 export const DELETE_CONFIRM_LABEL = 'Delete';
 export const DELETE_TEAM_LINE = 'It is deleted for the whole team.';
 export const DELETE_SHARE_LINKS_LINE = 'Its share links stop working.';
