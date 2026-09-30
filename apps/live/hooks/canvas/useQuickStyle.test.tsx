@@ -2,7 +2,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createFreehand, defaultScheme, type Element, type Tab } from '@livediagram/document';
-import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
+import { DEFAULT_WHITEBOARD_PREFS, type WhiteboardPen } from '@/lib/whiteboard-prefs';
+import type { PendingDraw } from '@/lib/draw-mode';
+import { whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
 
 // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the pen rows style the
@@ -19,7 +21,12 @@ const stroke = {
   penWidth: 1.5,
 } as Element;
 
-function setup(selection: string[], held = DEFAULT_WHITEBOARD_PREFS.pens[1]!) {
+function setup(
+  selection: string[],
+  held: WhiteboardPen | null = DEFAULT_WHITEBOARD_PREFS.pens[1]!,
+  toolIntent: PendingDraw | null = null,
+  memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el },
+) {
   let elements: Element[] = [stroke];
   const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements } as unknown as Tab;
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
@@ -34,12 +41,13 @@ function setup(selection: string[], held = DEFAULT_WHITEBOARD_PREFS.pens[1]!) {
       editsBlocked: false,
       liveElements: () => elements,
       commit,
-      memory: { recordEdit: vi.fn(), forget: vi.fn() } as never,
+      memory: memory as never,
       swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
       pen: { held, update },
+      toolIntent,
     }),
   );
-  return { result, commit, update, elements: () => elements };
+  return { result, commit, update, memory, elements: () => elements };
 }
 
 describe('useQuickStyle pen rows', () => {
@@ -63,5 +71,29 @@ describe('useQuickStyle pen rows', () => {
     act(() => result.current.setPenColour('#2f9e44'));
     expect(update).toHaveBeenCalledWith('second', { colour: '#2f9e44' });
     expect(commit).not.toHaveBeenCalled();
+  });
+});
+
+describe('useQuickStyle for a tool in hand', () => {
+  it('styles the next rectangle: remembered, nothing on the board changes', () => {
+    const { result, commit, memory } = setup([], null, whiteboardShapeIntent('rectangle'));
+    expect(result.current.view?.caption).toBe('Next rectangle');
+    expect(result.current.view?.sections.stroke).toBeTruthy();
+    act(() => result.current.setWidth('thick'));
+    expect(commit).not.toHaveBeenCalled();
+    const [before, after] = memory.recordEdit.mock.calls[0]!;
+    expect(before[0]).toMatchObject({ type: 'shape', shape: 'square' });
+    expect(after[0]).toMatchObject({ strokeWidth: 'thick' });
+  });
+
+  it('forgets the tool style on Clear styles', () => {
+    const { result, memory } = setup([], null, whiteboardShapeIntent('arrow'));
+    act(() => result.current.clearStyles());
+    expect(memory.forget).toHaveBeenCalledWith(['board:arrow']);
+  });
+
+  it('gives the selection priority over the tool', () => {
+    const { result } = setup(['s1'], null, whiteboardShapeIntent('rectangle'));
+    expect(result.current.view?.caption).toBeUndefined();
   });
 });

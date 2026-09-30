@@ -109,6 +109,12 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 ## Pens
 
+- **With a pen in hand, the cursor never changes** over a shape, note, line
+  or handle: the pen draws wherever it presses, so nothing under it offers
+  another action. (The cursor's look is being chosen from five candidates,
+  `apps/live/lib/whiteboard-pen-cursor.ts`; today's crosshair with a nib is the
+  default until then.)
+
 - A whiteboard offers **three pens**, left to right: the **main pen**, the
   **second pen** and the **third pen**, all Medium width. Picking a pen
   button selects it; picking the active pen again opens its flyout. The pens
@@ -168,11 +174,32 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   sticky and a text box are drawn in the board's ink at their default width,
   whichever pen was last in hand. A shape has no fill.
 - It previews that way while it is dragged out: solid, in the ink, unfilled.
-- Another colour or width is the quick style panel's job, once the shape is
-  drawn.
+- Another colour or width is the quick style panel's job: **with the tool in
+  hand** (nothing selected) the panel styles what it draws next, captioned
+  "Next rectangle", "Next arrow", "Next text box"; a choice there changes
+  nothing on the board and dresses every later mark of that kind. Restyling
+  a drawn shape teaches its kind the same way, as on a diagram tab. Clear
+  styles with a tool in hand puts its kind back to plain ink. Line and arrow
+  share one remembered style, as all arrows do.
+- A whiteboard keeps **its own style memory**, apart from its document's
+  diagram tabs: a board's styles never dress a diagram's next shape, nor the
+  other way round.
 - A **recognised** shape (see [Shape recognition](#shape-recognition)) is
   different: it is a pen stroke tidied up, so it keeps that pen's colour and
   weight.
+
+## Selecting
+
+- **A pen stroke is picked by its drawn line**, not its box: a click within
+  6 screen px of the line (either side, at any zoom) selects it, and a click
+  elsewhere in its box passes through to whatever is beneath, or the board.
+  Once selected, its box drags and resizes it as any element's. Shapes,
+  notes and text keep their whole box.
+- **Shift with Select always drags a selection box**, even when the press
+  starts on an element, and the box **adds** what it encloses to the
+  selection. A **Shift-click** on an element adds it to the selection or
+  removes it; a Shift-click on the empty board keeps the selection. A
+  resize handle keeps its own Shift behaviour.
 
 ## Nothing animates in
 

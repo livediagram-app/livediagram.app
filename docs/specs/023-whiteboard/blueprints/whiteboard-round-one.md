@@ -233,6 +233,33 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   (Plain / Dots / Grid) and Drawing (Basic / Shape recognition, `setRecognition(on)`). The dock has
   no recognition button.
 
+### Tool style and board memory
+
+- `useStyleMemory({ documentId, theme, board })`: `board = isWhiteboardTab(activeTab)` scopes every kind as
+  `board:<kind>` (`styleKindOf(el, board)`, `recordStyleEdit(..., board)`, `applyStyleMemory(..., board)`;
+  `parseStyleMemory` accepts the prefix). `useQuickStyle` records and forgets on whiteboards too.
+- `useShapeDrawing`'s dress on a whiteboard is `styleNewElement(boardShape(el))`.
+- `lib/quick-style-tool.ts`: `toolPhantom(intent, theme)` (shape: `boardShape(createShape)`; arrow:
+  `buildDrawnArrow(..., { ends, unpainted: true })`; text: `createText`; else null) and `toolCaption`.
+  `useQuickStyle({ toolIntent: pendingDraw })`: on a whiteboard with nothing selected, the view is
+  `quickStyleView([styleNewElement(phantom)])` through `onWhiteboard`, with `caption`; a choice runs
+  `memory.recordEdit([phantom], [applied])` and bumps a version; Clear styles forgets `board:<kind>`.
+- The panel shows `view.caption ?? view.pen.subject.name` above the rows unless `powerUser`.
+
+### Selecting on a whiteboard
+
+- `BoxedElementView`: `lineHit` = a pen stroke (`penWidth`, not a highlight) neither selected nor
+  multi-selected; the wrapper gets `pointer-events: none` and `FreehandSvg` a transparent
+  `[data-stroke-hit]` path of `strokeHitWidth(penWidth, zoom)` (`STROKE_HIT_SCREEN_PX` = 6 a side) with
+  `pointer-events: stroke`.
+- `useCanvasSurfaceGestures.onPointerDownCapture`: on a whiteboard, Select, Shift, primary button, no
+  draw intent or held Space, a press on the canvas that is not inside `[data-canvas-handle]` (resize
+  handles) starts an `additive` marquee with `clickTarget` = the pressed `[data-element-id]`.
+  `useCanvasPanAndMarquee`: a sub-4 px additive marquee toggles `clickTarget` (`onShiftSelect`) or does
+  nothing; a real one unions `currentSelection()` with its hits.
+- `[data-pen-in-hand]` on the canvas wrapper while a whiteboard pen is held; `globals.css` makes every
+  descendant inherit the pen cursor. `lib/whiteboard-pen-cursor.ts` holds the five candidate looks.
+
 ### Recognition preview
 
 - `apps/live/lib/recognition-preview.ts`: `RECOGNITION_THRESHOLD` (0.4), `RECOGNITION_PREVIEW_DWELL_MS`

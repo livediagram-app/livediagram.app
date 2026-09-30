@@ -195,3 +195,30 @@ describe('text elements', () => {
     expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
   });
 });
+
+// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a whiteboard keeps its own
+// memory, so a board's styles never dress a diagram tab's next shape, nor the other way round.
+describe('the board scope', () => {
+  it('keys a whiteboard element apart from a diagram one', () => {
+    expect(styleKindOf(shape('a', 'square'), true)).toBe('board:shape:square');
+    expect(styleKindOf(arrow('a'), true)).toBe('board:arrow');
+  });
+
+  it('records and applies within its own scope only', () => {
+    const board = recordStyleEdit(
+      {},
+      [shape('a', 'square')],
+      [shape('a', 'square', { strokeColor: '#ff0000' })],
+      forest,
+      true,
+    );
+    expect(board).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+    expect(applyStyleMemory(shape('n', 'square'), board, forest, true).strokeColor).toBe('#ff0000');
+    expect(applyStyleMemory(shape('n', 'square'), board, forest).strokeColor).toBeUndefined();
+  });
+
+  it('survives a round trip through storage', () => {
+    const raw = JSON.stringify({ 'board:shape:square': { strokeColor: '#ff0000' } });
+    expect(parseStyleMemory(raw)).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+  });
+});

@@ -53,6 +53,8 @@ export type QuickStyleView = {
   };
   // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
   pen?: QuickPenStyle;
+  // Names whose style this is when it is not a selection: a tool's next mark.
+  caption?: string;
 };
 
 // An unlocked shape, arrow or text element: the only elements the panel styles.

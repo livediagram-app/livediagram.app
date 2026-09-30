@@ -31,9 +31,13 @@ export type StyleMemoryApi = {
 export function useStyleMemory({
   documentId,
   theme,
+  board = false,
 }: {
   documentId: string | null;
   theme: ThemeDefinition;
+  // The active tab is a whiteboard: it records and applies its own memory
+  // (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays").
+  board?: boolean;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
   const loadedFor = useRef<string | null>(null);
@@ -88,13 +92,13 @@ export function useStyleMemory({
   return {
     recordEdit: (before, after) => {
       if (!ensureLoaded()) return;
-      const next = recordStyleEdit(memoryRef.current, before, after, theme);
+      const next = recordStyleEdit(memoryRef.current, before, after, theme, board);
       commit(next, 'recorded', Object.keys(next));
     },
     styleNewElement: <T extends Element>(el: T): T => {
       if (!ensureLoaded()) return el;
-      const dressed = applyStyleMemory(el, memoryRef.current, theme);
-      if (dressed !== el) console.debug('[style-memory] applied', styleKindOf(el));
+      const dressed = applyStyleMemory(el, memoryRef.current, theme, board);
+      if (dressed !== el) console.debug('[style-memory] applied', styleKindOf(el, board));
       return dressed;
     },
     forget: (kinds) => {

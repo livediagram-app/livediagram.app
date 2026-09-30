@@ -143,12 +143,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
-    // A whiteboard's marks wear the board's ink, not the remembered diagram
-    // style (docs/specs/023-whiteboard/whiteboard.md "Appearance").
+    // A whiteboard shape starts as plain ink, unfilled (a pen never colours
+    // it), then wears the style chosen for its tool, which the board keeps
+    // apart from its diagram tabs' (docs/specs/023-whiteboard/whiteboard.md "Shapes").
     const whiteboard = isWhiteboardTab(activeTab);
-    // A whiteboard shape is plain ink, unfilled; a pen never colours it.
     const dress = <T extends Element>(el: T): T =>
-      whiteboard ? boardShape(el) : styleNewElement(el);
+      styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
       const arrow = dress(
         buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme), {

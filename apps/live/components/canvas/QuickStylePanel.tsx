@@ -276,14 +276,19 @@ function QuickStyleSections({
     if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
   };
   const { width, style, textAlign, iconAlign } = view.sections;
+  // Whose style this is when it is not plainly the selection: the pen in hand,
+  // the selected strokes, or a tool's next mark. Power user mode leaves it out.
+  const caption = view.caption ?? view.pen?.subject.name;
   return (
     <>
+      {showSubject && caption ? (
+        <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">{caption}</p>
+      ) : null}
       {view.pen ? (
         <QuickPenRows
           pen={view.pen}
           quickStyle={quickStyle}
           showTitles={showTitles}
-          showSubject={showSubject}
           density={density}
         />
       ) : null}

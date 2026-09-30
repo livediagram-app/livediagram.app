@@ -22,23 +22,14 @@ export function QuickPenRows({
   quickStyle,
   showTitles,
   density,
-  showSubject,
 }: {
   pen: QuickPenStyle;
-  // The caption naming the pen or the strokes; off in power user mode.
-  showSubject: boolean;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
   density: QuickRowDensity;
 }) {
   return (
     <>
-      {showSubject ? (
-        // Whose style this is: the pen in hand, or the selected strokes.
-        <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">
-          {pen.subject.name}
-        </p>
-      ) : null}
       <QuickRadioRow
         title="Pen colour"
         testId="quick-style-pen-colour"

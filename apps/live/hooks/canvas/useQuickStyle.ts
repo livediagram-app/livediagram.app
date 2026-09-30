@@ -4,7 +4,9 @@
 // over the selection (one undo step), recorded into style memory, and counted
 // under its own telemetry token so panel use reads apart from menu use.
 
-import { useMemo } from 'react';
+import { useMemo, useReducer } from 'react';
+import type { PendingDraw } from '@/lib/draw-mode';
+import { toolCaption, toolPhantom } from '@/lib/quick-style-tool';
 import type {
   Element,
   QuickSwatchRole,
@@ -80,6 +82,9 @@ export function useQuickStyle(deps: {
     held: WhiteboardPen | null;
     update: (id: WhiteboardPenId, patch: { colour?: string | null; width?: number }) => void;
   };
+  // The draw intent in hand: on a whiteboard, a shape, line, arrow or text tool
+  // with nothing selected makes the panel style what it draws next.
+  toolIntent?: PendingDraw | null;
 }): QuickStyleApi {
   const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
   const { overrides } = deps.swatchOverrides;
@@ -89,14 +94,28 @@ export function useQuickStyle(deps: {
     [activeTab.elements, selectionIds],
   );
   // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays") the
-  // defaults read as the board's ink, and a restyle there never teaches the
-  // style memory what a diagram's next shape should wear.
+  // defaults read as the board's ink, and the style memory is the board's own
+  // (useStyleMemory's board scope), never a diagram tab's.
   const whiteboard = isWhiteboardTab(activeTab);
   const { appearance } = useAppearance();
   const ink = WHITEBOARD_INK[appearance];
   const held = deps.pen?.held ?? null;
+  // A tool's choices land in memory, not the document: a version to re-read it.
+  const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
+  const intent = deps.toolIntent ?? null;
+  const phantom = useMemo(() => {
+    if (!whiteboard || editsBlocked || selected.length > 0 || !intent) return null;
+    const plain = toolPhantom(intent, theme);
+    return plain ? memory.styleNewElement(plain) : null;
+    // toolVersion: memory changed under the same intent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion]);
   const view = useMemo(() => {
     if (editsBlocked) return null;
+    if (phantom && intent) {
+      const tool = onWhiteboard(quickStyleView([phantom], theme, overrides), [phantom], ink);
+      return tool && { ...tool, caption: toolCaption(intent) };
+    }
     const plain = quickStyleView(selected, theme, overrides);
     if (!whiteboard) return plain;
     const board = onWhiteboard(plain, selected, ink);
@@ -105,17 +124,24 @@ export function useQuickStyle(deps: {
       strokesPenStyle(selected, ink) ??
       (selected.length === 0 && held ? heldPenStyle(held, ink) : undefined);
     return pen ? { ...(board ?? { targetIds: [], sections: {} }), pen } : board;
-  }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held]);
+  }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held, phantom, intent]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
     if (!view || editsBlocked) return;
+    if (phantom) {
+      // The tool's next mark: remembered for its kind, nothing on the board changes.
+      memory.recordEdit([phantom], [apply(phantom)]);
+      bumpTool();
+      track('Element', 'Changed', telemetryType);
+      return;
+    }
     const ids = new Set(view.targetIds);
     const before = liveElements();
     const map = (els: Element[]) => els.map((el) => (ids.has(el.id) ? apply(el) : el));
     const after = map(before);
     commit(map);
-    if (!whiteboard) memory.recordEdit(before, after);
+    memory.recordEdit(before, after);
     track('Element', 'Changed', telemetryType);
   };
 
@@ -159,16 +185,23 @@ export function useQuickStyle(deps: {
     setIconAlign: (align) => run((el) => applyQuickIconAlign(el, align), 'QuickIconAlign'),
     clearStyles: () => {
       if (!view) return;
+      if (phantom) {
+        const kind = styleKindOf(phantom, true);
+        if (kind) memory.forget([kind]);
+        bumpTool();
+        track('Element', 'Changed', 'QuickClearStyles');
+        return;
+      }
       run((el) => clearQuickStyle(el, theme), 'QuickClearStyles');
       // Forget every kind the selection styles, not only the ones that
       // changed: a shape already at the default can have a memory waiting.
       const targets = new Set(view.targetIds);
       const kinds = new Set<StyleKindKey>();
       for (const el of selected) {
-        const kind = targets.has(el.id) ? styleKindOf(el) : null;
+        const kind = targets.has(el.id) ? styleKindOf(el, whiteboard) : null;
         if (kind) kinds.add(kind);
       }
-      if (!whiteboard) memory.forget([...kinds]);
+      memory.forget([...kinds]);
     },
     setSwatchOverride: (role, slot, hex) => {
       track('UI', 'Changed', 'QuickSwatchCustom');

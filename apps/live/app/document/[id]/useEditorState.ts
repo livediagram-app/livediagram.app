@@ -39,7 +39,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, isWhiteboardTab } from '@livediagram/document';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1682,7 +1682,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // chose per element kind, applied to the next element the user draws. The
   // style hooks below get `commit` / `tickTabs` wrapped to record into it.
   const activeTheme = getTheme(activeTab.theme);
-  const styleMemory = useStyleMemory({ documentId, theme: activeTheme });
+  const styleMemory = useStyleMemory({
+    documentId,
+    theme: activeTheme,
+    board: isWhiteboardTab(activeTab),
+  });
   const liveActiveElements = () =>
     (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
   const rememberingCommit = (mapElements: (els: Element[]) => Element[]) => {
@@ -2554,6 +2558,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
       update: whiteboardDock.updatePen,
     },
+    toolIntent: pendingDraw,
   });
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
