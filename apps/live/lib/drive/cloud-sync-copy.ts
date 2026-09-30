@@ -98,10 +98,10 @@ export function driveStatusOptions(
   }
 }
 
-// The Connect button's wordings, so it keeps one width while not connected.
-export const DRIVE_CONNECT_LABELS = ['Connect', 'Connecting…'] as const;
 // The problem line's action wordings, so it keeps one width while it shows.
-export const DRIVE_PROBLEM_LABELS = ['Reconnect', 'Resume', 'Connecting…'] as const;
+// While connecting the button keeps its word and is held; the status says
+// Connecting… (one place for the state, never two).
+export const DRIVE_PROBLEM_LABELS = ['Reconnect', 'Resume'] as const;
 
 export type DriveProblemAction = 'reconnect' | 'resume' | 'showFolder' | null;
 

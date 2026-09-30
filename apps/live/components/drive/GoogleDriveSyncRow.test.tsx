@@ -74,16 +74,22 @@ describe('GoogleDriveSyncRow', () => {
     expect(v.connect).toHaveBeenCalledOnce();
   });
 
-  it('holds Connect while connecting, at one width', () => {
+  it('says Connecting… once, in the status, and holds the Connect button', () => {
     const v = show({ state: 'disconnected' }, { connecting: true });
     expect(statusText().textContent).toBe('Connecting…');
-    const button = screen.getByRole('button', { name: 'Connecting…' });
-    expect([...button.querySelectorAll('[data-stable-option]')].map((n) => n.textContent)).toEqual([
-      'Connect',
-      'Connecting…',
-    ]);
+    const button = screen.getByRole('button', { name: 'Connect' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.queryByRole('button', { name: 'Connecting…' })).toBeNull();
     fireEvent.click(button);
     expect(v.connect).not.toHaveBeenCalled();
+  });
+
+  it('holds Reconnect while reconnecting, the status saying Connecting…', () => {
+    show({ state: 'needs_reconnect' }, { connecting: true });
+    expect(statusText().textContent).toBe('Connecting…');
+    expect(screen.getByRole('button', { name: 'Reconnect' }).getAttribute('aria-disabled')).toBe(
+      'true',
+    );
   });
 
   it('puts a failed or cancelled Connect on a second line', () => {

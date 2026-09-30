@@ -13,7 +13,6 @@ import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
 import {
-  DRIVE_CONNECT_LABELS,
   DRIVE_PROBLEM_LABELS,
   driveConnectedText,
   driveStatusOptions,
@@ -121,7 +120,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
     switch (problem?.action) {
       case 'reconnect':
         return {
-          label: connecting ? 'Connecting…' : 'Reconnect',
+          label: 'Reconnect',
           held: connecting,
           act: drive.connect,
         };
@@ -167,11 +166,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
                       if (!connecting) void drive.connect();
                     }}
                   >
-                    <StableLabel
-                      options={DRIVE_CONNECT_LABELS}
-                      current={connecting ? 'Connecting…' : 'Connect'}
-                      itemClassName="text-optical-line"
-                    />
+                    Connect
                   </Button>
                 </span>
               ) : (
