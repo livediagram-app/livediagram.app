@@ -15,6 +15,11 @@ Scope, by file:
 | `apps/live/lib/power-user-offer.ts`                                                          | Pure: offer counters, thresholds, eligibility; device-local storage              |
 | `apps/live/hooks/ui/usePowerUserOffer.ts`                                                    | Records sessions and shortcuts, shows the offer, applies the answer              |
 | `apps/live/components/providers/minimal-chrome.tsx`                                          | `MinimalChromeProvider`, `useMinimalChrome()`: the one flag                      |
+| `packages/ui/src/appearance/appearance-cycle.ts`                                             | Pure: `oppositeAppearanceSetting`, `quickAppearanceToggleName`                   |
+| `apps/live/components/chrome/AppearanceToggle.tsx`                                           | Quick appearance switch: click flips, right-click sets System                    |
+| `apps/live/hooks/ui/useAppearance.ts`                                                        | Logs and tracks every explicit pick                                              |
+| `apps/live/app/explorer/ExplorerShell.tsx`                                                   | Passes `powerUser` to its bottom bar                                             |
+| `apps/live/components/chrome/ChromeControls.tsx`                                             | `TabBar` and the Explorer pass `powerUser` through to the toggle                 |
 | `apps/live/components/chrome/RoleIndicator.tsx`                                              | `RolePill` (title bar) and `RoleStatusIcon` (status bar)                         |
 | `apps/live/app/document/[id]/useViewPreview.ts`                                              | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
 | `apps/live/app/document/[id]/useRoleIndicator.ts`                                            | Role in force, owner name and toggle, for the pill and the icon                  |
@@ -69,6 +74,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Role status icon | `RoleStatusIcon`                                         | Minimal chrome's pencil / eye, first in the status bar               |
 | View preview     | `viewPreview`, `setViewPreview`                          | Local read-only preview for someone who may edit                     |
 | Touch device     | `useCoarsePointer()` (`(hover: none)`)                   | Keeps More and the bin                                               |
+| Quick switch     | `oppositeAppearanceSetting(appearance)`                  | The explicit setting opposite the painted appearance                 |
 
 Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for the role pill.
 
@@ -165,6 +171,22 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 - Delete renders when its handler is given **and** (`touch` or `!minimal`).
 - The caption renders when `!minimal`. The toolbar root carries `role="toolbar"` and `aria-label={title}` always.
 
+### Quick appearance switch
+
+`EditorView` (via `TabBar`) and `ExplorerShell` pass `powerUser={isPowerUserMode(prefs)}` to `ChromeControls`, which
+hands it to `AppearanceToggle` as `quick`; both default to `false`, so any other host keeps the cycle:
+
+| Mode | Gesture      | Setting before | Result                                                             |
+| ---- | ------------ | -------------- | ------------------------------------------------------------------ |
+| off  | click        | any            | `cycle()` (Light → Dark → System)                                  |
+| off  | context menu | any            | browser default (no handler)                                       |
+| on   | click        | any            | `set(oppositeAppearanceSetting(appearance))`, `appearance` painted |
+| on   | context menu | not `system`   | `preventDefault()`, `set('system')`                                |
+| on   | context menu | `system`       | `preventDefault()`, no write, no event                             |
+
+The context menu gesture is the `contextmenu` event, which browsers fire for right-click, the Menu key, Shift+F10 and a
+mapped long press, so one handler covers every input.
+
 ### Settings: the mode's children
 
 - `RowBase.parent?: string`, the key of a row in the same category. `SettingsCategoryPane` renders, right after a row,
@@ -224,6 +246,19 @@ toast.offer(offer: ToastOffer): void;
   pane already tracks `Toggled` with the row's tokens.
 - The Minimal chrome row has `available: (ctx) => ctx.powerUserMode`. `SettingsRowContext` gains `powerUserMode:
 boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the row appears without reopening).
+
+```ts
+// packages/ui/src/appearance/appearance-cycle.ts
+export function oppositeAppearanceSetting(appearance: Appearance): AppearanceSetting; // 'light' <-> 'dark'
+export function quickAppearanceToggleName(
+  setting: AppearanceSetting,
+  appearance: Appearance,
+): string;
+// "Appearance: <setting>. Switch to <opposite>. Right-click to follow your device."
+// apps/live/components/chrome/AppearanceToggle.tsx
+export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean }): JSX.Element;
+```
+
 - Rejections: `readOfferCounters` rejects a non-object, or any field of the wrong type, as malformed (see Errors).
 
 ## Data and persistence
@@ -289,6 +324,8 @@ boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the 
   - **Minimal Chrome**: "Hides labels and hints you no longer need: palette captions, panel titles, the selection
     caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it."
 - Help row in the Explorer menu: the help glyph, label "Help".
+- Appearance hover card under the mode: title unchanged, description the setting's sentence followed by "Click for
+  <opposite>; right-click to follow your device." (on System: "Click for <opposite>.").
 
 ## Accessibility
 
@@ -318,6 +355,7 @@ boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the 
 | Offer answered       | `console.info('[power-user-offer] accepted'                     | 'declined')` |
 | Counters malformed   | `console.warn('[power-user-offer] counters reset', raw)`        |
 | View preview flipped | `console.info('[role] view preview', on)`                       |
+| Appearance picked    | `console.info('[appearance] set', next)`                        |
 
 ## Testing
 
@@ -345,6 +383,9 @@ boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the 
 | Minimal chrome hides + tooltips, role icon toggles        | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 | Role pill toggles view preview for the owner              | same                                                           |
 | Mode on / off with a changed and an untouched setting     | same                                                           |
+| Opposite setting and quick name                           | `packages/ui/src/appearance/appearance-cycle.test.ts`          |
+| Quick switch table (mode off / on, click / context menu)  | `components/chrome/AppearanceToggle.test.tsx` (jsdom)          |
+| Quick switch in the real status bar                       | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 
 ## Constants and configuration
 
