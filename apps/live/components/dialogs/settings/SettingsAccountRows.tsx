@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { Button, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 import { SettingsRowShell } from './SettingsRowShell';
+import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
@@ -66,6 +67,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
               </span>
               <span className="block text-xs text-slate-500 dark:text-slate-400">
                 You are working as a guest. Sign in to keep your documents across devices.
+                <SettingsSignInLink />
               </span>
             </span>
           )}
@@ -96,9 +98,15 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
               {row.label}
             </span>
             <span className="block text-xs text-slate-600 dark:text-slate-400">
-              {signedIn
-                ? 'Permanently removes your documents (the Trash included), folders, and account. This cannot be undone.'
-                : 'Only available once you are signed in: deleting wipes the data held against a verified account, and a guest browser has none.'}
+              {signedIn ? (
+                'Permanently removes your documents (the Trash included), folders, and account. This cannot be undone.'
+              ) : (
+                <>
+                  Only available once you are signed in: deleting wipes the data held against a
+                  verified account, and a guest browser has none.
+                  <SettingsSignInLink />
+                </>
+              )}
             </span>
           </span>
           {signedIn ? (

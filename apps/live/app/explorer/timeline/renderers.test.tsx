@@ -9,6 +9,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { TimelineEvent } from '@livediagram/ui';
 import { TIMELINE_RENDERERS } from './renderers';
+import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 
 vi.mock('@/components/panels/DocumentThumbnail', () => ({
   DocumentThumbnail: () => null,
@@ -164,6 +165,22 @@ describe('team and account cards', () => {
       }),
     );
     expect(deleted.onClick).toBeUndefined();
+  });
+
+  it('opens a token card in Settings, in place', () => {
+    const heard = vi.fn();
+    const onOpen = (e: Event) => heard((e as CustomEvent<string>).detail);
+    window.addEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    render(
+      event({
+        sourceType: 'account',
+        eventType: 'token_expiring',
+        title: 'API Token Expiring',
+        snapshot: { tokenName: 'CI' },
+      }),
+    ).onClick?.();
+    window.removeEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    expect(heard).toHaveBeenCalledWith('tokens');
   });
 
   it('counts uploaded images in the subject', () => {

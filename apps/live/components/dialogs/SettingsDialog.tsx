@@ -30,6 +30,7 @@ import {
 } from '@/components/dialogs/settings/useSettingsViewMemory';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
+import { clerkEnabled } from '@/lib/clerk-config';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -79,6 +80,7 @@ export function SettingsDialog({
       visibleCategories(aiCapable === true, {
         emailEnabled,
         signedIn,
+        authEnabled: clerkEnabled,
         powerUserMode,
         preferences: settings,
       }),
@@ -258,6 +260,11 @@ export function SettingsDialog({
                 setQuery('');
                 select(categoryId);
                 setGoTo({ categoryId, rowKey });
+              }}
+              onOpenCategory={(categoryId) => {
+                setQuery('');
+                select(categoryId);
+                setGoTo(null);
               }}
             />
             {/* A phone's way down to a parent's sub-categories: the root

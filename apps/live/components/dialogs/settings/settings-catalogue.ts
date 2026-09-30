@@ -43,9 +43,14 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
+// `authEnabled` is whether this deployment offers sign-in at all
+// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth self-host they
+// are absent end to end rather than a sign-in prompt with nowhere to go
+// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
 export type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
+  authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
 };
@@ -132,16 +137,28 @@ export type SettingsSliderRowSpec = RowBase & {
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 
-// API tokens (docs/specs/015-api/public-api-and-tokens.md): a read-only listing plus a link out to the Explorer's
-// tokens page. Not a preference at all: it reads account state from the api
-//, so like the appearance row it carries no read/write pair.
+// API tokens (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
+// the whole manager, create, one-time reveal, list and revoke. Not a
+// preference at all: it reads account state from the api, so like the
+// appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
+
+// A way into another category of this same dialog, opened in place: the
+// setting lives there, and this is where a reader might look for it first.
+export type SettingsLinkRowSpec = RowBase & {
+  kind: 'link';
+  target: SettingsCategoryId;
+  // The link's own words, which name the destination ("Manage API Tokens").
+  cta: string;
+};
 
 // A card with no control: it stands in for settings the reader cannot use
 // yet and says why. A section whose rows all vanish would otherwise take the
 // section heading with it, so the reader never learns the settings exist ,
 // which is the opposite of what a "find everything here" panel is for.
-export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string };
+// `signIn` marks a note whose reason is "you need an account", which then
+// ends with the Sign In link (docs/specs/007-editor/user-preferences.md).
+export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string; signIn?: boolean };
 
 // Keyboard shortcuts, like appearance, are a PER-DEVICE localStorage toggle
 // rather than a synced preference (docs/specs/007-editor/live-app.md): whether you want Cmd-Z bound
@@ -175,6 +192,7 @@ export type SettingsRowSpec =
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
   | SettingsTokensRowSpec
+  | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
   | SettingsShortcutListRowSpec
@@ -589,6 +607,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Email',
         label: 'Email Notifications',
         note: 'Sign in to choose which emails you get.',
+        signIn: true,
         description:
           'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
@@ -746,14 +765,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
       },
       {
-        kind: 'tokens',
-        key: 'apiTokens',
+        kind: 'link',
+        key: 'apiTokensLink',
         keywords: 'api token key mcp integration script developer access',
         section: 'API Access',
         label: 'API Tokens',
+        cta: 'Manage API Tokens',
+        target: 'tokens',
         description:
-          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Each one expires six months after it is created, and you can revoke any of them at any time.',
-        alsoIn: 'the Explorer’s API Tokens page',
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. They have their own category in Settings.',
+        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },
@@ -790,6 +811,22 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
           'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+      },
+    ],
+  },
+  {
+    id: 'tokens',
+    label: 'API Tokens',
+    rows: [
+      {
+        kind: 'tokens',
+        key: 'apiTokens',
+        keywords: 'api token key mcp integration script developer access create revoke secret',
+        label: 'API Tokens',
+        description:
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Treat one like a password. Each expires six months after it is created, and you can revoke any of them at any time.',
+        helpArticle: 'apiTokens',
+        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },

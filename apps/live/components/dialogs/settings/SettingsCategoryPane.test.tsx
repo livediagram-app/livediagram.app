@@ -149,3 +149,20 @@ describe('SettingsCategoryPane telemetry', () => {
     expect(track).not.toHaveBeenCalled();
   });
 });
+
+describe('SettingsCategoryPane link rows', () => {
+  it('opens the linked category in place', () => {
+    const ai = SETTINGS_CATEGORIES.find((c) => c.id === 'ai')!;
+    const onOpenCategory = vi.fn();
+    render(
+      <SettingsCategoryPane
+        category={{ ...ai, rows: ai.rows.filter((r) => r.kind === 'link') }}
+        settings={{}}
+        onChange={vi.fn()}
+        onOpenCategory={onOpenCategory}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Manage API Tokens' }));
+    expect(onOpenCategory).toHaveBeenCalledWith('tokens');
+  });
+});

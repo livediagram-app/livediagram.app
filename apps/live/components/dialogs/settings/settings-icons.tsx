@@ -25,6 +25,7 @@ export type SettingsIconId =
   | 'notifications'
   | 'accessibility'
   | 'ai'
+  | 'tokens'
   | 'privacy';
 
 // The sub-categories, nested under a top-level category (Panels).
@@ -46,6 +47,7 @@ const TILE: Record<SettingsIconId, string> = {
   notifications: 'bg-rose-500',
   accessibility: 'bg-indigo-500',
   ai: 'bg-violet-500',
+  tokens: 'bg-slate-500',
   privacy: 'bg-emerald-600',
 };
 
@@ -139,6 +141,14 @@ const AiGlyph = (
   </Svg>
 );
 
+// API Tokens: a key, the mark the tokens have always carried.
+const TokensGlyph = (
+  <Svg>
+    <circle cx="7" cy="7" r="3.8" />
+    <path d="M9.7 9.7 17 17M14.5 14.5l2-2M12.5 16.5l2-2" />
+  </Svg>
+);
+
 // Privacy: a padlock.
 const PrivacyGlyph = (
   <Svg>
@@ -156,6 +166,7 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   notifications: NotificationsGlyph,
   accessibility: AccessibilityGlyph,
   ai: AiGlyph,
+  tokens: TokensGlyph,
   privacy: PrivacyGlyph,
 };
 

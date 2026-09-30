@@ -26,6 +26,7 @@ import type {
 import { SourceTypeIcon } from '@livediagram/ui';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { EVENT_ICONS } from './icons';
+import { requestOpenSettings } from '@/lib/open-settings';
 
 function str(snapshot: Record<string, unknown>, key: string): string | null {
   const value = snapshot[key];
@@ -197,7 +198,8 @@ const accountRenderer: TimelineRenderer = (event) => {
   const token = str(event.snapshot, 'tokenName') ?? 'API token';
   const theme = str(event.snapshot, 'themeName') ?? 'A theme';
   const folder = str(event.snapshot, 'folderName') ?? 'A folder';
-  const tokens = () => window.location.assign('/explorer/tokens');
+  // Tokens live in Settings, which opens in place over the feed.
+  const tokens = () => requestOpenSettings('tokens');
   switch (event.eventType) {
     case 'token_created':
     case 'token_revoked':
