@@ -398,6 +398,31 @@ The eraser offers **both** modes, switched in its flyout:
   (`recogniseBoardStroke`) on the same stroke's streamlined centre line (see
   [Pens](#pens)), so what shows is what lands.
 - When off, strokes stay as drawn.
+- **Alt (Option) flips it for the stroke being drawn**, whichever way the
+  setting is, while the pen is still down; it never changes the setting.
+  - **Detection off:** pressing Alt recognises the stroke drawn so far at
+    once, as if the pen had held still: the shape shows, locks, and dragging
+    on reshapes it (Shift still makes it perfect). A stroke that reads as no
+    shape stays ink, and the next Alt press tries again.
+  - **Detection on, a shape shown:** pressing Alt breaks out of it: the
+    stroke is ink again, exactly as drawn so far, and carries on under the
+    pen; while Alt is held, holding still does not snap it again.
+  - Each press flips the state; releasing Alt changes nothing. Lifting the
+    pen lands whatever shows. Alt pressed on its own while drawing never
+    moves the focus to the browser's menu.
+  - Only while drawing: a stroke already landed is not converted.
+- **The same on a touch screen, without a keyboard:** when a pen or finger
+  stroke holds still for the recognition pause, a small **chip** appears
+  just above and before the tip (clear of the hand, 44 x 44 px target):
+  **Make shape** when detection is off and the stroke reads as a shape,
+  **Keep drawing** when a shape has snapped. A tap with the other hand does
+  what Alt does; the pen stays down and the stroke carries on. The chip
+  leaves when the pen moves on or lifts. A mouse stroke has Alt and shows no
+  chip.
+- **Telemetry:** `Whiteboard` · `Toggled` · `RecogniseOnce` / `BreakShape`,
+  with the source in the type only as `Key` or `Chip` suffixes
+  (`RecogniseOnceKey`, `RecogniseOnceChip`, `BreakShapeKey`,
+  `BreakShapeChip`).
 
 ## Board background
 
@@ -495,6 +520,9 @@ Preset-enum events only, never content, under a `Whiteboard` category:
 | ------------------------- | ---------- | -------------------------------------------------------- |
 | A whiteboard created      | `Created`  | `Template` (wizard), `NewTab`, `Import`                  |
 | A pen picked              | `Selected` | `Main`, `Second`, `Third`                                |
+| A shape picked in search  | `Selected` | `ShapeSearch` (never the kind)                           |
+| A shape pinned / unpinned | `Changed`  | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
+| The dock mode chosen      | `Changed`  | `ModeSimple`, `ModeShapes`                               |
 | A pen changed             | `Changed`  | `PenColour`, `PenWidth` (a width on any pen), `PenReset` |
 | The pen cursor chosen     | `Changed`  | `CursorDot`, `CursorCrosshair`                           |
 | Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
