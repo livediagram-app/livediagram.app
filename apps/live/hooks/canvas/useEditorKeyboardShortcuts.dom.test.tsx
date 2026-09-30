@@ -102,7 +102,14 @@ describe('onShortcutUsed', () => {
 
 describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts")', () => {
   const board = () => {
-    const wb = { pickSelect: vi.fn(), pickPen: vi.fn(), pickEraser: vi.fn() };
+    const wb = {
+      pickSelect: vi.fn(),
+      pickPen: vi.fn(),
+      pickEraser: vi.fn(),
+      pickSticky: vi.fn(),
+      pickText: vi.fn(),
+      pickShape: vi.fn(),
+    };
     const addShape = vi.fn();
     const setCanvasTool = vi.fn();
     const { bag } = deps({ selectedId: null, whiteboard: wb, addShape, setCanvasTool });
@@ -122,13 +129,46 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(wb.pickEraser).toHaveBeenCalledTimes(1);
   });
 
-  it('leaves the diagram tab keys out: no rectangle on R or 2, no laser on K', () => {
-    const { addShape, setCanvasTool } = board();
-    press('r');
-    press('2');
-    press('k');
+  it('adds notes, text and the dock shapes with N, T, R, O, D, L and A', () => {
+    const { wb, addShape } = board();
+    press('n');
+    press('t');
+    for (const k of ['r', 'o', 'd', 'l', 'a']) press(k);
+    expect(wb.pickSticky).toHaveBeenCalledTimes(1);
+    expect(wb.pickText).toHaveBeenCalledTimes(1);
+    expect(wb.pickShape.mock.calls.map((c) => c[0])).toEqual([
+      'rectangle',
+      'ellipse',
+      'diamond',
+      'line',
+      'arrow',
+    ]);
+    // The diagram tab's own shape adds never run on a whiteboard.
     expect(addShape).not.toHaveBeenCalled();
+  });
+
+  it('leaves the other diagram tab keys out: no laser on K, no cylinder on C', () => {
+    const { wb, addShape, setCanvasTool } = board();
+    press('k');
+    press('c');
+    expect(addShape).not.toHaveBeenCalled();
+    expect(wb.pickShape).not.toHaveBeenCalled();
     expect(setCanvasTool).not.toHaveBeenCalledWith('laser');
+  });
+
+  it('puts the eraser down with Escape', () => {
+    const wb = {
+      pickSelect: vi.fn(),
+      pickPen: vi.fn(),
+      pickEraser: vi.fn(),
+      pickSticky: vi.fn(),
+      pickText: vi.fn(),
+      pickShape: vi.fn(),
+    };
+    const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('Escape');
+    expect(wb.pickSelect).toHaveBeenCalledTimes(1);
   });
 
   it('keeps hand on H', () => {
@@ -138,7 +178,14 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
   });
 
   it('gives a view-role visitor V only', () => {
-    const wb = { pickSelect: vi.fn(), pickPen: vi.fn(), pickEraser: vi.fn() };
+    const wb = {
+      pickSelect: vi.fn(),
+      pickPen: vi.fn(),
+      pickEraser: vi.fn(),
+      pickSticky: vi.fn(),
+      pickText: vi.fn(),
+      pickShape: vi.fn(),
+    };
     const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('1');

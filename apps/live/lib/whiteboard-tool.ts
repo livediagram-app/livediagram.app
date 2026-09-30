@@ -46,7 +46,7 @@ export const WHITEBOARD_ERASER_RADIUS_PX: Readonly<Record<'stroke' | 'partial', 
   partial: 16,
 };
 
-export type WhiteboardShapeId = 'rectangle' | 'ellipse' | 'triangle' | 'diamond' | 'line' | 'arrow';
+export type WhiteboardShapeId = 'rectangle' | 'ellipse' | 'diamond' | 'line' | 'arrow';
 
 export const WHITEBOARD_SHAPES: readonly {
   id: WhiteboardShapeId;
@@ -55,7 +55,6 @@ export const WHITEBOARD_SHAPES: readonly {
 }[] = [
   { id: 'rectangle', label: 'Rectangle', intent: { type: 'shape', kind: 'square' } },
   { id: 'ellipse', label: 'Ellipse', intent: { type: 'shape', kind: 'circle' } },
-  { id: 'triangle', label: 'Triangle', intent: { type: 'shape', kind: 'triangle' } },
   { id: 'diamond', label: 'Diamond', intent: { type: 'shape', kind: 'diamond' } },
   { id: 'line', label: 'Line', intent: { type: 'arrow', ends: 'none' } },
   { id: 'arrow', label: 'Arrow', intent: { type: 'arrow', ends: 'to' } },

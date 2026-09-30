@@ -7,6 +7,7 @@
 
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import type { WhiteboardShapeId } from '@/lib/whiteboard-tool';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, document,
@@ -148,6 +149,9 @@ export type EditorKeyboardShortcutsDeps = {
     pickSelect: () => void;
     pickPen: (id: WhiteboardPenId) => void;
     pickEraser: () => void;
+    pickSticky: () => void;
+    pickText: () => void;
+    pickShape: (id: WhiteboardShapeId) => void;
   } | null;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
@@ -329,6 +333,14 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   '2': (l) => l.whiteboard?.pickPen('second'),
   '3': (l) => l.whiteboard?.pickPen('third'),
   e: (l) => l.whiteboard?.pickEraser(),
+  n: (l) => l.whiteboard?.pickSticky(),
+  t: (l) => l.whiteboard?.pickText(),
+  // Shapes draw with the pen in hand, as the Shapes flyout does.
+  r: (l) => l.whiteboard?.pickShape('rectangle'),
+  o: (l) => l.whiteboard?.pickShape('ellipse'),
+  d: (l) => l.whiteboard?.pickShape('diamond'),
+  l: (l) => l.whiteboard?.pickShape('line'),
+  a: (l) => l.whiteboard?.pickShape('arrow'),
 };
 
 // The key each whiteboard dock tool shows (and announces in aria-keyshortcuts).
@@ -338,4 +350,11 @@ export const WHITEBOARD_TOOL_KEYS = {
   second: '2',
   third: '3',
   eraser: 'E',
+  sticky: 'N',
+  text: 'T',
+  rectangle: 'R',
+  ellipse: 'O',
+  diamond: 'D',
+  line: 'L',
+  arrow: 'A',
 } as const;

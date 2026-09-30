@@ -68,7 +68,7 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   3. **Eraser**, with its mode (see [Eraser](#eraser)).
   4. **Sticky note**.
   5. **Text**.
-  6. **Shapes**: a small flyout of rectangle, ellipse, triangle, diamond, line
+  6. **Shapes**: a small flyout of rectangle, ellipse, diamond, line
      and arrow, drawn with the pen in hand (see [Shapes](#shapes)).
   7. **Shape recognition** toggle (see [Shape recognition](#shape-recognition)).
   8. **Undo** / **Redo**.
@@ -240,22 +240,35 @@ which already follows the reader's light or dark appearance
 ## Keyboard shortcuts
 
 On a whiteboard the plain-key shortcuts are the dock's, and only these
-(the diagram tab's element and mode keys, rectangle on R, the laser on K and
-so on, do not apply: a whiteboard has no palette to mirror):
+(the diagram tab's other element and mode keys, the laser on K and so on, do
+not apply: a whiteboard has no palette to mirror):
 
-| Key | Tool       |
-| --- | ---------- |
-| V   | Select     |
-| 1   | Main pen   |
-| 2   | Second pen |
-| 3   | Third pen  |
-| E   | Eraser     |
+| Key    | Tool                              |
+| ------ | --------------------------------- |
+| V      | Select                            |
+| Escape | Put the tool down: back to Select |
+| 1      | Main pen                          |
+| 2      | Second pen                        |
+| 3      | Third pen                         |
+| E      | Eraser                            |
+| N      | Sticky note                       |
+| T      | Text box                          |
+| R      | Rectangle                         |
+| O      | Ellipse (circle / oval)           |
+| D      | Diamond                           |
+| L      | Line                              |
+| A      | Arrow                             |
+
+The shape keys draw with the pen in hand, as the Shapes flyout does.
+Escape first closes whatever is open (a flyout, a text edit); with nothing
+open it puts down a pen, the eraser or an armed shape, and only with Select
+already in hand does it clear the selection.
 
 H (hand) and Z (zen) keep working as on any tab, and every modifier shortcut
 (undo, copy, delete and the rest) is unchanged. With a single note or text
 box selected, typing a character still edits it rather than switching tool.
-View-role visitors get V only. Each of these dock buttons shows its key small
-in its bottom-right corner, as the Toolbar layout's strip does (a tool bar is
+View-role visitors get V and Escape only. Each dock button and Shapes option
+with a key shows it small in its bottom-right corner, as the Toolbar layout's strip does (a tool bar is
 where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 ## Accessibility

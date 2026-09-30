@@ -2958,6 +2958,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
           pickSelect: whiteboardDock.pickSelect,
           pickPen: whiteboardDock.pickPen,
           pickEraser: whiteboardDock.pickEraser,
+          pickSticky: whiteboardDock.pickSticky,
+          pickText: whiteboardDock.pickText,
+          pickShape: whiteboardDock.pickShape,
         }
       : null,
   });

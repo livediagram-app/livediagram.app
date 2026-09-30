@@ -188,5 +188,24 @@ describe('WhiteboardDock keys', () => {
     expect(keyOf(/^Second pen/)).toBe('2');
     expect(keyOf(/^Third pen/)).toBe('3');
     expect(keyOf(/^Eraser/)).toBe('E');
+    expect(keyOf(/^Sticky note/)).toBe('N');
+    expect(keyOf(/^Text/)).toBe('T');
+  });
+
+  it('offers rectangle, ellipse, diamond, line and arrow with their keys, and no triangle', () => {
+    renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
+    const group = screen.getByRole('group', { name: 'Shapes' });
+    const options = [...group.querySelectorAll('button')].map((b) => [
+      b.getAttribute('aria-label'),
+      b.getAttribute('aria-keyshortcuts'),
+    ]);
+    expect(options).toEqual([
+      ['Rectangle', 'R'],
+      ['Ellipse', 'O'],
+      ['Diamond', 'D'],
+      ['Line', 'L'],
+      ['Arrow', 'A'],
+    ]);
   });
 });

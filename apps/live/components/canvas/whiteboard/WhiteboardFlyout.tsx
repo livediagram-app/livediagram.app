@@ -98,12 +98,15 @@ export function FlyoutOption({
   onPick,
   children,
   wide = false,
+  shortcut,
 }: {
   label: string;
   selected: boolean;
   onPick: () => void;
   children: ReactNode;
   wide?: boolean;
+  // The key that picks this option from anywhere on the board.
+  shortcut?: string;
 }) {
   return (
     <Tooltip label={label}>
@@ -111,12 +114,21 @@ export function FlyoutOption({
         type="button"
         aria-label={label}
         aria-pressed={selected}
+        aria-keyshortcuts={shortcut}
         onClick={onPick}
-        className={`flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:bg-slate-800 ${
+        className={`relative flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:bg-slate-800 ${
           wide ? 'px-3' : 'w-10'
         } ${selected ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15' : ''}`}
       >
         {children}
+        {shortcut ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400"
+          >
+            {shortcut}
+          </span>
+        ) : null}
       </button>
     </Tooltip>
   );

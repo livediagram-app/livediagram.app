@@ -221,6 +221,7 @@ export function WhiteboardDock({
               <FlyoutOption
                 key={s.id}
                 label={s.label}
+                shortcut={WHITEBOARD_TOOL_KEYS[s.id]}
                 selected={false}
                 onPick={() => pickAndClose(() => model.pickShape(s.id))}
               >
@@ -349,6 +350,7 @@ export function WhiteboardDock({
         {item({
           key: 'sticky',
           label: 'Sticky note',
+          shortcut: WHITEBOARD_TOOL_KEYS.sticky,
           icon: <StickyGlyph />,
           pressed: tool === 'sticky',
           onPress: () => pickAndClose(model.pickSticky),
@@ -356,6 +358,7 @@ export function WhiteboardDock({
         {item({
           key: 'text',
           label: 'Text',
+          shortcut: WHITEBOARD_TOOL_KEYS.text,
           icon: <TextGlyph />,
           pressed: tool === 'text',
           onPress: () => pickAndClose(model.pickText),

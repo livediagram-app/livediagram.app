@@ -236,10 +236,14 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - `EditorKeyboardShortcutsDeps.whiteboard` (`{ pickSelect, pickPen, pickEraser }`, null off a whiteboard);
   `useEditorState` passes the dock's actions.
 - On a whiteboard the listener consults only `WHITEBOARD_VIEW_KEYS` (V select, H hand, Z zen) and,
-  for editors, `WHITEBOARD_EDIT_KEYS` (1, 2, 3 pens, E eraser), then stops: the diagram tab's
+  for editors, `WHITEBOARD_EDIT_KEYS` (1, 2, 3 pens; E eraser; N note; T text; R, O, D, L, A the dock
+  shapes via `pickShape`, drawn with the pen in hand), then stops: the diagram tab's
   `VIEW_TOOL_KEYS` / `EDIT_KEYS` never run there. Type-to-edit and modifier shortcuts run first,
   unchanged.
-- `WHITEBOARD_TOOL_KEYS` gives each dock button its key: shown bottom-right (slate-500 / dark
+- Escape: the narrow Escape listener also arms for a whiteboard eraser and calls `pickSelect`; a
+  pen, note, text or shape intent is `pendingDraw` and is cancelled as on any tab, which reads as
+  Select. Only with Select in hand does Escape clear the selection.
+- `WHITEBOARD_TOOL_KEYS` gives each dock button and Shapes option its key: shown bottom-right (slate-500 / dark
   slate-400, 4.5:1) and in `aria-keyshortcuts`.
 
 ### Still canvas
