@@ -94,8 +94,8 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 - **An edit toolbar** floats above the path while in edit mode, with the selected nodes' **node
   type** as a three-way choice (**Corner**, **Mirrored**, **Aligned**, showing the shared type or
   none), **Delete point**, **Close path** / **Open path** (opening cuts the path at the selected
-  node), and **Done**. Every button also has its key: none for the types beyond Alt-click and
-  double-click below, Backspace / Delete, J, Escape. It is how a finger, which has no Alt or
+  node), and **Done**. Delete point, Close path and Done also have keys (Backspace / Delete,
+  J, Escape); the node type is also toggled by Alt-click and double-click (below). It is how a finger, which has no Alt or
   keyboard, reaches everything; long-pressing a node selects it and brings the toolbar near it.
 - **Setting the node type** from the toolbar converts the selected nodes: **Corner** removes their
   handles; **Mirrored** gives each mirrored handles (their own, averaged in angle and length, or
