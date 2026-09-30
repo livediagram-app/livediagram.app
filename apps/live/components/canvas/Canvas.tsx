@@ -635,6 +635,7 @@ export function Canvas(props: CanvasProps) {
         // setting cursor here too, the user would see the OS default
         // arrow in that gap while a draw-to-size intent is pending.
         ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+        ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
       }}
     >
       {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
@@ -693,6 +694,7 @@ export function Canvas(props: CanvasProps) {
             ? ''
             : undefined
         }
+        data-path-cursor={pathTool.cursor ? '' : undefined}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
@@ -713,6 +715,8 @@ export function Canvas(props: CanvasProps) {
           // wrapper drops its Tailwind cursor- class above when
           // pendingDraw is set, leaving no cursor specified at all.
           ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+          // A path in its edit mode says what a press would do (usePathTool).
+          ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
         }}
       >
         {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted

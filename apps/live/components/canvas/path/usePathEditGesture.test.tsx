@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPath, type PathAnchor, type PathElement } from '@livediagram/document';
 import { usePathEditGesture } from './usePathEditGesture';
+import { PATH_ADD_CURSOR } from '@/lib/path-edit';
 
 // A path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing").
 
@@ -359,6 +360,20 @@ describe('usePathEditGesture', () => {
     expect(enter.defaultPrevented).toBe(false);
     expect(s.onLeave).not.toHaveBeenCalled();
     bar.remove();
+  });
+
+  it('shows what a press would do under the pointer, and keeps it through a drag', () => {
+    const s = setup(open());
+    s.move(300, 100);
+    expect(s.hook.result.current.cursor).toBe('move');
+    s.move(200, 101);
+    expect(s.hook.result.current.cursor).toBe(PATH_ADD_CURSOR);
+    s.move(600, 600);
+    expect(s.hook.result.current.cursor).toBe('default');
+    s.press(300, 100);
+    s.move(360, 400);
+    expect(s.hook.result.current.cursor).toBe('move');
+    s.up(360, 400);
   });
 
   it('opens edit mode on Enter with one path selected', () => {

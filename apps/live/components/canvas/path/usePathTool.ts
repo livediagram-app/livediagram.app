@@ -227,6 +227,8 @@ export function usePathTool({
 
   return {
     toolbar,
+    // The cursor a path in its edit mode owns (docs/specs/023-whiteboard/path-tool.md "Cursors in edit mode").
+    cursor: edit.cursor,
     beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
     beginEditPress: (e: React.PointerEvent) => !onToolbar(e) && edit.beginEditPress(e),
     handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,

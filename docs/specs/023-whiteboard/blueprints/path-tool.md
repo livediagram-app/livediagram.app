@@ -252,6 +252,8 @@ normalise(node − in))` (the handles' averaged angle) and the mean of their len
 - **Snapping** (dragging nodes): per axis, the pressed node's candidate is the nearest `x` (and `y`)
   among the path's unmoved nodes and its own original position, within `PATH_SNAP_PX / zoom`; the
   delta shifts to match and a guide line is shown for each axis that snapped.
+- **Cursors** (`pathEditCursor`): between gestures a window `pointermove` hit-tests what a press would land on: `move` over a node or handle, `PATH_ADD_CURSOR` (a pen nib with a plus, hotspot at its tip, `copy` fallback) over a segment, `default` over the fill, other elements and empty space; a gesture keeps the cursor of what it pressed. `usePathTool.cursor` sets it on `<main>` and the canvas layer, whose `data-path-cursor` makes every descendant inherit it (`globals.css`, beside `data-pen-in-hand`). A path in its edit mode never takes the typed-label look (`editingLook`: no `cursor-text`, no `zIndex: 10` lift), and the element menu that rides beside a label being typed never opens for it (`useEditModeContextMenu`). `<main>` is `select-none`, so no drag selects text.
+- **On top**: `PathEditLayer` and `PathDraftLayer` draw at `zIndex: PATH_OVERLAY_Z` (40) in the canvas layer, above every element, the selection chrome (30) and a lifted label (10), whatever the path's order, layer or fill; the edit toolbar floats in the overlay band above the canvas like the selection toolbar.
 - **The edit toolbar** (`PathEditToolbar`, `role="toolbar"`, "Edit path", `data-floating-panel`): in
   screen space above the path's box (or just above the long-pressed node), clamped to the canvas;
   a radio group "Node type" (Corner, Mirrored, Aligned; disabled with no node selected), **Delete
@@ -475,6 +477,7 @@ numbers only).
 | Constant                 | Value        | Provenance                             | Safe range |
 | ------------------------ | ------------ | -------------------------------------- | ---------- |
 | `PATH_NODE_HIT_PX`       | 12           | spec (24 × 24 targets)                 | 12 to 20   |
+| `PATH_OVERLAY_Z`         | 40           | above the selection chrome (30)        | > 30       |
 | `PATH_TOUCH_HIT_PX`      | 16           | spec (a finger radius)                 | 16 to 24   |
 | `PATH_LONG_PRESS_MS`     | 500          | the canvas long-press (`useLongPress`) | 400 to 700 |
 | `PATH_CLOSE_PX`          | 8            | spec (a finger: `PATH_TOUCH_HIT_PX`)   | 6 to 12    |

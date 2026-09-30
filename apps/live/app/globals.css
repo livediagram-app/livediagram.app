@@ -625,6 +625,13 @@
   translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
 }
 
+/* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
+   the top element (its --iso-z) plus the arrows' nudge, so the handles stay above everything in 3D,
+   where painting goes by z rather than by z-index. */
+[data-iso] [data-selection-grips] {
+  translate: 0 0 calc(2px + var(--iso-z, 0) * 0.01px);
+}
+
 /* Rich-text notes (docs/specs/009-elements/rich-text-notes.md): the ink a linked run takes. Declared as a
    variable rather than a Tailwind class because the note editor paints its
    spans imperatively with inline CSS (see note-run-style.ts) and so can't
@@ -713,7 +720,10 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 
 /* A whiteboard pen in hand draws wherever it presses (docs/specs/023-whiteboard/whiteboard.md "Pens"):
-   elements, handles and labels under it keep the pen cursor instead of their own. */
-[data-pen-in-hand] * {
+   elements, handles and labels under it keep the pen cursor instead of their own. A path in its
+   edit mode owns the cursor the same way (docs/specs/023-whiteboard/path-tool.md "Cursors in edit
+   mode"): no label, element or overlay underneath lends its own, a text cursor least of all. */
+[data-pen-in-hand] *,
+[data-path-cursor] * {
   cursor: inherit !important;
 }

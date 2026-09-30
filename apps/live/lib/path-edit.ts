@@ -402,3 +402,26 @@ export function dragNodes(
     guides: snapped ? snap.guides : null,
   };
 }
+
+// A pen nib with a plus: a press here adds a node, a drag bends the segment. Black on a white rim,
+// so it reads on either board; the hotspot is the nib's tip.
+const PEN_PLUS_SVG =
+  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'>" +
+  "<g fill='none' stroke-linecap='round' stroke-linejoin='round'>" +
+  "<path d='M3 3 L6.5 12 L11 16 L16 11 L12 6.5 Z M3 3 L9 9' stroke='white' stroke-width='4'/>" +
+  "<path d='M3 3 L6.5 12 L11 16 L16 11 L12 6.5 Z M3 3 L9 9' stroke='black' stroke-width='1.5'/>" +
+  "<path d='M18 15 V23 M14 19 H22' stroke='white' stroke-width='4'/>" +
+  "<path d='M18 15 V23 M14 19 H22' stroke='black' stroke-width='1.6'/>" +
+  '</g></svg>';
+export const PATH_ADD_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(PEN_PLUS_SVG)}") 3 3, copy`;
+
+/**
+ * The cursor edit mode shows over what a press would land on (docs/specs/023-whiteboard/path-tool.md
+ * "Cursors in edit mode"): move over a node or handle, the pen with a plus over a segment, the
+ * arrow elsewhere, the fill included. Never a text cursor.
+ */
+export function pathEditCursor(hit: PathEditHit): string {
+  if (hit.kind === 'node' || hit.kind === 'handle') return 'move';
+  if (hit.kind === 'segment') return PATH_ADD_CURSOR;
+  return 'default';
+}

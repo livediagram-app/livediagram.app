@@ -2,6 +2,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { PathEditLayer } from './PathEditLayer';
+import { PathDraftLayer } from './PathDraftLayer';
 
 // docs/specs/023-whiteboard/path-tool.md "Editing": corner nodes draw as squares, smooth ones as circles.
 describe('PathEditLayer', () => {
@@ -37,5 +38,40 @@ describe('PathEditLayer', () => {
     expect(nodes[1]!.getAttribute('r')).toBe('2');
     expect(nodes[1]!.getAttribute('class')).toMatch(/^fill-brand-600/);
     expect(container.querySelectorAll('[data-path-handle]')).toHaveLength(2);
+  });
+});
+
+describe('the path overlays stay on top (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+  it('stack above every element, a label being typed included', () => {
+    const { container } = render(
+      <PathEditLayer
+        frame={{ x: 0, y: 0, width: 10, height: 10 }}
+        anchors={[
+          { x: 0, y: 0, mode: 'corner' },
+          { x: 10, y: 10, mode: 'corner' },
+        ]}
+        closed={false}
+        selected={new Set()}
+        box={null}
+        guides={null}
+        zoom={1}
+      />,
+    );
+    const svg = container.querySelector('[data-path-edit]') as SVGElement;
+    // Above the selection chrome (30) and an element lifted to type its label (10).
+    expect(Number(svg.style.zIndex)).toBeGreaterThan(30);
+    const draft = render(
+      <PathDraftLayer
+        element={null}
+        stroke="#000"
+        fill="none"
+        anchors={[{ x: 0, y: 0, mode: 'corner' }]}
+        active={0}
+        band={null}
+        ring={null}
+        zoom={1}
+      />,
+    ).container.querySelector('[data-path-overlay]') as SVGElement;
+    expect(Number(draft.style.zIndex)).toBeGreaterThan(30);
   });
 });

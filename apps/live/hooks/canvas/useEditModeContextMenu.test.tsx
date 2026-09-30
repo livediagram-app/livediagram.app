@@ -72,3 +72,30 @@ describe('useEditModeContextMenu', () => {
     document.body.removeChild(layer);
   });
 });
+
+describe('a path in its edit mode (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+  it('never opens the element menu: its edit mode is its points, with its own toolbar', () => {
+    const path = {
+      id: 'p1',
+      type: 'path',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      nodes: [],
+      closed: false,
+    } as unknown as Element;
+    const setContextMenu = vi.fn();
+    const measure = vi.spyOn(document, 'querySelector');
+    renderHook(() =>
+      useEditModeContextMenu({
+        editingId: 'p1',
+        elements: [path],
+        isReadOnly: false,
+        setContextMenu,
+      }),
+    );
+    expect(measure).not.toHaveBeenCalledWith('[data-element-id="p1"]');
+    measure.mockRestore();
+  });
+});

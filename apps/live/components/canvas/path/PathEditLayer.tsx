@@ -2,7 +2,7 @@
 
 import type { PathAnchor, PathElement } from '@livediagram/document';
 import { visibleHandles, type HandleSide } from '@/lib/path-edit';
-import { HandleMarker, NodeMarker, OVERLAY_SVG_CLASS } from './path-markers';
+import { HandleMarker, NodeMarker, OVERLAY_SVG_CLASS, PATH_OVERLAY_Z } from './path-markers';
 import type { PathGuides } from './usePathEditGesture';
 
 type Point = { x: number; y: number };
@@ -45,7 +45,12 @@ export function PathEditLayer({
   const ys = anchors.map((a) => a.y);
   const over = GUIDE_OVERHANG_PX / zoom;
   return (
-    <svg className={OVERLAY_SVG_CLASS} aria-hidden data-path-edit="">
+    <svg
+      className={OVERLAY_SVG_CLASS}
+      style={{ zIndex: PATH_OVERLAY_Z }}
+      aria-hidden
+      data-path-edit=""
+    >
       <g transform={rotation % 360 !== 0 ? `rotate(${rotation} ${cx} ${cy})` : undefined}>
         {guides?.x !== undefined ? (
           <line

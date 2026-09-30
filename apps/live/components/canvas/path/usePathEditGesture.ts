@@ -25,6 +25,7 @@ import {
   insertNodeAt,
   moveHandle,
   nodesInBox,
+  pathEditCursor,
   pathEditHit,
   toLocal,
   toWorld,
@@ -100,6 +101,8 @@ export function usePathEditGesture({
   const [guides, setGuides] = useState<PathGuides | null>(null);
   // The node a long-press chose: the toolbar comes to it (null: over the path).
   const [toolbarAt, setToolbarAt] = useState<number | null>(null);
+  // What a press would do under the pointer (never a text cursor); held through a gesture.
+  const [cursor, setCursor] = useState('default');
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureRef = useRef<Gesture | null>(null);
   const lastNodePressRef = useRef<{ id: string; node: number; at: number } | null>(null);
@@ -291,6 +294,7 @@ export function usePathEditGesture({
         held: false,
         draft: null,
       });
+    setCursor(pathEditCursor(hit));
     switch (hit.kind) {
       case 'node': {
         const now = performance.now();
@@ -388,6 +392,30 @@ export function usePathEditGesture({
     return () => window.removeEventListener('keydown', listener, { capture: true });
   }, [editingId]);
 
+  // The cursor follows what a press would land on, between gestures.
+  const onHover = useEffectEvent((ev: PointerEvent) => {
+    const el = element;
+    if (!el || gestureRef.current || ev.pointerType === 'touch') return;
+    const world = toCanvas(ev.clientX, ev.clientY);
+    if (!world) return;
+    const strokePx = BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE];
+    const hit = pathEditHit(
+      pathAnchors(el),
+      el.closed,
+      selectedRef.current,
+      toLocal(el, world),
+      zoomRef.current,
+      strokePx,
+    );
+    setCursor(pathEditCursor(hit));
+  });
+  useEffect(() => {
+    if (!editingId) return;
+    const listener = (ev: PointerEvent) => onHover(ev);
+    window.addEventListener('pointermove', listener);
+    return () => window.removeEventListener('pointermove', listener);
+  }, [editingId]);
+
   // Enter with one path selected opens its edit mode, from the keyboard.
   const onEnter = useEffectEvent((e: KeyboardEvent) => {
     if (e.key !== 'Enter' || !selectedPathId || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -435,6 +463,7 @@ export function usePathEditGesture({
   return {
     editing: element !== null,
     toolbarAt: element ? toolbarAt : null,
+    cursor: element ? cursor : null,
     setNodeType,
     deleteSelected,
     toggleClosed,

@@ -20,6 +20,7 @@ import {
   openPathAt,
   setNodeType,
   sharedNodeType,
+  pathEditCursor,
   pathEditHit,
   snapNodeDelta,
   toLocal,
@@ -340,5 +341,16 @@ describe('dragNodes', () => {
     const out = dragNodes(anchors, new Set([1]), 1, { x: 30, y: 2 }, true, 8);
     expect(out.anchors[1]!.y).toBeCloseTo(60);
     expect(out.guides).toBeNull();
+  });
+});
+
+describe('pathEditCursor (docs/specs/023-whiteboard/path-tool.md "Cursors in edit mode")', () => {
+  it('moves over nodes and handles, adds over segments, points elsewhere, never a text cursor', () => {
+    expect(pathEditCursor({ kind: 'node', node: 0 })).toBe('move');
+    expect(pathEditCursor({ kind: 'handle', node: 0, side: 'in' })).toBe('move');
+    expect(pathEditCursor({ kind: 'segment', segment: 0, t: 0.5 })).toMatch(
+      /^url\(.+\) \d+ \d+, copy$/,
+    );
+    expect(pathEditCursor({ kind: 'empty' })).toBe('default');
   });
 });

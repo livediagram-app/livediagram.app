@@ -42,6 +42,9 @@ export function useEditModeContextMenu({
       // and a menu popping open beside every note is noise — right-click /
       // long-press still opens the element menu deliberately.
       if (el.type === 'sticky') return;
+      // A path's edit mode is its points, with a toolbar of its own
+      // (docs/specs/023-whiteboard/path-tool.md "Editing"): no menu rides beside it.
+      if (el.type === 'path') return;
       // The element's on-screen rect. A freshly created element (double-click
       // text, palette drop) enters edit mode on its mount commit, so this
       // effect measures while the pop-in entry animation is still at scale ~0

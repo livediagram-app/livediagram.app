@@ -9,7 +9,7 @@ import {
   type PathElement,
 } from '@livediagram/document';
 import { PathSvg } from './PathSvg';
-import { NodeMarker, HandleMarker, OVERLAY_SVG_CLASS } from './path-markers';
+import { NodeMarker, HandleMarker, OVERLAY_SVG_CLASS, PATH_OVERLAY_Z } from './path-markers';
 import type { PathRing } from './usePathDrawGesture';
 
 type Point = { x: number; y: number };
@@ -63,7 +63,12 @@ export function PathDraftLayer({
           <PathSvg element={element} stroke={stroke} fill={fill} />
         </div>
       ) : null}
-      <svg className={OVERLAY_SVG_CLASS} aria-hidden data-path-overlay="">
+      <svg
+        className={OVERLAY_SVG_CLASS}
+        style={{ zIndex: PATH_OVERLAY_Z }}
+        aria-hidden
+        data-path-overlay=""
+      >
         {band ? (
           <path
             data-path-band=""
