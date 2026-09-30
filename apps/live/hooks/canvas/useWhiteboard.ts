@@ -148,8 +148,8 @@ export function useWhiteboard(deps: Deps) {
   };
 
   const pickShape = (id: WhiteboardShapeId) => {
-    // Drawn with the pen in hand: its colour and width (docs/specs/023-whiteboard/whiteboard.md "Shapes").
-    pickIntent(whiteboardShapeIntent(id, activePen));
+    // Plain: a pen never colours another tool (docs/specs/023-whiteboard/whiteboard.md "Shapes").
+    pickIntent(whiteboardShapeIntent(id));
   };
 
   const toggleRecognition = () => {

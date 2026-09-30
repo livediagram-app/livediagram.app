@@ -206,17 +206,17 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
 - The dock renders when `whiteboard && !readOnly && !chromeHidden`.
 
-### Shapes with the pen in hand
+### Shapes are plain ink
 
-- `whiteboardShapeIntent(id, pen)` arms the flyout's intent with `pen: { colour, width }`
-  (`PendingDraw` shape and arrow intents carry an optional `pen`).
-- `useShapeDrawing.commitDraw` on a whiteboard applies `applyWhiteboardPen(el, pen)`: a shape gets
-  `fillColor: 'transparent'`, `strokeWidth: nearestBorderStroke(width)` and `strokeColor` when the
-  pen has a colour; a line or arrow gets `strokeWidth: width` (px) and the colour.
-- `CanvasDrawPreview` takes `whiteboardInk` and previews: a whiteboard pen stroke in
-  `colour ?? ink` at `width` screen px (the committed stroke is non-scaling); a pen line at
-  `width × zoom`; a pen shape solid and unfilled, SVG outlines at the border px, CSS-bordered ones
-  at `px × zoom` (`PenShapePreview`).
+- A pen is a separate tool: pens do not set the colour of other tools. `whiteboardShapeIntent(id)`
+  arms the flyout's intent with `board: true` (`PendingDraw` shape and arrow intents).
+- `useShapeDrawing.commitDraw` on a whiteboard applies `boardShape(el)`: a shape gets
+  `fillColor: 'transparent'` and nothing else, so it draws in the ink at the default width; a line or
+  arrow is left unpainted. Style memory is skipped.
+- `CanvasDrawPreview` previews a board shape in the ink: a line at the default arrow width × zoom, a
+  shape solid and unfilled at the default border width (`PenShapePreview`).
+- A recognised shape is a pen stroke tidied up and keeps that pen's colour and weight
+  (`commit-freehand.ts`).
 
 ### Pen strokes: exact thickness, no guides
 

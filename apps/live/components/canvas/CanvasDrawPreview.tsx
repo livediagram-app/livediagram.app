@@ -1,5 +1,11 @@
 import type { RefObject } from 'react';
-import { BORDER_STROKE_PX, isSelfDrawingShape, nearestBorderStroke } from '@livediagram/document';
+import {
+  ARROW_THICKNESS_PX,
+  BORDER_STROKE_PX,
+  DEFAULT_ARROW_THICKNESS,
+  DEFAULT_BORDER_STROKE,
+  isSelfDrawingShape,
+} from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -199,16 +205,16 @@ export function CanvasDrawPreview({
                   aria-hidden
                   className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
                 >
-                  {pendingDraw.pen ? (
-                    // A whiteboard line: the pen's colour and width, which on a
+                  {pendingDraw.board ? (
+                    // A whiteboard line: the ink at the default width, which on a
                     // line scales with the zoom, as the committed line does.
                     <line
                       x1={x1}
                       y1={y1}
                       x2={x2}
                       y2={y2}
-                      stroke={inkOf(pendingDraw.pen.colour)}
-                      strokeWidth={pendingDraw.pen.width * viewportZoom}
+                      stroke={inkOf(null)}
+                      strokeWidth={ARROW_THICKNESS_PX[DEFAULT_ARROW_THICKNESS] * viewportZoom}
                       strokeLinecap="round"
                     />
                   ) : (
@@ -276,11 +282,11 @@ export function CanvasDrawPreview({
                   height: heightPx,
                 }}
               >
-                {pendingDraw.type === 'shape' && pendingDraw.pen ? (
+                {pendingDraw.type === 'shape' && pendingDraw.board ? (
                   <PenShapePreview
                     kind={pendingDraw.kind}
-                    colour={inkOf(pendingDraw.pen.colour)}
-                    widthPx={BORDER_STROKE_PX[nearestBorderStroke(pendingDraw.pen.width)]}
+                    colour={inkOf(null)}
+                    widthPx={BORDER_STROKE_PX[DEFAULT_BORDER_STROKE]}
                     usesSvg={usesSvg}
                     radius={radius}
                     zoom={viewportZoom}
@@ -310,7 +316,7 @@ export function CanvasDrawPreview({
 }
 
 // A whiteboard shape while it is drawn: the outline the committed shape will
-// have, in the pen's colour and weight, unfilled. SVG-rendered outlines keep a
+// have, in the board's ink at the default weight, unfilled. SVG-rendered outlines keep a
 // screen-px stroke; CSS-bordered ones (rectangle, ellipse) scale with the zoom,
 // as the committed shapes do.
 function PenShapePreview({

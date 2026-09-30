@@ -19,10 +19,6 @@ import { EMBED_PROVIDER_LABEL, eventStormingNote } from '@livediagram/document';
 // circle shape, line for an arrow, dashed box for text / sticky /
 // image, etc.) and the editor's commit handler can mint the right
 // element type from the same gesture.
-// The pen a whiteboard shape is drawn with: its colour (null = the board's
-// ink) and width in px.
-export type WhiteboardPenInk = { colour: string | null; width: number };
-
 export type PendingDraw =
   // `iconId` (+ seed `label`) ride the shape intent for the `icon` kind, so a
   // palette icon / tech icon draws to size exactly like a shape (tap to drop,
@@ -44,8 +40,9 @@ export type PendingDraw =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
-      // A whiteboard shape drawn with the pen in hand (docs/specs/023-whiteboard/whiteboard.md "Shapes").
-      pen?: WhiteboardPenInk;
+      // A whiteboard shape (docs/specs/023-whiteboard/whiteboard.md "Shapes"): drawn in the board's ink,
+      // unfilled, at the default width. Pens never colour it.
+      board?: true;
     }
   | { type: 'text' }
   // `fill` + `esKind` ride the sticky intent for the Event Storming tiles
@@ -73,7 +70,7 @@ export type PendingDraw =
   | { type: 'video'; provider?: EmbedProvider }
   // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
   // (docs/specs/023-whiteboard/whiteboard.md), which differ only in their heads.
-  | { type: 'arrow'; ends?: ArrowEnds; pen?: WhiteboardPenInk }
+  | { type: 'arrow'; ends?: ArrowEnds; board?: true }
   // A composite Component (docs/specs/008-canvas/canvas-and-palette.md): banner / hero / header / callout / stat /
   // process / avatar. Draws to size exactly like a shape — a tap drops it at
   // its natural size, a drag scales the whole group to the dragged box.

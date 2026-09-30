@@ -53,13 +53,15 @@ A whiteboard trades the editor's full chrome for one **floating dock** at the
 bottom centre of the canvas, like Microsoft Whiteboard's.
 
 - **Hidden on a whiteboard tab:** the palette (floating and the Toolbar
-  layout's strip), the quick style panel beside a selection, the format
-  painter, the highlighter (a whiteboard's pens are its markers), the Theme &
+  layout's strip), the format painter, the highlighter (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
   collaboration, comments, layers, activity and zoom controls stay, because
   they are about the document, not about drawing.
+- **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
+  it is how a shape, line, text box or stroke gets another colour or width
+  once drawn, since the pens colour only their own strokes.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
 - **The dock holds, left to right:**
@@ -69,7 +71,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   4. **Sticky note**.
   5. **Text**.
   6. **Shapes**: a small flyout of rectangle, ellipse, diamond, line
-     and arrow, drawn with the pen in hand (see [Shapes](#shapes)).
+     and arrow (see [Shapes](#shapes)). It opens on hover as well as on a
+     press, and closes a moment after the pointer leaves both it and the
+     button.
   7. **Shape recognition** toggle (see [Shape recognition](#shape-recognition)).
   8. **Undo** / **Redo**.
   9. **More**: board background and, when the operator asks for it, the full
@@ -138,12 +142,16 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 ## Shapes
 
-- A shape or line from the dock's Shapes flyout is drawn **with the pen in
-  hand**: its outline in the pen's colour (none for Ink, so it follows the
-  board), at the pen's weight (the exact width on a line or arrow, the
-  nearest border width on a shape), with no fill.
-- It previews that way while it is dragged out: solid, in the pen's colour
-  and weight, unfilled.
+- **A pen is a separate tool: pens do not set the colour of the other
+  tools.** A shape, line or arrow from the Shapes flyout (or its key), a
+  sticky and a text box are drawn in the board's ink at their default width,
+  whichever pen was last in hand. A shape has no fill.
+- It previews that way while it is dragged out: solid, in the ink, unfilled.
+- Another colour or width is the quick style panel's job, once the shape is
+  drawn.
+- A **recognised** shape (see [Shape recognition](#shape-recognition)) is
+  different: it is a pen stroke tidied up, so it keeps that pen's colour and
+  weight.
 
 ## Nothing animates in
 
@@ -259,7 +267,6 @@ not apply: a whiteboard has no palette to mirror):
 | L      | Line                              |
 | A      | Arrow                             |
 
-The shape keys draw with the pen in hand, as the Shapes flyout does.
 Escape first closes whatever is open (a flyout, a text edit); with nothing
 open it puts down a pen, the eraser or an armed shape, and only with Select
 already in hand does it clear the selection.

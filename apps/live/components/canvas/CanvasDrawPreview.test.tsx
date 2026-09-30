@@ -48,26 +48,27 @@ describe('CanvasDrawPreview on a whiteboard', () => {
     expect(container.querySelector('path')!.getAttribute('stroke')).toBe('#1c1917');
   });
 
-  it('previews a line in the pen colour, solid, scaled with the zoom like the line itself', () => {
+  it('previews a line in the ink at its default width, solid, scaled with the zoom', () => {
     const { container } = render(
       <CanvasDrawPreview
         {...base}
         drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
-        pendingDraw={{ type: 'arrow', ends: 'none', pen: { colour: '#2f9e44', width: 4 } }}
+        pendingDraw={{ type: 'arrow', ends: 'none', board: true }}
       />,
     );
     const line = container.querySelector('line')!;
-    expect(line.getAttribute('stroke')).toBe('#2f9e44');
-    expect(line.getAttribute('stroke-width')).toBe('8');
+    expect(line.getAttribute('stroke')).toBe('#1c1917');
+    // The default 2 px line at zoom 2.
+    expect(line.getAttribute('stroke-width')).toBe('4');
     expect(line.getAttribute('stroke-dasharray')).toBeNull();
   });
 
-  it('previews a rectangle with a solid pen-coloured outline and no fill', () => {
+  it('previews a rectangle with a solid outline in the ink and no fill', () => {
     const { container } = render(
       <CanvasDrawPreview
         {...base}
         drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
-        pendingDraw={{ type: 'shape', kind: 'square', pen: { colour: null, width: 4 } }}
+        pendingDraw={{ type: 'shape', kind: 'square', board: true }}
       />,
     );
     const box = container.querySelector('[data-pen-preview]') as HTMLElement;
@@ -83,7 +84,7 @@ describe('CanvasDrawPreview rectangle corners', () => {
       <CanvasDrawPreview
         {...base}
         drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
-        pendingDraw={{ type: 'shape', kind: 'square', pen: { colour: null, width: 4 } }}
+        pendingDraw={{ type: 'shape', kind: 'square', board: true }}
       />,
     );
     const box = container.querySelector('[data-pen-preview]') as HTMLElement;

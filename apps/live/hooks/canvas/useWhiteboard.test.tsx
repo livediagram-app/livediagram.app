@@ -89,7 +89,7 @@ describe('useWhiteboard', () => {
     expect(stored).toMatchObject({ recognise: true, eraserMode: 'partial' });
   });
 
-  it('arms a dock shape with the pen in hand', () => {
+  it('arms a dock shape in the ink, whatever pen was in hand', () => {
     const { deps, hook } = setup(board());
     act(() => hook.result.current.pickPen('second'));
     hook.rerender({ ...deps });
@@ -97,7 +97,7 @@ describe('useWhiteboard', () => {
     expect(deps.beginDraw).toHaveBeenLastCalledWith({
       type: 'shape',
       kind: 'diamond',
-      pen: { colour: '#1d7afc', width: 1.5 },
+      board: true,
     });
   });
 
