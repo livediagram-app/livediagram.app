@@ -70,6 +70,12 @@ With the Path tool in hand:
   shows a closing ring; a click closes the path, a drag closes it and shapes the closing segment's
   handle.
 - **Backspace / Delete** removes the last placed node and keeps drawing; with none left, it cancels.
+- **Undo while drawing** (Ctrl+Z / Cmd+Z, or the dock's Undo) steps back **one node at a time**
+  on the path being drawn: it removes the last placed node (with its handles) and keeps drawing,
+  and with none left it cancels the path, never touching the board's history. **Redo** (Ctrl+Shift+Z
+  / Cmd+Shift+Z, Ctrl+Y, or the dock's Redo) puts back the nodes undone this way, in order, until a
+  new node is placed. Once the path is committed, undo and redo work on the board as usual (the
+  committed path is one step).
 - **Finishing an open path:** **Enter**, **Escape**, **double-click**, or picking another tool
   commits it (two nodes or more). **Escape** with fewer than two nodes cancels; a further Escape
   puts the tool down.
