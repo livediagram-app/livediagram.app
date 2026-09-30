@@ -101,11 +101,13 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Shapes, left to right** (With shapes mode):
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
-     **Arrow, Rectangle, Ellipse, Diamond**, in that order.
-  2. A **separator**.
-  3. **Two frequent shape slots**: the two shape kinds this user picks most
-     often that are not already on the bar (see [Shape slots](#shape-slots)).
-  4. **Shapes**: one button for every shape. It opens its flyout on hover
+     **Arrow, Rectangle, Ellipse**, in that order.
+  2. **One most-used slot**: the shape kind this user picks most often that
+     is not pinned.
+  3. **Two last-used slots**: the two shape kinds this user picked most
+     recently that are neither pinned nor in the most-used slot.
+  4. A **separator**.
+  5. **Shapes**: one button for every shape. It opens its flyout on hover
      (a mouse or a pen, never a finger) as well as on a press, and closes a
      moment after the pointer leaves both it and the button; a press on a
      hover-opened flyout keeps it open. The flyout is small and sweet:
@@ -151,34 +153,38 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 The shapes group learns and keeps the shapes a user reaches for.
 
-- **Frequent slots:** two buttons between the separator and **Shapes**, each
-  arming its shape kind like a dock shape (plain ink, its kind's tool style),
-  with the kind's own preview as its icon and its name as its label. They hold
-  the two shape kinds this user has **picked most often** on whiteboards (from
-  the Shapes flyout's set or its search, a frequent slot, or a shape key), counting
-  every pick, excluding kinds **already on the bar** (the pinned shapes). Ties
-  go to the kind picked most recently. With too little history, the empty
-  slots fall back to **Rectangle**, then **Ellipse**, then the next kinds of
-  the Shapes flyout in order, never repeating one on the bar. The slots
-  update when a pick changes the ranking, never while a flyout is open or a
-  drag is in progress, so a slot never moves under the pointer mid-gesture.
-- **Pinned side:** the left of the shapes bar, before the separator. A user
-  who has never changed it has four pins, in this order: **Arrow**,
-  **Rectangle**, **Ellipse**, **Diamond**. Up to **seven** kinds can be pinned.
-- **Pinning:** dragging a frequent slot **to the left of the separator** pins
-  its kind at the drop position. With seven pinned, dropping onto a pinned
-  slot replaces that one; dropping elsewhere is refused, and the dragged slot
-  settles back with the hint "Seven shapes are pinned. Drag one out to swap."
-  Dragging a pinned shape to another place on the pinned side reorders it.
-  The pointer and the drop position show where it will land while dragging;
-  a drag starts after 6 screen px, so a press still picks.
-- **Unpinning only moves a shape off the pinned side**: dragging it **to the
-  right of the separator**, or **Unpin** in its menu. It is not removed or
-  forgotten: its pick count stays, so if it is among this user's two most
-  picked kinds not pinned, it shows in a **frequent slot** at once; otherwise
-  it is still in the Shapes flyout, or its search. Unpinning every shape
-  leaves the pinned side empty, and that is kept: the defaults never come
-  back on their own.
+- **The slots** (one most-used, then two last-used) sit between the pinned
+  shapes and the separator. Each arms its shape kind like a dock shape (plain
+  ink, its kind's tool style), with the kind's own preview as its icon and its
+  name as its label. Picks count from the Shapes flyout's set or its search,
+  a pinned shape, a slot, or a shape key, on whiteboards only.
+  - **Most used:** the kind with the most picks that is not pinned; ties go
+    to the one picked most recently.
+  - **Last used:** the two kinds picked most recently, newest first, that are
+    neither pinned nor the most-used one.
+  - **No kind shows twice** on the bar. With too little history, an empty
+    slot takes the next kind of the Shapes flyout's order (rectangle,
+    ellipse, diamond, cylinder, line, arrow, then the palette catalogue) that
+    is not already on the bar: with the default pins, **Diamond**, then
+    **Cylinder**, then **Line**.
+  - The slots update after a pick, never while a flyout is open or a drag is
+    in progress, so a slot never changes under the pointer mid-gesture.
+- **Pinned side:** the left of the shapes bar, up to the slots. A user who has
+  never changed it has three pins, in this order: **Arrow**, **Rectangle**,
+  **Ellipse**. Up to **seven** kinds can be pinned.
+- **Pinning:** dragging a slot onto the pinned side pins its kind at the drop
+  position; while dragging, a drop marker shows where it will land (there is
+  no permanent divider between pins and slots). With seven pinned, dropping
+  onto a pinned shape replaces that one; dropping elsewhere is refused, and
+  the dragged slot settles back with the hint "Seven shapes are pinned. Drag
+  one out to swap." Dragging a pinned shape to another place on the pinned
+  side reorders it. A drag starts after 6 screen px, so a press still picks.
+- **Unpinning only moves a shape off the pinned side**: dragging it off the
+  pinned side (onto the slots, or anywhere off the bar), or **Unpin** in its
+  menu. It is not removed or forgotten: its picks stay, so it can show at
+  once in the most-used or a last-used slot; otherwise it is still in the
+  Shapes flyout, or its search. Unpinning every shape leaves the pinned side
+  empty, and that is kept: the defaults never come back on their own.
 - **Pinning without a drag:** a right-click or long-press on a slot, or
   Shift+F10 / the context-menu key on a focused slot, offers **Pin to dock**
   (frequent) or **Unpin** (pinned), with the same limit and refusal.
