@@ -425,13 +425,13 @@ export function tokenExpiringEmail(
       heading: 'An API token is about to expire',
       intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your documents.`,
       points: [
-        'Create a fresh token from Explorer, Tokens before this one expires.',
+        'Create a fresh token in Settings, API Tokens before this one expires.',
         'Update whatever uses it (your scripts, or a connected AI tool) with the new token.',
         'Revoke the old token once the switch is done.',
       ],
       outro: 'Tokens last six months; this is the only reminder we send for each one.',
       ctaText: 'Manage your tokens',
-      ctaHref: `${base}/explorer/tokens`,
+      ctaHref: `${base}/explorer?settings=tokens`,
       footer:
         'You’re receiving this because an API token on your livediagram account is nearing its expiry.',
     }),

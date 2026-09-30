@@ -1,8 +1,8 @@
 'use client';
 
-// API token state (docs/specs/015-api/public-api-and-tokens.md), loaded once for a signed-in user so the Explorer
-// sidebar badge, the New-token header popover, and the list pane all read the
-// SAME source. `enabled` gates the fetch (off for guests / when Clerk is not
+// API token state (docs/specs/015-api/public-api-and-tokens.md), loaded for a signed-in user so a consumer's
+// create form and list read the SAME source: the Settings token manager, and
+// the Explorer's timeline token-card menus. `enabled` gates the fetch (off for guests / when Clerk is not
 // configured), mirroring useTeams. Tokens are Clerk-only, so `ownerId` here is
 // always the signed-in account id when enabled.
 import { useCallback, useEffect, useState } from 'react';
@@ -15,6 +15,8 @@ const MAX_TOKENS = 10;
 export type TokensController = {
   list: ApiToken[] | null;
   count: number;
+  // The per-account cap, so a caller can say it without restating it.
+  max: number;
   atCap: boolean;
   creating: boolean;
   error: string | null;
@@ -50,7 +52,7 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
       try {
         const res = await apiCreateToken(ownerId, name.trim());
         // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a token was minted by hand from the
-        // Explorer. The MCP consent flow tracks its own 'MCP' source separately.
+        // Settings token manager. The MCP consent flow tracks its own 'MCP' source separately.
         track('Token', 'Created', 'Manual');
         load();
         return res.token;
@@ -79,5 +81,5 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
     [ownerId, load],
   );
 
-  return { list, count, atCap, creating, error, create, revoke };
+  return { list, count, max: MAX_TOKENS, atCap, creating, error, create, revoke };
 }

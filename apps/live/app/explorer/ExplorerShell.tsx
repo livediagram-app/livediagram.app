@@ -77,6 +77,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     settingsFocus,
     setSettingsFocus,
     settingsCategory,
+    openSettingsOn,
     setSettingsCategory,
     moveTarget,
     setMoveTarget,
@@ -122,12 +123,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <AuthControls
-          onOpenAccount={() => {
-            setSettingsCategory('account');
-            setSettingsOpen(true);
-          }}
-        />
+        <AuthControls onOpenAccount={() => openSettingsOn('account')} />
       </header>
 
       <main

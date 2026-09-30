@@ -25,7 +25,7 @@ Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](
 
 In your AI tool, add a connector / MCP server pointing at **`https://mcp.livediagram.app/mcp`**. The first time, your tool opens a livediagram page asking you to **approve** the connection (you'll sign in if you aren't already). Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works.
 
-The token it creates is an ordinary API token: it appears in the Explorer's **API Tokens** page and you can **revoke** it there any time to disconnect the tool. Like all tokens, it lasts six months.
+The token it creates is an ordinary API token: it appears in the **API Tokens** category of **Settings** and you can **revoke** it there any time to disconnect the tool. Like all tokens, it lasts six months.
 
 ## What the AI can do
 
@@ -48,13 +48,13 @@ The AI does the thinking; livediagram validates, lays out, saves, and renders wh
 
 ## What a connection can and can't touch
 
-By default the token behind a connection has full read and write access to your documents — including the documents in your teams' shared libraries — so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, tick **read-only access** on the approval screen when you connect it: the connection can then find and read your documents but can't create, edit, share, rename, or delete anything (the block is enforced by our server, not just the tool). Its token shows a **Read-only** badge on the [API tokens](/help/account-and-data/api-tokens/) page.
+By default the token behind a connection has full read and write access to your documents — including the documents in your teams' shared libraries — so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, tick **read-only access** on the approval screen when you connect it: the connection can then find and read your documents but can't create, edit, share, rename, or delete anything (the block is enforced by our server, not just the tool). Its token shows a **Read-only** badge in the [API Tokens](/help/account-and-data/api-tokens/) category of Settings.
 
 Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay in the app.
 
 <Tip>
-  Connected a tool you no longer use? Open the Explorer’s API tokens page and revoke its token —
-  that instantly cuts off its access.
+  Connected a tool you no longer use? Open the **API Tokens** category in **Settings** and revoke
+  its token — that instantly cuts off its access.
 </Tip>
 
 </ArticleLayout>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
 import { track } from '@/lib/telemetry';
+import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
 
 // Top-level modal/dialog visibility for the editor: Search, Settings, the Share dialog, the per-tab Export / Import dialogs, and the
 // Collaborators modal.
@@ -29,6 +30,8 @@ export function useEditorDialogs() {
     setSettingsCategory(categoryId);
     setSettingsOpen(true);
   }, []);
+  // A link elsewhere in the editor naming a category (lib/open-settings.ts).
+  useOpenSettingsRequests(openSettingsOn);
   const closeSettings = useCallback(() => {
     setSettingsOpen(false);
     setSettingsFocus(null);

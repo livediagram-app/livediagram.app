@@ -34,6 +34,7 @@ import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
+import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
 
 // All Explorer state + handlers, lifted out of the old single-page
 // component when the sections became routes (docs/specs/013-workspace/folders.md): the layout's
@@ -119,9 +120,9 @@ export function useExplorerState() {
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled });
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here so
-  // the sidebar badge, the header New-token popover, and the list pane share
-  // one source.
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
+  // the timeline's token-card menus, which offer Revoke for a token that is
+  // still live. Managing them is the Settings API Tokens category.
   const tokens = useTokens(ownerId, { enabled: teamsEnabled });
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -142,6 +143,14 @@ export function useExplorerState() {
   // Category to open on, for the `?settings=` deep link. Distinct from
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  // Open Settings on a category in place: the account menu, and any link
+  // that names one (a timeline token card, lib/open-settings.ts).
+  const openSettingsOn = useCallback((categoryId: string) => {
+    setSettingsFocus(null);
+    setSettingsCategory(categoryId);
+    setSettingsOpen(true);
+  }, []);
+  useOpenSettingsRequests(openSettingsOn);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
@@ -533,6 +542,7 @@ export function useExplorerState() {
     setSettingsFocus,
     settingsCategory,
     setSettingsCategory,
+    openSettingsOn,
     // Folder + document actions
     folderActions,
     createFolder,

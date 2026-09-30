@@ -11,6 +11,7 @@ import { SettingsShortcutsRow } from './SettingsShortcutsRow';
 import { SettingsShortcutListRow } from './SettingsShortcutListRow';
 import { SettingsSliderRow } from './SettingsSliderRow';
 import { SettingsNoteRow } from './SettingsNoteRow';
+import { SettingsLinkRow } from './SettingsLinkRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -36,6 +37,7 @@ export function SettingsCategoryPane({
   onChange,
   focusRowKey = null,
   onGoToRow,
+  onOpenCategory,
   offeredRowKeys,
 }: {
   category: SettingsCategorySpec;
@@ -45,6 +47,8 @@ export function SettingsCategoryPane({
   focusRowKey?: string | null;
   // Go to a row, possibly in another category (the power user preset readout).
   onGoToRow?: (categoryId: SettingsCategoryId, rowKey: string) => void;
+  // Open another category in place, for a link row.
+  onOpenCategory?: (categoryId: SettingsCategoryId) => void;
   // Row keys the dialog offers right now, across every category.
   offeredRowKeys?: ReadonlySet<string>;
 }) {
@@ -170,6 +174,8 @@ export function SettingsCategoryPane({
         return <AppearanceRow row={row} />;
       case 'tokens':
         return <SettingsTokensRow row={row} />;
+      case 'link':
+        return <SettingsLinkRow row={row} onOpenCategory={onOpenCategory} />;
       case 'note':
         return <SettingsNoteRow row={row} />;
       case 'shortcuts':

@@ -511,7 +511,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
-    "Someone created a new personal API token by hand, from Settings or the Explorer's API Tokens page.",
+    'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite': 'Someone added a tile to their Favourites in the shape palette.',
   'UI|Added|Slide':
@@ -621,6 +621,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
+  'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
   'UI|Opened|SignInReasons':

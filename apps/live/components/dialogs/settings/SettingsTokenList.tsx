@@ -1,12 +1,13 @@
 'use client';
 
-// Explorer "API tokens" list (docs/specs/015-api/public-api-and-tokens.md). Signed-in only. Creation lives in the
-// header's New-token popover (NewTokenButton); this pane is just the list of
-// existing tokens with a per-row revoke that confirms in a popover first.
+// The token manager's list (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
+// Signed-in only. Creation is the form above it (SettingsTokenCreate); this is
+// the list of existing tokens with a per-row revoke that confirms in a popover
+// first. One column, because it sits in the Settings pane, not a full page.
 import { useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { EmptyState, Tooltip, Glyph } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@livediagram/ui';
 import { TOKEN_REVOKE_MESSAGE } from './token-copy';
 import { useRelativeNow } from '@/lib/relative-time';
 
@@ -62,38 +63,27 @@ function tokenStatus(t: ApiToken): Status {
   };
 }
 
-export function TokensPane({
+export function SettingsTokenList({
   tokens,
-  error,
   onRevoke,
 }: {
   tokens: ApiToken[] | null;
-  error: string | null;
   onRevoke: (id: string) => void;
 }) {
   const now = useRelativeNow();
   const [confirm, setConfirm] = useState<{ id: string; anchor: HTMLElement } | null>(null);
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-        API tokens let your own scripts or AI agents call the livediagram API as you. Treat a token
-        like a password: it has full read + write access to your documents. Each token lasts 6
-        months, then you create a new one with the New token button above.
-      </p>
-
-      {error ? <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p> : null}
-
+    <>
       {tokens === null ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-xs text-slate-400 dark:text-slate-400">Loading…</p>
       ) : tokens.length === 0 ? (
-        <EmptyState
-          icon={<KeyIcon />}
-          title="No API tokens yet"
-          description="Create one with the New token button above to call the livediagram API from your own scripts or AI tools."
-        />
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          No API tokens yet. Create one above to call the livediagram API from your own scripts or
+          AI tools.
+        </p>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="flex flex-col gap-2.5">
           {tokens.map((t) => {
             const status = tokenStatus(t);
             const expired = t.expiresAt - now <= 0;
@@ -108,7 +98,7 @@ export function TokensPane({
             return (
               <li
                 key={t.id}
-                className="group flex flex-col rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-slate-600"
+                className="flex flex-col rounded-lg border border-slate-200 p-3 dark:border-slate-700"
               >
                 <div className="flex items-start gap-2.5">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
@@ -135,7 +125,7 @@ export function TokensPane({
                     </span>
                   </div>
                 </div>
-                <dl className="mt-3.5 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-700/60">
+                <dl className="mt-3 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-700/60">
                   {rows.map(([label, value]) => (
                     <div key={label} className="flex items-baseline justify-between gap-2">
                       <dt className="text-slate-400">{label}</dt>
@@ -148,7 +138,8 @@ export function TokensPane({
                 <button
                   type="button"
                   onClick={(e) => setConfirm({ id: t.id, anchor: e.currentTarget })}
-                  className="mt-3 self-end rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                  aria-label={`Revoke ${t.name || 'Untitled token'}`}
+                  className="mt-2 self-end rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 >
                   Revoke
                 </button>
@@ -170,7 +161,7 @@ export function TokensPane({
           onCancel={() => setConfirm(null)}
         />
       ) : null}
-    </div>
+    </>
   );
 }
 

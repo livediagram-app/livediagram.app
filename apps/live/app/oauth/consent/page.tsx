@@ -214,7 +214,7 @@ function Consent() {
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
         access your livediagram documents on your behalf. Approving creates an API token, which you
-        can revoke any time from the Explorer’s API tokens page.
+        can revoke any time from the API Tokens category in Settings.
       </p>
       {/* Whole-row toggle with the shared presentational switch (the same
           pattern as ProfilePane / SettingsDialog rows) — this was the last
