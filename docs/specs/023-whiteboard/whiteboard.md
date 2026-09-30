@@ -101,7 +101,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Shapes, left to right** (With shapes mode):
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
-     **Arrow, Rectangle, Ellipse**, in that order.
+     **Arrow, Rectangle**, in that order. A pinned shape with a shape key
+     shows that key on its button, as every dock tool does (A, R, O, D, C,
+     L; see [Keyboard shortcuts](#keyboard-shortcuts)).
   2. A **separator**.
   3. **Shapes**: one button for every shape. It opens its flyout on hover
      (a mouse or a pen, never a finger) as well as on a press, and closes a
@@ -154,7 +156,9 @@ The shapes group learns and keeps the shapes a user reaches for.
   rows of three with **no labels**: they are meant to become obvious after a
   few picks. The **top row is recent**, the **bottom row most used**. Each arms its shape kind like a dock
   shape (plain ink, its kind's tool style), with the kind's own preview as its
-  icon and its name as its label and tooltip. Picks count from a slot, a
+  icon and **no name under it**: the name is its tooltip on hover and focus
+  and its accessible name, like every dock button. Search results show the
+  same way. Picks count from a slot, a
   search result, a pinned shape or a shape key, on whiteboards only.
   - **Most used** (bottom row): the three kinds with the most picks that are
     not pinned, most picked first; ties go to the one picked most recently.
@@ -167,13 +171,15 @@ The shapes group learns and keeps the shapes a user reaches for.
     too little history, an empty slot takes the next kind of this order that
     is not already showing: rectangle, ellipse, diamond, cylinder, line,
     arrow, then the palette catalogue. With the default pins, the most-used
-    row starts as **Diamond, Cylinder, Line** and the recent row as the next
-    three.
+    row starts as **Ellipse, Diamond, Cylinder** and the recent row as
+    **Line** and the next two.
   - The slots update after a pick, never while the flyout is open, so a slot
     never changes under the pointer.
 - **Pinned side:** the left of the shapes bar, up to the separator. A user who has
-  never changed it has three pins, in this order: **Arrow**, **Rectangle**,
-  **Ellipse**. Up to **seven** kinds can be pinned.
+  never changed it has two pins, in this order: **Arrow**, **Rectangle**. Up
+  to **seven** kinds can be pinned. Every pinned shape that has a shape key
+  shows it on its button (bottom right, as on every dock tool) and in
+  `aria-keyshortcuts`, wherever it is pinned.
 - **Pinning:** dragging a slot (or a search result) **from the Shapes
   flyout onto the pinned side** pins its kind at the drop position; while
   dragging, a drop marker shows where it will land, and the flyout stays open
