@@ -711,3 +711,9 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   --ld-timeline-neutral: #94a3b8;
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
 }
+
+/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-whiteboard/whiteboard.md "Pens"):
+   elements, handles and labels under it keep the pen cursor instead of their own. */
+[data-pen-in-hand] * {
+  cursor: inherit !important;
+}

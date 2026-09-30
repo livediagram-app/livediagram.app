@@ -239,6 +239,14 @@ function BoxedElementViewImpl({
   // branches below so they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
+  // A whiteboard pen stroke is picked by its drawn line, not its box
+  // (docs/specs/023-whiteboard/whiteboard.md "Selecting"); once selected, its box drags it as any.
+  const lineHit =
+    element.type === 'freehand' &&
+    element.penWidth !== undefined &&
+    element.pen !== 'highlighter' &&
+    !isSelected &&
+    !isMultiSelected;
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
@@ -400,6 +408,9 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles get lifted separately via SelectionHandles.)
         ...(isEditing ? { zIndex: 10 } : {}),
+        // Only the drawn line picks a pen stroke not yet selected (its hit
+        // line, in FreehandSvg); the rest of its box lets pointers through.
+        ...(lineHit ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -498,6 +509,7 @@ function BoxedElementViewImpl({
       {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
       <ElementFaceRouter
+        lineHit={lineHit}
         element={element}
         isEditing={isEditing}
         isSelected={isSelected}

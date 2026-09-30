@@ -27,6 +27,7 @@ import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
+import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
@@ -110,9 +111,12 @@ type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
+  // A pen stroke not yet selected: only its drawn line picks it.
+  lineHit: boolean;
 };
 
 export function ElementFaceRouter({
+  lineHit,
   element,
   isEditing,
   isSelected,
@@ -395,6 +399,7 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
+            hitWidth={lineHit ? strokeHitWidth(element.penWidth ?? 0, zoom) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)

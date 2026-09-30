@@ -93,3 +93,12 @@ export function whiteboardPointerRoute(input: {
 }): 'ink' | 'pan' {
   return input.pointerType === 'touch' && input.penSeen && input.inking ? 'pan' : 'ink';
 }
+
+// A pen stroke is picked by its drawn line, not its box (docs/specs/023-whiteboard/whiteboard.md
+// "Selecting"): the line catches pointers this far either side of it, in SCREEN px.
+export const STROKE_HIT_SCREEN_PX = 6;
+
+/** The width, in canvas px, of the invisible line that catches pointers on a pen stroke. */
+export function strokeHitWidth(penWidth: number, zoom: number): number {
+  return penWidth + (2 * STROKE_HIT_SCREEN_PX) / (zoom || 1);
+}

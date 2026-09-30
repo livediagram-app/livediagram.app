@@ -118,6 +118,7 @@ export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: Re
       {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
+          data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();
             if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${pos}`, e);

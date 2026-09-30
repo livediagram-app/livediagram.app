@@ -93,10 +93,14 @@ export function FreehandSvg({
   element,
   fill,
   stroke,
+  hitWidth,
 }: {
   element: FreehandElement;
   fill: string;
   stroke: string;
+  // Set when only the drawn line picks the stroke (a whiteboard pen stroke not
+  // yet selected): an invisible line this wide, in canvas px, catches pointers.
+  hitWidth?: number;
 }) {
   // Map normalised points to the 100x100 viewBox before threading
   // them through the smoothing helper. `points.length < 2` collapses
@@ -152,6 +156,18 @@ export function FreehandSvg({
           strokeLinejoin="round"
           strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
           vectorEffect={isPenStroke ? undefined : 'non-scaling-stroke'}
+        />
+      ) : null}
+      {d && hitWidth !== undefined ? (
+        <path
+          data-stroke-hit=""
+          d={d}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={hitWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'stroke' }}
         />
       ) : null}
     </svg>

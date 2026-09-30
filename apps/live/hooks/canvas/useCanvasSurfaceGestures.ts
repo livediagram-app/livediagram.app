@@ -259,6 +259,34 @@ export function useCanvasSurfaceGestures({
       );
       return;
     }
+    // Whiteboard, Select in hand (docs/specs/023-whiteboard/whiteboard.md "Selecting"): Shift + press always
+    // drags a selection box that adds to the selection, even when it starts on an element, and a
+    // Shift-click on an element toggles it. A handle keeps its own Shift behaviour.
+    if (
+      whiteboard &&
+      e.button === 0 &&
+      e.shiftKey &&
+      canvasTool === 'select' &&
+      !pendingDraw &&
+      !spaceHeldRef.current
+    ) {
+      const target = e.target as HTMLElement;
+      const onCanvas = target === e.currentTarget || !!wrapperRef.current?.contains(target);
+      if (onCanvas && !target.closest('[data-canvas-handle]')) {
+        focusCanvas();
+        e.preventDefault();
+        e.stopPropagation();
+        setMarquee({
+          startX: e.clientX,
+          startY: e.clientY,
+          currentX: e.clientX,
+          currentY: e.clientY,
+          additive: true,
+          clickTarget: target.closest('[data-element-id]')?.getAttribute('data-element-id') ?? null,
+        });
+        return;
+      }
+    }
     // Middle-mouse drag pans from anywhere on the canvas — empty
     // space OR over elements — regardless of the active tool. The
     // capture phase runs before the element + background

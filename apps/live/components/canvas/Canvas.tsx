@@ -183,6 +183,8 @@ export function Canvas(props: CanvasProps) {
     wrapperRef,
     onDeselect,
     onSelectMarquee,
+    onShiftSelect,
+    currentSelection: () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
     isPinchingRef,
   });
 
@@ -648,6 +650,11 @@ export function Canvas(props: CanvasProps) {
         // the base plane while the camera orbits so they can't z-fight
         // (flicker) with the coplanar contents above them.
         data-iso={canvasTool === 'isometric' ? '' : undefined}
+        // A whiteboard pen draws wherever it presses, so nothing under it swaps
+        // the pen cursor for its own (globals.css, docs/specs/023-whiteboard/whiteboard.md "Pens").
+        data-pen-in-hand={
+          pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? '' : undefined
+        }
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.

@@ -8,6 +8,8 @@ import {
   activeWhiteboardTool,
   whiteboardPenIntent,
   whiteboardPointerRoute,
+  STROKE_HIT_SCREEN_PX,
+  strokeHitWidth,
 } from './whiteboard-tool';
 
 const pen: PendingDraw = {
@@ -140,5 +142,13 @@ describe('whiteboardTakesTyping', () => {
     expect(whiteboardTakesTyping({ type: 'shape' })).toBe(false);
     expect(whiteboardTakesTyping({ type: 'arrow' })).toBe(false);
     expect(whiteboardTakesTyping({ type: 'freehand' })).toBe(false);
+  });
+});
+
+describe('strokeHitWidth', () => {
+  it('pads the line by a steady on-screen margin each side, at any zoom', () => {
+    expect(STROKE_HIT_SCREEN_PX).toBe(6);
+    expect(strokeHitWidth(1.5, 1)).toBe(13.5);
+    expect(strokeHitWidth(1.5, 2)).toBe(7.5);
   });
 });
