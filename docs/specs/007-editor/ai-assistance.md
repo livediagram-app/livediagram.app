@@ -88,7 +88,9 @@ No auth required. Response:
 { "aiEnabled": true }
 ```
 
-`aiEnabled` is `true` iff exactly one model key resolves to a provider (see below).
+`aiEnabled` is `true` iff a model key resolves to a provider (see below). Both AI features
+resolve from the same set of keys and fall back to each other's provider, so they are available
+together or not at all: one flag answers for both.
 
 ### `POST /api/ai`
 
@@ -186,21 +188,53 @@ variable that holds it should say whose it is, and the endpoint follows.
 | `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o`                                                              |
 | `AI_API_KEY` + `AI_BASE_URL` | generic  | whatever `AI_BASE_URL` says                               | none — `AI_MODEL` is REQUIRED                                         |
 
-`AI_MODEL` overrides the default for any provider; `AI_VISION_MODEL` overrides
-it for `/api/ai/read-notes` only. The READER has its own Google default,
+The generic row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything
+that speaks the OpenAI chat-completions wire.
+
+### Each feature has its own provider
+
+The worker runs two AI features, and each one resolves its own provider from the
+keys that are set, taking the first present key in its own preference order:
+
+| feature                                 | route                | preference order          |
+| --------------------------------------- | -------------------- | ------------------------- |
+| **assistant** (Ask / Clean)             | `/api/ai`            | openai → google → generic |
+| **reader** (event-storming crop reader) | `/api/ai/read-notes` | google → openai → generic |
+
+- **One key serves both.** A deployment with a single key runs both features on
+  that provider; a self-hoster sets one key and changes nothing.
+- **Two named keys split the features.** With `OPENAI_API_KEY` and
+  `GOOGLE_AI_STUDIO_API_KEY` both set, the assistant runs on OpenAI and the
+  reader on Google. This is the hosted site's configuration: the assistant
+  stays on the OpenAI model it has always used, and the reader uses Gemini,
+  which reads handwriting better for less.
+- **The generic key is the last resort.** `AI_API_KEY` serves a feature only
+  when neither named key is set. Set beside a named key it serves nothing, so
+  it is logged as an error on every resolution (`[ai] AI_API_KEY is set but
+unused`) rather than left as a dead secret nobody notices.
+- **A half-configured generic key resolves to no provider.** `AI_API_KEY`
+  without `AI_BASE_URL` or `AI_MODEL` logs one loud line and the AI surface
+  hides, exactly as with no key.
+
+### Which model
+
+- **Assistant**: `AI_MODEL`, else its provider's default model.
+- **Reader**: `AI_VISION_MODEL`, else `AI_MODEL` **when the reader shares the
+  assistant's provider**, else its provider's reader default, else its
+  provider's default model.
+
+`AI_MODEL` names a model of the provider serving the assistant, so it reaches
+the reader only when both run on that provider: a `gpt-4o` id sent to Gemini is
+a guaranteed failure. The READER has its own Google default,
 `gemini-2.5-flash-lite`, because reading handwriting is literal work: measured
 on a real wall it read 99% of the words against 95% for `gemini-3.6-flash`,
 while costing about a quarter as much and finishing four times faster
-(docs/research/vision/handwriting-readers.md). That default applies only when the
-operator has named NO model — setting `AI_MODEL` means it for the reader too,
-and `AI_VISION_MODEL` beats both. The generic
-row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything that speaks
-the OpenAI chat-completions wire.
+(docs/research/vision/handwriting-readers.md). An operator who names `AI_MODEL`
+for a single-provider deployment means it for the reader too, and
+`AI_VISION_MODEL` beats everything. The generic preset has no defaults, so it
+requires `AI_MODEL` for both features, keeping them available together.
 
-**Exactly one key may be set.** Two of them, or a generic key without a base URL
-or a model, resolves to NO provider and logs one loud line naming the conflict:
-picking one would be spending somebody's money on a coin flip, and picking one
-silently is how that goes unnoticed. `aiEnabled` is "a provider resolved".
+`aiEnabled` is "a provider resolved".
 
 `OPENAI_API_KEY` is not a compatibility alias — it is the OpenAI preset's own
 key, so a self-hoster already on OpenAI changes nothing. `OPENAI_MODEL` is gone;
@@ -226,8 +260,8 @@ The model half of the event-storming photo import ([Event storming](../021-event
 stickies are FOUND in the browser by classical computer vision; this route is
 asked only to read the handwriting on the crops that came out of that.
 
-- Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): key
-  present → origin allow-list → Clerk-only flag → owner → method → rate limiter.
+- Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): the
+  reader's provider resolves → origin allow-list → Clerk-only flag → owner → method → rate limiter.
 - **Body**: `{ crops: { id, image }[] }` — at most `READ_MAX_CROPS_PER_REQUEST`
   (6) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
   `image/jpeg`, `image/png`, `image/webp`. The client batches a bigger run and
@@ -260,14 +294,14 @@ fires it, because the route cannot know whether the author kept the result).
 
 ## Environment variables
 
-| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                 |
-| ------------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model key; exactly one enables AI, and which one names the provider (see "Whose model? The key says."). None = every AI surface hidden.                                                                             |
-| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                    |
-| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                          |
-| `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults to `AI_MODEL`, so a deployment only sets it to split the two apart.                 |
-| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
-| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
+| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                   |
+| ------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI, and each feature takes its provider from them (see "Each feature has its own provider"). None = every AI surface hidden.                                                              |
+| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                      |
+| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                            |
+| `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults as in "Which model": `AI_MODEL` only when the reader shares the assistant's provider. |
+| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim.   |
+| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                    |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so

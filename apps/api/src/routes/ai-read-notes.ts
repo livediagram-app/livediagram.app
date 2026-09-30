@@ -26,7 +26,7 @@ const MAX_TEXT_CHARS = 200;
 export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
-  const refused = await aiGate(ctx);
+  const refused = await aiGate(ctx, 'reader');
   if (refused) return refused;
 
   let body: ReadNotesRequest;
@@ -54,8 +54,8 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   }
 
   // The gate has already refused a deployment with no usable provider.
-  const provider = providerOf(env)!;
-  const model = provider.visionModel;
+  const provider = providerOf(env, 'reader')!;
+  const model = provider.model;
   // One user message: each crop introduced by the id it must be answered
   // under, so the model never has to infer which picture it is talking about.
   const content: unknown[] = [{ type: 'text', text: `Read these ${crops.length} sticky notes.` }];

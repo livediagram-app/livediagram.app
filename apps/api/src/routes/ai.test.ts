@@ -159,3 +159,14 @@ describe('handleAi malformed bodies', () => {
     });
   }
 });
+
+describe('handleAi provider (docs/specs/007-editor/ai-assistance.md, "Each feature has its own provider")', () => {
+  it('keeps the assistant on OpenAI when a Google key sits beside it', async () => {
+    const res = await handleAi(makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: 'g' } }));
+    expect(res.status).toBe(200);
+    const [url, init] = vi.mocked(globalThis.fetch).mock.calls[0]!;
+    expect(url).toBe('https://api.openai.com/v1/chat/completions');
+    expect(new Headers((init as RequestInit).headers).get('Authorization')).toBe('Bearer test-key');
+    expect(JSON.parse((init as RequestInit).body as string).model).toBe('gpt-4o');
+  });
+});

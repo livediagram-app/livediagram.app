@@ -106,6 +106,16 @@ describe('the shared gate still guards this route', () => {
     expect(res.status).toBe(429);
   });
 
+  it('reaches the provider when the rate limiter admits the caller', async () => {
+    globalThis.fetch = providerSays({ texts: [] });
+    const res = await handleAiReadNotes(
+      makeCtx({
+        env: { AI_RATE_LIMITER: { limit: async () => ({ success: true }) } } as Partial<Env>,
+      }),
+    );
+    expect(res.status).toBe(200);
+  });
+
   it('never calls the provider when the gate refuses', async () => {
     await handleAiReadNotes(makeCtx({ env: { OPENAI_API_KEY: undefined } }));
     expect(globalThis.fetch).not.toHaveBeenCalled();
@@ -323,6 +333,18 @@ describe('what leaves this worker', () => {
     expect(vi.mocked(globalThis.fetch).mock.calls[0]![0]).toBe(
       'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     );
+  });
+
+  it('reads with Google when an OpenAI key sits beside it, never with AI_MODEL', async () => {
+    globalThis.fetch = providerSays({ texts: [] });
+    const res = await handleAiReadNotes(
+      makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: 'g', AI_MODEL: 'gpt-4.1' } }),
+    );
+    expect(res.status).toBe(200);
+    const [url, init] = vi.mocked(globalThis.fetch).mock.calls[0]!;
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+    expect(new Headers((init as RequestInit).headers).get('Authorization')).toBe('Bearer g');
+    expect(JSON.parse((init as RequestInit).body as string).model).toBe('gemini-2.5-flash-lite');
   });
 });
 
