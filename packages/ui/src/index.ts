@@ -16,6 +16,8 @@ export { Tooltip, type TooltipProps } from './Tooltip';
 export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { SnapCarousel } from './SnapCarousel';
+export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { CanvasLoader } from './CanvasLoader';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';

@@ -217,17 +217,29 @@ ${cursorStops()}
 }
 }`;
 
-// The loop's phase is measured from the first mount in this document, so a
-// remount (the /new creating stage giving way to the editor's own load, see
-// the spec's in-place handoff) continues the drawing instead of restarting.
+// The loop's phase is measured from when the drawing first started in this
+// document, so a remount (the /new creating stage giving way to the editor's
+// own load, see the spec's in-place handoff) continues the drawing instead of
+// restarting. A prerendered copy (the quiet landing's, painted from the HTML)
+// is already animating before any script runs, so the first mount reads its
+// phase from that running animation rather than taking "now" as the start:
+// otherwise the copy that replaces it jumped back to the loop's beginning,
+// reading as a second loader.
 let epoch: number | null = null;
 
 export function DiagramBuildAnimation({ className = 'max-w-[240px]' }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
+    const el = ref.current;
     const now = performance.now();
-    epoch ??= now;
-    ref.current?.style.setProperty('--ldb-delay', `${-((now - epoch) % DURATION_MS)}ms`);
+    if (epoch === null) {
+      const running = el?.getAnimations?.({ subtree: true })[0]?.currentTime;
+      const elapsed = typeof running === 'number' ? running : 0;
+      epoch = now - elapsed;
+      // This copy IS the running drawing: its own delay already matches the phase.
+      if (elapsed > 0) return;
+    }
+    el?.style.setProperty('--ldb-delay', `${-((now - epoch) % DURATION_MS)}ms`);
   }, []);
 
   return (

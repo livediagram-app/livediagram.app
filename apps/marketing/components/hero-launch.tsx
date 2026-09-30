@@ -112,6 +112,9 @@ export function useLaunchGrow() {
                 '--grow-y': `${from.top}px`,
               } as CSSProperties
             }
+            // No loader here: the page changes the moment the growth lands, and /new's quiet canvas
+            // shows it from its first frame (CanvasLoader). One drawn here only flashed, then
+            // restarted on the next page, reading as a second loader.
             onAnimationEnd={() => window.location.assign(LAUNCH_HREF)}
           />,
           document.body,
