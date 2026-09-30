@@ -29,7 +29,7 @@ describe('filterGallery', () => {
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'central idea').map((t) => t.kind)).toContain('mindmap');
+    expect(filterGallery(all, 'offsite plan').map((t) => t.kind)).toContain('mindmap');
     expect(filterGallery(all, 'technical').map((t) => t.kind)).toContain('sequence-diagram');
   });
 

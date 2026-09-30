@@ -31,69 +31,124 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'mindmap':
+      // A bold round topic, five branches each in its own hue (card and
+      // connector alike), two white leaves edged in the branch's hue.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
+          {[
+            {
+              b: [17, 15],
+              l: [
+                [6, 6],
+                [6, 24],
+              ],
+              c: 'rgb(16 185 129)',
+              f: 'rgb(209 250 229)',
+              e: 'rgb(110 231 183)',
+            },
+            {
+              b: [40, 7],
+              l: [
+                [26, 2.5],
+                [54, 2.5],
+              ],
+              c: 'rgb(14 165 233)',
+              f: 'rgb(224 242 254)',
+              e: 'rgb(125 211 252)',
+            },
+            {
+              b: [63, 15],
+              l: [
+                [74, 7],
+                [74, 23],
+              ],
+              c: 'rgb(139 92 246)',
+              f: 'rgb(237 233 254)',
+              e: 'rgb(196 181 253)',
+            },
+            {
+              b: [60, 37],
+              l: [
+                [74, 44],
+                [48, 46],
+              ],
+              c: 'rgb(245 158 11)',
+              f: 'rgb(254 243 199)',
+              e: 'rgb(252 211 77)',
+            },
+            {
+              b: [20, 37],
+              l: [
+                [7, 44],
+                [31, 46],
+              ],
+              c: 'rgb(244 63 94)',
+              f: 'rgb(255 228 230)',
+              e: 'rgb(253 164 175)',
+            },
+          ].map(({ b, l, c, f, e }) => (
+            <g key={c}>
+              <line x1="40" y1="25" x2={b[0]} y2={b[1]} stroke={c} strokeWidth="1.3" />
+              {l.map(([lx, ly]) => (
+                <g key={`${lx}-${ly}`}>
+                  <line x1={b[0]} y1={b[1]} x2={lx} y2={ly} stroke={e} strokeWidth="0.7" />
+                  <rect
+                    x={lx! - 5}
+                    y={ly! - 2}
+                    width="10"
+                    height="4"
+                    rx="1"
+                    fill="white"
+                    stroke={e}
+                    strokeWidth="0.6"
+                  />
+                </g>
+              ))}
+              <rect
+                x={b[0]! - 7}
+                y={b[1]! - 3}
+                width="14"
+                height="6"
+                rx="1.5"
+                fill={f}
+                stroke={c}
+                strokeWidth="0.9"
+              />
+            </g>
+          ))}
           <circle
             cx="40"
             cy="25"
-            r="9"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.25"
+            r="7.5"
+            fill="rgb(3 105 161)"
+            stroke="rgb(7 89 133)"
+            strokeWidth="1"
           />
-          <circle cx="14" cy="25" r="5" fill="none" stroke="rgb(14 165 233)" strokeWidth="1.25" />
-          <circle cx="66" cy="25" r="5" fill="none" stroke="rgb(14 165 233)" strokeWidth="1.25" />
-          <circle cx="40" cy="6" r="5" fill="none" stroke="rgb(14 165 233)" strokeWidth="1.25" />
-          <circle cx="40" cy="44" r="5" fill="none" stroke="rgb(14 165 233)" strokeWidth="1.25" />
-          <line x1="31" y1="25" x2="19" y2="25" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="49" y1="25" x2="61" y2="25" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="40" y1="16" x2="40" y2="11" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="40" y1="34" x2="40" y2="39" stroke="rgb(100 116 139)" strokeWidth="1" />
-          {/* Hover story (preview-motion.css): two new ideas pop out of the
-              centre and glide to their places, each connector following. */}
-          <circle
-            className="pv-arrive"
-            opacity="0"
-            cx="63"
-            cy="10"
-            r="4"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.25"
-            style={pv({ '--pv-from-x': '-19px', '--pv-from-y': '13px', '--pv-at': '900ms' })}
-          />
+          {/* Hover story (preview-motion.css): Tab on the violet branch grows
+              a third leaf, which glides out of the branch in its hue. */}
           <line
             className="pv-new"
             opacity="0"
-            x1="47.5"
-            y1="20.1"
-            x2="59.7"
-            y2="12.2"
-            stroke="rgb(100 116 139)"
-            strokeWidth="1"
+            x1="63"
+            y1="15"
+            x2="72"
+            y2="31"
+            stroke="rgb(196 181 253)"
+            strokeWidth="0.7"
             style={pv({ '--pv-at': '1700ms' })}
           />
-          <circle
+          <rect
             className="pv-arrive"
             opacity="0"
-            cx="17"
-            cy="41"
-            r="4"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.25"
-            style={pv({ '--pv-from-x': '21px', '--pv-from-y': '-15px', '--pv-at': '1500ms' })}
-          />
-          <line
-            className="pv-new"
-            opacity="0"
-            x1="32.6"
-            y1="30.1"
-            x2="20.3"
-            y2="38.7"
-            stroke="rgb(100 116 139)"
-            strokeWidth="1"
-            style={pv({ '--pv-at': '2300ms' })}
+            x="67"
+            y="29"
+            width="10"
+            height="4"
+            rx="1"
+            fill="white"
+            stroke="rgb(139 92 246)"
+            strokeWidth="0.7"
+            style={pv({ '--pv-from-x': '-9px', '--pv-from-y': '-14px', '--pv-at': '900ms' })}
           />
         </svg>
       );
@@ -174,28 +229,46 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
     case 'mindmap-bubble':
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
-          {/* Central topic ringed by bubbles. */}
+          {/* A bold topic ringed by adjective bubbles, each in its own hue
+              with a matching spoke. */}
           {[
-            [40, 6],
-            [64, 16],
-            [64, 34],
-            [40, 44],
-            [16, 34],
-            [16, 16],
-          ].map(([bx, by], i) => (
+            [40, 6, 'rgb(14 165 233)', 'rgb(224 242 254)'],
+            [63, 15, 'rgb(139 92 246)', 'rgb(237 233 254)'],
+            [63, 35, 'rgb(245 158 11)', 'rgb(254 243 199)'],
+            [40, 44, 'rgb(244 63 94)', 'rgb(255 228 230)'],
+            [17, 35, 'rgb(20 184 166)', 'rgb(204 251 241)'],
+            [17, 15, 'rgb(16 185 129)', 'rgb(209 250 229)'],
+          ].map(([bx, by, c, f], i) => (
             <g key={`${bx}-${by}`}>
-              <line x1="40" y1="25" x2={bx} y2={by} stroke="rgb(100 116 139)" strokeWidth="0.9" />
+              <line x1="40" y1="25" x2={bx} y2={by} stroke={c as string} strokeWidth="0.9" />
               {/* Hover story: a wave swells each bubble in turn round the
                   ring (a rotation would swing the oval ring past the tile). */}
               <circle
                 cx={bx}
                 cy={by}
-                r="4.5"
-                fill="none"
-                stroke="rgb(14 165 233)"
-                strokeWidth="1.25"
+                r="5"
+                fill={f as string}
+                stroke={c as string}
+                strokeWidth="1.1"
                 className="pv-pulse"
                 style={pv({ '--pv-at': `${900 + i * 160}ms` })}
+              />
+              {/* The adjective over its proof line. */}
+              <line
+                x1={(bx as number) - 2.4}
+                y1={(by as number) - 0.9}
+                x2={(bx as number) + 2.4}
+                y2={(by as number) - 0.9}
+                stroke={c as string}
+                strokeWidth="0.9"
+              />
+              <line
+                x1={(bx as number) - 1.8}
+                y1={(by as number) + 1.2}
+                x2={(bx as number) + 1.8}
+                y2={(by as number) + 1.2}
+                stroke={c as string}
+                strokeWidth="0.5"
               />
             </g>
           ))}
@@ -203,18 +276,18 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             cx="40"
             cy="25"
             r="9"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.25"
+            fill="rgb(3 105 161)"
+            stroke="rgb(7 89 133)"
+            strokeWidth="1.1"
           />
           {/* ...then a new bubble sprouts off the lower-right one. */}
           <line
             className="pv-new"
             opacity="0"
-            x1="67.5"
-            y1="36.8"
+            x1="67"
+            y1="38.5"
             x2="71.7"
-            y2="40.1"
+            y2="42.1"
             stroke="rgb(100 116 139)"
             strokeWidth="0.9"
             style={pv({ '--pv-at': '2000ms' })}
@@ -223,11 +296,11 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             className="pv-new"
             opacity="0"
             cx="74"
-            cy="42"
+            cy="44"
             r="3"
-            fill="none"
+            fill="white"
             stroke="rgb(14 165 233)"
-            strokeWidth="1.25"
+            strokeWidth="1.1"
             style={pv({ '--pv-at': '2200ms' })}
           />
         </svg>
@@ -235,182 +308,245 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
     case 'orgchart':
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          {/* CEO */}
-          <rect
-            x="32"
-            y="2"
-            width="16"
-            height="7"
-            rx="1.5"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          {/* VP row */}
-          {[6, 33, 60].map((x) => (
-            <rect
-              key={x}
-              x={x}
-              y="20"
-              width="14"
-              height="6"
-              rx="1.25"
-              fill="none"
-              stroke="rgb(14 165 233)"
-              strokeWidth="0.9"
-              // Hover story: the middle VP, who gains the new hire below.
-              {...(x === 33 ? { className: 'pv-pulse', style: pv({ '--pv-at': '2100ms' }) } : {})}
-            />
-          ))}
-          {/* 3rd level: 2 reports under each VP */}
+          {/* Three tinted team bands, each a VP over three reports on a
+              spine; the CEO on top with the Chief of Staff on a staff line. */}
           {[
-            [4, 12],
-            [31, 39],
-            [58, 66],
-          ].map(([l, r], i) => (
-            <g key={i}>
+            {
+              x: 2,
+              band: 'rgb(245 243 255)',
+              edge: 'rgb(221 214 254)',
+              card: 'rgb(237 233 254)',
+              hue: 'rgb(139 92 246)',
+            },
+            {
+              x: 28,
+              band: 'rgb(240 249 255)',
+              edge: 'rgb(186 230 253)',
+              card: 'rgb(224 242 254)',
+              hue: 'rgb(14 165 233)',
+            },
+            {
+              x: 54,
+              band: 'rgb(255 251 235)',
+              edge: 'rgb(253 230 138)',
+              card: 'rgb(254 243 199)',
+              hue: 'rgb(245 158 11)',
+            },
+          ].map((t, i) => (
+            <g key={t.x}>
               <rect
-                x={l}
-                y="40"
-                width="8"
-                height="5"
-                rx="1"
+                x={t.x}
+                y="15"
+                width="24"
+                height="34"
+                rx="1.5"
+                fill={t.band}
+                stroke={t.edge}
+                strokeWidth="0.6"
+              />
+              <path
+                d={`M${t.x + 6} 24 V41.25 M${t.x + 6} 29.25 H${t.x + 9} M${t.x + 6} 35.25 H${t.x + 9} M${t.x + 6} 41.25 H${t.x + 9}`}
                 fill="none"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.8"
+                stroke="rgb(100 116 139)"
+                strokeWidth="0.6"
               />
               <rect
-                x={r}
-                y="40"
-                width="8"
-                height="5"
+                x={t.x + 2}
+                y="18"
+                width="20"
+                height="6"
                 rx="1"
-                fill="none"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.8"
+                fill={t.card}
+                stroke={t.hue}
+                strokeWidth="0.9"
               />
+              {[27, 33, 39].map((y, j) => (
+                <rect
+                  key={y}
+                  x={t.x + 9}
+                  y={y}
+                  width="13"
+                  height="4.5"
+                  rx="0.8"
+                  fill="white"
+                  stroke={t.hue}
+                  strokeWidth="0.6"
+                  // The open role: a dashed card waiting for a hire.
+                  {...(i === 0 && j === 2 ? { strokeDasharray: '1.2 0.8' } : {})}
+                />
+              ))}
             </g>
           ))}
-          {/* CEO -> VPs */}
-          <line x1="40" y1="9" x2="40" y2="15" stroke="rgb(100 116 139)" strokeWidth="0.85" />
-          <line x1="13" y1="15" x2="67" y2="15" stroke="rgb(100 116 139)" strokeWidth="0.85" />
-          <line x1="13" y1="15" x2="13" y2="20" stroke="rgb(100 116 139)" strokeWidth="0.85" />
-          <line x1="40" y1="15" x2="40" y2="20" stroke="rgb(100 116 139)" strokeWidth="0.85" />
-          <line x1="67" y1="15" x2="67" y2="20" stroke="rgb(100 116 139)" strokeWidth="0.85" />
-          {/* VPs -> reports */}
-          {[13, 40, 67].map((vpX, i) => (
-            <g key={i}>
-              <line
-                x1={vpX}
-                y1="26"
-                x2={[8, 35, 62][i]}
-                y2="40"
-                stroke="rgb(100 116 139)"
-                strokeWidth="0.7"
-              />
-              <line
-                x1={vpX}
-                y1="26"
-                x2={[16, 43, 70][i]}
-                y2="40"
-                stroke="rgb(100 116 139)"
-                strokeWidth="0.7"
-              />
-            </g>
-          ))}
-          {/* Hover story: a new hire drops in beside the middle VP's team and
-              their reporting line joins up. */}
-          <rect
-            className="pv-arrive"
-            opacity="0"
-            x="48.5"
-            y="40"
-            width="8"
-            height="5"
-            rx="1"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-            style={pv({ '--pv-from-y': '-14px', '--pv-from-x': '-8px', '--pv-at': '900ms' })}
-          />
-          <line
-            className="pv-new"
-            opacity="0"
-            x1="40"
-            y1="26"
-            x2="52.5"
-            y2="40"
+          <path
+            d="M36 8 V11.5 H14 V18 M40 8 V18 M44 8 V11.5 H66 V18"
+            fill="none"
             stroke="rgb(100 116 139)"
             strokeWidth="0.7"
-            style={pv({ '--pv-at': '1700ms' })}
+          />
+          <line x1="48" y1="4.5" x2="55" y2="4.5" stroke="rgb(100 116 139)" strokeWidth="0.7" />
+          {/* The dotted-line report: Engineering across the gap to Sales. */}
+          <path
+            d="M50 41.25 H53 V21 H56"
+            fill="none"
+            stroke="rgb(100 116 139)"
+            strokeWidth="0.6"
+            strokeDasharray="1.2 0.8"
+          />
+          <rect x="32" y="1" width="16" height="7" rx="1.5" fill="rgb(3 105 161)" />
+          <rect
+            x="55"
+            y="2"
+            width="12"
+            height="5"
+            rx="1"
+            fill="white"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.7"
+          />
+          {/* Hover story: the open role is filled, the dashed card turning
+              into a person in the team's hue. */}
+          <rect
+            className="pv-new"
+            opacity="0"
+            x="11"
+            y="39"
+            width="13"
+            height="4.5"
+            rx="0.8"
+            fill="rgb(237 233 254)"
+            stroke="rgb(139 92 246)"
+            strokeWidth="0.8"
+            style={pv({ '--pv-at': '1300ms' })}
+          />
+          <circle
+            className="pv-new"
+            opacity="0"
+            cx="14"
+            cy="41.25"
+            r="1.2"
+            fill="rgb(139 92 246)"
+            style={pv({ '--pv-at': '1600ms' })}
           />
         </svg>
       );
     case 'flowchart':
       return (
-        <svg width="60" height="44" viewBox="0 0 60 50" aria-hidden>
-          {/* Start (stadium) */}
+        <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
+          {/* The ISO spine: start, input, process, decision, document, end,
+              with the declined card's error step looping back to the form,
+              and the key card on the right. */}
+          <g fill="none" stroke="rgb(100 116 139)" strokeWidth="0.8">
+            <line x1="22" y1="5" x2="22" y2="8" />
+            <line x1="22" y1="12" x2="22" y2="15" />
+            <line x1="22" y1="20" x2="22" y2="24.5" />
+            <line x1="22" y1="34.5" x2="22" y2="37.5" />
+            <line x1="22" y1="43" x2="22" y2="45.5" />
+            <line x1="31" y1="29.5" x2="39" y2="29.5" />
+            <path d="M46 27 V10 H31" />
+          </g>
+          <rect x="13" y="1" width="18" height="4" rx="2" fill="rgb(3 105 161)" />
+          <polygon
+            points="15,8 32,8 29,12 12,12"
+            fill="rgb(240 249 255)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
           <rect
-            x="14"
+            x="13"
+            y="15"
+            width="18"
+            height="5"
+            rx="0.8"
+            fill="rgb(240 249 255)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <polygon
+            points="22,24.5 31,29.5 22,34.5 13,29.5"
+            fill="rgb(224 242 254)"
+            stroke="rgb(125 211 252)"
+            strokeWidth="0.8"
+          />
+          <path
+            d="M13 37.5 H31 V42.5 Q26.5 44.5 22 42.5 Q17.5 40.5 13 42.5 Z"
+            fill="rgb(240 249 255)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect
+            x="13"
+            y="45.5"
+            width="18"
+            height="4"
+            rx="2"
+            fill="rgb(224 242 254)"
+            stroke="rgb(125 211 252)"
+            strokeWidth="0.8"
+          />
+          <rect
+            x="39"
+            y="27"
+            width="14"
+            height="5"
+            rx="0.8"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+            strokeDasharray="1.2 0.8"
+          />
+          {/* The key: one miniature per symbol, a caption line beside each. */}
+          <rect
+            x="58"
             y="2"
             width="20"
-            height="7"
-            rx="3.5"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            height="36"
+            rx="1.5"
+            fill="rgb(248 250 252)"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.6"
           />
-          {/* Step 1 (square) */}
+          <rect x="60" y="6" width="6" height="2.6" rx="1.3" fill="rgb(3 105 161)" />
           <rect
-            x="14"
-            y="14"
-            width="20"
-            height="7"
-            rx="1"
-            fill="none"
+            x="60"
+            y="12"
+            width="6"
+            height="3"
+            rx="0.5"
+            fill="rgb(240 249 255)"
             stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            strokeWidth="0.5"
           />
-          {/* Decision (diamond) */}
           <polygon
-            points="24,25 33,32 24,39 15,32"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            points="63,18 66,20 63,22 60,20"
+            fill="rgb(224 242 254)"
+            stroke="rgb(125 211 252)"
+            strokeWidth="0.5"
           />
-          {/* End (stadium) */}
-          <rect
-            x="14"
-            y="42"
-            width="20"
-            height="6"
-            rx="3"
-            fill="rgb(186 230 253)"
+          <polygon
+            points="61,25 66.5,25 65,28 59.5,28"
+            fill="rgb(240 249 255)"
             stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            strokeWidth="0.5"
           />
-          {/* Side branch */}
-          <rect
-            x="40"
-            y="29"
-            width="16"
-            height="6"
-            rx="1"
-            fill="none"
+          <path
+            d="M60 31 H66 V34 Q64.5 35 63 34 Q61.5 33 60 34 Z"
+            fill="rgb(240 249 255)"
             stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            strokeWidth="0.5"
           />
-          {/* Arrows (simple lines) */}
-          <line x1="24" y1="9" x2="24" y2="14" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="24" y1="21" x2="24" y2="25" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="24" y1="39" x2="24" y2="42" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="33" y1="32" x2="40" y2="32" stroke="rgb(100 116 139)" strokeWidth="1" />
+          <g stroke="rgb(148 163 184)" strokeWidth="0.7">
+            <line x1="68" y1="7.3" x2="76" y2="7.3" />
+            <line x1="68" y1="13.5" x2="75" y2="13.5" />
+            <line x1="68" y1="20" x2="76" y2="20" />
+            <line x1="68" y1="26.5" x2="74" y2="26.5" />
+            <line x1="68" y1="32.5" x2="75" y2="32.5" />
+          </g>
           {/* Hover story: a token walks the flow, pausing at the decision. */}
           <circle
             className="pv-token"
             opacity="0"
-            cx="24"
-            cy="5.5"
+            cx="22"
+            cy="3"
             r="1.8"
             fill="rgb(2 132 199)"
             style={pv({ '--pv-at': '1100ms' })}
@@ -736,73 +872,105 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'decision-tree':
-      // A question at the root, two branches, four outcomes: the tree the
-      // template builds, drawn as one, with elbow connectors so the levels
-      // read top-down rather than as boxes scattered around a diamond.
+      // A bold root question, two soft follow-ups, four outcomes coloured by
+      // what they mean (stop, wait, wait, go), each with a sticker; No leaves
+      // by the left corner and Yes by the right, as elbows.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <polygon
-            points="40,2 47,8 40,14 33,8"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
           <g fill="none" stroke="rgb(100 116 139)" strokeWidth="0.8">
-            <path d="M40 14 V18 H23 V22" />
-            <path d="M40 14 V18 H57 V22" />
-            <path d="M23 30 V35 H11 V40" />
-            <path d="M23 30 V35 H31 V40" />
-            <path d="M57 30 V35 H51 V40" />
-            <path d="M57 30 V35 H71 V40" />
+            <path d="M32 8 H22 V16" />
+            <path d="M48 8 H58 V16" />
+            <path d="M15 21 H10 V35" />
+            <path d="M29 21 H30 V35" />
+            <path d="M51 21 H50 V35" />
+            <path d="M65 21 H70 V35" />
           </g>
-          {[14, 48].map((x) => (
-            <rect
+          <polygon points="40,2 48,8 40,14 32,8" fill="rgb(3 105 161)" />
+          {[22, 58].map((x) => (
+            <polygon
               key={x}
-              x={x}
-              y="22"
-              width="18"
-              height="8"
-              rx="1.5"
-              fill="none"
-              stroke="rgb(14 165 233)"
-              strokeWidth="1"
-            />
-          ))}
-          {[4, 24, 44, 64].map((x) => (
-            <rect
-              key={x}
-              x={x}
-              y="40"
-              width="14"
-              height="8"
-              rx="4"
+              points={`${x},16 ${x + 7},21 ${x},26 ${x - 7},21`}
               fill="rgb(224 242 254)"
-              stroke="rgb(14 165 233)"
-              strokeWidth="0.9"
-              // Hover story: the outcome the answers lead to.
-              {...(x === 24 ? { className: 'pv-pulse', style: pv({ '--pv-at': '2500ms' }) } : {})}
+              stroke="rgb(125 211 252)"
+              strokeWidth="0.8"
             />
           ))}
-          {/* Hover story: answering the questions lights one path down the
-              tree, root to branch to a single outcome. */}
+          {[
+            [2, 'rgb(254 226 226)', 'rgb(220 38 38)'],
+            [22, 'rgb(254 243 199)', 'rgb(217 119 6)'],
+            [42, 'rgb(254 243 199)', 'rgb(217 119 6)'],
+            [62, 'rgb(220 252 231)', 'rgb(22 163 74)'],
+          ].map(([x, fill, stroke]) => (
+            <g key={x as number}>
+              <rect
+                x={x as number}
+                y="35"
+                width="16"
+                height="8"
+                rx="1.2"
+                fill={fill as string}
+                stroke={stroke as string}
+                strokeWidth="0.9"
+                // Hover story: the outcome the answers lead to.
+                {...(x === 62 ? { className: 'pv-pulse', style: pv({ '--pv-at': '2500ms' }) } : {})}
+              />
+              <circle
+                cx={(x as number) + 15}
+                cy="35.5"
+                r="1.9"
+                fill="white"
+                stroke={stroke as string}
+                strokeWidth="0.6"
+              />
+            </g>
+          ))}
+          {/* The key: go, wait, stop. */}
+          {[
+            [2, 'rgb(220 252 231)', 'rgb(22 163 74)'],
+            [16, 'rgb(254 243 199)', 'rgb(217 119 6)'],
+            [30, 'rgb(254 226 226)', 'rgb(220 38 38)'],
+          ].map(([x, fill, stroke]) => (
+            <g key={x as number}>
+              <rect
+                x={x as number}
+                y="46"
+                width="5"
+                height="2.6"
+                rx="0.6"
+                fill={fill as string}
+                stroke={stroke as string}
+                strokeWidth="0.5"
+              />
+              <line
+                x1={(x as number) + 6.5}
+                y1="47.3"
+                x2={(x as number) + 11}
+                y2="47.3"
+                stroke="rgb(148 163 184)"
+                strokeWidth="0.7"
+              />
+            </g>
+          ))}
+          {/* Hover story: answering yes, yes lights the path down the tree
+              to the green outcome. */}
           <g
             className="pv-new"
             opacity="0"
             fill="none"
-            stroke="rgb(2 132 199)"
+            stroke="rgb(22 163 74)"
             strokeWidth="1.6"
             style={popGroup(1000)}
           >
             <path
               className="pv-draw"
               pathLength="1"
-              d="M40 14 V18 H23 V22"
+              d="M48 8 H58 V16"
               style={pv({ '--pv-at': '1000ms', '--pv-dur': '600ms' })}
             />
             <path
               className="pv-draw"
               pathLength="1"
-              d="M23 30 V35 H31 V40"
+              d="M65 21 H70 V35"
               style={pv({ '--pv-at': '1800ms', '--pv-dur': '600ms' })}
             />
           </g>

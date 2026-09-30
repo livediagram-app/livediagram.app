@@ -1,204 +1,230 @@
-// Tree-scaffold templates beyond the org chart: the OKR goal tree and
-// the website sitemap. Both are the org chart's three-tier geometry
-// (one root, a middle rank, leaf pairs) retold for different domains,
-// which is why they share a file; the org chart itself stays in
-// template-builders-trees.ts with the mind map it shipped alongside.
+// Tree-scaffold templates beyond the org chart: the OKR goal tree here, and
+// the website sitemap in ./template-builders-sitemap (re-exported below so
+// imports stay put). The org chart itself lives in
+// ./template-builders-trees.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
-// Element[]. Sizing constants live inline so each template is
-// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
+// Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/document';
+import {
+  createPinnedArrow,
+  createShape,
+  createText,
+  runsPlainText,
+  type Anchor,
+  type Element,
+  type ShapeElement,
+  type TextRun,
+} from '@livediagram/document';
 
-// OKR tree: one objective branching into three measurable key results,
-// each backed by the two initiatives meant to move it. The KR labels
-// carry real baseline → target numbers so the "measurable" part of the
-// framework is visible in the scaffold, not just implied.
-export function buildOkrTree(cx: number, cy: number): Element[] {
-  const objectiveW = 400;
-  const objectiveH = 88;
-  const krW = 250;
-  const krH = 76;
-  const initW = 210;
-  const initH = 60;
-  // KR centres sit krSpacing apart; each KR's two initiatives sit
-  // initSpread either side of it. No-overlap rule (see buildOrgChart):
-  // krSpacing > 2 * initSpread + initW, and 470 > 2*115 + 210 = 440.
-  const krSpacing = 470;
-  const initSpread = 115;
+export { buildSitemap } from './template-builders-sitemap';
 
-  const objectiveY = cy - 260;
-  const krY = cy - 40;
-  const initY = cy + 150;
+// OKR tree: a quarter's OKRs as the team would actually track them. One
+// objective (bold, a target glyph, its owner and quarter) over three key
+// results, each a card with a PROGRESS RING showing how far it is from
+// baseline to target, the result in bold ("NPS 40 → 55"), and
+// the current reading and owner beneath. The ring and the card's hue say
+// whether it is on track: green for on track, amber for at risk, in the
+// status presets, which read the same under every theme. Under each key
+// result hang the two initiatives meant to move it, each tagged with a
+// DONE / WIP / TO DO badge, so the tree answers the weekly check-in
+// question ("which bets are live, and are they working?") at a glance.
+// Connectors are square rakes without arrowheads: a goal tree shows what
+// rolls up into what, not a flow.
+type KeyResult = {
+  result: string;
+  now: string;
+  owner: string;
+  progress: number;
+  status: 'success' | 'warning';
+  initiatives: [string, string][];
+};
 
-  const objective = {
-    ...createShape('square', cx - objectiveW / 2, objectiveY),
-    width: objectiveW,
-    height: objectiveH,
-    label: 'Objective · Make self-serve customers successful',
-    textSize: 'md' as const,
-    textBold: true,
-    // The objective anchors the whole tree → hero preset.
-    colorPreset: 'bold',
-  };
+const KEY_RESULTS: KeyResult[] = [
+  {
+    result: 'KR1 · NPS 40 → 55',
+    now: 'Now 49 · on track',
+    owner: 'Sam',
+    progress: 60,
+    status: 'success',
+    initiatives: [
+      ['Revamp onboarding', 'badge-done'],
+      ['In-app help centre', 'badge-wip'],
+    ],
+  },
+  {
+    result: 'KR2 · Activation 25% → 40%',
+    now: 'Now 30% · at risk',
+    owner: 'Ana',
+    progress: 33,
+    status: 'warning',
+    initiatives: [
+      ['Guided first project', 'badge-wip'],
+      ['Starter templates', 'badge-todo'],
+    ],
+  },
+  {
+    result: 'KR3 · Churn 3.1% → 2%',
+    now: 'Now 2.4% · on track',
+    owner: 'Leo',
+    progress: 75,
+    status: 'success',
+    initiatives: [
+      ['Win-back emails', 'badge-done'],
+      ['Exit-survey insights', 'badge-wip'],
+    ],
+  },
+];
 
-  const krs = [
-    'KR1 · NPS 40 → 55',
-    'KR2 · Activation 25% → 40%',
-    'KR3 · Monthly churn under 2%',
-  ].map((label, i) => ({
-    ...createShape('square', cx - krW / 2 + (i - 1) * krSpacing, krY),
-    width: krW,
-    height: krH,
-    label,
-    textSize: 'sm' as const,
-    // The measurable middle tier: a tint above the plain initiatives.
-    colorPreset: 'soft',
-  }));
+const MUTED = '#64748b';
+// Goal-tree lines show what rolls up into what: no arrowheads.
+const LINE = { arrowEnds: 'none', arrowStyle: 'angled' } as const;
+// Each KR line leaves the objective from its own point on the bottom edge
+// (lines sharing one anchor are fanned apart at render time, which would
+// skew the rake's first leg).
+const OBJECTIVE_EXITS: [Anchor, number][] = [
+  ['ssw', 0.25],
+  ['s', 0.5],
+  ['sse', 0.75],
+];
 
-  const initiativeLabels: ReadonlyArray<readonly [string, string]> = [
-    ['Revamp onboarding', 'In-app help centre'],
-    ['Guided first project', 'Empty-state templates'],
-    ['Win-back email series', 'Exit-survey insights'],
-  ] as const;
-  const initiatives = krs.flatMap((kr, i) => {
-    const krCenterX = kr.x + krW / 2;
-    const [left, right] = initiativeLabels[i]!;
-    return [
-      {
-        ...createShape('square', krCenterX - initSpread - initW / 2, initY),
-        width: initW,
-        height: initH,
-        label: left,
-        textSize: 'sm' as const,
-      },
-      {
-        ...createShape('square', krCenterX + initSpread - initW / 2, initY),
-        width: initW,
-        height: initH,
-        label: right,
-        textSize: 'sm' as const,
-      },
-    ];
-  });
-
-  const arrows = [
-    ...krs.map((kr) => createPinnedArrow(objective.id, 's', kr.id, 'n')),
-    ...initiatives.map((init, i) =>
-      createPinnedArrow(krs[Math.floor(i / 2)]!.id, 's', init.id, 'n'),
-    ),
-  ];
-
-  return [objective, ...krs, ...initiatives, ...arrows];
-}
-
-// Sitemap: a website's page hierarchy from Home down through four
-// sections to their sub-pages. Same tree bones as the org chart, but
-// wired with orthogonal rake connectors, the sitemap convention, and
-// path captions under each leaf so the boxes read as routes rather
-// than people.
-//
-// A bare `angled` arrow has a single auto elbow, so a parent-bottom to
-// child-top edge would arrive at the child travelling SIDEWAYS along
-// its top edge (the head floats mid-air pointing at nothing). Each
-// connector instead carries two waypoints on the row midline, giving
-// the classic down-across-down rake that arrives vertically at the
-// child's top anchor. Waypoints are chord-midpoint-relative
-// (`curvePoints`), and the row midline IS the chord's mid-Y for a
-// vertical tier pair, so the deltas are purely horizontal and the
-// route translates cleanly when a box is dragged.
-const rakeWaypoints = (
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-): { dx: number; dy: number }[] => {
-  const chordMidX = (from.x + to.x) / 2;
+// Chord-midpoint-relative waypoints for a down-across-down rake, elbows on
+// the chord's mid-height, so the line arrives square on the child's top.
+const rake = (from: { x: number; y: number }, to: { x: number; y: number }) => {
+  const mx = (from.x + to.x) / 2;
   return [
-    { dx: from.x - chordMidX, dy: 0 },
-    { dx: to.x - chordMidX, dy: 0 },
+    { dx: from.x - mx, dy: 0 },
+    { dx: to.x - mx, dy: 0 },
   ];
 };
 
-export function buildSitemap(cx: number, cy: number): Element[] {
-  const homeW = 220;
-  const homeH = 76;
-  const sectionW = 190;
-  const sectionH = 64;
-  const leafW = 160;
-  const leafH = 54;
-  const pathH = 24;
-  // Section centres sit sectionSpacing apart; leaves sit leafSpread
-  // either side of their section. No-overlap rule (see buildOrgChart):
-  // sectionSpacing > 2 * leafSpread + leafW, and 380 > 2*100 + 160 = 360.
-  const sectionSpacing = 380;
-  const leafSpread = 100;
+export function buildOkrTree(cx: number, cy: number): Element[] {
+  const objW = 520;
+  const objH = 96;
+  const krW = 360;
+  const krH = 124;
+  const krGap = 36;
+  const ringD = 84;
+  const pad = 20;
+  const initW = 160;
+  const initH = 64;
+  const titleH = 44;
+  const captionH = 28;
+  const levelGap = 72;
+  const totalW = krW * 3 + krGap * 2;
+  const totalH = titleH + captionH + 32 + objH + levelGap + krH + levelGap + initH;
+  const left = cx - totalW / 2;
+  const top = cy - totalH / 2;
+  const objY = top + titleH + captionH + 32;
+  const krY = objY + objH + levelGap;
+  const initY = krY + krH + levelGap;
 
-  const homeY = cy - 250;
-  const sectionY = cy - 50;
-  const leafY = cy + 140;
-
-  const home = {
-    ...createShape('square', cx - homeW / 2, homeY),
-    width: homeW,
-    height: homeH,
-    label: 'Home',
-    textSize: 'lg' as const,
-    colorPreset: 'bold',
-  };
-
-  type Section = { label: string; leaves: [string, string] };
-  const sections: Section[] = [
-    { label: 'Product', leaves: ['Features', 'Integrations'] },
-    { label: 'Pricing', leaves: ['Plans', 'FAQ'] },
-    { label: 'Resources', leaves: ['Guides', 'Changelog'] },
-    { label: 'About', leaves: ['Team', 'Careers'] },
+  const elements: Element[] = [
+    {
+      ...createText(left, top),
+      width: totalW,
+      height: titleH,
+      label: 'Q3 OKRs · Growth team',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'left',
+    },
+    {
+      ...createText(left, top + titleH),
+      width: totalW,
+      height: captionH,
+      label:
+        'Objective: where we want to be. Key results: how we will know (the ring is progress to target). Initiatives: our bets.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
+    },
   ];
-
-  const elements: Element[] = [home];
   const arrows: Element[] = [];
 
-  sections.forEach((section, i) => {
-    const sectionCenterX = cx + (i - (sections.length - 1) / 2) * sectionSpacing;
-    const sectionEl = {
-      ...createShape('square', sectionCenterX - sectionW / 2, sectionY),
-      width: sectionW,
-      height: sectionH,
-      label: section.label,
-      textSize: 'md' as const,
-      colorPreset: 'soft',
+  const objRuns: TextRun[] = [
+    { text: 'Make self-serve customers successful', bold: true },
+    { text: '\nObjective · Owner: Dana Kim', size: 'sm' },
+  ];
+  const objective: ShapeElement = {
+    ...createShape('square', cx - objW / 2, objY),
+    width: objW,
+    height: objH,
+    label: runsPlainText(objRuns),
+    richText: objRuns,
+    textSize: 'md',
+    iconId: 'target',
+    // The objective anchors the whole tree: the hero preset.
+    colorPreset: 'bold',
+  };
+  elements.push(objective);
+
+  KEY_RESULTS.forEach((kr, i) => {
+    const x = left + i * (krW + krGap);
+    // The card is the node the lines pin to; the ring and the text sit on
+    // it, so it reads as one KR.
+    const card: ShapeElement = {
+      ...createShape('square', x, krY),
+      width: krW,
+      height: krH,
+      label: '',
+      colorPreset: kr.status,
     };
-    elements.push(sectionEl);
+    const ring: ShapeElement = {
+      ...createShape('progress-ring', x + pad, krY + (krH - ringD) / 2),
+      width: ringD,
+      height: ringD,
+      progress: kr.progress,
+      colorPreset: kr.status,
+    };
+    const runs: TextRun[] = [
+      { text: kr.result, bold: true },
+      { text: `\n${kr.now}\nOwner: ${kr.owner}`, size: 'sm' },
+    ];
+    const textX = x + pad + ringD + 16;
+    elements.push(card, ring, {
+      ...createText(textX, krY + pad - 4),
+      width: x + krW - pad - textX,
+      height: krH - (pad - 4) * 2,
+      label: runsPlainText(runs),
+      richText: runs,
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'middle',
+    });
+    const [anchor, fx] = OBJECTIVE_EXITS[i]!;
     arrows.push({
-      ...createPinnedArrow(home.id, 's', sectionEl.id, 'n'),
-      arrowStyle: 'angled',
-      curvePoints: rakeWaypoints({ x: cx, y: homeY + homeH }, { x: sectionCenterX, y: sectionY }),
+      ...createPinnedArrow(objective.id, anchor, card.id, 'n'),
+      ...LINE,
+      curvePoints: rake({ x: objective.x + objW * fx, y: objY + objH }, { x: x + krW / 2, y: krY }),
     });
 
-    section.leaves.forEach((leaf, j) => {
-      const leafCenterX = sectionCenterX + (j === 0 ? -leafSpread : leafSpread);
-      const leafEl = {
-        ...createShape('square', leafCenterX - leafW / 2, leafY),
-        width: leafW,
-        height: leafH,
-        label: leaf,
-        textSize: 'sm' as const,
-      };
-      elements.push(leafEl);
-      // Route caption under the page box, muted so it reads as metadata.
-      elements.push({
-        ...createText(leafCenterX - leafW / 2, leafY + leafH + 6),
-        width: leafW,
-        height: pathH,
-        label: `/${section.label.toLowerCase()}/${leaf.toLowerCase()}`,
+    // Two initiatives under each KR, each centred under its own quarter of
+    // the card so its line drops straight, with its status badge stuck on
+    // the top-right corner.
+    kr.initiatives.forEach(([label, badge], j) => {
+      const ix = x + krW * (j === 0 ? 0.25 : 0.75) - initW / 2;
+      const init: ShapeElement = {
+        ...createShape('square', ix, initY),
+        width: initW,
+        height: initH,
+        label,
         textSize: 'sm',
-        textAlignX: 'center',
-        textColor: '#64748b',
+      };
+      const badgeH = 24;
+      elements.push(init, {
+        ...createShape('sticker', ix + initW - badgeH * 2.2, initY - badgeH / 2 - 2),
+        width: badgeH * 2.5,
+        height: badgeH,
+        stickerId: badge,
+        rotation: j === 0 ? -3 : 3,
       });
       arrows.push({
-        ...createPinnedArrow(sectionEl.id, 's', leafEl.id, 'n'),
-        arrowStyle: 'angled',
-        curvePoints: rakeWaypoints(
-          { x: sectionCenterX, y: sectionY + sectionH },
-          { x: leafCenterX, y: leafY },
+        ...createPinnedArrow(card.id, j === 0 ? 'ssw' : 'sse', init.id, 'n'),
+        ...LINE,
+        curvePoints: rake(
+          { x: x + krW * (j === 0 ? 0.25 : 0.75), y: krY + krH },
+          { x: ix + initW / 2, y: initY },
         ),
       });
     });

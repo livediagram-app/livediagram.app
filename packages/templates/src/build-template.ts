@@ -12,20 +12,20 @@ import {
   buildLaptopWireframe,
   buildMobileWireframe,
 } from './template-builders-wireframes';
-import { buildSlideDeck, buildStoryboard } from './template-builders-slides';
+import { buildSlideDeck } from './template-builders-slides';
+import { buildStoryboard } from './template-builders-storyboard';
 import {
   buildKanban,
   buildPrioritizationMatrix,
   buildRetrospective,
   buildSwot,
 } from './template-builders-boards';
-import {
-  buildCloudArchitecture,
-  buildErDiagram,
-  buildSequenceDiagram,
-  buildSystemArchitecture,
-} from './template-builders-technical';
-import { buildStateMachine, buildUmlClass } from './template-builders-uml';
+import { buildSystemArchitecture } from './template-builders-technical';
+import { buildCloudArchitecture } from './template-builders-cloud';
+import { buildErDiagram } from './template-builders-er';
+import { buildSequenceDiagram } from './template-builders-sequence';
+import { buildUmlClass } from './template-builders-uml';
+import { buildStateMachine } from './template-builders-state-machine';
 import { buildFloorPlan } from './template-builders-floorplan';
 import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
@@ -45,11 +45,9 @@ import {
   buildPyramid,
   buildVenn,
 } from './template-builders-diagrams';
-import {
-  buildMilestoneTimeline,
-  buildMilestoneTimelineVertical,
-  buildTimeline,
-} from './template-builders-timelines';
+import { buildTimeline } from './template-builders-timelines';
+import { buildMilestoneTimeline } from './template-builders-milestones';
+import { buildMilestoneTimelineVertical } from './template-builders-milestones-vertical';
 import {
   buildApprovalWorkflow,
   buildBlank,
