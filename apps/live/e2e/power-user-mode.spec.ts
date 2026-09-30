@@ -132,7 +132,8 @@ test.describe('Power user mode', () => {
     await page.mouse.click(640, 420);
     const shape = page.locator('[data-element-id]').first();
     await expect(shape).toBeVisible();
-    await shape.click();
+    // Placing selects the square; a click on it now would deselect it
+    // (docs/specs/008-canvas/canvas-and-palette.md "Click the selected element again").
     const toolbar = page.getByRole('toolbar', { name: 'Selected Square' });
     await expect(toolbar).toBeVisible();
     await expect(page.getByText('Selected Square', { exact: true })).toHaveCount(0);

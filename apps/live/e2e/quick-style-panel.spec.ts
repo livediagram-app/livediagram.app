@@ -245,7 +245,9 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    // Clear of the panel, which sits on the canvas's left (docs/specs/008-canvas/quick-style-panel.md
+    // "Where it sits"), so the right-click below lands on the circle.
+    await drawShape(page, 'o', { x: 800, y: 300 });
     const widths = panel(page).getByRole('radiogroup', { name: 'Stroke width' });
     await widths.getByRole('radio', { name: 'Medium' }).focus();
     await page.keyboard.press('ArrowRight');
