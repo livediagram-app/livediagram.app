@@ -50,8 +50,11 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   await page.getByRole('button', { name: 'Menu for Quarterly plan' }).click();
   await page.getByRole('menu').last().getByText('Delete', { exact: true }).click();
   const confirm = page.getByRole('dialog');
-  await expect(confirm).toContainText('It can be restored from Settings › Trash for 30 days.');
-  await confirm.getByRole('button', { name: 'Delete document' }).click();
+  await expect(confirm.getByRole('heading')).toHaveText('Please confirm');
+  // No share links, no shared tabs: just the question.
+  await expect(confirm).toContainText('Delete "Quarterly plan"?');
+  await expect(confirm).not.toContainText('share links');
+  await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Menu for Quarterly plan' })).toHaveCount(0);
 
   // The share of lists: gone from the api's list too. The row leaves at once and the delete follows in
