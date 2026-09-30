@@ -187,7 +187,7 @@ The shapes group learns and keeps the shapes a user reaches for.
   empty, and that is kept: the defaults never come back on their own.
 - **Pinning without a drag:** a right-click or long-press on a slot, or
   Shift+F10 / the context-menu key on a focused slot, offers **Pin to dock**
-  (frequent) or **Unpin** (pinned), with the same limit and refusal.
+  (a slot) or **Unpin** (a pinned shape), with the same limit and refusal.
 - **Stored per user:** the pick counts and the pinned kinds (stored only once
   the user changes them, so "never changed" still means the defaults) live in the
   user's synced preferences ([User preferences](../007-editor/user-preferences.md)),
