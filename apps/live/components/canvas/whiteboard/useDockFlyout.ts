@@ -11,9 +11,6 @@ import { useHoverClose } from './useHoverClose';
 
 export type DockFlyoutKind = WhiteboardPenId | 'eraser' | 'settings' | 'shapes' | 'slot';
 
-// The flyouts whose openers live in the Shapes group: they close when that group goes (Simple mode).
-export const SHAPES_GROUP_FLYOUTS: readonly DockFlyoutKind[] = ['shapes', 'slot'];
-
 export type DockFlyout = {
   kind: DockFlyoutKind;
   // Opened by the pointer resting on its button: closes again when it leaves.
@@ -46,12 +43,13 @@ export function useDockFlyout() {
   const open = (
     kind: DockFlyoutKind,
     opener: HTMLElement,
-    extra: { hover?: boolean; slot?: SlotSource } = {},
+    // `viaKey`: opened by a key (S), which, like a hover, sends the focus back to the board on close.
+    extra: { hover?: boolean; viaKey?: boolean; slot?: SlotSource } = {},
   ) =>
     setFlyout({
       kind,
       hover: extra.hover ?? false,
-      viaHover: extra.hover ?? false,
+      viaHover: (extra.hover ?? false) || (extra.viaKey ?? false),
       left: measure(opener),
       openerKey: opener.dataset.dockItem ?? '',
       slot: extra.slot,

@@ -12,6 +12,15 @@ describe('searchWhiteboardShapes', () => {
     expect(searchWhiteboardShapes('hex')[0]!.key).toBe('hexagon');
   });
 
+  it('finds the sticky note by its names', () => {
+    for (const q of ['sticky', 'note', 'post-it']) {
+      expect(
+        searchWhiteboardShapes(q).map((e) => e.key),
+        q,
+      ).toContain('sticky');
+    }
+  });
+
   it('finds a shape by keyword', () => {
     expect(searchWhiteboardShapes('database')[0]!.key).toBe('cylinder');
   });

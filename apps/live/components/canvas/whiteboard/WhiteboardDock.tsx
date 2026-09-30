@@ -1,13 +1,13 @@
 'use client';
 
 // The whiteboard's floating dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// four groups side by side at the bottom centre, in place of the palette: Drawing tools, Shapes
-// (only in the With shapes mode), History and Settings. Each group is its own
+// four groups side by side at the bottom centre, in place of the palette: Drawing tools, Shapes,
+// History and Settings. Each group is its own
 // toolbar with one Tab stop.
 // Flyouts open ABOVE the dock, one at a time, so nothing moves under the pointer when a tool is
 // picked; on a narrow screen the groups scroll sideways together.
 
-import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
@@ -31,7 +31,7 @@ import { SettingsGroup } from './SettingsGroup';
 import { ShapesFlyout } from './ShapesFlyout';
 import { PINS_FULL_HINT, ShapesGroup } from './ShapesGroup';
 import { SlotGhost } from './SlotGhost';
-import { SHAPES_GROUP_FLYOUTS, useDockFlyout, type DockFlyout } from './useDockFlyout';
+import { useDockFlyout, type DockFlyout } from './useDockFlyout';
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 
@@ -59,22 +59,25 @@ export function WhiteboardDock({
   const { appearance } = useAppearance();
   const fly = useDockFlyout();
   const [hint, setHint] = useState<{ left: number } | null>(null);
-  const showShapes = model.dockMode === 'shapes';
 
-  // A flyout of a group that goes (Simple mode, maybe from another device) closes with it.
-  const flyoutKind = fly.flyout?.kind;
+  // S asks for the Shapes flyout: opened as a hover opens it (its field focused, the focus going back
+  // to the board when it closes); only Escape, a pick or a press elsewhere closes it.
+  const { shapesRequest } = model;
+  const seenRequest = useRef(shapesRequest);
   useEffect(() => {
-    if (!showShapes && flyoutKind && SHAPES_GROUP_FLYOUTS.includes(flyoutKind)) fly.close();
-  }, [showShapes, flyoutKind, fly]);
-
-  // The mode changes which groups show: the Settings flyout (open while the mode is chosen) follows
-  // its cog to where the re-centred dock put it.
-  const { reanchor } = fly;
-  useLayoutEffect(() => {
-    reanchor();
-    // Only a mode switch moves the openers.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model.dockMode]);
+    if (shapesRequest === seenRequest.current) return;
+    seenRequest.current = shapesRequest;
+    const opener = document.querySelector<HTMLElement>(
+      '[data-whiteboard-dock] [data-dock-item="shapes"]',
+    );
+    if (!opener) return;
+    if (fly.flyout?.kind === 'shapes') {
+      document.querySelector<HTMLElement>('#whiteboard-flyout-shapes input')?.focus();
+      return;
+    }
+    console.debug('[whiteboard-dock] Shapes flyout opened by S');
+    fly.open('shapes', opener, { viaKey: true });
+  }, [shapesRequest, fly]);
 
   useEffect(() => {
     if (!hint) return;
@@ -197,7 +200,6 @@ export function WhiteboardDock({
     <div
       data-floating-panel=""
       data-whiteboard-dock=""
-      data-dock-mode={model.dockMode}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -246,15 +248,13 @@ export function WhiteboardDock({
         className="-m-3 flex items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
       >
         <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
-        {showShapes ? (
-          <ShapesGroup
-            model={model}
-            fly={fly}
-            slotDrag={slotDrag}
-            refusing={refusing}
-            pickAndClose={pickAndClose}
-          />
-        ) : null}
+        <ShapesGroup
+          model={model}
+          fly={fly}
+          slotDrag={slotDrag}
+          refusing={refusing}
+          pickAndClose={pickAndClose}
+        />
         <HistoryGroup canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
         <SettingsGroup fly={fly} />
         {drag ? (

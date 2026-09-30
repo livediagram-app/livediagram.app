@@ -153,6 +153,8 @@ export type EditorKeyboardShortcutsDeps = {
     pickText: () => void;
     pickShape: (id: WhiteboardShapeId) => void;
     pickPath: () => void;
+    // S: the Shapes flyout, opened as a hover opens it, its search field focused.
+    openShapes: () => void;
   } | null;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
@@ -345,6 +347,8 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   c: (l) => l.whiteboard?.pickShape('cylinder'),
   l: (l) => l.whiteboard?.pickShape('line'),
   a: (l) => l.whiteboard?.pickShape('arrow'),
+  // The Shapes flyout, its search focused: the next letters search at once.
+  s: (l) => l.whiteboard?.openShapes(),
 };
 
 // The key each whiteboard dock tool shows (and announces in aria-keyshortcuts).
@@ -363,4 +367,5 @@ export const WHITEBOARD_TOOL_KEYS = {
   cylinder: 'C',
   line: 'L',
   arrow: 'A',
+  shapes: 'S',
 } as const;

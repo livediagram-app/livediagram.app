@@ -6,7 +6,15 @@
 // text colour on a slot. Fixed 20 px box, so a result or a slot never changes size.
 
 import type { WhiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
-import { DOCK_ICON_PX, ShapeGlyph } from './whiteboard-icons';
+import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
+import { DOCK_ICON_PX, ShapeGlyph, StickyGlyph } from './whiteboard-icons';
+
+// The key that picks a catalogue shape from anywhere on the board, if it has one (R, O, D, C, L, A,
+// and N for the sticky note): shown on its button or entry and in aria-keyshortcuts.
+export function shapeShortcut(entry: WhiteboardShapeEntry): string | undefined {
+  if (entry.dockShape) return WHITEBOARD_TOOL_KEYS[entry.dockShape];
+  return entry.glyph === 'sticky' ? WHITEBOARD_TOOL_KEYS.sticky : undefined;
+}
 
 export function ShapePreview({ entry, colour }: { entry: WhiteboardShapeEntry; colour?: string }) {
   return (
@@ -16,7 +24,13 @@ export function ShapePreview({ entry, colour }: { entry: WhiteboardShapeEntry; c
       className="flex shrink-0 items-center justify-center"
       style={{ width: DOCK_ICON_PX, height: DOCK_ICON_PX, color: colour }}
     >
-      {entry.dockShape ? <ShapeGlyph id={entry.dockShape} /> : entry.tile?.icon}
+      {entry.dockShape ? (
+        <ShapeGlyph id={entry.dockShape} />
+      ) : entry.glyph === 'sticky' ? (
+        <StickyGlyph />
+      ) : (
+        entry.tile?.icon
+      )}
     </span>
   );
 }

@@ -41,10 +41,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Whiteboard|Changed|ShapePinned':
     'Someone pinned a shape to their whiteboard dock, so it stays there beside the shapes they use most.',
   'Whiteboard|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
-  'Whiteboard|Changed|ModeSimple':
-    'Someone set their whiteboard dock to Simple: just the drawing tools and undo and redo.',
-  'Whiteboard|Changed|ModeShapes':
-    'Someone set their whiteboard dock to With shapes: the drawing tools, undo and redo, and the shapes.',
   'Whiteboard|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
   'Whiteboard|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
   'Whiteboard|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
@@ -867,7 +863,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Whiteboard|Selected':
     'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
   'Whiteboard|Changed':
-    "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background, the dock's mode or its pinned shapes.",
+    "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background or its pinned shapes.",
   'Whiteboard|Toggled':
     'Someone switched shape recognition on a whiteboard on or off, or flipped the stroke they were drawing between ink and a shape.',
   'Cta|Opened':

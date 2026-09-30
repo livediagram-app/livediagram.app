@@ -11,11 +11,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
-import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import type { WhiteboardShapeEntry, WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
 import type { ShapeSlots, SlotSource } from '@/lib/whiteboard-shape-slots';
-import { ShapePreview } from './ShapePreview';
+import { ShapePreview, shapeShortcut } from './ShapePreview';
 import type { ShapeSlotDragApi } from './useShapeSlotDrag';
 import { useShapeSearch } from './useShapeSearch';
 
@@ -190,7 +189,7 @@ function ShapeEntry({
     longPressed.current = true;
     onMenu();
   });
-  const key = entry.dockShape ? WHITEBOARD_TOOL_KEYS[entry.dockShape] : undefined;
+  const key = shapeShortcut(entry);
   return (
     <Tooltip label={entry.label}>
       <div

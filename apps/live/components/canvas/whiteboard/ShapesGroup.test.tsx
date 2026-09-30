@@ -57,7 +57,7 @@ describe('the pinned side', () => {
   });
 
   it('shows the key of every pinned shape that has one, like every dock tool', () => {
-    renderDock(model('select', { pinnedShapes: ['arrow', 'rectangle', 'star', 'line'] }));
+    renderDock(model('select', { pinnedShapes: ['arrow', 'rectangle', 'star', 'line', 'sticky'] }));
     const keys = [...shapesBar().querySelectorAll<HTMLElement>('[data-pinned-slot]')].map((b) => [
       b.getAttribute('aria-label'),
       b.getAttribute('aria-keyshortcuts'),
@@ -68,7 +68,22 @@ describe('the pinned side', () => {
       ['Rectangle', 'R', 'R'],
       ['Star', null, ''],
       ['Line', 'L', 'L'],
+      ['Sticky note', 'N', 'N'],
     ]);
+  });
+
+  it('presses a pinned sticky note while one is in hand', () => {
+    renderDock(model('sticky', { pinnedShapes: ['sticky'], armedShape: 'sticky' }));
+    expect(
+      within(shapesBar()).getByRole('button', { name: 'Sticky note' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+  });
+
+  it('presses Shapes for a sticky note in hand that is not pinned', () => {
+    renderDock(model('sticky', { pinnedShapes: [], armedShape: 'sticky' }));
+    expect(
+      within(shapesBar()).getByRole('button', { name: 'Shapes' }).getAttribute('aria-pressed'),
+    ).toBe('true');
   });
 
   it('arms a pinned kind with a press', () => {

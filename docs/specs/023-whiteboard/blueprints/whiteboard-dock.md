@@ -2,7 +2,7 @@
 
 Derived from [Whiteboard](../whiteboard.md) "What a whiteboard shows" and "Shape slots". The dock's
 tools, pens, eraser and backgrounds are in [whiteboard-round-one](whiteboard-round-one.md); this
-file owns the dock's layout (four groups), its modes, the Shapes flyout with its search and the
+file owns the dock's layout (four groups), the Shapes flyout with its search and the
 shape slots. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)
 as `Dn`.
 
@@ -29,9 +29,9 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/whiteboard-shape-slots.ts`                      | Default pins, the six slots, pick record, drops, outcomes (pure)       |
 | `lib/whiteboard-dock-prefs.ts`                       | The dock's synced preferences: parse and write                         |
 | `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference       |
-| `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape` and the dock prefs on the dock model  |
+| `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs      |
 | `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`, `paletteRank`, shared            |
-| `lib/user-preferences.ts`                            | `whiteboardDockMode`, `whiteboardPinnedShapes`, `whiteboardShapePicks` |
+| `lib/user-preferences.ts`                            | `whiteboardPinnedShapes`, `whiteboardShapePicks`                       |
 | `components/primitives/SearchInput.tsx`              | `listboxId`: the box as a combobox over an always-shown listbox        |
 | `apps/telemetry/app/event-explanations.ts`           | Sentences for the new tokens                                           |
 
@@ -40,7 +40,6 @@ Scope, by file (all under `apps/live/` unless stated):
 | Term            | Identifier                                           | Meaning                                                             |
 | --------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
 | Group           | `DockToolbar`, `data-dock-group`                     | One pill: `drawing`, `shapes`, `history`, `settings`                |
-| Dock mode       | `WhiteboardDockMode` (`simple` / `shapes`)           | Which groups show; Full drawing (`full`) is listed, not selectable  |
 | Shape catalogue | `WHITEBOARD_SHAPE_CATALOGUE`                         | Every shape a whiteboard arms, keyed by `WhiteboardShapeKey`        |
 | Shape key       | `WhiteboardShapeKey`                                 | A dock shape id, a shape kind, or `kind:choice`                     |
 | Pinned shape    | `pinnedShapes`, `data-pinned-slot`                   | A kind on the bar's pinned side, before the separator (up to seven) |
@@ -56,32 +55,31 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 
 ## Behaviour and state
 
-### Groups and modes
+### Groups
 
-- Order: Drawing tools, Shapes, History, Settings. `dockMode === 'simple'` renders every group but
-  Shapes.
-- **Drawing tools**: `select`, `main`, `second`, `third`, `text`, `sticky`, `path`, `eraser`, with
-  dividers after Select, after the markers and before the eraser.
-- **Shapes**: `pinned:<key>` × 0 to 7, the separator (`data-pinned-separator`), `shapes`. The
-  slots live in the Shapes flyout, not on the bar.
+- Order: Drawing tools, Shapes, History, Settings, always all four.
+- **Drawing tools**: `select`, `main`, `second`, `third`, `text`, `path`, `eraser`, with dividers
+  after Select, after the markers and before the eraser. The sticky note is a shape (below), not a
+  drawing tool.
+- **Shapes**: `pinned:<key>` × 0 to 7, the separator (`data-pinned-separator`), `shapes` (key S).
+  The slots live in the Shapes flyout, not on the bar.
 - **History**: `undo`, `redo`; `aria-disabled` (not `disabled`) when `!canUndo` / `!canRedo`, a
   press then does nothing, and the button stays in the arrow-key order.
 - **Settings**: `settings` (the cog) alone, last.
 - Each group is a `DockToolbar`: its own roving tab stop (`focusKey`, the last focused button; while
   none is rendered, the group's first button), ArrowLeft / ArrowRight wrap within the group, Home /
   End jump. Tab moves between groups.
-- Switching mode (Settings, Mode): `setDockMode(mode)`; the wrapper re-centres by itself (it is
-  centred with `left: 50%` and `translate: -50%`); a flyout whose opener is in the Shapes group
-  (`SHAPES_GROUP_FLYOUTS`: `shapes`, `slot`) closes when that group goes. The Settings flyout stays
-  open; its cog moves (Shapes sat before it), so a layout effect on `dockMode` calls
-  `reanchor()`, which measures the opener again and moves the flyout's centre onto it before paint.
-- The shape keys (R, O, D, C, L, A) work in every mode (D15): the dock only hides buttons.
+- **S** (`WHITEBOARD_EDIT_KEYS`, not while typing): `openShapes()` raises `shapesRequest` on the
+  dock model; the dock answers by opening the Shapes flyout as a hover opens it (`viaKey`, so its
+  field takes the focus and closing gives the focus back to the board). With the flyout already
+  open it focuses the field. Only Escape, a pick or a press elsewhere closes it: once the field
+  has the focus, S types there.
 
 ### Flyouts
 
 - One at a time (`useDockFlyout`): `{ kind, hover, viaHover, left, openerKey, slot? }`, `left`
   measured once from the opener's centre against `[data-whiteboard-dock]` (and again by
-  `reanchor()`). Kinds: a pen id, `eraser`, `settings`, `shapes`, `slot`.
+  `reanchor()` on scroll). `viaHover` is set by a hover or by S (`viaKey`). Kinds: a pen id, `eraser`, `settings`, `shapes`, `slot`.
 - Hover opens only the Shapes flyout (pen or mouse; never touch); the rest open on a press. `hover`
   drives the delayed close (`HOVER_CLOSE_MS`); a press on a hover flyout, or working in its field
   (`stick()`), clears it. `viaHover` stays set for the flyout's life.
@@ -100,9 +98,7 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 ### Settings
 
 - Sections, top to bottom: **Background**, **Cursor** (Crosshair + nib first, the default),
-  **Drawing**, **Mode** (Simple / With shapes / Full drawing). Full drawing is a `FlyoutOption` with
-  `unavailable`: `aria-disabled="true"`, no pick, accessible name "Full drawing, coming soon", a
-  "Coming soon" caption under its label.
+  **Drawing**, each a row of switch buttons (one of several).
 
 ### The Shapes flyout
 
@@ -132,14 +128,19 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 
 - The six Shapes flyout kinds first, keyed and labelled as the dock names them (`rectangle`,
   `ellipse`, `diamond`, `cylinder`, `line`, `arrow`); the first four take their palette tile's
-  keywords (so "square" finds Rectangle), Line and Arrow their own. Then every palette shape tile
+  keywords (so "square" finds Rectangle), Line and Arrow their own. Then the **sticky note** (key
+  `sticky`, label "Sticky note", keywords "sticky note post-it postit memo card" and the palette
+  tile's description, group Write, intent the plain `{ type: 'sticky' }`, drawn with the dock's
+  sticky glyph in ink: `glyph: 'sticky'`); `pickSticky` (key N) is `pickShape('sticky')`, so N
+  counts as a pick and the note joins the slots and the pins like any kind. Then every palette shape tile
   (`SHAPE_TILES`) not in the Components category and not already one of the six, keyed `kind` or
   `kind:choice` (`shapeTileSearchItem`), labelled with the tile's display name.
 - An entry's group is its tile's palette category (`section`, or `toolGroup` inside Tools); Line
   and Arrow file under Draw. Groups sort in `PALETTE_CATEGORIES` order; that order is the
   catalogue's, which breaks search ties and extends the slots' fallback.
 - Intent: the six via `whiteboardShapeIntent`; a tile entry `{ type: 'shape', kind, ...choice,
-board: true }`. `armedWhiteboardShape(intent)` reads a board intent back to its key.
+board: true }`. `armedWhiteboardShape(intent)` reads a board intent (or the plain sticky intent;
+  an Event Storming note, with a fill or a kind, is not it) back to its key.
 
 ### Shape slots
 
@@ -154,8 +155,10 @@ board: true }`. `armedWhiteboardShape(intent)` reads a board intent back to its 
   and slots; an empty slot takes the next fallback kind not already showing (the Shapes flyout
   order, rectangle to arrow, then the catalogue). With the default pins: Most used Ellipse,
   Diamond, Cylinder; Recent Line, Parallelogram, Hexagon.
-- Pressed state on the bar: a pinned shape when `armedShape` is its key; Shapes when a board shape
-  is armed that is not pinned.
+- Pressed state on the bar: a pinned shape when `armedShape` is its key; Shapes when a shape (the
+  sticky note included) is armed that is not pinned.
+- Keys: `shapeShortcut(entry)` gives R, O, D, C, L, A for the flyout six and N for the sticky note;
+  a pinned shape and a flyout entry show it bottom right and in `aria-keyshortcuts`.
 - **Drag** (`useShapeSlotDrag`, one for both sources, hosted by the dock): pointerdown (primary
   button) on a flyout entry (`from: 'flyout'`) or a pinned shape (`from: 'pinned'`) arms; travel
   of `SHAPE_SLOT_DRAG_PX` starts the drag, calls `stick()` so the flyout stays open, and measures
@@ -181,7 +184,7 @@ board: true }`. `armedWhiteboardShape(intent)` reads a board intent back to its 
 
 ```ts
 // lib/whiteboard-shape-catalogue.ts
-export type WhiteboardShapeKey = WhiteboardShapeId | ShapeKind | `${ShapeKind}:${string}`;
+export type WhiteboardShapeKey = WhiteboardShapeId | 'sticky' | ShapeKind | `${ShapeKind}:${string}`;
 export type WhiteboardShapeEntry = {
   key: WhiteboardShapeKey;
   label: string;
@@ -190,6 +193,7 @@ export type WhiteboardShapeEntry = {
   intent: PendingDraw;
   dockShape?: WhiteboardShapeId;
   tile?: PaletteTileDef;
+  glyph?: 'sticky';
 };
 export const WHITEBOARD_SHAPE_CATALOGUE: readonly WhiteboardShapeEntry[];
 export function whiteboardShapeEntry(key: string): WhiteboardShapeEntry | undefined;
@@ -220,22 +224,20 @@ export function unpinShape(pinned: readonly WhiteboardShapeKey[], key: Whiteboar
 export function dropIndicatorX(layout: SlotLayout, source: SlotSource, target: SlotDropTarget): number | null;
 
 // lib/whiteboard-dock-prefs.ts
-export type WhiteboardDockMode = 'simple' | 'shapes';
-export function readWhiteboardDockPrefs(prefs: UserPreferences): { mode; pinned; picks };
-export function withWhiteboardDockPrefs(prefs: UserPreferences, patch: Partial<{ mode; pinned; picks }>): UserPreferences;
+export function readWhiteboardDockPrefs(prefs: UserPreferences): { pinned; picks };
+export function withWhiteboardDockPrefs(prefs: UserPreferences, patch: Partial<{ pinned; picks }>): UserPreferences;
 
 // useDockFlyout gains stick() and reanchor(); WhiteboardFlyout gains restoreFocus.
 // The dock model (useWhiteboard) gains
 pickShape(key: WhiteboardShapeKey): void; // was the six ids only
 pickSearchedShape(key: WhiteboardShapeKey): void;
 armedShape: WhiteboardShapeKey | null;
-dockMode: WhiteboardDockMode; setDockMode(mode: WhiteboardDockMode): void;
+shapesRequest: number; openShapes(): void; // S
 pinnedShapes: WhiteboardShapeKey[]; slotShapes: ShapeSlots;
 applySlotOutcome(outcome: SlotOutcome): void;
 ```
 
-Parsing (`readWhiteboardDockPrefs`) rejects: a mode other than `simple` / `shapes` (including
-`full`) → `shapes`; a pinned value that is absent or not an array → the default pins; a pinned
+Parsing (`readWhiteboardDockPrefs`) rejects: a pinned value that is absent or not an array → the default pins; a pinned
 entry that is not a catalogue key, or a repeat → dropped; beyond seven → dropped; picks that are
 not a plain object → none; a pick entry whose key is not a catalogue key, or whose value is not
 `[positive integer, finite ms >= 0]` → dropped. An unknown key passed to `pickShape` arms nothing
@@ -245,41 +247,38 @@ and warns.
 
 | Field                    | Where                                                    | Class           | Travels        |
 | ------------------------ | -------------------------------------------------------- | --------------- | -------------- |
-| `whiteboardDockMode`     | user preferences blob (unset = With shapes)              | synced per user | across devices |
 | `whiteboardPinnedShapes` | user preferences blob (unset = defaults; `[]` = emptied) | synced per user | across devices |
 | `whiteboardShapePicks`   | user preferences blob (unset = none)                     | synced per user | across devices |
 
 Written through `useWhiteboardDockPrefs` off the freshest stored preferences
 (`readUserPreferences()`), then `setUserPreferences` and `writeUserPreferences(prefs, ownerId)`
 (localStorage cache plus the fire-and-forget PUT), as `useSwatchOverrides` does. A guest's owner id
-is its participant id. The default mode and empty counts are removed rather than stored; the pins
+is its participant id. Empty counts are removed rather than stored; the pins
 are stored once changed, even empty. No migration: new optional keys; an older reader ignores them.
 
 ## Errors and edge cases
 
 - A pinned or counted kind the palette no longer offers: dropped on read; its slot refills.
-- A stored `full` mode (a newer client): read as With shapes.
 - Seven pinned and a drop beside them: refused with the hint; the dragged slot is where it was.
 - Every pin unpinned: the side stays empty (`[]` stored); the defaults never return on their own.
 - A drag that measures no separator: logged, no drag.
 - A slot re-ranked away while focused: the group's tab stop falls back to its first button.
-- Simple mode set from another device while the Shapes flyout is open: the flyout closes.
 - The blob's 4 KB cap: at most 20 picks (about 600 bytes) and 7 pins (about 110 bytes).
 - Two kinds picked at the same millisecond (another device): the catalogue order breaks the tie.
 
 ## Security and trust
 
 Keys come from a closed catalogue and are validated on read; telemetry carries fixed tokens only
-(`ShapeSearch`, `ShapePinned`, `ShapeUnpinned`, `ModeSimple`, `ModeShapes`), never a kind.
+(`ShapeSearch`, `ShapePinned`, `ShapeUnpinned`), never a kind.
 
 ## Performance and limits
 
 - The catalogue is built once at module load (about 70 entries); search is a linear rank and sort
   per keystroke, well under a millisecond.
 - The dock does no layout measurement at rest: flyout placement, the hint and a slot drag measure
-  once, on opening or on the drag's start; re-anchoring measures one button per mode switch or
-  scroll event while a flyout is open.
-- Widest dock: 983 px (seven pins, 1600 px desktop, Chromium and WebKit).
+  once, on opening or on the drag's start; re-anchoring measures one button per scroll event while a flyout is
+  open.
+- Widest dock: 970 px (seven pins, 1600 px desktop, Chromium and WebKit).
 
 ## Presentation and UX
 
@@ -297,14 +296,14 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 - Copy: groups "Drawing tools", "Shapes", "History", "Settings"; buttons "Settings",
   "Undo", "Redo", "Text", "Sticky note", "Path tool", "Shapes", a shape by its label; flyout rows
   named (for screen readers only) "Recent shapes", "Most used shapes";
-  Settings "Mode" with "Simple", "With shapes", "Full drawing" / "Coming soon"; search placeholder
+  search placeholder
   and name "Search shapes", clear "Clear the shape search", empty "No shapes match"; slot menu "Pin
   to dock", "Unpin"; hint "Seven shapes are pinned. Drag one out to swap."
 
 ## Accessibility
 
 - Four `role="toolbar"` groups ("Drawing tools", "Shapes", "History", "Settings"), each labelled, horizontal, one tab stop, arrow keys within.
-- Unavailable controls (Undo, Redo, Full drawing) use `aria-disabled` and stay focusable.
+- Unavailable controls (Undo, Redo) use `aria-disabled` and stay focusable.
 - The Shapes flyout: `role="combobox"` field with `aria-controls` / `aria-expanded` /
   `aria-autocomplete="list"` / `aria-activedescendant`; a `role="listbox"` ("Shapes", or "Matching
   shapes" while typing) of `role="option"` entries (`aria-selected`, labelled by name, the set's
@@ -318,15 +317,15 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 ## Web Experience
 
 - Zero layout shift: picking a tool or opening a flyout never moves a group (measured in Chromium
-  and WebKit); only a pin or a mode switch, both the user's own act, changes the dock's width.
+  and WebKit); only a pin, the user's own act, changes the dock's width.
 - INP: every dock handler sets state; search is synchronous and small.
 
 ## Observability
 
 - `Whiteboard · Selected · ShapeSearch` (a typed result picked), `Whiteboard · Changed ·
 ShapePinned` / `ShapeUnpinned` (a replacement reports `ShapePinned`; a reorder reports nothing),
-  `Whiteboard · Changed · ModeSimple` / `ModeShapes`, fired before the preference is written.
-- Logs: `[whiteboard] unknown shape` (warn), `[whiteboard-dock] shape drag started`, `shape
+  fired before the preference is written.
+- Logs: `[whiteboard] unknown shape` (warn), `[whiteboard-dock] Shapes flyout opened by S` (debug), `[whiteboard-dock] shape drag started`, `shape
 dropped`, `shape drag cancelled`, `pin refused: side full` (debug), `shape drag: no Shapes bar
 to measure` (warn).
 
@@ -338,8 +337,8 @@ to measure` (warn).
 | Preselected set, six results, ranking, grid movement      | `apps/live/lib/whiteboard-shape-search.test.ts`                            |
 | Default pins, the six slots, pick record, drops, outcomes | `apps/live/lib/whiteboard-shape-slots.test.ts`                             |
 | Preference parsing and writing, emptied pins kept         | `apps/live/lib/whiteboard-dock-prefs.test.ts`                              |
-| Picks counted, search pick, mode, pins, unpin keeps count | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                            |
-| Groups, order, tab stops, arrows, modes, re-anchoring     | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`           |
+| Picks counted, search pick, S request, pins, unpin count  | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                            |
+| Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`           |
 | Pinned bar, pressed state, Unpin menu, drags both ways    | `apps/live/components/canvas/whiteboard/ShapesGroup.test.tsx`              |
 | Shapes flyout: hover focus, slots, results, menu, closing | `apps/live/components/canvas/whiteboard/ShapesFlyout.test.tsx`             |
 | Telemetry sentences                                       | `apps/telemetry/app/event-explanation.test.ts`                             |
@@ -360,8 +359,8 @@ to measure` (warn).
 | `SHAPE_SLOT_DRAG_PX`              | 6       | spec                     | 4 to 10       |
 | `HINT_MS`                         | 4000    | D17                      | 3000 to 6000  |
 | Group gap                         | 12 px   | D18                      | 8 to 16       |
-| Dock drops beside the cluster     | 1760 px | D9 (widest dock 983 px)  | at least 1735 |
+| Dock drops beside the cluster     | 1760 px | D9 (widest dock 970 px)  | at least 1720 |
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md): D9, D15 to D22.
+See [DEFAULTS.md](DEFAULTS.md): D9, D16 to D22.

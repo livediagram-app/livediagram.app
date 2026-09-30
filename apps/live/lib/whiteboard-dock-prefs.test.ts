@@ -1,25 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import {
-  DEFAULT_WHITEBOARD_DOCK_MODE,
-  readWhiteboardDockPrefs,
-  withWhiteboardDockPrefs,
-} from './whiteboard-dock-prefs';
+import { readWhiteboardDockPrefs, withWhiteboardDockPrefs } from './whiteboard-dock-prefs';
 import type { UserPreferences } from './user-preferences';
 
 describe('readWhiteboardDockPrefs', () => {
-  it('starts With shapes, the default pins and no history', () => {
-    expect(readWhiteboardDockPrefs({})).toEqual({
-      mode: DEFAULT_WHITEBOARD_DOCK_MODE,
-      pinned: ['arrow', 'rectangle'],
-      picks: {},
-    });
-    expect(DEFAULT_WHITEBOARD_DOCK_MODE).toBe('shapes');
-  });
-
-  it('reads Simple, and anything unknown or not yet selectable as the default', () => {
-    expect(readWhiteboardDockPrefs({ whiteboardDockMode: 'simple' }).mode).toBe('simple');
-    expect(readWhiteboardDockPrefs({ whiteboardDockMode: 'full' } as never).mode).toBe('shapes');
-    expect(readWhiteboardDockPrefs({ whiteboardDockMode: 7 } as never).mode).toBe('shapes');
+  it('starts with the default pins and no history', () => {
+    expect(readWhiteboardDockPrefs({})).toEqual({ pinned: ['arrow', 'rectangle'], picks: {} });
   });
 
   it('keeps only catalogue kinds among the pinned, once each, at most seven', () => {
@@ -75,13 +60,8 @@ describe('readWhiteboardDockPrefs', () => {
 });
 
 describe('withWhiteboardDockPrefs', () => {
-  it('writes only what changed, and drops empty values rather than storing them', () => {
+  it('writes only what changed, and drops empty counts rather than storing them', () => {
     const base: UserPreferences = { reduceMotion: true, whiteboardPinnedShapes: ['star'] };
-    expect(withWhiteboardDockPrefs(base, { mode: 'simple' })).toEqual({
-      reduceMotion: true,
-      whiteboardPinnedShapes: ['star'],
-      whiteboardDockMode: 'simple',
-    });
     // Once changed, the pins are stored, even empty: absent means the defaults.
     expect(withWhiteboardDockPrefs(base, { pinned: [] })).toEqual({
       reduceMotion: true,
@@ -91,11 +71,8 @@ describe('withWhiteboardDockPrefs', () => {
       ...base,
       whiteboardShapePicks: { star: [1, 2] },
     });
-  });
-
-  it('stores the default mode as no value', () => {
-    expect(withWhiteboardDockPrefs({ whiteboardDockMode: 'simple' }, { mode: 'shapes' })).toEqual(
-      {},
-    );
+    expect(
+      withWhiteboardDockPrefs({ whiteboardShapePicks: { star: [1, 2] } }, { picks: {} }),
+    ).toEqual({});
   });
 });

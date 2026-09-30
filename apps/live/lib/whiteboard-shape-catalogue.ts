@@ -7,7 +7,7 @@ import type { ShapeKind } from '@livediagram/document';
 import type { PendingDraw } from './draw-mode';
 import { SHAPE_TILES, shapeTileSearchItem } from './palette-search';
 import { PALETTE_CATEGORIES } from '@/components/palette/palette-categories';
-import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
+import { PALETTE_TILES, type PaletteTileDef } from '@/components/palette/palette-tile-defs';
 import {
   WHITEBOARD_SHAPES,
   whiteboardShapeIntent,
@@ -16,7 +16,9 @@ import {
 
 // A catalogue entry's stable id, stored in the synced preferences: a dock shape's id
 // ('rectangle'), a shape kind ('triangle'), or a kind and its creation choice ('session-button:poll').
-export type WhiteboardShapeKey = WhiteboardShapeId | ShapeKind | `${ShapeKind}:${string}`;
+// 'sticky' is the whiteboard's sticky note, a shape of the bar and the flyout like any other.
+export type WhiteboardShapeKey =
+  WhiteboardShapeId | 'sticky' | ShapeKind | `${ShapeKind}:${string}`;
 
 export type WhiteboardShapeEntry = {
   key: WhiteboardShapeKey;
@@ -31,6 +33,9 @@ export type WhiteboardShapeEntry = {
   dockShape?: WhiteboardShapeId;
   // The palette tile it comes from: previewed with the tile's own icon.
   tile?: PaletteTileDef;
+  // Drawn with the dock's own glyph rather than a tile's (the sticky note, whose tile keeps its
+  // paper colour, where the flyout draws every shape in the board's ink).
+  glyph?: 'sticky';
 };
 
 // The palette categories that are not shapes on a whiteboard (the spec's "not components").
@@ -86,10 +91,25 @@ function dockEntry(id: WhiteboardShapeId, label: string): WhiteboardShapeEntry {
   };
 }
 
+// The sticky note (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): found by its names,
+// armed as the plain note (no Event Storming colour).
+function stickyEntry(): WhiteboardShapeEntry {
+  const tile = PALETTE_TILES.find((t) => t.action.type === 'sticky' && !('fill' in t.action));
+  return {
+    key: 'sticky',
+    label: 'Sticky note',
+    keywords: `sticky note post-it postit memo card ${tile?.description ?? ''}`,
+    group: tile ? tileCategory(tile) : 'write',
+    intent: { type: 'sticky' },
+    glyph: 'sticky',
+  };
+}
+
 function buildCatalogue(): WhiteboardShapeEntry[] {
   const docked = new Set(Object.values(DOCK_TILE_KIND));
   const entries = [
     ...WHITEBOARD_SHAPES.map((s) => dockEntry(s.id, s.label)),
+    stickyEntry(),
     ...SHAPE_TILES.filter((t) => !EXCLUDED_CATEGORIES.has(tileCategory(t)))
       .filter((t) => !(t.action.type === 'shape' && docked.has(t.action.kind)))
       .map(tileEntry),
@@ -119,6 +139,8 @@ export function isWhiteboardShapeKey(key: unknown): key is WhiteboardShapeKey {
 // Which catalogue shape an armed intent is, or null: only a board shape counts.
 export function armedWhiteboardShape(intent: PendingDraw | null): WhiteboardShapeKey | null {
   if (!intent) return null;
+  // The plain note only: an Event Storming note carries a colour or a kind.
+  if (intent.type === 'sticky') return intent.fill || intent.esKind ? null : 'sticky';
   if (intent.type === 'arrow') {
     if (!intent.board) return null;
     return intent.ends === 'none' ? 'line' : 'arrow';

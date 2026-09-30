@@ -1,8 +1,8 @@
 'use client';
 
 // The dock's Drawing tools group (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// Select, Markers 1 to 3, Text, Sticky note, Path tool and Eraser, in every dock mode. A pen or the
-// eraser already in hand opens its flyout.
+// Select, Markers 1 to 3, Text, Path tool and Eraser; the sticky note is a shape (the Shapes group).
+// A pen or the eraser already in hand opens its flyout.
 
 import {
   EditPointsIcon,
@@ -15,7 +15,7 @@ import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
 import type { DockFlyoutApi } from './useDockFlyout';
-import { DOCK_ICON_PX, PenGlyph, StickyGlyph, TextGlyph } from './whiteboard-icons';
+import { DOCK_ICON_PX, PenGlyph, TextGlyph } from './whiteboard-icons';
 
 export function DrawingToolsGroup({
   model,
@@ -75,14 +75,6 @@ export function DrawingToolsGroup({
         icon={<TextGlyph />}
         pressed={tool === 'text'}
         onPress={() => pickAndClose(model.pickText)}
-      />
-      <DockButton
-        itemKey="sticky"
-        label="Sticky note"
-        shortcut={WHITEBOARD_TOOL_KEYS.sticky}
-        icon={<StickyGlyph />}
-        pressed={tool === 'sticky'}
-        onPress={() => pickAndClose(model.pickSticky)}
       />
       {/* The Path tool (docs/specs/023-whiteboard/path-tool.md), in the Shape Pen's own icon. */}
       <DockButton

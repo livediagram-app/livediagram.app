@@ -2,7 +2,6 @@
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
-import { WhiteboardDock } from './WhiteboardDock';
 import { dockModel as model, renderDock } from './dock-test-utils';
 
 const itemsOf = (group: string) =>
@@ -28,7 +27,7 @@ describe('WhiteboardDock groups', () => {
     }
   });
 
-  it('lays out Select, the markers, Text, Sticky note, Path tool and Eraser as the drawing tools', () => {
+  it('lays out Select, the markers, Text, Path tool and Eraser as the drawing tools', () => {
     renderDock();
     expect(itemsOf('drawing')).toEqual([
       'select',
@@ -36,10 +35,10 @@ describe('WhiteboardDock groups', () => {
       'second',
       'third',
       'text',
-      'sticky',
       'path',
       'eraser',
     ]);
+    expect(screen.queryByRole('button', { name: 'Sticky note' })).toBeNull();
   });
 
   it('gives the cog a group of its own, last', () => {
@@ -72,91 +71,13 @@ describe('WhiteboardDock groups', () => {
 
   it('moves the tab stop to the last focused button of its group', () => {
     renderDock();
-    const sticky = screen.getByRole('button', { name: 'Sticky note' });
-    act(() => sticky.focus());
-    expect(sticky.getAttribute('tabindex')).toBe('0');
+    const path = screen.getByRole('button', { name: 'Path tool' });
+    act(() => path.focus());
+    expect(path.getAttribute('tabindex')).toBe('0');
     expect(screen.getByRole('button', { name: 'Text' }).getAttribute('tabindex')).toBe('-1');
     // The other groups keep their own stops.
     expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('-1');
     expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('tabindex')).toBe('0');
-  });
-
-  it('shows every group but Shapes in Simple mode', () => {
-    renderDock(model('select', { dockMode: 'simple' }));
-    expect(screen.getAllByRole('toolbar').map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Drawing tools',
-      'History',
-      'Settings',
-    ]);
-    // Text, Sticky note and Path tool are drawing tools, so Simple keeps them.
-    for (const name of ['Text', 'Sticky note', 'Path tool']) {
-      expect(screen.getByRole('button', { name })).toBeTruthy();
-    }
-    expect(screen.queryByRole('button', { name: 'Shapes' })).toBeNull();
-  });
-
-  it('closes a Shapes-group flyout when the group goes, and keeps the others alone', () => {
-    const m = model('select');
-    const { view } = renderDock(m);
-    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
-    expect(screen.getByRole('group', { name: 'Shapes' })).toBeTruthy();
-    const next = { ...m, dockMode: 'simple' as const };
-    view.rerender(
-      <WhiteboardDock
-        model={next}
-        ink="#1c1917"
-        canUndo
-        canRedo={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-      />,
-    );
-    expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Select' })).toBeTruthy();
-  });
-});
-
-describe('WhiteboardDock mode switch', () => {
-  it('keeps the Settings flyout over its cog when the dock re-centres', () => {
-    // The cog sits 400 px in with Shapes shown, 100 px in without.
-    const spy = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: Element,
-    ) {
-      const el = this as HTMLElement;
-      const shapes = document.querySelector('[data-dock-group="shapes"]') !== null;
-      const left = el.dataset.dockItem === 'settings' ? (shapes ? 400 : 100) : 0;
-      return {
-        left,
-        right: left + 44,
-        width: el.dataset.dockItem ? 44 : 0,
-        top: 0,
-        bottom: 44,
-        height: 44,
-        x: left,
-        y: 0,
-        toJSON: () => ({}),
-      };
-    });
-    try {
-      const m = model('select');
-      const { view } = renderDock(m);
-      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-      const flyout = () => document.getElementById('whiteboard-flyout-settings')!;
-      expect(flyout().style.left).toBe('422px');
-      view.rerender(
-        <WhiteboardDock
-          model={{ ...m, dockMode: 'simple' }}
-          ink="#1c1917"
-          canUndo
-          canRedo={false}
-          onUndo={vi.fn()}
-          onRedo={vi.fn()}
-        />,
-      );
-      expect(flyout().style.left).toBe('122px');
-    } finally {
-      spy.mockRestore();
-    }
   });
 });
 
@@ -318,7 +239,6 @@ describe('WhiteboardDock drawing tools', () => {
     expect(keyOf(/^Marker 3/)).toBe('3');
     expect(keyOf(/^Path tool/)).toBe('P');
     expect(keyOf(/^Eraser/)).toBe('E');
-    expect(keyOf(/^Sticky note/)).toBe('N');
     expect(keyOf(/^Text/)).toBe('T');
   });
 });
@@ -334,30 +254,14 @@ describe('WhiteboardDock settings', () => {
     expect(cog.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('heads Background, Cursor, Drawing and Mode, not a title of its own', () => {
+  it('heads Background, Cursor and Drawing, not a title of its own', () => {
     renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const settings = screen.getByRole('group', { name: 'Settings' });
     const headings = [...settings.querySelectorAll('[data-flyout-heading]')].map(
       (h) => h.textContent,
     );
-    expect(headings).toEqual(['Background', 'Cursor', 'Drawing', 'Mode']);
-  });
-
-  it('switches the dock mode, and shows Full drawing as coming soon, not selectable', () => {
-    const { m } = renderDock();
-    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    const row = screen.getByRole('group', { name: 'Mode' });
-    expect(
-      within(row).getByRole('button', { name: 'With shapes' }).getAttribute('aria-pressed'),
-    ).toBe('true');
-    const full = within(row).getByRole('button', { name: 'Full drawing, coming soon' });
-    expect(full.getAttribute('aria-disabled')).toBe('true');
-    expect(full.textContent).toContain('Coming soon');
-    fireEvent.click(full);
-    expect(m.setDockMode).not.toHaveBeenCalled();
-    fireEvent.click(within(row).getByRole('button', { name: 'Simple' }));
-    expect(m.setDockMode).toHaveBeenCalledWith('simple');
+    expect(headings).toEqual(['Background', 'Cursor', 'Drawing']);
   });
 
   it('sets the board background', () => {

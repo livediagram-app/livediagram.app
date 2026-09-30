@@ -19,7 +19,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { SwatchOverrideStore } from './swatch-overrides';
-import type { WhiteboardDockMode } from './whiteboard-dock-prefs';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
@@ -219,11 +218,9 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows",
-  // "Shape slots"): its mode, the pinned shape kinds and the pick counts behind the Shapes
-  // flyout's slots. Read and written through lib/whiteboard-dock-prefs, which parses them. Missing ===
-  // With shapes, the default pins, no history.
-  whiteboardDockMode?: WhiteboardDockMode;
+  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): the pinned shape
+  // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
+  // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
   whiteboardShapePicks?: ShapePicks;
 };

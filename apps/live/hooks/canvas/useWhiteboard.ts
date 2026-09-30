@@ -80,8 +80,11 @@ export function useWhiteboard(deps: Deps) {
     pathEditing,
     leavePathEdit,
   } = deps;
-  // The synced dock preferences: mode, pinned shapes, pick counts ("Shape slots").
+  // The synced dock preferences: pinned shapes and pick counts ("Shape slots").
   const dockPrefs = useWhiteboardDockPrefs(deps);
+  // S (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): each press raises this, and
+  // the dock, which owns its flyouts, opens the Shapes flyout in answer.
+  const [shapesRequest, setShapesRequest] = useState(0);
   const whiteboard = isWhiteboardTab(activeTab);
   // Read lazily from this browser (readLocalStorageSafe copes with no storage).
   const [prefs, setPrefsState] = useState<WhiteboardPrefs>(loadWhiteboardPrefs);
@@ -234,14 +237,16 @@ export function useWhiteboard(deps: Deps) {
     resetPen,
     pickEraser,
     setEraserMode,
-    pickSticky: () => pickIntent({ type: 'sticky' }),
+    // The sticky note is a shape (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): N counts
+    // as a pick, like the shape keys.
+    pickSticky: () => pickShape('sticky'),
     pickText: () => pickIntent({ type: 'text' }),
     pickShape,
     pickSearchedShape,
+    shapesRequest,
+    openShapes: () => setShapesRequest((n) => n + 1),
     // The catalogue shape in hand, if any: its slot shows pressed.
     armedShape: armedWhiteboardShape(pendingDraw),
-    dockMode: dockPrefs.mode,
-    setDockMode: dockPrefs.setMode,
     pinnedShapes: dockPrefs.pinned,
     slotShapes: dockPrefs.slots,
     applySlotOutcome: dockPrefs.applySlotOutcome,

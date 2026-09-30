@@ -252,9 +252,9 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   by entering either. A press on a hover flyout makes it sticky. Its search field takes the focus
   even on a hover, the one exception ([whiteboard-dock](whiteboard-dock.md) "Flyouts").
 - The Settings flyout (`hideTitle`, accessible name "Settings", opened by the cog on a press only)
-  holds four headed sections, top to bottom: Background (Plain / Dots / Grid), Cursor (Crosshair +
-  nib first, the default, then Dot), Drawing (Basic / Shape recognition, `setRecognition(on)`) and
-  Mode ([whiteboard-dock](whiteboard-dock.md)). The dock has no recognition button.
+  holds three headed sections, top to bottom: Background (Plain / Dots / Grid), Cursor (Crosshair
+  - nib first, the default, then Dot) and Drawing (Basic / Shape recognition, `setRecognition(on)`).
+    The dock has no recognition button.
 
 ### Tool style and board memory
 
@@ -527,7 +527,8 @@ outline is rebuilt per update, as Excalidraw does.
   `useEditorState` passes the dock's actions.
 - On a whiteboard the listener consults only `WHITEBOARD_VIEW_KEYS` (V select, H hand, Z zen) and,
   for editors, `WHITEBOARD_EDIT_KEYS` (1, 2, 3 pens; E eraser; N note; T text; R, O, D, C, L, A the dock
-  shapes via `pickShape(key)`, plain ink, in every dock mode), then stops: the diagram tab's
+  shapes via `pickShape(key)`, plain ink; S the Shapes flyout, [whiteboard-dock](whiteboard-dock.md)),
+  then stops: the diagram tab's
   `VIEW_TOOL_KEYS` / `EDIT_KEYS` never run there. Type-to-edit and modifier shortcuts run first,
   unchanged.
 - Escape: the narrow Escape listener also arms for a whiteboard eraser and calls `pickSelect`; a

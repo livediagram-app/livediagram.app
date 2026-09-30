@@ -17,6 +17,39 @@ function openByPress() {
 }
 
 describe('the Shapes flyout', () => {
+  it('shows S on the Shapes button', () => {
+    renderDock();
+    const button = screen.getByRole('button', { name: 'Shapes' });
+    expect(button.getAttribute('aria-keyshortcuts')).toBe('S');
+    expect(button.textContent).toBe('S');
+  });
+
+  it('opens on S (a request from the model) with its field focused, and only Escape closes it', () => {
+    const m = model();
+    const { view } = renderDock(m);
+    const again = (n: number) =>
+      view.rerender(
+        <WhiteboardDock
+          model={{ ...m, shapesRequest: n }}
+          ink="#1c1917"
+          canUndo
+          canRedo={false}
+          onUndo={vi.fn()}
+          onRedo={vi.fn()}
+        />,
+      );
+    again(1);
+    expect(flyout()).toBeTruthy();
+    expect(document.activeElement).toBe(field());
+    // A second S types into the field (the editor's keys stand down while it has the focus).
+    fireEvent.change(field(), { target: { value: 's' } });
+    expect(flyout()).toBeTruthy();
+    fireEvent.keyDown(field(), { key: 'Escape' });
+    expect(flyout()).toBeNull();
+    // Opened by a key, like a hover: the focus goes back to the board.
+    expect(document.activeElement).toBe(document.body);
+  });
+
   it('opens on a press with its search field focused', () => {
     renderDock();
     const opener = openByPress();

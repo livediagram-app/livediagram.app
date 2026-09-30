@@ -2986,6 +2986,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
           pickText: whiteboardDock.pickText,
           pickShape: whiteboardDock.pickShape,
           pickPath: whiteboardDock.pickPath,
+          openShapes: whiteboardDock.openShapes,
         }
       : null,
   });

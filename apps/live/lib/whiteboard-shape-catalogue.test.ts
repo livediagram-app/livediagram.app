@@ -41,6 +41,15 @@ describe('the whiteboard shape catalogue', () => {
     expect(whiteboardShapeEntry('session-button:timer')?.label).toBe('Timer');
   });
 
+  it('holds the sticky note as a shape, armed as a plain note', () => {
+    const sticky = whiteboardShapeEntry('sticky')!;
+    expect(sticky.label).toBe('Sticky note');
+    expect(sticky.intent).toEqual({ type: 'sticky' });
+    expect(isWhiteboardShapeKey('sticky')).toBe(true);
+    // An Event Storming note (a coloured sticky) is not the whiteboard's note.
+    expect(armedWhiteboardShape({ type: 'sticky', fill: '#ffb000' })).toBeNull();
+  });
+
   it('has unique keys', () => {
     const keys = WHITEBOARD_SHAPE_CATALOGUE.map((e) => e.key);
     expect(new Set(keys).size).toBe(keys.length);
@@ -51,8 +60,8 @@ describe('the whiteboard shape catalogue', () => {
     expect(groups).toEqual(['shapes', 'write', 'draw', 'build', 'devices', 'data', 'behaviour']);
   });
 
-  it('arms every entry plain, as a board shape', () => {
-    for (const e of WHITEBOARD_SHAPE_CATALOGUE) {
+  it('arms every shape entry plain, as a board shape', () => {
+    for (const e of WHITEBOARD_SHAPE_CATALOGUE.filter((x) => x.key !== 'sticky')) {
       expect((e.intent as { board?: true }).board, e.key).toBe(true);
     }
     expect(whiteboardShapeEntry('triangle')?.intent).toEqual({
@@ -80,7 +89,7 @@ describe('the whiteboard shape catalogue', () => {
       expect(armedWhiteboardShape(e.intent), e.key).toBe(e.key);
     }
     expect(armedWhiteboardShape({ type: 'shape', kind: 'triangle' })).toBeNull();
-    expect(armedWhiteboardShape({ type: 'sticky' })).toBeNull();
+    expect(armedWhiteboardShape({ type: 'sticky' })).toBe('sticky');
     expect(armedWhiteboardShape(null)).toBeNull();
   });
 });

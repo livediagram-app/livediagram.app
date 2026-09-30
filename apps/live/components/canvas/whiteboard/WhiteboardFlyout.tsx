@@ -129,7 +129,6 @@ export function FlyoutOption({
   children,
   wide = false,
   shortcut,
-  unavailable = false,
 }: {
   label: string;
   selected: boolean;
@@ -138,8 +137,6 @@ export function FlyoutOption({
   wide?: boolean;
   // The key that picks this option from anywhere on the board.
   shortcut?: string;
-  // Shown but not selectable yet (Full drawing, "Coming soon"): stays focusable, so it is found.
-  unavailable?: boolean;
 }) {
   return (
     <Tooltip label={label}>
@@ -148,11 +145,8 @@ export function FlyoutOption({
         aria-label={label}
         aria-pressed={selected}
         aria-keyshortcuts={shortcut}
-        aria-disabled={unavailable || undefined}
-        onClick={unavailable ? undefined : onPick}
-        className={`relative flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-200 ${
-          unavailable ? 'cursor-not-allowed' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
-        } ${wide ? 'px-3' : 'w-10'} ${selected ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15' : ''}`}
+        onClick={onPick}
+        className={`relative flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition focus-visible:outline-2 focus-visible:outline-brand-500 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ${wide ? 'px-3' : 'w-10'} ${selected ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15' : ''}`}
       >
         {children}
         {shortcut ? (

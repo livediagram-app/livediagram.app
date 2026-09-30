@@ -27,9 +27,9 @@ export function dockModel(
     pickText: vi.fn(),
     pickShape: vi.fn(),
     pickSearchedShape: vi.fn(),
+    shapesRequest: 0,
+    openShapes: vi.fn(),
     armedShape: null,
-    dockMode: 'shapes' as const,
-    setDockMode: vi.fn(),
     pinnedShapes: [],
     slotShapes: {
       mostUsed: ['diamond', 'cylinder', 'line'],

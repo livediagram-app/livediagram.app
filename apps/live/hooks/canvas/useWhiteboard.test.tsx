@@ -189,7 +189,28 @@ describe('pen changes', () => {
   });
 });
 
+describe('the S key', () => {
+  it('raises a request the dock answers by opening its Shapes flyout', () => {
+    const { hook } = setup(board());
+    const before = hook.result.current.shapesRequest;
+    act(() => hook.result.current.openShapes());
+    expect(hook.result.current.shapesRequest).toBe(before + 1);
+  });
+});
+
 describe('shapes from the catalogue', () => {
+  it('places a sticky note as a shape: N arms the plain note and counts as a pick', () => {
+    const { deps, hook } = setup(board());
+    act(() => hook.result.current.pickSticky());
+    expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'sticky' });
+    expect(readUserPreferences().whiteboardShapePicks).toMatchObject({
+      sticky: [1, expect.any(Number)],
+    });
+    // Most used is filled first, so a kind picked once sits there, not in Recent too.
+    expect(hook.result.current.slotShapes.mostUsed[0]).toBe('sticky');
+    expect(hook.result.current.slotShapes.recent).not.toContain('sticky');
+  });
+
   it('arms any catalogue shape plain, as a board shape, with its creation choice', () => {
     const { deps, hook } = setup(board());
     act(() => hook.result.current.pickShape('session-button:poll'));
@@ -244,24 +265,6 @@ describe('shapes from the catalogue', () => {
 });
 
 describe('dock mode and pins', () => {
-  it('starts With shapes and switches to Simple, reported and synced', () => {
-    const { hook } = setup(board());
-    expect(hook.result.current.dockMode).toBe('shapes');
-    act(() => hook.result.current.setDockMode('simple'));
-    expect(hook.result.current.dockMode).toBe('simple');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'ModeSimple');
-    expect(readUserPreferences().whiteboardDockMode).toBe('simple');
-    act(() => hook.result.current.setDockMode('shapes'));
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'ModeShapes');
-    expect(readUserPreferences().whiteboardDockMode).toBeUndefined();
-  });
-
-  it('does nothing for the mode already in force', () => {
-    const { hook } = setup(board());
-    act(() => hook.result.current.setDockMode('shapes'));
-    expect(track).not.toHaveBeenCalled();
-  });
-
   it('pins, replaces and unpins, reporting each without the kind', () => {
     const { hook } = setup(board());
     const defaults = hook.result.current.pinnedShapes;

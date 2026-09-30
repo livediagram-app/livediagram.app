@@ -13,7 +13,7 @@ import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry, type WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
 import { dropIndicatorX, PINNED_SHAPES_MAX, type SlotSource } from '@/lib/whiteboard-shape-slots';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
-import { ShapePreview } from './ShapePreview';
+import { ShapePreview, shapeShortcut } from './ShapePreview';
 import type { DockFlyoutApi } from './useDockFlyout';
 import type { ShapeSlotDragApi } from './useShapeSlotDrag';
 import { ShapesGlyph } from './whiteboard-icons';
@@ -37,7 +37,9 @@ export function ShapesGroup({
   const pinned = model.pinnedShapes;
   const { drag } = slotDrag;
   const armed = model.armedShape;
-  const shapeInHand = model.tool === 'shape' && !(armed !== null && pinned.includes(armed));
+  // Any shape in hand (a catalogue shape, the sticky note included) that is not pinned.
+  const shapeInHand =
+    (model.tool === 'shape' || armed !== null) && !(armed !== null && pinned.includes(armed));
 
   const openPinMenu = (el: HTMLElement, key: WhiteboardShapeKey) => {
     if (slotDrag.isDragging()) return;
@@ -76,6 +78,7 @@ export function ShapesGroup({
         <DockButton
           itemKey="shapes"
           label="Shapes"
+          shortcut={WHITEBOARD_TOOL_KEYS.shapes}
           icon={<ShapesGlyph />}
           pressed={shapeInHand}
           controls={{ id: 'whiteboard-flyout-shapes', expanded: fly.flyout?.kind === 'shapes' }}
@@ -135,7 +138,7 @@ function PinnedShape({
       label={entry.label}
       icon={<ShapePreview entry={entry} />}
       // A pinned kind with a shape key shows it, as every dock tool does.
-      shortcut={entry.dockShape ? WHITEBOARD_TOOL_KEYS[entry.dockShape] : undefined}
+      shortcut={shapeShortcut(entry)}
       pressed={pressed}
       onPress={() => {
         // The release that ends a long-press opened the menu; it is not a pick.

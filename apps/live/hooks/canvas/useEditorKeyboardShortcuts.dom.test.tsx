@@ -110,6 +110,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      openShapes: vi.fn(),
     };
     const addShape = vi.fn();
     const setCanvasTool = vi.fn();
@@ -149,6 +150,13 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(addShape).not.toHaveBeenCalled();
   });
 
+  it('opens the Shapes flyout with S', () => {
+    const { wb, addShape } = board();
+    press('s');
+    expect(wb.openShapes).toHaveBeenCalledTimes(1);
+    expect(addShape).not.toHaveBeenCalled();
+  });
+
   it('picks up the Path tool with P, never the pencil', () => {
     const { wb } = board();
     press('p');
@@ -173,6 +181,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      openShapes: vi.fn(),
     };
     const onDeselect = vi.fn();
     const { bag } = deps({ selectedId: 'a', whiteboard: wb, canvasTool: 'eraser', onDeselect });
@@ -191,6 +200,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      openShapes: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
     renderHook(() => useEditorKeyboardShortcuts(bag));
@@ -213,6 +223,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      openShapes: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });
     renderHook(() => useEditorKeyboardShortcuts(bag));

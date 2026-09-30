@@ -256,13 +256,11 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
-  // The whiteboard dock (../023-whiteboard/whiteboard.md "What a whiteboard
-  // shows", "Shape slots"): its mode ('simple'; unset is With shapes), up to
+  // The whiteboard dock (../023-whiteboard/whiteboard.md "Shape slots"): up to
   // seven pinned shape keys (unset is the default pins, an empty list an
   // emptied side), and per shape key [times picked, last picked ms] for the
   // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
   // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
-  whiteboardDockMode?: 'simple' | 'shapes';
   whiteboardPinnedShapes?: string[];
   whiteboardShapePicks?: Record<string, [number, number]>;
 

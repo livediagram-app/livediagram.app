@@ -1,8 +1,7 @@
 'use client';
 
-// The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard
-// shows", "Shape slots"): the dock mode, the pinned shapes and the pick counts, written the way the
-// other synced preferences are (the same owner, guest or signed in). The logic is pure, in
+// The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "Shape slots"):
+// the pinned shapes and the pick counts, written the way the other synced preferences are (the same owner, guest or signed in). The logic is pure, in
 // lib/whiteboard-dock-prefs and lib/whiteboard-shape-slots.
 
 import { useMemo } from 'react';
@@ -11,7 +10,6 @@ import { readUserPreferences, type UserPreferences } from '@/lib/user-preference
 import {
   readWhiteboardDockPrefs,
   withWhiteboardDockPrefs,
-  type WhiteboardDockMode,
   type WhiteboardDockPrefs,
 } from '@/lib/whiteboard-dock-prefs';
 import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
@@ -30,11 +28,11 @@ export function useWhiteboardDockPrefs({
   writeUserPreferences,
   ownerId,
 }: WhiteboardDockPrefsDeps) {
-  const { mode, pinned, picks } = useMemo(
+  const { pinned, picks } = useMemo(
     () => readWhiteboardDockPrefs(userPreferences),
     [userPreferences],
   );
-  // The most-used slot, then the two last-used ones.
+  // The Shapes flyout's slots: Most used and Recent.
   const slots = useMemo(() => shapeSlots(picks, pinned), [picks, pinned]);
 
   // Written off the FRESHEST stored preferences, not this render's snapshot: the PUT sends the
@@ -44,13 +42,6 @@ export function useWhiteboardDockPrefs({
     const merged = withWhiteboardDockPrefs(latest, patch(readWhiteboardDockPrefs(latest)));
     setUserPreferences(merged);
     writeUserPreferences(merged, ownerId);
-  };
-
-  const setMode = (next: WhiteboardDockMode) => {
-    if (next === mode) return;
-    // Before the write, so an opt-out still reaches the wire.
-    track('Whiteboard', 'Changed', next === 'simple' ? 'ModeSimple' : 'ModeShapes');
-    update(() => ({ mode: next }));
   };
 
   const recordPick = (key: WhiteboardShapeKey) =>
@@ -69,5 +60,5 @@ export function useWhiteboardDockPrefs({
     update(() => ({ pinned: outcome.pinned }));
   };
 
-  return { mode, pinned, slots, setMode, recordPick, applySlotOutcome };
+  return { pinned, slots, recordPick, applySlotOutcome };
 }

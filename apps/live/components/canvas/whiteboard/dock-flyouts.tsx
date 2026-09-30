@@ -17,7 +17,6 @@ import {
   penAdjustsColour,
   type WhiteboardPen,
 } from '@/lib/whiteboard-prefs';
-import { WHITEBOARD_DOCK_MODES } from '@/lib/whiteboard-dock-prefs';
 import {
   PEN_CURSOR_VARIANTS,
   penCursorSvg,
@@ -96,8 +95,8 @@ export function EraserFlyoutBody({ model }: { model: WhiteboardDockModel }) {
   );
 }
 
-// Settings (the cog), top to bottom: Background, Cursor, Drawing and Mode, each a section of
-// switch buttons.
+// Settings (the cog), top to bottom: Background, Cursor and Drawing, each a section of switch
+// buttons (one of several).
 export function SettingsFlyoutBody({
   model,
   ink,
@@ -159,37 +158,6 @@ export function SettingsFlyoutBody({
             <span>{on ? 'Shape recognition' : 'Basic'}</span>
           </FlyoutOption>
         ))}
-      </FlyoutRow>
-      {/* Dock modes (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): synced per
-          user. Full drawing is shown, but not selectable yet. */}
-      <FlyoutRow label="Mode" heading>
-        {WHITEBOARD_DOCK_MODES.map((m) =>
-          m.comingSoon ? (
-            <FlyoutOption
-              key={m.id}
-              wide
-              unavailable
-              label={`${m.label}, coming soon`}
-              selected={false}
-              onPick={() => {}}
-            >
-              <span className="flex flex-col items-start text-left leading-tight text-slate-500 dark:text-slate-400">
-                <span>{m.label}</span>
-                <span className="text-[11px]">Coming soon</span>
-              </span>
-            </FlyoutOption>
-          ) : (
-            <FlyoutOption
-              key={m.id}
-              wide
-              label={m.label}
-              selected={model.dockMode === m.id}
-              onPick={() => model.setDockMode(m.id as 'simple' | 'shapes')}
-            >
-              <span>{m.label}</span>
-            </FlyoutOption>
-          ),
-        )}
       </FlyoutRow>
     </FlyoutRows>
   );
