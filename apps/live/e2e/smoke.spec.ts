@@ -26,7 +26,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 // The wizard dims nothing, so the header stays live beside it: the header's
 // apps menu must paint (and take clicks) in front of the wizard card, not
 // open invisibly behind it.
-test('the apps menu opens in front of the new-diagram wizard', async ({ page, pageErrors }) => {
+test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('Blank diagram', { exact: false })).toBeVisible();
 
