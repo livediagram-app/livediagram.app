@@ -315,6 +315,27 @@ The shapes group learns and keeps the shapes a user reaches for.
   removes it; a Shift-click on the empty board keeps the selection. A
   resize handle keeps its own Shift behaviour.
 
+## Text boxes
+
+A text box on a whiteboard **hugs its text**: its box, and so its selection
+ring and handles, sit just around the words, with only enough padding to grab
+and read it comfortably.
+
+- **Padding:** 4 canvas px left and right, 2 px top and bottom, around the
+  text's own line box. Nothing else is added: no default width or height.
+- **Click to place:** the box starts as the width of the caret plus its
+  padding, one line tall, and **grows as you type**, widening with the text
+  on one line (Enter starts a new line; the box grows down), and shrinks back
+  as text is deleted. It wraps only once it reaches 480 canvas px wide.
+- **Drag to size:** dragging out a text box sets its **width**; the text
+  wraps inside it and the **height always hugs** the lines.
+- **Resizing** a text box with a side or corner handle sets its width the
+  same way; its height stays hugging the text. Shift (the aspect ratio rule)
+  scales the text size with the box instead, as on every tab.
+- An empty text box left by clicking away is removed, as today.
+- Existing text boxes keep their size until edited or resized; then they hug.
+- Notes (stickies) keep their fixed note size.
+
 ## Nothing animates in
 
 A whiteboard is still: a stroke, shape, sticky or text box appears exactly as

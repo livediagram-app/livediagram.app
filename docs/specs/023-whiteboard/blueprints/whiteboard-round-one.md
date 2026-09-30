@@ -85,7 +85,10 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 
 ### Creation
 
-- `templateCanvasOverrides('whiteboard')` returns `{ kind: 'whiteboard', backgroundPattern: 'blank' }`.
+- `templateCanvasOverrides('whiteboard')` returns `{ kind: 'whiteboard', backgroundPattern: WHITEBOARD_DEFAULT_PATTERN }`
+  (`'graph'`, Grid): every creation path (the /new wizard, Quick Start on a tab, the MCP worker) goes
+  through it. A board stored without a pattern reads as `WHITEBOARD_UNSET_PATTERN` (`'blank'`,
+  Plain) in `resolveTabBackdrop` and the dock, so an existing board keeps its look.
   `buildTemplate('whiteboard', …)` returns `[]`. Category: `design` (nominal, like Blank: the picker
   shows it only as a quick-pick) (D1).
 - Quick Start overview: `Blank`, then `Whiteboard`, then the category cards.
@@ -246,9 +249,9 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   by entering either. A press on a hover flyout makes it sticky. A hover flyout passes
   `takeFocus={false}` so it never moves the keyboard focus.
 - The Settings flyout (`hideTitle`, accessible name "Settings", opened by the cog on a press only)
-  holds four headed sections: Mode ([whiteboard-dock](whiteboard-dock.md)), Background (Plain / Dots /
-  Grid), Drawing (Basic / Shape recognition, `setRecognition(on)`) and Cursor. The dock has no
-  recognition button.
+  holds four headed sections, top to bottom: Background (Plain / Dots / Grid), Cursor (Crosshair +
+  nib first, the default, then Dot), Drawing (Basic / Shape recognition, `setRecognition(on)`) and
+  Mode ([whiteboard-dock](whiteboard-dock.md)). The dock has no recognition button.
 
 ### Tool style and board memory
 
