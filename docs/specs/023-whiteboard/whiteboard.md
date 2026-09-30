@@ -64,9 +64,16 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   drawn, since the pens colour only their own strokes. Its "theme default"
   swatches show the board's ink (and no fill for a background), and a
   restyle on a whiteboard never feeds the style memory diagram tabs use.
-  Selected pen strokes get **Pen colour** (the ink, then the ten hues at
-  shade 3 of the colour picker's grid, adaptive like it, then a last swatch
-  that opens the full picker: the grid, Your colours and +) and **Pen width** (Fine / Medium / Bold). With nothing selected
+  Selected pen strokes get **Pen colour** and **Pen width** (Fine / Medium /
+  Bold). **Pen colour** is one row of **seven colours**, adaptive like the
+  colour picker's grid: the ink, then Red, Orange, Green, Teal, Blue and
+  Violet at shade 3; then a last swatch that opens the full picker (the grid,
+  Your colours and +). **A second row appears once the user has picked a
+  colour that is not one of those seven** (a grid shade or a custom colour,
+  from this panel's picker or a marker's): the most recently used such
+  colours, newest first, up to eight, kept in the user's synced preferences;
+  picking one of them moves it to the front. Until then the panel shows one
+  row. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
   **Every pen shows the same rows**, so Pen width stays at the same height
