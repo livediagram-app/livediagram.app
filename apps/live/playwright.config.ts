@@ -18,6 +18,8 @@ const BASE_URL =
 
 export default defineConfig({
   testDir: './e2e',
+  // Each invocation keeps its own artefacts: a run clears its output folder when it starts.
+  outputDir: clerkStub ? 'test-results-clerk-stub' : 'test-results',
   // The whole point is the smoke alarm, not a slow exhaustive suite:
   // fail fast rather than burn CI minutes on a hung run.
   timeout: 30_000,

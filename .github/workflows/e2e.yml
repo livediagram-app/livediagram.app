@@ -83,14 +83,17 @@ jobs:
       - name: Run signed-in specs
         run: pnpm --filter @livediagram/live test:e2e:clerk-stub
 
-      # A failure, or a flaky test that passed on retry: either leaves a trace of its failing attempt
-      # (retain-on-first-failure), and the reports carry it.
+      # A failure, a flaky test that passed on retry, or a run cut off by the job timeout: each leaves
+      # the trace of its failing attempt (retain-on-first-failure) in its test-results folder, and a
+      # finished run copies it into its report. always(): a timed-out job is cancelled, not failed.
       - name: Upload reports with traces
-        if: failure() || hashFiles('apps/live/playwright-report*/data/*.zip') != ''
+        if: always() && hashFiles('apps/live/test-results*/**/trace.zip', 'apps/live/playwright-report*/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
             apps/live/playwright-report
             apps/live/playwright-report-clerk-stub
+            apps/live/test-results
+            apps/live/test-results-clerk-stub
           retention-days: 7
