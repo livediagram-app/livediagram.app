@@ -116,6 +116,11 @@ export function FreehandSvg({
   const vbW = isPenStroke ? Math.max(element.width, 1) : 100;
   const vbH = isPenStroke ? Math.max(element.height, 1) : 100;
   const vbPoints = element.points.map((p) => ({ x: p.nx * vbW, y: p.ny * vbH }));
+  // The curve is built in the stroke's true proportions (element px), where its corners
+  // are real angles, then scaled into the viewBox: the same curve the export draws.
+  const boxW = Math.max(element.width, 1);
+  const boxH = Math.max(element.height, 1);
+  const boxPoints = element.points.map((p) => ({ x: p.nx * boxW, y: p.ny * boxH }));
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md) keep their deliberate corners:
   // straight M/L segments instead of the Catmull-Rom smoothing the
   // sampled pencil strokes want.
@@ -125,7 +130,10 @@ export function FreehandSvg({
       : element.straightEdges
         ? vbPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
           (element.closed ? ' Z' : '')
-        : catmullRomToBezierPath(vbPoints, element.closed);
+        : catmullRomToBezierPath(boxPoints, element.closed, {
+            scaleX: vbW / boxW,
+            scaleY: vbH / boxH,
+          });
   const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   // A recorded pen width (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) wins over the preset.
   const widthPx =

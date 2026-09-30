@@ -137,7 +137,7 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   const d = el.straightEdges
     ? pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r2(p.x)} ${r2(p.y)}`).join(' ') +
       (el.closed ? ' Z' : '')
-    : catmullRomToBezierPath(pts, el.closed, r2);
+    : catmullRomToBezierPath(pts, el.closed, { fmt: r2 });
   // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
   // (a fixed wide round stroke, multiply blend, never filled); the
   // border presets don't apply. Mirrors FreehandSvg in the editor so

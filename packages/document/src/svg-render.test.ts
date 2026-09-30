@@ -326,9 +326,9 @@ describe('renderElementsToSvg', () => {
         strokeColor: '#333333',
       } as Tab['elements'][number];
       const svg = renderElementsToSvg(tab([el]));
-      // The same Catmull-Rom curve the canvas's FreehandSvg draws (it used to
-      // export straight segments), with the numbers rounded to 2 places.
-      expect(svg).toContain('d="M 10 10 C 26.67 18.33, 93.33 51.67, 110 60"');
+      // The same centripetal Catmull-Rom curve the canvas's FreehandSvg draws, with the
+      // numbers rounded to 2 places: two points make a straight span, controls at thirds.
+      expect(svg).toContain('d="M 10 10 C 43.33 26.67, 76.67 43.33, 110 60"');
       expect(svg).not.toContain('rx="6"');
     });
 
