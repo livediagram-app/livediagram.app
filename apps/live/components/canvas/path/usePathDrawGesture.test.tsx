@@ -100,7 +100,21 @@ function setup(elements: Element[] = [], zoom = 1) {
     });
     return e;
   };
-  return { hook, commits, onStartPath, press, move, up, click, key };
+  // A modified key as the browser sends it: Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, Cmd+Z.
+  const chord = (k: string, mods: { shift?: boolean; meta?: boolean } = {}) => {
+    const e = new KeyboardEvent('keydown', {
+      key: k,
+      ctrlKey: !mods.meta,
+      metaKey: !!mods.meta,
+      shiftKey: !!mods.shift,
+      cancelable: true,
+    });
+    act(() => {
+      window.dispatchEvent(e);
+    });
+    return e;
+  };
+  return { hook, commits, onStartPath, press, move, up, click, key, chord };
 }
 
 describe('usePathDrawGesture', () => {
@@ -366,6 +380,74 @@ describe('usePathDrawGesture', () => {
     expect(s.hook.result.current.editPointer).toBe(true);
     s.key('Control', 'keyup');
     expect(s.hook.result.current.editPointer).toBe(false);
+  });
+
+  describe('undo while drawing (docs/specs/023-whiteboard/path-tool.md "Drawing")', () => {
+    const xs = (s: ReturnType<typeof setup>) =>
+      s.hook.result.current.draft?.anchors.map((a) => a.x);
+
+    it('steps back one node at a time on Ctrl+Z and Cmd+Z, keeping the board history out of it', () => {
+      const s = setup();
+      s.click(0, 0);
+      s.press(100, 0);
+      s.move(140, 0);
+      s.up();
+      s.click(200, 0);
+      const z = s.chord('z');
+      expect(z.defaultPrevented).toBe(true);
+      expect(xs(s)).toEqual([0, 100]);
+      s.chord('z', { meta: true });
+      expect(xs(s)).toEqual([0]);
+      expect(s.commits).toHaveLength(0);
+    });
+
+    it('redoes the undone nodes in order, handles and all, with Ctrl+Shift+Z and Ctrl+Y', () => {
+      const s = setup();
+      s.click(0, 0);
+      s.press(100, 0);
+      s.move(140, 0);
+      s.up();
+      s.click(200, 0);
+      s.chord('z');
+      s.chord('z');
+      expect(s.hook.result.current.history).toMatchObject({ canUndo: true, canRedo: true });
+      s.chord('z', { shift: true });
+      expect(xs(s)).toEqual([0, 100]);
+      expect(s.hook.result.current.draft!.anchors[1]!.handleOut).toEqual({ x: 140, y: 0 });
+      s.chord('y');
+      expect(xs(s)).toEqual([0, 100, 200]);
+      expect(s.hook.result.current.history!.canRedo).toBe(false);
+    });
+
+    it('forgets the undone nodes once a new node is placed', () => {
+      const s = setup();
+      s.click(0, 0);
+      s.click(100, 0);
+      s.chord('z');
+      s.click(50, 50);
+      expect(s.hook.result.current.history!.canRedo).toBe(false);
+      s.chord('z', { shift: true });
+      expect(xs(s)).toEqual([0, 50]);
+    });
+
+    it('cancels the path when no node is left, and leaves undo to the board without one', () => {
+      const s = setup();
+      s.click(0, 0);
+      s.chord('z');
+      expect(s.hook.result.current.draft).toBeNull();
+      expect(s.hook.result.current.history).toBeNull();
+      expect(s.chord('z').defaultPrevented).toBe(false);
+    });
+
+    it('gives the dock the same undo and redo', () => {
+      const s = setup();
+      s.click(0, 0);
+      s.click(100, 0);
+      act(() => s.hook.result.current.history!.undo());
+      expect(xs(s)).toEqual([0]);
+      act(() => s.hook.result.current.history!.redo());
+      expect(xs(s)).toEqual([0, 100]);
+    });
   });
 
   it('claims nothing when the tool is not in hand', () => {

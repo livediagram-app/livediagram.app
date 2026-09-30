@@ -87,6 +87,16 @@ export function usePathDrawGesture({
   const setDraft = (next: PathDraft | null) => {
     draftRef.current = next;
     setDraftState(next);
+    // The nodes undone while drawing belong to this draft only.
+    if (next === null) setRedo([]);
+  };
+  // Nodes undone while drawing (docs/specs/023-whiteboard/path-tool.md "Drawing"), last undone
+  // last: redo puts them back in order until a new node is placed.
+  const redoRef = useRef<PathAnchor[]>([]);
+  const [redoCount, setRedoCount] = useState(0);
+  const setRedo = (nodes: PathAnchor[]) => {
+    redoRef.current = nodes;
+    setRedoCount(nodes.length);
   };
   const [cursor, setCursor] = useState<Point | null>(null);
   const [shift, setShift] = useState(false);
@@ -256,6 +266,7 @@ export function usePathDrawGesture({
       }
       case 'place': {
         if (!d) onStartPath?.();
+        setRedo([]);
         const next = placeNode(d, p, now, e.shiftKey);
         setDraft(next);
         const count = next.anchors.length;
@@ -334,6 +345,33 @@ export function usePathDrawGesture({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [armed]);
 
+  // Undo while drawing: the last placed node goes (handles and all) and waits for a redo; with
+  // none left the path is cancelled.
+  const undoNode = () => {
+    const d = draftRef.current;
+    if (!d) return;
+    endDrag();
+    const next = removeLastPlaced(d);
+    if (!next) {
+      console.debug('[path] undo: path cancelled');
+      setDraft(null);
+      return;
+    }
+    const removed = d.anchors[d.anchors.length - 1]!;
+    setDraft(next);
+    setRedo([...redoRef.current, removed]);
+    announce(`${next.anchors.length} points`);
+  };
+  const redoNode = () => {
+    const d = draftRef.current;
+    const back = redoRef.current[redoRef.current.length - 1];
+    if (!d || !back) return;
+    endDrag();
+    setRedo(redoRef.current.slice(0, -1));
+    setDraft({ ...d, anchors: [...d.anchors, back], placed: d.placed + 1, lastPlacedAt: null });
+    announce(`${d.anchors.length + 1} points`);
+  };
+
   // Keys, in the capture phase so they win over the editor's own while a path is being drawn.
   const onKey = useEffectEvent((e: KeyboardEvent, down: boolean) => {
     if (e.code === 'Space') {
@@ -352,6 +390,14 @@ export function usePathDrawGesture({
       e.preventDefault();
       e.stopImmediatePropagation();
     };
+    const lower = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && (lower === 'z' || lower === 'y')) {
+      // Undo and redo step through the path being drawn; the board's history waits for it.
+      claim();
+      if (lower === 'y' || e.shiftKey) redoNode();
+      else undoNode();
+      return;
+    }
     if (e.key === 'Enter' || e.key === 'Escape') {
       claim();
       finish();
@@ -406,6 +452,11 @@ export function usePathDrawGesture({
     shift,
     dragIndex,
     editPointer: armed && editPointer,
+    // The dock's Undo and Redo while a path is being drawn step through its nodes.
+    history:
+      armed && draft
+        ? { canUndo: true, canRedo: redoCount > 0, undo: undoNode, redo: redoNode }
+        : null,
     ring,
     beginPathPress,
     handlePathDoubleClick,

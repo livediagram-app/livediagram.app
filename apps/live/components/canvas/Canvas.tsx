@@ -879,6 +879,16 @@ export function Canvas(props: CanvasProps) {
 
       <CanvasChrome
         {...props}
+        // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
+        // nodes, not the board (docs/specs/023-whiteboard/path-tool.md "Drawing").
+        {...(pathTool.history
+          ? {
+              canUndo: pathTool.history.canUndo,
+              canRedo: pathTool.history.canRedo,
+              onUndo: pathTool.history.undo,
+              onRedo: pathTool.history.redo,
+            }
+          : null)}
         isPaintMode={isPaintMode}
         mainSize={mainSize}
         avatarConfig={avatarLook.config}

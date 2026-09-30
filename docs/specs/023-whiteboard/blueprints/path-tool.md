@@ -186,6 +186,14 @@ instead; releasing Space resumes shaping from the node's new place. Release ends
   editor's own Escape puts the tool down.
 - `Backspace` / `Delete`: remove the last placed node; with `placed === 0`, cancel (a continued path
   is left as it was).
+- `Ctrl/Cmd+Z`: **undo while drawing**: the last placed node goes (handles and all, `removeLastPlaced`)
+  and is pushed on the draft's redo list; with `placed <= 1` the draft is cancelled. `Ctrl/Cmd+Shift+Z`
+  and `Ctrl+Y`: the last node on the redo list goes back on the end (`placed + 1`). Both are claimed
+  whenever a draft exists, so the board's history never runs under a draft. Placing a node, or the
+  draft ending, empties the redo list. `usePathDrawGesture.history`
+  (`{ canUndo: true, canRedo, undo, redo }`, null without a draft) replaces `canUndo` / `canRedo` /
+  `onUndo` / `onRedo` on `CanvasChrome`, so the dock's History group and the corner cluster step through
+  the draft too.
 - Space, Alt, Shift: read from the pointer events and a Space key flag.
 
 **Rubber band**: while not dragging, the last node to `cursor` (Shift: constrained) as a cubic
@@ -498,7 +506,7 @@ numbers only).
 | Ink projection                                                                                  | `packages/document/src/whiteboard.test.ts`                                                                      |
 | Drawing state machine                                                                           | `apps/live/lib/path-draw.test.ts`                                                                               |
 | Edit operations and hit test                                                                    | `apps/live/lib/path-edit.test.ts`                                                                               |
-| Draw gesture: press, drag, keys, commit                                                         | `apps/live/components/canvas/path/usePathDrawGesture.test.tsx`                                                  |
+| Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `apps/live/components/canvas/path/usePathDrawGesture.test.tsx`                                                  |
 | Edit gesture: select, drag, keys, one commit                                                    | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`                                                  |
 | Commit: new, continued, edit, delete, telemetry                                                 | `apps/live/hooks/canvas/usePathCommits.test.tsx`                                                                |
 | Tool derivation                                                                                 | `apps/live/lib/whiteboard-tool.test.ts`                                                                         |

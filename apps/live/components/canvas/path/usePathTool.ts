@@ -228,6 +228,8 @@ export function usePathTool({
 
   return {
     toolbar,
+    // Undo and Redo while a path is being drawn (docs/specs/023-whiteboard/path-tool.md "Drawing").
+    history: draw.history,
     // The cursor a path in its edit mode owns (docs/specs/023-whiteboard/path-tool.md "Cursors in edit mode").
     cursor: edit.cursor ?? (draw.editPointer ? 'default' : null),
     beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
