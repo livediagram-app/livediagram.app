@@ -54,7 +54,7 @@ Scope, by file:
 | Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)      | 2, 4, 8 px, recorded as `penWidth`                       |
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'` | The held pen, with its colour, width and recognition     |
 | Dock             | `WhiteboardDock`                               | The floating bottom-centre toolbar                       |
-| Dock tool        | `WhiteboardTool`                               | `select/pen/highlighter/eraser/sticky/text/shape`        |
+| Dock tool        | `WhiteboardTool`                               | `select/pen/eraser/sticky/text/shape`                    |
 | Flyout           | `WhiteboardFlyout`                             | A dock button's settings, opened above the dock          |
 | Eraser mode      | `WhiteboardEraserMode` (`stroke/partial`)      | Whole-stroke or part-of-stroke erase                     |
 | Ink projection   | `inkWhiteboardElement(el, ink)`                | Display-only colours for unpainted elements              |
@@ -90,7 +90,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   defaults `DEFAULT_WHITEBOARD_PREFS` (pens Ink, Red, Blue, Green at Medium; `activePenId: 'ink'`;
   `recognise: false`; `eraserMode: 'stroke'`).
 - `activeWhiteboardTool(canvasTool, pendingDraw)`:
-  - `canvasTool === 'eraser'` → `eraser`; `canvasTool === 'highlighter'` → `highlighter`;
+  - `canvasTool === 'eraser'` → `eraser` (a stray `highlighter` reads as `select`);
   - `pendingDraw` freehand `variant: 'whiteboard'` → `pen`;
   - `pendingDraw.type` `sticky` → `sticky`, `text` → `text`, `shape` or `arrow` → `shape`;
   - otherwise `select`.
@@ -99,7 +99,6 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   - **Pen p**: when `p` is already the active pen and the tool is `pen`, toggle its flyout; else set
     `activePenId = p`, leave eraser / highlighter (`setCanvasTool('select')`), arm
     `whiteboardPenIntent(p, recognise)`, track `Whiteboard / Selected / penTelemetryType(p)`.
-  - **Highlighter**: when active, toggle its flyout; else `selectCanvasTool('highlighter')`.
   - **Eraser**: when active, toggle its flyout; else `cancelDraw()`, `selectCanvasTool('eraser')`.
   - **Sticky / Text**: `setCanvasTool('select')`, arm `{ type: 'sticky' }` / `{ type: 'text' }`
     (one-shot: after placing, the tool reads `select`). Both open for typing on drop
@@ -187,8 +186,8 @@ The canvas host maps the displayed elements through it with a per-object cache
 ### Pen versus touch
 
 - `whiteboardPointerRoute({ pointerType, penSeen, inking })` → `'ink' | 'pan'`: `'pan'` only for
-  `pointerType === 'touch' && penSeen && inking`; else `'ink'`. `inking` is true for a held pen, the
-  highlighter and the eraser (D4).
+  `pointerType === 'touch' && penSeen && inking`; else `'ink'`. `inking` is true for a held pen or the
+  eraser (D4).
 - Any `pointerdown` with `pointerType === 'pen'` on a whiteboard calls `markPenSeen()`. The flag is a
   module variable: it resets on reload.
 - A `'pan'` route starts the ordinary canvas pan and stops the press there.
@@ -204,6 +203,26 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
 - The dock renders when `whiteboard && !readOnly && !chromeHidden`.
+
+### Shapes with the pen in hand
+
+- `whiteboardShapeIntent(id, pen)` arms the flyout's intent with `pen: { colour, width }`
+  (`PendingDraw` shape and arrow intents carry an optional `pen`).
+- `useShapeDrawing.commitDraw` on a whiteboard applies `applyWhiteboardPen(el, pen)`: a shape gets
+  `fillColor: 'transparent'`, `strokeWidth: nearestBorderStroke(width)` and `strokeColor` when the
+  pen has a colour; a line or arrow gets `strokeWidth: width` (px) and the colour.
+- `CanvasDrawPreview` takes `whiteboardInk` and previews: a whiteboard pen stroke in
+  `colour ?? ink` at `width` screen px (the committed stroke is non-scaling); a pen line at
+  `width × zoom`; a pen shape solid and unfilled, SVG outlines at the border px, CSS-bordered ones
+  at `px × zoom` (`PenShapePreview`).
+
+### Still canvas
+
+- `CanvasStillProvider` (`apps/live/components/canvas/CanvasStillContext.tsx`), provided by `Canvas` with
+  `still = isWhiteboardTab(tab)`; `useBoxedElementAnimation` drops `animate-element-pop-in` when
+  still. Author-set looping animations are untouched.
+- On entering a whiteboard with `highlighter` or `format` held, the hook sets `select` and arms the
+  pen; `buildEditorCommands` with `whiteboard: true` drops `tool:highlighter` and `tool:format`.
 
 ## Interfaces and contracts
 
@@ -247,8 +266,7 @@ export type WhiteboardPrefs = {
 export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs;
 export function loadWhiteboardPrefs(): WhiteboardPrefs;
 export function saveWhiteboardPrefs(prefs: WhiteboardPrefs): void;
-export type WhiteboardTool =
-  'select' | 'pen' | 'highlighter' | 'eraser' | 'sticky' | 'text' | 'shape';
+export type WhiteboardTool = 'select' | 'pen' | 'eraser' | 'sticky' | 'text' | 'shape';
 export function activeWhiteboardTool(
   canvasTool: CanvasTool,
   pendingDraw: PendingDraw | null,
@@ -311,7 +329,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 - Dock: bottom centre, `bottom-4` from 1500 px wide, lifted above the bottom-right cluster below it; buttons
   44 × 44 px; rounded panel with the editor's panel surface tokens; separators between groups
-  (select | pens | highlighter, eraser | sticky, text, shapes | recognition | undo, redo | more).
+  (select | pens | eraser | sticky, text, shapes | recognition | undo, redo | more).
 - Pen buttons: a filled nib in the pen's colour (Ink shows the ink colour), a thickness bar below
   scaled to its width.
 - Flyouts sit above their button, never move the dock; clamp to the viewport horizontally (12 px
@@ -319,7 +337,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   with the `translate` property because the pop-in animation owns `transform`.
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: toolbar label "Whiteboard tools"; buttons "Select", "Ink pen", "Red pen", "Blue pen",
-  "Green pen", "Highlighter", "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
+  "Green pen", "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
   "Undo", "Redo", "More"; pen flyout "Colour", "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; More flyout
   "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "A plain board to draw on

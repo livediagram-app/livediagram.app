@@ -1230,7 +1230,7 @@ export const articles: Article[] = [
     title: 'Whiteboards',
     description: 'A tab for freehand drawing: a dock of pens, erasers, stickies and shapes.',
     keywords:
-      'whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar highlighter eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness',
+      'whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

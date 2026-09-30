@@ -64,6 +64,9 @@ export type CommandContext = {
   // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
+  // A whiteboard (docs/specs/023-whiteboard/whiteboard.md): its dock replaces the highlighter and the
+  // format painter, so search does not offer them either.
+  whiteboard?: boolean;
   // Are timeline lanes on right now (docs/specs/021-event-storming/event-storming.md Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
   // Can this deployment read a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 8)? False
@@ -195,13 +198,16 @@ const CANVAS_TOOLS: {
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
+const WHITEBOARD_ABSENT_TOOLS = new Set(['highlighter', 'format']);
+
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
-      !(t.mutates && ctx.isReadOnly),
+      !(t.mutates && ctx.isReadOnly) &&
+      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,

@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { isSelfDrawingShape } from '@livediagram/document';
+import { BORDER_STROKE_PX, isSelfDrawingShape, nearestBorderStroke } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -23,6 +23,9 @@ type CanvasDrawPreviewProps = {
   stamp: StampGhost | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
+  // The board's ink on a whiteboard (docs/specs/023-whiteboard/whiteboard.md), what the Ink pen
+  // previews in. Absent elsewhere.
+  whiteboardInk?: string;
 };
 
 // Live previews shown while a draw gesture is in flight: the freehand pen
@@ -39,7 +42,12 @@ export function CanvasDrawPreview({
   stamp,
   viewportZoom,
   wrapperRef,
+  whiteboardInk,
 }: CanvasDrawPreviewProps) {
+  // A whiteboard mark previews as it will land (docs/specs/023-whiteboard/whiteboard.md "Pens"): the
+  // pen's colour (Ink: the board's) and width, solid, unfilled. Only the
+  // smoothing a committed stroke gets can still differ.
+  const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
   const showsPen = !!penPoints && pendingDraw?.type === 'freehand' && penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
   const showsBox = !!drawDrag && !!pendingDraw && !stamp;
@@ -92,6 +100,9 @@ export function CanvasDrawPreview({
             // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
             // what you see while dragging is what lands.
             const isHighlighter = pendingDraw.variant === 'highlighter';
+            // A whiteboard pen: its own colour and width, in screen px like the
+            // committed stroke (non-scaling).
+            const wb = pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
             return (
               <svg
                 aria-hidden
@@ -100,8 +111,10 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke={isHighlighter ? highlighterColor : 'rgb(14, 165, 233)'}
-                  strokeWidth={isHighlighter ? highlighterWidth : 2}
+                  stroke={
+                    wb ? inkOf(wb.colour) : isHighlighter ? highlighterColor : 'rgb(14, 165, 233)'
+                  }
+                  strokeWidth={wb ? wb.width : isHighlighter ? highlighterWidth : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
                   strokeLinecap="round"
@@ -185,15 +198,29 @@ export function CanvasDrawPreview({
                   aria-hidden
                   className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
                 >
-                  <line
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke="rgb(14, 165, 233)"
-                    strokeWidth={1.5}
-                    strokeDasharray="4 3"
-                  />
+                  {pendingDraw.pen ? (
+                    // A whiteboard line: the pen's colour and width, which on a
+                    // line scales with the zoom, as the committed line does.
+                    <line
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke={inkOf(pendingDraw.pen.colour)}
+                      strokeWidth={pendingDraw.pen.width * viewportZoom}
+                      strokeLinecap="round"
+                    />
+                  ) : (
+                    <line
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke="rgb(14, 165, 233)"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 3"
+                    />
+                  )}
                 </svg>
               );
             }
@@ -248,7 +275,17 @@ export function CanvasDrawPreview({
                   height: heightPx,
                 }}
               >
-                {usesSvg && pendingDraw.type === 'shape' ? (
+                {pendingDraw.type === 'shape' && pendingDraw.pen ? (
+                  <PenShapePreview
+                    kind={pendingDraw.kind}
+                    colour={inkOf(pendingDraw.pen.colour)}
+                    widthPx={BORDER_STROKE_PX[nearestBorderStroke(pendingDraw.pen.width)]}
+                    usesSvg={usesSvg}
+                    radius={radius}
+                    zoom={viewportZoom}
+                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
+                  />
+                ) : usesSvg && pendingDraw.type === 'shape' ? (
                   <ShapeSvgOverlay
                     shape={pendingDraw.kind}
                     fill="rgba(14, 165, 233, 0.10)"
@@ -268,5 +305,51 @@ export function CanvasDrawPreview({
           })()
         : null}
     </>
+  );
+}
+
+// A whiteboard shape while it is drawn: the outline the committed shape will
+// have, in the pen's colour and weight, unfilled. SVG-rendered outlines keep a
+// screen-px stroke; CSS-bordered ones (rectangle, ellipse) scale with the zoom,
+// as the committed shapes do.
+function PenShapePreview({
+  kind,
+  colour,
+  widthPx,
+  usesSvg,
+  radius,
+  zoom,
+  aspect,
+}: {
+  kind: import('@livediagram/document').ShapeKind;
+  colour: string;
+  widthPx: number;
+  usesSvg: boolean;
+  radius: string;
+  zoom: number;
+  aspect: number;
+}) {
+  if (usesSvg) {
+    return (
+      <ShapeSvgOverlay
+        shape={kind}
+        fill="none"
+        stroke={colour}
+        strokeWidth={widthPx}
+        aspect={aspect}
+      />
+    );
+  }
+  return (
+    <div
+      data-pen-preview=""
+      className="h-full w-full"
+      style={{
+        borderStyle: 'solid',
+        borderColor: colour,
+        borderWidth: widthPx * zoom,
+        borderRadius: radius,
+      }}
+    />
   );
 }

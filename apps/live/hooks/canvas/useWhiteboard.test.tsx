@@ -89,6 +89,24 @@ describe('useWhiteboard', () => {
     expect(stored).toMatchObject({ recognise: true, eraserMode: 'partial' });
   });
 
+  it('arms a dock shape with the pen in hand', () => {
+    const { deps, hook } = setup(board());
+    act(() => hook.result.current.pickPen('blue'));
+    hook.rerender({ ...deps });
+    act(() => hook.result.current.pickShape('diamond'));
+    expect(deps.beginDraw).toHaveBeenLastCalledWith({
+      type: 'shape',
+      kind: 'diamond',
+      pen: { colour: '#1d7afc', width: 4 },
+    });
+  });
+
+  it('puts down a highlighter carried over from a diagram tab', () => {
+    const { deps } = setup(board(), null, 'highlighter' as never);
+    expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
+    expect(deps.beginDraw).toHaveBeenCalled();
+  });
+
   it('stores a background on the tab as its pattern', () => {
     const { deps, hook } = setup(board());
     act(() => hook.result.current.setBackground('grid'));

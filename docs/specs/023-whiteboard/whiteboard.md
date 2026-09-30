@@ -54,9 +54,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 - **Hidden on a whiteboard tab:** the palette (floating and the Toolbar
   layout's strip), the quick style panel beside a selection, the format
-  painter, the Theme & canvas brush and the theme-mode banner, the tool panels
-  (the eraser's and the highlighter's settings live in the dock's flyouts
-  instead) and the empty-canvas banner (the dock is the hint). The header,
+  painter, the highlighter (a whiteboard's pens are its markers), the Theme &
+  canvas brush and the theme-mode banner, the tool panels (the eraser's
+  settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
   collaboration, comments, layers, activity and zoom controls stay, because
   they are about the document, not about drawing.
@@ -65,16 +65,18 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **The dock holds, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Pens**: the preset pens, one button each (see [Pens](#pens)).
-  3. **Highlighter** ([Highlighter](../008-canvas/highlighter.md)).
-  4. **Eraser**, with its mode (see [Eraser](#eraser)).
-  5. **Sticky note**.
-  6. **Text**.
-  7. **Shapes**: a small flyout of rectangle, ellipse, triangle, diamond, line
-     and arrow.
-  8. **Shape recognition** toggle (see [Shape recognition](#shape-recognition)).
-  9. **Undo** / **Redo**.
-  10. **More**: board background and, when the operator asks for it, the full
-      palette as an escape hatch.
+  3. **Eraser**, with its mode (see [Eraser](#eraser)).
+  4. **Sticky note**.
+  5. **Text**.
+  6. **Shapes**: a small flyout of rectangle, ellipse, triangle, diamond, line
+     and arrow, drawn with the pen in hand (see [Shapes](#shapes)).
+  7. **Shape recognition** toggle (see [Shape recognition](#shape-recognition)).
+  8. **Undo** / **Redo**.
+  9. **More**: board background and, when the operator asks for it, the full
+     palette as an escape hatch.
+- **No highlighter.** A whiteboard's pens are its markers, so the dock has
+  none, search does not offer it (nor the format painter), and one held on a
+  diagram tab is put down on arriving at a whiteboard.
 - The dock never moves when a tool is picked: flyouts open **above** it, and
   the dock's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
@@ -103,6 +105,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   highlighter is ([Highlighter](../008-canvas/highlighter.md)): the next drag
   draws again, and the stroke just drawn is not selected. Select, Escape or
   another tool puts it down.
+- **What you draw is what lands.** While a stroke is being drawn it already
+  shows in the pen's colour and width (the Ink pen in the board's ink); on
+  release only the smoothing of the line may change.
 - **Strokes stay open.** A whiteboard stroke that ends near its start is not
   closed and filled, as a pencil sketch on a diagram tab is: an "o" written on
   a board is ink, not a shape.
@@ -112,6 +117,22 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - A stroke records the pen's colour and width on its `freehand` element when
   drawn. The **Ink** pen records no explicit colour, so its strokes follow the
   appearance; every other pen records its colour, which stays as drawn.
+
+## Shapes
+
+- A shape or line from the dock's Shapes flyout is drawn **with the pen in
+  hand**: its outline in the pen's colour (none for Ink, so it follows the
+  board), at the pen's weight (the exact width on a line or arrow, the
+  nearest border width on a shape), with no fill.
+- It previews that way while it is dragged out: solid, in the pen's colour
+  and weight, unfilled.
+
+## Nothing animates in
+
+A whiteboard is still: a stroke, shape, sticky or text box appears exactly as
+drawn, with none of the pop-in a new element gets on a diagram tab. It is
+still an element, selectable and movable like any other. An animation the
+author sets on an element on purpose still plays.
 
 ## Touch and pen input
 
@@ -258,7 +279,7 @@ The whiteboard is built in rounds and tuned with the operator between them.
 
 [Event storming](../021-event-storming/event-storming.md) (the tab-kind
 precedent), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)
-(shape recogniser), [Highlighter](../008-canvas/highlighter.md),
+(shape recogniser),
 [Eraser panel](../008-canvas/eraser-panel.md),
 [Appearance](../004-interface-design/appearance.md),
 [Microsoft Whiteboard import](../020-import-export/whiteboard-import.md),

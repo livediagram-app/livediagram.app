@@ -449,6 +449,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         highlighterWidth={highlighterWidth}
         pendingDraw={pendingDraw}
         stamp={stamp}
+        whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
       />
@@ -499,12 +500,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <WhiteboardDock
           model={props.whiteboardDock}
           ink={props.whiteboardInk ?? '#1c1917'}
-          highlighter={{
-            colour: props.highlighterColor ?? '#fde047',
-            width: props.highlighterWidth ?? 14,
-            onColour: (c) => props.onSetHighlighterColor?.(c),
-            onWidth: (px) => props.onSetHighlighterWidth?.(px),
-          }}
           canUndo={canUndo}
           canRedo={canRedo}
           onUndo={onUndo}

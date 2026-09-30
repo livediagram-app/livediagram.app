@@ -16,7 +16,6 @@ function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> 
     pickSelect: vi.fn(),
     pickPen: vi.fn(),
     updatePen: vi.fn(),
-    pickHighlighter: vi.fn(),
     pickEraser: vi.fn(),
     setEraserMode: vi.fn(),
     pickSticky: vi.fn(),
@@ -34,7 +33,6 @@ function renderDock(m = model(), extra: { canUndo?: boolean } = {}) {
     <WhiteboardDock
       model={m}
       ink="#1c1917"
-      highlighter={{ colour: '#fde047', width: 14, onColour: vi.fn(), onWidth: vi.fn() }}
       canUndo={extra.canUndo ?? true}
       canRedo={false}
       onUndo={onUndo}
@@ -138,6 +136,18 @@ describe('WhiteboardDock', () => {
     expect(toggle.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(toggle);
     expect(m.toggleRecognition).toHaveBeenCalled();
+  });
+
+  it('has no highlighter', () => {
+    renderDock();
+    expect(screen.queryByRole('button', { name: 'Highlighter' })).toBeNull();
+  });
+
+  it('draws a picked shape with the pen in hand', () => {
+    const { m } = renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rectangle' }));
+    expect(m.pickShape).toHaveBeenCalledWith('rectangle');
   });
 
   it('disables Undo when there is nothing to undo', () => {

@@ -25,8 +25,8 @@ import {
   type WhiteboardPrefs,
 } from '@/lib/whiteboard-prefs';
 import {
-  WHITEBOARD_SHAPES,
   activeWhiteboardTool,
+  whiteboardShapeIntent,
   whiteboardPenIntent,
   type WhiteboardShapeId,
   type WhiteboardTool,
@@ -79,7 +79,7 @@ export function useWhiteboard(deps: Deps) {
 
   const armPen = (next: WhiteboardPrefs) => {
     const pen = next.pens.find((p) => p.id === next.activePenId) ?? next.pens[0]!;
-    if (canvasTool === 'eraser' || canvasTool === 'highlighter') setCanvasTool('select');
+    if (canvasTool !== 'select' && canvasTool !== 'pan') setCanvasTool('select');
     beginDraw(whiteboardPenIntent(pen, next.recognise));
   };
 
@@ -98,7 +98,10 @@ export function useWhiteboard(deps: Deps) {
       return;
     }
     if (!entered || editsBlocked || pendingDraw) return;
-    if (canvasTool !== 'select' && canvasTool !== 'pan') return;
+    // A whiteboard has no highlighter or format painter: one carried over from
+    // a diagram tab is put down, and the pen picked up in its place.
+    const heldElsewhere = canvasTool === 'highlighter' || canvasTool === 'format';
+    if (canvasTool !== 'select' && canvasTool !== 'pan' && !heldElsewhere) return;
     armPen(prefs);
     // Runs on a tab change only; the rest is read at that moment.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,11 +133,6 @@ export function useWhiteboard(deps: Deps) {
     }
   };
 
-  const pickHighlighter = () => {
-    cancelDraw();
-    selectCanvasTool('highlighter');
-  };
-
   const pickEraser = () => {
     cancelDraw();
     selectCanvasTool('eraser');
@@ -152,8 +150,8 @@ export function useWhiteboard(deps: Deps) {
   };
 
   const pickShape = (id: WhiteboardShapeId) => {
-    const shape = WHITEBOARD_SHAPES.find((s) => s.id === id);
-    if (shape) pickIntent(shape.intent);
+    // Drawn with the pen in hand: its colour and width (docs/specs/023-whiteboard/whiteboard.md "Shapes").
+    pickIntent(whiteboardShapeIntent(id, activePen));
   };
 
   const toggleRecognition = () => {
@@ -179,7 +177,6 @@ export function useWhiteboard(deps: Deps) {
     pickSelect,
     pickPen,
     updatePen,
-    pickHighlighter,
     pickEraser,
     setEraserMode,
     pickSticky: () => pickIntent({ type: 'sticky' }),

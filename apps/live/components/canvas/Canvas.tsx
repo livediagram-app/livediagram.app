@@ -18,7 +18,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/document';
+import { isEventStormingTab, isWhiteboardTab } from '@livediagram/document';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -41,6 +41,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
+import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
@@ -673,41 +674,43 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        <MindGrowProvider value={mindGrow}>
-          <CanvasElementsLayer
-            {...props}
-            // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-            // so the prop from the host is overridden with the local resolver.
-            onEnterPortal={resolvePortal}
-            onFireReaction={props.onFireReaction}
-            reactionBursts={props.reactionBursts}
-            onReactionBurstDone={props.onReactionBurstDone}
-            // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-            // lives, rather than threaded from the page.
-            chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
-            // Pressing a Selection Mode button that hands out Avatar mode drops
-            // the character at THAT button (see avatarSpawn), not the viewport
-            // centre: you pressed a thing on the canvas, so the character should
-            // appear where you pressed it.
-            onPressModeButton={pressModeButton}
-            onPressFocusButton={props.onPressFocusButton}
-            hasArrows={hasArrows}
-            arrowLabels={arrowLabels}
-            showHandles={showHandles}
-            showAnchorsFor={showAnchorsFor}
-            badgeColor={badgeColor}
-            selectionBounds={selectionBounds}
-            showPlus={showPlus}
-            showUnionResize={showUnionResize}
-            unionResizeBounds={unionResizeBounds}
-            unionResizePrimaryId={unionResizePrimaryId}
-            isPaintMode={isPaintMode}
-            handleArrowSelect={handleArrowSelect}
-            handleElementContextSelect={handleElementContextSelect}
-            quickRingOpen={quickRingOpen}
-            setQuickRingOpen={setQuickRingOpen}
-          />
-        </MindGrowProvider>
+        <CanvasStillProvider still={isWhiteboardTab({ kind: tabKind })}>
+          <MindGrowProvider value={mindGrow}>
+            <CanvasElementsLayer
+              {...props}
+              // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+              // so the prop from the host is overridden with the local resolver.
+              onEnterPortal={resolvePortal}
+              onFireReaction={props.onFireReaction}
+              reactionBursts={props.reactionBursts}
+              onReactionBurstDone={props.onReactionBurstDone}
+              // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+              // lives, rather than threaded from the page.
+              chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
+              // Pressing a Selection Mode button that hands out Avatar mode drops
+              // the character at THAT button (see avatarSpawn), not the viewport
+              // centre: you pressed a thing on the canvas, so the character should
+              // appear where you pressed it.
+              onPressModeButton={pressModeButton}
+              onPressFocusButton={props.onPressFocusButton}
+              hasArrows={hasArrows}
+              arrowLabels={arrowLabels}
+              showHandles={showHandles}
+              showAnchorsFor={showAnchorsFor}
+              badgeColor={badgeColor}
+              selectionBounds={selectionBounds}
+              showPlus={showPlus}
+              showUnionResize={showUnionResize}
+              unionResizeBounds={unionResizeBounds}
+              unionResizePrimaryId={unionResizePrimaryId}
+              isPaintMode={isPaintMode}
+              handleArrowSelect={handleArrowSelect}
+              handleElementContextSelect={handleElementContextSelect}
+              quickRingOpen={quickRingOpen}
+              setQuickRingOpen={setQuickRingOpen}
+            />
+          </MindGrowProvider>
+        </CanvasStillProvider>
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk

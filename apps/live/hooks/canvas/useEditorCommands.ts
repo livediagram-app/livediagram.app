@@ -9,6 +9,7 @@
 // get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
+import { isWhiteboardTab } from '@livediagram/document';
 import { useCallback, useMemo } from 'react';
 import { isBoxed } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -68,6 +69,7 @@ export function useEditorCommands(): {
   runCommand: (id: string) => void;
 } {
   const ctx = useEditorContext();
+  const whiteboard = isWhiteboardTab(ctx.activeTab);
   const {
     isReadOnly,
     isOwner,
@@ -162,6 +164,7 @@ export function useEditorCommands(): {
       canvasEmpty,
       isMobile,
       esBoard,
+      whiteboard,
       photoImportAvailable,
     }),
     [
@@ -180,6 +183,7 @@ export function useEditorCommands(): {
       canvasEmpty,
       isMobile,
       esBoard,
+      whiteboard,
       photoImportAvailable,
     ],
   );

@@ -9,8 +9,7 @@
 import { Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/document';
-import { EraserIcon, HighlighterIcon, SelectIcon } from '@/components/palette/palette-icons';
-import { HIGHLIGHTER_COLORS, HIGHLIGHTER_WIDTHS } from '@/lib/highlighter-config';
+import { EraserIcon, SelectIcon } from '@/components/palette/palette-icons';
 import {
   WHITEBOARD_PEN_COLOURS,
   WHITEBOARD_PEN_WIDTHS,
@@ -36,7 +35,7 @@ import {
 } from './whiteboard-icons';
 
 type Flyout = {
-  kind: WhiteboardPenId | 'highlighter' | 'eraser' | 'shapes' | 'more';
+  kind: WhiteboardPenId | 'eraser' | 'shapes' | 'more';
   left: number;
 };
 
@@ -49,12 +48,6 @@ export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the Ink pen draws with.
   ink: string;
-  highlighter: {
-    colour: string;
-    width: number;
-    onColour: (colour: string) => void;
-    onWidth: (px: number) => void;
-  };
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -64,7 +57,6 @@ export type WhiteboardDockProps = {
 export function WhiteboardDock({
   model,
   ink,
-  highlighter,
   canUndo,
   canRedo,
   onUndo,
@@ -181,39 +173,6 @@ export function WhiteboardDock({
   }
 
   const flyoutBody = (kind: Flyout['kind']): { label: string; body: ReactNode } => {
-    if (kind === 'highlighter') {
-      return {
-        label: 'Highlighter',
-        body: (
-          <FlyoutRows>
-            <FlyoutRow label="Colour">
-              {HIGHLIGHTER_COLORS.map((c) => (
-                <FlyoutOption
-                  key={c.id}
-                  label={c.label}
-                  selected={highlighter.colour === c.id}
-                  onPick={() => highlighter.onColour(c.id)}
-                >
-                  <Swatch colour={c.id} />
-                </FlyoutOption>
-              ))}
-            </FlyoutRow>
-            <FlyoutRow label="Strength">
-              {HIGHLIGHTER_WIDTHS.map((w) => (
-                <FlyoutOption
-                  key={w.id}
-                  label={w.label}
-                  selected={highlighter.width === w.px}
-                  onPick={() => highlighter.onWidth(w.px)}
-                >
-                  <WidthBar px={w.px / 2.5} />
-                </FlyoutOption>
-              ))}
-            </FlyoutRow>
-          </FlyoutRows>
-        ),
-      };
-    }
     if (kind === 'eraser') {
       return {
         label: 'Eraser',
@@ -355,17 +314,6 @@ export function WhiteboardDock({
         {divider('d1')}
         {penItems}
         {divider('d2')}
-        {item({
-          key: 'highlighter',
-          label: 'Highlighter',
-          icon: <HighlighterIcon size={DOCK_ICON_PX} />,
-          pressed: tool === 'highlighter',
-          flyoutKind: 'highlighter',
-          onPress: (el) =>
-            tool === 'highlighter'
-              ? toggleFlyout('highlighter', el)
-              : pickAndClose(model.pickHighlighter),
-        })}
         {item({
           key: 'eraser',
           label: 'Eraser',

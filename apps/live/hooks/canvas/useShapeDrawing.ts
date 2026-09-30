@@ -23,6 +23,7 @@ import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
+import { applyWhiteboardPen } from '@/lib/whiteboard-tool';
 import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -145,7 +146,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // A whiteboard's marks wear the board's ink, not the remembered diagram
     // style (docs/specs/023-whiteboard/whiteboard.md "Appearance").
     const whiteboard = isWhiteboardTab(activeTab);
-    const dress = <T extends Element>(el: T): T => (whiteboard ? el : styleNewElement(el));
+    // A dock shape also wears the pen it was drawn with (its colour and width).
+    const pen =
+      (intent.type === 'shape' || intent.type === 'arrow') && whiteboard ? intent.pen : undefined;
+    const dress = <T extends Element>(el: T): T =>
+      !whiteboard ? styleNewElement(el) : pen ? applyWhiteboardPen(el, pen) : el;
     if (intent.type === 'arrow') {
       const arrow = dress(
         buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme), {
