@@ -269,6 +269,8 @@ export function buildKanban(cx: number, cy: number): Element[] {
       width: goalW,
       height: 32,
       progress: 36,
+      // The track stays pale on every canvas, so its percentage is inked dark.
+      textColor: '#0f172a',
       ...content,
     },
   );
@@ -392,6 +394,9 @@ function ticket(x: number, y: number, w: number, h: number, card: Card, done: bo
       textSize: 'sm',
       textAlignX: 'left',
       textAlignY: 'top',
+      // Dark ink: the card stays white (or Done's pale green) on every
+      // canvas, so the theme's canvas ink (white on a dark one) would vanish.
+      textColor: done ? '#14532d' : '#0f172a',
       ...content,
     },
   ];
