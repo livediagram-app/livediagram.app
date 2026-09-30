@@ -217,10 +217,10 @@ out top to bottom:
 
 - **Overview.** A key tile, the title, one line on what tokens are for, and the
   **capacity meter**: "3 of 10" over ten pips, one per slot, filled for each
-  live token (brand; amber from 8; rose at the cap). A **New Token** button
+  live token (brand; amber from 8; rose at the cap). A **New** button (accessible name "New token")
   opens the composer; at the cap it is disabled and the meter says to revoke
   one first.
-- **Composer.** Opens in place under the overview from New Token. A name
+- **Composer.** Opens in place under the overview from New. A name
   field (optional, up to 60 characters, focused when opened) with **suggestion chips** that fill it
   ("Claude", "Cursor", "CI Bot", "Local Script"), a live line saying when the
   token will expire (six months from today, as a date), then **Cancel** and
@@ -240,11 +240,11 @@ out top to bottom:
   Expired), labelled with the time left. A **Revoke** control per card opens
   a confirmation popover with the revoke warning first.
 - **First run.** With no tokens, the composer is already open and is the
-  whole category: no New Token button, no meter, no Cancel, and no empty-list
+  whole category: no New button, no meter, no Cancel, and no empty-list
   card, so the one thing on screen is the form. It does not take focus on
   load. Under it a single quiet line points readers who want to connect an AI
   tool at the Connect an AI Tool guide, since that flow creates its own token.
-  Once a token exists the overview's meter and New Token button take over.
+  Once a token exists the overview's meter and New button take over.
 
 "Edit" is exactly what the API supports: create and revoke. There is no rename
 or scope change; a token is replaced by creating a new one and revoking the old.

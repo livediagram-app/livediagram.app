@@ -63,7 +63,7 @@ describe('SettingsTokensRow', () => {
     render(<SettingsTokensRow row={ROW} />);
     // The form is the empty state: no second button to it, no "0 of 10".
     expect(await screen.findByLabelText('What Is It For?')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'New Token' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'New token' })).toBeNull();
     expect(screen.queryByRole('meter')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
   });
@@ -82,16 +82,16 @@ describe('SettingsTokensRow', () => {
     expect(api.apiCreateToken).toHaveBeenCalledWith('user_1', 'CI Bot');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.queryByText(/lvd_secret/)).toBeNull();
-    // Now there is one: the list, the meter and New Token take over.
+    // Now there is one: the list, the meter and New take over.
     expect(await screen.findByText('CI bot')).toBeTruthy();
     expect(screen.getByRole('meter').getAttribute('aria-valuetext')).toBe('1 of 10');
-    expect(screen.getByRole('button', { name: 'New Token' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New token' })).toBeTruthy();
   });
 
   it('closes an opened composer on Escape without creating anything', async () => {
     api.apiListTokens.mockResolvedValue([TOKEN]);
     render(<SettingsTokensRow row={ROW} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'New Token' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'New token' }));
     fireEvent.keyDown(screen.getByLabelText('What Is It For?'), { key: 'Escape' });
     expect(screen.queryByLabelText('What Is It For?')).toBeNull();
     expect(api.apiCreateToken).not.toHaveBeenCalled();

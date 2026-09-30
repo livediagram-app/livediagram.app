@@ -51,9 +51,17 @@ export function SettingsTokenOverview({
           </span>
         </span>
         {composing || firstRun ? null : (
-          <Button size="xs" onClick={onNew} disabled={count === null || atCap} className="shrink-0">
+          // Visibly just "New" beside the API Tokens title; the accessible
+          // name says what it makes, still starting with the visible word.
+          <Button
+            size="xs"
+            onClick={onNew}
+            disabled={count === null || atCap}
+            aria-label="New token"
+            className="shrink-0"
+          >
             <PlusIcon />
-            New Token
+            New
           </Button>
         )}
       </div>
