@@ -63,3 +63,16 @@ describe('TemplatePickerBrowse', () => {
     expect(screen.getByText('Swimlane flowchart')).toBeTruthy();
   });
 });
+
+// docs/specs/023-whiteboard/whiteboard.md "Creating one": Whiteboard is the last tile of the grid.
+describe('TemplatePickerBrowse, the whiteboard tile', () => {
+  it('comes last, after every category, with its own description', () => {
+    renderBrowse(null);
+    const grid = screen.getByText('Blank diagram').closest('.grid')!;
+    const tiles = [...grid.children];
+    const last = tiles[tiles.length - 1]!;
+    expect(last.textContent).toContain('Whiteboard');
+    expect(last.textContent).toContain('Free drawing with markers and shapes');
+    expect(tiles[1]!.textContent).not.toContain('Whiteboard');
+  });
+});

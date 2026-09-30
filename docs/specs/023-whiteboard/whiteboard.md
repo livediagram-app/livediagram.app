@@ -34,7 +34,10 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 - **New Document wizard:** a **Whiteboard** template (a `TemplateKind` with a
   blank builder and a preview tile, `packages/templates`), producing a document
-  with one whiteboard tab.
+  with one whiteboard tab. It is the **last tile** of the template grid, after
+  every category (Blank diagram first, the categories, then Whiteboard: a
+  different activity from the diagram templates), described **"Free drawing
+  with markers and shapes"**.
 - **New tab:** the tab bar's new-tab action opens Quick Start as on any
   document, and Quick Start offers **Whiteboard** as a quick-pick beside
   **Blank**, so a whiteboard can be added to any document in the same two

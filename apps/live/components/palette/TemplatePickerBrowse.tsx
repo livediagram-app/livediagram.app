@@ -118,14 +118,6 @@ export function TemplatePickerBrowse({
                 onCommit={() => onTemplateCommit('blank')}
               />
             ) : null}
-            {whiteboardTemplate ? (
-              <TemplateCard
-                template={whiteboardTemplate}
-                active={templateKind === 'whiteboard'}
-                onSelect={() => onTemplateCommit('whiteboard')}
-                onCommit={() => onTemplateCommit('whiteboard')}
-              />
-            ) : null}
             {TEMPLATE_CATEGORIES.map((cat) => {
               const items = shelfTemplates(cat.id);
               if (items.length === 0) return null;
@@ -145,6 +137,16 @@ export function TemplatePickerBrowse({
                 />
               );
             })}
+            {/* A whiteboard is a different activity from the diagram templates:
+                last, after every category (docs/specs/023-whiteboard/whiteboard.md "Creating one"). */}
+            {whiteboardTemplate ? (
+              <TemplateCard
+                template={whiteboardTemplate}
+                active={templateKind === 'whiteboard'}
+                onSelect={() => onTemplateCommit('whiteboard')}
+                onCommit={() => onTemplateCommit('whiteboard')}
+              />
+            ) : null}
           </div>
         )}
       </AnimatedHeightBox>
