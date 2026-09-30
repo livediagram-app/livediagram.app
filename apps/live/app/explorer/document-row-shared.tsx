@@ -61,8 +61,9 @@ export function ownerLabelFor(liveDoc: PaneDocument): string {
 // with its icon on the left, and Delete last under a separator. It was
 // a tile grid (icon over label, two then three columns); eight verbs in
 // a grid meant reading in two directions with labels wrapping under
-// their icons, and a list of verbs scans down in one. Delete is red at
-// rest so the one irreversible verb is found before it's read.
+// their icons, and a list of verbs scans down in one. Delete sits last,
+// apart, in the ordinary colour: it goes to the Trash for 30 days
+// (docs/specs/013-workspace/trash.md), so it is not the irreversible verb it was.
 export function DocumentActionsMenu({
   document: liveDoc,
   anchor,
@@ -276,7 +277,6 @@ export function DocumentActionsMenu({
           <MenuGroupSeparator />
           <MenuActionRow
             plain
-            danger
             icon={<TrashIcon size={12} />}
             label="Delete"
             onClick={then(onDelete)}
