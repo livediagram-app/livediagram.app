@@ -471,14 +471,18 @@ export function Canvas(props: CanvasProps) {
 
   // Stable selection-routing wrappers for the memo'd element / arrow
   // views — see useCanvasSelectHandlers.
-  const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
-    inertIds: props.layerInertIds,
-    multiSelectedIds,
-    onSelect,
-    onShiftSelect,
-    onElementContextMenu,
-    onMultiContextMenu,
-  });
+  const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
+    useCanvasSelectHandlers({
+      inertIds: props.layerInertIds,
+      isPaintMode,
+      selectedId,
+      multiSelectedIds,
+      onSelect,
+      onDeselect,
+      onShiftSelect,
+      onElementContextMenu,
+      onMultiContextMenu,
+    });
 
   // An armed workshop-note tile is a STAMP, not a draw-to-size (docs/specs/021-event-storming/event-storming.md
   // Phase 4): its ghost follows the pointer, and the draw gesture places by the
@@ -755,6 +759,7 @@ export function Canvas(props: CanvasProps) {
               unionResizePrimaryId={unionResizePrimaryId}
               isPaintMode={isPaintMode}
               handleArrowSelect={handleArrowSelect}
+              handleElementClick={handleElementClick}
               handleElementContextSelect={handleElementContextSelect}
               quickRingOpen={quickRingOpen}
               setQuickRingOpen={setQuickRingOpen}

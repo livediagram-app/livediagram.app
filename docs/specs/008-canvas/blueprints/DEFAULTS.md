@@ -60,3 +60,5 @@ One row per default applied where a spec is silent or qualitative.
 | D54 | resize            | Where the other axis goes when an edge handle is constrained           | The opposite edge stays; the other axis grows evenly about its centre line (the Figma convention)                   |
 | D55 | resize            | The minimum size under a constrained resize                            | The uniform scale stops where the shorter side meets 20; a side already thinner than 20 never shrinks               |
 | D56 | resize            | A corner's leading axis when the pointer has moved equally far on both | `x` leads                                                                                                           |
+| D57 | selection-clicks  | Which selection a click is settled against                             | The selection at release, read through a ref; a press never changes a selected element's membership                 |
+| D58 | selection-clicks  | How long a mouse or pen press may be held and still click              | No limit; only touch hands a held press to the long-press                                                           |

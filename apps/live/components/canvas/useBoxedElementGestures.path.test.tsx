@@ -25,7 +25,6 @@ describe('a double press on a path', () => {
         isEditing: false,
         remotelyLocked: false,
         isAnnotation: false,
-        multiSelectActive: false,
         isMultiSelected: false,
         isSelected: true,
         onBeginDrag,

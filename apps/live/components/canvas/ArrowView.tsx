@@ -76,7 +76,8 @@ type ArrowViewProps = {
   // wrapper around the export viable: with pre-bound callbacks,
   // every parent render would invalidate the memo via fresh
   // function identities.
-  onSelect: (id: string, e: ReactPointerEvent) => void;
+  // `paired`: the press is the second of a double-click, which always selects.
+  onSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   // Right-click: select the arrow + open its context menu at the cursor.
   onContextSelect: (id: string, screenX: number, screenY: number) => void;
   onBeginEndpointDrag: (id: string, end: ArrowEnd, e: ReactPointerEvent) => void;
@@ -413,7 +414,7 @@ function ArrowViewImpl({
           if (e.button !== 0) return;
           e.stopPropagation();
           const doubled = pairsWithLast(e);
-          onSelect(arrow.id, e);
+          onSelect(arrow.id, e, doubled);
           // Select first: selecting resets the edit state, so the editor opens after.
           if (doubled) openEditor();
           // Pressing the line bends it once the pointer travels

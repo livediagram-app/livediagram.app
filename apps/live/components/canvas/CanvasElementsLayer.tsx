@@ -61,7 +61,8 @@ type ElementsExtras = {
   unionResizeBounds: Bounds | null;
   unionResizePrimaryId: string | null;
   isPaintMode: boolean;
-  handleArrowSelect: (id: string, e: ReactPointerEvent) => void;
+  handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
+  handleElementClick: (id: string) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
   // Which quick-connect ring is open (lifted to Canvas so only one opens
   // at a time and the toolbar can dodge the top ring). null = all closed.
@@ -86,6 +87,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     tabLayers,
     layerPreviewId,
     handleArrowSelect,
+    handleElementClick,
     handleElementContextSelect,
     hasArrows,
     arrowLabels,
@@ -196,6 +198,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // presence/absence so children still branch on them.
   const h = useStableHandlers({
     handleArrowSelect,
+    handleElementClick,
     handleElementContextSelect,
     onBeginEndpointDrag,
     onBeginEdit,
@@ -433,7 +436,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             photoReadAs={draftView?.differences.get(element.id)}
             isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
-            multiSelectActive={multiSelectedIds.size > 0}
+            onPlainClick={h.handleElementClick}
             remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
             isEditing={element.id === editingId}
             editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
