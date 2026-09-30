@@ -12,7 +12,7 @@ test lives here.
 
 ## Why it's separate from CI's unit gate
 
-Browser E2E costs real CI minutes (a browser download + a running
+Browser E2E costs real CI minutes (a browser + a running
 stack), so it is **deliberately not on the per-PR critical path**. The
 `ci.yml` gate (lint / format / typecheck / test / build) stays fast and
 runs on every PR and push. The browser suite is its own workflow,
@@ -33,9 +33,10 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
   `import-images.spec.ts`, the image import pipeline's Safari path
   ([Import image pipeline](../020-import-export/import-image-pipeline.md)); CI never sets it.
-- **Browser binary cached** on `~/.cache/ms-playwright` keyed by the
-  Playwright version, so the ~120 MB download happens once per version
-  bump, not per run.
+- **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
+  Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
+  dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
+  naming the tag to set, when a Playwright bump leaves the image behind.
 - **Focused tests, not a matrix.** Each spec file proves what only a browser
   can show for one feature; breadth and edge cases stay in unit tests, where
   they are cheap.

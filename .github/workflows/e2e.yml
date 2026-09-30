@@ -23,6 +23,11 @@ jobs:
     name: Chromium smoke
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Playwright's own image carries Chromium and every system library it needs, so no run downloads
+    # or apt-installs them. Its tag is the locked @playwright/test version; the first step checks it.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -41,22 +46,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Cache the Playwright browser binary keyed by the installed
-      # version, so the ~120 MB download happens once per version bump,
-      # not per run.
-      - name: Resolve Playwright version
-        id: pw
-        run: echo "version=$(pnpm --filter @livediagram/live exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browsers
-        id: pw-cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
-
-      - name: Install Chromium
-        run: pnpm --filter @livediagram/live exec playwright install --with-deps chromium
+      # The image's browsers belong to one Playwright version: a bump of @playwright/test without the
+      # image tag would look for a Chromium the image doesn't have.
+      - name: Check the image matches Playwright
+        run: |
+          locked="$(pnpm --filter @livediagram/live exec playwright --version | awk '{print $2}')"
+          image="$(grep -o 'mcr.microsoft.com/playwright:v[0-9.]*' .github/workflows/e2e.yml | head -n 1)"
+          echo "Playwright ${locked}, image ${image}"
+          if [ "${image}" != "mcr.microsoft.com/playwright:v${locked}" ]; then
+            echo "::error::Set the e2e.yml container image to v${locked}"
+            exit 1
+          fi
 
       # Build the live app the way production does — a clean env with no
       # NEXT_PUBLIC_API_BASE / Clerk keys, so it calls same-origin `/api`
