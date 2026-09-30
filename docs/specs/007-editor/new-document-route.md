@@ -399,6 +399,20 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
+- **`/new?browse=<collection>`**: opens the wizard on a template
+  **collection** instead of the category overview: the template step shows
+  the collection's cards under a `← All templates` back bar, exactly as a
+  drilled-in category does. Collections are cross-category shortlists
+  (`TEMPLATE_COLLECTIONS` in `packages/templates`); today there is one,
+  **Brainstorm** (`brainstorm`): Mind map, Tree mind map, Bubble map,
+  Affinity map, Fishbone and Event storming, in that order. It is not a
+  bypass: nothing is committed until the author picks. Placement params
+  compose with it. An unknown collection is ignored and the overview shows.
+  The static page's HTML is the overview, so the same pre-paint guard as the
+  bypass hides the wizard card (`visibility`, so nothing moves) until React
+  has rendered the collection. Read by `wizardBrowseCollection` in
+  `apps/live/lib/new-document-params.ts`. The marketing hero's Brainstorm
+  button links here.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
   combinable with every param above. `useCtaAttribution` reads it once,
@@ -528,6 +542,11 @@ to carry one. Custom theme cards show just the saved name.
 - `/new?template=kanban` → no wizard; a Kanban diagram created and the
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` → the plain wizard.
+- `/new?template=whiteboard` → no wizard; a whiteboard document created and
+  the editor loads with the Ink pen in hand.
+- `/new?browse=brainstorm` → the wizard, its template step showing the
+  Brainstorm collection.
+- `/new?browse=not-a-collection` → the plain wizard.
 - "Just Draw" on the wizard's step rail → blank document created
   immediately, same as Skip.
 
