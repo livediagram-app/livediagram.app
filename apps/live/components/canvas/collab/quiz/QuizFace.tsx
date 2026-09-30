@@ -39,6 +39,8 @@ import { QuizPickers } from './QuizPickers';
 // The countdown ring sits just outside the disc.
 const RING_RADIUS = QUIZ_DISC_RADIUS + 7;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+// How far inside the disc's top edge its `…` sits.
+const ELLIPSIS_INSET = 6;
 
 export type QuizActions = {
   answer?: (index: number) => void;
@@ -146,7 +148,13 @@ export function QuizFace({
             fill={surface}
             stroke={stroke ?? tint(textColor, 0.22)}
             strokeWidth={stroke ? 3 : 2}
-            style={{ filter: 'drop-shadow(0 2px 6px rgb(0 0 0 / 0.18))' }}
+            // The disc is the element's only body (BoxedElementView lets the
+            // rest of the box fall through to the canvas), so it alone takes
+            // the press that selects and drags the quiz.
+            style={{
+              filter: 'drop-shadow(0 2px 6px rgb(0 0 0 / 0.18))',
+              pointerEvents: 'auto',
+            }}
           />
           {phase === 'open' || phase === 'locked' ? (
             <>
@@ -239,7 +247,12 @@ export function QuizFace({
           </div>
         ) : null}
 
-        <div className="absolute right-2 top-2">
+        {/* The `…` rides the top of the disc, where the quiz's controls
+            already are, rather than the far corner of an empty square box. */}
+        <div
+          className="absolute -translate-x-1/2"
+          style={{ left: c, top: c - QUIZ_DISC_RADIUS + ELLIPSIS_INSET }}
+        >
           <ElementEllipsisMenu label="Quiz options" color={textColor}>
             {(close) => {
               const row = (text: string, fn?: () => void) =>
