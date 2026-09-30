@@ -1,12 +1,10 @@
 # Selection Mode button
 
-Status: **implemented**.
-
 A canvas element that looks like a button and, when pressed, **switches whoever pressed it into a selection mode**. Which mode is configurable; it defaults to **Avatar** ([Avatar mode](../008-canvas/avatar-mode.md)).
 
 ## Why
 
-The canvas can now be walked around, lasered over, spotlit, or tilted — but every one of those modes lives behind a picker in the palette, which means explaining it. A button ON the canvas turns that into an invitation: put "Walk with me" next to the title of a walkthrough diagram and a visitor who has never opened the mode picker can join in with one click. It is the same instinct as the Quick Start templates: put the affordance where the user already is.
+A document can be walked around, lasered over, spotlit, or tilted — but every one of those modes lives behind a picker in the palette, which means explaining it. A button ON the canvas turns that into an invitation: put "Walk with me" next to the title of a walkthrough document and a visitor who has never opened the mode picker can join in with one click. It is the same instinct as the Quick Start templates: put the affordance where the user already is.
 
 It also gives a presenter somewhere to put a control bar — a row of buttons that hand the room a laser, a spotlight, or a character.
 
@@ -36,7 +34,7 @@ In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group 
 
 Right-click the button → **Button**: a "Switches the presser to" tile grid of all nine modes (Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, Highlighter, Isometric), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
 
-The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a canvas we can't see. **Highlighter** ([Highlighter](../008-canvas/highlighter.md)) joined the set when the marker became a held mode rather than a draw tile: "here, mark up the canvas" is one of the most natural things to hand a room, so the button is one of the better reasons the element exists.
+The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a document we can't see. **Highlighter** ([Highlighter](../008-canvas/highlighter.md)) is in the set because the marker is a held mode rather than a draw tile: "here, mark up the board" is one of the most natural things to hand a room, so the button is one of the better reasons the element exists.
 
 ## Model + validation
 
@@ -51,9 +49,9 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 - **`packages/document`**: `selection-mode.ts` (vocabulary + default + guard); `'mode-button'` in the `ShapeKind` union, `SHAPE_KINDS`, and `SHAPE_DEFAULT_SIZE`; the `mode` field on `ShapeElement`; the `createShape` branch; the `mode` check in `validate.ts`; `Mode Button` in `element-kind-label.ts`. Unit-tested.
 - **`apps/live/components/canvas/ModeButtonFace.tsx`** — the pressable face (glyph + label + hover card), and the `MODE_LABEL` map the element menu also reads.
-- Wiring, one small edit each: `BoxedElementView` (render the face instead of a plain label), `CanvasElementsLayer` + `Canvas.types` + `EditorCanvasHost` (thread the press to the tool setter, and the viewer's current mode down for the disabled state), `shape-svg-overlay.tsx` (the kind renders on the CSS box path — left on the SVG path it drew a TRANSPARENT box, since the overlay has no case for it, which is why the first version had no fill at all), `lib/themes.ts` (exempt from the colour projection), `palette-tile-defs.tsx` (the tile + the Behaviour group), `ElementDataSections` + `ElementAppearanceSections` + `EditorContextMenu.types` + `EditorContextMenuHost` (the Button section), `useDataShapeSetters` (the `mode` patch), `element-telemetry.ts` (the token), `draw-mode.ts` (spell a hyphenated kind out in the draw banner).
+- Wiring, one small edit each: `ElementFaceRouter` (render the face instead of a plain label), `CanvasElementsLayer` + `Canvas.types` + `EditorCanvasHost` (thread the press to the tool setter, and the viewer's current mode down for the Leave state), `shape-svg-overlay.tsx` (the kind renders on the CSS box path; the SVG overlay has no case for it and would draw a transparent box), `lib/themes.ts` (exempt from the colour projection), `palette-tile-defs.tsx` (the tile + the Behaviour group), `ElementDataSections` + `ElementAppearanceSections` + `EditorContextMenu.types` + `EditorContextMenuHost` (the Button section), `useDataShapeSetters` (the `mode` patch), `element-telemetry.ts` (the token), `draw-mode.ts` (spell a hyphenated kind out in the draw banner).
 
-## Out of scope (v1)
+## Out of scope
 
 - Buttons that do anything OTHER than switch a mode (open a tab, run a layout, start a poll). The element is named for what it does; a general action button is a bigger design question.
 - Pressing a button FOR someone else, or a presenter forcing a mode on the room. Modes stay personal.

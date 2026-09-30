@@ -1,7 +1,5 @@
 # The mind node
 
-Status: shipped
-
 ## What
 
 A **Mind node**: a labelled node that knows its parent, and grows a mind map
@@ -17,7 +15,7 @@ its shortcut in its hover card. The toolbar buttons are not offered on a locked
 node (growing re-lays the map) or to a view-role visitor.
 
 Each new node is placed in the map, connected to its parent with a pinned
-arrow, selected, and put straight into label editing — so a whole branch is
+arrow, selected, and put straight into label editing, so a whole branch is
 typed without touching the mouse.
 
 ## Why this is the gap
@@ -26,16 +24,16 @@ typed without touching the mouse.
 and lists as a core capability: _"hierarchical node/branch structures with quick
 keyboard-driven expansion."_
 
-What shipped before this was three mindmap **templates** and a radial auto-layout
-([Layout cleanup](../008-canvas/layout-cleanup.md)). A template is a static picture you then
-rearrange by hand. The value of a mind-mapping tool is not the picture — it is
-being able to keep up with someone talking, which means Tab and Enter and never
-reaching for the palette. Half the product's stated identity was a starter
-image.
+Without it, a mind map comes only from three mindmap **templates** and a radial
+auto-layout ([Layout cleanup](../008-canvas/layout-cleanup.md)). A template is a static picture you
+then rearrange by hand. The value of a mind-mapping tool is not the picture; it
+is being able to keep up with someone talking, which means Tab and Enter and
+never reaching for the palette. Without growth, half the product's stated
+identity is a starter image.
 
 ## The element
 
-`shape: 'mind-node'` — a shape kind, not a new element type, for the reason
+`shape: 'mind-node'`: a shape kind, not a new element type, for the reason
 [The Page element](page-element.md) gives: a new `BoxedElement` member would mean teaching validation, both
 export renderers, Mermaid, Markdown, Excalidraw, the MCP tools and the API
 schema about something that behaves like a shape in all of them.
@@ -52,13 +50,14 @@ single-valued, so it cannot disagree with itself, and deleting a parent leaves
 dangling ids rather than a corrupt tree (see "Deleting" below).
 
 The connector is an ordinary pinned arrow. The tree is not a second graph
-model — it is the arrows you can already see, plus a pointer saying which node
+model: it is the arrows you can already see, plus a pointer saying which node
 owns which.
 
 ## Placement
 
-Default size **250×80**. It was 170×48, which fitted a couple of words and made
-anything longer wrap or overflow, which is not what people type into a mind map.
+Default size **250×80**: wide enough for a phrase. 170×48 fits a couple of words
+and makes anything longer wrap or overflow, which is not what people type into a
+mind map.
 
 ### A tidy map stays tidy
 
@@ -96,7 +95,7 @@ In a map that is not tidy, a tree child goes to the **right** of its parent, at
 `parent.x + width + 64` (the other flows place along their own axis, below).
 
 Its `y` is the bottom of the lowest existing node in that parent's subtree,
-plus a gap — not the parent's `y`. Stacking against the subtree rather than the
+plus a gap, not the parent's `y`. Stacking against the subtree rather than the
 immediate children is what stops a new branch from landing on top of a
 grandchild that had already grown down past its own parent.
 
@@ -106,7 +105,7 @@ A sibling is a child of the same parent, so it takes the same path.
 
 In free placement a new node joins the **end** of the list it belongs to. For
 a child that is the bottom of the parent's branch, as above. **Enter on a
-root** makes another root at the bottom of the root stack — under every tree
+root** makes another root at the bottom of the root stack, under every tree
 sharing that column, not in the gap directly below the node you pressed Enter
 on. Taking that gap wedges the new root between two trees and leaves the one
 below with nowhere to put its own siblings. (A root has no parent to lay out
@@ -126,10 +125,10 @@ moving the pile-up one place down. The obstacles are every node the growth
 added or moved: just the new node in free placement, and the re-laid-out nodes
 in tidy growth.
 
-Dropping the child below everything instead (the first fix) kept it clear and
-put it nowhere near its parent, with its connector raking back across the map.
-In free placement the node's own tree never moves — moving the branch you are
-growing from would be absurd — so when a cousin in that same tree holds the
+Dropping the child below everything instead would keep it clear and put it
+nowhere near its parent, with its connector raking back across the map.
+In free placement the node's own tree never moves (moving the branch you are
+growing from would be absurd), so when a cousin in that same tree holds the
 slot, the new node is the one that gives way.
 
 Every move lands in the **same commit** as the add, so one keystroke is one
@@ -175,10 +174,10 @@ Tab and Enter fire off the **selected** node, with no label editor open, and
 again from inside the label editor so a chain of nodes is typed without pausing.
 
 Tab is also the canvas's element-traversal key ([Canvas accessibility baseline](../004-interface-design/canvas-accessibility.md)),
-and both listeners sit on `window`. The traversal one is mounted first, so it
-consumed every Tab and pressing it on a mind node cycled the tab's elements
-instead of growing a branch: the selected element now gets first refusal on the
-key. Shift+Tab stays traversal, since only plain Tab grows.
+and both listeners sit on `window`. The traversal one is mounted first, so the
+selected element gets first refusal on the key; otherwise pressing Tab on a mind
+node would cycle the tab's elements instead of growing a branch.
+Shift+Tab stays traversal, since only plain Tab grows.
 
 ### Typing ahead
 
@@ -243,22 +242,22 @@ Resizing a node resizes only that node.
 
 ## Flows: the shape the map grows in
 
-Growth started with one arrangement, the one a keyboard-driven outline wants: a
-child to the right, siblings stacked down it. That is a **tree**, and it is only
-one of the shapes people draw. Four ship (`MindFlow` in
+The arrangement a keyboard-driven outline wants is a child to the right,
+siblings stacked down it. That is a **tree**, and it is only one of the shapes
+people draw. There are four (`MindFlow` in
 `packages/document/src/mind-flow.ts`), picked from the **Mind Map** section of a
 selected node's menu:
 
-- **Tree** — branches right, siblings stacked down. The default, so every map
+- **Tree**: branches right, siblings stacked down. The default, so every map
   already drawn keeps its shape.
-- **Balanced** — branches both ways off the root, the classic hand-drawn mind
+- **Balanced**: branches both ways off the root, the classic hand-drawn mind
   map. Only the root alternates: a branch keeps the side it started on, because
   flipping deeper down folds it back over its own parent. A new root child
   (Tab) goes to the side with less on it; a sibling (Enter) stays on the side
   of the node it was pressed on.
-- **Downward** — branches below, siblings spread across. The tree on its side,
+- **Downward**: branches below, siblings spread across. The tree on its side,
   which is what an org chart or a decision tree looks like.
-- **Bubble** — branches fanned around the parent. Laid out tidily, the root's
+- **Bubble**: branches fanned around the parent. Laid out tidily, the root's
   children share the full circle **equally**, starting from the root's west
   side and running clockwise, so a lone first branch points east. Weighting
   them by leaf count swung every other branch round the dial each time one of
@@ -315,7 +314,7 @@ it in place, and the new nodes look like the template's own.
 ## Deleting
 
 Deleting a node leaves its children with a `mindParentId` pointing at nothing.
-They become roots — their arrows are already gone (arrow cleanup on delete is
+They become roots: their arrows are already gone (arrow cleanup on delete is
 existing behaviour), so what remains on screen is exactly what the model says.
 
 The alternative, cascading the delete to the subtree, was rejected: deleting one
@@ -332,15 +331,13 @@ where every other per-element action already lives, so the two that grow a
 mind map belong there too, and the actions work by pointer as well as by key,
 which the shortcuts alone never did.
 
-This **replaces a hint chip** pinned under the selected node. It announced the
-two shortcuts to everybody forever rather than to whoever was looking for
-them; it was dark enough to read as an error state in light mode; and it hung
-off the node's left edge rather than centred, because a centred one landed
-underneath the very "+" the actions now live in.
+There is **no hint chip** under the selected node. One would announce the two
+shortcuts to everybody forever rather than to whoever is looking for them, and a
+centred one would land underneath the very "+" the actions live in.
 
 ## What it is not
 
-Not an auto-layout of anything else on the tab. Tidy growth re-lays out only
+Not an auto-layout. Nodes are placed where they fit and then stay put: a mind
 the map being grown, and only while that map is still exactly as the layout
 left it; a hand-arranged map is never re-flowed by a keystroke. Arbitrary
 diagrams keep the radial / tree re-layouts in Auto Layout
