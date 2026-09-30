@@ -225,6 +225,7 @@ The new route owns:
 **Escape backs you out of whatever you just clicked**, one screen at a time, and never
 creates anything:
 
+- **With a search typed:** the search clears.
 - **On the Location step:** back to the Template step.
 - **On the Template step of `/new`:** back to the screen that opened it. When the
   browser came from another page of this site (the home page's Diagram or Brainstorm,

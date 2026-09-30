@@ -614,6 +614,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
     "Someone switched category in the Toolbar layout's palette strip across the top of the canvas.",
+  'UI|Closed|NewDocument':
+    'Someone pressed Escape in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',

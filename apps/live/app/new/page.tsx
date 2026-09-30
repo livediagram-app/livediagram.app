@@ -50,6 +50,7 @@ import {
   wizardBypassKind,
 } from '@/lib/new-document-params';
 import { markQuietLanding } from '@/lib/quiet-landing';
+import { backOutTarget } from '@/lib/back-out';
 import { QUIET_LANDING_ATTR, QUIET_LANDING_LOADER_CLASS } from '@/lib/quiet-landing-boot';
 import { CanvasLoader } from '@livediagram/ui';
 import { getTheme } from '@/lib/themes';
@@ -205,6 +206,19 @@ export default function NewDocumentPage() {
       document.documentElement.removeAttribute('data-wizard-browse');
     }
   }, [browseShelf]);
+
+  const backOut = () => {
+    if (submitting) return;
+    const target = backOutTarget({
+      referrer: document.referrer,
+      origin: window.location.origin,
+      historyLength: window.history.length,
+    });
+    console.debug(`[new] back out ${target}`);
+    track('UI', 'Closed', 'NewDocument');
+    if (target === 'back') window.history.back();
+    else window.location.assign('/');
+  };
 
   useEffect(() => {
     document.title = 'New document | livediagram';
@@ -540,6 +554,9 @@ export default function NewDocumentPage() {
                   saveLocation: DEFAULT_SAVE_LOCATION,
                 })
               }
+              // Escape backs out to the page that opened /new, creating nothing
+              // (docs/specs/007-editor/new-document-route.md "Escape backs out").
+              onBackOut={backOut}
             />
           </CustomThemeProvider>
         </div>
