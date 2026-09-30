@@ -96,12 +96,12 @@ describe('the shape geometry table', () => {
     expect(fit).toEqual({ sx: 1, sy: 1, ox: 45, oy: 0 });
   });
 
-  it('the export draws the diamond natively from the table points', () => {
-    const svg = renderElementsToSvg(tabOf([shapeAt('diamond')]));
+  it('the export draws the diamond natively from the table points, inset by half the stroke', () => {
+    const svg = renderElementsToSvg(tabOf([shapeAt('diamond', { strokeWidth: 'thick' })]));
     expect(svg).toContain(
-      `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, 10, 20, 160, 100)}"`,
+      `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, 12, 22, 156, 96)}"`,
     );
-    expect(scaledPolygonPoints(DIAMOND_POINTS, 10, 20, 160, 100)).toBe('90,20 170,70 90,120 10,70');
+    expect(scaledPolygonPoints(DIAMOND_POINTS, 12, 22, 156, 96)).toBe('90,22 168,70 90,118 12,70');
   });
 
   it('keeps the laptop bezel even on a wide box, as the canvas does', () => {

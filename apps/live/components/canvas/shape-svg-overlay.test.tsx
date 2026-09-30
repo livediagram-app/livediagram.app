@@ -48,6 +48,15 @@ describe('ShapeSvgOverlay draws the shared table', () => {
     );
   });
 
+  it('insets the diamond by half its stroke so the tips stay inside the box', () => {
+    const { container } = render(
+      <ShapeSvgOverlay shape="diamond" fill="#fff" stroke="#000" strokeWidth={4} />,
+    );
+    const style = container.querySelector('svg')!.style;
+    expect([style.left, style.top]).toEqual(['2px', '2px']);
+    expect([style.width, style.height]).toEqual(['calc(100% - 4px)', 'calc(100% - 4px)']);
+  });
+
   it('paints a frame with its fill, like every other shape', () => {
     const { container } = render(<ShapeSvgOverlay shape="frame" fill="#fef3c7" stroke="#000" />);
     expect(container.querySelector('rect')!.getAttribute('fill')).toBe('#fef3c7');
