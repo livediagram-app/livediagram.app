@@ -1,6 +1,5 @@
 import { TemplatePreview } from '@livediagram/template-previews';
 import type { TemplateCategory } from '@livediagram/templates';
-import { ChevronDownIcon } from '@livediagram/ui';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-classes';
 import type { GalleryTemplate } from '@/lib/template-gallery';
 
@@ -8,7 +7,7 @@ import type { GalleryTemplate } from '@/lib/template-gallery';
 // per category not yet open, so they read as part of the gallery rather than a row of tags under
 // it. Each shows a fanned stack of its first three templates' previews (the editor picker's own
 // art, re-lit in dark by preview-art-tile on the plate), its name and how many templates it
-// holds, and a Show All cue. Hovering or focusing a card fans the stack wider. Clicking opens the
+// holds. Hovering or focusing a card fans the stack wider. Clicking opens the
 // category's carousel above, as the chips it replaced did.
 
 type Group = { id: TemplateCategory; label: string; templates: GalleryTemplate[] };
@@ -43,7 +42,7 @@ export function CategoryTiles({
               type="button"
               onClick={() => onOpen(group.id)}
               aria-label={`Show ${group.label} templates`}
-              className={`group flex h-full w-full flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
+              className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
             >
               <span className="preview-art-tile relative block h-24 overflow-hidden rounded-xl bg-slate-50">
                 {group.templates.slice(0, 3).map((t, i) => (
@@ -62,10 +61,6 @@ export function CategoryTiles({
                 <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
                   {group.templates.length} templates
                 </span>
-              </span>
-              <span className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-500 group-hover:text-brand-700 dark:text-slate-400 dark:group-hover:text-brand-200">
-                Show All
-                <ChevronDownIcon size={12} />
               </span>
             </button>
           </li>

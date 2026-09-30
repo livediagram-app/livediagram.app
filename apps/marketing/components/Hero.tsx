@@ -49,15 +49,15 @@ export function Hero() {
         </p>
         {/* CTA pair (docs/specs/019-marketing/marketing-site.md): the wizard is the encouraged path, so Choose
             Template is the primary and sits on the right; Just Draw is the
-            straight-to-blank-canvas escape hatch (docs/specs/007-editor/new-document-route.md). DOM order keeps
-            the primary first so the mobile stack leads with it; sm:order-*
-            swaps them side by side on desktop. */}
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            straight-to-blank-canvas escape hatch (docs/specs/007-editor/new-document-route.md). Side by side
+            at every width, a phone included. DOM order keeps the primary first (tab order, and
+            anything that reads the page); order-* puts it on the right. */}
+        <div className="mt-10 flex items-center justify-center gap-3">
           <a
             href={ctaHref('/new', 'Home.Hero')}
             className={buttonClassName({
               size: 'lg',
-              className: 'w-full shadow-sm sm:order-2 sm:w-auto',
+              className: 'order-2 shadow-sm',
             })}
           >
             <ButtonContent>Choose Template</ButtonContent>
@@ -67,7 +67,7 @@ export function Hero() {
             className={buttonClassName({
               variant: 'secondary',
               size: 'lg',
-              className: 'w-full shadow-sm sm:order-1 sm:w-auto',
+              className: 'order-1 shadow-sm',
             })}
           >
             <ButtonContent>Just Draw</ButtonContent>

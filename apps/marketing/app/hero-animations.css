@@ -1106,15 +1106,18 @@
   }
 }
 /* The launch window's proof points build in as a flow, a node then the arrow to the next, as
-   the hero's diagrams build; --i is the node's place in the flow. */
+   the hero's diagrams build; --i is the node's place in the flow. Filled backwards only: the
+   first frame holds through the stagger delay, and once a node has landed the animation lets go
+   entirely. Filled forwards, a finished animation kept every node on its own compositor layer at a
+   fractional x, and the browser resampled its text soft. */
 .hero-proof-node {
   animation: hero-proof-node 420ms cubic-bezier(0.34, 1.56, 0.64, 1)
-    calc(var(--proof-start, 400ms) + var(--i) * 420ms) both;
+    calc(var(--proof-start, 400ms) + var(--i) * 420ms) backwards;
 }
 .hero-proof-arrow {
   transform-origin: left center;
   animation: hero-proof-arrow 260ms ease-out
-    calc(var(--proof-start, 400ms) + 220ms + var(--i) * 420ms) both;
+    calc(var(--proof-start, 400ms) + 220ms + var(--i) * 420ms) backwards;
 }
 @keyframes hero-proof-node {
   from {
@@ -1238,12 +1241,13 @@
    clips at the line (hero-word-slot, a clip-path, which unlike overflow keeps the word on the
    headline's baseline; room above and below for accents and descenders), and the leaving word
    slides up out of it as the next slides up into place. No fade, no blur. Content pacing, and
-   nothing moves on load. Both end on none, so the settled word renders sharp. */
+   nothing moves on load. The entrance fills backwards only, so the settled word holds no layer and
+   renders sharp. */
 .hero-word-slot {
   clip-path: inset(-0.08em -0.2em -0.28em -0.2em);
 }
 .hero-word-in {
-  animation: hero-word-in 800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation: hero-word-in 800ms cubic-bezier(0.65, 0, 0.35, 1) backwards;
 }
 .hero-word-out {
   animation: hero-word-out 800ms cubic-bezier(0.65, 0, 0.35, 1) both;

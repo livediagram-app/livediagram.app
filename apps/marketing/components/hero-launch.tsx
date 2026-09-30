@@ -151,7 +151,7 @@ export function LaunchCanvasOverlay({
           >
             <span
               className={
-                'flex min-h-11 w-full items-center gap-2 rounded-xl border-[1.5px] border-(--hue) bg-[color-mix(in_srgb,var(--hue)_10%,var(--art-paper))] py-1.5 pl-1.5 pr-2.5 text-left text-[11px] font-semibold leading-tight text-[color-mix(in_srgb,var(--hue)_55%,var(--art-text))] shadow-sm shadow-[color-mix(in_srgb,var(--hue)_25%,transparent)] lg:w-auto lg:whitespace-nowrap ' +
+                'flex min-h-11 w-full items-center gap-2 rounded-xl border-[1.5px] border-(--hue) bg-[color-mix(in_srgb,var(--hue)_10%,var(--art-paper))] py-1.5 pl-1.5 pr-2.5 text-left text-[11px] font-semibold leading-tight text-[color-mix(in_srgb,var(--hue)_40%,var(--art-text))] shadow-sm shadow-[color-mix(in_srgb,var(--hue)_25%,transparent)] lg:w-auto lg:whitespace-nowrap ' +
                 (playing ? 'hero-proof-node' : '')
               }
             >

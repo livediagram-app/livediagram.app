@@ -58,6 +58,7 @@ import {
 // Geometry: each window is `card`% of the stage with a GAP% gutter, so the
 // centred window sits at translateX = (100 - card) / 2 - i * (card + GAP).
 // `card` is wider on mobile so the windows stay legible there.
+// Kept in step with the stage's --hero-card (88 / sm:68), the same widths for the first paint.
 const CARD_WIDE = 68;
 const CARD_NARROW = 88;
 const GAP = 3;
@@ -176,9 +177,9 @@ const CARDS: {
   },
 ];
 
-// Window width as a % of the stage: narrower peek (wider window) on phones.
-// Phrased as the phone query so the static render (where a media query reads
-// false) keeps the wide layout, as before.
+// Window width as a % of the stage, for the whole-pixel snap: narrower peek (wider window) on
+// phones. It only matters once the stage is measured (after hydration, when the media query is
+// true to the device); the first paint takes the same numbers from CSS (--hero-card).
 function useCardWidth() {
   return useMediaQuery('(max-width: 639px)') ? CARD_NARROW : CARD_WIDE;
 }
@@ -206,13 +207,17 @@ export function HeroIllustration() {
     return () => window.clearTimeout(id);
   }, [active, reduceMotion]);
 
-  const tx = (100 - card) / 2 - active * (card + GAP);
+  // Before measurement (the static HTML and the first paint) the window width comes from CSS, by
+  // breakpoint (--hero-card on the stage: 88 on a phone, 68 from sm), so a phone paints its own
+  // layout from the first frame; a JS media query reads "desktop" in the static HTML, and the
+  // window used to paint cramped and then grow.
+  const tx = `calc(((100 - var(--hero-card)) / 2 - ${active} * (var(--hero-card) + ${GAP})) * 1%)`;
   // Whole-pixel geometry once the stage is measured (lib/hero-stage.ts), so the centred window's
   // text renders sharp; the percentages above hold until then (and with JS off).
   const stageRef = useRef<HTMLDivElement>(null);
   const box = useStageBox(stageRef);
   const snapped = box ? snapStage(box, card, GAP, active) : null;
-  const cardWidth = snapped ? `${snapped.cardPx}px` : `${card}%`;
+  const cardWidth = snapped ? `${snapped.cardPx}px` : 'calc(var(--hero-card) * 1%)';
 
   const { launch, layer } = useLaunchGrow();
 
@@ -223,14 +228,14 @@ export function HeroIllustration() {
         ref={stageRef}
         aria-hidden
         data-hero-anchor="stage"
-        className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
+        className="w-full overflow-hidden [--hero-card:88] sm:[--hero-card:68] [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
       >
         <div
           className="hero-track flex w-full"
           style={
             snapped
               ? { gap: `${snapped.gapPx}px`, transform: `translateX(${snapped.translatePx}px)` }
-              : { gap: `${GAP}%`, transform: `translateX(${tx}%)` }
+              : { gap: `${GAP}%`, transform: `translateX(${tx})` }
           }
         >
           {CARDS.map((c, i) => {
