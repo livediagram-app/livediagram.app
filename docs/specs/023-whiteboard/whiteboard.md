@@ -293,8 +293,14 @@ The eraser offers **both** modes, switched in its flyout:
   shape**: it never goes back to the drawing. Dragging on without lifting
   **reshapes it**: a line's end nearer the pen follows the pen, its other end
   stays; a shape's corner nearer the pen follows the pen, the opposite corner
-  stays, and dragging past it flips the box. Lifting lands the shape exactly as
-  shown. A stroke that reads as no shape shows no preview. Half a
+  stays, and dragging past it flips the box. **Shift** held while reshaping
+  makes the shape perfect: a circle stays a true circle, and a square,
+  diamond, triangle or star stays as wide as it is tall (the dragged corner
+  follows the larger of the two distances); a line snaps to 45° steps about
+  its fixed end. Releasing Shift lets it free again on the next move. Lifting
+  lands the shape exactly as shown.
+- **Shift keeps the aspect ratio** whenever a placed element is resized on a
+  whiteboard, as on every tab ([Canvas and palette](../008-canvas/canvas-and-palette.md), resize). A stroke that reads as no shape shows no preview. Half a
   second is long enough that a pause mid-letter does not trigger it and short
   enough to feel like an answer (Procreate's QuickShape and GoodNotes sit
   around the same). The preview and the commit run the same test
