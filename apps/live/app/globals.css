@@ -625,6 +625,13 @@
   translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
 }
 
+/* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
+   the top element (its --iso-z) plus the arrows' nudge, so the handles stay above everything in 3D,
+   where painting goes by z rather than by z-index. */
+[data-iso] [data-selection-grips] {
+  translate: 0 0 calc(2px + var(--iso-z, 0) * 0.01px);
+}
+
 /* Rich-text notes (docs/specs/009-elements/rich-text-notes.md): the ink a linked run takes. Declared as a
    variable rather than a Tailwind class because the note editor paints its
    spans imperatively with inline CSS (see note-run-style.ts) and so can't

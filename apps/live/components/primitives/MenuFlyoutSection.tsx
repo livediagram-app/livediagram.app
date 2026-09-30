@@ -308,7 +308,8 @@ function Flyout({
       // must ride along too — collapsing it on every element switch broke
       // the style-several-elements-in-a-row flow. Empty-canvas clicks still
       // close the whole menu (the canvas handler), which unmounts this.
-      if (t instanceof Element && t.closest('[data-element-id]')) return;
+      // An element's own grips live in the canvas grips layer (data-grips-for), not inside it.
+      if (t instanceof Element && t.closest('[data-element-id], [data-grips-for]')) return;
       setOpen(false);
     };
     document.addEventListener('pointerdown', onDown);

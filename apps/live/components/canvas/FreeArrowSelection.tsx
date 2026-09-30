@@ -20,6 +20,7 @@ const EDGES = ['n', 'e', 's', 'w'] as const;
 // the arrow; the ring moves it, since dragging the arrow's line bends it. Only
 // the ring and the handles take presses: the inside stays click-through, so
 // whatever sits within the frame is still reachable.
+// Mounted in the canvas grips layer (SelectionGripsLayer), above every element.
 export function FreeArrowSelection({
   arrowId,
   points,
@@ -59,7 +60,7 @@ export function FreeArrowSelection({
     <div
       data-testid="arrow-move-frame"
       className="pointer-events-none absolute rounded ring-2 ring-brand-200"
-      style={{ left, top, width, height, zIndex: 30 }}
+      style={{ left, top, width, height }}
     >
       {EDGES.map((side) => (
         <div

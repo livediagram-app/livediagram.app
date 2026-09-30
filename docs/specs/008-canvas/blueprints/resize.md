@@ -1,8 +1,9 @@
 # Resize blueprint
 
 Derived from [Canvas and palette](../canvas-and-palette.md) "Resize", "Aspect ratio lock",
-"Rotation" and "Adding elements", for the resize of boxed elements and multi-selections and the
-Shift constraint on draw-to-size. Reshaping a recognised whiteboard shape is owned by the
+"Rotation" and "Adding elements", for the resize of boxed elements and multi-selections, the
+Shift constraint on draw-to-size, and where every selection grip draws ("The handles are always on
+top"). Reshaping a recognised whiteboard shape is owned by the
 [whiteboard blueprint](../../023-whiteboard/blueprints/whiteboard-round-one.md).
 
 ## Domain and naming
@@ -19,6 +20,13 @@ Shift constraint on draw-to-size. Reshaping a recognised whiteboard shape is own
 - **Uniform-scale floor**: `minUniformScale({ width, height })`, the largest of `MIN_SIZE / side` over
   the sides of at least `MIN_SIZE`, and `1` for any side below it.
 - **Union**: `unionRects(startBounds)` of a multi-selection's boxed members at the press.
+- **Grip**: anything drawn to operate a selection rather than to show content: corner and edge
+  handles (`ResizeHandles`, `EdgeResizeHandle`), union handles and their dashed border, a free
+  arrow's frame (`FreeArrowSelection`), an arrow's end, curve and elbow grips
+  (`SelectedArrowHandles`), the quick-connect pluses (`QuickConnectPluses`) and the next-note
+  buttons.
+- **Grips layer**: `SelectionGripsLayer`, the one `[data-selection-grips]` layer that holds every grip.
+- **Grips frame**: `[data-grips-for="<id>"]`, an element's own handles standing on its box.
 
 ## Behaviour and state
 
@@ -56,11 +64,39 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   target is inside `[data-canvas-handle]`. `ResizeHandles`, `EdgeResizeHandle` and
   `UnionResizeHandles` all carry `data-canvas-handle`, so every handle reaches its resize with Shift.
 
+- Grips layer: `CanvasElementsLayer` draws it last in the transformed world, after every element,
+  the remote cursors and the laser, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
+  `inset: 0` (canvas coordinates). Inside it, in paint order: the canvas's own grips (next-note
+  buttons, quick-connect pluses, union border, union handles), an `<svg>` whose `<g>` hosts SVG
+  grips, then a `<div>` host for HTML grips.
+- The layer hands its two hosts to `SelectionGripsContext` from a layout effect, so the first commit
+  re-renders synchronously and the grips fill before the first paint; on unmount the hosts go null.
+- An element view renders its grips where it always did, wrapped in `BoxGripsPortal` (HTML) or
+  `ArrowGripsPortal` (SVG). The DOM lands in the layer; the React event path stays the element's,
+  so a press, double-press, context menu and pointer-up on a grip reach the same handlers as
+  before, and every grip still stops its own press so the element body never sees it.
+- `SelectionChromeLayer` draws a grips frame at the element's `x`, `y`, `width`, `height`,
+  `transform: translateX(shiftX) rotate(rotation)` (each part only when non-zero), origin centre:
+  the element's resting box, turned and shifted as the wrapper is. The frame is
+  `pointer-events: none`; each grip re-enables them, so the body beneath stays draggable.
+- The element's own content keeps its paint order; nothing about selection raises it.
+- A grip is not affected by the element's opacity, a layer's opacity, a vote's dimming or a looping
+  animation's motion: it draws opaque on the resting box.
+
 ## Interfaces and contracts
 
 - `apps/live/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
   `constrainedBounds`, `leadingAxis`, `minUniformScale`, `snapLeadingAxis(candidate, handle, lead,
 snapEdge, minScale = 0)`, `unionResizeMember`, `ResizeAxis`. All pure.
+- `apps/live/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts, isoDepth,
+children })`, `SelectionGripsContext` (`SelectionGripHosts | null`, `{ box: HTMLElement; arrows:
+SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ arrowId, children })` (wraps
+  its children in `<g transform="translate(shiftX 0)">` from `useInsertShift().xFor(arrowId)`),
+  `SELECTION_GRIPS_Z_INDEX`.
+- `SelectionChromeLayer({ elementId, box, zoom, rotation, shiftX?, showHandles, showAnchors,
+onBeginDrag })` in `element-parts.tsx`.
+- `MenuFlyoutSection` treats a press inside `[data-grips-for]` as a press on the element, as it
+  treats `[data-element-id]`, so an open flyout stays open when a handle is pressed.
 - `apps/live/hooks/canvas/boxed-drag-resolve.ts`: `resolveBoxedResize({ elements, startBounds,
 primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ boundsById, guides }`
   or null for `move`, a missing start box, or a multi-selection without a corner.
@@ -74,6 +110,16 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
 - A pointer dragged past the anchor: the scale goes negative and is clamped to the floor; the box
   never flips.
 - A tie between `|dx|` and `|dy|` on a corner leads with `x`.
+- No grips layer mounted (a portal rendered outside `CanvasElementsLayer`): the portal renders
+  nothing. `CanvasElementsLayer` is the only renderer of element views, and it always mounts one.
+- An element on a hidden layer is not drawn, so its grips are not either; a layer-preview solo draws
+  only that band's elements and so only their grips.
+- Isometric view: painting goes by depth, not z-index, so `[data-iso] [data-selection-grips]` takes
+  `translate: 0 0 calc(2px + var(--iso-z) * 0.01px)` with `--iso-z` one past the top element's
+  paint index (above the arrows' `1px` nudge).
+- A later element that forms its own stacking context, or a descendant with its own z-index (a
+  lane's gutter and a face's settings button, both `z-10`), stays under the layer.
+- Remote cursors (`z-index: 40`) stay above the grips.
 
 ## Performance and limits
 
@@ -99,10 +145,19 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   mid-drag toggle.
 - `hooks/canvas/useCanvasSurfaceGestures.whiteboard-handles.test.tsx`: Shift press on corner, edge
   and union handles does not start a marquee.
+- `components/canvas/SelectionGripsLayer.test.tsx`: the layer draws last and above; a box's eight
+  handles land in the layer and none in the element; the frame's box, rotation and shift; cursor
+  and counter-scale kept; a handle press starts the resize without reaching the element body; an
+  arrow's end grips land in the layer's `<svg>`; nothing renders outside a layer.
+- `e2e/grips-on-top.spec.ts`: in a real browser, no element covers any handle of a rotated, faded,
+  animated or note-covered element, nor an arrow's end grip under a later box
+  (`document.elementFromPoint` at each grip's centre).
 
 ## Constants and configuration
 
 - `MIN_SIZE = 20` (canvas px, `resize-geometry.ts`), the spec's 20x20 floor.
+- `SELECTION_GRIPS_Z_INDEX = 30` (`SelectionGripsLayer.tsx`): above element descendants that carry
+  `z-10` and an element being edited (`10`), below remote cursors (`40`). Safe range 11 to 39.
 - `ALIGN_SNAP_THRESHOLD` for resize snaps; draw-to-size uses `6 / viewportZoom` with a 1 px floor.
 
 ## Defaults ledger
