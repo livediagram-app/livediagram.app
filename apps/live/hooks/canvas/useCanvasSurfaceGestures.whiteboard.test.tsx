@@ -36,7 +36,7 @@ function setup(whiteboard: boolean, pendingDraw: PendingDraw | null = PEN) {
       avatar: {},
       peerAvatars: [],
       isoCamera: {},
-      canvasLongPress: { onPointerDown: vi.fn(), pressPoint: null },
+      onDeselect: vi.fn(),
       beginPendingDrawGesture,
       onCanvasContextMenu: vi.fn(),
       onCanvasDoubleClick: vi.fn(),

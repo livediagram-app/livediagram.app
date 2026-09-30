@@ -20,7 +20,6 @@ import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { isEventStormingTab, isWhiteboardTab } from '@livediagram/document';
-import { useLongPress } from '@/hooks/ui/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
@@ -198,22 +197,6 @@ export function Canvas(props: CanvasProps) {
     onShiftSelect,
     currentSelection: () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
     isPinchingRef,
-  });
-
-  // Touch has no right-click, so a press-and-hold on the empty canvas opens
-  // the tab / canvas context menu (the same one desktop reaches via
-  // right-click). Element presses stopPropagation in their own pointerdown,
-  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
-  //
-  // The same press also armed a marquee (or a pan), still live under the
-  // finger when the hold fires. Its release reads as a sub-4px "drag", which
-  // deselects, and deselecting closes the context menu: the menu flashed
-  // open on the hold and vanished on the lift (iPhone / iPad). The hold has
-  // claimed the press, so drop whatever the press started.
-  const canvasLongPress = useLongPress((x, y) => {
-    setMarquee(null);
-    setPan(null);
-    onCanvasContextMenu?.(x, y);
   });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
@@ -563,11 +546,11 @@ export function Canvas(props: CanvasProps) {
     peerAvatars: props.remoteAvatars,
     onPushPeer: props.onAvatarPush,
     isoCamera,
-    canvasLongPress,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: pathTool.beginEditPress,
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
+    onDeselect,
     onCanvasDoubleClick,
   });
 
@@ -973,12 +956,15 @@ export function Canvas(props: CanvasProps) {
           Portaled to escape the canvas's pan/zoom transform so its fixed
           position is viewport-relative. Reveals only after a deliberate hold
           and completes as the context menu opens. */}
-      {canvasLongPress.pressPoint ? (
+      {surface.canvasLongPress.pressPoint ? (
         <Portal>
           <div
             aria-hidden
             className="animate-longpress-hold pointer-events-none fixed z-[var(--z-toast)] h-9 w-9 rounded-full border-2 border-brand-500/70"
-            style={{ left: canvasLongPress.pressPoint.x, top: canvasLongPress.pressPoint.y }}
+            style={{
+              left: surface.canvasLongPress.pressPoint.x,
+              top: surface.canvasLongPress.pressPoint.y,
+            }}
           />
         </Portal>
       ) : null}

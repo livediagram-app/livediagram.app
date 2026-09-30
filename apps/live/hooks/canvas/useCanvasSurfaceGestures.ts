@@ -7,7 +7,7 @@ import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarqu
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
-import type { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
@@ -41,11 +41,11 @@ export function useCanvasSurfaceGestures({
   peerAvatars,
   onPushPeer,
   isoCamera,
-  canvasLongPress,
   beginPendingDrawGesture,
   interceptPress,
   onEraseStart,
   onCanvasContextMenu,
+  onDeselect,
   onCanvasDoubleClick,
 }: {
   canvasTool: CanvasProps['canvasTool'];
@@ -68,7 +68,6 @@ export function useCanvasSurfaceGestures({
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   isoCamera: ReturnType<typeof useIsometricCamera>;
-  canvasLongPress: ReturnType<typeof useLongPress>;
   // Starts the queued draw-to-size / freehand gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
@@ -77,6 +76,7 @@ export function useCanvasSurfaceGestures({
   interceptPress?: (e: ReactPointerEvent) => boolean;
   onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
+  onDeselect: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
 }) {
   // Which peer's character a click landed on, plus where to stand and which way
@@ -344,11 +344,35 @@ export function useCanvasSurfaceGestures({
     spotlight.shrink();
   };
 
+  // Right-clicking (or long-pressing) the empty canvas deselects, then opens
+  // the canvas menu (docs/specs/008-canvas/canvas-and-palette.md "Selection"). The
+  // deselect lands first: it closes any open menu, and the canvas menu then opens.
+  const openCanvasMenu = (x: number, y: number) => {
+    console.debug('[canvas-menu] deselect + open', x, y);
+    onDeselect();
+    onCanvasContextMenu?.(x, y);
+  };
+
+  // Touch has no right-click, so a press-and-hold on the empty canvas opens
+  // the tab / canvas context menu (the same one desktop reaches via
+  // right-click). Element presses stopPropagation in their own pointerdown,
+  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
+  //
+  // The same press also armed a marquee (or a pan), still live under the
+  // finger when the hold fires. Its release reads as a sub-4px "drag", which
+  // deselects, and deselecting closes the context menu: the menu flashed
+  // open on the hold and vanished on the lift (iPhone / iPad). The hold has
+  // claimed the press, so drop whatever the press started.
+  const canvasLongPress = useLongPress((x, y) => {
+    cancelPressGesture();
+    openCanvasMenu(x, y);
+  });
+
   // The tab menu opens on RELEASE, like an element's, through the same hook:
   // it copes with contextmenu arriving before the release (macOS / X11) OR
   // after it (Windows), which the old arm-then-wait ref here did not.
   const rightClick = useRightClickRelease(
-    (e) => onCanvasContextMenu?.(e.clientX, e.clientY),
+    (e) => openCanvasMenu(e.clientX, e.clientY),
     // The canvas is the last stop for a right-click; nothing above it cares.
     { stopPropagation: false },
   );
@@ -470,6 +494,7 @@ export function useCanvasSurfaceGestures({
   };
 
   return {
+    canvasLongPress,
     onPointerDownCapture,
     onContextMenuCapture,
     onContextMenu,

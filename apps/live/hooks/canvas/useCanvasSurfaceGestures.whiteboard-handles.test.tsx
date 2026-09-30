@@ -33,7 +33,7 @@ function setup(wrapper: HTMLElement) {
       avatar: {},
       peerAvatars: [],
       isoCamera: {},
-      canvasLongPress: { onPointerDown: vi.fn(), pressPoint: null },
+      onDeselect: vi.fn(),
       beginPendingDrawGesture: () => false,
       onCanvasContextMenu: vi.fn(),
       onCanvasDoubleClick: vi.fn(),

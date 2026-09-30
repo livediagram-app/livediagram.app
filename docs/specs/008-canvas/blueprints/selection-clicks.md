@@ -2,23 +2,24 @@
 
 Derived from [Canvas and palette](../canvas-and-palette.md), its "Selection" bullet **Click the
 selected element again** and its "Marquee box-select" rules **Only Shift adds to or takes from a
-selection** and **A plain click on a member**. The spec decides; this file only adds engineering
+selection** and **A plain click on a member**, and its "Selection" bullet **Right-clicking the empty canvas deselects too**. The spec decides; this file only adds engineering
 precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`. The rules hold on
 every tab kind, the whiteboard included.
 
 Scope, by file:
 
-| File                                                     | Role                                                                                      |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `apps/live/lib/selection-click.ts`                       | Pure click rules (`isOnlySelected`, `plainClickOutcome`, `isPlainClick`), `armPlainClick` |
-| `apps/live/hooks/canvas/useCanvasSelectHandlers.ts`      | `handleElementClick` settles a click; `handleArrowSelect` applies the rules to arrows     |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | A boxed press arms the click on a selected element; a paired press reselects              |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`         | `beginDrag` drops the multi-selection when the pressed element is not a member            |
-| `apps/live/components/canvas/ArrowView.tsx`              | The line press passes `paired` (the double-press verdict) to `onSelect`                   |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Threads `onPlainClick` and `isPaintMode` into the gesture hook                            |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Hands `handleElementClick` to every boxed view as `onPlainClick`                          |
-| `apps/live/components/canvas/Canvas.tsx`                 | Feeds `selectedId`, `isPaintMode` and `onDeselect` to `useCanvasSelectHandlers`           |
-| `apps/live/hooks/ui/useLongPress.ts`                     | Exports `LONG_PRESS_MS`                                                                   |
+| File                                                     | Role                                                                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `apps/live/lib/selection-click.ts`                       | Pure click rules (`isOnlySelected`, `plainClickOutcome`, `isPlainClick`), `armPlainClick`        |
+| `apps/live/hooks/canvas/useCanvasSelectHandlers.ts`      | `handleElementClick` settles a click; `handleArrowSelect` applies the rules to arrows            |
+| `apps/live/components/canvas/useBoxedElementGestures.ts` | A boxed press arms the click on a selected element; a paired press reselects                     |
+| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`         | `beginDrag` drops the multi-selection when the pressed element is not a member                   |
+| `apps/live/components/canvas/ArrowView.tsx`              | The line press passes `paired` (the double-press verdict) to `onSelect`                          |
+| `apps/live/components/canvas/BoxedElementView.tsx`       | Threads `onPlainClick` and `isPaintMode` into the gesture hook                                   |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Hands `handleElementClick` to every boxed view as `onPlainClick`                                 |
+| `apps/live/components/canvas/Canvas.tsx`                 | Feeds `selectedId`, `isPaintMode` and `onDeselect` to `useCanvasSelectHandlers`                  |
+| `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`     | `openCanvasMenu`: a right-click or long-press on the empty canvas deselects, then opens the menu |
+| `apps/live/hooks/ui/useLongPress.ts`                     | Exports `LONG_PRESS_MS`                                                                          |
 
 ## Domain and naming
 
@@ -71,6 +72,16 @@ element already selected, so nothing is settled.
 **Unchanged**: the whiteboard's Shift marquee (`useCanvasSurfaceGestures`, `useCanvasPanAndMarquee`)
 claims Shift presses in the capture phase before any element sees them.
 
+**Right-click or long-press on the empty canvas** (`useCanvasSurfaceGestures`): both open through
+`openCanvasMenu(x, y)` = `onDeselect()`, then `onCanvasContextMenu?.(x, y)`. The right-click opens on
+release through `useRightClickRelease` (Windows, macOS, X11 and the macOS Ctrl+click orders alike, the
+latter after `cancelPressGesture`); a right press that travels past its slop opens nothing and keeps
+the selection. The canvas long-press (`useLongPress`, touch only) lives in this hook now and is
+returned as `canvasLongPress` for the hold ring `Canvas` draws; it calls `cancelPressGesture`, then
+`openCanvasMenu`. With no canvas menu to open (view role) it still deselects. The spotlight,
+isometric and avatar tools open nothing and keep the selection. A right-click on an element never
+reaches the canvas (the element stops it), so the element menu keeps its own selection rules.
+
 ## Interfaces and contracts
 
 - `isOnlySelected(sel: SelectionSnapshot, id: string): boolean`
@@ -82,6 +93,8 @@ claims Shift presses in the capture phase before any element sees them.
   event satisfies it.
 - `useCanvasSelectHandlers` gains `isPaintMode`, `selectedId`, `onDeselect`, and returns
   `handleElementClick`; `handleArrowSelect` gains `paired?: boolean`.
+- `useCanvasSurfaceGestures` takes `onDeselect` in place of `canvasLongPress`, and returns
+  `canvasLongPress`.
 - `ArrowViewProps.onSelect(id, e, paired?)`; `BoxedElementViewProps.onPlainClick?(id)`.
 
 ## Errors and edge cases
@@ -102,18 +115,20 @@ claims Shift presses in the capture phase before any element sees them.
 ## Observability
 
 - `console.debug('[select-click]', id, outcome)` on every settled click.
+- `console.debug('[canvas-menu] deselect + open', x, y)` on every canvas menu opened from the empty canvas.
 - The existing `[double-press]` line marks the paired press that reselects.
 
 ## Testing
 
-| Rule                                        | Test                                                                     |
-| ------------------------------------------- | ------------------------------------------------------------------------ |
-| Only selected, outcome, plain click, arming | `apps/live/lib/selection-click.test.ts`                                  |
-| Boxed press arming per kind, Shift, paint   | `apps/live/components/canvas/useBoxedElementGestures.selection.test.tsx` |
-| Double-click from selected and unselected   | same file                                                                |
-| Non-member press drops the multi-selection  | `apps/live/hooks/canvas/useEditorDrag.select-press.test.tsx`             |
-| Settling, arrows, paint mode, inert         | `apps/live/hooks/canvas/useCanvasSelectHandlers.test.tsx`                |
-| End to end in a browser                     | `apps/live/e2e/select-clicks.spec.ts`                                    |
+| Rule                                           | Test                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| Only selected, outcome, plain click, arming    | `apps/live/lib/selection-click.test.ts`                                  |
+| Boxed press arming per kind, Shift, paint      | `apps/live/components/canvas/useBoxedElementGestures.selection.test.tsx` |
+| Double-click from selected and unselected      | same file                                                                |
+| Non-member press drops the multi-selection     | `apps/live/hooks/canvas/useEditorDrag.select-press.test.tsx`             |
+| Settling, arrows, paint mode, inert            | `apps/live/hooks/canvas/useCanvasSelectHandlers.test.tsx`                |
+| Right-click and long-press on the empty canvas | `apps/live/hooks/canvas/useCanvasSurfaceGestures.test.tsx`               |
+| End to end in a browser                        | `apps/live/e2e/select-clicks.spec.ts`                                    |
 
 ## Constants and configuration
 
