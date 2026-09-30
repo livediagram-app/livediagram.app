@@ -86,7 +86,8 @@ export function pathEditHit(
       best = { kind: 'handle', ...h };
     }
   }
-  if (best.kind === 'handle') return best;
+  // The nearest of the handles and nodes; a node wins a tie, so a handle lying on its node never
+  // hides the node.
   let node = -1;
   anchors.forEach((a, i) => {
     const d = dist(p, a);
@@ -96,6 +97,7 @@ export function pathEditHit(
     }
   });
   if (node >= 0) return { kind: 'node', node };
+  if (best.kind === 'handle') return best;
   const near = nearestOnPath(anchors, closed, p);
   const reach = STROKE_HIT_SCREEN_PX / (zoom || 1) + strokePx / 2;
   if (near && near.distance <= reach) return { kind: 'segment', segment: near.segment, t: near.t };
@@ -176,10 +178,11 @@ export function insertNodeAt(
     node.mode = 'aligned';
     node.handleIn = first.c2;
     node.handleOut = second.c1;
+    // An end that had no handle keeps none: its split control lies on it.
     const from = out[seg.from]!;
     const to = out[seg.to]!;
-    out[seg.from] = { ...from, mode: loosen(from.mode), handleOut: first.c1 };
-    out[seg.to] = { ...to, mode: loosen(to.mode), handleIn: second.c2 };
+    if (from.handleOut) out[seg.from] = { ...from, mode: loosen(from.mode), handleOut: first.c1 };
+    if (to.handleIn) out[seg.to] = { ...to, mode: loosen(to.mode), handleIn: second.c2 };
   }
   const index = seg.to === 0 ? out.length : seg.to;
   out.splice(index, 0, node);

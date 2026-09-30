@@ -198,6 +198,18 @@ describe('usePathDrawGesture', () => {
     expect(last.handleIn).toEqual({ x: 60, y: 0 });
   });
 
+  it('never reads a press that became a drag as the first half of a double-click', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.press(100, 0);
+    s.move(140, 0);
+    s.up();
+    clock += 150;
+    s.click(100, 0);
+    expect(s.commits).toHaveLength(0);
+    expect(s.hook.result.current.draft!.anchors[1]!.handleOut).toBeUndefined();
+  });
+
   it('removes the last node on Backspace and cancels with none left', () => {
     const s = setup();
     s.click(0, 0);

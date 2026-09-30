@@ -215,3 +215,22 @@ describe('toLocal', () => {
     expect(p.y).toBeCloseTo(0);
   });
 });
+
+describe('handles that lie on their node', () => {
+  it('never hide the node from a press', () => {
+    const anchors = [
+      { x: 0, y: 0, mode: 'corner' as const, handleOut: { x: 0, y: 0 } },
+      corner(100, 0),
+    ];
+    expect(pathEditHit(anchors, false, new Set([1]), { x: 0, y: 0 }, 1, 2)).toEqual({
+      kind: 'node',
+      node: 0,
+    });
+  });
+
+  it('are never made by a split next to a node without one', () => {
+    const anchors = [corner(0, 0), smooth(200, 0, 40, 40)];
+    const { anchors: out } = insertNodeAt(anchors, false, 0, 0.5);
+    expect(out[0]!.handleOut).toBeUndefined();
+  });
+});

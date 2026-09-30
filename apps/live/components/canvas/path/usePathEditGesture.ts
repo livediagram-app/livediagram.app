@@ -97,6 +97,7 @@ export function usePathEditGesture({
   const commitRef = useLatest(onCommitPathEdit);
   const leaveRef = useLatest(onLeave);
   const deselectRef = useLatest(onDeselect);
+  const beginEditRef = useLatest(onBeginEdit);
 
   // A new path in edit mode (or none) starts with no nodes selected and no gesture.
   const [seenId, setSeenId] = useState(editingId);
@@ -351,6 +352,13 @@ export function usePathEditGesture({
       const n = anchors.length;
       const current = sel.size > 0 ? Math.max(...sel) : e.shiftKey ? 0 : -1;
       setSelected(new Set([(current + (e.shiftKey ? -1 : 1) + n) % n]));
+      return;
+    }
+    if (mod && (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
+      // Undo and redo stay in edit mode, as in Figma: the editor's own undo leaves every edit
+      // mode, so the path's reopens once it has run (unless the step took the path away).
+      const id = el.id;
+      window.setTimeout(() => beginEditRef.current(id), 0);
       return;
     }
     if (mod && e.key.toLowerCase() === 'a') {

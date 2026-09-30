@@ -122,15 +122,17 @@ export function usePathDrawGesture({
     }
     const anchor = d.anchors[drag.index];
     if (!anchor) return;
+    // A press that became a drag was no click, so it cannot start a double-click.
+    const base = d.lastPlacedAt === null ? d : { ...d, lastPlacedAt: null };
     if (spaceRef.current) {
       // Space moves the node being placed, its handles with it.
       setDraft(
-        withAnchor(d, drag.index, translateAnchor(anchor, q.x - drag.last.x, q.y - drag.last.y)),
+        withAnchor(base, drag.index, translateAnchor(anchor, q.x - drag.last.x, q.y - drag.last.y)),
       );
     } else {
       drag.alt = drag.alt || e.altKey;
       setDraft(
-        withAnchor(d, drag.index, shapeHandles(anchor, q, { alt: drag.alt, shift: e.shiftKey })),
+        withAnchor(base, drag.index, shapeHandles(anchor, q, { alt: drag.alt, shift: e.shiftKey })),
       );
     }
     drag.last = q;

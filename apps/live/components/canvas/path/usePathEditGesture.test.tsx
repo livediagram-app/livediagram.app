@@ -253,6 +253,19 @@ describe('usePathEditGesture', () => {
     expect([...s.hook.result.current.selected]).toEqual([0, 1, 2]);
   });
 
+  it('stays in edit mode through undo and redo, leaving the key to the editor', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout'] });
+    const el = open();
+    const s = setup(el);
+    const z = s.key('z', { meta: true });
+    expect(z.defaultPrevented).toBe(false);
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(s.onBeginEdit).toHaveBeenCalledWith(el.id);
+    vi.useRealTimers();
+  });
+
   it('opens edit mode on Enter with one path selected', () => {
     const s = setup(null, 'p1');
     const e = s.key('Enter');
