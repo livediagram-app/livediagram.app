@@ -1305,6 +1305,11 @@ A shape can be **locked** to prevent accidental movement or resizing.
 
 When a shape is selected, **four corner handles** (NW, NE, SW, SE) appear as small white squares with a brand-600 border, and **four edge handles** (N, E, S, W) as short bars on the edge midpoints. A multi-selection shows the four corner handles on its union box, no edge handles. Fixed-size elements show none, and a table shows no edge handles.
 
+- **The handles are always on top.** Corner and edge handles (single and union), and the rest of a
+  selection's grips, draw above every element on the board, whatever the selected element's place in
+  the stacking order, its layer, rotation, opacity or animation, so no handle is ever hidden or
+  unreachable behind another element. The element's own content stays where it is in the stacking
+  order: only the handles rise.
 - **Press-and-drag a handle** to resize the shape.
 - The corner opposite a corner handle stays anchored; the dragged corner follows the cursor. An edge handle moves its own edge and, unconstrained, resizes that axis only.
 - **Minimum size is 20×20** to keep shapes pickable. A constrained resize stops where the shorter side reaches 20, so the ratio survives; a side that began thinner than 20 (a straight pen stroke) never shrinks further under the constraint.
