@@ -14,17 +14,23 @@ export const RECOGNITION_PREVIEW_DWELL_MS = 500;
 // "Still", in SCREEN px: a resting hand wobbles a little at any zoom.
 export const RECOGNITION_PREVIEW_STILL_PX = 4;
 
-/** The shape a (simplified) board stroke reads as, or null. */
+/** The shape a board stroke (the live pipeline's points) reads as, or null. */
 export function recogniseBoardStroke(points: Point[]): RecognisedShape | null {
   const detected = recogniseShape(points);
   return detected && detected.confidence >= RECOGNITION_THRESHOLD ? detected : null;
 }
 
-/** Whether every sample from `from` on stays within the still radius of `anchor`, on screen. */
-export function stillSince(points: Point[], from: number, anchor: Point, zoom: number): boolean {
+/** Whether every sample from `from` up to `count` stays within the still radius of `anchor`, on screen. */
+export function stillSince(
+  sample: (i: number) => Point,
+  from: number,
+  count: number,
+  anchor: Point,
+  zoom: number,
+): boolean {
   const r = RECOGNITION_PREVIEW_STILL_PX / (zoom || 1);
-  for (let i = Math.max(0, from); i < points.length; i++) {
-    const p = points[i]!;
+  for (let i = Math.max(0, from); i < count; i++) {
+    const p = sample(i);
     if (Math.hypot(p.x - anchor.x, p.y - anchor.y) > r) return false;
   }
   return true;

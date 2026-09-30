@@ -159,7 +159,9 @@ export function isMarkerIntent(intent: PendingDraw | null | undefined): boolean 
 
 // A whiteboard pen draws freely: no alignment guides and no start snap
 // (docs/specs/023-whiteboard/whiteboard.md "No guides for pens").
-export function isWhiteboardPenIntent(intent: PendingDraw | null | undefined): boolean {
+export function isWhiteboardPenIntent(
+  intent: PendingDraw | null | undefined,
+): intent is Extract<PendingDraw, { variant: 'whiteboard' }> {
   return intent?.type === 'freehand' && intent.variant === 'whiteboard';
 }
 

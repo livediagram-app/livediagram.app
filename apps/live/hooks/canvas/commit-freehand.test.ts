@@ -112,6 +112,15 @@ describe('a whiteboard pen stroke', () => {
     expect(shape.strokeColor).toBeUndefined();
   });
 
+  it('lands the pipeline\u2019s points as given, never simplified a second time', () => {
+    // Jitter RDP at 1.2 px would flatten to two points: the live pipeline already decided.
+    const drawn = Array.from({ length: 12 }, (_, i) => ({ x: i * 10, y: i % 2 === 0 ? 0 : 0.5 }));
+    const s = setup(pen());
+    s.commit(drawn, false);
+    const stroke = s.elements[0] as FreehandElement;
+    expect(stroke.points).toHaveLength(drawn.length);
+  });
+
   it('keeps strokes as drawn with recognition off', () => {
     const s = setup(pen({ recognise: false }));
     s.commit(loop, false);

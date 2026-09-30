@@ -486,17 +486,18 @@ export function Canvas(props: CanvasProps) {
     viewportZoom,
     wrapperRef,
   });
-  const { drawDrag, penPoints, drawHover, beginPendingDrawGesture } = useCanvasDrawGesture({
-    pendingDraw,
-    elements,
-    wrapperRef,
-    viewportZoom,
-    isPinchingRef,
-    onCommitDraw,
-    onCommitFreehand,
-    stampAt,
-    showStamp,
-  });
+  const { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture } =
+    useCanvasDrawGesture({
+      pendingDraw,
+      elements,
+      wrapperRef,
+      viewportZoom,
+      isPinchingRef,
+      onCommitDraw,
+      onCommitFreehand,
+      stampAt,
+      showStamp,
+    });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
   // drag-based draw gesture: while the polygon intent is armed it
@@ -875,6 +876,7 @@ export function Canvas(props: CanvasProps) {
         drawHover={drawHover}
         stamp={stamp}
         penPoints={penPoints}
+        penStroke={penStroke}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         wrapperRef={wrapperRef}

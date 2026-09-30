@@ -4,6 +4,7 @@ import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -70,6 +71,16 @@ export function useCanvasDrawGesture({
   // reconciliation). Null when no pen drag is active.
   const [penPoints, setPenPoints] = useState<{ x: number; y: number }[] | null>(null);
 
+  // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
+  // samples, no React state per sample; docs/specs/023-whiteboard/whiteboard.md "Pens").
+  const { penStroke, beginWhiteboardStroke } = useWhiteboardPenGesture({
+    pendingDraw,
+    wrapperRef,
+    viewportZoom,
+    isPinchingRef,
+    onCommitFreehand,
+  });
+
   // Snap a draw gesture's START point to nearby element edge / centre
   // lines the same way the moving corner snaps: a 0×0 candidate snaps
   // each axis independently to the nearest line within the same
@@ -98,11 +109,13 @@ export function useCanvasDrawGesture({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return false;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    if (pendingDraw.type === 'freehand') {
+    if (isWhiteboardPenIntent(pendingDraw)) {
+      // A whiteboard pen starts where it touches (no guides for pens).
+      beginWhiteboardStroke(e, { x: sx, y: sy });
+    } else if (pendingDraw.type === 'freehand') {
       // Snap the first stroke point to nearby alignments (same as a shape's
       // first corner) so the sketch can begin from an aligned start.
-      // A whiteboard pen starts where it touches (no guides for pens).
-      const start = isWhiteboardPenIntent(pendingDraw) ? { x: sx, y: sy } : snapDrawStart(sx, sy);
+      const start = snapDrawStart(sx, sy);
       setPenPoints([{ x: start.x, y: start.y }]);
     } else if (stampAt) {
       // A stamp presses where its ghost is: start and end are both the
@@ -305,8 +318,8 @@ export function useCanvasDrawGesture({
     };
   }, [dragging, pendingDraw]);
 
-  // Pen-gesture sampling loop. While penPoints is non-null and the
-  // freehand intent is the active pendingDraw, accumulate pointer
+  // Pen-gesture sampling loop (the diagram pencil and the highlighter). While
+  // penPoints is non-null and the freehand intent is the active pendingDraw, accumulate pointer
   // samples into the polyline. Pointermove writes to a local mirror
   // and schedules ONE setPenPoints per requestAnimationFrame, so a
   // 120 Hz pointer doesn't pump thousands of React renders. On
@@ -322,20 +335,12 @@ export function useCanvasDrawGesture({
     if (isPinchingRef?.current) return null;
     return pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
   });
-  const commitPenStroke = useEffectEvent((stroke: { x: number; y: number }[], pinched: boolean) => {
+  const commitPenStroke = useEffectEvent((stroke: { x: number; y: number }[]) => {
     // Recognition is which PEN you picked, not a preference (docs/specs/008-canvas/two-pens.md):
     // the Shape Pen converts, plain Freehand and the highlighter never do.
     if (pendingDraw?.type !== 'freehand' || stroke.length < 2) return;
-    // A stroke a second finger interrupted is discarded on a whiteboard
-    // (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input").
-    if (pinched && pendingDraw.variant === 'whiteboard') {
-      console.debug('[whiteboard] stroke discarded: pinch');
-      return;
-    }
     onCommitFreehand(stroke, pendingDraw.variant === 'shape-pen');
   });
-  // Whether a second finger has taken over, read at the sample.
-  const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
   // The stroke as the press left it: where the sampling starts from.
   const penAtPress = useEffectEvent(() => penPoints ?? []);
   const penning = penPoints !== null && pendingDraw?.type === 'freehand';
@@ -343,12 +348,7 @@ export function useCanvasDrawGesture({
     if (!penning) return;
     let buffer = penAtPress();
     let rafId: number | null = null;
-    // A second finger took over mid-stroke. On a whiteboard the fragment drawn
-    // so far is discarded (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input").
-    let pinched = false;
     const onMove = (e: PointerEvent) => {
-      // Remember the pinch before sampling stops for it.
-      if (pinchingNow()) pinched = true;
       const point = penSample(e);
       if (!point) return;
       buffer = [...buffer, point];
@@ -365,7 +365,7 @@ export function useCanvasDrawGesture({
       }
       const snapshot = buffer;
       setPenPoints(null);
-      commitPenStroke(snapshot, pinched);
+      commitPenStroke(snapshot);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
@@ -376,5 +376,5 @@ export function useCanvasDrawGesture({
     };
   }, [penning, pendingDraw]);
 
-  return { drawDrag, penPoints, drawHover, beginPendingDrawGesture };
+  return { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture };
 }

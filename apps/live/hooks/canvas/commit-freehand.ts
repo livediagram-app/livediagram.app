@@ -66,8 +66,10 @@ export function makeCommitFreehand({
   // the memory knows.
   styleNewElement?: <T extends Element>(el: T) => T;
 }) {
-  // Canvas-driven commit for the pen gesture. Receives the raw
-  // pointer-sample polyline in canvas coords and applies:
+  // Canvas-driven commit for the pen gesture. A whiteboard pen's points arrive
+  // as the live stroke pipeline's final output (docs/specs/023-whiteboard/whiteboard.md
+  // "Pens") and land as they are, so release reshapes nothing. The diagram pencil
+  // and the highlighter hand over raw pointer samples in canvas coords, which get:
   //   1. Ramer-Douglas-Peucker simplification with a tolerance
   //      that scales inversely with zoom so the visible jitter
   //      (~1 px on screen) is what gets smoothed, not absolute
@@ -94,8 +96,9 @@ export function makeCommitFreehand({
       return;
     }
     const zoom = zoomRef.current ?? 1;
-    // The same smoothing the stroke being drawn shows (lib/pen-smoothing).
-    const simplified = simplifyPenStroke(rawPoints, zoom);
+    // A whiteboard stroke was smoothed and simplified while it was drawn; anything
+    // else is simplified here (lib/pen-smoothing).
+    const simplified = whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom);
     if (simplified.length < 2) {
       disarm();
       return;

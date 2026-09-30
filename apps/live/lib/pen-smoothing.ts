@@ -1,7 +1,8 @@
-// The one smoothing a pen stroke gets, shared by the stroke being drawn and the
-// stroke that lands (docs/specs/023-whiteboard/whiteboard.md "What you draw is what lands"): RDP
-// simplification of the samples at a screen-px tolerance, then a Catmull-Rom
-// curve through what is left. Both run it, so releasing never reshapes a line.
+// The commit smoothing of the diagram pencil and the highlighter
+// (docs/specs/008-canvas/canvas-and-palette.md "Pencil"): RDP simplification of the raw
+// samples at a screen-px tolerance; the curve through what is left is drawn by
+// catmullRomToBezierPath. A whiteboard pen does not use it: its live stroke pipeline
+// (lib/live-stroke) smooths while it draws.
 import { simplifyPolyline } from '@livediagram/document';
 
 type Point = { x: number; y: number };

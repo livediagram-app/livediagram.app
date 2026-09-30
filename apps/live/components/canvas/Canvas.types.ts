@@ -383,7 +383,8 @@ export type CanvasProps = {
   // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
   // through recogniseShape and may mint a real shape primitive instead of a
   // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone.
+  // preference — the toggle that used to set it is gone. A whiteboard pen's points are
+  // its live stroke pipeline's final output, landed as they are (lib/live-stroke).
   onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed

@@ -30,20 +30,20 @@ describe('recogniseBoardStroke', () => {
 
 describe('stillSince', () => {
   const at = { x: 100, y: 100 };
+  const still = (pts: { x: number; y: number }[], from: number, zoom: number) =>
+    stillSince((i) => pts[i]!, from, pts.length, at, zoom);
   it('holds while every sample since stays within the still radius on screen', () => {
-    const pts = [{ x: 0, y: 0 }, at, { x: 101, y: 101 }, { x: 99, y: 100 }];
-    expect(stillSince(pts, 1, at, 1)).toBe(true);
+    expect(still([{ x: 0, y: 0 }, at, { x: 101, y: 101 }, { x: 99, y: 100 }], 1, 1)).toBe(true);
   });
 
   it('breaks once a sample leaves it, even if the pen comes back', () => {
-    const pts = [{ x: 0, y: 0 }, at, { x: 120, y: 100 }, { x: 100, y: 100 }];
-    expect(stillSince(pts, 1, at, 1)).toBe(false);
+    expect(still([{ x: 0, y: 0 }, at, { x: 120, y: 100 }, { x: 100, y: 100 }], 1, 1)).toBe(false);
   });
 
   it('measures on screen: the same wobble breaks it zoomed in', () => {
     const pts = [at, { x: 102, y: 100 }];
-    expect(stillSince(pts, 0, at, 1)).toBe(true);
-    expect(stillSince(pts, 0, at, 4)).toBe(false);
+    expect(still(pts, 0, 1)).toBe(true);
+    expect(still(pts, 0, 4)).toBe(false);
   });
 
   it('uses a delay long enough to be a pause, short enough to feel prompt', () => {
