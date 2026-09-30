@@ -845,13 +845,15 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   storyboard: 'crosshatch',
   // The twelve-starter batch follows the same split: the retro formats,
   // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
-  // boards on the dot grid; the grids, tree and report ride graph paper;
+  // boards on the dot grid, as is the postmortem (a dense written report,
+  // where graph lines behind every card read as noise); the matrices and
+  // tree ride graph paper;
   // the Sailboat's drawn scene gets a blank canvas like the flywheel.
   'start-stop-continue': 'grid',
   'mad-sad-glad': 'grid',
   'four-ls': 'grid',
   sailboat: 'blank',
-  'incident-postmortem': 'graph',
+  'incident-postmortem': 'grid',
   'opportunity-solution-tree': 'graph',
   'crazy-eights': 'grid',
   'stakeholder-map': 'graph',
