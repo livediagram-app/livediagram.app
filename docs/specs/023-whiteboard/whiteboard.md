@@ -77,27 +77,23 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Dock modes**, chosen under **Settings** (see below) and kept in the
   user's synced preferences ([User preferences](../007-editor/user-preferences.md);
   a guest keeps it in this browser): **Simple** (drawing tools, history and
-  settings only), **With shapes** (the default: all five groups, as laid out
+  settings only), **With shapes** (the default: all four groups, as laid out
   below) and **Full drawing** (shown disabled, with the note
   "Coming soon"). Switching mode never moves the groups that stay: the
   dock re-centres once, and a flyout of a group that goes closes.
-- **The dock is five groups side by side**, centred together at the bottom
+- **The dock is four groups side by side**, centred together at the bottom
   of the canvas with a clear gap between them, left to right: **drawing
-  tools**, **content** (Text, Sticky note, Path tool), **shapes**, **history**
-  (Undo, Redo) and **settings** (the cog on its own). Each group is its own
-  pill, and its own toolbar for assistive technology ("Drawing tools",
-  "Content", "Shapes", "History", "Settings"), each one Tab stop with arrow
-  keys moving within it.
+  tools**, **shapes**, **history** (Undo, Redo) and **settings** (the cog on
+  its own). Each group is its own pill, and its own toolbar for assistive
+  technology ("Drawing tools", "Shapes", "History", "Settings"), each one Tab
+  stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
-  3. **Eraser**, with its mode (see [Eraser](#eraser)).
-- **History:** **Undo** and **Redo**, the same actions as the bottom-right
-  cluster and the keyboard; disabled when there is nothing to undo or redo.
-- **Content, left to right** (With shapes mode):
-  1. **Text**.
-  2. **Sticky note**.
-  3. **Path tool** (see [Path tool](path-tool.md)).
+  3. **Text**.
+  4. **Sticky note**.
+  5. **Path tool** (see [Path tool](path-tool.md)).
+  6. **Eraser**, with its mode (see [Eraser](#eraser)).
 - **Shapes, left to right** (With shapes mode):
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
@@ -128,6 +124,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
        picks one, which arms it like a dock shape (plain ink, the tool style
        of its kind, drawn with a drag or dropped with a click) and closes the
        flyout; **Escape** closes it without picking.
+- **History:** **Undo** and **Redo**, the same actions as the bottom-right
+  cluster and the keyboard; disabled when there is nothing to undo or redo.
 - **Settings**, the last group: a **cog** that opens **on a press only**, never on hover; a
   flyout with no title of its own and four sections, each headed in the
   flyouts' small capitals and a row of the same switch buttons, top to
