@@ -1,10 +1,8 @@
 # The Page element
 
-Status: shipped
-
 ## What
 
-A **Page** in the palette's Tools → Write group: a large, paper-proportioned
+A **Page** in the palette's **Write** category: a large, paper-proportioned
 element you write into with the rich-text editor, for the prose a diagram
 needs but a label can't hold — a brief, a decision record, the notes a
 workshop board is built around.
@@ -16,8 +14,8 @@ whole artefact.
 
 ## It is a shape kind, not a new element type
 
-`shape: 'page'`. The alternative — a new `BoxedElement` member — would have
-meant touching validation, both export renderers, Mermaid, Markdown,
+`shape: 'page'`. The alternative, a new `BoxedElement` member, would mean
+touching validation, both export renderers, Mermaid, Markdown,
 Excalidraw, the MCP tools and the API schema, to arrive at something that
 behaves like a shape in every one of them.
 
@@ -31,15 +29,14 @@ A shape already carries what a document needs:
 - Border, fill, shadow, opacity, layers, links, notes, comments, actions.
 
 So the whole feature is a kind, a size, two alignment defaults, a renderer and
-a palette tile. Nothing downstream had to learn a new element.
+a palette tile. Nothing downstream learns a new element.
 
 ## The name
 
 It is **Page**, in the palette and in the selection toolbar and in the code.
 
-"Document" was the first choice and was wrong twice over. The palette already
-has **Document** in Shapes — the flowchart output symbol with the wavy bottom
-(`shape: 'document'`) — so two unrelated things would have shared a name in
+"Document" would be wrong twice over. The palette has **Document** in Shapes — the flowchart output symbol with the wavy bottom
+(`shape: 'document'`) — so two unrelated things would share a name in
 one search box. And the selection toolbar names an element by its kind, so a
 tile called Document selecting into "Selected Page" made the editor look like
 it disagreed with itself.
@@ -47,9 +44,8 @@ it disagreed with itself.
 Page is also simply more accurate: it is one sheet, not a document that flows
 across sheets (see Out of scope).
 
-Renaming the flowchart shape was considered and rejected: its id is persisted
-in palette favourites, and "Document" is its correct name in flowchart
-vocabulary.
+The flowchart shape keeps its name: its id is persisted in palette favourites,
+and "Document" is its correct name in flowchart vocabulary.
 
 ## The masthead
 
@@ -72,8 +68,8 @@ Plain strings, not rich runs: a title has one look and the element sets it.
 
 ### Editing them
 
-Each line is a `contentEditable` span that commits on blur, in
-`PageMasthead.tsx` — deliberately **not** the shared label editor. That editor
+Each line is a `contentEditable` field that commits on blur: `PageMasthead.tsx`
+renders two `InlineTextLine`s (`InlineTextLine.tsx`), deliberately **not** the shared label editor. That editor
 owns one field per element (`label` plus its runs), and threading a second and
 third target through it would complicate every element in the app to serve one.
 A single-line plain string does not need the runs machinery.
@@ -113,9 +109,9 @@ like the nodes around it is precisely what stopped it reading as a page. The
 user can still recolour it from the menu like anything else.
 
 It is also routed to the **CSS box** render path rather than the SVG overlay.
-`isSvgRenderedShape` sends every known kind except square / circle / stadium /
-browser to the overlay, which has no case for a page and drew nothing at all —
-a white sheet is a rectangle, so it belongs with square.
+`isSvgRenderedShape` keeps page off the overlay, with square / circle / stadium /
+browser and the other CSS-drawn kinds; the overlay has no case for a page and
+would draw nothing. A white sheet is a rectangle, so it belongs with square.
 
 It resizes like any shape. Nothing is locked to the aspect ratio: a landscape
 page is a legitimate thing to want, and locking it would be the tool telling
