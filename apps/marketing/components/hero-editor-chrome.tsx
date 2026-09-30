@@ -129,7 +129,7 @@ export function ToolbarStrip() {
           <Glyph size={10} units={24}>
             <Prims prims={lucideStar} />
           </Glyph>
-          <span className="hidden sm:inline">Favourites</span>
+          <span className="hidden sm:text-optical-line">Favourites</span>
           <ChevronDownIcon size={7} />
         </span>
         <StripDivider />

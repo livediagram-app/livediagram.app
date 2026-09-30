@@ -145,7 +145,7 @@ export function LaunchCanvasOverlay({
         <Glyph size={16} units={16} className="h-4 w-4">
           <path d="M3 2l9 5-4 1 2.5 4.5-1.8 1L6.2 9 3 12z" />
         </Glyph>
-        Click to start drawing
+        <span className="text-optical-line">Click to start drawing</span>
       </span>
       {/* The proof points as a little flow on the canvas: each a node painted as a user paints a
           shape, wired to the next. Not on a phone, where the window is too narrow for a row and a
