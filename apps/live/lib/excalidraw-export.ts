@@ -133,8 +133,9 @@ export function tabToExcalidrawText(tab: Tab): string {
           type: el.straightEdges ? 'line' : 'freedraw',
           backgroundColor: el.closed ? fill : 'transparent',
           points: pts,
-          pressures: [],
-          simulatePressure: true,
+          // A whiteboard pen stroke's real pressures travel; without them Excalidraw simulates.
+          pressures: el.pressures ?? [],
+          simulatePressure: !el.pressures,
           lastCommittedPoint: null,
         }),
       );

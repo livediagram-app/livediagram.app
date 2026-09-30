@@ -99,7 +99,7 @@ describe('a whiteboard pen draws freely (docs/specs/023-whiteboard/whiteboard.md
       result.current.beginPendingDrawGesture({ clientX: 100, clientY: 25 } as ReactPointerEvent);
     });
     const { penPoints, penStroke } = result.current;
-    return penStroke ? penStroke.smoother.points()[0]! : penPoints![0]!;
+    return penStroke ? penStroke.points[0]! : penPoints![0]!;
   };
 
   it('starts where the pen touches, unsnapped', () => {
@@ -132,6 +132,6 @@ describe('a whiteboard pen draws through the live pipeline (docs/specs/023-white
       result.current.beginPendingDrawGesture({ clientX: 5, clientY: 6 } as ReactPointerEvent);
     });
     expect(result.current.penPoints).toBeNull();
-    expect(result.current.penStroke?.smoother.points()).toEqual([{ x: 5, y: 6 }]);
+    expect(result.current.penStroke?.points).toEqual([{ x: 5, y: 6 }]);
   });
 });

@@ -6,6 +6,8 @@ import {
   snapToArrowPoint,
   type ArrowElement,
   type Element,
+  type FreehandElement,
+  type PenStroke,
   type Endpoint,
   type ShapeElement,
 } from '@livediagram/document';
@@ -66,10 +68,11 @@ export function makeCommitFreehand({
   // the memory knows.
   styleNewElement?: <T extends Element>(el: T) => T;
 }) {
-  // Canvas-driven commit for the pen gesture. A whiteboard pen's points arrive
-  // as the live stroke pipeline's final output (docs/specs/023-whiteboard/whiteboard.md
-  // "Pens") and land as they are, so release reshapes nothing. The diagram pencil
-  // and the highlighter hand over raw pointer samples in canvas coords, which get:
+  // Canvas-driven commit for the pen gesture. A whiteboard pen's raw samples land as they
+  // are, with their pressures and streamline (`ink`), and draw as the same perfect-freehand
+  // outline the stroke showed while drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"),
+  // so release reshapes nothing. The diagram pencil and the highlighter hand over raw pointer
+  // samples in canvas coords, which get:
   //   1. Ramer-Douglas-Peucker simplification with a tolerance
   //      that scales inversely with zoom so the visible jitter
   //      (~1 px on screen) is what gets smoothed, not absolute
@@ -82,7 +85,7 @@ export function makeCommitFreehand({
   //      doesn't trip the close), commit a closed path. Otherwise
   //      commit an open stroke.
   //   3. createFreehand to mint the element + commit.
-  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean) => {
+  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, ink?: PenInk) => {
     // Disarm on a gesture too short to be a stroke — unless the marker is
     // HELD, where a stray tap must not silently put the tool down.
     // A whiteboard pen is held too (docs/specs/023-whiteboard/whiteboard.md "Pens").
@@ -96,8 +99,8 @@ export function makeCommitFreehand({
       return;
     }
     const zoom = zoomRef.current ?? 1;
-    // A whiteboard stroke was smoothed and simplified while it was drawn; anything
-    // else is simplified here (lib/pen-smoothing).
+    // A whiteboard stroke keeps its raw samples; anything else is simplified here
+    // (lib/pen-smoothing).
     const simplified = whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom);
     if (simplified.length < 2) {
       disarm();
@@ -129,7 +132,7 @@ export function makeCommitFreehand({
     }
 
     if (whiteboardPen) {
-      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen)]);
+      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen, ink)]);
       return;
     }
 
@@ -228,6 +231,8 @@ export function makeCommitFreehand({
 }
 
 type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
+// A whiteboard pen stroke's ink beyond its points: a pressure per point (a pen) and the streamline.
+export type PenInk = Pick<FreehandElement, 'pressures' | 'streamline'>;
 
 // What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape
 // recognition"): with recognition on, a stroke that reads as a shape is the
@@ -236,10 +241,21 @@ type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 // width. The main pen records no colour, so its marks follow the board.
 // Style memory is skipped on purpose: a board's marks wear the pen, not the
 // remembered diagram style.
-function whiteboardStroke(points: { x: number; y: number }[], pen: WhiteboardPenIntent): Element {
+function whiteboardStroke(
+  points: { x: number; y: number }[],
+  pen: WhiteboardPenIntent,
+  ink: PenInk | undefined,
+): Element {
   const colour = pen.colour ? { strokeColor: pen.colour } : {};
-  // The same test the hold-still preview runs (lib/recognition-preview), so it is what lands.
-  const detected = pen.recognise ? recogniseBoardStroke(points) : null;
+  const stroke: PenStroke = {
+    points,
+    pressures: ink?.pressures,
+    width: pen.width,
+    streamline: ink?.streamline ?? 0,
+  };
+  // The same test on the same stroke the hold-still preview runs (lib/recognition-preview), so
+  // it is what lands.
+  const detected = pen.recognise ? recogniseBoardStroke(stroke) : null;
   if (detected) {
     track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
     if (detected.kind === 'line') {
@@ -267,5 +283,5 @@ function whiteboardStroke(points: { x: number; y: number }[], pen: WhiteboardPen
     };
   }
   track('Element', 'Added', 'Freehand');
-  return { ...createFreehand(points, false), penWidth: pen.width, ...colour };
+  return { ...createFreehand(points, false), penWidth: pen.width, ...ink, ...colour };
 }

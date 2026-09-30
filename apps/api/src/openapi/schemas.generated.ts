@@ -2746,11 +2746,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "pressures": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
       "rotation": {
         "type": "number"
       },
       "straightEdges": {
         "type": "boolean"
+      },
+      "streamline": {
+        "type": "number"
       },
       "strokeColor": {
         "type": "string"

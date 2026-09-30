@@ -112,13 +112,19 @@ describe('a whiteboard pen stroke', () => {
     expect(shape.strokeColor).toBeUndefined();
   });
 
-  it('lands the pipeline\u2019s points as given, never simplified a second time', () => {
-    // Jitter RDP at 1.2 px would flatten to two points: the live pipeline already decided.
+  it('lands its raw samples as given, never simplified', () => {
+    // Jitter RDP at 1.2 px would flatten to two points: a pen stroke keeps every sample.
     const drawn = Array.from({ length: 12 }, (_, i) => ({ x: i * 10, y: i % 2 === 0 ? 0 : 0.5 }));
     const s = setup(pen());
     s.commit(drawn, false);
     const stroke = s.elements[0] as FreehandElement;
     expect(stroke.points).toHaveLength(drawn.length);
+  });
+
+  it('keeps the pen\u2019s pressures and streamline, the ink it drew with', () => {
+    const s = setup(pen());
+    s.commit(scribble, false, { pressures: [0.1, 0.4, 0.8, 1], streamline: 0.2 });
+    expect(s.elements[0]).toMatchObject({ pressures: [0.1, 0.4, 0.8, 1], streamline: 0.2 });
   });
 
   it('keeps strokes as drawn with recognition off', () => {

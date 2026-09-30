@@ -3,9 +3,19 @@
 // and the pieces of a stroke that survive a Partial erase. Pure; canvas coords.
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from './border-style';
 import { createFreehand } from './factories';
+import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';
 import type { FreehandElement } from './index';
 
 type Point = { x: number; y: number };
+// A point of a pen stroke with its pressure, when the stroke records one.
+type InkPoint = Point & { p?: number };
+
+// Two ink points' blend at `t` (0: `a`), pressure included when both carry one.
+function lerpInk(a: InkPoint, b: InkPoint, t: number): InkPoint {
+  const q: InkPoint = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  if (a.p !== undefined && b.p !== undefined) q.p = a.p + (b.p - a.p) * t;
+  return q;
+}
 
 // How many halvings locate the edge of the brush on a cut segment.
 const CROSSING_BISECTION_STEPS = 12;
@@ -21,6 +31,7 @@ const STYLE_FIELDS = [
   'strokeStyle',
   'penWidth',
   'pen',
+  'streamline',
   'layerId',
   'opacity',
   'animation',
@@ -64,11 +75,12 @@ export function freehandAbsolutePoints(el: FreehandElement): Point[] {
 }
 
 function inkHalfWidth(el: FreehandElement): number {
-  const width =
-    el.pen === 'highlighter'
-      ? (el.penWidth ?? HIGHLIGHTER_DEFAULT_WIDTH)
-      : (el.penWidth ?? BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE]);
-  return width / 2;
+  if (el.pen === 'highlighter') return (el.penWidth ?? HIGHLIGHTER_DEFAULT_WIDTH) / 2;
+  if (el.penWidth === undefined)
+    return BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE] / 2;
+  // A pen stroke is widest where it was pressed hardest.
+  const hardest = el.pressures?.length ? Math.max(...el.pressures) : PEN_MID_PRESSURE;
+  return penPressureWidth(el.penWidth, hardest) / 2;
 }
 
 function distToSegment(p: Point, a: Point, b: Point): number {
@@ -133,25 +145,25 @@ export function strokeTouchesBrush(el: FreehandElement, a: Point, b: Point, r: n
 }
 
 // Cut long segments so the brush cannot slip between two samples.
-function densify(pts: Point[], step: number): Point[] {
-  const out: Point[] = [pts[0]!];
+function densify(pts: InkPoint[], step: number): InkPoint[] {
+  const out: InkPoint[] = [pts[0]!];
   for (let i = 1; i < pts.length; i++) {
     const from = pts[i - 1]!;
     const to = pts[i]!;
     const n = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / step));
     for (let k = 1; k <= n; k++) {
-      out.push({ x: from.x + ((to.x - from.x) * k) / n, y: from.y + ((to.y - from.y) * k) / n });
+      out.push(lerpInk(from, to, k / n));
     }
   }
   return out;
 }
 
 // The point on `out -> in` where the brush's edge lies.
-function crossing(outside: Point, inside: Point, isInside: (p: Point) => boolean): Point {
+function crossing(outside: InkPoint, inside: InkPoint, isInside: (p: Point) => boolean): InkPoint {
   let lo = outside;
   let hi = inside;
   for (let i = 0; i < CROSSING_BISECTION_STEPS; i++) {
-    const mid = { x: (lo.x + hi.x) / 2, y: (lo.y + hi.y) / 2 };
+    const mid = lerpInk(lo, hi, 0.5);
     if (isInside(mid)) hi = mid;
     else lo = mid;
   }
@@ -186,7 +198,10 @@ export function eraseStrokePart(
   r: number,
   mintId: () => string,
 ): FreehandElement[] | null {
-  const raw = freehandAbsolutePoints(el);
+  const pressures = el.pressures?.length === el.points.length ? el.pressures : undefined;
+  const raw: InkPoint[] = freehandAbsolutePoints(el).map((q, i) =>
+    pressures ? { ...q, p: pressures[i]! } : q,
+  );
   if (raw.length === 0) return null;
   const reach = r + inkHalfWidth(el);
   if (boxesApart(raw, a, b, reach)) return null;
@@ -197,8 +212,8 @@ export function eraseStrokePart(
   if (!inside.some(Boolean)) return null;
   if (inside.every(Boolean)) return [];
 
-  const runs: Point[][] = [];
-  let run: Point[] | null = null;
+  const runs: InkPoint[][] = [];
+  let run: InkPoint[] | null = null;
   for (let i = 0; i < pts.length; i++) {
     const p = pts[i]!;
     if (!inside[i]) {
@@ -231,6 +246,7 @@ export function eraseStrokePart(
   const annotations = pickFields(el, ANNOTATION_FIELDS);
   return kept.map((points, i) => ({
     ...createFreehand(points, false),
+    ...(pressures ? { pressures: points.map((q) => q.p ?? PEN_MID_PRESSURE) } : {}),
     ...style,
     ...(i === longest ? annotations : {}),
     id: mintId(),

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { catmullRomToBezierPath, createFreehand, freehandFrame, simplifyPolyline } from './index';
+import {
+  catmullRomToBezierPath,
+  createFreehand,
+  freehandGeometry,
+  simplifyPolyline,
+} from './index';
 
 // Three pure helpers underpin the pencil tool (docs/specs/008-canvas/canvas-and-palette.md Pencil
 // (freehand) subsection):
@@ -259,23 +264,18 @@ describe('createFreehand', () => {
   });
 });
 
-describe('freehandFrame', () => {
-  it('is the box createFreehand gives the same points: bounds padded by a pixel', () => {
+describe('freehandGeometry', () => {
+  it('is the geometry createFreehand gives the same points', () => {
     const points = [
       { x: 10.25, y: 20.5 },
       { x: 40.75, y: 20.5 },
       { x: 33.1, y: 60.9 },
     ];
-    const el = createFreehand(points, false);
-    expect(freehandFrame(10.25, 20.5, 40.75, 60.9)).toEqual({
-      x: el.x,
-      y: el.y,
-      width: el.width,
-      height: el.height,
-    });
+    const { x, y, width, height, points: normalised } = createFreehand(points, false);
+    expect(freehandGeometry(points)).toEqual({ x, y, width, height, points: normalised });
   });
 
-  it('never collapses below one pixel', () => {
-    expect(freehandFrame(5, 5, 5, 5)).toEqual({ x: 4, y: 4, width: 2, height: 2 });
+  it('gives no points a 1x1 box at the origin', () => {
+    expect(freehandGeometry([])).toEqual({ x: 0, y: 0, width: 1, height: 1, points: [] });
   });
 });

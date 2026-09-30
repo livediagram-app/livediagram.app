@@ -6,7 +6,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { useWhiteboardPenGesture } from './useWhiteboardPenGesture';
 
 // The whiteboard pen gesture (docs/specs/023-whiteboard/whiteboard.md "Pens", "Touch and pen input";
-// blueprint whiteboard-round-one "Live stroke pipeline", Capture).
+// blueprint whiteboard-round-one "Pen ink").
 
 const PEN: PendingDraw = {
   type: 'freehand',
@@ -16,14 +16,13 @@ const PEN: PendingDraw = {
   recognise: false,
 };
 
-type Init = { x: number; y: number; t: number; id?: number; coalesced?: Event[] };
+type Init = { x: number; y: number; id?: number; pressure?: number };
 
-/** A pointer event as the browser sends it: position, time, pointer id, coalesced samples. */
-function pointer(type: string, { x, y, t, id = 1, coalesced }: Init): Event {
+/** A pointer event as the browser sends it: position, pointer id, pressure. */
+function pointer(type: string, { x, y, id = 1, pressure }: Init): Event {
   const e = new MouseEvent(type, { clientX: x, clientY: y });
-  Object.defineProperty(e, 'timeStamp', { value: t });
   Object.defineProperty(e, 'pointerId', { value: id });
-  if (coalesced) Object.defineProperty(e, 'getCoalescedEvents', { value: () => coalesced });
+  if (pressure !== undefined) Object.defineProperty(e, 'pressure', { value: pressure });
   return e;
 }
 
@@ -46,10 +45,10 @@ function setup(zoom = 1) {
     },
     { initialProps: { pendingDraw: PEN as PendingDraw | null } },
   );
-  const press = (x: number, y: number, t = 0, pointerType = 'mouse') =>
+  const press = (x: number, y: number, pointerType = 'mouse', pressure = 0.5) =>
     act(() => {
       hook.result.current.beginWhiteboardStroke(
-        { pointerType, pointerId: 1, timeStamp: t } as ReactPointerEvent,
+        { pointerType, pointerId: 1, pressure } as ReactPointerEvent,
         { x: (x - 10) / zoom, y: (y - 20) / zoom },
       );
     });
@@ -57,89 +56,79 @@ function setup(zoom = 1) {
     act(() => {
       window.dispatchEvent(e);
     });
-  return {
-    hook,
-    press,
-    send,
-    isPinchingRef,
-    onCommitFreehand,
-    renders: () => renders,
-  };
+  return { hook, press, send, isPinchingRef, onCommitFreehand, renders: () => renders };
 }
 
 afterEach(() => vi.restoreAllMocks());
 
 describe('useWhiteboardPenGesture', () => {
-  it('commits exactly the points the stroke showed last, in canvas px', () => {
+  it('commits exactly the raw samples the stroke showed, in canvas px, with its streamline', () => {
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup(2);
     s.press(10, 20);
     const stroke = s.hook.result.current.penStroke!;
-    let shown: { x: number; y: number }[] = [];
-    stroke.subscribe(() => {
-      shown = [...stroke.smoother.kept, ...stroke.smoother.tail()];
-    });
-    for (let i = 1; i <= 30; i++) {
-      s.send(pointer('pointermove', { x: 10 + i * 6, y: 20 + Math.sin(i / 3) * 20, t: i * 8 }));
-    }
-    s.send(pointer('pointerup', { x: 190, y: 20 + Math.sin(10) * 20, t: 245 }));
+    for (let i = 1; i <= 20; i++) s.send(pointer('pointermove', { x: 10 + i * 6, y: 20 + i }));
+    const shown = stroke.points.slice();
+    s.send(pointer('pointerup', { x: 130, y: 40 }));
     expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
-    const [points, recognise] = s.onCommitFreehand.mock.calls[0]!;
+    const [points, recognise, ink] = s.onCommitFreehand.mock.calls[0]!;
     expect(recognise).toBe(false);
     expect(points).toEqual(shown);
+    expect(points).toHaveLength(21);
     // Canvas px: the wrapper sits at (10, 20) and the zoom is 2.
-    expect(points[0]).toEqual({ x: 0, y: 0 });
-    expect(points[points.length - 1].x).toBe(90);
-    expect(points[points.length - 1].y).toBeCloseTo((Math.sin(10) * 20) / 2, 9);
+    expect(points[20]).toEqual({ x: 60, y: 10 });
+    expect(ink).toEqual({ streamline: 0.5 });
     expect(s.hook.result.current.penStroke).toBeNull();
   });
 
-  it('takes every coalesced sample of a move', () => {
+  it('records a pen\u2019s pressure with every sample', () => {
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
-    s.press(10, 20);
-    const coalesced = [
-      pointer('pointermove', { x: 14, y: 20, t: 2 }),
-      pointer('pointermove', { x: 18, y: 20, t: 4 }),
-      pointer('pointermove', { x: 22, y: 20, t: 6 }),
-    ];
-    s.send(pointer('pointermove', { x: 22, y: 20, t: 6, coalesced }));
-    expect(s.hook.result.current.penStroke!.smoother.sampleCount).toBe(4);
+    s.press(10, 20, 'pen', 0.3);
+    s.send(pointer('pointermove', { x: 20, y: 20, pressure: 0.6 }));
+    s.send(pointer('pointermove', { x: 30, y: 20, pressure: 0.9 }));
+    // A lifted pen reports no pressure: the lift point keeps the last one.
+    s.send(pointer('pointerup', { x: 40, y: 20, pressure: 0 }));
+    const [points, , ink] = s.onCommitFreehand.mock.calls[0]!;
+    expect(points).toHaveLength(4);
+    expect(ink).toEqual({ pressures: [0.3, 0.6, 0.9, 0.9], streamline: 0.2 });
   });
 
   it('renders nothing per sample: the stroke is drawn outside React', () => {
     const s = setup();
     s.press(10, 20);
     const before = s.renders();
-    for (let i = 1; i <= 10; i++)
-      s.send(pointer('pointermove', { x: 10 + i * 5, y: 20, t: i * 8 }));
+    for (let i = 1; i <= 10; i++) s.send(pointer('pointermove', { x: 10 + i * 5, y: 20 }));
     expect(s.renders()).toBe(before);
+    expect(s.hook.result.current.penStroke!.points).toHaveLength(11);
   });
 
-  it('adds where the pen lifted when it moved since the last sample', () => {
+  it('adds nothing on release when the pen lifts where it last was', () => {
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
-    s.send(pointer('pointermove', { x: 30, y: 20, t: 8 }));
-    s.send(pointer('pointerup', { x: 50, y: 20, t: 16 }));
-    const points = s.onCommitFreehand.mock.calls[0]![0] as { x: number; y: number }[];
-    expect(points[points.length - 1]).toEqual({ x: 40, y: 0 });
+    s.send(pointer('pointermove', { x: 30, y: 20 }));
+    s.send(pointer('pointerup', { x: 30, y: 20 }));
+    expect(s.onCommitFreehand.mock.calls[0]![0]).toHaveLength(2);
   });
 
   it('ignores another pointer: a second finger neither draws nor ends the stroke', () => {
     const s = setup();
     s.press(10, 20);
-    s.send(pointer('pointermove', { x: 30, y: 20, t: 8 }));
-    s.send(pointer('pointermove', { x: 300, y: 300, t: 9, id: 2 }));
-    s.send(pointer('pointerup', { x: 300, y: 300, t: 10, id: 2 }));
+    s.send(pointer('pointermove', { x: 30, y: 20 }));
+    s.send(pointer('pointermove', { x: 300, y: 300, id: 2 }));
+    s.send(pointer('pointerup', { x: 300, y: 300, id: 2 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
-    expect(s.hook.result.current.penStroke!.smoother.sampleCount).toBe(2);
+    expect(s.hook.result.current.penStroke!.points).toHaveLength(2);
   });
 
   it('discards a stroke the browser cancels', () => {
     const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
-    s.send(pointer('pointermove', { x: 30, y: 20, t: 8 }));
-    s.send(pointer('pointercancel', { x: 30, y: 20, t: 9 }));
-    s.send(pointer('pointerup', { x: 30, y: 20, t: 10 }));
+    s.send(pointer('pointermove', { x: 30, y: 20 }));
+    s.send(pointer('pointercancel', { x: 30, y: 20 }));
+    s.send(pointer('pointerup', { x: 30, y: 20 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
     expect(s.hook.result.current.penStroke).toBeNull();
     expect(debug).toHaveBeenCalledWith('[whiteboard] stroke discarded: cancel');
@@ -149,10 +138,10 @@ describe('useWhiteboardPenGesture', () => {
     vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
-    s.send(pointer('pointermove', { x: 30, y: 20, t: 8 }));
+    s.send(pointer('pointermove', { x: 30, y: 20 }));
     s.isPinchingRef.current = true;
-    s.send(pointer('pointermove', { x: 50, y: 20, t: 16 }));
-    s.send(pointer('pointerup', { x: 50, y: 20, t: 24 }));
+    s.send(pointer('pointermove', { x: 50, y: 20 }));
+    s.send(pointer('pointerup', { x: 50, y: 20 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
   });
 
@@ -160,24 +149,21 @@ describe('useWhiteboardPenGesture', () => {
     const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
-    s.send(pointer('pointermove', { x: 30, y: 20, t: 8 }));
+    s.send(pointer('pointermove', { x: 30, y: 20 }));
     s.hook.rerender({ pendingDraw: null });
     expect(s.hook.result.current.penStroke).toBeNull();
-    s.send(pointer('pointerup', { x: 30, y: 20, t: 16 }));
+    s.send(pointer('pointerup', { x: 30, y: 20 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
     expect(debug).toHaveBeenCalledWith('[whiteboard] stroke discarded: pen put down');
   });
 
-  it('logs each committed stroke with its pointer and counts', () => {
+  it('logs each committed stroke with its pointer, samples and pressure', () => {
     const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
     const s = setup();
-    s.press(10, 20, 0, 'pen');
-    const coalesced = [
-      pointer('pointermove', { x: 20, y: 20, t: 4 }),
-      pointer('pointermove', { x: 30, y: 20, t: 8 }),
-    ];
-    s.send(pointer('pointermove', { x: 30, y: 20, t: 8, coalesced }));
-    s.send(pointer('pointerup', { x: 30, y: 20, t: 12 }));
-    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke pen samples=3 coalesced=1 kept=2');
+    s.press(10, 20, 'pen', 0.4);
+    s.send(pointer('pointermove', { x: 20, y: 20, pressure: 0.5 }));
+    s.send(pointer('pointermove', { x: 30, y: 20, pressure: 0.5 }));
+    s.send(pointer('pointerup', { x: 30, y: 20 }));
+    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke pen samples=3 pressure=yes');
   });
 });

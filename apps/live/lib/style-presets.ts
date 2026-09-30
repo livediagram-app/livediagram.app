@@ -176,7 +176,8 @@ export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element
   // drawn, so choosing a preset must drop it or the choice would do nothing.
   // A highlighter never draws the preset, so its width stays.
   if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {
-    const { penWidth: _dropped, ...rest } = el;
+    // Its pen ink (pressures, streamline) goes with it: the preset draws a plain stroke.
+    const { penWidth: _dropped, pressures: _p, streamline: _s, ...rest } = el;
     return { ...rest, strokeWidth: value };
   }
   return supportsBorder(el) || el.type === 'table' ? { ...el, strokeWidth: value } : el;

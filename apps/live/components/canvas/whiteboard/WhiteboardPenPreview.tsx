@@ -21,7 +21,7 @@ type WhiteboardPenPreviewProps = {
 // preview and what lands, so release changes no pixel.
 export function WhiteboardPenPreview({ stroke, pen, ink, zoom }: WhiteboardPenPreviewProps) {
   const colour = pen.colour ?? ink;
-  const recognised = useRecognitionPreview(stroke, pen.recognise, zoom);
+  const recognised = useRecognitionPreview(stroke, pen.recognise, zoom, pen.width);
   return (
     <>
       <LiveInk stroke={stroke} colour={colour} width={pen.width} hidden={!!recognised} />

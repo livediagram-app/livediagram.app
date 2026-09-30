@@ -503,6 +503,16 @@ export function isValidElement(el: unknown): el is Element {
     if (el.penWidth !== undefined && (!isNum(el.penWidth) || el.penWidth < 1 || el.penWidth > 100))
       return false;
     if (el.straightEdges !== undefined && typeof el.straightEdges !== 'boolean') return false;
+    // Whiteboard pen ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): a pressure per point.
+    if (el.pressures !== undefined) {
+      if (!Array.isArray(el.pressures) || el.pressures.length !== el.points.length) return false;
+      for (const p of el.pressures) if (!isNum(p) || p < 0 || p > 1) return false;
+    }
+    if (
+      el.streamline !== undefined &&
+      (!isNum(el.streamline) || el.streamline < 0 || el.streamline > 1)
+    )
+      return false;
     return true;
   }
   // text / sticky / annotation / link-card carry no extra required fields.

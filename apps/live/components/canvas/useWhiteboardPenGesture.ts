@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
-import { coalescedSamples, createLiveStroke, eventTime, type LiveStroke } from '@/lib/live-stroke';
+import { createLiveStroke, type LiveStroke } from '@/lib/live-stroke';
 
 type Point = { x: number; y: number };
 
@@ -14,10 +14,11 @@ type WhiteboardPenGestureDeps = Pick<
 };
 
 // The whiteboard pen's gesture (docs/specs/023-whiteboard/whiteboard.md "Pens", "Touch and pen
-// input"; blueprint whiteboard-round-one "Live stroke pipeline", Capture). The press makes one
-// LiveStroke and sets it as state once; after that every move pushes its coalesced samples straight
-// into the stroke and notifies its subscribers (the ink, the recognition dwell), so drawing costs no
-// React render. Release commits the pipeline's own final points: what was drawn is what lands.
+// input"; blueprint whiteboard-round-one "Pen ink"). The press makes one LiveStroke and sets it as
+// state once; after that every move adds its raw sample and pressure straight to the stroke and
+// notifies its subscribers (the ink, the recognition dwell), so drawing costs no React render. One
+// sample per move, as Excalidraw takes them: its streamline values are tuned to that rate. Release
+// commits the very samples the stroke showed, so what was drawn is what lands.
 export function useWhiteboardPenGesture({
   pendingDraw,
   wrapperRef,
@@ -35,32 +36,30 @@ export function useWhiteboardPenGesture({
 
   /** Starts a stroke at `at` (canvas px) from the press `e`. */
   const beginWhiteboardStroke = (
-    e: Pick<React.PointerEvent, 'pointerType' | 'pointerId' | 'timeStamp'>,
+    e: Pick<React.PointerEvent, 'pointerType' | 'pointerId' | 'pressure'>,
     at: Point,
   ) => {
-    const stroke = createLiveStroke(e.pointerType, e.pointerId, viewportZoom);
-    stroke.smoother.push(at.x, at.y, eventTime(e));
+    const stroke = createLiveStroke(e.pointerType, e.pointerId);
+    stroke.push(at.x, at.y, e.pressure);
     setPenStroke(stroke);
   };
 
-  // Samples convert with the zoom and the wrapper as they are at each event, so ink stays under the
-  // pen even if the view moves mid-stroke; the smoothing keeps the press's zoom.
-  const sampleInto = useEffectEvent((stroke: LiveStroke, samples: PointerEvent[]) => {
+  // A sample converts with the zoom and the wrapper as they are at its event, so ink stays under
+  // the pen even if the view moves mid-stroke.
+  const canvasPoint = useEffectEvent((e: PointerEvent): Point | null => {
     const rect = wrapperRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    for (const s of samples) {
-      const p = pointerToCanvas(s.clientX, s.clientY, rect, viewportZoom);
-      stroke.smoother.push(p.x, p.y, eventTime(s));
-    }
+    return rect ? pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom) : null;
   });
   const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
-  const commitStroke = useEffectEvent((stroke: LiveStroke, coalesced: number) => {
-    const points = stroke.smoother.end();
-    if (points.length < 2) return;
+  const commitStroke = useEffectEvent((stroke: LiveStroke) => {
+    if (stroke.points.length < 2) return;
     console.debug(
-      `[whiteboard] stroke ${stroke.pointer} samples=${stroke.smoother.sampleCount} coalesced=${coalesced} kept=${points.length}`,
+      `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
     );
-    onCommitFreehand(points, false);
+    onCommitFreehand(stroke.points.slice(), false, {
+      ...(stroke.pressures ? { pressures: stroke.pressures.slice() } : {}),
+      streamline: stroke.streamline,
+    });
   });
 
   useEffect(() => {
@@ -68,8 +67,6 @@ export function useWhiteboardPenGesture({
     const stroke = penStroke;
     // A second finger took over mid-stroke: the stroke is discarded on release.
     let pinched = false;
-    // Samples beyond one per event, for the commit log.
-    let coalesced = 0;
     const mine = (e: PointerEvent) =>
       stroke.pointerId === undefined ||
       e.pointerId === undefined ||
@@ -78,9 +75,8 @@ export function useWhiteboardPenGesture({
       if (!mine(e)) return;
       if (pinchingNow()) pinched = true;
       if (pinched) return;
-      const samples = coalescedSamples(e);
-      coalesced += samples.length - 1;
-      sampleInto(stroke, samples);
+      const p = canvasPoint(e);
+      if (!p || !stroke.push(p.x, p.y, e.pressure)) return;
       stroke.notify();
     };
     const onUp = (e: PointerEvent) => {
@@ -91,8 +87,11 @@ export function useWhiteboardPenGesture({
         console.debug('[whiteboard] stroke discarded: pinch');
         return;
       }
-      sampleInto(stroke, [e]);
-      commitStroke(stroke, coalesced);
+      // Where the pen lifted, if it moved since the last sample. A lifted pen reports no
+      // pressure, so the sample keeps the last one.
+      const p = canvasPoint(e);
+      if (p) stroke.push(p.x, p.y);
+      commitStroke(stroke);
     };
     const onCancel = (e: PointerEvent) => {
       if (!mine(e)) return;

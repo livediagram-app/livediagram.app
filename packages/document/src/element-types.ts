@@ -868,6 +868,12 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
+  // A whiteboard pen stroke's ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): one pressure
+  // per point, 0 to 1, when the pen reported one (absent: a constant width), and the
+  // perfect-freehand streamline it was drawn with (absent: a stroke stored before either was
+  // recorded, drawn with none). A pen stroke's points are its raw samples.
+  pressures?: number[];
+  streamline?: number;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter

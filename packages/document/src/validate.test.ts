@@ -66,6 +66,22 @@ describe('isValidElement', () => {
     expect(isValidElement({ ...freehand, penWidth: 101 })).toBe(false);
   });
 
+  it('accepts a whiteboard pen stroke\u2019s pressures and streamline, rejects junk', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pressure per point, 0 to 1.
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
+    const pen = { id: 'f', type: 'freehand', closed: false, points, penWidth: 1.5, ...box };
+    expect(isValidElement({ ...pen, pressures: [0, 1], streamline: 0.2 })).toBe(true);
+    expect(isValidElement({ ...pen, pressures: [0.5] })).toBe(false);
+    expect(isValidElement({ ...pen, pressures: [0.5, 1.2] })).toBe(false);
+    expect(isValidElement({ ...pen, pressures: [0.5, 'hard'] })).toBe(false);
+    expect(isValidElement({ ...pen, pressures: 'firm' })).toBe(false);
+    expect(isValidElement({ ...pen, streamline: -0.1 })).toBe(false);
+    expect(isValidElement({ ...pen, streamline: 2 })).toBe(false);
+  });
+
   it('rejects a non-object / missing id / unknown type', () => {
     expect(isValidElement(null)).toBe(false);
     expect(isValidElement({ type: 'shape', shape: 'square', ...box })).toBe(false);

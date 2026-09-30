@@ -29,7 +29,7 @@ describe('useRecognitionPreview', () => {
   const hook = (stroke: LiveStroke | null, active = true) =>
     renderHook(
       (p: { stroke: LiveStroke | null; active: boolean }) =>
-        useRecognitionPreview(p.stroke, p.active, 1),
+        useRecognitionPreview(p.stroke, p.active, 1, 1.5),
       { initialProps: { stroke, active } },
     );
 
@@ -47,7 +47,7 @@ describe('useRecognitionPreview', () => {
     act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
     expect(result.current).not.toBeNull();
     act(() => {
-      stroke.smoother.push(60, 200, 10_000);
+      stroke.push(60, 200);
       stroke.notify();
     });
     expect(result.current).toBeNull();
@@ -60,7 +60,7 @@ describe('useRecognitionPreview', () => {
     const { result } = hook(stroke);
     act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
     act(() => {
-      stroke.smoother.push(2, 1, 10_000);
+      stroke.push(2, 1);
       stroke.notify();
     });
     expect(result.current?.kind).toBe('square');

@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createFreehand, type FreehandElement } from '@livediagram/document';
+import {
+  createFreehand,
+  freehandPenStroke,
+  penStrokePath,
+  type FreehandElement,
+} from '@livediagram/document';
 import { FreehandSvg } from './boxed-element-overlays';
 
 const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
@@ -16,15 +21,16 @@ const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
 });
 
 describe('FreehandSvg', () => {
-  it('draws a pen stroke at its width in canvas px, so it zooms with the board in every browser', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "A pen's width is ink on the board".
-    const el = stroke({ penWidth: 2.5 });
+  it('draws a pen stroke as its filled pressure outline in canvas px, zooming with the board', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Pens": ink on the board, drawn by perfect-freehand.
+    const el = stroke({ penWidth: 2.5, pressures: [0.3, 0.9], streamline: 0.2 });
     const { container } = render(<FreehandSvg element={el} fill="none" stroke="#000" />);
     const svg = container.querySelector('svg')!;
     const path = container.querySelector('path')!;
     expect(svg.getAttribute('viewBox')).toBe(`0 0 ${el.width} ${el.height}`);
-    expect(path.getAttribute('stroke-width')).toBe('2.5');
-    expect(path.getAttribute('vector-effect')).toBeNull();
+    expect(path.getAttribute('d')).toBe(penStrokePath(freehandPenStroke(el)));
+    expect(path.getAttribute('fill')).toBe('#000');
+    expect(path.getAttribute('stroke')).toBe('none');
   });
 
   it('keeps a pencil stroke on its non-scaling preset', () => {

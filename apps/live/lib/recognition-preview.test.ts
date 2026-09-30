@@ -19,12 +19,14 @@ const square = (): { x: number; y: number }[] => {
 
 describe('recogniseBoardStroke', () => {
   it('reads a square drawn as a stroke', () => {
-    expect(recogniseBoardStroke(square())?.kind).toBe('square');
+    expect(recogniseBoardStroke({ points: square(), width: 1.5, streamline: 0.5 })?.kind).toBe(
+      'square',
+    );
   });
 
   it('reads a scribble as nothing', () => {
     const scribble = Array.from({ length: 30 }, (_, i) => ({ x: i * 7, y: (i * 37) % 23 }));
-    expect(recogniseBoardStroke(scribble)).toBeNull();
+    expect(recogniseBoardStroke({ points: scribble, width: 1.5, streamline: 0.5 })).toBeNull();
   });
 });
 

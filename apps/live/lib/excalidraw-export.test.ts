@@ -201,6 +201,32 @@ describe('boxed element degradation', () => {
     expect(scene.elements[1]!.strokeColor).toBe('transparent');
   });
 
+  it('exports a whiteboard pen stroke\u2019s real pressures', () => {
+    const scene = parse(
+      tabToExcalidrawText(
+        tab([
+          {
+            id: 'f1',
+            type: 'freehand',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 50,
+            closed: false,
+            penWidth: 1.5,
+            pressures: [0.2, 0.9],
+            streamline: 0.2,
+            points: [
+              { nx: 0, ny: 0 },
+              { nx: 1, ny: 1 },
+            ],
+          },
+        ]),
+      ),
+    );
+    expect(scene.elements[0]).toMatchObject({ pressures: [0.2, 0.9], simulatePressure: false });
+  });
+
   it('exports freehand strokes as freedraw and polygons as closed lines', () => {
     const scene = parse(
       tabToExcalidrawText(
@@ -248,6 +274,8 @@ describe('boxed element degradation', () => {
     expect(poly!.type).toBe('line');
     expect(poly!.points).toHaveLength(4); // re-appends the first point to close
     expect(poly!.points![3]).toEqual([0, 0]);
+    // Without recorded pressure, Excalidraw simulates it.
+    expect(draw).toMatchObject({ pressures: [], simulatePressure: true });
     expect(poly!.backgroundColor).toBe('#b2f2bb');
   });
 });

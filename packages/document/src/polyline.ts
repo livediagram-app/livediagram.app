@@ -68,134 +68,52 @@ export function simplifyPolyline(
   return out;
 }
 
-// A turn at least this sharp (degrees between the incoming and the outgoing
-// chord) is a corner: the curve breaks its tangent there instead of rounding
-// it. A loop of radius R turns 2 sqrt(2 tol / R) radians per kept point at the
-// simplifier's tolerance, so 80 keeps loops down to about 2 px round, while a
-// box corner (90) and a retrace cusp (150 to 180) stay sharp. Tuned from the
-// research's 100 (safe range 80 to 135, docs/research/stroke-smoothing.md): at
-// 100 a mouse-drawn box's corners bulged 3 px outside it. One value for every
-// stroke: the renderer draws stored strokes, which record no pointer.
-export const CORNER_TURN_DEG = 80;
-const CORNER_COS = Math.cos((CORNER_TURN_DEG * Math.PI) / 180);
-
-type Point = { x: number; y: number };
-
-/** Whether `p` turns by at least `CORNER_TURN_DEG` between `prev` and `next`. */
-export function isStrokeCorner(prev: Point, p: Point, next: Point): boolean {
-  const ax = p.x - prev.x;
-  const ay = p.y - prev.y;
-  const bx = next.x - p.x;
-  const by = next.y - p.y;
-  const la = ax * ax + ay * ay;
-  const lb = bx * bx + by * by;
-  if (la === 0 || lb === 0) return false;
-  return (ax * bx + ay * by) / Math.sqrt(la * lb) <= CORNER_COS;
-}
-
-// A point's smooth neighbour for the segment beside it, or null for the
-// phantom end point: no neighbour (a stroke end), a zero chord, or a corner.
-function neighbour(
-  at: (i: number) => Point | undefined,
-  i: number,
-  away: number,
-  toward: number,
-): Point | null {
-  const p = at(i);
-  const n = at(away);
-  const other = at(toward);
-  if (!p || !n || !other) return null;
-  if (n.x === p.x && n.y === p.y) return null;
-  return isStrokeCorner(n, p, other) ? null : n;
-}
-
-/**
- * One cubic Bezier of the centripetal Catmull-Rom: segment `i`, from point `i`
- * to `i + 1`, as `C c1x c1y, c2x c2y, x y`. `at` returns the point at an index
- * or undefined past an end (a closed path wraps instead). Knots are spaced by
- * the square root of the chord (Yuksel et al.), so the curve cannot cusp or
- * loop within a segment. A missing neighbour or a corner uses the phantom point
- * `2 p1 - p2`, which leaves along the chord.
- */
-export function catmullRomSegment(
-  at: (i: number) => Point | undefined,
-  i: number,
+// Catmull-Rom to cubic-Bezier SVG path. Turns a sequence of points
+// into a smooth curve passing through every one. The output is an
+// SVG `d` attribute string (M, then cubic C segments). `closed`
+// adds the closing tangent + the `Z` terminator so a filled
+// freehand reads as a continuous outline.
+//
+// Algorithm: for each segment p1..p2, compute control points from
+// the neighbouring p0 and p3 using Catmull-Rom tangents (alpha=0.5,
+// uniform tension). Endpoints reuse themselves as the missing
+// neighbour. Pure: no allocations beyond the output strings, no
+// time-dependence. `fmt` shapes every number written (the SVG export
+// rounds to keep its files small); the canvas writes them raw.
+export function catmullRomToBezierPath(
+  points: { x: number; y: number }[],
+  closed: boolean,
   fmt: (n: number) => number = (n) => n,
 ): string {
-  return segmentString(at, i, fmt, fmt);
-}
-
-function segmentString(
-  at: (i: number) => Point | undefined,
-  i: number,
-  fx: (n: number) => number,
-  fy: (n: number) => number,
-): string {
-  const p1 = at(i)!;
-  const p2 = at(i + 1)!;
-  const d2 = Math.sqrt(Math.hypot(p2.x - p1.x, p2.y - p1.y));
-  let c1x = p1.x;
-  let c1y = p1.y;
-  let c2x = p2.x;
-  let c2y = p2.y;
-  if (d2 > 0) {
-    // Tangents scaled to the segment's knot interval (m * d2), phantom = chord.
-    let m1x = p2.x - p1.x;
-    let m1y = p2.y - p1.y;
-    let m2x = m1x;
-    let m2y = m1y;
-    const p0 = neighbour(at, i, i - 1, i + 1);
-    if (p0) {
-      const d1 = Math.sqrt(Math.hypot(p1.x - p0.x, p1.y - p0.y));
-      m1x = d2 * ((p1.x - p0.x) / d1 - (p2.x - p0.x) / (d1 + d2) + (p2.x - p1.x) / d2);
-      m1y = d2 * ((p1.y - p0.y) / d1 - (p2.y - p0.y) / (d1 + d2) + (p2.y - p1.y) / d2);
-    }
-    const p3 = neighbour(at, i + 1, i + 2, i);
-    if (p3) {
-      const d3 = Math.sqrt(Math.hypot(p3.x - p2.x, p3.y - p2.y));
-      m2x = d2 * ((p2.x - p1.x) / d2 - (p3.x - p1.x) / (d2 + d3) + (p3.x - p2.x) / d3);
-      m2y = d2 * ((p2.y - p1.y) / d2 - (p3.y - p1.y) / (d2 + d3) + (p3.y - p2.y) / d3);
-    }
-    c1x = p1.x + m1x / 3;
-    c1y = p1.y + m1y / 3;
-    c2x = p2.x - m2x / 3;
-    c2y = p2.y - m2y / 3;
-  }
-  return `C ${fx(c1x)} ${fy(c1y)}, ${fx(c2x)} ${fy(c2y)}, ${fx(p2.x)} ${fy(p2.y)}`;
-}
-
-export type CatmullRomPathOptions = {
-  /** Shapes every number written (the SVG export rounds to keep files small). */
-  fmt?: (n: number) => number;
-  /** Scale the finished curve, built in the points' true proportions, per axis. */
-  scaleX?: number;
-  scaleY?: number;
-};
-
-// A smooth SVG path (`M`, then one cubic `C` per span) through every point:
-// the centripetal Catmull-Rom above, broken at corners. `closed` wraps the
-// neighbours, adds the closing span and a `Z`, so a filled freehand reads as a
-// continuous outline. Every freehand stroke draws through this, on the canvas
-// and in every export (docs/specs/023-whiteboard/whiteboard.md "Pens").
-export function catmullRomToBezierPath(
-  points: Point[],
-  closed: boolean,
-  options: CatmullRomPathOptions = {},
-): string {
-  const fmt = options.fmt ?? ((n: number) => n);
-  const sx = options.scaleX ?? 1;
-  const sy = options.scaleY ?? 1;
-  const fx = sx === 1 ? fmt : (n: number) => fmt(n * sx);
-  const fy = sy === 1 ? fmt : (n: number) => fmt(n * sy);
   if (points.length === 0) return '';
+  if (points.length === 1) {
+    const p = points[0]!;
+    return `M ${fmt(p.x)} ${fmt(p.y)}`;
+  }
   const n = points.length;
-  const out: string[] = [`M ${fx(points[0]!.x)} ${fy(points[0]!.y)}`];
-  if (n === 1) return out[0]!;
-  const at = closed
-    ? (i: number) => points[((i % n) + n) % n]
-    : (i: number) => (i < 0 || i >= n ? undefined : points[i]);
-  const spans = closed ? n : n - 1;
-  for (let i = 0; i < spans; i++) out.push(segmentString(at, i, fx, fy));
+  const get = (i: number): { x: number; y: number } => {
+    if (closed) return points[((i % n) + n) % n]!;
+    if (i < 0) return points[0]!;
+    if (i >= n) return points[n - 1]!;
+    return points[i]!;
+  };
+  const out: string[] = [];
+  out.push(`M ${fmt(points[0]!.x)} ${fmt(points[0]!.y)}`);
+  const last = closed ? n : n - 1;
+  for (let i = 0; i < last; i++) {
+    const p0 = get(i - 1);
+    const p1 = get(i);
+    const p2 = get(i + 1);
+    const p3 = get(i + 2);
+    // Catmull-Rom -> Bezier conversion (uniform / alpha = 0.5 ish).
+    // The 1/6 factor produces a smooth curve passing through p1
+    // and p2 with control points pulled from p0 and p3.
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    out.push(`C ${fmt(c1x)} ${fmt(c1y)}, ${fmt(c2x)} ${fmt(c2y)}, ${fmt(p2.x)} ${fmt(p2.y)}`);
+  }
   if (closed) out.push('Z');
   return out.join(' ');
 }

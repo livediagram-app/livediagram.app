@@ -1,7 +1,12 @@
 // Shape recognition on a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"):
 // the one test a stroke passes to become a clean shape, shared by the preview shown while the pen
 // holds still and the commit on release, so the preview is exactly what lands.
-import { recogniseShape, type RecognisedShape } from '@livediagram/document';
+import {
+  penStrokeCentreline,
+  recogniseShape,
+  type PenStroke,
+  type RecognisedShape,
+} from '@livediagram/document';
 
 type Point = { x: number; y: number };
 
@@ -14,9 +19,9 @@ export const RECOGNITION_PREVIEW_DWELL_MS = 500;
 // "Still", in SCREEN px: a resting hand wobbles a little at any zoom.
 export const RECOGNITION_PREVIEW_STILL_PX = 4;
 
-/** The shape a board stroke (the live pipeline's points) reads as, or null. */
-export function recogniseBoardStroke(points: Point[]): RecognisedShape | null {
-  const detected = recogniseShape(points);
+/** The shape a pen stroke reads as, or null: read off its streamlined centre line. */
+export function recogniseBoardStroke(stroke: PenStroke): RecognisedShape | null {
+  const detected = recogniseShape(penStrokeCentreline(stroke));
   return detected && detected.confidence >= RECOGNITION_THRESHOLD ? detected : null;
 }
 

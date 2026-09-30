@@ -1,39 +1,65 @@
 // The stroke being drawn with a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens";
-// blueprint whiteboard-round-one "Live stroke pipeline"). One object per stroke, made on the press:
-// its smoother (the pure pipeline in @livediagram/document) and the subscribers that draw it, so the
-// input handler can push samples and have the ink redrawn at once, without a React render.
+// blueprint whiteboard-round-one "Pen ink"). One object per stroke, made on the press: its raw
+// samples in canvas px (only exact repeats dropped, as Excalidraw does), a pressure per sample when
+// the pointer is a pen, the streamline its pointer draws with, and the subscribers that draw it, so
+// the input handler can add a sample and have the ink redrawn at once, without a React render.
 
 import {
-  STROKE_SMOOTHING,
-  createStrokeSmoother,
-  strokePointerKind,
-  type StrokePointerKind,
-  type StrokeSmoother,
+  PEN_STREAMLINE,
+  penPointerKind,
+  type PenPointerKind,
+  type PenStroke,
 } from '@livediagram/document';
 
+type Point = { x: number; y: number };
+
 export type LiveStroke = {
-  readonly smoother: StrokeSmoother;
-  readonly pointer: StrokePointerKind;
+  readonly pointer: PenPointerKind;
   /** The pointer that started the stroke; undefined when the press did not say. */
   readonly pointerId: number | undefined;
+  readonly streamline: number;
+  /** Raw samples, canvas px, append-only. */
+  readonly points: readonly Point[];
+  /** One per sample for a pen; null for a pointer without pressure (a constant width). */
+  readonly pressures: readonly number[] | null;
+  /** Adds a sample; false when it repeats the previous one exactly. */
+  push(x: number, y: number, pressure?: number): boolean;
+  /** The stroke as perfect-freehand input, for a pen of `width`. */
+  ink(width: number): PenStroke;
   /** Calls `listener` on every `notify()` until the returned function is called. */
   subscribe(listener: () => void): () => void;
-  /** Tells the subscribers the stroke changed: once per input event, after its samples. */
+  /** Tells the subscribers the stroke changed: once per input event. */
   notify(): void;
 };
 
-/** A live stroke for a press by `pointerType` at `zoom` (the zoom scales its screen-px settings). */
+/** A live stroke for a press by `pointerType`: a pen records pressure, anything else does not. */
 export function createLiveStroke(
   pointerType: string | undefined,
   pointerId: number | undefined,
-  zoom: number,
 ): LiveStroke {
-  const pointer = strokePointerKind(pointerType);
+  const pointer = penPointerKind(pointerType);
+  const streamline = PEN_STREAMLINE[pointer];
+  const points: Point[] = [];
+  const pressures: number[] | null = pointer === 'pen' ? [] : null;
   const listeners = new Set<() => void>();
   return {
-    smoother: createStrokeSmoother(STROKE_SMOOTHING[pointer], zoom),
     pointer,
     pointerId,
+    streamline,
+    points,
+    pressures,
+    push(x, y, pressure) {
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+      const last = points[points.length - 1];
+      if (last && last.x === x && last.y === y) return false;
+      points.push({ x, y });
+      if (pressures) {
+        const p = pressure ?? pressures[pressures.length - 1] ?? 0.5;
+        pressures.push(Math.min(1, Math.max(0, Number.isFinite(p) ? p : 0.5)));
+      }
+      return true;
+    },
+    ink: (width) => ({ points, pressures: pressures ?? undefined, width, streamline }),
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
@@ -42,20 +68,4 @@ export function createLiveStroke(
       for (const listener of listeners) listener();
     },
   };
-}
-
-/**
- * Every sample the browser gathered for this move (`getCoalescedEvents`), or the event itself where
- * the method is missing (insecure contexts, older engines) or returns nothing.
- */
-export function coalescedSamples(e: PointerEvent): PointerEvent[] {
-  const samples = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : [];
-  return samples.length > 0 ? samples : [e];
-}
-
-/** An event's time in ms on the page clock, or now when it carries none. */
-export function eventTime(e: { timeStamp?: number }): number {
-  return typeof e.timeStamp === 'number' && Number.isFinite(e.timeStamp)
-    ? e.timeStamp
-    : performance.now();
 }

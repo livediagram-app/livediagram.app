@@ -90,6 +90,24 @@ describe('eraseStrokePart', () => {
     }
   });
 
+  it('keeps a pressure for every point of each piece, interpolated, and the streamline', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pen stroke's ink survives a partial erase.
+    const src = line({ pressures: [0.2, 1], streamline: 0.2 });
+    const pieces = eraseStrokePart(src, { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
+    expect(pieces).toHaveLength(2);
+    for (const piece of pieces) {
+      expect(piece.streamline).toBe(0.2);
+      expect(piece.pressures).toHaveLength(piece.points.length);
+      const xsOf = freehandAbsolutePoints(piece);
+      piece.pressures!.forEach((p, i) => expect(p).toBeCloseTo(0.2 + (0.8 * xsOf[i]!.x) / 200, 6));
+    }
+  });
+
+  it('leaves a stroke without pressures without them', () => {
+    const pieces = eraseStrokePart(line(), { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
+    for (const piece of pieces) expect(piece.pressures).toBeUndefined();
+  });
+
   it('gives the longest piece the annotations', () => {
     const src = line({
       label: 'note',
