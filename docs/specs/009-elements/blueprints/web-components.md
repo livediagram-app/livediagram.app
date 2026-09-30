@@ -8,19 +8,19 @@ Scope, by file:
 
 | File                                                         | Role                                                                             |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                     | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`                | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
-| `packages/document/src/shape-factory.ts`                      | Default sizes and starting content per kind                                      |
-| `packages/document/src/svg-render-web.ts`                     | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
-| `packages/document/src/themes.ts`                             | `themeColourFields`: accent bars retheme only their stroke                       |
-| `packages/document/src/colors.ts`                             | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                        | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                           | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
-| `packages/document/src/legacy-groups.ts`                      | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
-| `packages/document/src/stored-elements.ts`                    | `migrateStoredElements`: every stored-tab entry point                            |
+| `packages/document/src/web-components.ts`                    | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `packages/document/src/component-factories.ts`               | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
+| `packages/document/src/shape-factory.ts`                     | Default sizes and starting content per kind                                      |
+| `packages/document/src/svg-render-web.ts`                    | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `packages/document/src/themes.ts`                            | `themeColourFields`: accent bars retheme only their stroke                       |
+| `packages/document/src/colors.ts`                            | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
+| `packages/document/src/data-shapes.ts`                       | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `packages/document/src/validate.ts`                          | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
+| `packages/document/src/legacy-groups.ts`                     | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
+| `packages/document/src/stored-elements.ts`                   | `migrateStoredElements`: every stored-tab entry point                            |
 | `apps/api/src/tab-row.ts`                                    | `rowToTab` runs the migration                                                    |
 | `apps/live/lib/offline/offline-store.ts`                     | `offlineLoadTab` runs the migration                                              |
-| `apps/live/lib/import-merge.ts`                              | `mergeFields` runs the migration on a JSON tab import [Q2]                       |
+| `apps/live/lib/import-merge.ts`                              | `mergeFields` runs the migration on a JSON tab import [QA2]                      |
 | `apps/live/components/canvas/web/*.tsx`                      | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
 | `apps/live/components/canvas/InlineTextLine.tsx`             | The in-place single-line editor                                                  |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`          | Routes faces; computes `editable`                                                |
@@ -64,7 +64,7 @@ shape kind.
 - `callout`, `stat`, `process`: `fillColor: surface`, `strokeColor: accent`, `textColor: ink`.
 - Starting content (`createShape`): banner "Banner title" / "Subtitle or description", callout
   "Heads up" / "A short note with some supporting detail.", `STAT_DEFAULTS`,
-  `PROCESS_DEFAULT_STEPS`, header "Brand" + `NAV_DEFAULT_LINKS` (`DA9`).
+  `PROCESS_DEFAULT_STEPS`, header "Brand" + `NAV_DEFAULT_LINKS` (`D12`).
 
 ### Editing
 
@@ -76,18 +76,18 @@ shape kind.
    write `next` back. Enter → blur. Escape → restore `value`, then blur. Every key is stopped from
    reaching the canvas. `editable = isSelected && !readOnly && !isLocked` (and a setter wired).
 3. **Row writes.** Canvas edits one element by id (`setWebRows`); the menu edits the selection
-   (`setWebRowsSelected`). Both go through `withWebRows`: each string `clampWebText` (`DA1`),
+   (`setWebRowsSelected`). Both go through `withWebRows`: each string `clampWebText` (`D4`),
    the array sliced to the kind's max, and dropped entirely when below the kind's min; a field
    lands only on its own kind.
 4. **Append.** The ring's add action on a selected stat row, process or header ("Add stat", "Add
-   step", "Add link") calls `appendWebRowTo(id)`, offered only while `canAppendWebRow` [Q1] (`DA2`).
+   step", "Add link") calls `appendWebRowTo(id)`, offered only while `canAppendWebRow` [QA1] (`D5`).
 5. **Menu.** "Stats" / "Steps" / "Links" section in the Tools flyout: per-row inputs committing on
-   blur, ↑ / ↓ reorder, × remove (disabled at the min), Add (disabled at the max) [Q4].
+   blur, ↑ / ↓ reorder, × remove (disabled at the min), Add (disabled at the max) [QA4].
 6. **Masthead.** `setPageHeading(id, field, value)` on `page`, `banner`, `callout`; an empty line
-   stores `undefined` (`DA8`).
+   stores `undefined` (`D11`).
 7. **Hero caption.** Lines via `setHeroCaptionLine` (trimmed, collapsed, sliced to
    `PAGE_HEADING_MAX`); only on an image that has a caption. The "Caption Card" toggle adds
-   `HERO_DEFAULT_CAPTION` or deletes `heroCaption` (`DA3`).
+   `HERO_DEFAULT_CAPTION` or deletes `heroCaption` (`D6`).
 
 ### Layout (pure, element-relative; canvas and export call the same functions)
 
@@ -98,12 +98,12 @@ shape kind.
 22))` at the top-left; heading `round(clamp(h * 0.14, 12, 24))` px, one line; body below.
 - **Stat row:** `n` cards, `gap = min(STAT_GAP, w * 0.2 / (n - 1))`, equal widths; value px
   `round(clamp(min(h * 0.34, cardW * 0.28), 12, 72))`, caption `round(clamp(value * 0.45, 10, 22))`
-  [Q3].
+  [QA3].
 - **Process:** columns `w / n`; caption px `round(clamp(h * 0.14, 10, 20))`; diameter
   `max(8, min(h - captionH - 6, colW * 0.62))`; connectors between neighbours, inset
   `min(8, colW * 0.06)`, drawn only when longer than 4px.
 - **Header:** `pad = round(clamp(h * 0.26, 10, 28))`; logo radius `max(6, min(h * 0.29, 32))`;
-  link px `round(clamp(h * 0.18, 11, 20))`; links measured by estimate (`DA5`) and dropped from the
+  link px `round(clamp(h * 0.18, 11, 20))`; links measured by estimate (`D8`) and dropped from the
   end until the brand keeps `HEADER_BRAND_MIN`.
 - **Hero card:** margin `round(clamp(min * 0.06, 6, 28))`; title px `round(clamp(h * 0.075, 12,
 34))`; the card sits at the bottom, inset by the margin.
@@ -116,19 +116,19 @@ shape kind.
 - Cards: `fillColor` surface, `textColor` ink, accent for the card border, values, badge, circles
   and connectors.
 - A collaborator's selection never changes a face's accent; it shows only on the selection ring
-  [Q5].
+  [QA5].
 - Hero card: `fillColor ?? '#0f172a'` at 0.82 opacity; text `textColor ?? ACCENT_BAR_TEXT`
-  (`DA4`). Images have no theme colour fields, so a theme switch leaves the card.
+  (`D7`). Images have no theme colour fields, so a theme switch leaves the card.
 
 ### Legacy groups (read path)
 
 `migrateStoredElements(elements) = dropLegacyDocks(migrateLegacyGroups(elements))`, run by
-`rowToTab`, `offlineLoadTab` and the JSON tab import [Q2]:
+`rowToTab`, `offlineLoadTab` and the JSON tab import [QA2]:
 
 1. `hasLegacyGroups` false → return the same array (no copy).
 2. Union box per `groupId` over non-arrow elements.
 3. Each `pinned-group` end becomes `{ kind: 'free', x, y }` at `anchorFraction(anchor)` of its
-   group's box; a group with no members gives `(0, 0)` (`DA6`).
+   group's box; a group with no members gives `(0, 0)` (`D9`).
 4. `groupId` is deleted from every element.
 
 Invariants:
@@ -205,14 +205,14 @@ Migration runs on every read and is idempotent; nothing is written back until th
 | E2  | Write below a kind's minimum              | `withWebRows` drops that field; the element is unchanged   |
 | E3  | Header too narrow for its links           | Links dropped from the end, brand keeps `HEADER_BRAND_MIN` |
 | E4  | Process too narrow                        | Circles shrink; connectors under 4px are not drawn         |
-| E5  | Export text wider than its rect           | Character-estimate clip with an ellipsis (`DA7`)           |
+| E5  | Export text wider than its rect           | Character-estimate clip with an ellipsis (`D10`)           |
 | E6  | Pasted rich text into a line              | `contentEditable="plaintext-only"`                         |
 | E7  | Escape in a line                          | Restores the stored value, no commit                       |
-| E8  | Legacy group with no members              | Free end at `(0, 0)` (`DA6`)                               |
+| E8  | Legacy group with no members              | Free end at `(0, 0)` (`D9`)                                |
 | E9  | Old client saves a `pinned-group` end     | Accepted; migrated on the next read                        |
 | E10 | Icon dropped on banner, stat row, process | Stands alone (`acceptsInlineIcon` false)                   |
-| E11 | Icon on callout or header                 | Badge glyph / logo; drawn in export too [G2]               |
-| E12 | Peer selects an accent bar                | Only the ring shows the peer's colour [Q5]                 |
+| E11 | Icon on callout or header                 | Badge glyph / logo; drawn in export too [GA2]              |
+| E12 | Peer selects an accent bar                | Only the ring shows the peer's colour [QA5]                |
 
 ## Security and trust
 
@@ -230,9 +230,9 @@ the input unchanged in the common case.
 - Palette: the Components tab (Banner, Callout, Stat row, Process, Hero, Header), drag-to-draw or
   tap-to-drop at `COMPONENT_SIZE`.
 - Radius: banner, callout, header and stat cards expose corner radius (`RADIUS_SHAPES`); banner,
-  header, stat row and process expose no Border controls (`SELF_PAINTING_SHAPES`) [Q4].
+  header, stat row and process expose no Border controls (`SELF_PAINTING_SHAPES`) [QA4].
 - Header logo: the inline icon when set, else the brand's first letter; callout badge: the inline
-  icon, else "i" [Q4].
+  icon, else "i" [QA4].
 - Placeholders while empty: "Subtitle", "Heading", "0", "Caption", "Step", "Link", "Title",
   "Supporting line".
 
@@ -251,33 +251,33 @@ Faces are canvas-space; in-place edits touch the DOM only until blur, then one c
 
 ## Observability
 
-None in code today; the migration's no-op and rewrite paths emit nothing [G1].
+None in code today; the migration's no-op and rewrite paths emit nothing [GA1].
 
 ## Testing
 
 | Rule                                         | Test                                                                         | File                                                             |
 | -------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| One element per component, no `groupId` (I1) | every component builds exactly one element                                   | `packages/document/src/web-components.test.ts`                    |
-| Colours per family                           | dresses the accent-bar kinds in the accent with white text                   | `packages/document/src/web-components.test.ts`                    |
-| Hero is an image with a caption              | the hero is an image with a caption card in the accent                       | `packages/document/src/web-components.test.ts`                    |
-| Bounds (I3)                                  | validation bounds the rows (three cases)                                     | `packages/document/src/web-components.test.ts`                    |
-| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                    | `packages/document/src/web-components.test.ts`                    |
-| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                | `packages/document/src/web-components.test.ts`                    |
-| Export draws rows, title once, hero caption  | headless render (three cases)                                                | `packages/document/src/web-components.test.ts`                    |
-| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                       | `packages/document/src/web-components.test.ts`                    |
+| One element per component, no `groupId` (I1) | every component builds exactly one element                                   | `packages/document/src/web-components.test.ts`                   |
+| Colours per family                           | dresses the accent-bar kinds in the accent with white text                   | `packages/document/src/web-components.test.ts`                   |
+| Hero is an image with a caption              | the hero is an image with a caption card in the accent                       | `packages/document/src/web-components.test.ts`                   |
+| Bounds (I3)                                  | validation bounds the rows (three cases)                                     | `packages/document/src/web-components.test.ts`                   |
+| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                    | `packages/document/src/web-components.test.ts`                   |
+| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                | `packages/document/src/web-components.test.ts`                   |
+| Export draws rows, title once, hero caption  | headless render (three cases)                                                | `packages/document/src/web-components.test.ts`                   |
+| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                       | `packages/document/src/web-components.test.ts`                   |
 | Faces commit, inert until selected           | web component faces (six cases)                                              | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
 | Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                              | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
 | Setters, caption toggle                      | useWebComponentSetters (five cases)                                          | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
-| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                             | `packages/document/src/legacy-groups.test.ts`                     |
-| Migration pipeline                           | migrateStoredElements (two cases)                                            | `packages/document/src/stored-elements.test.ts`                   |
+| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                             | `packages/document/src/legacy-groups.test.ts`                    |
+| Migration pipeline                           | migrateStoredElements (two cases)                                            | `packages/document/src/stored-elements.test.ts`                  |
 | api read migrates                            | freezes a legacy group out of the stored elements                            | `apps/api/src/tab-row.test.ts`                                   |
 | Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped | `apps/live/lib/excalidraw-import.test.ts`                        |
 | ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                     | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
 | Single selection bounds itself               | a single selection is bounded by the element itself                          | `apps/live/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                           | `apps/live/lib/draw-commit.test.ts`                              |
-| Offline and import migrate                   | none [G14]                                                                   |                                                                  |
-| Ring add hidden when full                    | none [G14]                                                                   |                                                                  |
-| Export draws the inline icon                 | none [G2]                                                                    |                                                                  |
+| Offline and import migrate                   | none [GA14]                                                                  |                                                                  |
+| Ring add hidden when full                    | none [GA14]                                                                  |                                                                  |
+| Export draws the inline icon                 | none [GA2]                                                                   |                                                                  |
 
 ## Constants and configuration
 
@@ -287,7 +287,7 @@ None in code today; the migration's no-op and rewrite paths emit nothing [G1].
 | `STATS_MIN` / `STATS_MAX`                 | 1 / 6                                                            | A row needs one card; six fit 482px                 |
 | `PROCESS_MIN_STEPS` / `PROCESS_MAX_STEPS` | 2 / 8                                                            | A process has two steps; eight stay legible         |
 | `NAV_LINKS_MAX`                           | 6                                                                | A header's nav; 4 to 8                              |
-| `STAT_GAP`                                | 16                                                               | Card gap, capped by width [Q3]                      |
+| `STAT_GAP`                                | 16                                                               | Card gap, capped by width [QA3]                     |
 | `HEADER_BRAND_MIN`                        | 90                                                               | Brand room before links drop; 60 to 140             |
 | `ACCENT_BAR_TEXT`                         | `'#ffffff'`                                                      | The text an accent bar carries                      |
 | `PAGE_HEADING_MAX`                        | 200                                                              | Masthead and caption lines (Page spec)              |
@@ -298,4 +298,4 @@ None in code today; the migration's no-op and rewrite paths emit nothing [G1].
 
 Telemetry: `Element·Added·<Banner|Callout|StatRow|ProcessSteps|Header|Hero>` on create and copy;
 `Element·Changed·<StatRow|ProcessSteps|Header>` from the menu and ring, `Element·Changed·Hero` from
-the caption toggle. Inline edits emit nothing [G13].
+the caption toggle. Inline edits emit nothing [GA13].

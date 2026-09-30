@@ -8,21 +8,21 @@ Scope, by file:
 
 | File                                                                                      | Role                                                                                                                                                                    |
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                                                     | `PieSlice`, `PieAnim`, `PIE_ANIMS`, `PIE_LOOPING_ANIMS`, `PIE_PALETTE`, `PIE_DEFAULT_SLICES`, `LineSeries`, `LINE_DEFAULT_*`, `LegendItem`, `LEGEND_*`, the kind guards |
-| `packages/document/src/element-types.ts`                                                   | `ChartLegendPosition` and the chart / legend fields on `ShapeElement`                                                                                                   |
-| `packages/document/src/chart-frame.ts`                                                     | `chartFrame`: colours, data, legend strip, plot `area`                                                                                                                  |
-| `packages/document/src/chart-palettes.ts`                                                  | `ChartPaletteId`, `CHART_PALETTES`, `chartPaletteColors`, `isChartPaletteId`                                                                                            |
-| `packages/document/src/theme-presets.ts`                                                   | `themeChartPalette`: the tab theme's categorical ramp                                                                                                                   |
-| `packages/document/src/label-font.ts`                                                      | `LEGEND_FONT_PX`, `legendFontPx`                                                                                                                                        |
-| `packages/document/src/svg-render-charts.ts`                                               | `svgPieChart`, `svgBarChart`, `svgLineChart`                                                                                                                            |
-| `packages/document/src/svg-render-shapes.ts`                                               | `svgLegendShape`                                                                                                                                                        |
-| `packages/document/src/svg-render.ts`                                                      | Export: resolves the chart palette per tab, routes the legend                                                                                                           |
-| `packages/document/src/validate.ts`                                                        | `SHAPE_KINDS`, array bounds, `chartPalette`, `legendItems` checks                                                                                                       |
+| `packages/document/src/data-shapes.ts`                                                    | `PieSlice`, `PieAnim`, `PIE_ANIMS`, `PIE_LOOPING_ANIMS`, `PIE_PALETTE`, `PIE_DEFAULT_SLICES`, `LineSeries`, `LINE_DEFAULT_*`, `LegendItem`, `LEGEND_*`, the kind guards |
+| `packages/document/src/element-types.ts`                                                  | `ChartLegendPosition` and the chart / legend fields on `ShapeElement`                                                                                                   |
+| `packages/document/src/chart-frame.ts`                                                    | `chartFrame`: colours, data, legend strip, plot `area`                                                                                                                  |
+| `packages/document/src/chart-palettes.ts`                                                 | `ChartPaletteId`, `CHART_PALETTES`, `chartPaletteColors`, `isChartPaletteId`                                                                                            |
+| `packages/document/src/theme-presets.ts`                                                  | `themeChartPalette`: the tab theme's categorical ramp                                                                                                                   |
+| `packages/document/src/label-font.ts`                                                     | `LEGEND_FONT_PX`, `legendFontPx`                                                                                                                                        |
+| `packages/document/src/svg-render-charts.ts`                                              | `svgPieChart`, `svgBarChart`, `svgLineChart`                                                                                                                            |
+| `packages/document/src/svg-render-shapes.ts`                                              | `svgLegendShape`                                                                                                                                                        |
+| `packages/document/src/svg-render.ts`                                                     | Export: resolves the chart palette per tab, routes the legend                                                                                                           |
+| `packages/document/src/validate.ts`                                                       | `SHAPE_KINDS`, array bounds, `chartPalette`, `legendItems` checks                                                                                                       |
 | `apps/live/lib/chart.ts`                                                                  | `chartAnim`; re-exports `chartFrame`                                                                                                                                    |
 | `apps/live/lib/csv.ts`                                                                    | `parseCsvLineData`                                                                                                                                                      |
 | `apps/live/components/canvas/PieChartView.tsx`, `BarChartView.tsx`, `LineChartView.tsx`   | Canvas marks                                                                                                                                                            |
 | `apps/live/components/canvas/LegendView.tsx`                                              | Canvas legend element                                                                                                                                                   |
-| `apps/live/components/primitives/ChartSurface.tsx`, `ChartLegend.tsx`, `ChartTooltip.tsx` | Frame, key, tooltip                                                                                                                                                     |
+| `apps/live/components/primitives/ChartSurface.tsx`, `ChartLegend.tsx`, `ChartReadout.tsx` | Frame, key, readout                                                                                                                                                     |
 | `apps/live/hooks/canvas/useChartHover.ts`                                                 | Hover key per mark                                                                                                                                                      |
 | `apps/live/components/dialogs/LineDataDialog.tsx`                                         | The line data grid modal and CSV import                                                                                                                                 |
 | `apps/live/components/palette/ElementDataSections.tsx`                                    | Data, Legend and Chart sections; the chart Animation tiles                                                                                                              |
@@ -52,10 +52,12 @@ Scope, by file:
 | Legend (element) | `ShapeKind` `'legend'`, `isLegendShape`, `legendItems`  | A standalone key card; not a chart                       |
 | Legend row       | `LegendItem = { label, color? }`                        | One dot and one label                                    |
 | Key text size    | `textSize` read through `legendFontPx`                  | 11 / 14 / 18 px                                          |
+| Readout          | `ChartReadout`                                          | The hovered mark's `label: value` box                    |
 
 Banned synonyms: "series" for a pie datum (say datum or slice), "legend" for the chart's strip in
 code comments where the element is meant (say key vs legend element), "colour scheme" for a chart
-palette (that is the code block's term).
+palette (that is the code block's term), "tooltip" for the readout (a tooltip names a
+control).
 
 ## Behaviour and state
 
@@ -73,22 +75,23 @@ palette (that is the code block's term).
 For datum `i` with optional `color`:
 `color ?? (chartPaletteColors(chartPalette) ?? (themeRamp non-empty ? themeRamp : PIE_PALETTE))[i % n]`.
 On the canvas `themeRamp = themeChartPalette(getTheme(activeTab.theme))`; in the export it is
-`themeChartPalette(getBuiltInTheme(tab.theme, surface))` [G3]. `themeChartPalette` emits each
+`themeChartPalette(getBuiltInTheme(tab.theme, surface))` [GE3]. `themeChartPalette` emits each
 palette entry's stroke, then accent tints and shades, then the text colour, deduplicated; it is
 never empty.
 
 Legend element ladder: `item.color ?? (chartPaletteColors(chartPalette) ?? PIE_PALETTE)[i % n]`;
-the theme ramp is not consulted [Q3].
+the theme ramp is not consulted [QE3].
 
 ### Layout (`chartFrame`)
 
 1. `w = max(1, width)`, `h = max(1, height)`; `data = pieSlices` when non-empty, else
-   `PIE_DEFAULT_SLICES` (`DE5`).
+   `PIE_DEFAULT_SLICES` (`D101`).
 2. `pos = chartLegendPosition ?? 'bottom'`; `showLegend = chartLegend !== false`.
 3. Left / right: strip width `min(w * 0.4, 130)`; top / bottom: band height `min(h * 0.32, 72)`;
    zero when hidden.
 4. `area` is the remaining rect; `legend` is the strip, with `show` and `pos`.
-5. `ChartLegend` renders nothing when the strip is under 48 px wide (side) or 18 px tall (band);
+5. `ChartLegend` renders nothing when the strip is under 48 px wide (side) or 18 px tall (band)
+   (D107);
    side legends stack in a column, bands wrap in a centred row; swatch `round(fontPx * 0.8)`.
 
 ### Marks
@@ -101,7 +104,7 @@ the theme ramp is not consulted [Q3].
   `min(3, barW / 4)`; a slate-300 baseline.
 - **Line**: categories and series fall back to the defaults when empty; the value range always
   includes 0 (an all-equal range widens by 1); each series a polyline with point markers;
-  tooltips read `category · series: value`.
+  readouts read `category · series: value` (D106).
 - The mark group carries `chartAnim(element, origin)`: pie origin its centre, bar the baseline
   centre. Axes, labels and the key stay still.
 
@@ -114,12 +117,13 @@ grow and pop play once, spin and pulse loop.
 
 `useChartHover` keys a pie or bar mark by index and a line point by `{ s, i }`; each mark enables
 its own pointer events; the SVG stays `pointer-events-none` so drags reach the element.
-`ChartTooltip` shows `label: value` (a blank label shows a dash glyph) anchored above the mark, independent of the key.
+`ChartReadout` shows `label: value` (a blank label shows a dash glyph) anchored above the mark,
+independent of the key (D106).
 
 ### Edit
 
 1. Tools flyout, **Data** section: pie and bar use `PieDataEditor` (swatch, label, value per row;
-   `+ Add slice` appends `{ label: 'Item n', value: 10 }`; remove disabled at one row, `DE6`);
+   `+ Add slice` appends `{ label: 'Item n', value: 10 }`; remove disabled at one row, `D102`);
    line uses `LineDataSummary` and an **Edit data** button opening `LineDataDialog`.
 2. `LineDataDialog`: a row per category, a column per series, add and remove on both axes (never
    below one), **Import CSV** (`parseCsvLineData`), committing the whole dataset on each blur or
@@ -129,7 +133,7 @@ its own pointer events; the SVG stays `pointer-events-none` so drags reach the e
 4. Animation section: `PieAnimTiles` replaces the boxed set.
 5. Style band: Colours and Border are hidden; **Presets** shows `ChartPalettePresets` (eight
    tiles, hover previews, click commits `'ChartPalette'`) and a Reset that clears `chartPalette`
-   [G1].
+   [GE1].
 6. Legend element, Tools flyout, **Legend** section: `LegendDataEditor` (rows) and
    `LegendTextSize`.
 
@@ -147,7 +151,7 @@ its own pointer events; the SVG stays `pointer-events-none` so drags reach the e
 | `setLegendItemsSelected(items)` (legend)  | `{ legendItems }` capped to 40 rows, 120 chars  | `Legend`      |
 
 The data setters match every chart kind, so a mixed pie and line selection writes both field sets
-onto both [G2].
+onto both [GE2].
 
 ## Interfaces and contracts
 
@@ -182,7 +186,7 @@ export function parseCsvLineData(
 Validation (`isValidElement`): `pieSlices`, `lineCategories`, `lineSeries` bounded to
 `MAX_DATA_ARRAY` entries; `chartPalette` must pass `isChartPaletteId`; `legendItems` bounded to
 `LEGEND_MAX_ITEMS`, each `label` a string of at most `LEGEND_MAX_TEXT`, `color` a string when
-present. Datum shapes, series values, `pieAnim*` and `chartLegendPosition` are not checked [G5].
+present. Datum shapes, series values, `pieAnim*` and `chartLegendPosition` are not checked [GE5].
 
 CSV contract: header row = category column label plus series names (blank names become
 `Series n`); each later non-blank row = category label (blank becomes `#n`) plus values;
@@ -209,16 +213,16 @@ Palette ids are permanent; names may change.
 
 | #   | Case                           | Handling                                                     |
 | --- | ------------------------------ | ------------------------------------------------------------ |
-| E1  | Empty `pieSlices`              | Sample data renders (`DE5`)                                  |
-| E2  | Negative value                 | Treated as 0 for size; the tooltip shows the stored value    |
+| E1  | Empty `pieSlices`              | Sample data renders (`D101`)                                 |
+| E2  | Negative value                 | Treated as 0 for size; the readout shows the stored value    |
 | E3  | All values 0                   | Divisor 1: nothing drawn, the key still lists the rows       |
-| E4  | One datum at 100 %             | Full circle, tooltip anchored at the top                     |
-| E5  | Non-numeric value from the api | NaN geometry [G5]                                            |
+| E4  | One datum at 100 %             | Full circle, readout anchored at the top                     |
+| E5  | Non-numeric value from the api | NaN geometry [GE5]                                           |
 | E6  | Unknown `chartPalette`         | Rejected on write; at render falls through to the theme ramp |
 | E7  | Key strip too small            | Key not rendered                                             |
-| E8  | CSV with no usable rows        | `null`; the dialog does nothing and says nothing [G9]        |
+| E8  | CSV with no usable rows        | `null`; the dialog does nothing and says nothing [GE9]       |
 | E9  | Series shorter than categories | A missing value reads as 0 (`valAt`)                         |
-| E10 | Custom tab theme in an export  | Export ramp from `getBuiltInTheme`, default scheme [G3]      |
+| E10 | Custom tab theme in an export  | Export ramp from `getBuiltInTheme`, default scheme [GE3]     |
 
 ## Security and trust
 
@@ -236,16 +240,16 @@ function per render; hover state is per view.
 ## Presentation and UX
 
 - Defaults: key Below, Medium text, sample data, theme colours.
-- Key rows show the label, or a dash glyph when blank; tooltips `label: value`.
+- Key rows show the label, or a dash glyph when blank; readouts `label: value`.
 - The legend element card paints from the element's fill and stroke with rows of dot and label.
-- No loading or error states; the CSV failure path is silent [G9].
+- No loading or error states; the CSV failure path is silent [GE9].
 
 ## Accessibility
 
 - Reduced motion: `lvd-pie-*` classes are `animation: none`.
-- Chart SVGs, the key and the tooltip are `aria-hidden`; values are reachable by pointer hover
-  only. There is no text alternative for screen readers or keyboard users [G10].
-- The CSV import is a `label` wrapping a hidden file input, not keyboard-focusable [G9].
+- Chart SVGs, the key and the readout are `aria-hidden`; values are reachable by pointer hover
+  only. There is no text alternative for screen readers or keyboard users [GE10].
+- The CSV import is a `label` wrapping a hidden file input, not keyboard-focusable [GE9].
 - Palette colours are not contrast-checked against the card; the key text uses the element text
   colour.
 
@@ -259,28 +263,28 @@ is lazy-loaded through `EditorElementDialogs` like the other element dialogs.
 Telemetry: `track('Element', 'Added', 'Pie-chart' | 'Bar-chart' | 'Line-chart' | 'Legend')` on
 create; `track('Element', 'Changed', 'ChartData' | 'LineData' | 'ChartAnim' | 'ChartLegend' |
 'ChartPalette' | 'Legend')` on edits. No log fingerprints; the CSV rejection and the value
-fallbacks are silent [G12].
+fallbacks are silent [GE12].
 
 ## Testing
 
-| Rule                                             | Test                                                            | File                                               |
-| ------------------------------------------------ | --------------------------------------------------------------- | -------------------------------------------------- |
-| `isChartShape` is the three kinds                | is exactly the three chart kinds                                | `packages/document/src/data-shapes.test.ts`         |
-| Key Below by default, side strip, hidden         | chartFrame layout cases (seven)                                 | `apps/live/lib/chart.test.ts`                      |
-| Per-datum colour, else cycle the palette         | prefers an explicit slice colour, else cycles the palette       | `apps/live/lib/chart.test.ts`                      |
-| Empty data falls back to samples                 | falls back to the default slices when the element has none      | `apps/live/lib/chart.test.ts`                      |
-| Palettes: eight colours, unique, resolvable      | chart palettes cases                                            | `packages/document/src/chart-palettes.test.ts`      |
-| Preset writes only the palette                   | sets the palette on a chart without touching its data           | `apps/live/lib/style-presets.test.ts`              |
-| Key sizes 11 / 14 / 18, export parity            | legendFontPx cases                                              | `packages/document/src/label-font.test.ts`          |
-| CSV parsing                                      | parseCsvLineData cases                                          | `apps/live/lib/csv.test.ts`                        |
-| Data / anim / legend setters                     | pie chart setter cases                                          | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
-| Export draws charts unframed                     | leaves a chart unframed; draws more than a box                  | `packages/document/src/export-consistency.test.ts`  |
-| Every kind renders without NaN                   | never emits NaN or undefined                                    | `packages/document/src/svg-render-coverage.test.ts` |
-| Ladder: datum > chart palette > theme > built-in | partial (`chartFrame` only); none for `themeChartPalette` [G11] |                                                    |
-| Reset clears the palette                         | none [G1]                                                       |                                                    |
-| Legend matches an adjacent chart                 | none [Q3]                                                       |                                                    |
-| Grow / pop once, spin / pulse loop               | none [G11]                                                      |                                                    |
-| Tooltip on hover regardless of the key           | none [G11]                                                      |                                                    |
+| Rule                                             | Test                                                             | File                                                |
+| ------------------------------------------------ | ---------------------------------------------------------------- | --------------------------------------------------- |
+| `isChartShape` is the three kinds                | is exactly the three chart kinds                                 | `packages/document/src/data-shapes.test.ts`         |
+| Key Below by default, side strip, hidden         | chartFrame layout cases (seven)                                  | `apps/live/lib/chart.test.ts`                       |
+| Per-datum colour, else cycle the palette         | prefers an explicit slice colour, else cycles the palette        | `apps/live/lib/chart.test.ts`                       |
+| Empty data falls back to samples                 | falls back to the default slices when the element has none       | `apps/live/lib/chart.test.ts`                       |
+| Palettes: eight colours, unique, resolvable      | chart palettes cases                                             | `packages/document/src/chart-palettes.test.ts`      |
+| Preset writes only the palette                   | sets the palette on a chart without touching its data            | `apps/live/lib/style-presets.test.ts`               |
+| Key sizes 11 / 14 / 18, export parity            | legendFontPx cases                                               | `packages/document/src/label-font.test.ts`          |
+| CSV parsing                                      | parseCsvLineData cases                                           | `apps/live/lib/csv.test.ts`                         |
+| Data / anim / legend setters                     | pie chart setter cases                                           | `apps/live/hooks/canvas/useElementStyle.test.ts`    |
+| Export draws charts unframed                     | leaves a chart unframed; draws more than a box                   | `packages/document/src/export-consistency.test.ts`  |
+| Every kind renders without NaN                   | never emits NaN or undefined                                     | `packages/document/src/svg-render-coverage.test.ts` |
+| Ladder: datum > chart palette > theme > built-in | partial (`chartFrame` only); none for `themeChartPalette` [GE11] |                                                     |
+| Reset clears the palette                         | none [GE1]                                                       |                                                     |
+| Legend matches an adjacent chart                 | none [QE3]                                                       |                                                     |
+| Grow / pop once, spin / pulse loop               | none [GE11]                                                      |                                                     |
+| Readout on hover regardless of the key           | none [GE11]                                                      |                                                     |
 
 ## Constants and configuration
 

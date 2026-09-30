@@ -10,14 +10,14 @@ Scope, by file:
 
 | File                                                 | Role                                                                |
 | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                 | `ShapeKind` includes `'page'`                                       |
-| `packages/document/src/shape-factory.ts`              | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
-| `packages/document/src/element-types.ts`              | `ShapeElement.pageTitle`, `pageSubtitle`                            |
-| `packages/document/src/data-shapes.ts`                | `PAGE_HEADING_MAX`                                                  |
-| `packages/document/src/validate.ts`                   | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
-| `packages/document/src/svg-render-body.ts`            | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
-| `packages/document/src/svg-render-data.ts`            | `svgPageMasthead`: export title, subtitle, rule                     |
-| `packages/document/src/themes.ts`                     | `themeColourFields`: page exempt from theme applies [Q15]           |
+| `packages/document/src/shape-kind.ts`                | `ShapeKind` includes `'page'`                                       |
+| `packages/document/src/shape-factory.ts`             | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
+| `packages/document/src/element-types.ts`             | `ShapeElement.pageTitle`, `pageSubtitle`                            |
+| `packages/document/src/data-shapes.ts`               | `PAGE_HEADING_MAX`                                                  |
+| `packages/document/src/validate.ts`                  | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
+| `packages/document/src/svg-render-body.ts`           | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
+| `packages/document/src/svg-render-data.ts`           | `svgPageMasthead`: export title, subtitle, rule                     |
+| `packages/document/src/themes.ts`                    | `themeColourFields`: page exempt from theme applies [QD15]          |
 | `apps/live/lib/themes.ts`                            | `deriveNewBoxedColours` returns a page's own colours                |
 | `apps/live/components/canvas/shape-svg-overlay.tsx`  | `isSvgRenderedShape('page')` is false: CSS box path                 |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`  | Stacks `PageMasthead` over the body region                          |
@@ -27,7 +27,7 @@ Scope, by file:
 | `apps/live/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
 | `apps/live/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
-| `apps/live/lib/export-tab-text.ts`                   | Markdown outline [Q13]                                              |
+| `apps/live/lib/export-tab-text.ts`                   | Markdown outline [QD13]                                             |
 
 ## Domain and naming
 
@@ -51,7 +51,7 @@ Banned synonyms: "document" for a page (`'document'` is the flowchart shape), "s
    `SHAPE_DEFAULT_SIZE.page`, a drag sizes it.
 2. `createShape('page', x, y)` sets `textAlignX: 'left'`, `textAlignY: 'top'`, `fillColor:
 '#ffffff'`, `strokeColor: '#d4d4d8'`, `shadow: { offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 }`,
-   `textSize: 'sm'` (DD16), `padding: 'lg'`. No `aspectLocked`.
+   `textSize: 'sm'` (D91), `padding: 'lg'`. No `aspectLocked`.
 3. `deriveNewBoxedColours` returns the page's own colours unchanged, before backdrop derivation and
    theme overrides.
 4. `track('Element', 'Added', 'Page')` via `shapeTelemetryToken`.
@@ -59,7 +59,7 @@ Banned synonyms: "document" for a page (`'document'` is the flowchart shape), "s
 ### Theme applies
 
 A theme switch, reset or recolour leaves a page's fill, stroke and text alone: `themeColourFields`
-returns no fields for a page [Q15]. The user recolours a page from the menu.
+returns no fields for a page [QD15]. The user recolours a page from the menu.
 
 ### Render
 
@@ -72,23 +72,23 @@ returns no fields for a page [Q15]. The user recolours a page from the menu.
 ### Body
 
 - Double-click opens the shared label editor (`RichTextEditor`) on `label` / `richText`.
-- Past the page's height the body clips at rest with a bottom fade, and scrolls while editing [Q12].
+- Past the page's height the body clips at rest with a bottom fade, and scrolls while editing [QD12].
 
 ### Masthead editing
 
 States per line: at rest, editing (`focus` → `editing = true`).
 
-1. A line is editable when the page is neither locked nor viewed read-only (DD19); otherwise it is
+1. A line is editable when the page is neither locked nor viewed read-only (D94); otherwise it is
    inert and a press falls through to the page.
 2. On an editable line, `pointerdown` and `dblclick` stop propagation; every `keydown` stops
    propagation.
 3. Enter commits (blur). Escape restores the stored value, then blurs.
 4. Blur commits: collapse whitespace runs to one space, trim, truncate to `PAGE_HEADING_MAX`
-   (DD18); call `onCommit` only when the value changed.
+   (D93); call `onCommit` only when the value changed.
 5. `setPageHeading(id, field, value)` commits through history on `MASTHEAD_SHAPES` only; an empty
    value stores `undefined`.
-6. `track('Element', 'Changed', 'PageHeading')` on a committed change [Q16].
-7. An empty line shows its placeholder ("Title" / "Subtitle") at 40% opacity (DD17), so the
+6. `track('Element', 'Changed', 'PageHeading')` on a committed change [QD16].
+7. An empty line shows its placeholder ("Title" / "Subtitle") at 40% opacity (D92), so the
    masthead keeps its height.
 
 Invariants:
@@ -137,22 +137,22 @@ existing invalid-tab response.
 - **Never persisted:** a line's `editing` state; the fold (derived).
 - **Migration:** none; a page without masthead fields renders placeholders.
 - **SVG / PNG export:** the box (rect, `rx` 6, fill and stroke), the masthead via `svgPageMasthead`,
-  then the body label [Q13]. The fold is not drawn.
+  then the body label [QD13]. The fold is not drawn.
 - **Markdown export:** the page's title as the item, the body indented beneath it, one line per
-  body line [Q13].
+  body line [QD13].
 
 ## Errors and edge cases
 
 | #   | Case                                   | Handling                                                  |
 | --- | -------------------------------------- | --------------------------------------------------------- |
-| E1  | Title pasted over 200 chars            | Truncated at commit (DD18); validation rejects longer     |
+| E1  | Title pasted over 200 chars            | Truncated at commit (D93); validation rejects longer      |
 | E2  | Rich text pasted into a masthead line  | `contentEditable="plaintext-only"` keeps it plain         |
 | E3  | Newline typed or pasted in a line      | Enter commits; pasted newlines collapse to spaces         |
 | E4  | Line cleared                           | Stored as `undefined`                                     |
-| E5  | Page smaller than the fold             | Fold `min(22, w/2, h/2)`; hidden at ≤ 2px (DD20)          |
-| E6  | Body longer than the page              | Clip with fade at rest, scroll in the editor [Q12]        |
+| E5  | Page smaller than the fold             | Fold `min(22, w/2, h/2)`; hidden at ≤ 2px (D95)           |
+| E6  | Body longer than the page              | Clip with fade at rest, scroll in the editor [QD12]       |
 | E7  | Page on a locked tab or read-only view | Masthead inert; body not editable                         |
-| E8  | Page recoloured dark                   | Masthead follows the page's text colour [Q14]             |
+| E8  | Page recoloured dark                   | Masthead follows the page's text colour [QD14]            |
 | E9  | Unknown shape kind in data             | Not a page; out of scope (`isSvgRenderedShape` routes it) |
 
 ## Security and trust
@@ -169,8 +169,8 @@ The body follows the label runs model. `PAGE_HEADING_MAX` bounds each line at th
 
 - Paper: `420 × 594`, white body, `#d4d4d8` hairline, soft shadow, `padding: 'lg'` (24px), body
   top-left.
-- Masthead (DD17): title 19px / 600, subtitle 12px / 500, both in the page's text colour, the
-  subtitle at reduced emphasis [Q14]; `gap-0.5`; rule `border-b` in the page stroke; `pb-2`.
+- Masthead (D92): title 19px / 600, subtitle 12px / 500, both in the page's text colour, the
+  subtitle at reduced emphasis [QD14]; `gap-0.5`; rule `border-b` in the page stroke; `pb-2`.
 - Fold: a 22px triangle cut painted `var(--lvd-canvas-bg, #fff)`, a leaf in the page fill and
   stroke with a `rgba(15, 23, 42, 0.10)` overlay, and the diagonal in the stroke.
 - A focused line: `focus:bg-brand-50/60`, outline width `1 / zoom`.
@@ -182,7 +182,7 @@ The body follows the label runs model. `PAGE_HEADING_MAX` bounds each line at th
 - Each line: `role="textbox"`, `aria-label` "Page title" / "Page subtitle", `tabIndex` 0 when
   editable, −1 otherwise. Placeholders are `aria-hidden`.
 - The fold is `aria-hidden`.
-- Contrast: body and masthead text in the page's text colour against its fill [Q14]; on the
+- Contrast: body and masthead text in the page's text colour against its fill [QD14]; on the
   default white page slate-900 is 17.9:1 and slate-500 is 4.76:1.
 - Motion: none.
 
@@ -193,32 +193,32 @@ The body follows the label runs model. `PAGE_HEADING_MAX` bounds each line at th
 
 ## Observability
 
-The code emits no log here (G1). Target fingerprint:
+The code emits no log here (GD1). Target fingerprint:
 
 | #   | Where                             | Level           | Fingerprint                                          |
 | --- | --------------------------------- | --------------- | ---------------------------------------------------- |
 | O1  | `InlineTextLine` commit truncates | `console.debug` | `[page] heading truncated field=<f> from=<n> to=200` |
 
-Telemetry: `Element` / `Added` / `Page`; `Element` / `Changed` / `PageHeading` [Q16].
+Telemetry: `Element` / `Added` / `Page`; `Element` / `Changed` / `PageHeading` [QD16].
 
 ## Testing
 
 | Rule                                            | Test                                            | File                                                        |
 | ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
-| Page has a body in exports                      | `every kind with a body draws one` lists `page` | `packages/document/src/export-consistency.test.ts`           |
+| Page has a body in exports                      | `every kind with a body draws one` lists `page` | `packages/document/src/export-consistency.test.ts`          |
 | Page is found in palette search                 | palette search kinds                            | `apps/live/lib/palette-search.test.ts`                      |
 | Masthead line commits through `onSetHeading`    | web component heading commit (shared line)      | `apps/live/components/canvas/web/WebComponentFace.test.tsx` |
-| Size 420 × 594, alignment, padding, colours     | none                                            | (G7)                                                        |
-| Exempt from new-element colour derivation (I3)  | none                                            | (G7)                                                        |
-| Exempt from theme applies [Q15]                 | none                                            | (G7)                                                        |
-| CSS box path                                    | none                                            | (G7)                                                        |
-| `PAGE_HEADING_MAX` validated (I1)               | none                                            | (G7)                                                        |
-| Empty line stores `undefined`                   | none                                            | (G7)                                                        |
-| Enter commits, Escape restores, keys stay local | none                                            | (G7)                                                        |
-| Fold clamps and hides                           | none                                            | (G7)                                                        |
-| `svgPageMasthead` output                        | none                                            | (G7)                                                        |
-| Markdown title + indented body [Q13]            | none                                            | (G7)                                                        |
-| Body clips / scrolls [Q12]                      | none                                            | (G7)                                                        |
+| Size 420 × 594, alignment, padding, colours     | none                                            | (GD7)                                                       |
+| Exempt from new-element colour derivation (I3)  | none                                            | (GD7)                                                       |
+| Exempt from theme applies [QD15]                | none                                            | (GD7)                                                       |
+| CSS box path                                    | none                                            | (GD7)                                                       |
+| `PAGE_HEADING_MAX` validated (I1)               | none                                            | (GD7)                                                       |
+| Empty line stores `undefined`                   | none                                            | (GD7)                                                       |
+| Enter commits, Escape restores, keys stay local | none                                            | (GD7)                                                       |
+| Fold clamps and hides                           | none                                            | (GD7)                                                       |
+| `svgPageMasthead` output                        | none                                            | (GD7)                                                       |
+| Markdown title + indented body [QD13]           | none                                            | (GD7)                                                       |
+| Body clips / scrolls [QD12]                     | none                                            | (GD7)                                                       |
 
 ## Constants and configuration
 
@@ -227,9 +227,9 @@ Telemetry: `Element` / `Added` / `Page`; `Element` / `Changed` / `PageHeading` [
 | `SHAPE_DEFAULT_SIZE.page` | `{ width: 420, height: 594 }`                        | Spec: √2, A-series; keep the ratio           | `shape-factory.ts`                       |
 | `PAGE_HEADING_MAX`        | `200`                                                | Spec; one line                               | `data-shapes.ts`                         |
 | `FOLD_PX`                 | `22`                                                 | Spec, element px; 16 to 32                   | `PageCornerFold.tsx`                     |
-| `PADDING_PX.lg`           | `24`                                                 | Spec "wide margin"                           | `packages/document/src/index.ts`          |
+| `PADDING_PX.lg`           | `24`                                                 | Spec "wide margin"                           | `packages/document/src/index.ts`         |
 | Page fill / stroke        | `#ffffff` / `#d4d4d8`                                | Spec "white body, hairline border"; zinc-300 | `shape-factory.ts`                       |
-| Page shadow               | `{ offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 }` | DD16                                         | `shape-factory.ts`                       |
-| Masthead sizes            | title 19px / 600, subtitle 12px / 500                | DD17                                         | `PageMasthead.tsx`, `svg-render-data.ts` |
-| Export masthead offsets   | title `+19`, subtitle `+16`, rule `+10`              | DD21                                         | `svg-render-data.ts`                     |
+| Page shadow               | `{ offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 }` | D91                                          | `shape-factory.ts`                       |
+| Masthead sizes            | title 19px / 600, subtitle 12px / 500                | D92                                          | `PageMasthead.tsx`, `svg-render-data.ts` |
+| Export masthead offsets   | title `+19`, subtitle `+16`, rule `+10`              | D96                                          | `svg-render-data.ts`                     |
 | `MASTHEAD_SHAPES`         | `page`, `banner`, `callout`                          | Kinds carrying masthead lines                | `useDataShapeSetters.ts`                 |

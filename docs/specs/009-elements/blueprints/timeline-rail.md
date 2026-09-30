@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                      | Role                                                                   |
 | --------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                     | `RAIL_*` constants, `isRailShape`, `isSelfDrawingShape`                |
-| `packages/document/src/shape-factory.ts`                   | `SHAPE_DEFAULT_SIZE['timeline-rail']`, `createShape` rail defaults     |
-| `packages/document/src/element-types.ts`                   | `ShapeElement.railCount`, `ShapeElement.railLabels`                    |
-| `packages/document/src/validate.ts`                        | `SHAPE_KINDS` entry, `railLabels` bound                                |
-| `packages/document/src/svg-render-data.ts`                 | `svgTimelineRail`: the headless render                                 |
-| `packages/document/src/colors.ts`                          | `SELF_PAINTING_SHAPES` entry (no Border controls)                      |
+| `packages/document/src/data-shapes.ts`                    | `RAIL_*` constants, `isRailShape`, `isSelfDrawingShape`                |
+| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE['timeline-rail']`, `createShape` rail defaults     |
+| `packages/document/src/element-types.ts`                  | `ShapeElement.railCount`, `ShapeElement.railLabels`                    |
+| `packages/document/src/validate.ts`                       | `SHAPE_KINDS` entry, `railLabels` bound                                |
+| `packages/document/src/svg-render-data.ts`                | `svgTimelineRail`: the headless render                                 |
+| `packages/document/src/colors.ts`                         | `SELF_PAINTING_SHAPES` entry (no Border controls)                      |
 | `apps/live/components/canvas/RailView.tsx`                | Canvas render + `RailLabel` inline editor                              |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes a rail to `RailView`, computes `editable`                       |
 | `apps/live/components/canvas/element-variant.ts`          | Borderless wrapper via `SELF_PAINTING_SHAPES`                          |
@@ -47,25 +47,25 @@ The rail holds no state of its own beyond `railCount` and `railLabels`. Every wr
 `commit`, so one undo step.
 
 1. **Create.** `createShape('timeline-rail', x, y)` returns `railCount: RAIL_DEFAULT_POINTS` (3),
-   `strokeColor: '#64748b'`, size `RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX` × 96 (`DA13`).
+   `strokeColor: '#64748b'`, size `RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX` × 96 (`D16`).
 2. **Set count** (`setRailCountSelected(count)`): for each selected rail,
    `n = clamp(round(count), RAIL_MIN_POINTS, RAIL_MAX_POINTS)`; write `railCount: n` and
    `width: n * RAIL_POINT_STEP_PX`. Non-rail selections are untouched. Tracks
    `Element·Changed·TimelineRail`.
 3. **Add point** (`addRailPointSelected()`): for each selected rail,
    `n = min(RAIL_MAX_POINTS, (railCount ?? RAIL_DEFAULT_POINTS) + 1)`; same width rule. The ring
-   offers it only while `railCount < RAIL_MAX_POINTS` and fires no event on a no-op [G3].
+   offers it only while `railCount < RAIL_MAX_POINTS` and fires no event on a no-op [GA3].
 4. **Set label** (`setRailLabelSelected(elementId, index, text)`): pads `railLabels` with `''` up to
    `index`, then writes `text` at `index`. Addressed by id, not by selection.
 5. **Remove points.** Only through the stepper, down to `RAIL_MIN_POINTS`. Labels past the new
-   count stay stored and reappear when the count grows again [Q7].
+   count stay stored and reappear when the count grows again [QA7].
 6. **Resize.** Free; points spread across the new width. The next count change resets width to
    `n * RAIL_POINT_STEP_PX`.
 
 Label editor states (`RailLabel`): **inert** (not editable: a `div`, `pointer-events-none`),
 **idle** (editable `textarea`), **drafting** (local `draft` differs from `value`). Transitions:
 focus → drafting; blur → commit if `draft !== value`; Enter (no Shift) → blur; an external `value`
-change re-seeds `draft`. Labels are single-line: a newline is stripped on commit [Q8].
+change re-seeds `draft`. Labels are single-line: a newline is stripped on commit [QA8].
 
 Guards:
 
@@ -106,15 +106,15 @@ onSetRailLabel?: (elementId: string, index: number, text: string) => void;
 
 Validation (`isValidElement`): `railLabels`, when present, is an array of at most `MAX_DATA_ARRAY`
 (5 000) entries. `railCount` is validated as a finite number in `[RAIL_MIN_POINTS,
-RAIL_MAX_POINTS]` [G6]; a failing element fails the tab (`invalid tab`, 400).
+RAIL_MAX_POINTS]` [GA6]; a failing element fails the tab (`invalid tab`, 400).
 
 ## Data and persistence
 
-| Field        | Class     | Notes                                                   |
-| ------------ | --------- | ------------------------------------------------------- |
-| `railCount`  | persisted | Absent reads as 3                                       |
-| `railLabels` | persisted | Sparse by position; may be longer than `railCount` [Q7] |
-| `draft`      | ephemeral | Local to `RailLabel`, never stored                      |
+| Field        | Class     | Notes                                                    |
+| ------------ | --------- | -------------------------------------------------------- |
+| `railCount`  | persisted | Absent reads as 3                                        |
+| `railLabels` | persisted | Sparse by position; may be longer than `railCount` [QA7] |
+| `draft`      | ephemeral | Local to `RailLabel`, never stored                       |
 
 No migration: both fields are optional and every reader defaults them.
 
@@ -123,10 +123,10 @@ No migration: both fields are optional and every reader defaults them.
 | #   | Case                                     | Handling                                                           |
 | --- | ---------------------------------------- | ------------------------------------------------------------------ |
 | E1  | `railCount` absent                       | `RAIL_DEFAULT_POINTS`                                              |
-| E2  | Stored `railCount` out of range          | Rejected on write [G6]; renderers draw `max(1, round(n))` (`DA10`) |
+| E2  | Stored `railCount` out of range          | Rejected on write [GA6]; renderers draw `max(1, round(n))` (`D13`) |
 | E3  | `railLabels` shorter than the count      | Missing labels render blank                                        |
-| E4  | `railLabels` longer than the count       | Extra entries kept, not drawn [Q7]                                 |
-| E5  | "Add point" at `RAIL_MAX_POINTS`         | Not offered [G3]                                                   |
+| E4  | `railLabels` longer than the count       | Extra entries kept, not drawn [QA7]                                |
+| E5  | "Add point" at `RAIL_MAX_POINTS`         | Not offered [GA3]                                                  |
 | E6  | Stepper at a bound                       | The button is `disabled`                                           |
 | E7  | Label edited while another peer edits it | Last commit wins; the local draft re-seeds from the new value      |
 | E8  | Locked or read-only rail                 | Labels inert, setters not wired (`onSetRailLabel` undefined)       |
@@ -134,7 +134,7 @@ No migration: both fields are optional and every reader defaults them.
 ## Security and trust
 
 Writes arrive through `isValidTab` at the api. Label text is plain text: the canvas renders it as
-React text and the export escapes it with `xmlEscape`. The bounded `railCount` [G6] caps render cost.
+React text and the export escapes it with `xmlEscape`. The bounded `railCount` [GA6] caps render cost.
 
 ## Performance and limits
 
@@ -143,11 +143,11 @@ At most 12 points, each one `<g>` plus one `textarea` or `div`. No measurement, 
 ## Presentation and UX
 
 - Palette: tile `tools:timeline` in the Build tab, caption "Timeline", description naming the
-  ring's "Add point" [G4].
-- Geometry (element-relative, `DA11`): inset `padX = min(44, 0.12 w)`; points evenly spaced from
+  ring's "Add point" [GA4].
+- Geometry (element-relative, `D14`): inset `padX = min(44, 0.12 w)`; points evenly spaced from
   `padX` to `w - padX`; label slot top `0.06 h`, height `0.36 h`, width `0.92` of the spacing;
   dot at `0.58 h`, radius `clamp(0.1 h, 5, 9)`; line at `0.82 h`; font `clamp(0.16 h, 10, 16)`.
-- Colours (`DA12`): line `#94a3b8`, stem `#cbd5e1`, dots the accent, labels `textColor`.
+- Colours (`D15`): line `#94a3b8`, stem `#cbd5e1`, dots the accent, labels `textColor`.
 - Wrapper: no border, no fill (`SELF_PAINTING_SHAPES`); selection ring only. No element label.
 - Menu: section "Timeline" with the "Points" stepper (`−` / value / `+`).
 - Empty label: placeholder "Label" while editable, nothing while inert.
@@ -156,7 +156,7 @@ At most 12 points, each one `<g>` plus one `textarea` or `div`. No measurement, 
 
 - The stepper buttons carry `aria-label` "Fewer points" / "More points" and `disabled` at bounds.
 - The drawing is `aria-hidden`; inert labels are `aria-hidden`. Editable labels are `textarea`s
-  with the placeholder "Label" and no accessible name [G15].
+  with the placeholder "Label" and no accessible name [GA15].
 - No motion.
 
 ## Web experience
@@ -166,22 +166,22 @@ label commit is one `commit` (INP).
 
 ## Observability
 
-None in code today. The decision points (count clamp, no-op add) emit nothing [G1].
+None in code today. The decision points (count clamp, no-op add) emit nothing [GA1].
 
 ## Testing
 
-| Rule                                   | Test                                                      | File                                              |
-| -------------------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
-| Count sets width to `n * step` (I1)    | sets the point count and resizes to keep spacing constant | `apps/live/hooks/canvas/useElementStyle.test.ts`  |
-| Count clamped (I2)                     | clamps the count to the allowed range                     | `apps/live/hooks/canvas/useElementStyle.test.ts`  |
-| Add point widens by one step           | appends a point via addRailPointSelected                  | `apps/live/hooks/canvas/useElementStyle.test.ts`  |
-| Only rails change                      | leaves non-rail shapes untouched                          | `apps/live/hooks/canvas/useElementStyle.test.ts`  |
+| Rule                                   | Test                                                      | File                                               |
+| -------------------------------------- | --------------------------------------------------------- | -------------------------------------------------- |
+| Count sets width to `n * step` (I1)    | sets the point count and resizes to keep spacing constant | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
+| Count clamped (I2)                     | clamps the count to the allowed range                     | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
+| Add point widens by one step           | appends a point via addRailPointSelected                  | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
+| Only rails change                      | leaves non-rail shapes untouched                          | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
 | `isRailShape` names exactly the rail   | kind predicate table (`'rail'`)                           | `packages/document/src/data-shapes.test.ts`        |
 | Export draws a body, rasterised in PNG | every kind with a body draws one; image exports agree     | `packages/document/src/export-consistency.test.ts` |
-| Label write pads and sets (I3)         | none [G14]                                                |                                                   |
-| Label commits on blur / Enter, once    | none [G14]                                                |                                                   |
-| "Add point" hidden at the cap          | none [G3]                                                 |                                                   |
-| `Added·TimelineRail` token             | none [Q6]                                                 |                                                   |
+| Label write pads and sets (I3)         | none [GA14]                                               |                                                    |
+| Label commits on blur / Enter, once    | none [GA14]                                               |                                                    |
+| "Add point" hidden at the cap          | none [GA3]                                                |                                                    |
+| `Added·TimelineRail` token             | none [QA6]                                                |                                                    |
 
 ## Constants and configuration
 
@@ -198,4 +198,4 @@ None in code today. The decision points (count clamp, no-op add) emit nothing [G
 | `MAX_DATA_ARRAY`      | 5 000       | Abuse bound for `railLabels`, `validate.ts`              |
 
 Telemetry: `Element·Added·TimelineRail` on create and copy, `Element·Changed·TimelineRail` on every
-count or label write [Q6].
+count or label write [QA6].

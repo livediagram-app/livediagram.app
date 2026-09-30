@@ -9,9 +9,9 @@ Scope, by file:
 
 | File                                                     | Role                                                          |
 | -------------------------------------------------------- | ------------------------------------------------------------- |
-| `packages/document/src/shape-factory.ts`                  | 320x220, label "Hidden", transparent box, `textAlignY: 'top'` |
-| `packages/document/src/validate.ts`                       | `revealed` must be a boolean                                  |
-| `packages/document/src/svg-render-faces.ts`               | Export cover, omitted when `revealed === true`                |
+| `packages/document/src/shape-factory.ts`                 | 320x220, label "Hidden", transparent box, `textAlignY: 'top'` |
+| `packages/document/src/validate.ts`                      | `revealed` must be a boolean                                  |
+| `packages/document/src/svg-render-faces.ts`              | Export cover, omitted when `revealed === true`                |
 | `apps/live/components/canvas/RevealFace.tsx`             | Cover, double press, Hide pill                                |
 | `apps/live/hooks/ui/usePressWithoutDrag.ts`              | `requireDouble` and `isDoublePress`                           |
 | `apps/live/hooks/canvas/useBehaviourElements.ts`         | `revealedIds`, `toggleRevealForMe`, the facilitator gate      |
@@ -44,12 +44,12 @@ States per viewer: **covered**, **revealed for me**, **revealed for all**.
 | ---------------- | ------------------------- | ----------- | -------------------------- |
 | covered          | double press on the cover | not blocked | revealed for me            |
 | revealed for me  | single press on Hide      | not blocked | covered                    |
-| any              | menu **Reveal for all**   | [Q15]       | revealed for all           |
-| revealed for all | menu **Hide for all**     | [Q15]       | covered or revealed for me |
+| any              | menu **Reveal for all**   | [QF15]      | revealed for all           |
+| revealed for all | menu **Hide for all**     | [QF15]      | covered or revealed for me |
 | revealed for me  | reload                    |             | covered                    |
 
 1. **Double press.** `onClick` swallows a dragged click (`isDragTravel`), then pairs presses with
-   `isDoublePress(last, now)`: `now - last <= DOUBLE_PRESS_MS && now >= last` (DF11). The first
+   `isDoublePress(last, now)`: `now - last <= DOUBLE_PRESS_MS && now >= last` (D118). The first
    press arms, the second fires and disarms. `onDoubleClick` stops propagation, so the canvas never
    opens the label editor.
 2. **Local lift.** `toggleRevealForMe(id)` toggles membership of `revealedIds` (React state in
@@ -57,7 +57,7 @@ States per viewer: **covered**, **revealed for me**, **revealed for all**.
 3. **Room lift.** `setRevealedSelected(revealed)` patches `revealed` on every selected or targeted
    `reveal` on the active tab through `commitTabs`: synced, persisted, undoable.
 4. **Blocked.** While someone else facilitates, `onToggleReveal` is `undefined`: presses do nothing
-   [Q15]. The facilitator can still lift privately (DF14).
+   [QF15]. The facilitator can still lift privately (D121).
 5. **Precedence.** Revealed for all wins over any personal state; a personal lift survives a
    room-wide Hide, because `revealedIds` is untouched by it.
 
@@ -93,23 +93,23 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 - **Persisted:** `revealed`, `label`, colours.
 - **Session only:** `revealedIds`; lost on reload by design.
 - **Undo:** Reveal / Hide for all is an ordinary commit; a local lift is not undoable.
-- **Export:** covered unless `revealed === true` (DF13); the content beneath is in the export
+- **Export:** covered unless `revealed === true` (D120); the content beneath is in the export
   either way.
 
 ## Errors and edge cases
 
-| #   | Case                                          | Handling                                           |
-| --- | --------------------------------------------- | -------------------------------------------------- |
-| E1  | Single click                                  | Arms only; nothing uncovers (I3)                   |
-| E2  | Two clicks more than 450 ms apart             | Each arms again                                    |
-| E3  | Drag across the cover                         | Swallowed, disarms nothing                         |
-| E4  | Double tap on touch                           | Same path as a click; no `dblclick` dependency     |
-| E5  | Content added above the zone later            | Paints over the cover (document order) [Q12]       |
-| E6  | Blocked viewer presses the cover              | Nothing happens; copy still says "to reveal" [Q15] |
-| E7  | Lifted locally, then a facilitator takes over | Stays lifted; the Hide pill is dead [Q15]          |
-| E8  | Blocked viewer uses the menu                  | **Reveal for all** still writes [Q15]              |
-| E9  | Revealed for all, then Hide for all           | Viewers with a personal lift keep it               |
-| E10 | Element deleted while lifted locally          | Stale id in `revealedIds`, harmless                |
+| #   | Case                                          | Handling                                            |
+| --- | --------------------------------------------- | --------------------------------------------------- |
+| E1  | Single click                                  | Arms only; nothing uncovers (I3)                    |
+| E2  | Two clicks more than 450 ms apart             | Each arms again                                     |
+| E3  | Drag across the cover                         | Swallowed, disarms nothing                          |
+| E4  | Double tap on touch                           | Same path as a click; no `dblclick` dependency      |
+| E5  | Content added above the zone later            | Paints over the cover (document order) [QF12]       |
+| E6  | Blocked viewer presses the cover              | Nothing happens; copy still says "to reveal" [QF15] |
+| E7  | Lifted locally, then a facilitator takes over | Stays lifted; the Hide pill is dead [QF15]          |
+| E8  | Blocked viewer uses the menu                  | **Reveal for all** still writes [QF15]              |
+| E9  | Revealed for all, then Hide for all           | Viewers with a personal lift keep it                |
+| E10 | Element deleted while lifted locally          | Stale id in `revealedIds`, harmless                 |
 
 ## Security and trust
 
@@ -122,13 +122,13 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 
 - **Cover:** fully opaque `bg-slate-100` (dark `slate-800`), dashed 2 px border in the stroke
   colour, hatching (`Hatching`), eye glyph, label (blank reads "Hidden"), then
-  "Double-click to reveal" or "Double-tap to reveal" (`useCoarsePointer`, DF12).
-- **No tooltip on the cover** [Q13].
+  "Double-click to reveal" or "Double-tap to reveal" (`useCoarsePointer`, D119).
+- **No tooltip on the cover** [QF13].
 - **Revealed for me:** only the Hide pill at the top right takes pointers; tooltip
   "Hide it again" / "Only affects your screen".
 - **Revealed for all:** the face renders nothing; the element stays selectable by its outline.
 - **Menu:** accordion **Reveal**, hint "Anyone can click the cover to peek for themselves. This
-  takes it off for everyone." [Q14], tiles **Reveal for all** / **Hide for all** [Q14].
+  takes it off for everyone." [QF14], tiles **Reveal for all** / **Hide for all** [QF14].
 - **Telemetry:** placing emits `Element·Added·Reveal`; both menu tiles emit
   `Element·Changed·Reveal`; a local lift emits nothing.
 
@@ -157,15 +157,15 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                          | Test                                       | File                                              |
-| --------------------------------------------- | ------------------------------------------ | ------------------------------------------------- |
+| Rule                                          | Test                                       | File                                               |
+| --------------------------------------------- | ------------------------------------------ | -------------------------------------------------- |
 | Not votable                                   | "rejects the interactive Behaviour shapes" | `packages/document/src/session.test.ts`            |
 | Export draws a cover                          | "draws more than a box and a label"        | `packages/document/src/export-consistency.test.ts` |
-| `revealed` must be boolean                    | none                                       | (gap)                                             |
-| Double press within 450 ms, single never (I3) | none                                       | (gap, `isDoublePress` is pure)                    |
-| Local lift never writes (I1)                  | none                                       | (gap)                                             |
-| Blocked viewer cannot lift                    | none                                       | (gap) [Q15]                                       |
-| Revealed for all hides the cover everywhere   | none                                       | (gap)                                             |
+| `revealed` must be boolean                    | none                                       | (gap)                                              |
+| Double press within 450 ms, single never (I3) | none                                       | (gap, `isDoublePress` is pure)                     |
+| Local lift never writes (I1)                  | none                                       | (gap)                                              |
+| Blocked viewer cannot lift                    | none                                       | (gap) [QF15]                                       |
+| Revealed for all hides the cover everywhere   | none                                       | (gap)                                              |
 
 ## Constants and configuration
 
@@ -174,5 +174,5 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | `SHAPE_DEFAULT_SIZE.reveal` | `{ width: 320, height: 220 }` | A column of notes, not one sticky             |
 | Default label               | `'Hidden'`                    | Names the cover until the author does         |
 | Default stroke / text       | `'#94a3b8'` / `'#0f172a'`     | Slate border, dark label                      |
-| `DOUBLE_PRESS_MS`           | `450`                         | Shared double-press window; 300 to 500 (DF11) |
+| `DOUBLE_PRESS_MS`           | `450`                         | Shared double-press window; 300 to 500 (D118) |
 | `PRESS_DRAG_SLOP_PX`        | `4`                           | Shared press tolerance, screen px             |

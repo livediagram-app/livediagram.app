@@ -8,11 +8,11 @@ Scope, by file:
 
 | File                                                 | Role                                                                    |
 | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`              | `ImageElement`                                                          |
-| `packages/document/src/factories.ts`                  | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
-| `packages/document/src/validate.ts`                   | Structural check of an image element in a tab body                      |
-| `packages/document/src/svg-render-describe.ts`        | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
-| `packages/document/src/svg-render.ts`                 | `svgImageShape`: clipped `<image>` over a white backing rect            |
+| `packages/document/src/element-types.ts`             | `ImageElement`                                                          |
+| `packages/document/src/factories.ts`                 | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
+| `packages/document/src/validate.ts`                  | Structural check of an image element in a tab body                      |
+| `packages/document/src/svg-render-describe.ts`       | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
+| `packages/document/src/svg-render.ts`                | `svgImageShape`: clipped `<image>` over a white backing rect            |
 | `packages/api-schema/src/image-limits.ts`            | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy        |
 | `packages/api-schema/src/image-sniff.ts`             | `sniffImageType`: magic-number table                                    |
 | `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
@@ -27,7 +27,7 @@ Scope, by file:
 | `apps/api/src/thumbnail.ts`                          | `loadEmbeddedImages` for the preview and live image                     |
 | `apps/api/wrangler.toml`                             | `IMAGES` bucket (production and `[env.staging]`), cron, caps comment    |
 | `apps/live/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
-| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`         |
+| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
 | `apps/live/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
 | `apps/live/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
 | `apps/live/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
@@ -36,7 +36,7 @@ Scope, by file:
 | `apps/live/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
 | `apps/live/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
 | `apps/live/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
-| `apps/live/app/document/[id]/useElementCreation.ts`   | `addImage`: arms the draw gesture                                       |
+| `apps/live/app/document/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
 | `apps/live/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, opens the picker                         |
 
 Out of this blueprint, cited where they touch images: Offline Mode data-URI embedding
@@ -73,26 +73,27 @@ Banned synonyms: "asset", "upload" as a noun for the stored row (say image), "ph
 
 States of one element: **placeholder** (`imageId === null`) → **attached** (`imageId` set) →
 **placeholder** again on detach. Rendering adds the transient states of `useImageBlobUrl`:
-`idle` (no id), `loading`, `ready`, `broken`.
+`idle` (no id), `loading`, `ready`, `broken`. The blob URL is revoked on unmount and on an `imageId`
+change (D46).
 
 1. **Create.** `addImage` arms `beginDraw({ type: 'image' })` unless `editsBlocked` or
-   `imagesBlocked` (embed mode, DB10). A tap drops `createImage` (200×150, DB17); a drag sizes
+   `imagesBlocked` (embed mode, D42). A tap drops `createImage` (200×150, D49); a drag sizes
    it. `commitDraw` tracks `track('Element', 'Added', 'Image')` and calls
    `openImagePickerFor(id)`. Shortcut `9` does the same while `onAddImage` is supplied.
 2. **Attach.** `applyImageToElement(id, image)` commits `imageId`, `naturalWidth`,
-   `naturalHeight` and `alt: el.alt ?? image.originalName` (DB9), then closes the picker.
+   `naturalHeight` and `alt: el.alt ?? image.originalName` (D41), then closes the picker.
 3. **Detach.** "Remove from element" calls `removeImageFromElement(id)`: `imageId: null`,
    `naturalWidth` / `naturalHeight` dropped, width and height kept. The gallery row is untouched.
 4. **Place from gallery or paste.** `addImageFromGallery` drops a new element at the viewport
-   centre, 240 px on its longer side (DB8), pre-attached, selected, tracked `Added / Image`.
+   centre, 240 px on its longer side (D40), pre-attached, selected, tracked `Added / Image`.
    `pasteImageFile` uploads first (renaming a nameless or `image.png` paste to
-   `pasted-<ms>.<ext>`, DB11), then places.
+   `pasted-<ms>.<ext>`, D43), then places.
 5. **Resize.** Constrained when `aspectLocked === true` or Shift is held; the ratio held is the
-   box's ratio at drag start (`resolveBoxedResize` in `boxed-drag-resolve.ts`). `[Q2]`
+   box's ratio at drag start (`resolveBoxedResize` in `boxed-drag-resolve.ts`). `[QB2]`
 6. **Reset to natural size.** A context-menu action sets width and height to `naturalWidth` /
-   `naturalHeight` about the element's centre, disabled when either is absent. `[Q3]`
+   `naturalHeight` about the element's centre, disabled when either is absent. `[QB3]`
 7. **Activity.** Setting `imageId` from null logs `Set image on <name>`; setting it to null logs
-   `Cleared image on <name>` (`summarizeEdits` in `change-summaries.ts`). `[Q4]`
+   `Cleared image on <name>` (`summarizeEdits` in `change-summaries.ts`). `[QB4]`
 
 ### Upload (`POST /api/images`)
 
@@ -101,7 +102,7 @@ Guards run in this order; the first failure answers.
 1. `env.IMAGES` absent → 503 `images_unavailable`.
 2. Pre-dispatch in `index.ts`: read-only token → 403; `Content-Length > MAX_IMAGE_BYTES` →
    413 `payload_too_large`; `WRITE_RATE_LIMITER` exhausted → 429 `rate_limited`.
-3. No resolved owner → 400 (`requireOwner`, DB1).
+3. No resolved owner → 400 (`requireOwner`, D33).
 4. `Content-Type` (lower-cased) not in `ACCEPTED_IMAGE_TYPES` → 415 `unsupported_type`.
 5. `Content-Length` missing, non-finite or `<= 0` → 400; `> MAX_IMAGE_BYTES` → 413
    `file_too_large` (unreachable behind step 2 while both caps are equal).
@@ -109,15 +110,15 @@ Guards run in this order; the first failure answers.
    `{ image, deduped: true }`, body unread.
 7. Soft caps, only when at least one is set: one `imageTotalsByOwner` query; `count >= maxImages`
    → 403 `gallery_full` `reason: 'count'`; `bytes + Content-Length > maxBytes` → 403
-   `gallery_full` `reason: 'bytes'` (DB3).
-8. `X-Image-Width` / `X-Image-Height` not finite and positive → 400 (DB6: trusted, not decoded).
+   `gallery_full` `reason: 'bytes'` (D35).
+8. `X-Image-Width` / `X-Image-Height` not finite and positive → 400 (D38: trusted, not decoded).
 9. Body read; `byteLength > MAX_IMAGE_BYTES` → 413 `file_too_large`.
 10. `sniffImageType(first 16 bytes)` null or not equal to the declared type → 415
     `unsupported_type`.
-11. `sha256Hex(body)`; a row at `(owner, sha)` → 200 `{ image, deduped: true }` (DB5).
-12. JPEG only: `stripJpegMetadata`; a throw → 415 `malformed_jpeg`, nothing stored (DB4).
+11. `sha256Hex(body)`; a row at `(owner, sha)` → 200 `{ image, deduped: true }` (D37).
+12. JPEG only: `stripJpegMetadata`; a throw → 415 `malformed_jpeg`, nothing stored (D36).
 13. `id = crypto.randomUUID()`; `IMAGES.put(id, stored, { httpMetadata: { contentType },
-customMetadata: { ownerId, originalName } })`; then `insertImage`. `[Q10]`
+customMetadata: { ownerId, originalName } })`; then `insertImage`. `[QB10]`
 14. `waitUntil(recordImageUploaded(env, owner))` ([Timeline](../../013-workspace/timeline.md));
     200 `{ image, deduped: false }`.
 
@@ -135,14 +136,14 @@ Invariants:
 2. Otherwise, with `?d=<documentId>`: the document exists, `gateGrant` returns a grant, and
    `documentReferencesImage(d, id, grant.tabScope)` is true → allowed. A tab-scoped visitor
    counts only their tab ([Tab-scoped share links](../../013-workspace/tab-scoped-share-links.md)).
-   `[Q8]`
+   `[QB8]`
 3. Not allowed, or no R2 object → 404. Allowed → the bytes, `Content-Type` from the object,
    `Cache-Control: private, max-age=86400`.
 
 ### Delete, list, usage
 
 - `DELETE /api/images/:id`: owner only; no row → 200 `{ ok: true }`; another owner → 403
-  (DB2); else `IMAGES.delete(id)` then `deleteImage`, 200 `{ ok: true }`.
+  (D34); else `IMAGES.delete(id)` then `deleteImage`, 200 `{ ok: true }`.
 - `GET /api/images`: owner only; `listImagesByOwner`, newest first.
 - `GET /api/images/usage`: owner only; `imageUsageByOwner` joins the owner's `documents →
 document_tabs → tabs`, parses each body, attributes each image once per document. An
@@ -156,10 +157,10 @@ UNUSED_IMAGE_RETENTION_MS, deleteOldUnusedImages)`.
 1. `env.IMAGES` absent → return 0.
 2. Candidates: `SELECT id FROM images WHERE created_at < cutoff`. None → 0.
 3. Scan: pages of `SCAN_PAGE` tab rows by `rowid`, prefiltered by `data LIKE '%"imageId"%'`
-   (DB7); each page narrows the candidates through `unusedImageIds`; stop when none remain or a
+   (D39); each page narrows the candidates through `unusedImageIds`; stop when none remain or a
    page is short.
 4. `unusedImageIds`: a parsed body removes every candidate its image elements reference. An
-   unparseable body keeps every candidate whose id occurs in its raw text. `[Q6]`
+   unparseable body keeps every candidate whose id occurs in its raw text. `[QB6]`
 5. Delete in chunks of `IMAGE_DELETE_CHUNK`: `IMAGES.delete(chunk)` first, then one `DB.batch`
    of row deletes. Return the count.
 
@@ -167,14 +168,14 @@ UNUSED_IMAGE_RETENTION_MS, deleteOldUnusedImages)`.
 
 - Client: `loadTabImages` takes the distinct ids of the tab, uses a `data:` id as is, otherwise
   `apiFetchImageDataUrl` with `documentId` and `shareCode`, decodes each to an
-  `HTMLImageElement`, concurrently, with no budget (DB13). A failure skips that id.
+  `HTMLImageElement`, concurrently, with no budget (D45). A failure skips that id.
 - `describeBoxedExport`: `radius = BORDER_RADIUS_PX[borderRadius]` or 4, `objectFit ??
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
   absent. SVG: `svgImageShape`; PNG / PDF: `drawImageElement` in `export-tab-canvas-draw.ts`.
 - Server: `loadEmbeddedImages` reads each id from `IMAGES` through `embedTabImages` with
   `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image that
-  does not fit is skipped and later smaller ones may still fit (DB12). Only ids with a row in
-  `images` are read. `[Q7]`
+  does not fit is skipped and later smaller ones may still fit (D44). Only ids with a row in
+  `images` are read. `[QB7]`
 
 ### Availability
 
@@ -182,7 +183,7 @@ UNUSED_IMAGE_RETENTION_MS, deleteOldUnusedImages)`.
   the snapshot embed are no-ops.
 - The editor learns availability from `GET /api/capabilities` (`imagesEnabled`) and withholds
   `onAddImage`, which hides every `needsImage` tile (`tools:image`, avatar, hero) and the `9`
-  shortcut. `[Q1]`
+  shortcut. `[QB1]`
 
 ## Interfaces and contracts
 
@@ -241,7 +242,7 @@ export function addImageFileForDocument(
 ): Promise<UploadResult>;
 ```
 
-Routes (error bodies are `{ error: <token>, ... }`, `[Q10]`):
+Routes (error bodies are `{ error: <token>, ... }`, `[QB10]`):
 
 | Route                    | Success                                   | Rejections                                                                                                                                                                                 |
 | ------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -255,7 +256,7 @@ Upload request headers: `Content-Type`, `Content-Length`, `X-Image-Sha256` (opti
 hex), `X-Image-Width`, `X-Image-Height`, `X-Image-Original-Name` (optional).
 
 Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `file_too_large`,
-`images_unavailable` map to fixed copy; any other token shows the raw `ApiError` message (G6).
+`images_unavailable` map to fixed copy; any other token shows the raw `ApiError` message (GB6).
 `apiListImages` and `apiImageUsage` read a 503 as `null` and `{}`.
 
 ## Data and persistence
@@ -280,41 +281,41 @@ Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `f
 
 ## Errors and edge cases
 
-| #   | Case                                                | Handling                                                                                            |
-| --- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| E1  | SVG, HTML or other bytes declared as PNG            | Sniff mismatch, 415 `unsupported_type`                                                              |
-| E2  | Truncated or malformed JPEG                         | 415 `malformed_jpeg`; nothing written                                                               |
-| E3  | Lying `Content-Length`                              | Body re-checked after read, 413                                                                     |
-| E4  | Forged `X-Image-Sha256`                             | Early dedupe is owner-scoped; body hash re-verified before insert                                   |
-| E5  | Same bytes uploaded concurrently                    | Unique index rejects the second insert; its R2 object is deleted and the existing row returned (G4) |
-| E6  | Upload without a valid sha header at a full gallery | Cap check precedes body dedupe: 403 even when the bytes are already stored                          |
-| E7  | Cap var `"100abc"`                                  | `parseInt` reads 100; blank, `0`, negative or non-numeric read as no cap                            |
-| E8  | Delete of a referenced image                        | 200; references render **broken**                                                                   |
-| E9  | Referenced id with no R2 object                     | Read 404; canvas **broken**; export and snapshot keep the placeholder                               |
-| E10 | Snapshot images over the budget                     | Placeholder for each that does not fit                                                              |
-| E11 | Offline `data:` id sent to the api                  | R2 miss, placeholder in snapshots; canvas and client export use it directly                         |
-| E12 | Unparseable tab body in the sweep                   | Keeps every candidate named in its raw text `[Q6]`                                                  |
-| E13 | Sweep throws                                        | `image sweep failed` logged; the next day retries                                                   |
-| E14 | R2 delete succeeds, D1 batch fails                  | Row survives; next sweep re-deletes (R2 delete is idempotent)                                       |
-| E15 | Picker opened while the tab is locked / view role   | `openImagePickerFor` no-ops; placeholder shows "No image"                                           |
-| E16 | Image with zero natural height                      | `readImageDimensions` fails, "Could not read image dimensions."                                     |
+| #   | Case                                                | Handling                                                                                             |
+| --- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| E1  | SVG, HTML or other bytes declared as PNG            | Sniff mismatch, 415 `unsupported_type`                                                               |
+| E2  | Truncated or malformed JPEG                         | 415 `malformed_jpeg`; nothing written                                                                |
+| E3  | Lying `Content-Length`                              | Body re-checked after read, 413                                                                      |
+| E4  | Forged `X-Image-Sha256`                             | Early dedupe is owner-scoped; body hash re-verified before insert                                    |
+| E5  | Same bytes uploaded concurrently                    | Unique index rejects the second insert; its R2 object is deleted and the existing row returned (GB4) |
+| E6  | Upload without a valid sha header at a full gallery | Cap check precedes body dedupe: 403 even when the bytes are already stored                           |
+| E7  | Cap var `"100abc"`                                  | `parseInt` reads 100; blank, `0`, negative or non-numeric read as no cap                             |
+| E8  | Delete of a referenced image                        | 200; references render **broken**                                                                    |
+| E9  | Referenced id with no R2 object                     | Read 404; canvas **broken**; export and snapshot keep the placeholder                                |
+| E10 | Snapshot images over the budget                     | Placeholder for each that does not fit                                                               |
+| E11 | Offline `data:` id sent to the api                  | R2 miss, placeholder in snapshots; canvas and client export use it directly                          |
+| E12 | Unparseable tab body in the sweep                   | Keeps every candidate named in its raw text `[QB6]`                                                  |
+| E13 | Sweep throws                                        | `image sweep failed` logged; the next day retries                                                    |
+| E14 | R2 delete succeeds, D1 batch fails                  | Row survives; next sweep re-deletes (R2 delete is idempotent)                                        |
+| E15 | Picker opened while the tab is locked / view role   | `openImagePickerFor` no-ops; placeholder shows "No image"                                            |
+| E16 | Image with zero natural height                      | `readImageDimensions` fails, "Could not read image dimensions."                                      |
 
 ## Security and trust
 
 - **Trust boundary.** Every upload header is untrusted. Type is sniffed, size re-checked, hash
-  recomputed; width and height are trusted after a positivity check (DB6) and affect only layout.
+  recomputed; width and height are trusted after a positivity check (D38) and affect only layout.
 - **Stored XSS.** SVG is never accepted (`ACCEPTED_IMAGE_TYPES`); served bytes carry their sniffed
   type. An `imageId` is written into export SVG as `href` and must be XML-escaped; `validate.ts`
-  admits only a uuid or a `data:image/(png|jpeg|gif|webp);base64,` URI (G1).
+  admits only a uuid or a `data:image/(png|jpeg|gif|webp);base64,` URI (GB1).
 - **Read authorisation.** Owner, or a reader of a document that references the id. Knowing an id
-  is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[Q8]`
+  is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[QB8]`
 - **Server-side embed.** Only ids with an `images` row are read from R2, so a tab cannot pull a
-  `thumb/<documentId>` snapshot or any other key into its public live image. `[Q7]`
+  `thumb/<documentId>` snapshot or any other key into its public live image. `[QB7]`
 - **Privacy.** JPEG APPn and COM segments are stripped before storage (I2). PNG, WebP and GIF
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
-  cap; optional per-owner caps `[Q9]`; guest signature enforcement covers the `images` segment
-  (`OWNER_SCOPED_SEGMENTS`); read-only tokens cannot write. Uploads are off in embeds (DB10).
+  cap; optional per-owner caps `[QB9]`; guest signature enforcement covers the `images` segment
+  (`OWNER_SCOPED_SEGMENTS`); read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
 
 ## Performance and limits
@@ -335,29 +336,29 @@ Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `f
 ## Presentation and UX
 
 - **Placeholder**, editor: dashed slate border, image glyph, "Double-click to upload"; hover
-  tints brand. View role: same box, "No image". `[Q10]`
+  tints brand. View role: same box, "No image". `[QB10]`
 - **Loading**: pulsing slate box with the element's radius. **Broken**: rose box, broken glyph,
-  "Image unavailable". **Ready**: bitmap on white, `objectFit` (default `contain`), radius from
-  `borderRadius` (default 4 px).
+  "Image unavailable". **Ready**: bitmap on white in every theme (D47), `objectFit` (default
+  `contain`), radius from `borderRadius` (default 4 px) (D48).
 - **Picker** (`Dialog`, `size="2xl"`, title "Image"): tabs "Upload" and "Gallery (n)".
   - Upload: `ImageDropZone`, prompt "Drop, paste, or click to choose an image"; paste anywhere
     while open.
   - Gallery: 4-column grid; "Loading…"; empty "No images yet. Drop one in the Upload tab and
     it'll show up here."; a tile click uses it; a trash button deletes after a confirm ("Delete
     image").
-  - A dedupe answer flashes "Already in your gallery" before closing. `[Q5]`
+  - A dedupe answer flashes "Already in your gallery" before closing. `[QB5]`
   - Footer, when the element has an image: "Detaches the image from this element. The gallery
     copy is kept." and "Remove from element".
-  - 503: "Image uploads are not enabled on this deployment." `[Q10]`
+  - 503: "Image uploads are not enabled on this deployment." `[QB10]`
 - Upload errors render inline under the drop zone with the mapped copy.
 
 ## Accessibility
 
-- `<img alt={element.alt ?? ''}>`; `alt` defaults to the file name on attach (DB9).
+- `<img alt={element.alt ?? ''}>`; `alt` defaults to the file name on attach (D41).
 - Picker is a labelled `Dialog` (`ariaLabel="Image picker"`); gallery tiles are buttons labelled
   "Use <name>", delete buttons "Delete <name>".
 - The Upload / Gallery switch is a `role="tablist"` with `aria-selected` tabs, and the delete
-  button is visible on focus as well as hover (G7).
+  button is visible on focus as well as hover (GB7).
 - Glyphs are `aria-hidden`. The loading pulse follows the global reduced-motion rule.
 
 ## Web experience
@@ -370,16 +371,16 @@ Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `f
 
 ## Observability
 
-| #   | Where                        | Level           | Fingerprint                                                                        |
-| --- | ---------------------------- | --------------- | ---------------------------------------------------------------------------------- |
-| O1  | `scheduleSweep`, success     | `console.log`   | `image sweep: deleted <n> images older than <cutoff>`                              |
-| O2  | `scheduleSweep`, failure     | `console.error` | `image sweep failed` + error                                                       |
-| O3  | Upload rejection (G5)        | `console.warn`  | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
-| O4  | Upload stored / deduped (G5) | `console.info`  | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
-| O5  | Delete (G5)                  | `console.info`  | `[images] deleted id=<id>`                                                         |
-| O6  | Client upload failure (G5)   | `console.warn`  | `[image-upload] failed code=<token>`                                               |
+| #   | Where                         | Level           | Fingerprint                                                                        |
+| --- | ----------------------------- | --------------- | ---------------------------------------------------------------------------------- |
+| O1  | `scheduleSweep`, success      | `console.log`   | `image sweep: deleted <n> images older than <cutoff>`                              |
+| O2  | `scheduleSweep`, failure      | `console.error` | `image sweep failed` + error                                                       |
+| O3  | Upload rejection (GB5)        | `console.warn`  | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
+| O4  | Upload stored / deduped (GB5) | `console.info`  | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
+| O5  | Delete (GB5)                  | `console.info`  | `[images] deleted id=<id>`                                                         |
+| O6  | Client upload failure (GB5)   | `console.warn`  | `[image-upload] failed code=<token>`                                               |
 
-O1 and O2 exist. O3 to O6 do not; Observability stays unchecked until G5 lands.
+O1 and O2 exist. O3 to O6 do not; Observability stays unchecked until GB5 lands.
 
 ## Testing
 
@@ -391,26 +392,26 @@ O1 and O2 exist. O3 to O6 do not; Observability stays unchecked until G5 lands.
 | Read: owner, share + reference, 404 otherwise        | four byte-read tests                           | `apps/api/src/routes/images.test.ts`           |
 | Tab-scoped read                                      | `asks whether the scoped tab…`                 | `apps/api/src/routes/images.test.ts`           |
 | Delete: owner, idempotent, 403                       | three DELETE tests                             | `apps/api/src/routes/images.test.ts`           |
-| Upload guard order, caps, dedupe, strip, 415s        | none (G2)                                      | `apps/api/src/routes/images.test.ts`           |
+| Upload guard order, caps, dedupe, strip, 415s        | none (GB2)                                     | `apps/api/src/routes/images.test.ts`           |
 | Magic-number sniff, SVG rejected                     | `sniffImageType` suite                         | `apps/api/src/image-sniff.test.ts`             |
 | JPEG strip (APPn, COM, SOS verbatim, throws)         | `stripJpegMetadata` suite                      | `apps/api/src/image-strip.test.ts`             |
 | Summary hides `owner_id` / `sha256`                  | `imageRowToSummary` suite                      | `apps/api/src/image-row.test.ts`               |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`      | `packages/api-schema/src/image-limits.test.ts` |
 | Store-wide reference scan                            | `unusedImageIds` suite                         | `apps/api/src/db/images.test.ts`               |
-| Unparseable body keeps named candidates              | exists with the opposite assertion `[Q6]`      | `apps/api/src/db/images.test.ts`               |
-| Sweep order, paging, chunks, no-R2 no-op             | none (G3)                                      | `apps/api/src/db/images.test.ts`               |
-| Snapshot embeds, missing keeps placeholder           | two `getDocumentThumbnailSvg` tests             | `apps/api/src/thumbnail.test.ts`               |
+| Unparseable body keeps named candidates              | exists with the opposite assertion `[QB6]`     | `apps/api/src/db/images.test.ts`               |
+| Sweep order, paging, chunks, no-R2 no-op             | none (GB3)                                     | `apps/api/src/db/images.test.ts`               |
+| Snapshot embeds, missing keeps placeholder           | two `getDocumentThumbnailSvg` tests            | `apps/api/src/thumbnail.test.ts`               |
 | Embed budget in document order                       | `spends a total budget in document order…`     | `packages/api-schema/src/embed-images.test.ts` |
-| Export embeds `<image>`, placeholder without href    | `image elements` suite                         | `packages/document/src/svg-render.test.ts`      |
+| Export embeds `<image>`, placeholder without href    | `image elements` suite                         | `packages/document/src/svg-render.test.ts`     |
 | Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                       | `apps/live/lib/upload-image.test.ts`           |
 | Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites       | `apps/live/lib/api-client.test.ts`             |
-| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`     | `packages/document/src/factories.test.ts`       |
-| No colour controls                                   | `supportsColours covers … not text or image`   | `packages/document/src/geometry.test.ts`        |
+| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`     | `packages/document/src/factories.test.ts`      |
+| No colour controls                                   | `supportsColours covers … not text or image`   | `packages/document/src/geometry.test.ts`       |
 | Offline data-URI rewrite                             | `offline-images` suites                        | `apps/live/lib/offline/offline-images.test.ts` |
-| Palette hides without R2 `[Q1]`                      | none                                           |                                                |
-| Set / Cleared image log `[Q4]`                       | none                                           |                                                |
-| Picker, placeholder states, paste, export in browser | none (G8)                                      |                                                |
-| Escaped `href`, validated `imageId` (G1)             | none                                           |                                                |
+| Palette hides without R2 `[QB1]`                     | none                                           |                                                |
+| Set / Cleared image log `[QB4]`                      | none                                           |                                                |
+| Picker, placeholder states, paste, export in browser | none (GB8)                                     |                                                |
+| Escaped `href`, validated `imageId` (GB1)            | none                                           |                                                |
 
 ## Constants and configuration
 
@@ -420,16 +421,16 @@ O1 and O2 exist. O3 to O6 do not; Observability stays unchecked until G5 lands.
 | `MAX_IMAGE_MB`              | `10`                                     | Derived, for copy                                          |
 | `ACCEPTED_IMAGE_TYPES`      | png, jpeg, webp, gif                     | Spec whitelist; SVG must never join                        |
 | `MAX_BODY_BYTES`            | `8 * 1024 * 1024`                        | Non-image write cap in `limits.ts`                         |
-| `IMAGE_MAX_PER_OWNER`       | unset (hosted intent `100`)              | `[vars]`; positive integer or unset `[Q9]`                 |
-| `IMAGE_MAX_BYTES_PER_OWNER` | unset (hosted intent `104857600`)        | `[vars]`; positive integer or unset `[Q9]`                 |
+| `IMAGE_MAX_PER_OWNER`       | unset (hosted intent `100`)              | `[vars]`; positive integer or unset `[QB9]`                |
+| `IMAGE_MAX_BYTES_PER_OWNER` | unset (hosted intent `104857600`)        | `[vars]`; positive integer or unset `[QB9]`                |
 | `IMAGE_EMBED_BUDGET_BYTES`  | `3 * 1024 * 1024`                        | Spec; 1 to 8 MiB keeps snapshots streamable                |
 | `UNUSED_IMAGE_RETENTION_MS` | `30 * 24 * 60 * 60 * 1000`               | Spec 30-day floor; never below a week                      |
 | `IMAGE_DELETE_CHUNK`        | `1000`                                   | R2 `delete()` key limit; must stay ≤ 1000                  |
-| `SCAN_PAGE`                 | `200`                                    | Sweep page (DB7); bounded by 200 × `MAX_TAB_BYTES` memory  |
+| `SCAN_PAGE`                 | `200`                                    | Sweep page (D39); bounded by 200 × `MAX_TAB_BYTES` memory  |
 | Read `Cache-Control`        | `private, max-age=86400`                 | Spec; `private` is load-bearing                            |
 | Sniff window                | first 16 bytes, minimum 12               | Longest signature (WebP) needs 12                          |
-| Gallery placement size      | `240` px on the longer side              | DB8; literal `max` in `addImageFromGallery`                |
-| `createImage` size          | 200 × 150                                | DB17                                                       |
+| Gallery placement size      | `240` px on the longer side              | D40; literal `max` in `addImageFromGallery`                |
+| `createImage` size          | 200 × 150                                | D49                                                        |
 | `WRITE_RATE_LIMITER`        | 300 per 60 s                             | `wrangler.toml`, namespace `1001`                          |
 | Cron                        | `0 3 * * *`                              | Shared daily trigger, production and staging               |
 | Buckets                     | `livediagram-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |

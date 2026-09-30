@@ -8,8 +8,8 @@ Scope, by file:
 
 | File                                                         | Role                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `packages/document/src/shape-marker.ts`                       | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
-| `packages/document/src/element-types.ts`                      | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
+| `packages/document/src/shape-marker.ts`                      | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
+| `packages/document/src/element-types.ts`                     | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
 | `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
 | `apps/live/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
 | `apps/live/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
@@ -20,7 +20,7 @@ Scope, by file:
 | `apps/live/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
 | `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
 | `apps/live/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
-| `apps/live/lib/editor-commands-selection.ts`                 | Command-palette "Add … marker" / "Clear marker" [Q12]                      |
+| `apps/live/lib/editor-commands-selection.ts`                 | Command-palette "Add … marker" / "Clear marker" [QE12]                     |
 
 ## Domain and naming
 
@@ -57,7 +57,7 @@ max(16, min(min(w, h) * 0.32, 48))`; fixed buckets from `MARKER_FIXED_PX` (sm 12
 ### Menu
 
 1. Single element: `showMarkers = target is a shape && !progress && !rail && !rating && !chart &&
-hasText`, `hasText` = trimmed label non-empty or the element is being edited [Q12].
+hasText`, `hasText` = trimmed label non-empty or the element is being edited [QE12].
 2. Placement: the Text flyout, after Typography and Alignment.
 3. `MarkerTiles`: None + `SHAPE_MARKERS` in order; the Size row (Scale / S / M / L) always
    renders, inert and dimmed at 40 % until a marker is set.
@@ -66,11 +66,11 @@ hasText`, `hasText` = trimmed label non-empty or the element is being edited [Q1
 5. Multi-selection: shown when any member passes the same kind test and has text (`markerSrc`),
    writing to every selected shape.
 6. Command palette, single shape selected: "Clear marker" when one is set, and "Add <name>
-   marker" for each other marker, calling `setMarkerSelected` [Q12].
+   marker" for each other marker, calling `setMarkerSelected` [QE12].
 
 ### Export
 
-PNG, SVG and PDF exports do not draw markers [Q11].
+PNG, SVG and PDF exports do not draw markers [QE11].
 
 ## Interfaces and contracts
 
@@ -91,7 +91,7 @@ export function applyMarkerSizeToEl(el: Element, size: TextSize): Element;
 ```
 
 Both apply helpers and `setShapeFieldSelected` write to any shape, self-drawing kinds included
-(the renderer then ignores it). `validate.ts` does not check `marker` or `markerSize` [G5].
+(the renderer then ignores it). `validate.ts` does not check `marker` or `markerSize` [GE5].
 
 ## Data and persistence
 
@@ -100,19 +100,19 @@ Both apply helpers and `setShapeFieldSelected` write to any shape, self-drawing 
 
 ## Errors and edge cases
 
-| #   | Case                                  | Handling                                                 |
-| --- | ------------------------------------- | -------------------------------------------------------- |
-| E1  | Shape has no label                    | Marker centred per alignment                             |
-| E2  | Label cleared after a marker was set  | Marker stays, centred; menu hides until text returns     |
-| E3  | Marker stored on a self-drawing shape | Not drawn                                                |
-| E4  | Unknown `marker` string               | `ShapeMarkerGlyph` falls through to the checked box [G5] |
-| E5  | Inline icon present                   | Icon on its side, marker hugging the label               |
-| E6  | Rich-text label                       | Runs render beside the marker unchanged                  |
+| #   | Case                                  | Handling                                                  |
+| --- | ------------------------------------- | --------------------------------------------------------- |
+| E1  | Shape has no label                    | Marker centred per alignment                              |
+| E2  | Label cleared after a marker was set  | Marker stays, centred; menu hides until text returns      |
+| E3  | Marker stored on a self-drawing shape | Not drawn                                                 |
+| E4  | Unknown `marker` string               | `ShapeMarkerGlyph` falls through to the checked box [GE5] |
+| E5  | Inline icon present                   | Icon on its side, marker hugging the label                |
+| E6  | Rich-text label                       | Runs render beside the marker unchanged                   |
 
 ## Security and trust
 
 The marker is a closed union rendered from constants; no element string reaches markup. An
-unvalidated value only picks a glyph branch [G5].
+unvalidated value only picks a glyph branch [GE5].
 
 ## Performance and limits
 
@@ -126,8 +126,8 @@ element text colour. Tiles show glyph over label.
 ## Accessibility
 
 - The glyph is `aria-hidden`; the marker's meaning (status, done) has no text alternative
-  (`DE8`).
-- Colour alone distinguishes the three circles; they share one shape (WCAG 1.4.1) (`DE8`).
+  (`D104`).
+- Colour alone distinguishes the three circles; they share one shape (WCAG 1.4.1) (`D104`).
 - No motion.
 
 ## Web experience
@@ -138,7 +138,7 @@ Canvas-space only (CLS 0). The Size row always renders so the flyout height is s
 ## Observability
 
 Telemetry `track('Element', 'Changed', 'Marker' | 'MarkerSize')` from `commitStyle` or
-`setShapeFieldSelected`. No log fingerprints [G12].
+`setShapeFieldSelected`. No log fingerprints [GE12].
 
 ## Testing
 
@@ -148,10 +148,10 @@ Telemetry `track('Element', 'Changed', 'Marker' | 'MarkerSize')` from `commitSty
 | Set the size bucket                          | sets the marker size bucket                                            | `apps/live/hooks/canvas/useElementStyle.test.ts` |
 | Command palette offers / clears markers      | offers the marker catalogue; offers Clear marker and hides the current | `apps/live/lib/editor-commands.test.ts`          |
 | Not offered for non-shapes (palette)         | does not offer markers for a non-shape boxed element                   | `apps/live/lib/editor-commands.test.ts`          |
-| Self-drawing shapes never draw a marker      | none [G11]                                                             |                                                  |
-| Marker sits left of the label, centred alone | none [G11]                                                             |                                                  |
-| Menu shown only with text; multi-select      | none [G11]                                                             |                                                  |
-| Export draws the marker                      | none [Q11]                                                             |                                                  |
+| Self-drawing shapes never draw a marker      | none [GE11]                                                            |                                                  |
+| Marker sits left of the label, centred alone | none [GE11]                                                            |                                                  |
+| Menu shown only with text; multi-select      | none [GE11]                                                            |                                                  |
+| Export draws the marker                      | none [QE11]                                                            |                                                  |
 
 ## Constants and configuration
 

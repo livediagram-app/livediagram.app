@@ -8,19 +8,19 @@ Scope, by file:
 
 | File                                                     | Role                                                                 |
 | -------------------------------------------------------- | -------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                    | `REACTIONS`, labels, emoji, hints, pad labels, default, `isReaction` |
-| `packages/document/src/shape-factory.ts`                  | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"             |
-| `packages/document/src/validate.ts`                       | Validates the `reaction` field [Q21]                                 |
-| `packages/document/src/session.ts`                        | `NON_VOTABLE_SHAPES` includes `reaction-pad`                         |
-| `packages/document/src/svg-render-faces.ts`               | Export glyph and label                                               |
+| `packages/document/src/data-shapes.ts`                   | `REACTIONS`, labels, emoji, hints, pad labels, default, `isReaction` |
+| `packages/document/src/shape-factory.ts`                 | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"             |
+| `packages/document/src/validate.ts`                      | Validates the `reaction` field [QF21]                                |
+| `packages/document/src/session.ts`                       | `NON_VOTABLE_SHAPES` includes `reaction-pad`                         |
+| `packages/document/src/svg-render-faces.ts`              | Export glyph and label                                               |
 | `packages/api-schema/src/room-messages.ts`               | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`               |
 | `apps/live/components/canvas/ReactionPadFace.tsx`        | The floor pad, tooltip, press                                        |
 | `apps/live/components/canvas/ReactionBurst.tsx`          | Canvas surface, clock, reduced motion, cleanup                       |
 | `apps/live/lib/reaction-particles.ts`                    | Pure spawn, step, alpha, draw                                        |
 | `apps/live/hooks/canvas/useReactionBursts.ts`            | Bursts keyed by element id; play, receive, clear                     |
-| `apps/live/app/document/[id]/useEditorState.ts`           | `fireReaction`: play, broadcast, track                               |
+| `apps/live/app/document/[id]/useEditorState.ts`          | `fireReaction`: play, broadcast, track                               |
 | `apps/live/hooks/collab/useEditorBroadcast.ts`           | `broadcastReaction` and its gate                                     |
-| `apps/live/app/document/[id]/useRoomConnection.ts`        | Receives the op                                                      |
+| `apps/live/app/document/[id]/useRoomConnection.ts`       | Receives the op                                                      |
 | `apps/live/components/canvas/Canvas.tsx`                 | `onWalkIntoReactionPad` runs `onFireReaction`                        |
 | `apps/live/components/canvas/BoxedElementView.tsx`       | Mounts `ReactionBurst` beside the label stack                        |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`                 |
@@ -52,7 +52,7 @@ Banned synonyms: "emoji burst", "celebration", "effect", "button" for the pad (i
    `PendingDraw.reaction`. `draw-commit.ts` and `useElementCreation.ts` apply `reaction` and
    `label: REACTION_PAD_LABEL[reaction]` at commit.
 2. **Reaction** menu: `setReactionSelected(reaction)` patches `reaction` only; the label stays
-   (DF24).
+   (D131).
 
 ### Firing
 
@@ -60,26 +60,26 @@ Banned synonyms: "emoji burst", "celebration", "effect", "button" for the pad (i
 2. **Walk-on:** the `useAvatarWalk` arrival effect calls `onWalkIntoReactionPad` once per arrival;
    `Canvas` forwards it to `props.onFireReaction`.
 3. `fireReaction(element)`: `played = reactions.play(element.id, element.reaction)`, then
-   `broadcastReaction(element.id, played)`, then `track('Element', 'Used', 'ReactionPad')` [Q19].
-4. `play` uses `reaction ?? REACTION_DEFAULT` [Q21] and starts the burst.
+   `broadcastReaction(element.id, played)`, then `track('Element', 'Used', 'ReactionPad')` [QF19].
+4. `play` uses `reaction ?? REACTION_DEFAULT` [QF21] and starts the burst.
 5. `broadcastReaction` sends nothing when cursors are hidden, the document is not hydrated, or it is
-   neither shareable nor in a team (DF23).
-6. Read-only surfaces pass no `onFireReaction`: the pad is inert and walk-ons do nothing [Q20].
+   neither shareable nor in a team (D130).
+6. Read-only surfaces pass no `onFireReaction`: the pad is inert and walk-ons do nothing [QF20].
 
 ### Receiving
 
 `useRoomConnection` hands `op.elementId` and `op.reaction` to `reactions.receive`, which starts
-`isReaction(reaction) ? reaction : REACTION_DEFAULT`. No tab check (DF25, gap G9).
+`isReaction(reaction) ? reaction : REACTION_DEFAULT`. No tab check (D132, gap GF9).
 
 ### Playing (`ReactionBurst`)
 
 1. Size the canvas to `(1 + 2·OVERSCAN)` times the pad per axis; backing store at
    `min(2, devicePixelRatio)`.
-2. Seed an LCG from `seed`; `scale = clamp(width / 150, 0.55, 3)` (DF22);
+2. Seed an LCG from `seed`; `scale = clamp(width / 150, 0.55, 3)` (D129);
    `spawnBurst(reaction, scale, rand)`.
-3. Reduced motion: `stepParticles(particles, 0.45)`, paint once, `onDone` after 900 ms (DF21).
+3. Reduced motion: `stepParticles(particles, 0.45)`, paint once, `onDone` after 900 ms (D128).
 4. Otherwise per frame: `dt = min(0.05, Δt)`, step, paint with `globalCompositeOperation =
-'lighter'` from the pad centre; stop when no particle lives or after `BURST_MS` (DF20).
+'lighter'` from the pad centre; stop when no particle lives or after `BURST_MS` (D127).
 5. `onDone` clears the map entry; the canvas unmounts.
 
 ### Physics (`stepParticles`)
@@ -138,13 +138,13 @@ export function alphaOf(p: Particle): number;
 export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 ```
 
-| Input                              | Handling                           |
-| ---------------------------------- | ---------------------------------- |
-| `reaction` absent on the element   | Plays `REACTION_DEFAULT`           |
-| `reaction` unknown on the element  | Rejected by `isValidElement` [Q21] |
-| `op.reaction` unknown (newer peer) | Plays `REACTION_DEFAULT`           |
-| `spawnBurst` with an unknown name  | Confetti physics and palette       |
-| `scale` outside `[0.55, 3]`        | Clamped                            |
+| Input                              | Handling                            |
+| ---------------------------------- | ----------------------------------- |
+| `reaction` absent on the element   | Plays `REACTION_DEFAULT`            |
+| `reaction` unknown on the element  | Rejected by `isValidElement` [QF21] |
+| `op.reaction` unknown (newer peer) | Plays `REACTION_DEFAULT`            |
+| `spawnBurst` with an unknown name  | Confetti physics and palette        |
+| `scale` outside `[0.55, 3]`        | Clamped                             |
 
 ## Data and persistence
 
@@ -161,12 +161,12 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 | E2  | Peer on a newer build          | Unknown reaction plays confetti                      |
 | E3  | Pad moved by a peer mid-burst  | The burst follows the element, not coordinates       |
 | E4  | Pad deleted mid-burst          | Its view unmounts; the map entry stays until reused  |
-| E5  | Burst for a pad on another tab | Stored, never drawn (DF25, gap G9)                   |
+| E5  | Burst for a pad on another tab | Stored, never drawn (D132, gap GF9)                  |
 | E6  | Backgrounded tab resumes       | `dt` clamped to 50 ms                                |
 | E7  | Standing on a pad              | One burst per arrival; step off and on to fire again |
 | E8  | Drag across the pad            | Moves, never fires                                   |
-| E9  | Broadcast gate closed          | Local burst only (DF23)                              |
-| E10 | View-role visitor              | Inert [Q20]                                          |
+| E9  | Broadcast gate closed          | Local burst only (D130)                              |
+| E10 | View-role visitor              | Inert [QF20]                                         |
 | E11 | Reduced motion                 | One still frame for 900 ms                           |
 
 ## Security and trust
@@ -175,7 +175,7 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 - Only an element id and a name travel; a peer can at most restart a burst on a pad that exists
   on the receiver's active tab.
 - The name is length-bounded only by the room's `MAX_MESSAGE_CHARS` (256 KiB) and senders are not
-  rate limited; rendering stays bounded by I2 (gap G14).
+  rate limited; rendering stays bounded by I2 (gap GF14).
 
 ## Performance and limits
 
@@ -193,7 +193,7 @@ export function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void;
 it in Avatar mode."`.
 - **Burst:** centred on the pad, `z-10` over the face and under selection chrome, pointer-inert.
 - **Palette:** a **React** accordion (`palette-create-tabs.tsx`) in Behaviours, one tile per
-  reaction with its emoji [Q22].
+  reaction with its emoji [QF22].
 - **Menu:** accordion **Reaction** (icon: current emoji), three-column tiles, hint line
   `"<hint>. Press the pad, or walk a character onto it in Avatar mode."`.
 - **Inert:** read-only surfaces render the same face without a button.
@@ -238,13 +238,13 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Closed-form step, launch delay, death                  | `stepParticles` block                                   | `apps/live/lib/reaction-particles.test.ts`         |
 | Frame-rate independence (I3)                           | "is frame-rate independent …"                           | `apps/live/lib/reaction-particles.test.ts`         |
 | Alpha fade in, hold, fade out                          | `alphaOf` block                                         | `apps/live/lib/reaction-particles.test.ts`         |
-| Op is presence, never logged                           | presence classification tests                           | `apps/api/src/document-room.test.ts`                |
+| Op is presence, never logged                           | presence classification tests                           | `apps/api/src/document-room.test.ts`               |
 | Telemetry token `ReactionPad`                          | palette census                                          | `apps/live/lib/palette-telemetry-coverage.test.ts` |
 | One burst per pad, restart on re-fire (I2)             | none                                                    | (gap)                                              |
 | Local-first then broadcast                             | none                                                    | (gap)                                              |
 | Walk-on fires once per arrival                         | none                                                    | (gap)                                              |
 | Reduced motion, `dt` clamp, DPR cap, unmount (I4)      | none                                                    | (gap)                                              |
-| Unknown element `reaction` rejected                    | none                                                    | (gap) [Q21]                                        |
+| Unknown element `reaction` rejected                    | none                                                    | (gap) [QF21]                                       |
 
 ## Constants and configuration
 
@@ -253,9 +253,9 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | `SHAPE_DEFAULT_SIZE['reaction-pad']` | `{ width: 150, height: 110 }` | Press-me square; the burst scale's base width |
 | `REACTION_DEFAULT`                   | `'confetti'`                  | The celebration most boards want              |
 | `OVERSCAN` (`ReactionBurst.tsx`)     | `2`                           | Pad-widths per side; 1 to 3                   |
-| `BURST_MS`                           | `2600`                        | Hard stop; above the longest life (DF20)      |
+| `BURST_MS`                           | `2600`                        | Hard stop; above the longest life (D127)      |
 | DPR cap                              | `2`                           | Backing store; 1 to 2                         |
 | `dt` cap                             | `0.05` s                      | One frame at 20 fps                           |
-| Reduced-motion instant               | `0.45` s, held `900` ms       | Mid-burst still (DF21)                        |
-| Scale clamp                          | `[0.55, 3]`                   | Tiny and huge pads stay readable (DF22)       |
+| Reduced-motion instant               | `0.45` s, held `900` ms       | Mid-burst still (D128)                        |
+| Scale clamp                          | `[0.55, 3]`                   | Tiny and huge pads stay readable (D129)       |
 | Particle counts                      | 88, 54, 30, 3 + 48, 3 x 26-35 | `spawnBurst`, per reaction                    |

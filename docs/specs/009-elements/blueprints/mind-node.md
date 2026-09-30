@@ -8,15 +8,15 @@ Scope, by file:
 
 | File                                                         | Role                                                                  |
 | ------------------------------------------------------------ | --------------------------------------------------------------------- |
-| `packages/document/src/mind-map.ts`                           | Tree walks, placement, `makeRoom`, `growMindChild`, `growMindSibling` |
-| `packages/document/src/mind-flow.ts`                          | `MindFlow`, per-flow placement, gaps                                  |
-| `packages/document/src/anchor-choice.ts`                      | `bestAnchorTowards`: the connector's faces                            |
-| `packages/document/src/shape-factory.ts`                      | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                          |
-| `packages/document/src/element-types.ts`                      | `mindParentId`, `mindFlow`                                            |
-| `packages/document/src/validate.ts`                           | `mindParentId` is a string; `mindFlow` a known flow                   |
-| `packages/document/src/duplicate.ts`                          | Re-parents copied children onto copied parents                        |
-| `apps/live/app/document/[id]/useElementCreation.ts`           | `canGrowMindNode`, `growMindNode`                                     |
-| `apps/live/app/document/[id]/useElementHelpers.ts`            | `placePrebuilt`: add + shifts in one commit                           |
+| `packages/document/src/mind-map.ts`                          | Tree walks, placement, `makeRoom`, `growMindChild`, `growMindSibling` |
+| `packages/document/src/mind-flow.ts`                         | `MindFlow`, per-flow placement, gaps                                  |
+| `packages/document/src/anchor-choice.ts`                     | `bestAnchorTowards`: the connector's faces                            |
+| `packages/document/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                          |
+| `packages/document/src/element-types.ts`                     | `mindParentId`, `mindFlow`                                            |
+| `packages/document/src/validate.ts`                          | `mindParentId` is a string; `mindFlow` a known flow                   |
+| `packages/document/src/duplicate.ts`                         | Re-parents copied children onto copied parents                        |
+| `apps/live/app/document/[id]/useElementCreation.ts`          | `canGrowMindNode`, `growMindNode`                                     |
+| `apps/live/app/document/[id]/useElementHelpers.ts`           | `placePrebuilt`: add + shifts in one commit                           |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                        |
 | `apps/live/hooks/canvas/useCanvasA11y.ts`                    | `ownsTabKey`: traversal stands aside                                  |
 | `apps/live/components/canvas/RichTextEditor.tsx`             | Tab / Enter inside the label editor                                   |
@@ -51,21 +51,21 @@ Growth is a pure function of the element list; the editor applies its result in 
 
 ### Growing a child (`growMindChild(elements, parent, sizeFrom = parent)`)
 
-1. **Size.** The new node takes `sizeFrom`'s width and height [Q15].
+1. **Size.** The new node takes `sizeFrom`'s width and height [QA15].
 2. **Flow.** `mindFlowOf(elements, parent)`: the root's `mindFlow` if valid, else `'tree'`.
 3. **Natural slot** (`placeMindChild`), with `subtree = mindSubtree(parent)` and
    `children = mindChildren(parent)`:
    - **tree:** `x = parent.x + parent.width + MIND_CHILD_GAP_X`; `y` centred on the parent when the
-     subtree is empty [Q14], else `bottom(subtree) + MIND_SIBLING_GAP_Y`. Axis `y`.
+     subtree is empty [QA14], else `bottom(subtree) + MIND_SIBLING_GAP_Y`. Axis `y`.
    - **downward:** `y = parent.y + parent.height + MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2`
-     (`DA23`); `x` centred when empty, else `right(subtree) + MIND_SIBLING_GAP_Y`. Axis `x`.
+     (`D26`); `x` centred when empty, else `right(subtree) + MIND_SIBLING_GAP_Y`. Axis `x`.
    - **balanced:** side is left when `outward === 0` and the child count is odd, or when
-     `cos(outward) < 0` (`DA24`); `x` mirrors the tree rule on that side; `y` stacks against the
+     `cos(outward) < 0` (`D27`); `x` mirrors the tree rule on that side; `y` stacks against the
      same-side part of the subtree only. Axis `y`.
    - **bubble:** index `k = children.length`, step `ceil(k / 2) * (k odd ? 1 : -1)`, angle
      `outward + step * BUBBLE_STEP`, radius `hypot(parent) / 2 + MIND_CHILD_GAP_X + hypot(node) / 2`
-     (`DA25`). When `|step * BUBBLE_STEP|` passes 150°, the next ring starts one node diagonal
-     further out, so siblings never overlap [Q16]. Axis `y`.
+     (`D28`). When `|step * BUBBLE_STEP|` passes 150°, the next ring starts one node diagonal
+     further out, so siblings never overlap [QA16]. Axis `y`.
 4. **Give way inside its own tree** (`clearOfFixedNodes`): while the slot overlaps a node of the
    same tree, move it past that node along the flow's axis, plus `MIND_SIBLING_GAP_Y`. At most
    `blockers.length + 1` passes.
@@ -73,15 +73,15 @@ Growth is a pure function of the element list; the editor applies its result in 
    `[from, to] = [bestAnchorTowards(parent, centre(node)), bestAnchorTowards(node, centre(parent))]`.
 6. **Make room** (`makeRoom`): the other trees, sorted by top edge, each slide **down** (never
    sideways) just past any obstacle they overlap, starting from the new node's box; a moved tree
-   becomes an obstacle for the ones below [Q13]. Trees holding a locked node do not move; the new
-   node gives way instead [G10].
+   becomes an obstacle for the ones below [QA13]. Trees holding a locked node do not move; the new
+   node gives way instead [GA10].
 
 ### Growing a sibling (`growMindSibling(elements, node)`)
 
 - With a parent in the list: `growMindChild(elements, parent, node)`.
 - Without one (a root, or a dangling pointer): a new root at `x = node.x`,
   `y = max(bottom of every tree overlapping [node.x, node.x + width), node bottom) +
-MIND_SIBLING_GAP_Y`, no arrow, no shifts, no `mindFlow` (`DA27`).
+MIND_SIBLING_GAP_Y`, no arrow, no shifts, no `mindFlow` (`D30`).
 
 ### Applying a growth (`growMindNode(id, relation)`)
 
@@ -101,10 +101,10 @@ MIND_SIBLING_GAP_Y`, no arrow, no shifts, no `mindFlow` (`DA27`).
 | Label editor on a mind node      | Tab         | Commit label, then child            |
 | Label editor on a mind node      | Enter       | Commit label, then sibling          |
 | Label editor on a mind node      | Shift+Enter | Newline                             |
-| Label editor on a mind node      | Shift+Tab   | Nothing mind-specific [G9]          |
+| Label editor on a mind node      | Shift+Tab   | Nothing mind-specific [GA9]         |
 
 Canvas guards: not in a text field, no modifier, no Shift, not read-only, `editingId === null`,
-exactly one selected element (`DA29`), `canGrowMindNode`. `useCanvasA11y` returns early for plain
+exactly one selected element (`D32`), `canGrowMindNode`. `useCanvasA11y` returns early for plain
 Tab when `ownsTabKey(selectedId)`.
 
 ### Flow pick (`setMindFlowSelected(flow)`)
@@ -115,13 +115,13 @@ once; tracks `Element·Changed·MindFlow`.
 ### Delete
 
 Deleting a node removes its arrows (existing arrow cleanup) and nothing else; its children keep a
-dangling `mindParentId`, so they are roots, with the default `tree` flow [Q18].
+dangling `mindParentId`, so they are roots, with the default `tree` flow [QA18].
 
 Invariants:
 
 - **I1:** a growth never moves a node of the tree it grows in.
 - **I2:** a growth is one commit: add, connector and shifts together.
-- **I3:** every walk terminates on a cyclic `mindParentId` (seen-sets) (`DA28`).
+- **I3:** every walk terminates on a cyclic `mindParentId` (seen-sets) (`D31`).
 - **I4:** the flow is read only from the root.
 
 ## Interfaces and contracts
@@ -162,7 +162,7 @@ export function mindFlowOf(elements: Element[], node: ShapeElement): MindFlow;
 
 Validation: `mindParentId`, when present, is a string (a dangling id is legal); `mindFlow`, when
 present, is one of `MIND_FLOWS`, else the element and its tab are rejected (`invalid tab`, 400).
-`mindFlow` on a non-root is stored and ignored [Q17].
+`mindFlow` on a non-root is stored and ignored [QA17].
 
 ## Data and persistence
 
@@ -182,11 +182,11 @@ No migration: absent fields mean root and `tree`.
 | E2  | Cyclic `mindParentId`                  | Walks stop at the first repeat (I3)                        |
 | E3  | Invalid stored `mindFlow`              | Rejected on write; `mindFlowOf` defaults to `tree` on read |
 | E4  | Cousin in the same tree holds the slot | The new node moves along the flow axis                     |
-| E5  | Another tree holds the slot            | That tree slides down, cascading [Q13]                     |
-| E6  | A locked tree holds the slot           | Treated as fixed; the new node gives way [G10]             |
-| E7  | A non-mind element holds the slot      | Ignored; the node may overlap it (`DA26`)                  |
-| E8  | Many bubble children                   | Second ring beyond ±150° [Q16]                             |
-| E9  | Several nodes selected                 | Tab / Enter do not grow (`DA29`)                           |
+| E5  | Another tree holds the slot            | That tree slides down, cascading [QA13]                    |
+| E6  | A locked tree holds the slot           | Treated as fixed; the new node gives way [GA10]            |
+| E7  | A non-mind element holds the slot      | Ignored; the node may overlap it (`D29`)                   |
+| E8  | Many bubble children                   | Second ring beyond ±150° [QA16]                            |
+| E9  | Several nodes selected                 | Tab / Enter do not grow (`D32`)                            |
 | E10 | Read-only, share view, embed, export   | No grower: `canGrowMindNode` false, no ring options        |
 
 ## Security and trust
@@ -215,7 +215,7 @@ walks are iterative, so a hostile `mindParentId` graph cannot exhaust the stack.
 ## Accessibility
 
 - Every growth action is reachable by keyboard (Tab / Enter) and by pointer (the ring).
-- Shift+Tab keeps element traversal on the canvas; inside the label editor it grows nothing [G9].
+- Shift+Tab keeps element traversal on the canvas; inside the label editor it grows nothing [GA9].
 - Tooltips name the shortcuts. No motion is added.
 
 ## Web experience
@@ -224,32 +224,32 @@ One commit per keystroke; the label editor opens on the new node in the same int
 
 ## Observability
 
-None in code today [G1].
+None in code today [GA1].
 
 ## Testing
 
 | Rule                                           | Test                                                           | File                                                          |
 | ---------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------- |
-| Children / subtree walks, cycle-safe (I3)      | mindChildren; mindSubtree (terminates on a cycle)              | `packages/document/src/mind-map.test.ts`                       |
-| First child right, centred [Q14]               | puts a first child to the right, vertically centred            | `packages/document/src/mind-map.test.ts`                       |
-| Stack against the subtree                      | stacks a second child; clears a GRANDCHILD                     | `packages/document/src/mind-map.test.ts`                       |
-| Cousin in own tree: new node gives way (I1)    | gives way to a cousin in the same tree                         | `packages/document/src/mind-map.test.ts`                       |
-| Connector east to west, pinned                 | parents the node and connects it east to west                  | `packages/document/src/mind-map.test.ts`                       |
-| Sibling, root sibling at end of the column     | growMindSibling (five cases)                                   | `packages/document/src/mind-map.test.ts`                       |
-| Size inheritance [Q15]                         | size inheritance (three cases)                                 | `packages/document/src/mind-map.test.ts`                       |
-| Make room: whole tree, cascade, own tree fixed | making room (four cases)                                       | `packages/document/src/mind-map.test.ts`                       |
-| Four flows, read from the root (I4)            | mind flows (tree, downward, balanced, bubble)                  | `packages/document/src/mind-flow.test.ts`                      |
+| Children / subtree walks, cycle-safe (I3)      | mindChildren; mindSubtree (terminates on a cycle)              | `packages/document/src/mind-map.test.ts`                      |
+| First child right, centred [QA14]              | puts a first child to the right, vertically centred            | `packages/document/src/mind-map.test.ts`                      |
+| Stack against the subtree                      | stacks a second child; clears a GRANDCHILD                     | `packages/document/src/mind-map.test.ts`                      |
+| Cousin in own tree: new node gives way (I1)    | gives way to a cousin in the same tree                         | `packages/document/src/mind-map.test.ts`                      |
+| Connector east to west, pinned                 | parents the node and connects it east to west                  | `packages/document/src/mind-map.test.ts`                      |
+| Sibling, root sibling at end of the column     | growMindSibling (five cases)                                   | `packages/document/src/mind-map.test.ts`                      |
+| Size inheritance [QA15]                        | size inheritance (three cases)                                 | `packages/document/src/mind-map.test.ts`                      |
+| Make room: whole tree, cascade, own tree fixed | making room (four cases)                                       | `packages/document/src/mind-map.test.ts`                      |
+| Four flows, read from the root (I4)            | mind flows (tree, downward, balanced, bubble)                  | `packages/document/src/mind-flow.test.ts`                     |
 | Traversal stands aside for plain Tab only      | useCanvasA11y Tab ownership                                    | `apps/live/hooks/canvas/useCanvasA11y.tab-ownership.test.tsx` |
-| Copy re-parents children                       | re-parents a copied mind child; leaves an outside parent alone | `packages/document/src/factories.test.ts`                      |
+| Copy re-parents children                       | re-parents a copied mind child; leaves an outside parent alone | `packages/document/src/factories.test.ts`                     |
 | Duplicate re-parents                           | re-parents a copied mind-map child                             | `apps/live/hooks/canvas/useElementDuplication.test.tsx`       |
-| Export rounds the node                         | rounds a mind node the way the canvas does                     | `packages/document/src/svg-render.test.ts`                     |
-| Canvas Tab / Enter grow, guards                | none [G14]                                                     |                                                               |
-| Editor Tab / Enter commit then grow            | none [G14]                                                     |                                                               |
-| Ring leads with the two options                | none [G14]                                                     |                                                               |
-| Flow set once per root                         | none [G14]                                                     |                                                               |
-| One commit per growth (I2)                     | none [G14]                                                     |                                                               |
-| Delete leaves orphans as roots                 | none [G14]                                                     |                                                               |
-| Bubble second ring                             | none [Q16]                                                     |                                                               |
+| Export rounds the node                         | rounds a mind node the way the canvas does                     | `packages/document/src/svg-render.test.ts`                    |
+| Canvas Tab / Enter grow, guards                | none [GA14]                                                    |                                                               |
+| Editor Tab / Enter commit then grow            | none [GA14]                                                    |                                                               |
+| Ring leads with the two options                | none [GA14]                                                    |                                                               |
+| Flow set once per root                         | none [GA14]                                                    |                                                               |
+| One commit per growth (I2)                     | none [GA14]                                                    |                                                               |
+| Delete leaves orphans as roots                 | none [GA14]                                                    |                                                               |
+| Bubble second ring                             | none [QA16]                                                    |                                                               |
 
 ## Constants and configuration
 

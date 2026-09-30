@@ -8,9 +8,9 @@ Scope, by file:
 
 | File                                                 | Role                                                                |
 | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/shape-factory.ts`              | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled   |
-| `packages/document/src/validate.ts`                   | `portalTarget` must be a non-empty string                           |
-| `packages/document/src/svg-render-faces.ts`           | The export ring (`'portal'`)                                        |
+| `packages/document/src/shape-factory.ts`             | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled   |
+| `packages/document/src/validate.ts`                  | `portalTarget` must be a non-empty string                           |
+| `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                        |
 | `apps/live/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring               |
 | `apps/live/components/canvas/portal-travel.ts`       | `makePortalTravel`: `enterPortal` and `resolvePortal`               |
 | `apps/live/components/canvas/Canvas.tsx`             | Builds the travel, wires click and walk-in through `enterPortalRef` |
@@ -32,7 +32,7 @@ Scope, by file:
 | Site           | `PortalSite = { tabId, tabName, portal }`         | A portal with the tab it lives on                      |
 | Destination    | `PortalDestination = { portal, tabId, elements }` | The far portal, its tab and that tab's elements        |
 | Unlinked       | `resolvePortalDestination(...) === null`          | Dead ring, inert                                       |
-| Portal name    | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [Q11]       |
+| Portal name    | `portalName(elements, portal)`                    | Trimmed label, else `Portal <n>` (per tab) [QF11]      |
 | Travel         | `enterPortal(from)`                               | Switch tab, centre camera, place the character         |
 | Exit point     | `portalExitPoint(portal)`                         | Bottom centre of the far portal (the avatar's feet)    |
 | Arrived portal | `arrivedPortalRef` in `useAvatarWalk`             | The exit portal, ignored until the character steps off |
@@ -46,7 +46,7 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
 
 1. With `tabs`: `resolvePortalSite(tabs, from)` searches `portalSites(tabs)` (tab order, then
    element order). Own target wins when it is set, is not `from.id`, and names a portal. Else the
-   first site whose `portalTarget === from.id` (DF9). A hit returns that site's tab elements.
+   first site whose `portalTarget === from.id` (D116). A hit returns that site's tab elements.
 2. Without `tabs`, or no hit: `resolvePortalTarget(elements, from)`, the same rule on one tab,
    reporting `activeTabId`.
 3. Otherwise `null`: unlinked. A deleted target, a non-portal target and a self-target all land
@@ -67,7 +67,7 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
   `resolvePortal(element).travel`, absent when unlinked.
 - **Walk-in.** The `useAvatarWalk` effect on `[active, standingOnId]`:
   1. Inactive: clear both refs.
-  2. `standingOnId === null`: clear `arrivedPortalRef` (DF8).
+  2. `standingOnId === null`: clear `arrivedPortalRef` (D115).
   3. Same as last frame, or equal to `arrivedPortalRef`: ignore.
   4. A `portal` under the feet: call `onWalkIntoPortal`, which is `enterPortalRef.current`.
 - Both triggers run the same `enterPortal`.
@@ -76,18 +76,18 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
 
 - **Sources:** selected portals on the active tab, else the context-menu target.
 - **`setPortalTargetSelected(targetId | null)`** maps every tab: sources take `targetId`; the
-  target takes the last source's id (DF7); any other portal pointing at a source or at the target
+  target takes the last source's id (D114); any other portal pointing at a source or at the target
   is cleared. `null` unlinks both ends. Emits `Element·Changed·Portal`.
-- **`setPortalNameSelected(name)`** writes the trimmed name, empty clears `label` (DF10). Emits
-  `Element·Changed·Portal` [Q9].
-- **`createLinkedPortal()`** creates a portal `NEW_PORTAL_GAP` to the right (DF6), links both
-  ways, releases every portal on every tab that pointed at the source [Q10], selects the new one.
+- **`setPortalNameSelected(name)`** writes the trimmed name, empty clears `label` (D117). Emits
+  `Element·Changed·Portal` [QF9].
+- **`createLinkedPortal()`** creates a portal `NEW_PORTAL_GAP` to the right (D113), links both
+  ways, releases every portal on every tab that pointed at the source [QF10], selects the new one.
   Emits `Element·Added·Portal`.
 
 Invariants:
 
 - **I1:** resolution never returns `from` itself and never throws.
-- **I2:** after any setter, no two portals claim the same end (exclusivity on every tab) [Q10].
+- **I2:** after any setter, no two portals claim the same end (exclusivity on every tab) [QF10].
 - **I3:** a walk-in fires once per arrival, and never for the exit portal until the feet reach
   bare canvas.
 - **I4:** click and walk-in run one function.
@@ -145,11 +145,11 @@ export function makePortalTravel(deps: PortalTravelDeps): {
 | E6  | Far portal on another tab                 | Tab switch first, then camera and character           |
 | E7  | Unlinked press                            | Face inert; tooltip explains                          |
 | E8  | Drag on the ring                          | Moves, never travels                                  |
-| E9  | Arrive on the exit portal                 | Ignored until bare canvas (DF8)                       |
+| E9  | Arrive on the exit portal                 | Ignored until bare canvas (D115)                      |
 | E10 | Exit portal overlaps another element      | Stepping onto that element does not clear the ignore  |
 | E11 | Click travel outside Avatar mode          | Camera moves; the remembered character position moves |
-| E12 | Create with a third portal on another tab | Released on every tab [Q10]                           |
-| E13 | Multi-selection linked to one target      | Last source takes the return link (DF7)               |
+| E12 | Create with a third portal on another tab | Released on every tab [QF10]                          |
+| E13 | Multi-selection linked to one target      | Last source takes the return link (D114)              |
 
 ## Security and trust
 
@@ -209,25 +209,25 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 | Rule                                                   | Test                                            | File                                                |
 | ------------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------- |
-| Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`            |
+| Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`           |
 | Candidates and positional names                        | `portalsOnTab`, `portalName` blocks             | `apps/live/lib/portals.test.ts`                     |
 | Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/live/lib/portals.test.ts`                     |
 | Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/live/lib/portals.test.ts`                     |
 | Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/live/lib/portals.test.ts`                     |
 | Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/live/lib/portals.test.ts`                     |
 | Travel order, ignored exit, unlinked inert (I4)        | `makePortalTravel` block                        | `apps/live/components/canvas/portal-travel.test.ts` |
-| Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`              |
-| Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`   |
-| Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [Q9] [Q10]                                    |
+| Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`             |
+| Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`  |
+| Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                  |
 | Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                               |
 | Drag never travels                                     | none                                            | (gap)                                               |
 
 ## Constants and configuration
 
-| Name                        | Value                        | Provenance / safe range                        |
-| --------------------------- | ---------------------------- | ---------------------------------------------- |
-| `SHAPE_DEFAULT_SIZE.portal` | `{ width: 72, height: 112 }` | Portal-shaped, taller than wide                |
-| Energy colour (factory)     | `strokeColor: '#38bdf8'`     | Electric blue; any colour                      |
-| `NEW_PORTAL_GAP`            | `96`                         | Canvas px right of the source; 48 to 200 (DF6) |
-| Art grid                    | `viewBox="0 0 24 36"`        | Matches the 2:3 default aspect                 |
-| `PRESS_DRAG_SLOP_PX`        | `4`                          | Shared press tolerance, screen px              |
+| Name                        | Value                        | Provenance / safe range                         |
+| --------------------------- | ---------------------------- | ----------------------------------------------- |
+| `SHAPE_DEFAULT_SIZE.portal` | `{ width: 72, height: 112 }` | Portal-shaped, taller than wide                 |
+| Energy colour (factory)     | `strokeColor: '#38bdf8'`     | Electric blue; any colour                       |
+| `NEW_PORTAL_GAP`            | `96`                         | Canvas px right of the source; 48 to 200 (D113) |
+| Art grid                    | `viewBox="0 0 24 36"`        | Matches the 2:3 default aspect                  |
+| `PRESS_DRAG_SLOP_PX`        | `4`                          | Shared press tolerance, screen px               |

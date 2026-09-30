@@ -74,8 +74,8 @@ groups all three (they're all in `isSelfDrawingShape` too).
   reduced-motion-safe), the axes / labels stay still. `element-variant.ts` gives
   them a borderless wrapper. The shared layout `chartFrame` lives in
   `packages/document/src/chart-frame.ts` (re-exported from `apps/live/lib/chart.ts`,
-  which holds `chartAnim`); the frame, tooltip and legend are drawn by
-  `ChartSurface`; hover wiring in `useChartHover` + `ChartTooltip`.
+  which holds `chartAnim`); the frame, readout and legend are drawn by
+  `ChartSurface`; hover wiring in `useChartHover` + `ChartReadout`.
 - CSV import (line): `parseCsvLineData` in `apps/live/lib/csv.ts` (quoted-field
   aware) turns a pasted/uploaded CSV into categories + series.
 - Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),

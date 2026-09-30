@@ -9,12 +9,12 @@ Scope, by file:
 
 | File                                                         | Role                                                                                                        |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                        | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
-| `packages/document/src/shape-factory.ts`                      | Size 240 × 180; seeds the three rows                                                                        |
-| `packages/document/src/validate.ts`                           | Row count, row text and `done` type checks                                                                  |
-| `packages/document/src/element-deltas.ts`                     | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
-| `packages/document/src/collab-ledger.ts`                      | Wire validation of an incoming `check` delta                                                                |
-| `packages/document/src/svg-render-shapes.ts`                  | `svgChecklistShape`: the headless render                                                                    |
+| `packages/document/src/data-shapes.ts`                       | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
+| `packages/document/src/shape-factory.ts`                     | Size 240 × 180; seeds the three rows                                                                        |
+| `packages/document/src/validate.ts`                          | Row count, row text and `done` type checks                                                                  |
+| `packages/document/src/element-deltas.ts`                    | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
+| `packages/document/src/collab-ledger.ts`                     | Wire validation of an incoming `check` delta                                                                |
+| `packages/document/src/svg-render-shapes.ts`                 | `svgChecklistShape`: the headless render                                                                    |
 | `apps/live/components/canvas/ChecklistView.tsx`              | Canvas card, row buttons, footer count                                                                      |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`         | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
 | `apps/live/hooks/canvas/useCollabElements.ts`                | `toggleChecklistItem`: builds and applies the delta                                                         |
@@ -33,7 +33,7 @@ Scope, by file:
 | Tick         | `ElementDelta` `{ kind: 'check', index, text, done }` | One row's new `done` state, named by index and text |
 | Row edit     | `setChecklistItemsSelected(items)`                    | Whole-array replace: add, remove, retitle           |
 | Footer count | `done/total`                                          | Shown when at least one row is done                 |
-| Accent       | the element's stroke colour                           | Card border, box border, filled box [Q10]           |
+| Accent       | the element's stroke colour                           | Card border, box border, filled box [QE10]          |
 
 Banned synonyms: "todo item" (say row), "check" for a row edit (a check is only a tick), "task
 list".
@@ -61,7 +61,7 @@ Third task, all unchecked). Telemetry `Added Checklist`.
 2. Guards, in order: canvas button `disabled` unless `editable` (not read-only, not user-locked,
    tab not locked); handler returns when `editsBlocked` (tab locked, read-only, tab not loaded).
    Neither path checks a locked or hidden layer, and the menu path does not check the element lock
-   [G6].
+   [GE6].
 3. `checklistDeltaFor(el, index)` returns `{ kind: 'check', index, text: item.text, done: !done }`
    or null for a missing row.
 4. `applyElementDelta` applies it locally and sends it; it is not pushed onto the undo stack and
@@ -81,7 +81,7 @@ sends no whole-element update.
 1. `ChecklistRowsEditor` keeps a local draft, reseeded when the element's rows change.
 2. Text inputs (`maxLength` 200, placeholder "Task") commit the whole draft on blur.
 3. `+ Add row` appends `{ text: '', done: false }`, disabled at 30 rows. `×` removes a row,
-   disabled at one row (`DE6`).
+   disabled at one row (`D102`).
 4. `setChecklistItemsSelected` slices to 30 rows and 200 characters each, writes every selected
    checklist, one undo step, `track('Element', 'Changed', 'Checklist')`.
 5. Double-click on the card does nothing (`isSelfDrawingShape`).
@@ -117,11 +117,11 @@ like any field once applied. No migration.
 | --- | ------------------------------------ | --------------------------------------------------------------- |
 | E1  | Two people tick different rows       | Both deltas land                                                |
 | E2  | Peer reordered or retitled meanwhile | Delta finds the row by text, or does nothing                    |
-| E3  | Duplicate row texts                  | Index first; otherwise the first row with that text (`DE7`)     |
+| E3  | Duplicate row texts                  | Index first; otherwise the first row with that text (`D103`)    |
 | E4  | Peer's whole copy lacks a tick       | `keepLocalTicks` keeps ours                                     |
 | E5  | More rows than fit                   | Clipped on the canvas; export draws `floor((h - 24) / 26)` rows |
 | E6  | Long row text                        | Ellipsis on the canvas; export cuts at the width in 7 px chars  |
-| E7  | Locked layer or user-locked (menu)   | Tick still applies [G6]                                         |
+| E7  | Locked layer or user-locked (menu)   | Tick still applies [GE6]                                        |
 
 ## Security and trust
 
@@ -143,7 +143,7 @@ blurb "Tickable to-do rows". AI vocabulary includes it with `checklistItems` (ma
   done"; disabled when not editable.
 - Menu rows use native checkboxes labelled "Row n done".
 - Box target 16 px inside a 24 px row; done text at opacity 0.55 and the footer at 0.6 lower
-  contrast against the card and are not contrast-checked (`DE3`).
+  contrast against the card and are not contrast-checked (`D99`).
 - No motion.
 
 ## Web experience
@@ -153,12 +153,12 @@ Canvas-space only (CLS 0). A tick applies locally before the network (INP).
 ## Observability
 
 Ticks are deliberately untracked. Row edits track `Changed Checklist`. No log fingerprints; a
-dropped delta (no match) is silent [G12].
+dropped delta (no match) is silent [GE12].
 
 ## Testing
 
-| Rule                                   | Test                                                    | File                                          |
-| -------------------------------------- | ------------------------------------------------------- | --------------------------------------------- |
+| Rule                                   | Test                                                    | File                                           |
+| -------------------------------------- | ------------------------------------------------------- | ---------------------------------------------- |
 | Guard matches only `checklist`         | checklist matches only its own kind                     | `packages/document/src/data-shapes.test.ts`    |
 | Bounds                                 | bounds the code block + checklist fields                | `packages/document/src/validate.test.ts`       |
 | Two ticks on different rows both land  | ticks different checklist rows from two people          | `packages/document/src/element-deltas.test.ts` |
@@ -166,19 +166,19 @@ dropped delta (no match) is silent [G12].
 | Whole-element update keeps ticks       | keeps our ticks and our comments, takes their row edits | `packages/document/src/element-deltas.test.ts` |
 | Tick-only change is delta-only         | is true for an answer, a tick or a comment alone        | `packages/document/src/element-deltas.test.ts` |
 | Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes           | `packages/document/src/svg-render.test.ts`     |
-| Starter rows all unchecked, no footer  | none [G11]                                              |                                               |
-| Lock and layer gating of ticks         | none [G6]                                               |                                               |
-| Ticks are not undoable and not tracked | none [G11]                                              |                                               |
+| Starter rows all unchecked, no footer  | none [GE11]                                             |                                                |
+| Lock and layer gating of ticks         | none [GE6]                                              |                                                |
+| Ticks are not undoable and not tracked | none [GE11]                                             |                                                |
 
 ## Constants and configuration
 
-| Name                  | Value              | Provenance / safe range                    |
-| --------------------- | ------------------ | ------------------------------------------ |
-| `CHECKLIST_MAX_ITEMS` | 30                 | Spec                                       |
-| `CHECKLIST_MAX_TEXT`  | 200                | Spec                                       |
-| Size                  | 240 × 180          | Spec                                       |
-| `CHECK_ROW_HEIGHT`    | 26                 | Export row pitch; canvas uses 24 + 4 [G13] |
-| `CHECK_BOX_SIZE`      | 14                 | Export box; canvas box 16 [G13]            |
-| `CHECK_PAD`           | 12                 | Matches `p-3`                              |
-| Done text opacity     | 0.55               | Canvas and export                          |
-| Footer                | 10 px, opacity 0.6 | Canvas and export                          |
+| Name                  | Value              | Provenance / safe range                     |
+| --------------------- | ------------------ | ------------------------------------------- |
+| `CHECKLIST_MAX_ITEMS` | 30                 | Spec                                        |
+| `CHECKLIST_MAX_TEXT`  | 200                | Spec                                        |
+| Size                  | 240 × 180          | Spec                                        |
+| `CHECK_ROW_HEIGHT`    | 26                 | Export row pitch; canvas uses 24 + 4 [GE13] |
+| `CHECK_BOX_SIZE`      | 14                 | Export box; canvas box 16 [GE13]            |
+| `CHECK_PAD`           | 12                 | Matches `p-3`                               |
+| Done text opacity     | 0.55               | Canvas and export                           |
+| Footer                | 10 px, opacity 0.6 | Canvas and export                           |

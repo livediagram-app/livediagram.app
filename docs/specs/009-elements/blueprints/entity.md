@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                         | Role                                                  |
 | ------------------------------------------------------------ | ----------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                        | `EntityField`, `ENTITY_MAX_FIELDS`, `ENTITY_MAX_TEXT` |
-| `packages/document/src/element-types.ts`                      | `ShapeElement.entityFields`                           |
-| `packages/document/src/shape-factory.ts`                      | `createShape('entity', …)` defaults                   |
-| `packages/document/src/validate.ts`                           | `SHAPE_KINDS` entry and the `entityFields` bounds     |
-| `packages/document/src/svg-render-data.ts`                    | `svgEntityRows`: rule and rows in the headless render |
-| `packages/document/src/label-font.ts`                         | `LABEL_FONT_PX`, `labelFontPx`: the title's px table  |
+| `packages/document/src/data-shapes.ts`                       | `EntityField`, `ENTITY_MAX_FIELDS`, `ENTITY_MAX_TEXT` |
+| `packages/document/src/element-types.ts`                     | `ShapeElement.entityFields`                           |
+| `packages/document/src/shape-factory.ts`                     | `createShape('entity', …)` defaults                   |
+| `packages/document/src/validate.ts`                          | `SHAPE_KINDS` entry and the `entityFields` bounds     |
+| `packages/document/src/svg-render-data.ts`                   | `svgEntityRows`: rule and rows in the headless render |
+| `packages/document/src/label-font.ts`                        | `LABEL_FONT_PX`, `labelFontPx`: the title's px table  |
 | `apps/live/components/canvas/EntityView.tsx`                 | `EntityView`, `entityHeaderHeight`                    |
 | `apps/live/components/canvas/label-style.ts`                 | `FIXED_FONT_PX` (re-export of `LABEL_FONT_PX`)        |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setEntityFieldsSelected`                             |
@@ -40,19 +40,19 @@ for a field, "column" for a field. "Entity" is the single user-facing and code t
 ## Behaviour and state
 
 1. **Create.** `createShape('entity', x, y)`: `label: 'Entity'`, `textAlignX: 'left'`,
-   `textAlignY: 'top'`, `textSize: 'md'`, fields `id: string` and `name: string` (`DA19`).
+   `textAlignY: 'top'`, `textSize: 'md'`, fields `id: string` and `name: string` (`D22`).
 2. **Title edit.** The ordinary label editor; nothing entity-specific.
 3. **Fields edit** (`EntityFieldsEditor`): a local draft of the rows. Typing changes the draft only;
    **blur** of an input commits the whole draft; **remove** (×) and **Add field** commit at once.
    Add appends `{ name: '' }`. An emptied type input sets `type: undefined` in the draft.
 4. **Commit** (`setEntityFieldsSelected(fields)`): for each selected entity, write
    `fields.slice(0, ENTITY_MAX_FIELDS)`, each `name` sliced to `ENTITY_MAX_TEXT`, and `type` kept
-   only when non-empty after trimming, sliced to `ENTITY_MAX_TEXT` [G12]. One `commit`, tracks
+   only when non-empty after trimming, sliced to `ENTITY_MAX_TEXT` [GA12]. One `commit`, tracks
    `Element·Changed·Entity`.
 5. **Title bar height** (`entityHeaderHeight`): `fontPx` is `16` for `'scale'` (or absent) and
    `FIXED_FONT_PX[size]` otherwise; height `max(30, round(fontPx * 1.25) + 10)`. One function in
    `@livediagram/document` serves canvas and export, and reads the same absent-size default the
-   label uses [G11].
+   label uses [GA11].
 
 Invariants:
 
@@ -100,13 +100,13 @@ No migration: absent `entityFields` renders as an empty list.
 
 | #   | Case                               | Handling                                                          |
 | --- | ---------------------------------- | ----------------------------------------------------------------- |
-| E1  | No fields                          | "No fields yet" placeholder (`DA20`)                              |
-| E2  | More rows than the box holds       | Clipped on canvas; export skips rows below the box (`DA21`) [Q12] |
+| E1  | No fields                          | "No fields yet" placeholder (`D23`)                               |
+| E2  | More rows than the box holds       | Clipped on canvas; export skips rows below the box (`D24`) [QA12] |
 | E3  | Long name or type                  | Truncated with an ellipsis on canvas; export draws it whole       |
 | E4  | Paste of more than 40 rows         | Sliced to 40 on commit                                            |
 | E5  | 41st row via Add field             | Button `disabled` at 40                                           |
-| E6  | Whitespace-only type               | Dropped to `undefined` [G12]                                      |
-| E7  | `textSize` absent in a stored file | Band and label read the same default [G11]                        |
+| E6  | Whitespace-only type               | Dropped to `undefined` [GA12]                                     |
+| E7  | `textSize` absent in a stored file | Band and label read the same default [GA11]                       |
 | E8  | Locked or read-only                | Nothing on the canvas is a control; rows edit only from the menu  |
 
 ## Security and trust
@@ -120,13 +120,13 @@ Worst case 40 rows of 80 + 80 characters, about 6.4 KB per entity; rendering is 
 
 ## Presentation and UX
 
-- Palette: tile `tools:entity` in the Components tab, caption "Entity" [Q12].
+- Palette: tile `tools:entity` in the Components tab, caption "Entity" [QA12].
 - Canvas: the whole view is `pointer-events-none`; the title bar is an empty band with a 1px
   bottom rule in `strokeColor ?? '#cbd5e1'`; rows below at 11px, `name` left and truncated, `type`
-  pushed right at 10px and 0.55 opacity (`DA22`).
+  pushed right at 10px and 0.55 opacity (`D25`).
 - Export: `svgEntityRows` draws the rule and rows; the generic label emitter draws the title.
 - Menu: section "Fields" (Tools flyout) with a name input, a type input, a × per row and
-  "Add field". No reorder [Q12].
+  "Add field". No reorder [QA12].
 
 ## Accessibility
 
@@ -137,19 +137,19 @@ Worst case 40 rows of 80 + 80 characters, about 6.4 KB per entity; rendering is 
 
 ## Observability
 
-None in code today [G1].
+None in code today [GA1].
 
 ## Testing
 
 | Rule                                         | Test                                          | File                                                |
 | -------------------------------------------- | --------------------------------------------- | --------------------------------------------------- |
 | Band follows text size, 30 floor             | entityHeaderHeight (three cases)              | `apps/live/components/canvas/entity-header.test.ts` |
-| Export keeps the card box and draws a body   | still frames a record; every kind with a body | `packages/document/src/export-consistency.test.ts`   |
-| Class template uses entities, fields as rows | class diagram drops four entity classes        | `apps/live/lib/templates.test.ts`                   |
-| Bounds 40 / 80, `type` optional (I1)         | none [G14]                                    |                                                     |
-| Cleared type stores `undefined` (I2)         | none [G14]                                    |                                                     |
-| Editor commits on blur, add, remove          | none [G14]                                    |                                                     |
-| Canvas and export band agree (I3)            | none [G11]                                    |                                                     |
+| Export keeps the card box and draws a body   | still frames a record; every kind with a body | `packages/document/src/export-consistency.test.ts`  |
+| Class template uses entities, fields as rows | class diagram drops four entity classes       | `apps/live/lib/templates.test.ts`                   |
+| Bounds 40 / 80, `type` optional (I1)         | none [GA14]                                   |                                                     |
+| Cleared type stores `undefined` (I2)         | none [GA14]                                   |                                                     |
+| Editor commits on blur, add, remove          | none [GA14]                                   |                                                     |
+| Canvas and export band agree (I3)            | none [GA11]                                   |                                                     |
 
 ## Constants and configuration
 

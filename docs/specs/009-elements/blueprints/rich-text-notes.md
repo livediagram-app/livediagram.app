@@ -9,8 +9,8 @@ Scope, by file:
 
 | File                                                         | Role                                                                             |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `packages/document/src/rich-text.ts`                          | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
-| `packages/document/src/element-types.ts`                      | `note?` + `noteRich?` on every boxed element                                     |
+| `packages/document/src/rich-text.ts`                         | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
+| `packages/document/src/element-types.ts`                     | `note?` + `noteRich?` on every boxed element                                     |
 | `apps/live/lib/note-value.ts`                                | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
 | `apps/live/hooks/canvas/useEditorNotes.ts`                   | `noteOpenId`, `openNote`, `closeNote`, `setNote` through history                 |
 | `apps/live/components/panels/EditorAnchoredPopovers.tsx`     | Mounts `NotePopover`; lifecycle telemetry on commit                              |
@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/live/components/canvas/RichTextToolbar.tsx`            | The label toolbar hosting the same picker                                        |
 | `apps/live/components/canvas/useRichTextSession.ts`          | Label session (`collapsedScope: 'all'`)                                          |
 | `apps/live/components/canvas/label-style.ts`                 | `effectiveRunStyle`: label headings in `em`                                      |
-| `apps/live/components/canvas/PresentationElementPopover.tsx` | Third read-only surface for a note, in presentation mode [Q7]                    |
+| `apps/live/components/canvas/PresentationElementPopover.tsx` | Third read-only surface for a note, in presentation mode [QD7]                   |
 | `apps/live/lib/url-safety.ts`                                | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
 
 ## Domain and naming
@@ -72,21 +72,21 @@ editable. There is no other state: the editor is uncontrolled and the live value
    `note` command.
 3. `NotePopover` anchors to `[data-element-id]`'s live rect, bottom-centre plus `GAP`, clamps
    horizontally by `WIDTH / 2 + VIEWPORT_EDGE_MARGIN`, and flips above when the popover would pass
-   the viewport bottom. The flip uses the rendered height of the popover [Q3]. It re-anchors on
+   the viewport bottom. The flip uses the rendered height of the popover [QD3]. It re-anchors on
    `resize` and on capture-phase `scroll`.
-4. The editor mounts, paints the runs, focuses, and parks the caret at the end (DD4).
+4. The editor mounts, paints the runs, focuses, and parks the caret at the end (D79).
 
 ### Edit
 
-- Typing, Enter (a literal `'\n'` via `insertTextAtCaret`), paste (`text/plain` only, DD3) and IME
+- Typing, Enter (a literal `'\n'` via `insertTextAtCaret`), paste (`text/plain` only, D78) and IME
   composition end all call `syncFromDom` and report `(plain, runs)` up.
 - A format command mutates `runsRef` synchronously, reports up in the same tick, then repaints and
   restores the selection on the next layout effect.
 - `Cmd/Ctrl+B/I/U` call `onToggle`, never the native command.
 - `Cmd/Ctrl+Enter` commits and closes. `Escape` closes without committing.
-- An outside `mousedown` commits (editable) or just closes (read-only) (DD2).
+- An outside `mousedown` commits (editable) or just closes (read-only) (D77).
 - Delete note commits `('', [])` and closes. It is disabled while there is neither a stored note
-  nor typed text (DD8).
+  nor typed text (D83).
 
 ### Collapsed-caret scope
 
@@ -100,17 +100,17 @@ editable. There is no other state: the editor is uncontrolled and the live value
 ### Block type
 
 1. The picker shows `blockTypeOf(heading, listStyle)`, where both are read from the **first line of
-   the selection** (the caret's line when collapsed) [Q6].
+   the selection** (the caret's line when collapsed) [QD6].
 2. Picking a type runs `blockTypeApplies(type)`: always both `onApplyList(list)` then
    `onApplyHeading(heading)`, so heading and list are never set together through the picker.
-3. `blockTypeOf` reports a list over a heading when both are present (DD10); only legacy runs reach
+3. `blockTypeOf` reports a list over a heading when both are present (D85); only legacy runs reach
    that pairing.
 
 ### Links
 
 1. The Link button toggles the field; it is pre-filled with `active.link` when the target is
    uniformly linked.
-2. Apply: `normaliseUrl(value)`. `null` marks the field invalid and stores nothing (DD7).
+2. Apply: `normaliseUrl(value)`. `null` marks the field invalid and stores nothing (D82).
    Otherwise `applyLink(url)` patches `{ link: url }` over the inline target range.
 3. Remove (shown only when pre-filled) patches `{ link: undefined }`.
 4. Enter / Escape inside the field are stopped so they never save or cancel the note.
@@ -123,13 +123,13 @@ editable. There is no other state: the editor is uncontrolled and the live value
    `hasRichFormatting`, `noteRich`.
 3. When `noteFieldsEqual(prev, now)` nothing is tracked; otherwise `Added` (no previous note),
    `Deleted` (no new note) or `Changed`.
-4. On a tab where edits are blocked the popover opens `readOnly` and never commits [Q4].
+4. On a tab where edits are blocked the popover opens `readOnly` and never commits [QD4].
 
 Invariants:
 
 - **I1:** stored `note === runsPlainText(noteRich)` whenever `noteRich` is present.
 - **I2:** `noteRich` present ⇒ `hasRichFormatting(noteRich)`.
-- **I3:** stored `note` is trimmed and non-empty; an empty note stores neither field (DD1).
+- **I3:** stored `note` is trimmed and non-empty; an empty note stores neither field (D76).
 - **I4:** no stored value ever reaches the DOM as markup; runs render as React text.
 - **I5:** an `href` is emitted only when `isSafeFollowUrl(run.link)`.
 
@@ -186,7 +186,7 @@ type NotePopoverProps = {
 Wire contract: the api's OpenAPI schema (`apps/api/src/openapi/schemas.generated.ts`) types `note`
 as `string` and `noteRich` as `TextRun[]`. `isValidElement` (via `isValidTab`) checks that
 `noteRich` is an array of runs with a string `text` and optional attributes of the right primitive
-type, and that `runsPlainText(noteRich) === note` [Q2]. A rejection is the existing invalid-tab
+type, and that `runsPlainText(noteRich) === note` [QD2]. A rejection is the existing invalid-tab
 response.
 
 ## Data and persistence
@@ -210,10 +210,10 @@ response.
 | E7  | Heading on an empty line                         | `applyHeadingToLines` returns the runs unchanged            |
 | E8  | Commit straight after a format click             | Report runs in the same tick, so the new value commits      |
 | E9  | Anchor element missing from the DOM              | Position not updated; popover stays hidden until it appears |
-| E10 | Edits blocked (locked tab, loading)              | Popover `readOnly` [Q4]                                     |
-| E11 | Malformed `noteRich` in a tab                    | Rejected by `isValidElement` [Q2]                           |
-| E12 | `note` and `noteRich` disagree                   | Rejected by `isValidElement` [Q2]                           |
-| E13 | Editor resized to 24rem near the viewport bottom | Popover re-flips from its measured height [Q3]              |
+| E10 | Edits blocked (locked tab, loading)              | Popover `readOnly` [QD4]                                    |
+| E11 | Malformed `noteRich` in a tab                    | Rejected by `isValidElement` [QD2]                          |
+| E12 | `note` and `noteRich` disagree                   | Rejected by `isValidElement` [QD2]                          |
+| E13 | Editor resized to 24rem near the viewport bottom | Popover re-flips from its measured height [QD3]             |
 
 ## Security and trust
 
@@ -241,14 +241,15 @@ response.
   buttons via `toolbarButtonClass(active, 'shrink-0')`, `TOOLBAR_DIVIDER` between groups, wrapping
   row on `bg-slate-50`.
 - Block-type trigger shows `blockTypeLabel(blockType)` and a chevron; the menu lists
-  `BLOCK_TYPES` in order, the current one tinted brand.
+  `BLOCK_TYPES` in order, the current one tinted brand. The menu closes on an option click and on
+  an outside `pointerdown` in the capture phase (D86).
 - Editor: `min-h-44 max-h-96 resize-y overflow-y-auto`, 13px, placeholder
   `Add a note for this element…`.
 - Link field: placeholder `example.com`, Apply (brand), Remove (only when pre-filled).
 - Read-only: `NoteRichText` in a `max-h-96` scroll box; no toolbar, no footer.
 - Rendering: base 13px; `size` 11 / 13 / 16px; heading 1 17px/700, 2 14.5px/600, 3 13.5px/600
-  (DD5); heading line-height 1.45; links underlined in `var(--note-link-color)` (DD6).
-- Labels render headings at `1.7em`/700, `1.35em`/700, `1.15em`/600, line-height 1.25 (DD9).
+  (D80); heading line-height 1.45; links underlined in `var(--note-link-color)` (D81).
+- Labels render headings at `1.7em`/700, `1.35em`/700, `1.15em`/600, line-height 1.25 (D84).
 - No loading state: the note is on the element already. No error state beyond E4's invalid field.
 
 ## Accessibility
@@ -257,9 +258,9 @@ response.
 - Toggles: `aria-label` and `aria-pressed`; Link adds `aria-expanded`.
 - Picker trigger: `aria-haspopup="listbox"`, `aria-expanded`, `aria-label="Block type"`; options
   `role="option"` with `aria-selected`. Escape does not close the menu and arrow keys do not move
-  between options (G12).
+  between options (GD12).
 - Link field: `aria-label="Link address"`, `aria-invalid` on refusal; the refusal has no text
-  message, only the rose border (G12).
+  message, only the rose border (GD12).
 - Focus: toolbar controls `preventDefault` on `mousedown` (`noFocusSteal`) so the editor keeps its
   selection; the link field takes focus when opened.
 - Contrast: link colour brand-700 on white and brand-200 on slate-800 meet 4.5:1.
@@ -274,7 +275,7 @@ response.
 
 ## Observability
 
-The code emits no log on this path (G1). Target fingerprints:
+The code emits no log on this path (GD1). Target fingerprints:
 
 | #   | Where                                    | Level          | Fingerprint                                          |
 | --- | ---------------------------------------- | -------------- | ---------------------------------------------------- |
@@ -283,7 +284,7 @@ The code emits no log on this path (G1). Target fingerprints:
 | O3  | `NotePopover` commit while edits blocked | `console.warn` | `[note] commit skipped id=<id> reason=edits-blocked` |
 
 Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note` / `Used` /
-`Bold | Italic | Underline | Heading | List | Link`, once per command [Q5].
+`Bold | Italic | Underline | Heading | List | Link`, once per command [QD5].
 
 ## Testing
 
@@ -293,36 +294,36 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 | `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `apps/live/lib/note-value.test.ts`                  |
 | Empty note strips both fields                          | whitespace-only reads as empty                       | `apps/live/lib/note-value.test.ts`                  |
 | Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `apps/live/lib/note-value.test.ts`                  |
-| `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `packages/document/src/rich-text.test.ts`            |
-| Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `packages/document/src/rich-text.test.ts`            |
-| Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `packages/document/src/rich-text.test.ts`            |
+| `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `packages/document/src/rich-text.test.ts`           |
+| Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `packages/document/src/rich-text.test.ts`           |
+| Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `packages/document/src/rich-text.test.ts`           |
 | Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `apps/live/components/notes/note-run-style.test.ts` |
 | Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `apps/live/components/notes/note-run-style.test.ts` |
 | Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `apps/live/components/notes/note-run-style.test.ts` |
 | Closed vocabulary; both attributes applied             | `blockTypeApplies` round-trips through `blockTypeOf` | `apps/live/components/rich-text/block-type.test.ts` |
 | List detection reads the prefix                        | `listStyleOfText`                                    | `apps/live/components/rich-text/block-type.test.ts` |
-| Detection reads the selection's first line [Q6]        | none                                                 | (G7)                                                |
-| Collapsed caret: word / line in a note, all in a label | none                                                 | (G7)                                                |
-| `Cmd/Ctrl+B/I/U` drive run toggles                     | none                                                 | (G7)                                                |
-| Link field: normalise, refuse, Remove                  | none                                                 | (G7)                                                |
-| Read-only viewer gets no toolbar                       | none                                                 | (G7)                                                |
-| Popover 416px, editor 11rem to 24rem, flip [Q3]        | none                                                 | (G7)                                                |
-| One `Note` / `Used` per command [Q5]                   | none                                                 | (G7)                                                |
-| Note edits go through history (undo restores)          | none                                                 | (G7)                                                |
-| Label headings in `em`                                 | none                                                 | (G7)                                                |
+| Detection reads the selection's first line [QD6]       | none                                                 | (GD7)                                               |
+| Collapsed caret: word / line in a note, all in a label | none                                                 | (GD7)                                               |
+| `Cmd/Ctrl+B/I/U` drive run toggles                     | none                                                 | (GD7)                                               |
+| Link field: normalise, refuse, Remove                  | none                                                 | (GD7)                                               |
+| Read-only viewer gets no toolbar                       | none                                                 | (GD7)                                               |
+| Popover 416px, editor 11rem to 24rem, flip [QD3]       | none                                                 | (GD7)                                               |
+| One `Note` / `Used` per command [QD5]                  | none                                                 | (GD7)                                               |
+| Note edits go through history (undo restores)          | none                                                 | (GD7)                                               |
+| Label headings in `em`                                 | none                                                 | (GD7)                                               |
 
 ## Constants and configuration
 
-| Name                    | Value                                        | Provenance / safe range                                 | Home                       |
-| ----------------------- | -------------------------------------------- | ------------------------------------------------------- | -------------------------- |
-| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together         | `NotePopover.tsx`          |
-| `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [Q3] | `NotePopover.tsx`          |
-| `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                         | `NotePopover.tsx`          |
-| `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                   | `lib/clamp-to-viewport.ts` |
-| Editor min / max height | `min-h-44` (11rem) / `max-h-96` (24rem)      | Spec                                                    | `NoteRichTextEditor.tsx`   |
-| `NOTE_BASE_PX`          | `13`                                         | Spec; 12 to 15                                          | `note-run-style.ts`        |
-| `NOTE_RUN_PX`           | `{ sm: 11, md: 13, lg: 16 }`                 | Spec                                                    | `note-run-style.ts`        |
-| `NOTE_HEADING`          | `1: 17/700, 2: 14.5/600, 3: 13.5/600`        | Spec for 1 and 2; DD5 for 3                             | `note-run-style.ts`        |
-| `HEADING_SCALE`         | `1: 1.7em/700, 2: 1.35em/700, 3: 1.15em/600` | DD9; each level above the next, all above 1em           | `label-style.ts`           |
-| `SAFE_SCHEMES`          | `http:`, `https:`, `mailto:`                 | Spec; never widen to `javascript:` / `data:`            | `lib/url-safety.ts`        |
-| `BLOCK_TYPES`           | six entries, Paragraph first                 | Spec order                                              | `block-type.ts`            |
+| Name                    | Value                                        | Provenance / safe range                                  | Home                       |
+| ----------------------- | -------------------------------------------- | -------------------------------------------------------- | -------------------------- |
+| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together          | `NotePopover.tsx`          |
+| `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [QD3] | `NotePopover.tsx`          |
+| `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                          | `NotePopover.tsx`          |
+| `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                    | `lib/clamp-to-viewport.ts` |
+| Editor min / max height | `min-h-44` (11rem) / `max-h-96` (24rem)      | Spec                                                     | `NoteRichTextEditor.tsx`   |
+| `NOTE_BASE_PX`          | `13`                                         | Spec; 12 to 15                                           | `note-run-style.ts`        |
+| `NOTE_RUN_PX`           | `{ sm: 11, md: 13, lg: 16 }`                 | Spec                                                     | `note-run-style.ts`        |
+| `NOTE_HEADING`          | `1: 17/700, 2: 14.5/600, 3: 13.5/600`        | Spec for 1 and 2; D80 for 3                              | `note-run-style.ts`        |
+| `HEADING_SCALE`         | `1: 1.7em/700, 2: 1.35em/700, 3: 1.15em/600` | D84; each level above the next, all above 1em            | `label-style.ts`           |
+| `SAFE_SCHEMES`          | `http:`, `https:`, `mailto:`                 | Spec; never widen to `javascript:` / `data:`             | `lib/url-safety.ts`        |
+| `BLOCK_TYPES`           | six entries, Paragraph first                 | Spec order                                               | `block-type.ts`            |

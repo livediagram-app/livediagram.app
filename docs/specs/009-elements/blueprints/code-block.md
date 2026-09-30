@@ -8,13 +8,13 @@ Scope, by file:
 
 | File                                                         | Role                                                                                          |
 | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                        | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
-| `packages/document/src/code-themes.ts`                        | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
-| `packages/document/src/element-types.ts`                      | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
-| `packages/document/src/shape-factory.ts`                      | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
-| `packages/document/src/colors.ts`                             | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
-| `packages/document/src/validate.ts`                           | Snippet length, closed language set, closed scheme ids                                        |
-| `packages/document/src/svg-render-shapes.ts`                  | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
+| `packages/document/src/data-shapes.ts`                       | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
+| `packages/document/src/code-themes.ts`                       | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
+| `packages/document/src/element-types.ts`                     | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
+| `packages/document/src/shape-factory.ts`                     | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
+| `packages/document/src/colors.ts`                            | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
+| `packages/document/src/validate.ts`                          | Snippet length, closed language set, closed scheme ids                                        |
+| `packages/document/src/svg-render-shapes.ts`                 | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
 | `apps/live/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
 | `apps/live/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
 | `apps/live/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
@@ -32,16 +32,16 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term        | Identifier                            | Meaning                                                          |
-| ----------- | ------------------------------------- | ---------------------------------------------------------------- |
-| Code block  | `ShapeKind` `'code-block'`            | The snippet card                                                 |
-| Snippet     | `ShapeElement.code`                   | Up to `CODE_MAX_LENGTH` characters                               |
-| Language    | `ShapeElement.codeLanguage`           | One of `CODE_LANGUAGES`; absent = `'plain'`                      |
-| Scheme      | `ShapeElement.codeTheme: CodeThemeId` | The card's complete colour set; absent = `midnight`              |
-| Wrap        | `ShapeElement.codeWrap`               | Long-line wrapping; absent = on                                  |
-| Token       | `CodeToken = { kind, text }`          | `kind` in `plain \| keyword \| string \| comment \| number` [Q4] |
-| Badge       | the top-right language text           | Hidden for `plain`                                               |
-| Placeholder | `// double-click to add code`         | Shown for an empty or whitespace-only snippet                    |
+| Term        | Identifier                            | Meaning                                                           |
+| ----------- | ------------------------------------- | ----------------------------------------------------------------- |
+| Code block  | `ShapeKind` `'code-block'`            | The snippet card                                                  |
+| Snippet     | `ShapeElement.code`                   | Up to `CODE_MAX_LENGTH` characters                                |
+| Language    | `ShapeElement.codeLanguage`           | One of `CODE_LANGUAGES`; absent = `'plain'`                       |
+| Scheme      | `ShapeElement.codeTheme: CodeThemeId` | The card's complete colour set; absent = `midnight`               |
+| Wrap        | `ShapeElement.codeWrap`               | Long-line wrapping; absent = on                                   |
+| Token       | `CodeToken = { kind, text }`          | `kind` in `plain \| keyword \| string \| comment \| number` [QE4] |
+| Badge       | the top-right language text           | Hidden for `plain`                                                |
+| Placeholder | `// double-click to add code`         | Shown for an empty or whitespace-only snippet (D105)              |
 
 Banned synonyms: "code theme" in UI copy (say colour scheme), "syntax theme", "snippet language".
 
@@ -58,7 +58,7 @@ Banned synonyms: "code theme" in UI copy (say colour scheme), "syntax theme", "s
 2. Card: `rounded-lg` border in `scheme.border` on `scheme.surface`, `overflow-hidden`.
 3. Badge when `language !== 'plain'`: 10 px mono, top 6 px, right 10 px, `scheme.muted`.
 4. Body `pre`: 12 px mono, 16 px line height, 12 px padding. Wrap on: `whitespace-pre-wrap
-break-all`; wrap off: `whitespace-pre` [G8].
+break-all`; wrap off: `whitespace-pre` [GE8].
 5. Empty: the italic placeholder in `scheme.muted`.
 6. Tokenizer not loaded: the snippet as plain text in `scheme.text` (degrade, never blank).
 7. Loaded: one `div` per line, one `span` per token coloured from the scheme (`plain → text`,
@@ -73,6 +73,8 @@ break-all`; wrap off: `whitespace-pre` [G8].
 | `loaded`  | `tokenizer !== null`      | highlighted; listeners fire                                 |
 | `failed`  | import rejected           | plain text; `loadPromise` cleared so the next mount retries |
 
+A failed load renders plain text and retries on the next mount (D105).
+
 ### Tokenizer rules (`tokenizeCode`)
 
 - CRLF normalised; split on `\n`. `plain` returns one plain token per non-empty line.
@@ -86,16 +88,16 @@ break-all`; wrap off: `whitespace-pre` [G8].
 ### Edit
 
 1. Double-click on the card calls `onEditCode(id)` before any label edit, unless
-   `remotelyLocked`; read-only surfaces pass no handler. A user-locked block still opens [Q7].
+   `remotelyLocked`; read-only surfaces pass no handler. A user-locked block still opens [QE7].
 2. The Code section (Tools flyout): `CodeSummary` ("No code yet" or "n lines · language"), an
    **Edit code** button opening the same dialog, and a **Wrap Long Lines** toggle
-   (`setCodeWrapSelected`, `'CodeWrap'`). No language picker in the menu [Q5].
+   (`setCodeWrapSelected`, `'CodeWrap'`). No language picker in the menu [QE5].
 3. `CodeEditDialog`: a 14-row monospace textarea (`maxLength = CODE_MAX_LENGTH`, spellcheck off,
    autofocus) and a language `select` ("Plain text" for `plain`). Tab inserts two spaces at the
-   caret and never moves focus [Q8]. Save commits `setCodeSelected(draft.slice(0, 4000), lang)`
+   caret and never moves focus [QE8]. Save commits `setCodeSelected(draft.slice(0, 4000), lang)`
    (one undo step, `'CodeBlock'`) and closes; Cancel, Close and Escape discard.
 4. `setCodeSelected` writes to every selected code block, not only the one the dialog opened
-   for [G7].
+   for [GE7].
 5. Style band: Colours and Border are absent (`supportsColours` false); **Presets** holds the
    eight schemes with hover preview and click commit (`'CodeTheme'`).
 
@@ -130,7 +132,7 @@ export function useCodeTokenizer(): boolean;
 
 Validation rejections (`isValidElement` returns false): `code` not a string or longer than 4 000;
 `codeLanguage` outside `CODE_LANGUAGES`; `codeTheme` failing `isCodeThemeId`. `codeWrap` is not
-checked [G5]. Writers also truncate: the dialog `maxLength`, `save` and `setCodeSelected` slice
+checked [GE5]. Writers also truncate: the dialog `maxLength`, `save` and `setCodeSelected` slice
 to 4 000.
 
 ## Data and persistence
@@ -153,7 +155,7 @@ Scheme ids are permanent. An unknown stored id renders as `midnight` but cannot 
 | E2  | Snippet over 4 000 chars        | Truncated by every writer; rejected by validation                            |
 | E3  | Unterminated block comment      | Comment to the end of the snippet                                            |
 | E4  | Unterminated backtick string    | String carries to later lines                                                |
-| E5  | Very long unbroken token        | Wrap on: broken anywhere (canvas), mid-token fallback (export) [G8]          |
+| E5  | Very long unbroken token        | Wrap on: broken anywhere (canvas), mid-token fallback (export) [GE8]         |
 | E6  | More lines than fit             | Clipped by the card on the canvas; export draws `floor((h - 24) / 16)` lines |
 | E7  | Block deleted while dialog open | The dialog unmounts (element lookup fails)                                   |
 | E8  | Read-only session               | No `onEditCode`, and the dialog never mounts when read-only                  |
@@ -182,10 +184,10 @@ without a code block never pay for it. The dialog is lazy-loaded.
 ## Accessibility
 
 - Contrast: `text`, `keyword`, `string`, `number` meet 4.5:1 on every scheme; `muted` and
-  `comment` fall below 4.5:1 on seven of eight (Paper 2.56:1, Plum comment 2.15:1) [Q9].
+  `comment` fall below 4.5:1 on seven of eight (Paper 2.56:1, Plum comment 2.15:1) [QE9].
 - The dialog has `ariaLabel="Edit code"`; the language control is a labelled native `select`.
 - Keyboard: Tab never leaves the textarea, so Save is reachable only after Escape closes the
-  dialog, which discards [Q8].
+  dialog, which discards [QE8].
 - The canvas card has no motion.
 
 ## Web experience
@@ -196,37 +198,37 @@ The tokenizer and dialog are separate chunks (LCP unaffected). The canvas card i
 ## Observability
 
 - `console.error('code tokenizer failed to load', err)` on a failed import, without a
-  recognisable `[code-highlight]` prefix [G12].
+  recognisable `[code-highlight]` prefix [GE12].
 - Telemetry: `Added CodeBlock`; `Changed CodeBlock | CodeWrap | CodeTheme`.
 
 ## Testing
 
-| Rule                                            | Test                                               | File                                       |
-| ----------------------------------------------- | -------------------------------------------------- | ------------------------------------------ |
+| Rule                                            | Test                                               | File                                        |
+| ----------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
 | Guard matches only `code-block`                 | code block matches only its own kind               | `packages/document/src/data-shapes.test.ts` |
 | Bounded snippet, closed language set            | bounds the code block + checklist fields           | `packages/document/src/validate.test.ts`    |
 | Every scheme complete, unique, default midnight | code themes cases                                  | `packages/document/src/code-themes.test.ts` |
 | Unknown scheme falls back                       | falls back rather than returning undefined         | `packages/document/src/code-themes.test.ts` |
 | Headless render: card, lines, badge             | renders a code block as the dark card + mono lines | `packages/document/src/svg-render.test.ts`  |
 | Headless wraps word-first; off keeps one line   | code block wrapping cases                          | `packages/document/src/code-themes.test.ts` |
-| Preset writes only the scheme                   | sets the scheme on a code block and nothing else   | `apps/live/lib/style-presets.test.ts`      |
-| Tokenizer classes per language                  | none [G11]                                         |                                            |
-| Degrades to plain until loaded                  | none [G11]                                         |                                            |
-| Tab inserts two spaces; Save is one undo step   | none [G11]                                         |                                            |
-| Double-click opens the dialog                   | none [G11]                                         |                                            |
+| Preset writes only the scheme                   | sets the scheme on a code block and nothing else   | `apps/live/lib/style-presets.test.ts`       |
+| Tokenizer classes per language                  | none [GE11]                                        |                                             |
+| Degrades to plain until loaded                  | none [GE11]                                        |                                             |
+| Tab inserts two spaces; Save is one undo step   | none [GE11]                                        |                                             |
+| Double-click opens the dialog                   | none [GE11]                                        |                                             |
 
 ## Constants and configuration
 
-| Name                 | Value                       | Provenance / safe range                      |
-| -------------------- | --------------------------- | -------------------------------------------- |
-| `CODE_MAX_LENGTH`    | 4 000                       | Spec                                         |
-| `CODE_LANGUAGES`     | 10 ids                      | Spec                                         |
-| `DEFAULT_CODE_THEME` | `'midnight'`                | Spec                                         |
-| `CODE_THEMES`        | 8 schemes × 8 colours       | Spec                                         |
-| `CODE_FONT_SIZE`     | 12                          | Matches `text-xs` on the canvas              |
-| `CODE_LINE_HEIGHT`   | 16                          | Matches `leading-4`                          |
-| `CODE_PAD`           | 12                          | Matches `p-3`                                |
-| Export char width    | 7.2 px per char             | Inline estimate in `svgCodeBlockShape` [G13] |
-| Wrap word threshold  | a space past half the width | `wrapLine`                                   |
-| Tab width            | 2 spaces                    | Spec                                         |
-| Size                 | 320 × 180                   | Spec                                         |
+| Name                 | Value                       | Provenance / safe range                       |
+| -------------------- | --------------------------- | --------------------------------------------- |
+| `CODE_MAX_LENGTH`    | 4 000                       | Spec                                          |
+| `CODE_LANGUAGES`     | 10 ids                      | Spec                                          |
+| `DEFAULT_CODE_THEME` | `'midnight'`                | Spec                                          |
+| `CODE_THEMES`        | 8 schemes × 8 colours       | Spec                                          |
+| `CODE_FONT_SIZE`     | 12                          | Matches `text-xs` on the canvas               |
+| `CODE_LINE_HEIGHT`   | 16                          | Matches `leading-4`                           |
+| `CODE_PAD`           | 12                          | Matches `p-3`                                 |
+| Export char width    | 7.2 px per char             | Inline estimate in `svgCodeBlockShape` [GE13] |
+| Wrap word threshold  | a space past half the width | `wrapLine`                                    |
+| Tab width            | 2 spaces                    | Spec                                          |
+| Size                 | 320 × 180                   | Spec                                          |

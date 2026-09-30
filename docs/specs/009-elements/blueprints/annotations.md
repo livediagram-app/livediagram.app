@@ -7,29 +7,29 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `DDn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                              |
-| -------------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                  | `AnnotationElement`                                               |
-| `packages/document/src/index.ts`                          | `isBoxed` and the `BoxedElement` union include `'annotation'`     |
-| `packages/document/src/factories.ts`                      | `createAnnotation`, `ANNOTATION_SIZE`                             |
-| `packages/document/src/colors.ts`                         | Per-type colour and padding defaults; `supportsColours`           |
-| `packages/document/src/themes.ts`                         | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                   |
-| `packages/document/src/svg-render-describe.ts`            | Export shape: an ellipse                                          |
-| `apps/live/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                          |
-| `apps/live/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                            |
-| `apps/live/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape         |
-| `apps/live/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                            |
-| `apps/live/app/document/[id]/useElementCreation.ts`       | `addAnnotation`: viewport-centre drop + telemetry                 |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                     |
-| `apps/live/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw             |
-| `apps/live/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                 |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                             |
-| `apps/live/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                          |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                      |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [Q9]                                  |
-| `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [Q8] |
-| `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [Q8]        |
-| `apps/live/lib/export-tab-text.ts`                       | Markdown outline [Q11]                                            |
+| File                                                     | Role                                                               |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| `packages/document/src/element-types.ts`                 | `AnnotationElement`                                                |
+| `packages/document/src/index.ts`                         | `isBoxed` and the `BoxedElement` union include `'annotation'`      |
+| `packages/document/src/factories.ts`                     | `createAnnotation`, `ANNOTATION_SIZE`                              |
+| `packages/document/src/colors.ts`                        | Per-type colour and padding defaults; `supportsColours`            |
+| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                    |
+| `packages/document/src/svg-render-describe.ts`           | Export shape: an ellipse                                           |
+| `apps/live/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                           |
+| `apps/live/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                             |
+| `apps/live/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape          |
+| `apps/live/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                             |
+| `apps/live/app/document/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                  |
+| `apps/live/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                      |
+| `apps/live/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw              |
+| `apps/live/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                  |
+| `apps/live/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                              |
+| `apps/live/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                           |
+| `apps/live/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                       |
+| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                  |
+| `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8] |
+| `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]        |
+| `apps/live/lib/export-tab-text.ts`                       | Markdown outline [QD11]                                            |
 
 ## Domain and naming
 
@@ -63,28 +63,28 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 
 - `pointerenter` sets `hovering`; `pointerleave` clears it.
 - The preview renders when `hovering && !isSelected && !isEditing && element.note`.
-- Escape dismisses a showing preview until the next `pointerenter` [Q10].
+- Escape dismisses a showing preview until the next `pointerenter` [QD10].
 - The preview stays while the pointer moves onto it and for a short grace period after leaving the
-  marker [Q10].
+  marker [QD10].
 
 ### Open the note
 
 - A double-click on an annotation calls `onOpenNote(id)` (unless `isEditing` or remotely locked),
-  which toggles `noteOpenId` [Q9]. A single click selects; a press-and-drag moves.
+  which toggles `noteOpenId` [QD9]. A single click selects; a press-and-drag moves.
 - A read-only viewer's double-click opens the popover `readOnly`.
 - The generic note badge is suppressed on an annotation: the marker is the affordance.
 
 ### Resize and rotate
 
 - A selected annotation shows corner resize handles and keeps its aspect lock, so it stays round
-  [Q8].
-- The Size section (width, height, aspect lock) applies; Rotation is hidden for annotations [Q8].
+  [QD8].
+- The Size section (width, height, aspect lock) applies; Rotation is hidden for annotations [QD8].
 - Shape morph grid and Border are hidden: both gate on `type === 'shape'` / `supportsBorder`.
 
 ### Everything else
 
 Move, recolour (Colours accordion), layer, lock, link, comment, assign an action and delete follow
-the generic boxed paths. No quick-connect plus appears (`showPlus` excludes annotations) [Q11].
+the generic boxed paths. No quick-connect plus appears (`showPlus` excludes annotations, D90) [QD11].
 
 Invariants:
 
@@ -139,24 +139,24 @@ format treats `type` as an open string.
 - **Persisted:** the boxed fields plus `note` / `noteRich`, in the tab JSON.
 - **Never persisted:** `hovering`, the preview position.
 - **Migration:** none.
-- **Visual export:** an ellipse in the element's fill and stroke; no glyph, no note (DD13) [Q11].
+- **Visual export:** an ellipse in the element's fill and stroke; no glyph, no note (D88) [QD11].
 - **Markdown export:** listed under Elements with `(annotation)` only when `label` is set, which no
-  editor path does [Q11].
+  editor path does [QD11].
 - **Excalidraw export:** an ellipse (`excalidraw-export.ts:147`), without the note.
 
 ## Errors and edge cases
 
-| #   | Case                                        | Handling                                            |
-| --- | ------------------------------------------- | --------------------------------------------------- |
-| E1  | Add while edits are blocked                 | `addAnnotation` returns; nothing tracked            |
-| E2  | Hover with no note                          | No preview                                          |
-| E3  | Marker near the top of the viewport         | Preview flips below when `rect.top - GAP < 120`     |
-| E4  | Marker near a side edge                     | Preview centre clamped by `MAX_W / 2 + EDGE_MARGIN` |
-| E5  | Long note                                   | Preview clipped at 15rem with a fade [Q10]          |
-| E6  | Marker removed from the DOM while hovered   | Position not updated; unmounts with the element     |
-| E7  | Remotely locked marker double-clicked       | Ignored                                             |
-| E8  | Resized far from 44                         | Allowed, aspect kept [Q8]; new markers are still 44 |
-| E9  | Annotation dropped on a shape via icon fold | Not an icon; `acceptsInlineIcon` is shape-only      |
+| #   | Case                                        | Handling                                             |
+| --- | ------------------------------------------- | ---------------------------------------------------- |
+| E1  | Add while edits are blocked                 | `addAnnotation` returns; nothing tracked             |
+| E2  | Hover with no note                          | No preview                                           |
+| E3  | Marker near the top of the viewport         | Preview flips below when `rect.top - GAP < 120`      |
+| E4  | Marker near a side edge                     | Preview centre clamped by `MAX_W / 2 + EDGE_MARGIN`  |
+| E5  | Long note                                   | Preview clipped at 15rem with a fade [QD10]          |
+| E6  | Marker removed from the DOM while hovered   | Position not updated; unmounts with the element      |
+| E7  | Remotely locked marker double-clicked       | Ignored                                              |
+| E8  | Resized far from 44                         | Allowed, aspect kept [QD8]; new markers are still 44 |
+| E9  | Annotation dropped on a shape via icon fold | Not an icon; `acceptsInlineIcon` is shape-only       |
 
 ## Security and trust
 
@@ -173,19 +173,19 @@ from links, so it cannot capture canvas gestures.
 
 - Marker: a circle (`borderRadius: 50%`), 2px solid border in the stroke, `shadow-sm`, glyph at 58%
   of the box tinted by the stroke.
-- Colours (DD14): light fill `#e0f2fe`, stroke `#0ea5e9`; dark fill `#3a3a44`, stroke `#a1a1aa`;
+- Colours (D89): light fill `#e0f2fe`, stroke `#0ea5e9`; dark fill `#3a3a44`, stroke `#a1a1aa`;
   padding `none`. A theme sets fill and stroke only.
-- Preview (DD12): portal, `z-[var(--z-toast)]`, white / slate-900 card, `max-w` 280px, `max-h-60`,
+- Preview (D87): portal, `z-[var(--z-toast)]`, white / slate-900 card, `max-w` 280px, `max-h-60`,
   above the marker with a 10px gap, below when too close to the top.
 - Tile: caption from the tile, description "Annotation. A note marker: hover to read it,
-  double-click to edit." [Q9]
+  double-click to edit." [QD9]
 - No loading or error state.
 
 ## Accessibility
 
 - Glyph `aria-hidden`; the element's name comes from `elementKindLabel` ("Annotation").
 - Hover preview meets WCAG 2.2 SC 1.4.13: dismissible (Escape), hoverable, persistent until the
-  pointer leaves both [Q10].
+  pointer leaves both [QD10].
 - Keyboard: the command palette's `note` command opens the note for the selected annotation.
 - Contrast: glyph `#0ea5e9` on `#e0f2fe` is a non-text graphic above 3:1; dark `#a1a1aa` on
   `#3a3a44` likewise.
@@ -198,7 +198,7 @@ from links, so it cannot capture canvas gestures.
 
 ## Observability
 
-The code emits no log here (G1). Target fingerprint:
+The code emits no log here (GD1). Target fingerprint:
 
 | #   | Where                         | Level           | Fingerprint                                     |
 | --- | ----------------------------- | --------------- | ----------------------------------------------- |
@@ -208,21 +208,21 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 
 ## Testing
 
-| Rule                                           | Test                                           | File                                                          |
-| ---------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
+| Rule                                           | Test                                           | File                                                           |
+| ---------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
 | New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/document/src/factories.test.ts`                      |
-| Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/live/lib/canvas.test.ts`                                |
-| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/live/lib/canvas-selection.test.ts`                      |
-| Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/live/lib/element-telemetry.test.ts`                     |
-| Tile routes to an action                       | palette telemetry coverage                     | `apps/live/lib/palette-telemetry-coverage.test.ts`            |
+| Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/live/lib/canvas.test.ts`                                 |
+| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/live/lib/canvas-selection.test.ts`                       |
+| Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/live/lib/element-telemetry.test.ts`                      |
+| Tile routes to an action                       | palette telemetry coverage                     | `apps/live/lib/palette-telemetry-coverage.test.ts`             |
 | No inline text (I1)                            | `elementHasText` false for annotation          | `packages/document/src/element-has-text.test.ts`               |
 | No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `packages/document/src/shadow.test.ts`, `arrow-behind.test.ts` |
-| Themes fill + stroke, not text                 | none                                           | (G7)                                                          |
-| `supportsColours` true                         | none                                           | (G7)                                                          |
-| Hover preview gate (I3), flip, Escape [Q10]    | none                                           | (G7)                                                          |
-| Double-click opens, read-only opens read-only  | none                                           | (G7)                                                          |
-| Export draws an ellipse                        | none                                           | (G7)                                                          |
-| Rotation hidden, aspect kept on resize [Q8]    | none                                           | (G7)                                                          |
+| Themes fill + stroke, not text                 | none                                           | (GD7)                                                          |
+| `supportsColours` true                         | none                                           | (GD7)                                                          |
+| Hover preview gate (I3), flip, Escape [QD10]   | none                                           | (GD7)                                                          |
+| Double-click opens, read-only opens read-only  | none                                           | (GD7)                                                          |
+| Export draws an ellipse                        | none                                           | (GD7)                                                          |
+| Rotation hidden, aspect kept on resize [QD8]   | none                                           | (GD7)                                                          |
 
 ## Constants and configuration
 
@@ -232,7 +232,7 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 | `GAP`                     | `10`                       | Marker to preview, px; 6 to 16          | `AnnotationMarker.tsx`     |
 | `MAX_W`                   | `280`                      | Preview width cap, px; 240 to 360       | `AnnotationMarker.tsx`     |
 | Flip threshold            | `120`                      | Space needed above, px (inline literal) | `AnnotationMarker.tsx`     |
-| Preview max height        | `max-h-60` (15rem)         | DD12                                    | `AnnotationMarker.tsx`     |
+| Preview max height        | `max-h-60` (15rem)         | D87                                     | `AnnotationMarker.tsx`     |
 | Glyph size                | `58%` of the marker        | Reads at 44px; 50% to 66%               | `AnnotationMarker.tsx`     |
 | `DARK_INK.annotationFill` | `#3a3a44`                  | One step above the dark shape fill      | `colors.ts`                |
 | `EDGE_MARGIN`             | `VIEWPORT_EDGE_MARGIN` = 8 | Shared popover margin                   | `lib/clamp-to-viewport.ts` |
