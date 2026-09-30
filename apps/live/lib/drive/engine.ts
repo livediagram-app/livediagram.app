@@ -9,6 +9,7 @@ import {
   DRIVE_PROP_ROOT,
   driveRootName,
   type DriveConnection,
+  type DriveItem,
   type DriveItemKind,
 } from '@livediagram/api-schema';
 import { stripDriveName } from '@livediagram/api-schema';
@@ -54,8 +55,12 @@ export type DriveMirrorStatus = {
   rootName: string | null;
   // Every mirrored (Personal Space) document: the savedAt last uploaded to
   // Drive, or null while it has never been. A document not listed is not
-  // mirrored (a team, shared or offline document).
-  mirrored: Record<string, number | null>;
+  // mirrored (a team, shared or offline document) or is newer than the last
+  // pass. Null until a pass has finished, so nothing is guessed on arrival.
+  mirrored: Record<string, number | null> | null;
+  // Documents whose last upload failed (not a network or auth failure, which
+  // stop the whole pass): retried every pass, cleared when one succeeds.
+  failed: string[];
 };
 
 export type DriveEngineTelemetry = (
@@ -99,8 +104,16 @@ const INITIAL: DriveMirrorStatus = {
   leaseHeldElsewhere: false,
   notices: [],
   rootName: null,
-  mirrored: {},
+  mirrored: null,
+  failed: [],
 };
+
+// Each mirrored document's last uploaded savedAt, from the drive_items rows.
+export function mirroredFromItems(items: Iterable<DriveItem>): Record<string, number | null> {
+  const out: Record<string, number | null> = {};
+  for (const item of items) if (item.kind === 'document') out[item.ldId] = item.mirroredSavedAt;
+  return out;
+}
 
 export class DriveMirrorEngine {
   private readonly deps: DriveEngineDeps;
@@ -110,6 +123,7 @@ export class DriveMirrorEngine {
   private stopped = false;
   private readonly backoff = new Backoff();
   private readonly lastContentWrite = new Map<string, number>();
+  private readonly failedDocuments = new Set<string>();
   private pageToken: string | null = null;
   private pageTokenPersisted: string | null = null;
   private pageTokenSavedAt = 0;
@@ -250,9 +264,22 @@ export class DriveMirrorEngine {
 
   // ---- one pass --------------------------------------------------------------
 
+  // What each document's last upload was is on our own server (drive_items),
+  // so the Explorer can say it before any call to Google, and while syncing is
+  // paused. Once per engine: later passes publish it with their result.
+  private async publishKnownMirror(): Promise<void> {
+    if (this.status.mirrored !== null) return;
+    try {
+      this.publish({ mirrored: mirroredFromItems(await this.deps.port.listItems()) });
+    } catch (err) {
+      driveWarn('known-mirror-failed', { error: String(err) });
+    }
+  }
+
   private async runPass(kind: PassKind): Promise<void> {
     const { deps } = this;
     driveLog('pass-start', { kind });
+    await this.publishKnownMirror();
     try {
       await deps.tokens.get();
     } catch (err) {
@@ -301,6 +328,7 @@ export class DriveMirrorEngine {
         progress: null,
         notices: this.noticesOf(snapshot),
         mirrored: this.mirroredOf(snapshot),
+        failed: this.failedOf(snapshot),
       });
       driveLog('pass-end', { kind });
     } catch (err) {
@@ -515,6 +543,8 @@ export class DriveMirrorEngine {
     if (creates > 1) this.publish({ progress: { done, total: creates } });
     await runOutbound(this.context(snapshot), plan.ops, {
       onContentWritten: (id) => this.lastContentWrite.set(id, deps.now()),
+      onDocumentFailed: (id) => this.failedDocuments.add(id),
+      onDocumentWritten: (id) => this.failedDocuments.delete(id),
       onCreated: () => {
         done += 1;
         if (creates > 1) this.publish({ progress: { done, total: creates } });
@@ -564,12 +594,16 @@ export class DriveMirrorEngine {
     deps.track('FirstMirrorFinished');
   }
 
-  private mirroredOf(snapshot: MirrorSnapshot): Record<string, number | null> {
-    const out: Record<string, number | null> = {};
-    for (const d of snapshot.documents.values()) {
-      out[d.id] = snapshot.items.get(itemKey('document', d.id))?.mirroredSavedAt ?? null;
+  // Forget failures of documents that left the mirror (deleted, moved to a team).
+  private failedOf(snapshot: MirrorSnapshot): string[] {
+    for (const id of this.failedDocuments) {
+      if (!snapshot.documents.has(id)) this.failedDocuments.delete(id);
     }
-    return out;
+    return [...this.failedDocuments];
+  }
+
+  private mirroredOf(snapshot: MirrorSnapshot): Record<string, number | null> {
+    return mirroredFromItems(snapshot.items.values());
   }
 
   private noticesOf(snapshot: MirrorSnapshot): DriveMirrorNotice[] {

@@ -82,6 +82,7 @@ export const lucideClipboardCheck: readonly IconPrim[] = [{"t":"rect","x":8,"y":
 export const lucideClipboardPaste: readonly IconPrim[] = [{"t":"path","d":"M11 14h10"},{"t":"path","d":"M16 4h2a2 2 0 0 1 2 2v1.344"},{"t":"path","d":"m17 18 4-4-4-4"},{"t":"path","d":"M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 1.793-1.113"},{"t":"rect","x":8,"y":2,"w":8,"h":4,"rx":1}];
 export const lucideClock: readonly IconPrim[] = [{"t":"circle","cx":12,"cy":12,"r":10},{"t":"path","d":"M12 6v6l4 2"}];
 export const lucideCloud: readonly IconPrim[] = [{"t":"path","d":"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"}];
+export const lucideCloudAlert: readonly IconPrim[] = [{"t":"path","d":"M12 12v4"},{"t":"path","d":"M12 20h.01"},{"t":"path","d":"M8.128 16.949A7 7 0 1 1 15.71 8h1.79a1 1 0 0 1 0 9h-1.642"}];
 export const lucideCloudCheck: readonly IconPrim[] = [{"t":"path","d":"m17 15-5.5 5.5L9 18"},{"t":"path","d":"M5.516 16.07A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 3.501 7.327"}];
 export const lucideCloudOff: readonly IconPrim[] = [{"t":"path","d":"M10.94 5.274A7 7 0 0 1 15.71 10h1.79a4.5 4.5 0 0 1 4.222 6.057"},{"t":"path","d":"M18.796 18.81A4.5 4.5 0 0 1 17.5 19H9A7 7 0 0 1 5.79 5.78"},{"t":"path","d":"m2 2 20 20"}];
 export const lucideCloudSync: readonly IconPrim[] = [{"t":"path","d":"m17 18-1.535 1.605a5 5 0 0 1-8-1.5"},{"t":"path","d":"M17 22v-4h-4"},{"t":"path","d":"M20.996 15.251A4.5 4.5 0 0 0 17.495 8h-1.79a7 7 0 1 0-12.709 5.607"},{"t":"path","d":"M7 10v4h4"},{"t":"path","d":"m7 14 1.535-1.605a5 5 0 0 1 8 1.5"}];

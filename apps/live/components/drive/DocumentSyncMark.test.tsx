@@ -13,6 +13,9 @@ import {
   documentSyncState,
 } from './drive-mirror-context';
 import { DocumentSyncMark } from './DocumentSyncMark';
+import { isMirrorable } from '@/app/explorer/document-badges';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import type { PaneDocument } from '@/app/explorer/views';
 
 afterEach(cleanup);
 
@@ -25,34 +28,72 @@ const status = (over: Partial<DriveMirrorStatus> = {}): DriveMirrorStatus => ({
 });
 const NOTICE = { kind: 'document' as const, ldId: 'mine', name: 'Plan', parentId: 'p' };
 
+// Every flow the Explorer row meets (docs/specs/022-drive-mirror/drive-mirror.md,
+// "The Explorer shows each document's sync").
+const state = (over: Partial<DriveMirrorStatus>, savedAt: number, mirrorable = true, id = 'mine') =>
+  documentSyncState(status(over), id, savedAt, mirrorable);
+
 describe('documentSyncState', () => {
   it('is synced once the last save is in Drive', () => {
-    expect(documentSyncState(status(), 'mine', 100)).toBe('synced');
-    expect(documentSyncState(status(), 'mine', 90)).toBe('synced');
+    expect(state({}, 100)).toBe('synced');
+    expect(state({}, 90)).toBe('synced');
   });
 
-  it('is waiting while a newer save is not in Drive yet, syncing during a pass', () => {
-    expect(documentSyncState(status(), 'mine', 101)).toBe('waiting');
-    expect(documentSyncState(status({ mirrored: { mine: null } }), 'mine', 1)).toBe('waiting');
-    expect(documentSyncState(status({ state: 'syncing' }), 'mine', 101)).toBe('syncing');
-    expect(documentSyncState(status({ state: 'syncing' }), 'mine', 100)).toBe('synced');
+  it('is waiting after an edit, syncing during a pass, synced once uploaded', () => {
+    expect(state({}, 101)).toBe('waiting');
+    expect(state({ state: 'syncing' }, 101)).toBe('syncing');
+    expect(state({ state: 'syncing', mirrored: { mine: 101 } }, 101)).toBe('synced');
   });
 
-  it('says nothing for a document that is not mirrored, or when Drive is not connected', () => {
-    expect(documentSyncState(status(), 'team-doc', 1)).toBeNull();
-    expect(documentSyncState(status({ state: 'disconnected' }), 'mine', 100)).toBeNull();
-    expect(documentSyncState(status({ state: 'needs_reconnect' }), 'mine', 100)).toBeNull();
+  it('is waiting at once for a document the engine has not seen yet (new, duplicated, imported, moved out of a team, synced up from offline, restored)', () => {
+    expect(state({}, 5, true, 'duplicate')).toBe('waiting');
+    expect(state({ mirrored: { mine: null } }, 1)).toBe('waiting');
+    expect(state({ state: 'syncing' }, 5, true, 'duplicate')).toBe('syncing');
+  });
+
+  it('says nothing for a document that is not mirrored (team, shared with you, offline)', () => {
+    expect(state({}, 100, false)).toBeNull();
+    // Moved into a team: still in the engine's last list, but the row knows.
+    expect(state({ mirrored: { mine: 100 } }, 100, false)).toBeNull();
+  });
+
+  it('says nothing before Drive is known to be connected, or once it is not', () => {
+    expect(state({ state: 'starting' }, 100)).toBeNull();
+    expect(state({ state: 'disconnected' }, 100)).toBeNull();
+  });
+
+  it('says nothing until drive_items has been read, never guessing', () => {
+    expect(state({ mirrored: null }, 100)).toBeNull();
+    expect(state({ mirrored: null, state: 'syncing' }, 100)).toBeNull();
+  });
+
+  it('keeps saying what it knows while syncing is paused', () => {
+    expect(state({ state: 'needs_reconnect' }, 100)).toBe('synced');
+    expect(state({ state: 'needs_reconnect' }, 101)).toBe('waiting');
+    expect(state({ state: 'needs_resume' }, 101)).toBe('waiting');
+  });
+
+  it('stays waiting while offline or rate-limited: it has not gone up yet', () => {
+    expect(state({ error: 'offline' }, 101)).toBe('waiting');
+    expect(state({ error: 'rate_limited' }, 101)).toBe('waiting');
+    expect(state({ error: 'offline' }, 100)).toBe('synced');
+  });
+
+  it("says a document's upload failed, until a retry succeeds", () => {
+    expect(state({ failed: ['mine'] }, 101)).toBe('failed');
+    expect(state({ failed: ['mine'], state: 'syncing' }, 101)).toBe('failed');
+    expect(state({ failed: [] }, 101)).toBe('waiting');
   });
 
   it('leaves a document with a folder notice to that notice', () => {
-    expect(documentSyncState(status({ notices: [NOTICE] }), 'mine', 100)).toBeNull();
+    expect(state({ notices: [NOTICE] }, 100)).toBeNull();
   });
 });
 
-function show(s: DriveMirrorStatus, savedAt: number) {
+function show(s: DriveMirrorStatus, savedAt: number, mirrorable = true) {
   render(
     <DriveMirrorContext.Provider value={{ ...DRIVE_MIRROR_OFF, mode: 'broker', status: s }}>
-      <DocumentSyncMark documentId="mine" savedAt={savedAt} />
+      <DocumentSyncMark documentId="mine" savedAt={savedAt} mirrorable={mirrorable} />
     </DriveMirrorContext.Provider>,
   );
 }
@@ -67,6 +108,13 @@ describe('DocumentSyncMark', () => {
     cleanup();
     show(status({ state: 'syncing' }), 101);
     expect(screen.getByRole('img', { name: 'Syncing to Google Drive…' })).toBeTruthy();
+    cleanup();
+    show(status({ failed: ['mine'] }), 101);
+    expect(
+      screen.getByRole('img', {
+        name: "Couldn't sync to Google Drive. Trying again automatically.",
+      }),
+    ).toBeTruthy();
   });
 
   it('keeps every cloud quiet and colours only its symbol: the check green, the arrows blue', () => {
@@ -79,6 +127,7 @@ describe('DocumentSyncMark', () => {
       [status(), 100, 'emerald'],
       [status(), 101, 'blue'],
       [status({ state: 'syncing' }), 101, 'blue'],
+      [status({ failed: ['mine'] }), 101, 'amber'],
     ] as const) {
       show(s, savedAt);
       const state = document
@@ -95,7 +144,23 @@ describe('DocumentSyncMark', () => {
   });
 
   it('renders nothing for a document that is not mirrored', () => {
-    show(status({ mirrored: {} }), 100);
+    show(status(), 100, false);
     expect(document.querySelector('[data-document-sync]')).toBeNull();
+  });
+});
+
+describe('isMirrorable', () => {
+  const doc = (over: Partial<PaneDocument>) =>
+    ({ id: 'd', name: 'Plan', ownerId: 'me', savedAt: 1, ...over }) as PaneDocument;
+  it("is the user's own Personal Space document, saved in the cloud", () => {
+    expect(isMirrorable(doc({}))).toBe(true);
+    expect(isMirrorable(doc({ shareCode: 'abc' }))).toBe(true);
+  });
+  it('is not a team document, one shared with the user, or an offline one', () => {
+    expect(isMirrorable(doc({ team: { id: 't', name: 'Team' } }))).toBe(false);
+    expect(isMirrorable(doc({ shared: { ownerName: 'Ann', role: 'edit', shareCode: 'x' } }))).toBe(
+      false,
+    );
+    expect(isMirrorable(doc({ ownerId: OFFLINE_OWNER_ID }))).toBe(false);
   });
 });

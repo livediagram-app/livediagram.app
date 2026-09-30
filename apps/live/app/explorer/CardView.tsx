@@ -13,7 +13,13 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
+import {
+  FavouriteMarker,
+  FolderChip,
+  VisibilityBadge,
+  isMirrorable,
+  useIconOnlyBadges,
+} from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
@@ -196,7 +202,11 @@ function DocumentCard(
           {/* A flex box, not an inline span: an inline wrapper sits the mark on
               the text baseline and lifts it off the row's centre. */}
           <span className="ml-auto flex items-center">
-            <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
+            <DocumentSyncMark
+              documentId={liveDoc.id}
+              savedAt={liveDoc.savedAt}
+              mirrorable={isMirrorable(liveDoc)}
+            />
           </span>
         </div>
         {ownerLabel ? (

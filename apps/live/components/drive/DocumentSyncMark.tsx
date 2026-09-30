@@ -6,7 +6,12 @@
 // each a different glyph so colour is never the only signal, and named on
 // hover and focus. Nothing at all for a document that is not mirrored.
 
-import { lucideCloudCheck, lucideCloudSync, lucideCloudUpload } from '@livediagram/icons/lucide';
+import {
+  lucideCloudAlert,
+  lucideCloudCheck,
+  lucideCloudSync,
+  lucideCloudUpload,
+} from '@livediagram/icons/lucide';
 import type { IconPrim } from '@livediagram/icons';
 import { Glyph, Tooltip, type IconProps } from '@livediagram/ui';
 import { useDocumentSync, type DocumentSyncState } from './drive-mirror-context';
@@ -15,6 +20,7 @@ export const DOCUMENT_SYNC_LABEL: Record<DocumentSyncState, string> = {
   synced: 'Synced to Google Drive',
   waiting: 'Waiting to sync to Google Drive',
   syncing: 'Syncing to Google Drive…',
+  failed: "Couldn't sync to Google Drive. Trying again automatically.",
 };
 
 // Lucide's cloud glyphs as vendored, in two tones: the cloud stays as quiet as
@@ -27,12 +33,14 @@ const ACCENT: Record<DocumentSyncState, string> = {
   synced: 'text-emerald-600 dark:text-emerald-400',
   waiting: 'text-blue-600 dark:text-blue-400',
   syncing: 'text-blue-600 dark:text-blue-400',
+  failed: 'text-amber-600 dark:text-amber-400',
 };
 
 const PRIMS: Record<DocumentSyncState, readonly IconPrim[]> = {
   synced: lucideCloudCheck,
   waiting: lucideCloudUpload,
   syncing: lucideCloudSync,
+  failed: lucideCloudAlert,
 };
 
 // Vendored Lucide glyphs (docs/specs/004-interface-design/iconography.md).
@@ -56,8 +64,18 @@ function SyncGlyph({ state, size = 14, ...rest }: IconProps & { state: DocumentS
 // On-screen stroke in px.
 export const DOCUMENT_SYNC_WEIGHT = 1;
 
-export function DocumentSyncMark({ documentId, savedAt }: { documentId: string; savedAt: number }) {
-  const state = useDocumentSync(documentId, savedAt);
+export function DocumentSyncMark({
+  documentId,
+  savedAt,
+  mirrorable,
+}: {
+  documentId: string;
+  savedAt: number;
+  // The document belongs in Drive: the user's own, in their Personal Space, not
+  // offline. Known from the row itself, so a new document shows Waiting at once.
+  mirrorable: boolean;
+}) {
+  const state = useDocumentSync(documentId, savedAt, mirrorable);
   if (!state) return null;
   const label = DOCUMENT_SYNC_LABEL[state];
   return (

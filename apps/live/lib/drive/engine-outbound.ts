@@ -27,7 +27,16 @@ import type { MirrorDocument } from './livediagram-port';
 export type OutboundHooks = {
   onContentWritten(documentId: string): void;
   onCreated(): void;
+  // A document's create or update failed and was skipped (not run-fatal): the
+  // Explorer says so on its row until a later pass succeeds.
+  onDocumentFailed?(documentId: string): void;
+  // A document's create or update went through.
+  onDocumentWritten?(documentId: string): void;
 };
+
+function documentIdOf(op: OutboundOp): string | null {
+  return op.op === 'create-file' || op.op === 'update-file' ? op.document.id : null;
+}
 
 // A failure that ends the whole run rather than one op.
 export function isRunFatal(err: unknown): boolean {
@@ -237,14 +246,18 @@ export async function runOutbound(
 ): Promise<void> {
   try {
     for (const op of ops) {
+      const documentId = documentIdOf(op);
       try {
         await runOp(ctx, op, hooks);
+        if (documentId) hooks.onDocumentWritten?.(documentId);
       } catch (err) {
         if (isRunFatal(err)) throw err;
         driveWarn('outbound-failed', {
           op: op.op,
+          ...(documentId ? { id: documentId } : {}),
           error: err instanceof Error ? err.message : String(err),
         });
+        if (documentId) hooks.onDocumentFailed?.(documentId);
       }
     }
   } finally {

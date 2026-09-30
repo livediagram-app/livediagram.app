@@ -406,6 +406,45 @@ Every open tab follows, not only the one that ran the check. It rides the
 existing "something was just written" signal the Timeline already listens to,
 marked as coming from Drive so a view re-reads only for those.
 
+## The Explorer shows each document's sync
+
+Each document the mirror copies carries a small cloud on its Explorer row and
+card, at the right of its Updated time, on the same centre line as the
+visibility badge and the time ([Optical alignment](../004-interface-design/optical-alignment.md)).
+It is a vendored Lucide glyph drawn at a 1px stroke: the cloud in the quiet
+metadata colour, and only its symbol in colour, named on hover and focus.
+
+| State   | Glyph                                           | Symbol colour | Name                                                       |
+| ------- | ----------------------------------------------- | ------------- | ---------------------------------------------------------- |
+| Synced  | `cloud-check`                                   | green         | Synced to Google Drive                                     |
+| Waiting | `cloud-upload`                                  | blue          | Waiting to sync to Google Drive                            |
+| Syncing | `cloud-sync`, pulsing (not with reduced motion) | blue          | Syncing to Google Drive…                                   |
+| Failed  | `cloud-alert`                                   | amber         | Couldn't sync to Google Drive. Trying again automatically. |
+
+What decides it:
+
+- **Mirrorable** is known from the row itself: the user's own document, in
+  their Personal Space, saved in the cloud. Team documents, documents shared
+  with the user and offline documents never carry a mark.
+- **Synced** when the savedAt last uploaded (`drive_items.mirrored_saved_at`)
+  is at least the document's savedAt. Otherwise **Waiting**, or **Syncing**
+  while a pass runs. A mirrorable document the engine has not seen yet (new,
+  duplicated, imported, moved out of a team, synced up from offline, restored
+  from the Trash) is Waiting at once: it is known it will be copied.
+- **Failed** when that document's last upload failed on its own (not a network,
+  rate-limit or sign-in failure, which stop the whole pass and show in Cloud
+  Sync). It is retried every pass and clears when one succeeds; the failures
+  are kept in memory, so after a reload the document shows Waiting until the
+  first pass fails it again.
+- **Known from our own server first.** On arrival the engine reads
+  `drive_items` before any call to Google, so the marks appear at once. They
+  stay while syncing is paused (reconnect or resume): which documents are up
+  to date is still known.
+- **Nothing** before it is known whether Drive is connected, once it is not, or
+  on a row whose document has a folder notice (that marker instead).
+- Changes made in Drive while the user was away show after the catch-up check;
+  until then the mark says what livediagram last uploaded.
+
 ## Open with
 
 - The live app serves `/drive/open`, the Drive UI integration's Open URL.

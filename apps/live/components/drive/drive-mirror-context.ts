@@ -40,7 +40,8 @@ export const DRIVE_STATUS_INITIAL: DriveMirrorStatus = {
   leaseHeldElsewhere: false,
   notices: [],
   rootName: null,
-  mirrored: {},
+  mirrored: null,
+  failed: [],
 };
 
 const noop = async () => {};
@@ -67,27 +68,41 @@ export function useDriveMirror(): DriveMirrorContextValue {
   return useContext(DriveMirrorContext);
 }
 
-// Where one document stands with Google Drive, for its Explorer row: null
-// when it is not mirrored (Drive not connected; a team, shared or offline
-// document) or its row has a folder notice instead.
-export type DocumentSyncState = 'synced' | 'waiting' | 'syncing';
+// Where one document stands with Google Drive, for its Explorer row
+// (docs/specs/022-drive-mirror/drive-mirror.md, "The Explorer shows each document's sync").
+// `mirrorable`: the row's own knowledge that the document belongs in Drive
+// (it is the user's, in their Personal Space, not offline), so a document the
+// engine has not seen yet (new, duplicated, imported, moved out of a team)
+// shows Waiting at once instead of nothing. Null: nothing to say (Drive not
+// connected, the first read of drive_items not back yet, not mirrored, or a
+// folder notice on the row instead).
+export type DocumentSyncState = 'synced' | 'waiting' | 'syncing' | 'failed';
 
 export function documentSyncState(
   status: DriveMirrorStatus,
   documentId: string,
   savedAt: number,
+  mirrorable: boolean,
 ): DocumentSyncState | null {
-  if (status.state !== 'idle' && status.state !== 'syncing') return null;
-  if (!(documentId in status.mirrored)) return null;
+  // Starting or disconnected: nothing to say. Paused (reconnect or resume):
+  // still known which documents are up to date and which are not.
+  if (status.state === 'starting' || status.state === 'disconnected') return null;
+  if (status.mirrored === null) return null;
+  if (!mirrorable) return null;
   if (status.notices.some((n) => n.kind === 'document' && n.ldId === documentId)) return null;
+  if (status.failed.includes(documentId)) return 'failed';
   const uploaded = status.mirrored[documentId] ?? null;
   if (uploaded !== null && uploaded >= savedAt) return 'synced';
   return status.state === 'syncing' ? 'syncing' : 'waiting';
 }
 
-export function useDocumentSync(documentId: string, savedAt: number): DocumentSyncState | null {
+export function useDocumentSync(
+  documentId: string,
+  savedAt: number,
+  mirrorable: boolean,
+): DocumentSyncState | null {
   const { status } = useDriveMirror();
-  return documentSyncState(status, documentId, savedAt);
+  return documentSyncState(status, documentId, savedAt, mirrorable);
 }
 
 // The unseen-folder notice on one document, if any.

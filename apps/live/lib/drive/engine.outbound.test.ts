@@ -3,6 +3,7 @@ import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
 import { parseDocumentEnvelope } from '../export-document-text';
 import { DRIVE_WRITE_IDLE_MS, DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
 import { fileOf, HOST, makeEngine, OWNER, world } from './test-support';
+import { DriveTokenError } from './token-source';
 
 // Every row of the spec's Outbound table, end to end through the engine, the
 // REST client and the fake Google (docs/specs/022-drive-mirror/drive-mirror.md,
@@ -251,5 +252,77 @@ describe('outbound rows', () => {
     const file = fileOf(w.google, w.ld, 'document', 'd1')!;
     expect(file.id).not.toBe(oldId);
     expect(file.name).toBe('Again.livediagram');
+  });
+});
+
+// The Explorer's per-document marks (docs/specs/022-drive-mirror/drive-mirror.md,
+// "The Explorer shows each document's sync").
+describe('what the Explorer is told per document', () => {
+  it("reads each document's last upload from drive_items before any call to Google", async () => {
+    const w = await connected();
+    w.ld.createDocument('d1', 'Plan');
+    await w.engine.start();
+    // A new engine, as on the next page load.
+    const next = makeEngine({ ...w, deviceId: 'device-b' });
+    await next.engine.start();
+    // Its very first status already carries what drive_items says, published
+    // before Syncing (which follows the Google token).
+    expect(next.statuses[0]!.mirrored).toMatchObject({ d1: expect.any(Number) });
+    expect(next.statuses[0]!.state).toBe('starting');
+  });
+
+  it('still says what it knows while syncing is paused', async () => {
+    const w = await connected();
+    w.ld.createDocument('d1', 'Plan');
+    await w.engine.start();
+    const paused = makeEngine({
+      ...w,
+      deviceId: 'device-b',
+      tokens: {
+        get: async () => {
+          throw new DriveTokenError('needs_reconnect');
+        },
+      },
+    });
+    await paused.engine.start();
+    const last = paused.statuses.at(-1)!;
+    expect(last.state).toBe('needs_reconnect');
+    expect(last.mirrored).toMatchObject({ d1: expect.any(Number) });
+  });
+
+  it('marks exactly the document whose upload failed, and clears it when a retry succeeds', async () => {
+    const w = await connected();
+    w.ld.createDocument('ok', 'Fine');
+    await w.engine.start();
+    w.clock.tick(1000);
+    w.ld.createDocument('bad', 'Broken');
+    // Not run-fatal (not a rate limit, auth or network failure): one op fails.
+    w.google.fail({
+      status: 400,
+      reason: 'badRequest',
+      match: ({ method, path }) => method === 'POST' && path.startsWith('/upload/'),
+    });
+    await w.engine.flush();
+    expect(w.statuses.at(-1)!.failed).toEqual(['bad']);
+    expect(w.statuses.at(-1)!.mirrored).not.toHaveProperty('bad');
+    await w.engine.flush();
+    expect(w.statuses.at(-1)!.failed).toEqual([]);
+    expect(w.statuses.at(-1)!.mirrored).toHaveProperty('bad');
+  });
+
+  it('forgets a failure once the document leaves the mirror (moved into a team)', async () => {
+    const w = await connected();
+    await w.engine.start();
+    w.ld.createDocument('bad', 'Broken');
+    w.google.fail({
+      status: 400,
+      reason: 'badRequest',
+      match: ({ method, path }) => method === 'POST' && path.startsWith('/upload/'),
+    });
+    await w.engine.flush();
+    expect(w.statuses.at(-1)!.failed).toEqual(['bad']);
+    w.ld.moveIntoTeam('bad');
+    await w.engine.flush();
+    expect(w.statuses.at(-1)!.failed).toEqual([]);
   });
 });

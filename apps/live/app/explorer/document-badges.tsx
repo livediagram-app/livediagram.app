@@ -85,6 +85,14 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
 // (a shared-with-me row / a share-link owned row), Team, or Private. Each
 // carries a concise hover card explaining what the state means. Offline
 // wins first: an offline document is never shared or in a team.
+// Whether a row's document is one the Google Drive mirror copies
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
+// own, in their Personal Space, saved in the cloud. Team documents, documents
+// shared with the user and offline documents are not mirrored.
+export function isMirrorable(liveDoc: PaneDocument): boolean {
+  return !liveDoc.team && !liveDoc.shared && liveDoc.ownerId !== OFFLINE_OWNER_ID;
+}
+
 export function VisibilityBadge({
   document: liveDoc,
   iconOnly = false,

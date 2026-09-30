@@ -8,7 +8,13 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
+import {
+  FavouriteMarker,
+  FolderChip,
+  VisibilityBadge,
+  isMirrorable,
+  useIconOnlyBadges,
+} from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
@@ -96,7 +102,11 @@ export function DocumentRow(props: DocumentEntryProps) {
         <span className="flex min-w-0 items-center">
           <RelativeTimeChip at={liveDoc.savedAt} />
         </span>
-        <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
+        <DocumentSyncMark
+          documentId={liveDoc.id}
+          savedAt={liveDoc.savedAt}
+          mirrorable={isMirrorable(liveDoc)}
+        />
       </span>
       {renaming ? (
         <span />
