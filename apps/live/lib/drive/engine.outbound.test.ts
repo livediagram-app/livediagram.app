@@ -257,6 +257,20 @@ describe('outbound rows', () => {
 
 // The Explorer's per-document marks (docs/specs/022-drive-mirror/drive-mirror.md,
 // "The Explorer shows each document's sync").
+describe('the Drive folder for Open folder', () => {
+  it('publishes the root folder id from our own server before any call to Google', async () => {
+    const w = await connected();
+    w.ld.createDocument('d1', 'Plan');
+    await w.engine.start();
+    const rootId = w.ld.connection!.rootFolderId;
+    expect(rootId).toBeTruthy();
+    expect(w.statuses.at(-1)!.rootFolderId).toBe(rootId);
+    const next = makeEngine({ ...w, deviceId: 'device-b' });
+    await next.engine.start();
+    expect(next.statuses[0]!.rootFolderId).toBe(rootId);
+  });
+});
+
 describe('what the Explorer is told per document', () => {
   it("reads each document's last upload from drive_items before any call to Google", async () => {
     const w = await connected();

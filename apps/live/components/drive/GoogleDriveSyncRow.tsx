@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { lucideCloud, lucideTriangleAlert } from '@livediagram/icons/lucide';
 import { Button, StableLabel, lucideGlyph } from '@livediagram/ui';
+import { ArrowOutIcon } from '@/components/primitives/HelpArticleLink';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
@@ -92,6 +93,11 @@ function useSinceNow(lastSyncedAt: number | null): number {
   return Math.max(tick, stepNow);
 }
 
+// The livediagram folder in Google Drive, in a new tab.
+export function driveFolderUrl(folderId: string): string {
+  return `https://drive.google.com/drive/folders/${encodeURIComponent(folderId)}`;
+}
+
 export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const drive = useDriveMirror();
   const { status, connecting } = drive;
@@ -145,10 +151,30 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   // Connected, the description under the card says where the documents go.
   const described =
     phase === 'connected' ? { ...row, description: driveConnectedText(status.rootName) } : row;
+  // The quoted folder name opens that folder in Google Drive, once its id is
+  // known (our own server says so before any call to Google).
+  const folderLink =
+    phase === 'connected' && status.rootName && status.rootFolderId ? (
+      <>
+        Your documents are synced to “
+        <a
+          href={driveFolderUrl(status.rootFolderId)}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${status.rootName}, open in Google Drive`}
+          className="inline-flex items-center gap-0.5 font-medium text-blue-600 underline-offset-2 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+        >
+          {status.rootName}
+          <ArrowOutIcon />
+        </a>
+        ” in Google Drive.
+      </>
+    ) : undefined;
 
   return (
     <SettingsRowShell
       row={described}
+      descriptionContent={folderLink}
       wrapper={() => (
         <div
           ref={card}
@@ -156,12 +182,17 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
           data-drive-phase={phase}
           className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 dark:border-slate-700 dark:bg-slate-800"
         >
-          <div className="flex items-center justify-between gap-3">
+          {/* Wide: one row. Narrow (a phone's Settings): the status and buttons
+              wrap under the name instead of leaving the card. */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
               <CloudGlyph />
               {row.label}
             </span>
-            <span data-drive-actions className="flex shrink-0 items-center gap-3">
+            <span
+              data-drive-actions
+              className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-2"
+            >
               <span aria-live="polite">
                 <StatusText options={driveStatusOptions(status, phase)} current={copy.status} />
               </span>
