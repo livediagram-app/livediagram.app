@@ -107,9 +107,10 @@ export function useQuickStyle(deps: {
     if (!whiteboard || editsBlocked || selected.length > 0 || !intent) return null;
     const plain = toolPhantom(intent, theme);
     return plain ? memory.styleNewElement(plain) : null;
-    // toolVersion: memory changed under the same intent.
+    // toolVersion: memory changed under the same intent. memory.scope: another document's (or
+    // tab kind's) memory, whose style must never show as this one's next mark.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion]);
+  }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion, memory.scope]);
   const view = useMemo(() => {
     if (editsBlocked) return null;
     if (phantom && intent) {

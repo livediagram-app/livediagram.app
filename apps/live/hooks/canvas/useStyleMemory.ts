@@ -21,6 +21,9 @@ import {
 export const STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250;
 
 export type StyleMemoryApi = {
+  // Which memory this is: the document and whether it is a whiteboard's. A consumer that memoises
+  // something dressed from memory keys it on this, so a document or tab-kind switch re-dresses it.
+  scope: string;
   // Record one style commit: the active tab's elements before and after it.
   recordEdit: (before: readonly Element[], after: readonly Element[]) => void;
   // Dress a user-drawn element from memory; identity when nothing applies.
@@ -90,6 +93,7 @@ export function useStyleMemory({
   };
 
   return {
+    scope: `${documentId ?? ''}:${board ? 'board' : 'diagram'}`,
     recordEdit: (before, after) => {
       if (!ensureLoaded()) return;
       const next = recordStyleEdit(memoryRef.current, before, after, theme, board);

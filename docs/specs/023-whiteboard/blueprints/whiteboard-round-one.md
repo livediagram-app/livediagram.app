@@ -268,6 +268,20 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
   `quickStyleView([styleNewElement(phantom)])` through `onWhiteboard`, with `caption`; a choice runs
   `memory.recordEdit([phantom], [applied])` and bumps a version; Clear styles forgets `board:<kind>`.
 - The panel shows `view.caption ?? view.pen.subject.name` above the rows unless `powerUser`.
+- `useStyleMemory` returns `scope` (`<documentId>:board` or `<documentId>:diagram`); `useQuickStyle`'s
+  phantom memo keys on it, so a document or tab-kind switch with a tool still in hand re-dresses the
+  phantom from the memory in front of the user.
+- Leaving a whiteboard (`useWhiteboard`'s tab effect, `whiteboard` false) runs `cancelDraw()` when
+  `isWhiteboardOnlyIntent(pendingDraw)` (`draw-mode.ts`): a whiteboard pen, the Path tool, or a
+  shape / arrow intent with `board: true`. A diagram palette intent carried onto a board stays in hand
+  and lands in the board's ink and memory (`useShapeDrawing` decides by the tab, not the intent).
+- Audited, no board flag read late: every `styleNewElement` call site (`useShapeDrawing`,
+  `commit-freehand`'s diagram recognition, `useArrowConnect`, `useBoxedDragHandlers` quick-connect,
+  `useEditorDrag` chained arrows, `useElementCreation`, `usePathCommits`, `onDressPath`) and every
+  `recordEdit` (`rememberingCommit` / `rememberingTickTabs`, `useStylePreview.onCommitted`,
+  `useQuickStyle`) read the render-fresh memory; paste, duplicate, the format painter and peers'
+  edits (`applyRemoteTabs`) never dress or record; a whiteboard stroke, recognised or not, takes its
+  pen only. Tests: `useStyleMemory.board-scope.test.tsx`, `useWhiteboard.board-tools.test.tsx`.
 
 ### Selecting on a whiteboard
 

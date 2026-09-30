@@ -16,7 +16,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
-import type { PendingDraw } from '@/lib/draw-mode';
+import { isWhiteboardOnlyIntent, type PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import {
   DEFAULT_WHITEBOARD_PREFS,
@@ -109,11 +109,9 @@ export function useWhiteboard(deps: Deps) {
     const entered = seenRef.current !== key;
     seenRef.current = key;
     if (!whiteboard) {
-      // A whiteboard pen or the Path tool is put down: neither exists on a diagram tab.
-      const held =
-        (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
-        pendingDraw?.type === 'path';
-      if (held) cancelDraw();
+      // A whiteboard pen, the Path tool or a dock shape is put down: none exists on a diagram
+      // tab, and a dock shape would preview and be named the board's way there.
+      if (isWhiteboardOnlyIntent(pendingDraw)) cancelDraw();
       return;
     }
     if (!entered || editsBlocked || pendingDraw) return;

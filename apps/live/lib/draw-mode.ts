@@ -169,6 +169,15 @@ export function isWhiteboardPenIntent(
   return intent?.type === 'freehand' && intent.variant === 'whiteboard';
 }
 
+// A tool that exists on a whiteboard only (docs/specs/023-whiteboard/whiteboard.md "Shapes"): a pen,
+// the Path tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so
+// the board's tools and their look never reach a diagram tab.
+export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
+  if (!intent) return false;
+  if (isWhiteboardPenIntent(intent) || isPathIntent(intent)) return true;
+  return (intent.type === 'shape' || intent.type === 'arrow') && intent.board === true;
+}
+
 // Whether a freshly drawn element drops straight into typing. A text box is
 // only useful once typed into; on a whiteboard a sticky is too, as on a real
 // board (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
