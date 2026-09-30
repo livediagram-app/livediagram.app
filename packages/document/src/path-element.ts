@@ -70,3 +70,48 @@ export function reshapePath(
   const ty = dy - (dx * Math.sin(r) + dy * Math.cos(r));
   return { ...el, ...g, x: g.x + tx, y: g.y + ty, closed };
 }
+
+const turn = (p: Point, c: Point, cos: number, sin: number): Point => ({
+  x: c.x + (p.x - c.x) * cos - (p.y - c.y) * sin,
+  y: c.y + (p.x - c.x) * sin + (p.y - c.y) * cos,
+});
+
+/** The nodes where they show on screen: turned by the element's rotation about its centre. */
+export function pathWorldAnchors(el: PathElement): PathAnchor[] {
+  const anchors = pathAnchors(el);
+  const rotation = el.rotation ?? 0;
+  if (rotation % 360 === 0) return anchors;
+  const r = (rotation * Math.PI) / 180;
+  const cos = Math.cos(r);
+  const sin = Math.sin(r);
+  const c = { x: el.x + el.width / 2, y: el.y + el.height / 2 };
+  return anchors.map((a) => {
+    const out: PathAnchor = { ...turn(a, c, cos, sin), mode: a.mode };
+    if (a.handleIn) out.handleIn = turn(a.handleIn, c, cos, sin);
+    if (a.handleOut) out.handleOut = turn(a.handleOut, c, cos, sin);
+    return out;
+  });
+}
+
+/**
+ * A continued path (docs/specs/023-whiteboard/path-tool.md "Drawing"): the same element with the
+ * drawn anchors, which are in world px, so any rotation is already in them and none is kept.
+ */
+export function continuedPath(
+  el: PathElement,
+  anchors: readonly PathAnchor[],
+  closed: boolean,
+): PathElement {
+  const { rotation: _rotation, ...rest } = el;
+  return { ...rest, ...pathGeometry(anchors, closed), closed };
+}
+
+/** The same path run the other way: each node's handles trade places. */
+export function reversePath(anchors: readonly PathAnchor[]): PathAnchor[] {
+  return [...anchors].reverse().map((a) => {
+    const out: PathAnchor = { x: a.x, y: a.y, mode: a.mode };
+    if (a.handleOut) out.handleIn = a.handleOut;
+    if (a.handleIn) out.handleOut = a.handleIn;
+    return out;
+  });
+}

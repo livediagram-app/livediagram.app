@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
 import type { FreehandElement } from './index';
-import { eraseStrokePart, freehandAbsolutePoints, strokeTouchesBrush } from './whiteboard-stroke';
+import {
+  eraseStrokePart,
+  freehandAbsolutePoints,
+  pathTouchesBrush,
+  strokeTouchesBrush,
+} from './whiteboard-stroke';
+import { createPath } from './path-element';
 
 // A horizontal stroke from (0, 100) to (200, 100), 4px wide.
 const line = (over: Partial<FreehandElement> = {}): FreehandElement => ({
@@ -158,5 +164,39 @@ describe('eraseStrokePart', () => {
     const pieces = eraseStrokePart(square, { x: 100, y: 50 }, { x: 100, y: 50 }, 5, mint)!;
     expect(pieces).toHaveLength(1);
     expect(pieces[0]!.closed).toBe(false);
+  });
+});
+
+describe('pathTouchesBrush (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing")', () => {
+  const arch = createPath(
+    [
+      { x: 0, y: 100, mode: 'corner', handleOut: { x: 0, y: 0 } },
+      { x: 200, y: 100, mode: 'corner', handleIn: { x: 200, y: 0 } },
+      { x: 200, y: 200, mode: 'corner' },
+    ],
+    true,
+  );
+
+  it('is touched on its curve, not on its bare box', () => {
+    // The arch peaks at y = 25 in the middle.
+    expect(pathTouchesBrush(arch, { x: 100, y: 20 }, { x: 100, y: 20 }, 8)).toBe(true);
+    expect(pathTouchesBrush(arch, { x: 100, y: 60 }, { x: 100, y: 60 }, 8)).toBe(false);
+  });
+
+  it('is touched anywhere inside when closed and filled', () => {
+    const filled = { ...arch, fillColor: '#ff0000' };
+    expect(pathTouchesBrush(filled, { x: 100, y: 60 }, { x: 100, y: 60 }, 8)).toBe(true);
+    expect(
+      pathTouchesBrush(
+        { ...arch, fillColor: 'transparent' },
+        { x: 100, y: 60 },
+        { x: 100, y: 60 },
+        8,
+      ),
+    ).toBe(false);
+  });
+
+  it('catches a fast swipe across it', () => {
+    expect(pathTouchesBrush(arch, { x: 100, y: -50 }, { x: 100, y: 60 }, 2)).toBe(true);
   });
 });

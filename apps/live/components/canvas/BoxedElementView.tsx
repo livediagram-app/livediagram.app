@@ -239,12 +239,14 @@ function BoxedElementViewImpl({
   // branches below so they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
-  // A whiteboard pen stroke is picked by its drawn line, not its box
-  // (docs/specs/023-whiteboard/whiteboard.md "Selecting"); once selected, its box drags it as any.
+  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
+  // (docs/specs/023-whiteboard/whiteboard.md "Selecting", path-tool.md "Selecting and erasing");
+  // once selected, the box drags either as any element.
   const lineHit =
-    element.type === 'freehand' &&
-    element.penWidth !== undefined &&
-    element.pen !== 'highlighter' &&
+    ((element.type === 'freehand' &&
+      element.penWidth !== undefined &&
+      element.pen !== 'highlighter') ||
+      element.type === 'path') &&
     !isSelected &&
     !isMultiSelected;
 

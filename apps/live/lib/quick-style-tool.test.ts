@@ -38,3 +38,13 @@ describe('toolCaption', () => {
     expect(toolCaption({ type: 'text' })).toBe('Next text box');
   });
 });
+
+describe('the Path tool (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+  it('styles the next path: an unpainted closed stand-in, so a fill can be chosen too', () => {
+    const el = toolPhantom({ type: 'path' }, theme)!;
+    expect(el).toMatchObject({ type: 'path', closed: true });
+    expect('strokeColor' in el).toBe(false);
+    expect('fillColor' in el).toBe(false);
+    expect(toolCaption({ type: 'path' })).toBe('Next path');
+  });
+});

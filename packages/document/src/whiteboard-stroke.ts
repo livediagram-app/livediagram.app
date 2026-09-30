@@ -4,7 +4,9 @@
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from './border-style';
 import { createFreehand } from './factories';
 import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';
-import type { FreehandElement } from './index';
+import type { FreehandElement, PathElement } from './index';
+import { pathWorldAnchors } from './path-element';
+import { samplePath } from './path-geometry';
 
 type Point = { x: number; y: number };
 // A point of a pen stroke with its pressure, when the stroke records one.
@@ -142,6 +144,34 @@ export function strokeTouchesBrush(el: FreehandElement, a: Point, b: Point, r: n
     if (segmentDistance(pts[i - 1]!, pts[i]!, a, b) <= reach) return true;
   }
   return false;
+}
+
+// Even-odd: whether `p` lies inside the closed polyline.
+function insidePolygon(p: Point, pts: readonly Point[]): boolean {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const a = pts[i]!;
+    const b = pts[j]!;
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * True when a brush swept from `a` to `b` touches a path (docs/specs/023-whiteboard/path-tool.md
+ * "Selecting and erasing"): its drawn line, and the inside of a closed path with a fill.
+ */
+export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number): boolean {
+  const pts = samplePath(pathWorldAnchors(el), el.closed);
+  const reach = r + BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE] / 2;
+  if (pts.length === 0 || boxesApart(pts, a, b, reach)) return false;
+  for (let i = 1; i < pts.length; i++) {
+    if (segmentDistance(pts[i - 1]!, pts[i]!, a, b) <= reach) return true;
+  }
+  const filled = el.closed && el.fillColor !== undefined && el.fillColor !== 'transparent';
+  return filled && (insidePolygon(a, pts) || insidePolygon(b, pts));
 }
 
 // Cut long segments so the brush cannot slip between two samples.

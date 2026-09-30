@@ -176,6 +176,9 @@ export function EditorCanvasHost() {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitPath,
+    commitPathEdit,
+    styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,
@@ -692,6 +695,9 @@ export function EditorCanvasHost() {
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}
         onCommitPolygon={commitPolygon}
+        onCommitPath={commitPath}
+        onCommitPathEdit={commitPathEdit}
+        onDressPath={styleNewElement}
         settings={userPreferences}
         onChangeSettings={onChangeSettings}
         // Only Minimal docks the panels. Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's

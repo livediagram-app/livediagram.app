@@ -28,6 +28,7 @@ import {
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { isPathEditing } from '@/lib/path-edit';
+import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -2295,6 +2296,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
   });
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn path, a continued one, an edit.
+  const { commitPath, commitPathEdit } = usePathCommits({
+    editsBlocked: createBlocked,
+    commit,
+    styleNewElement: styleMemory.styleNewElement,
+  });
 
   // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
   const { canGrowMindNode, growMindNode, abandonMindNode } = useMindGrowth({
@@ -3164,6 +3171,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitPath,
+    commitPathEdit,
+    styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,

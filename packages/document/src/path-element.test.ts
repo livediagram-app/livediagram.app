@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { createPath, pathAnchors, pathGeometry, reshapePath } from './path-element';
+import {
+  continuedPath,
+  createPath,
+  pathAnchors,
+  pathGeometry,
+  pathWorldAnchors,
+  reshapePath,
+  reversePath,
+} from './path-element';
 import { elementSupportsText, isBoxed } from './index';
 import type { PathAnchor } from './path-geometry';
 
@@ -106,5 +114,61 @@ describe('a path in the element vocabulary', () => {
     const el = createPath([corner(0, 0), corner(10, 10)], false);
     expect(isBoxed(el)).toBe(true);
     expect(elementSupportsText(el)).toBe(false);
+  });
+});
+
+describe('pathWorldAnchors', () => {
+  it('turns nodes and handles with the element', () => {
+    const el = {
+      ...createPath(
+        [
+          { x: 0, y: 0, mode: 'corner', handleOut: { x: 50, y: 0 } },
+          { x: 100, y: 0, mode: 'corner' },
+        ],
+        false,
+      ),
+      rotation: 90,
+    };
+    // A 100 x 1 box centred on (50, 0): a quarter turn stands it upright.
+    const [a, b] = pathWorldAnchors(el);
+    expect(a!.x).toBeCloseTo(50);
+    expect(a!.y).toBeCloseTo(-50);
+    expect(b!.y).toBeCloseTo(50);
+    expect(a!.handleOut!.x).toBeCloseTo(50);
+    expect(a!.handleOut!.y).toBeCloseTo(0);
+  });
+
+  it('is pathAnchors for an unrotated path', () => {
+    const el = createPath([corner(0, 0), corner(10, 10)], false);
+    expect(pathWorldAnchors(el)).toEqual(pathAnchors(el));
+  });
+});
+
+describe('continuedPath', () => {
+  it('takes the new anchors unrotated and keeps the style', () => {
+    const el = {
+      ...createPath([corner(0, 0), corner(10, 10)], false),
+      rotation: 30,
+      strokeColor: '#0f0',
+    };
+    const next = continuedPath(el, [corner(0, 0), corner(10, 10), corner(30, 0)], true);
+    expect(next.id).toBe(el.id);
+    expect(next.strokeColor).toBe('#0f0');
+    expect(next).not.toHaveProperty('rotation');
+    expect(next.closed).toBe(true);
+    expect(next.nodes).toHaveLength(3);
+  });
+});
+
+describe('reversePath', () => {
+  it('runs the other way, each node trading its handles', () => {
+    const rev = reversePath([
+      { x: 0, y: 0, mode: 'corner', handleOut: { x: 5, y: 0 } },
+      { x: 10, y: 0, mode: 'mirrored', handleIn: { x: 8, y: 0 }, handleOut: { x: 12, y: 0 } },
+    ]);
+    expect(rev.map((a) => a.x)).toEqual([10, 0]);
+    expect(rev[0]!.handleOut).toEqual({ x: 8, y: 0 });
+    expect(rev[1]!.handleIn).toEqual({ x: 5, y: 0 });
+    expect(rev[1]!.handleOut).toBeUndefined();
   });
 });

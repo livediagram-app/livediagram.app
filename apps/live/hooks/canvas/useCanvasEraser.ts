@@ -45,7 +45,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { WhiteboardEraserMode } from '@/lib/whiteboard-prefs';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
-import { partialEraseStep, strokesTouched } from '@/lib/whiteboard-erase';
+import { partialEraseStep, pathsTouched, strokesTouched } from '@/lib/whiteboard-erase';
 
 // Where the transformed canvas sits on screen at the press, so a client point
 // maps to canvas coords for the whiteboard's geometric erase.
@@ -127,7 +127,15 @@ export function useCanvasEraser(deps: EraserDeps) {
     const r = screenRadius / frame.zoom;
     const isProtected = (el: Element) =>
       el.locked === true || depsRef.current.layerInertIds.has(el.id);
+    // A path goes whole in either mode (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing").
+    let changed = false;
+    for (const id of pathsTouched(activeTab.elements, from, at, r, isProtected)) {
+      if (erasedRef.current.has(id)) continue;
+      erasedRef.current.add(id);
+      changed = true;
+    }
     if (whiteboard.mode === 'partial') {
+      if (changed) removeErased();
       if (strokesTouched(activeTab.elements, from, at, r, isProtected).length === 0) return true;
       checkpointOnce();
       cutRef.current = true;
@@ -136,7 +144,6 @@ export function useCanvasEraser(deps: EraserDeps) {
       );
       return true;
     }
-    let changed = false;
     for (const id of strokesTouched(activeTab.elements, from, at, r, isProtected)) {
       if (erasedRef.current.has(id)) continue;
       erasedRef.current.add(id);
@@ -147,7 +154,8 @@ export function useCanvasEraser(deps: EraserDeps) {
       for (const { id } of elementHostsAtPoint(point.x, point.y)) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
-        if (!el || el.type === 'freehand' || isProtected(el) || layerInertIds.has(id)) continue;
+        if (!el || el.type === 'freehand' || el.type === 'path') continue;
+        if (isProtected(el) || layerInertIds.has(id)) continue;
         erasedRef.current.add(id);
         changed = true;
       }

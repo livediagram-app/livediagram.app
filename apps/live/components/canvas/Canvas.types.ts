@@ -397,6 +397,16 @@ export type CanvasProps = {
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn or continued path lands, an
+  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
+  // drawn shows the style it will land with.
+  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
+  onCommitPathEdit: (
+    id: string,
+    next: { anchors: import('@livediagram/document').PathAnchor[]; closed: boolean },
+    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
+  ) => void;
+  onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
   // Minimal panel layout preference (docs/specs/007-editor/user-preferences.md). When true, the floating
   // panels render as dock popovers on desktop too (always on mobile).
   minimalPanels?: boolean;

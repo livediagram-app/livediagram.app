@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   createFreehand,
+  createPath,
   createShape,
   type Element,
   type FreehandElement,
+  type PathElement,
 } from '@livediagram/document';
-import { partialEraseStep, strokesTouched } from './whiteboard-erase';
+import { partialEraseStep, pathsTouched, strokesTouched } from './whiteboard-erase';
 
 const line = (id: string, y: number): FreehandElement => ({
   ...createFreehand(
@@ -65,5 +67,25 @@ describe('partialEraseStep', () => {
         mint,
       ),
     ).toBeNull();
+  });
+});
+
+describe('pathsTouched (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing")', () => {
+  const path = (id: string, y: number, over: Partial<PathElement> = {}): PathElement => ({
+    ...createPath(
+      [
+        { x: 0, y, mode: 'corner' },
+        { x: 200, y, mode: 'corner' },
+      ],
+      false,
+    ),
+    id,
+    ...over,
+  });
+
+  it('names the paths the brush crosses, skipping protected ones', () => {
+    const els = [path('a', 100), path('b', 300), path('c', 100, { locked: true })];
+    const isProtected = (el: { locked?: boolean }) => el.locked === true;
+    expect(pathsTouched(els, { x: 50, y: 104 }, { x: 60, y: 104 }, 8, isProtected)).toEqual(['a']);
   });
 });

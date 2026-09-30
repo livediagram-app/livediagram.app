@@ -27,6 +27,7 @@ import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
+import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
@@ -415,6 +416,18 @@ export function ElementFaceRouter({
               the drawn stroke. */}
           {isEditing || label.length > 0 ? labelNode : null}
         </>
+      ) : element.type === 'path' ? (
+        // A path (docs/specs/023-whiteboard/path-tool.md) draws its curve and takes no label.
+        <PathSvg
+          element={element}
+          hitWidth={
+            lineHit
+              ? strokeHitWidth(BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE], zoom)
+              : undefined
+          }
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+        />
       ) : element.type === 'table' ? (
         <TableView
           element={element}

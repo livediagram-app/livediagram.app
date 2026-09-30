@@ -76,6 +76,8 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
+import { usePathTool } from '@/components/canvas/path/usePathTool';
+import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
@@ -511,8 +513,20 @@ export function Canvas(props: CanvasProps) {
       viewportZoom,
       onCommitPolygon,
     });
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md), in front of both: see usePathTool.
+  const pathTool = usePathTool({
+    pendingDraw,
+    elements,
+    inertIds: props.layerInertIds,
+    wrapperRef,
+    viewportZoom,
+    activeTabId: props.activeTabId,
+    whiteboardInk: props.whiteboardDock ? props.whiteboardInk : undefined,
+    onCommitPath: props.onCommitPath,
+    onDressPath: props.onDressPath,
+  });
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    beginPolygonPoint(e) || beginPendingDrawGesture(e);
+    pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
@@ -633,7 +647,7 @@ export function Canvas(props: CanvasProps) {
         onDoubleClick={(e) => {
           // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
           // add-text double-click while the intent is armed.
-          if (handlePolygonDoubleClick()) return;
+          if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
           surface.onWrapperDoubleClick(e);
         }}
         // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
@@ -662,7 +676,10 @@ export function Canvas(props: CanvasProps) {
         // A whiteboard pen draws wherever it presses, so nothing under it swaps
         // the pen cursor for its own (globals.css, docs/specs/023-whiteboard/whiteboard.md "Pens").
         data-pen-in-hand={
-          pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? '' : undefined
+          (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
+          pendingDraw?.type === 'path'
+            ? ''
+            : undefined
         }
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
@@ -694,6 +711,7 @@ export function Canvas(props: CanvasProps) {
           <MindGrowProvider value={mindGrow}>
             <CanvasElementsLayer
               {...props}
+              elements={pathTool.elements}
               // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
               // so the prop from the host is overridden with the local resolver.
               onEnterPortal={resolvePortal}
@@ -738,6 +756,8 @@ export function Canvas(props: CanvasProps) {
             zoom={viewportZoom}
           />
         ) : null}
+        {/* The path being drawn (docs/specs/023-whiteboard/path-tool.md), in the same layer. */}
+        {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
