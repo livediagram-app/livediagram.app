@@ -419,8 +419,10 @@ default document name) without walking the wizard:
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
 - **`/new?browse=<collection>`**: opens the wizard on a template
   **collection** instead of the category overview: the template step opens
-  with the collection as its open shelf, as a category tile opens one; the
-  collection has no tile of its own and leaves once another shelf opens. Collections are cross-category shortlists
+  **drilled in** on the collection: every one of its cards at once in a grid
+  under a `← All templates` back bar, and nothing else (no shelf, no other
+  category tiles). The back bar returns to the shelf with Popular open; the
+  collection has no tile of its own. Collections are cross-category shortlists
   (`TEMPLATE_COLLECTIONS` in `packages/templates`); today there is one,
   **Brainstorm** (`brainstorm`): Mind map, Tree mind map, Bubble map,
   Affinity map, Fishbone and Event storming, in that order. It is not a

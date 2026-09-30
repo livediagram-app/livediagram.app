@@ -14,6 +14,7 @@ import {
 } from '@livediagram/templates';
 import { CloseIcon, SearchIcon, SnapCarousel } from '@livediagram/ui';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
+import { BackBar } from '@/components/primitives/BackBar';
 import { CategoryTile, TemplateCard } from '@/components/palette/template-picker-cards';
 
 // A shelf the picker can open: a real template category, or the curated
@@ -111,6 +112,9 @@ export function TemplatePickerBrowse({
   const openId = openCategory ?? 'popular';
   const open = shelves.find((shelf) => shelf.id === openId) ?? shelves[0];
   // A collection is never a folded tile: it leaves once another shelf opens.
+  // A `?browse=` collection opens drilled in, as it always has: every card of it at once under a
+  // back bar, the shelf and the other categories out of the way (docs/specs/007-editor/new-document-route.md).
+  const collection = open && TEMPLATE_COLLECTIONS.some((c) => c.id === open.id) ? open : undefined;
   const folded = shelves.filter(
     (shelf) => shelf !== open && !TEMPLATE_COLLECTIONS.some((c) => c.id === shelf.id),
   );
@@ -170,7 +174,10 @@ export function TemplatePickerBrowse({
           the whole catalogue. Blank is special-cased out of the category
           grouping (it's a "start from scratch", not a category template) and
           leads the Popular shelf instead. */}
-      <AnimatedHeightBox viewKey={templateFilter ? 'search' : 'shelf'} className="mt-4">
+      <AnimatedHeightBox
+        viewKey={templateFilter ? 'search' : collection ? 'collection' : 'shelf'}
+        className="mt-4"
+      >
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
             <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-400">
@@ -189,6 +196,25 @@ export function TemplatePickerBrowse({
               ))}
             </div>
           )
+        ) : collection ? (
+          <>
+            <BackBar
+              label="All templates"
+              current={collection.label}
+              onClick={() => setOpenCategory('popular')}
+            />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {collection.items.map((t) => (
+                <TemplateCard
+                  key={t.kind}
+                  template={t}
+                  active={templateKind === t.kind}
+                  onSelect={() => onTemplateCommit(t.kind)}
+                  onCommit={() => onTemplateCommit(t.kind)}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div>
             {open ? (

@@ -64,6 +64,8 @@ describe('the whiteboard tile', () => {
     const last = tiles.lastElementChild!;
     expect(last.textContent).toContain('Whiteboard');
     expect(last.textContent).toContain('Free drawing without distractions');
+    // Its own category: the whiteboard's preview alone, not a fan of three.
+    expect(last.querySelectorAll('[data-single-preview] svg')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: /^Start a whiteboard/ }));
     expect(commit).toHaveBeenCalledWith('whiteboard');
   });
@@ -76,14 +78,27 @@ describe('the whiteboard tile', () => {
 });
 
 describe('a ?browse= collection', () => {
-  it('opens as the open shelf, with no tile of its own, and leaves once another opens', () => {
+  it('opens drilled in: every card of the collection at once, under a back bar, nothing else', () => {
     render(<Shelf initial="brainstorm" />);
-    expect(stage().textContent).toContain('Brainstorm');
-    for (const title of ['Mind map', 'Tree mind map', 'Affinity map', 'Event storming']) {
-      expect(screen.getAllByText(title).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /All templates/ })).toBeTruthy();
+    expect(screen.getByText('Brainstorm')).toBeTruthy();
+    for (const title of [
+      'Mind map',
+      'Tree mind map',
+      'Bubble map',
+      'Affinity map',
+      'Fishbone',
+      'Event storming',
+    ]) {
+      expect(screen.getByText(title)).toBeTruthy();
     }
-    expect(screen.queryByRole('button', { name: 'Browse Brainstorm templates' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Browse Popular templates' }));
+    expect(screen.queryByText('Explore More Categories')).toBeNull();
+    expect(screen.queryByText('Kanban')).toBeNull();
+  });
+
+  it('goes back to the shelf with Popular open', () => {
+    render(<Shelf initial="brainstorm" />);
+    fireEvent.click(screen.getByRole('button', { name: /All templates/ }));
     expect(stage().textContent).toContain('Popular');
     expect(screen.queryByRole('button', { name: 'Browse Brainstorm templates' })).toBeNull();
   });

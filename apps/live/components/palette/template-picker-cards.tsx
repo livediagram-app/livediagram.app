@@ -70,10 +70,12 @@ export function CategoryTile({
   count?: number;
   // One muted line under the name, for a tile that is not a shelf.
   description?: string;
-  // The shelf's templates; the first three make the fan.
+  // The shelf's templates; the first three make the fan. A tile of one kind (Whiteboard, its
+  // own category) shows that one preview alone, filling the plate, never a fan.
   kinds: readonly TemplateKind[];
   onOpen: () => void;
 }) {
+  const single = kinds.length === 1 ? kinds[0] : undefined;
   return (
     <button
       type="button"
@@ -81,11 +83,21 @@ export function CategoryTile({
       aria-label={ariaLabel}
       className="group flex h-full w-full min-w-0 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
-      <PreviewFan
-        kinds={kinds}
-        plateClassName="h-16 w-full rounded-md"
-        cardClassName="h-10 [&>svg]:h-7"
-      />
+      {single ? (
+        <span
+          data-optical-ignore=""
+          data-single-preview=""
+          className="preview-art-tile flex h-16 w-full items-center justify-center overflow-hidden rounded-md bg-slate-50 [&>svg]:h-14 [&>svg]:w-auto"
+        >
+          <TemplatePreview kind={single} />
+        </span>
+      ) : (
+        <PreviewFan
+          kinds={kinds}
+          plateClassName="h-16 w-full rounded-md"
+          cardClassName="h-10 [&>svg]:h-7"
+        />
+      )}
       <span className="mt-auto flex w-full min-w-0 items-center justify-between gap-1">
         <span className="line-clamp-2 min-w-0 break-words text-xs font-semibold leading-4 text-slate-900 dark:text-slate-100">
           {label}
