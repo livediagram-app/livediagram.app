@@ -99,27 +99,34 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   2. **Sticky note**.
   3. **Path tool** (see [Path tool](path-tool.md)).
 - **Shapes, left to right** (With shapes mode):
-  1. **Pinned shapes**, the left side of the bar: up to five shape kinds
+  1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
      the user keeps there (see [Shape slots](#shape-slots)); by default
      **Line, Arrow, Rectangle, Diamond, Ellipse**, in that order.
   2. A **separator**.
   3. **Two frequent shape slots**: the two shape kinds this user picks most
      often that are not already on the bar (see [Shape slots](#shape-slots)).
-  4. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
-     line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
-     pen, never a finger) as well as on a press, without taking the keyboard
-     focus, and closes a moment after the pointer leaves both it and the
-     button; a press on a hover-opened flyout keeps it open.
-  5. **More shapes** (`…`): opens **on a press only**, with its **search
-     field focused at once**, so typing finds any shape of the palette's shape
-     catalogue by name or keyword (flowchart, basic, block and every other
-     shape kind the palette offers; not icons, templates or components).
-     Results show as a grid of the shapes' own previews in the board's ink,
-     best match first; an empty field shows every shape, grouped as in the
-     palette. Arrow keys move through the results, **Enter** or a press picks
-     one, which arms it like a dock shape (plain ink, the tool style of its
-     kind, drawn with a drag or dropped with a click), and closes the flyout;
-     **Escape** closes it without picking. No match says "No shapes match".
+  4. **Shapes**: one button for every shape. It opens its flyout on hover
+     (a mouse or a pen, never a finger) as well as on a press, and closes a
+     moment after the pointer leaves both it and the button; a press on a
+     hover-opened flyout keeps it open. The flyout is small and sweet:
+     - the **preselected set**: rectangle, ellipse, diamond, cylinder, line
+       and arrow (see [Shapes](#shapes));
+     - a **search field**, **focused as soon as the flyout opens**, hover
+       included, so typing at once finds any shape of the palette's shape
+       catalogue by name or keyword (flowchart, basic, block and every other
+       shape kind the palette offers; not icons, templates or components).
+       Opening it on hover is the one place hover takes the keyboard focus:
+       while the field holds it, letters type there rather than picking dock
+       tools, and Escape or the flyout closing gives the focus back to the
+       board.
+     - **No full list**: with the field empty only the preselected set shows;
+       typing replaces it with **at most six results**, the best matches
+       first, as the shapes' own previews in the board's ink. No match says
+       "No shapes match".
+     - Arrow keys move through the set or the results, **Enter** or a press
+       picks one, which arms it like a dock shape (plain ink, the tool style
+       of its kind, drawn with a drag or dropped with a click) and closes the
+       flyout; **Escape** closes it without picking.
 - **Settings**, the last group: a **cog** that opens **on a press only**, never on hover; a
   flyout with no title of its own and four sections, each headed in the
   flyouts' small capitals and a row of the same switch buttons, top to
@@ -148,7 +155,7 @@ The shapes group learns and keeps the shapes a user reaches for.
   arming its shape kind like a dock shape (plain ink, its kind's tool style),
   with the kind's own preview as its icon and its name as its label. They hold
   the two shape kinds this user has **picked most often** on whiteboards (from
-  the Shapes flyout, More shapes, a frequent slot, or a shape key), counting
+  the Shapes flyout's set or its search, a frequent slot, or a shape key), counting
   every pick, excluding kinds **already on the bar** (the pinned shapes). Ties
   go to the kind picked most recently. With too little history, the empty
   slots fall back to **Rectangle**, then **Ellipse**, then the next kinds of
@@ -157,11 +164,11 @@ The shapes group learns and keeps the shapes a user reaches for.
   drag is in progress, so a slot never moves under the pointer mid-gesture.
 - **Pinned side:** the left of the shapes bar, before the separator. A user
   who has never changed it has five pins, in this order: **Line**, **Arrow**,
-  **Rectangle**, **Diamond**, **Ellipse**. Up to **five** kinds can be pinned.
+  **Rectangle**, **Diamond**, **Ellipse**. Up to **seven** kinds can be pinned.
 - **Pinning:** dragging a frequent slot **to the left of the separator** pins
-  its kind at the drop position. With five pinned, dropping onto a pinned
+  its kind at the drop position. With seven pinned, dropping onto a pinned
   slot replaces that one; dropping elsewhere is refused, and the dragged slot
-  settles back with the hint "Five shapes are pinned. Drag one out to swap."
+  settles back with the hint "Seven shapes are pinned. Drag one out to swap."
   Dragging a pinned shape to another place on the pinned side reorders it.
   The pointer and the drop position show where it will land while dragging;
   a drag starts after 6 screen px, so a press still picks.
@@ -169,7 +176,7 @@ The shapes group learns and keeps the shapes a user reaches for.
   right of the separator**, or **Unpin** in its menu. It is not removed or
   forgotten: its pick count stays, so if it is among this user's two most
   picked kinds not pinned, it shows in a **frequent slot** at once; otherwise
-  it is still one press away in Shapes or More shapes. Unpinning every shape
+  it is still in the Shapes flyout, or its search. Unpinning every shape
   leaves the pinned side empty, and that is kept: the defaults never come
   back on their own.
 - **Pinning without a drag:** a right-click or long-press on a slot, or
