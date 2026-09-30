@@ -1,31 +1,28 @@
 # Web components are elements; groups are gone
 
-Status: shipped
-
 ## What
 
-Two changes that ship together, because the second cannot land before the first:
+Two decisions, the second resting on the first:
 
-1. The palette's **Components** (Banner, Callout, Stat row, Process steps, Hero, Header) stop
-   being bundles of primitives held together by a shared `groupId` and become **single
-   elements**, each with a layout that re-flows as it is resized and every piece of text
-   editable in place.
-2. **Groups are removed from the editor**: the `groupId` field, the Group / Ungroup actions and
-   `⌘G`, group mode, group selection and drill-in, the group toolbar actions, group
-   quick-connect and its `pinned-group` arrow endpoints, and the Eraser's "whole group" option.
+1. The palette's **Components** (Banner, Callout, Stat row, Process steps, Hero, Header) are
+   **single elements**, not bundles of primitives held together by a shared `groupId`, each with
+   a layout that re-flows as it is resized and every piece of text editable in place.
+2. **The editor has no groups**: no `groupId` field, no Group / Ungroup actions or `⌘G`, no
+   group mode, group selection or drill-in, no group toolbar actions, no group quick-connect or
+   `pinned-group` arrow endpoints, and no "whole group" option in the Eraser.
 
 ## Why
 
-Groups cost more than they gave. Every selection, drag, delete, duplicate, lock, layer, eraser,
-quick-connect and clipboard path had a group branch, and the interactions (select the group,
-click again to drill in, no resize, group mode to extend one) were a steady source of "why did
+Groups cost more than they give. Every selection, drag, delete, duplicate, lock, layer, eraser,
+quick-connect and clipboard path needs a group branch, and the interactions (select the group,
+click again to drill in, no resize, group mode to extend one) are a steady source of "why did
 that happen". What people actually wanted from them is covered by the marquee multi-selection
 (move, align, style, delete many at once) and by frames.
 
-The one real dependency was the palette: six Components were built as grouped primitives. A
-component built that way comes apart the moment a user drags the wrong piece, resizes as a
+The one real dependency is the palette's Components. A component built as grouped primitives
+comes apart the moment a user drags the wrong piece, resizes as a
 uniform zoom of loose boxes (so text and padding scale together), and can only be edited by
-drilling into the group. The Entity ([The entity](entity.md)) already showed the better answer for the UML
+drilling into the group. The Entity ([The entity](entity.md)) shows the better answer for the UML
 class box: make it one element.
 
 ## The elements
@@ -36,12 +33,12 @@ shadow, comments, links, copy / paste, undo.
 
 | Kind          | Text                                                    | Rows (bounded)                        |
 | ------------- | ------------------------------------------------------- | ------------------------------------- |
-| `banner`      | `label` = title, `pageSubtitle` = subtitle              | —                                     |
-| `callout`     | `pageTitle` = heading, `label` = body                   | —                                     |
-| `stat-row`    | —                                                       | `stats: { value, caption }[]`, 1 to 6 |
-| `process`     | —                                                       | `processSteps: string[]`, 2 to 8      |
+| `banner`      | `label` = title, `pageSubtitle` = subtitle              | none                                  |
+| `callout`     | `pageTitle` = heading, `label` = body                   | none                                  |
+| `stat-row`    | none                                                    | `stats: { value, caption }[]`, 1 to 6 |
+| `process`     | none                                                    | `processSteps: string[]`, 2 to 8      |
 | `site-header` | `label` = brand                                         | `navLinks: string[]`, 0 to 6          |
-| image hero    | `heroCaption: { title, subtitle }` on an `ImageElement` | —                                     |
+| image hero    | `heroCaption: { title, subtitle }` on an `ImageElement` | none                                  |
 
 **The label is the main text wherever there is one**, so double-click edits it with the normal
 label editor (rich text, alignment, size, bold) exactly like any shape. The masthead lines
@@ -94,8 +91,8 @@ hero.
 
 ## Existing diagrams
 
-- Components already on a board were built as loose primitives and **stay as they are**: once
-  groups are gone they are simply separate elements. We do not try to recognise and fuse them.
+- Components already on a board were built as loose primitives and **stay as they are**: they
+  are simply separate elements. We do not try to recognise and fuse them.
 - `groupId` on stored elements is **ignored** and stripped on load.
 - A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved
   to, by `migrateLegacyGroups`, at the two boundaries where stored tabs enter: the api worker's
@@ -103,7 +100,9 @@ hero.
   offline store's tab load. The validator still accepts the legacy endpoint shape on write, so a
   browser running a cached pre-change build can still save; the next read migrates it.
 
-## Removed
+## No groups
+
+The editor has none of these:
 
 - Group / Ungroup in the selection popover, multi-selection toolbar and context menu; `⌘G`.
 - Group mode (the "Click another element to add to the group" pill).
@@ -111,6 +110,6 @@ hero.
   duplicate / clipboard / format-painter / insert-between paths.
 - Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
 - The Eraser Panel's "whole group" toggle ([Eraser Panel](../008-canvas/eraser-panel.md)).
-- Excalidraw import no longer maps `groupIds` (grouped Excalidraw elements import as separate
-  elements); export no longer writes them ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)).
-- The help article on groups.
+- Group membership in Excalidraw files: import does not map `groupIds` (grouped Excalidraw
+  elements import as separate elements), and export writes an empty `groupIds` ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)).
+- A help article on groups.

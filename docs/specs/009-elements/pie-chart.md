@@ -2,9 +2,8 @@
 
 Data charts are elements whose marks are sized by value, in a categorical
 palette, with an optional legend. The palette holds them in its own top-level **Data**
-category (it was folded into the Tools tab for a while; [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)
-pulled it back out) — **Pie**, **Bar**, and
-**Line** today, built so more chart kinds slot in beside them. They share the
+category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)):
+**Pie**, **Bar**, and **Line**, built so more chart kinds slot in beside them. They share the
 animation set, legend toggle, and context-menu categories; pie + bar also share
 the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 
@@ -31,10 +30,9 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   `chartLegend: false`. The default is **Below**: a side legend spends up to
   130px of a 280px-wide chart on series names, squeezing the plot into a third
   of the card, and it is the plot people are reading — a bottom band costs
-  height, which these charts have more of to give. (It was Right historically;
-  changing the resolved default moves any existing chart that never picked a
-  placement, which is the point of a default rather than a per-element field.)
-  The chart default sizes are squarer to match. The chart layout (`chartFrame`) reserves a
+  height, which these charts have more of to give. The resolved default applies
+  to every chart that never picked a placement, which is the point of a default
+  rather than a per-element field. The chart default sizes are squarer to match. The chart layout (`chartFrame`) reserves a
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.
@@ -43,9 +41,7 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   ordinary `textSize` (a chart has no label, so the Text flyout never offers
   it) and reads through `legendFontPx` (`label-font.ts`): 11 / 14 / 18px, with
   Medium the default. A key is not a name, so it has its own scale rather than
-  the label one. The key was a fixed 11px with no control, which read as too
-  small; every existing chart already carries `textSize: 'md'`, so they all
-  moved to the new default without a migration.
+  the label one. An absent `textSize` reads as Medium.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set — a chart animates its marks, not
@@ -54,9 +50,10 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   — each branch hue on multi-colour themes, accent tints/shades on single-accent
   themes), overridable per datum. So a chart reads as part of the theme out of
   the box.
-- It's a normal boxed element otherwise (move / resize / select / group / lock),
-  but the **Colours / Border / Presets** context-menu categories are hidden — a
-  chart styles per-datum via its Data category, not as one filled box.
+- It's a normal boxed element otherwise (move / resize / select / lock),
+  but the **Colours / Border** context-menu categories are hidden — a
+  chart styles per-datum via its Data category, not as one filled box. Its
+  **Presets** grid holds the chart palettes (see Chart palettes).
 
 ## Model
 
@@ -73,31 +70,31 @@ groups all three (they're all in `isSelfDrawingShape` too).
   `isChartShape` live in `@livediagram/diagram` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
   default palette or a per-mark colour, with a `ChartLegend`; the mark group
-  carries the `lvd-pie-*` animation (CSS in `globals.css`, reduced-motion-safe),
-  the axes / labels stay still. `element-variant.ts` gives them a borderless
-  wrapper. Shared preamble lives in `lib/chart.ts` (`chartFrame` / `chartAnim`);
-  hover wiring in `useChartHover` + `ChartTooltip`.
+  carries the `lvd-pie-*` animation (CSS in `apps/live/app/canvas-motion.css`,
+  reduced-motion-safe), the axes / labels stay still. `element-variant.ts` gives
+  them a borderless wrapper. The shared layout `chartFrame` lives in
+  `packages/diagram/src/chart-frame.ts` (re-exported from `apps/live/lib/chart.ts`,
+  which holds `chartAnim`); the frame, tooltip and legend are drawn by
+  `ChartSurface`; hover wiring in `useChartHover` + `ChartTooltip`.
 - CSV import (line): `parseCsvLineData` in `apps/live/lib/csv.ts` (quoted-field
   aware) turns a pasted/uploaded CSV into categories + series.
-- Setters in `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),
+- Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),
   `setLineDataSelected(categories, series)` (line), + `setChartLegendSelected` /
   `setChartLegendPositionSelected` / `setPieAnim*Selected`, all gated to chart
   shapes.
-- Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Added', 'PieChart' | 'BarChart' |
-'LineChart')` on create, `track('Element', 'Changed', 'ChartData' | 'LineData'
+- Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Added', 'Pie-chart' | 'Bar-chart' |
+'Line-chart')` on create, `track('Element', 'Changed', 'ChartData' | 'LineData'
 | 'ChartAnim' | 'ChartLegend')` on edits.
 
-Follows the composite-component pattern ([Timeline rail](timeline-rail.md), 52): a dedicated `ShapeKind`
-
-- small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
-  context-menu category. New chart kinds reuse it under the same Data palette category.
+Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a dedicated
+`ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
+context-menu category. New chart kinds reuse it under the same Data palette category.
 
 ## Chart palettes
 
-A chart's colours were a two-level fallback: a per-slice / per-series override,
-else the categorical ramp derived from the tab theme. That left no way to say
-"this chart is greys" short of opening the data editor and setting a colour on
-every row by hand, and a row added later still came out in the theme's colours.
+Without a chart-level palette, saying "this chart is greys" would mean opening
+the data editor and setting a colour on every row by hand, and a row added later
+would still come out in the theme's colours.
 
 `chartPalette` (a `ChartPaletteId` from `packages/diagram/src/chart-palettes.ts`)
 slots in as the middle rung: **per-datum colour > the chart's palette > the tab

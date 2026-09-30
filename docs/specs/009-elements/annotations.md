@@ -8,9 +8,9 @@ Annotations are a first-class element type. They build on the existing
 per-element **note** feature (`note?: string` on every boxed element, edited
 through `NotePopover` / `useEditorNotes`, see [Canvas and palette](../008-canvas/canvas-and-palette.md));
 an annotation is just the dedicated, palette-addable element whose entire
-purpose is to carry one. The note is a small **rich-text** document as of
-[Rich-text notes](rich-text-notes.md) — formatting lives in `noteRich?: TextRun[]`
-and `note` stays the plain-text mirror, so everything below is unchanged.
+purpose is to carry one. The note is a small **rich-text** document
+([Rich-text notes](rich-text-notes.md)): formatting lives in `noteRich?: TextRun[]`
+and `note` is the plain-text mirror.
 
 ## What it is
 
@@ -20,7 +20,7 @@ and `note` stays the plain-text mirror, so everything below is unchanged.
   the note.
 - **Fixed marker, not a box.** The circle does not resize: no corner / rotate
   handles. You can still move it (drag), recolour it (Colours accordion),
-  re-layer it (bring to front / send to back), lock it, group it, link it, and
+  re-layer it (bring to front / send to back), lock it, link it, and
   delete it like any other element. It keeps a consistent marker size so a
   canvas full of annotations stays tidy.
 - **Glyph is fixed.** Every annotation shows the same note marker glyph; it
@@ -28,9 +28,9 @@ and `note` stays the plain-text mirror, so everything below is unchanged.
 
 ## Adding one
 
-- **Tools tab** of the palette has an **Annotation** button. Clicking
+- The palette's **Write** category has an **Annotation** button. Clicking
   it drops a new annotation at the viewport centre, selects it, and is one
-  undoable commit. This is the **only** palette tile that still places
+  undoable commit. This is the **only** palette tile that places
   instantly: every other one arms the tap-or-drag draw gesture ([Canvas and palette](../008-canvas/canvas-and-palette.md)
   "Placement on add"). A marker is a fixed 44×44 glyph, so a drag would ask
   for a size the element then ignores — there is nothing to draw.
@@ -60,7 +60,7 @@ and `note` stays the plain-text mirror, so everything below is unchanged.
 ## Model
 
 `AnnotationElement` is a boxed element (`type: 'annotation'`), so it flows
-through every generic boxed path (selection, drag, layering, lock, group,
+through every generic boxed path (selection, drag, layering, lock,
 link, colours, comments, the note feature). It carries the shared boxed
 fields plus `note?: string` (and `noteRich?: TextRun[]`, [Rich-text notes](rich-text-notes.md)). `createAnnotation(x, y)` (in
 `packages/diagram/src/factories.ts`) returns one at the default 44×44 marker
@@ -71,7 +71,8 @@ size. `isBoxed` and the `BoxedElement` union include it.
   element's dimensions the way a shape would).
 - **Colours / theme:** annotation themes its `fillColor` (circle) and
   `strokeColor` (ring + glyph) via `THEME_COLOUR_FIELDS`, exactly like a
-  shape's fill + stroke; it has no themed text (the note is plain). The
+  shape's fill + stroke; it has no themed text (the note is not drawn on the
+  marker). The
   per-type colour defaults live in `packages/diagram/src/colors.ts`
   (`defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` /
   `defaultPadding`) and `supportsColours` returns true for it.

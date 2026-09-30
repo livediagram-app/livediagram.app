@@ -21,26 +21,24 @@ Five markers, plus a **None** option that clears it:
 - **Size** is a `TextSize` bucket: **Scale / Small / Medium / Large**. `Scale`
   (the default) tracks the element's text size, so the marker grows and shrinks
   with the label; the fixed buckets are small / medium / large dots.
-- Progress shapes (bar / ring) draw their own centred percentage, so they don't
-  show a marker.
+- Self-drawing shapes (`isSelfDrawingShape`: progress, charts, rating, code
+  block, checklist and the rest) draw their own content, so they don't show a
+  marker.
 
 ## Managing markers
 
-A **Markers** category in the single-shape right-click menu, in its own band
-between **Border** and **Collaborate**:
-
-```
-Border
-─────────
-Markers
-─────────
-Collaborate
-```
+A **Markers** category in the element menu's **Text** flyout, beside Typography
+and Alignment ([Canvas and palette](../008-canvas/canvas-and-palette.md)). Like
+the other Text categories it shows only once the shape has text, or while its
+text is being typed.
 
 Inside it: an illustrated tile per option (None + the five markers, each a glyph
-over its label) and, once a marker is chosen, a **Size** row (Scale / S / M / L)
-mirroring the Text-size control. Shapes only; not offered for arrows / text /
-images / tables, nor in the multi-selection menu.
+over its label) and a **Size** row (Scale / S / M / L) mirroring the Text-size
+control. The Size row always renders, dimmed and inert until a marker is set
+([Menu flyouts must not resize under the pointer](../004-interface-design/flyout-height-stability.md)).
+Hovering a tile or a size previews it on the canvas; a click commits. Shapes
+only; not offered for arrows / text / images / tables. The multi-selection menu
+offers it too, for every marker-capable shape in the selection with text.
 
 ## Implementation notes
 
@@ -51,11 +49,12 @@ images / tables, nor in the multi-selection menu.
   shared by the canvas renderer and the context-menu tiles; the circles carry a
   fixed fill, the checkbox tints with the element's text colour.
 - Rendering reuses the shape's icon+label flex layout (`ShapeInlineIconLayout`
-  in `BoxedElementView.tsx`), generalised to draw an optional marker left of the
+  in `apps/live/components/canvas/shape-inline-icon-layout.tsx`), generalised to draw an optional marker left of the
   label with or without an inline icon.
 - Setters `setMarkerSelected` / `setMarkerSizeSelected` in
-  `apps/live/hooks/canvas/useElementStyle.ts` apply to the selected shape(s) in one
-  history step.
+  `apps/live/hooks/canvas/useShapeStyleSetters.ts` (exposed through `useElementStyle.ts`)
+  and the menu's `commitMarker` / `commitMarkerSize` (`useStylePreview.ts`) apply to
+  the selected shape(s) in one history step.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Changed', 'Marker' | 'MarkerSize')`.
 - Image export (PNG / SVG / PDF) drawing the marker beside the label is a
   **follow-up** (`lib/export-tab.ts`): the export positions labels

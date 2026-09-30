@@ -11,8 +11,8 @@ OG image. The URL is edited the same way every other element's link is.
 boxed element added through the standard new-type surface (the `annotation`
 precedent): `isBoxed`, `createLinkCard` (280×120 default), the `colors.ts`
 defaults + `supportsColours`, `element-variant.ts` (a bordered, rounded card:
-`fillColor` background + `strokeColor` border), `search.ts`, `export-tab.ts`
-(renders as a rounded rect). It is **resizable** like a shape (not a fixed
+`fillColor` background + `strokeColor` border), `search.ts`, `svg-render.ts`
+(exports as a rounded rect). It is **resizable** like a shape (not a fixed
 marker) and recolour / move / lock / layer / delete like any element.
 
 - **URL source = `element.link` (`{ kind: 'url' }`)** — no new field. Editing
@@ -67,7 +67,7 @@ neutral chip).
 `track('Element', 'Added', 'LinkCard')` on create; `track('Element',
 'Changed', 'LinkUnfurled')` on a successful fetch (reuses existing actions).
 
-## Out of scope (v1)
+## Out of scope
 
 A Worker **image proxy / cache** (so viewers don't hit the third-party image
 host directly, and dead links keep their thumbnail) — noted follow-up.

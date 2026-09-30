@@ -1,7 +1,5 @@
 # YouTube video element
 
-Status: shipped
-
 ## What
 
 A **Video** element in the palette's **Media** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)): a
@@ -18,13 +16,13 @@ new-type surface, following the `link-card` precedent ([Link cards](link-cards.m
 
 **It carries no new data field.** The URL lives in `element.link`
 (`{ kind: 'url' }`) exactly as a link card's does, so double-clicking opens the
-existing `LinkPickerDialog` and `applyElementLink` commits it — no second URL
+existing `LinkPickerDialog` and `applyElementLink` commits it: no second URL
 editor, no new dialog.
 
 The picker opens **restricted**, though. A link card can legitimately point at
 a tab or another diagram; a video cannot, because its link is not a
-destination, it is the content — a video pointed at a tab has nothing to play.
-So `LinkPickerDialog` gained a `urlOnly` config (caller-supplied copy plus a
+destination, it is the content: a video pointed at a tab has nothing to play.
+So `LinkPickerDialog` has a `urlOnly` config (caller-supplied copy plus a
 validator) which hides the mode switcher entirely and validates as you type:
 a non-YouTube URL shows "That isn't a YouTube video link" and Save stays
 disabled. The validator runs again at commit, so Enter cannot slip past a
@@ -48,7 +46,7 @@ exists to prevent, on the very gesture that creates the element; fitting keeps
 the drag meaningful (it picks the position and the scale) without ever minting
 a stretched frame.
 
-`THEME_COLOUR_FIELDS` gives video an **empty** list — like image and sticky, a
+`THEME_COLOUR_FIELDS` gives video an **empty** list: like image and sticky, a
 video keeps its own look across themes.
 
 ## Accepted URLs
@@ -66,7 +64,7 @@ anything else:
 | `m.` / `www.` / `music.` hosts, `-nocookie` | all normalised              |
 
 An id is exactly 11 characters of `[A-Za-z0-9_-]`. The host must be a YouTube
-host — a query string `?v=` on some other site is not a video. Anything the
+host; a query string `?v=` on some other site is not a video. Anything the
 parser rejects renders the "not a YouTube link" state rather than an id-shaped
 guess.
 
@@ -98,7 +96,7 @@ sitting in the background.
 
 ## The player never takes the pointer by default
 
-The iframe carries `pointer-events: none` **always** — playing, selected, or
+The iframe carries `pointer-events: none` **always**: playing, selected, or
 not. Anything else breaks dragging, and tying it to selection only moves the
 problem one step: clicking a video to drag it selects it, which would make it
 interactive, so the drag never starts.
@@ -112,8 +110,8 @@ badge, and the two controls that appear top-left on hover once it is playing.
   pause, since pausing means clicking the player.
 
 Top-**left** because every element's link badge is pinned to the top-right
-corner, and a video always has a link — controls there sat underneath it and
-could not be clicked.
+corner, and a video always has a link; controls there would sit underneath it
+and could not be clicked.
 
 ## States
 
@@ -145,7 +143,5 @@ are worth having.
 
 ## Not in scope
 
-Vimeo, Loom, and friends. The only YouTube-specific parts are the parser, the
-poster URL and the embed origin, so a second provider is a `provider` field
-and three more cases rather than a rewrite. Also out: start-time offsets,
-autoplay-on-load (deliberately never), and playlists.
+Start-time offsets, autoplay-on-load (deliberately never), and playlists.
+Other providers are specified in [More than YouTube](embed-providers.md).
