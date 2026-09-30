@@ -59,7 +59,8 @@ canvas-2D drawers cannot draw. Adding a body to a kind wires up both exports.
 
 **Borders are the element's own.** A shape's export border uses its stroke
 width, dash pattern and radius (`svg-render-border.ts`), inset by half the
-stroke the way the canvas's CSS border sits inside the box. A self-painting
+stroke the way the canvas's CSS border sits inside the box; the diamond's polygon
+is inset the same way, so its tips never cross the box edge. A self-painting
 kind keeps the wrapper's 4px corners (the Reveal cover).
 
 **The Collaborate cards share one kit.** Every card is laid out in the canvas
