@@ -89,7 +89,8 @@ export function DocumentRow(props: DocumentEntryProps) {
       <span className="hidden sm:block">
         {showVisibility ? <VisibilityBadge document={liveDoc} /> : null}
       </span>
-      <span className="flex items-center gap-1.5">
+      {/* The sync mark at the column's right edge, so the marks line up. */}
+      <span className="flex items-center justify-between gap-1.5">
         <RelativeTimeChip at={liveDoc.savedAt} />
         <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
       </span>

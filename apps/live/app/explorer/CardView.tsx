@@ -184,7 +184,9 @@ function DocumentCard(
           <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           <RelativeTimeChip at={liveDoc.savedAt} />
-          <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
+          <span className="ml-auto">
+            <DocumentSyncMark documentId={liveDoc.id} savedAt={liveDoc.savedAt} />
+          </span>
         </div>
         {ownerLabel ? (
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{ownerLabel}</span>
