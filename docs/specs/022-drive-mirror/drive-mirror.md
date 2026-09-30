@@ -49,75 +49,68 @@ this spec does not restate it.
   UI. The section is there only where the deployment offers a provider. The
   account menu has no Drive entry. Search finds the row by drive, google,
   sync, backup, mirror and cloud; it links to the help article.
-- **What the row says,** in plain words:
-  - **Not connected:** "Keep a copy of your documents in your Google Drive."
-    ("Checking Google Drive…" while it finds out) and **Connect Google Drive**.
-    Pressing it turns the row to **Connecting…** at once, and it stays so
-    while the consent state is fetched and the browser leaves for Google, so
-    there is never a moment where nothing seems to happen. If that fails (the
-    request errors or is blocked), the row is **Not connected** again and says
-    "Couldn't reach Google. Check your connection and try again."
-  - **Leaving for Google and coming back** always returns the user to exactly
-    where they started: the same page with Settings open on Account > Cloud
-    Sync. Before leaving, the page's own history entry is given
-    `?settings=account&section=cloud-sync` (the entry is kept, not replaced by
-    a navigation), so the browser's Back button from Google's page reloads it
-    with Cloud Sync open. The same place is carried through the consent (kept
-    in this browser's session against the consent state, and accepted only as
-    a same-origin path), so a finished connection, and a **cancel at Google**,
-    come back there too. Back from a finished connection the row says
-    **Connecting** (never Not connected: the connection exists) until the
-    mirror reports, and the mirror syncs at once, even when another tab of the
-    same browser is the one running it. A cancel is not an error: the row says, calmly, "Connection
-    cancelled. Connect whenever you're ready."
-  - **The status** is plain, small, muted text at the top right of the card,
-    on the same line as "Google Drive", with no pill: "Checking…", "Not
-    connected", "Connecting…", "Synced just now", "Synced 3 mins ago",
-    "Syncing…" (only once a sync has run for a moment, so a routine check
-    never flickers it), "Copying 3 of 12…". When something needs the user it
-    turns to the warning colour **with a small warning glyph**, so colour is
-    never the only signal: "Needs reconnecting", "Paused", "Needs attention"
-    (a folder notice) or "Offline".
-  - **Connected:** one line, "Your documents are synced to “<root folder
-    name>” in Google Drive." (the root's actual name, as the user may have
-    renamed it; "Your documents are synced to Google Drive." while unknown),
-    or instead, while it applies, "Copying 3 of 12 documents…", "Syncing a
-    little slower for now, at Google's request.", "Can't reach Google Drive.
-    Trying again automatically." or "Another tab is syncing. This one stays
-    up to date." Under it: "Syncs happen continuously while livediagram is
-    open." (the exact rhythm is in the help article). **Syncing is
-    automatic** (after edits, every 2 minutes and on returning to the tab,
-    retrying by itself), so there is no Sync now button. The one button is
-    **Disconnect**, the neutral grey secondary button: it is reversible and
-    leaves the Drive files where they are. Its confirmation is neutral too.
-  - **Folder notices** take the "Syncs happen continuously" line's place as
-    one line, "<name>: Moved to a Drive folder livediagram can't see.", and
-    **Show folder** joins Disconnect among the buttons (and "and n more" for several; the next shows once one
-    is resolved).
-  - **Needs attention**: "Google Drive needs reconnecting. Your files are
-    safe." with **Reconnect**, or "Syncing paused in this browser. Resume to
-    continue." with **Resume**, beside **Disconnect**. The why (rate limits,
-    reconnecting, the rhythm and its per-document limit, copies made in
-    Drive) is in the help article.
-  - **Terminology:** "documents", not documents; "Google Drive", then "Drive"
-    once named; "sync" for the ongoing work, "copy" only for the first copy.
-  - **Below the card:** "Your Personal Space, copied to your Google Drive in
-    matching folders. Renames, moves and deletions sync both ways. livediagram
-    only sees files it created."
+- **The row is one row:** the cloud and "Google Drive" on the left; on the
+  right, the status and **one button**: **Connect** ("Connecting…" while it
+  starts) when not connected, the neutral grey **Disconnect** when connected
+  or paused (reversible, and the Drive files stay; its confirmation is
+  neutral too). There is no body text and no Sync now: **syncing is
+  automatic** (after edits, every 2 minutes, and on returning to the tab,
+  retrying by itself; the exact rhythm is in the help article).
+- **The status** is plain, small, muted text: "Checking…", "Not connected",
+  "Connecting…", "Last synced just now", "Last synced 3 mins ago" ("Not
+  synced yet" before the first), "Syncing…" (only once a sync has run for a
+  moment, so a routine check never flickers it), "Copying 3 of 12…". When
+  something needs the user it turns to the warning colour **with a small
+  warning glyph**, so colour is never the only signal: "Needs reconnecting",
+  "Paused", "Needs attention" (a folder notice) or "Offline".
+- **A second line only for problems,** with what to press:
+  - a Connect that could not start: "Couldn't reach Google. Check your
+    connection and try again." (it starts as **Connecting…** at once, and stays
+    so while the consent state is fetched and the browser leaves for Google,
+    so there is never a moment where nothing seems to happen);
+  - a cancel at Google, calmly: "Connection cancelled. Connect whenever you're
+    ready.";
+  - "Google Drive needs reconnecting. Your files are safe." with
+    **Reconnect**, or "Syncing paused in this browser. Resume to continue."
+    with **Resume**;
+  - "Can't reach Google Drive. Trying again automatically.";
+  - a folder notice, "<name>: Moved to a Drive folder livediagram can't
+    see." (with "and n more" for several; the next shows once one is
+    resolved) with **Show folder**.
+    The why (rate limits, reconnecting, the rhythm and its per-document limit,
+    copies made in Drive) is in the help article.
+- **Leaving for Google and coming back** always returns the user to exactly
+  where they started: the same page with Settings open on Account > Cloud
+  Sync. Before leaving, the page's own history entry is given
+  `?settings=account&section=cloud-sync` (the entry is kept, not replaced by
+  a navigation), so the browser's Back button from Google's page reloads it
+  with Cloud Sync open. The same place is carried through the consent (kept
+  in this browser's session against the consent state, and accepted only as
+  a same-origin path), so a finished connection, and a **cancel at Google**,
+  come back there too. Back from a finished connection the status says
+  **Connecting…** (never Not connected: the connection exists) until the
+  mirror reports, and the mirror syncs at once, even when another tab of the
+  same browser is the one running it.
+- **Below the card:** not connected, "Your Personal Space, copied to your
+  Google Drive in matching folders. Renames, moves and deletions sync both
+  ways. livediagram only sees files it created."; connected, "Your documents
+  are synced to “<root folder name>” in Google Drive." (the root's actual
+  name, as the user may have renamed it; "Your documents are synced to Google
+  Drive." while unknown).
+- **Terminology:** "documents"; "Google Drive", then "Drive" once named;
+  "sync" for the ongoing work, "copy" only for the first copy.
 - **Nothing moves within a phase** (the product's layout stability rule,
   "Layout stability" in the interface design specs, **reserve per phase, not
-  per message**). The row has three phases: **not connected** (checking, not
-  connected, connecting, a connect that failed, a cancel), **connected**
-  (synced, syncing, the first copy, another tab writing, offline,
-  rate-limited, folder notices) and **needs attention** (reconnect, resume).
-  Within a phase every part keeps its size: the status holds that phase's
-  wordings at their widest realistic value, the line that phase's sentences
-  (short, one line where the width allows), and the buttons that phase's
-  labels only ("Connect Google Drive" / "Connecting…"). A change of phase
-  that follows the user's own action (Connect, Disconnect, Reconnect) may
-  change the row's height. No blank space, no divider and no empty block is
-  kept for anything that cannot appear in the current phase. The footer
-  holds only buttons, and nothing overlaps at any width. Counts and times use
+  per message**). The phases are **not connected** (checking, not connected,
+  connecting, a connect that failed, a cancel), **connected** (synced,
+  syncing, the first copy, offline, folder notices) and **needs attention**
+  (reconnect, resume). Within a phase the row keeps its shape: the status
+  holds that phase's wordings at their widest realistic value, and the button
+  its phase's labels ("Connect" / "Connecting…"). The problem line appears
+  only while there is a problem, below the row, moving nothing in it; a
+  change of phase that follows the user's own action (Connect, Disconnect,
+  Reconnect) may change the card's height. No blank space is kept for
+  anything, and no button covers anything at any width. Counts and times use
   tabular numerals.
 - **Where the status lives:** only in Cloud Sync. The avatar carries no
   sync mark, badge or tooltip; it renders exactly as without Drive.
@@ -380,8 +373,8 @@ Named constants in one cadence module of the mirror code, with the values and bu
   again brings a check.
 - **Opening Cloud Sync checks.** When the Cloud Sync row scrolls into view, a
   check runs (unless one finished in the last 30 seconds): the status reads
-  "Checking…" while it runs, then "Synced just now".
-- **"Synced" means the last successful check**, including a check that found
+  "Checking…" while it runs, then "Last synced just now".
+- **"Last synced" means the last successful check**, including a check that found
   nothing new. A visible tab whose last check is older than two check
   intervals logs `drive: stale` (a bug to find, never a state shown quietly)
   and asks for a check at once. Each check first asks for

@@ -114,13 +114,13 @@ A `DRIVE_TOKEN_KEY` that does not decode to 32 bytes counts as unset and logs `d
 
 `DriveMirrorState`, published by the engine (and relayed to the other tabs):
 
-| State             | Means                                          | Panel shows                                      |
-| ----------------- | ---------------------------------------------- | ------------------------------------------------ |
-| `starting`        | Auth or the first pass not settled             | "Checking Google Drive…"                         |
-| `disconnected`    | No connection row                              | **Connect Google Drive**                         |
-| `idle`, `syncing` | Row with status `connected` and a usable token | the status (Synced … / Syncing…), **Disconnect** |
-| `needs_reconnect` | Row with status `needs_reconnect`              | **Reconnect**, **Disconnect**                    |
-| `needs_resume`    | Browser-only mode, the token lapsed            | **Resume sync**, **Disconnect**                  |
+| State             | Means                                          | Panel shows                                           |
+| ----------------- | ---------------------------------------------- | ----------------------------------------------------- |
+| `starting`        | Auth or the first pass not settled             | "Checking Google Drive…"                              |
+| `disconnected`    | No connection row                              | **Connect**                                           |
+| `idle`, `syncing` | Row with status `connected` and a usable token | the status (Last synced … / Syncing…), **Disconnect** |
+| `needs_reconnect` | Row with status `needs_reconnect`              | **Reconnect**, **Disconnect**                         |
+| `needs_resume`    | Browser-only mode, the token lapsed            | **Resume**, **Disconnect**                            |
 
 Transitions (`idle` / `syncing` read as connected): `disconnected` to `idle` by `/drive/connected` (broker) or the GIS grant (browser); `connected` to
 `needs_reconnect` when `POST /api/drive/token` answers `409 drive_needs_reconnect`; `needs_reconnect` to `connected`
@@ -599,43 +599,44 @@ keywords: 'drive google sync backup mirror cloud', description, helpArticle: 'go
 
 `driveSyncPhase(status)` (`apps/live/lib/drive/cloud-sync-copy.ts`): `not-connected` (`starting`, `disconnected`),
 `attention` (`needs_reconnect`, `needs_resume`), else `connected`. `driveSyncCopy(status, connect, view)` →
-`{ phase, status, warn, text, action, failed? }`, `view` = `{ now, syncingLong }`. Each phase's parts are sized for that
-phase only (`driveStatusOptions(status, phase)`, `driveSyncTexts(status, phase)`, `DRIVE_PHASE_PRIMARY`):
+`{ phase, status, problem }`, `view` = `{ now, syncingLong, checking }`; `problem` =
+`{ text, action: 'reconnect' | 'resume' | 'showFolder' | null, failed? }` or `null`:
 
-| Phase           | State                     | Status (`warn` in bold)                 | Text                                                         | Buttons                                         |
-| --------------- | ------------------------- | --------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| `not-connected` | `starting`                | Checking…                               | "Checking Google Drive…"                                     | none (the primary's place kept)                 |
-| `not-connected` | `disconnected`            | Not connected / Connecting…             | "Keep a copy of your documents in your Google Drive."        | **Connect Google Drive** / **Connecting…**      |
-| `not-connected` | connect failed            | Not connected                           | `DRIVE_CONNECT_FAILED`                                       | same                                            |
-| `not-connected` | cancelled at Google       | Not connected                           | `DRIVE_CONNECT_CANCELLED`                                    | same                                            |
-| `connected`     | `idle`                    | Synced {relativeSince} / Not synced yet | "Your documents are synced to “{rootName}” in Google Drive." | **Disconnect**                                  |
-| `connected`     | `syncing` ≥ 600 ms        | Syncing…                                | same                                                         | **Disconnect**                                  |
-| `connected`     | first mirror              | Copying {done} of {total}…              | "Copying {done} of {total} documents…"                       | **Disconnect**                                  |
-| `connected`     | `rate_limited`            | Synced {relativeSince}                  | "Syncing a little slower for now, at Google's request."      | **Disconnect**                                  |
-| `connected`     | `offline` / `failed`      | **Offline**                             | "Can't reach Google Drive. Trying again automatically."      | **Disconnect**                                  |
-| `connected`     | lease elsewhere           | Synced {relativeSince}                  | "Another tab is syncing. This one stays up to date."         | **Disconnect**                                  |
-| `connected`     | notices                   | **Needs attention**                     | the usual line                                               | **Disconnect**                                  |
-| `attention`     | `needs_reconnect`         | **Needs reconnecting** / Connecting…    | "Google Drive needs reconnecting. Your files are safe."      | **Disconnect**, **Reconnect** / **Connecting…** |
-| `attention`     | `needs_resume`            | **Paused**                              | "Syncing paused in this browser. Resume to continue."        | **Disconnect**, **Resume**                      |
-| `attention`     | reconnect failed to start | **Needs reconnecting**                  | `DRIVE_CONNECT_FAILED`                                       | same                                            |
+| Phase           | State                     | Status (`warn` in bold)                      | Button                    | Problem line                                                               |
+| --------------- | ------------------------- | -------------------------------------------- | ------------------------- | -------------------------------------------------------------------------- |
+| `not-connected` | `starting`                | Checking…                                    | **Connect**               | none                                                                       |
+| `not-connected` | `disconnected`            | Not connected / Connecting…                  | **Connect** / Connecting… | none                                                                       |
+| `not-connected` | connect failed            | Not connected                                | **Connect**               | `DRIVE_CONNECT_FAILED` (`failed`, `role="alert"`)                          |
+| `not-connected` | cancelled at Google       | Not connected                                | **Connect**               | `DRIVE_CONNECT_CANCELLED`                                                  |
+| `connected`     | `idle`                    | Last synced {relativeSince} / Not synced yet | **Disconnect**            | none                                                                       |
+| `connected`     | `syncing` ≥ 600 ms        | Syncing…                                     | **Disconnect**            | none                                                                       |
+| `connected`     | a check the row asked for | Checking…                                    | **Disconnect**            | none                                                                       |
+| `connected`     | first mirror              | Copying {done} of {total}…                   | **Disconnect**            | none                                                                       |
+| `connected`     | `offline` / `failed`      | **Offline**                                  | **Disconnect**            | `DRIVE_OFFLINE`                                                            |
+| `connected`     | notices                   | **Needs attention**                          | **Disconnect**            | "{name}: Moved to a Drive folder livediagram can't see." + **Show folder** |
+| `attention`     | `needs_reconnect`         | **Needs reconnecting** / Connecting…         | **Disconnect**            | `DRIVE_NEEDS_RECONNECT` + **Reconnect** / Connecting…                      |
+| `attention`     | `needs_resume`            | **Paused**                                   | **Disconnect**            | `DRIVE_NEEDS_RESUME` + **Resume**                                          |
+| `attention`     | reconnect failed to start | **Needs reconnecting**                       | **Disconnect**            | `DRIVE_CONNECT_FAILED` (`failed`) + **Reconnect**                          |
 
-"Your documents are synced to Google Drive." while the root name is unknown. The status is a `StableLabel` in the
-header's top-right corner, `text-xs` slate-500 (slate-400 dark), amber-700 (amber-300 dark) with a 12 px warning
-glyph when `warn`; its options are every wording of the phase, the times at their widest realistic value
-(`DRIVE_SINCE_SAMPLES`) and the copy count at total of total. "Syncing…" shows only after
-`DRIVE_SYNCING_SHOW_DELAY_MS` (600 ms) of one pass, so the 2-minute check never flickers it. Body: the text line
-(`aria-live="polite"`); in `connected` a detail slot holding `DRIVE_RHYTHM` ("Syncs happen continuously while
-livediagram is open.") or, with notices, "{name}: Moved to a Drive folder livediagram can't see." (with "and {n}
-more"), with **Show folder** (secondary, adopts the first notice) in the footer before **Disconnect**. No divider, no progress bar. Footer: buttons only,
-right-aligned, wrapping. There is no Sync now: the engine's own `syncNow` stays for arrival, focus and the tab
-channel. **Disconnect** is `Button` variant `secondary`; its confirmation is `ConfirmDialog` variant `neutral`.
+The card is one row: the label left; right, `[data-drive-actions]` holding the status (`[data-drive-status]`, a
+grid of every wording of the phase with only the current visible: `driveStatusOptions(status, phase)`, the times at
+their widest realistic value, `DRIVE_SINCE_SAMPLES`, the copy count at total of total; `text-xs` slate-500, or
+amber-700 / amber-300 with a 12 px warning glyph when `warn`) and one button: **Connect** (`primary`, a
+`StableLabel` over `DRIVE_CONNECT_LABELS`, `aria-disabled` while connecting) or **Disconnect** (`secondary`; its
+confirmation is `ConfirmDialog` variant `neutral`). "Syncing…" shows only after `DRIVE_SYNCING_SHOW_DELAY_MS`
+(600 ms) of one pass. `[data-drive-problem]` renders below the row, above a top border, only while `problem` is
+set: its words (rose when `failed`, else amber) and its action (**Show folder** `secondary`, adopting the first
+notice; **Reconnect** / **Resume** `primary`, a `StableLabel` over `DRIVE_PROBLEM_LABELS`). The row's description
+(`SettingsRowShell`) is the provider's while not connected and `driveConnectedText(rootName)` ("Your documents are
+synced to “{rootName}” in Google Drive.") while connected. There is no Sync now: the engine's own `syncNow` stays
+for arrival, focus and the tab channel.
 
 **Connecting.** `DriveMirrorContextValue` carries `connecting: boolean` and `connectError: string | null`.
 `connect()` sets `connecting` before any await; in broker mode it stays set once `window.location.assign` has run
 (the page is leaving), and a `pageshow` with `persisted` (Back from Google out of the bfcache) clears it. If
 `apiDriveState` or the browser token request throws, `connecting` clears and `connectError` is
 `DRIVE_CONNECT_FAILED`: "Couldn't reach Google. Check your connection and try again.", shown in
-the row's text slot in place of the description, with the status **Not connected**; it clears on the next Connect.
+the problem line, with the status **Not connected**; it clears on the next Connect.
 Logged `connect-failed` (warn). The status reads **Connecting…** while `connecting`.
 
 **Returning from Google.** `connect()` (broker) first rewrites the current entry's URL with
@@ -643,7 +644,7 @@ Logged `connect-failed` (warn). The status reads **Connecting…** while `connec
 state, thatPath)`, then `location.assign(google)`, so Back from Google reloads the entry with Cloud Sync open.
 `/drive/connected` `location.replace`s itself with the remembered path on success and on `error` (a cancel), and on a
 cancel first sets the one-shot `livediagram:v2:drive-connect-outcome` = `cancelled` in `sessionStorage`; the provider
-reads and clears it on mount into `connectNote: 'cancelled'`, shown in the row's text slot as
+reads and clears it on mount into `connectNote: 'cancelled'`, shown on the problem line as
 `DRIVE_CONNECT_CANCELLED` in the ordinary colour, the status **Not connected**. `safeReturnPath(path)` accepts only a
 path that starts with one `/`, holds no backslash and no control character, and resolves to the page's own origin;
 anything else is `/explorer`. Settings deep links (`?settings`, `?section`) stay in the URL while Settings is open
@@ -672,12 +673,11 @@ context: skipped outside the connected phase, while a pass runs, or when `lastSy
 context's `checking` is set (the status reads "Checking…") until a status with `state: 'idle'` and a newer
 `lastSyncedAt` arrives, or 10 s pass.
 
-**Per phase.** `StableLabel` (`@livediagram/ui`) lays every wording of one control in one grid cell, all but the
-current one `invisible` and `aria-hidden`. The status, the text line and the primary take only their
-phase's wordings, so nothing moves within a phase and no space is kept for another phase. The e2e compares the row's
-size and every part's box within each phase (not connected: idle, connect failed, connecting; connected: copying,
-synced, syncing, notice; attention: needs reconnect), and checks that no footer button overlaps anything above it,
-at 1280, 900 and 390 px wide.
+**Per phase.** The status and the button keep their phase's widest wording, so the row keeps its shape within a
+phase; the problem line comes and goes below it. The e2e compares the card's width and the row's, the status's and
+the button's boxes within each phase (not connected: idle, connect failed, connecting; connected: copying, synced,
+syncing, notice; attention: needs reconnect, reconnect failed), and checks that no button covers the label, the
+status or the problem's words, another button, or leaves the card, at 1280, 900 and 390 px wide.
 
 `status.rootName`: the root's Drive name, set when the root is created (`driveRootName(host)`), found, checked on
 arrival, or renamed (an inbound change for the root's file id), `null` until known.
