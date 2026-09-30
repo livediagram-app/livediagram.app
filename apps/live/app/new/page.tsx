@@ -13,7 +13,9 @@ import {
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDocumentSettings } from '@/components/palette/TemplatePicker';
+import { BlankCanvasScreen } from '@/components/chrome/BlankCanvasScreen';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -41,7 +43,9 @@ import {
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-document-params';
+import { WIZARD_BYPASS_PARAMS, wantsWelcome, wizardBypassKind } from '@/lib/new-document-params';
+import { markQuietLanding } from '@/lib/quiet-landing';
+import { QUIET_LANDING_ATTR } from '@/lib/quiet-landing-boot';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -53,7 +57,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 const loadEditor = () => import('@/app/document/[id]/editor-page');
 const EditorPage = dynamic(loadEditor, {
   ssr: false,
-  loading: () => <DocumentLoading stage="opening" />,
+  loading: () => <OpeningScreen />,
 });
 
 // The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-document-route.md). The URL does
@@ -61,6 +65,8 @@ const EditorPage = dynamic(loadEditor, {
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
+const welcomeFromUrl = () => wantsWelcome(window.location.search);
+const noWelcome = () => false;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
@@ -167,6 +173,13 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
+  // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
+  // grew into rather than the opening screen, so nothing else paints between the two.
+  const quietLanding = useSyncExternalStore(subscribeNever, welcomeFromUrl, noWelcome);
+  // BlankCanvasScreen now paints the canvas the guard painted; lift the guard so the body shows.
+  useLayoutEffect(() => {
+    if (quietLanding) document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
+  }, [quietLanding]);
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
@@ -356,13 +369,19 @@ export default function NewDocumentPage() {
     // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
-    if (documentCount === 0) {
+    // The hero's launch window (/new?blank=1&welcome=1) queues the offer too: its create fires
+    // before the count is known, and the synced tourSeen gate keeps it to people who haven't
+    // answered it. It also lands on the blank canvas the hero grew into (lib/quiet-landing.ts).
+    const welcome = templateKind === 'blank' && wantsWelcome(window.location.search);
+    if (documentCount === 0 || welcome) {
       markTourPending();
     }
+    if (welcome) markQuietLanding();
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
     document.documentElement.removeAttribute('data-just-draw');
+    document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
     window.history.replaceState(null, '', `/document/${documentId}`);
     setOpenedId(documentId);
   };
@@ -425,6 +444,7 @@ export default function NewDocumentPage() {
   // from mount to the handoff (docs/specs/007-editor/new-document-route.md). The editor's own load
   // renders the same screen, so create → open reads as one moment. Create failures fall through to
   // the retryable error card branch before this one.
+  if (quietLanding) return <BlankCanvasScreen />;
   if (bypassKind) return <DocumentLoading stage="creating" />;
 
   return (

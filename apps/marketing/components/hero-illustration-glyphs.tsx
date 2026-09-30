@@ -1,14 +1,14 @@
 // The hero illustration's glyph vocabulary: the small, stateless pieces the
-// five editor windows draw themselves out of. Split from HeroIllustration,
+// six editor windows draw themselves out of. Split from HeroIllustration,
 // which was over the 1000-line mark and mixed a timed animation with 370
 // lines of SVG paths. Every one of these is pure markup with no state, no
 // module constants and no reference to another, so they read on their own.
 // Glyphs the editor's chrome also draws (the share-state dots, the Tabs label,
-// chevrons, menu, search) come from @livediagram/ui instead, so the hero
+// chevrons, menu, search, the canvas cluster and the toolbelt) come from @livediagram/ui instead, so the hero
 // mirrors the editor rather than a copy of it.
 
 import { lucideShare2 } from '@livediagram/icons/lucide';
-import { Glyph, GlyphDisc, Prims, SearchIcon } from '@livediagram/ui';
+import { Glyph, GlyphDisc, Prims } from '@livediagram/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
 // small initials on the participant's colour, a ring of the bar's own surface, overlapping the
@@ -33,79 +33,6 @@ export function TabAvatar({
     >
       {initials}
     </GlyphDisc>
-  );
-}
-
-// Small chrome glyphs: the bottom tab bar's toolbelt (search, keyboard
-// shortcuts, settings, dark-mode) and the zoom cluster (history, undo, redo,
-// layers, brush). Decorative, sized for the chrome.
-export function ToolGlyph({
-  kind,
-  small = false,
-}: {
-  kind: 'search' | 'keys' | 'sliders' | 'moon' | 'history' | 'undo' | 'redo' | 'layers' | 'brush';
-  // The editor's bottom chrome draws its glyphs small inside roomy hit
-  // targets; `small` is that proportion.
-  small?: boolean;
-}) {
-  const px = small ? 11 : 15;
-  const common = {
-    width: px,
-    height: px,
-    viewBox: '0 0 16 16',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 1.4,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-    'aria-hidden': true,
-  } as const;
-  return (
-    <span className="flex h-6 w-6 items-center justify-center rounded-md">
-      {kind === 'search' ? (
-        <SearchIcon size={px} />
-      ) : kind === 'keys' ? (
-        <svg {...common}>
-          <rect x="1.5" y="4" width="13" height="8" rx="1.5" />
-          <path d="M4 7h.01M7 7h.01M10 7h.01M5 9.5h6" />
-        </svg>
-      ) : kind === 'sliders' ? (
-        <svg {...common}>
-          <path d="M2 5h12M2 11h12" />
-          <circle cx="6" cy="5" r="1.6" fill="white" className="dark:fill-slate-900" />
-          <circle cx="10.5" cy="11" r="1.6" fill="white" className="dark:fill-slate-900" />
-        </svg>
-      ) : kind === 'history' ? (
-        <svg {...common}>
-          <path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9" />
-          <path d="M2.5 3v3h3M8 5.5V8l2 1.5" />
-        </svg>
-      ) : kind === 'undo' ? (
-        <svg {...common}>
-          <path d="M6 4 3 7l3 3" />
-          <path d="M3 7h6.5a3.5 3.5 0 0 1 0 7H7" />
-        </svg>
-      ) : kind === 'redo' ? (
-        <svg {...common}>
-          <path d="M10 4l3 3-3 3" />
-          <path d="M13 7H6.5a3.5 3.5 0 0 0 0 7H9" />
-        </svg>
-      ) : kind === 'layers' ? (
-        <svg {...common}>
-          <path d="M8 2.5 14 5.5 8 8.5 2 5.5z" strokeLinejoin="round" />
-          <path d="M2 8.5l6 3 6-3M2 11.5l6 3 6-3" />
-        </svg>
-      ) : kind === 'brush' ? (
-        <svg {...common}>
-          <path d="M13.5 2.5 7 9l-1 1 .5 .5 1-1 6.5-6.5z" strokeLinejoin="round" />
-          <path d="M6 10c-1.5 0-2.5 1-2.5 2.5S2 14 2 14s2 .2 3.5-1S6 10 6 10z" />
-        </svg>
-      ) : (
-        <svg {...common}>
-          <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" />
-        </svg>
-      )}
-    </span>
   );
 }
 
