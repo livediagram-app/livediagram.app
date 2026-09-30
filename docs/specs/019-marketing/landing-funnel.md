@@ -68,15 +68,15 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                    | Slots                                                                           |
-| ----------- | ---------------------------------- | ------------------------------------------------------------------------------- |
-| `Home`      | `/`                                | `Header`, `HeaderDraw`, `Hero`, `HeroDraw`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `Hero`, `Closing`                                       |
-| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `Card`                                                  |
-| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `Card`                                                  |
-| `Status`    | `/status`                          | `Header`, `HeaderDraw`                                                          |
-| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`                                                          |
-| `Help`      | `/help`, `/help/*`                 | `Header`                                                                        |
+| Surface     | Pages it covers                    | Slots                                                                                         |
+| ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| `Home`      | `/`                                | `Header`, `HeaderDraw`, `Hero`, `HeroDraw`, `HeroCanvas`, `Gallery`, `GalleryDraw`, `Closing` |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `Hero`, `Closing`                                                     |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `Card`                                                                |
+| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `Card`                                                                |
+| `Status`    | `/status`                          | `Header`, `HeaderDraw`                                                                        |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`                                                                        |
+| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                      |
 
 The slots:
 
@@ -85,6 +85,8 @@ The slots:
   Start drawing button, its `Header`.
 - `Hero` / `HeroDraw`: the landing hero's pair; on a feature page, `Hero` is
   the category hero's Start drawing.
+- `HeroCanvas`: the hero stage's launch window, the mini canvas that grows
+  into the editor (`/new?blank=1&quickstart=1`).
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
   `Template·Used`, so it is not repeated in the source. `GalleryDraw` is the

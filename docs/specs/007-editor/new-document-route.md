@@ -399,6 +399,20 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
+- **`/new?blank=1&quickstart=1`**: Just Draw that lands **with Quick Start
+  open**. It commits the blank document exactly as `?blank=1` does, and the
+  editor then opens its Quick Start picker over the empty tab, as if the
+  empty-canvas banner's Quick Start button had been pressed. This is the URL
+  the marketing hero's launch window grows into
+  ([Marketing site](../019-marketing/marketing-site.md)): the visitor clicked
+  a blank canvas, so they arrive on one with the templates offered. The intent
+  crosses the in-place handoff as a one-shot `sessionStorage` flag
+  (`lib/quick-start-pending.ts`, written just before the handoff, as the tour
+  flag is), and the editor **consumes** it the first time the document has
+  loaded, is editable, and its active tab is empty. Consumed, not peeked: a
+  reload lands on the canvas like any blank document, and Cancel is final.
+  `quickstart` alone (no `blank`) does nothing; it only rides the blank
+  bypass, and the bfcache restore strips it with the bypass params.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
   combinable with every param above. `useCtaAttribution` reads it once,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
-import { wizardBypassKind } from './new-document-params';
+import { wantsQuickStart, wizardBypassKind } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
   it('reads ?blank as the blank template, whatever its value', () => {
@@ -27,5 +27,18 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
 
   it('reads back the link the templates package builds for the gallery', () => {
     expect(wizardBypassKind(templateCreateHref('swot').slice('/new'.length))).toBe('swot');
+  });
+});
+
+describe('wantsQuickStart (docs/specs/007-editor/new-document-route.md)', () => {
+  it('rides the blank bypass', () => {
+    expect(wantsQuickStart('?blank=1&quickstart=1')).toBe(true);
+    expect(wantsQuickStart('?quickstart=1&blank=1&via=Home.HeroCanvas')).toBe(true);
+  });
+
+  it('does nothing without the blank bypass', () => {
+    expect(wantsQuickStart('?quickstart=1')).toBe(false);
+    expect(wantsQuickStart('?template=kanban&quickstart=1')).toBe(false);
+    expect(wantsQuickStart('?blank=1')).toBe(false);
   });
 });

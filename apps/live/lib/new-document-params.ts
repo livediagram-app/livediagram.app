@@ -7,9 +7,13 @@ import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 // One reader for both so the page, its bfcache-restore cleanup and the
 // pre-hydration guard agree on what counts.
 
+// Rides the blank bypass: open Quick Start over the new document
+// (/new?blank=1&quickstart=1, the marketing hero's launch window).
+export const QUICK_START_PARAM = 'quickstart';
+
 // The params the bypass reads; the bfcache restore strips exactly these so
 // Back from the editor lands on the plain wizard with placement intact.
-export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
+export const WIZARD_BYPASS_PARAMS = ['blank', 'template', QUICK_START_PARAM] as const;
 
 // Which template the query asks to commit without the wizard, or null for
 // the wizard itself. `blank` wins when both are present (it is the older,
@@ -20,4 +24,10 @@ export function wizardBypassKind(search: string): TemplateKind | null {
   if (params.has('blank')) return 'blank';
   const template = params.get('template');
   return isTemplateKind(template) ? template : null;
+}
+
+// Whether the bypass should land with Quick Start open. Only the blank bypass
+// carries it: a named template already fills the canvas Quick Start would offer.
+export function wantsQuickStart(search: string): boolean {
+  return wizardBypassKind(search) === 'blank' && new URLSearchParams(search).has(QUICK_START_PARAM);
 }

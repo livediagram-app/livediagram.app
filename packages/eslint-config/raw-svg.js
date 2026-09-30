@@ -19,6 +19,8 @@ export const ICON_ART_ALLOWLIST = [
   // Marketing illustrations and the hero's mimicry of the editor chrome.
   '**/components/feature-art/**',
   '**/components/HeroIllustration.tsx',
+  '**/components/hero-editor-window.tsx',
+  '**/components/hero-theme-dialog.tsx',
   '**/components/hero-illustration-glyphs.tsx',
   // Style-value previews, option previews and coloured chips.
   '**/components/palette/palette-style-previews.tsx',

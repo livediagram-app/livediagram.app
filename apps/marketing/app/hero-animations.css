@@ -1051,3 +1051,58 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* The launch window (components/hero-launch.tsx, docs/specs/019-marketing/marketing-site.md).
+   Its invitation breathes while the window is centred: an attention pulse, so an ambient loop
+   (docs/specs/004-interface-design/motion.md). */
+.hero-launch-invite {
+  animation: hero-launch-invite 2.4s ease-in-out infinite;
+}
+@keyframes hero-launch-invite {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 10px 15px -3px rgb(14 165 233 / 0.3),
+      0 0 0 0 rgb(14 165 233 / 0.35);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 10px 15px -3px rgb(14 165 233 / 0.3),
+      0 0 0 10px rgb(14 165 233 / 0);
+  }
+}
+/* A click grows the canvas to fill the screen: a fixed layer clipped from the canvas's rect
+   (--grow-t/-r/-b/-l, set from the click) to the whole viewport, its paper easing from the
+   window's canvas to the opening screen's (apps/live DocumentLoading: slate-50, slate-950 in
+   dark), so it lands on the screen /new paints next. The page-transition token, 250ms; the
+   navigation follows its end. */
+.hero-grow {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  --grow-paper: #f8fafc;
+  background-color: var(--grow-paper);
+  background-image: radial-gradient(circle at center, var(--art-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  animation: hero-grow 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.dark .hero-grow {
+  --grow-paper: #020617;
+}
+@keyframes hero-grow {
+  from {
+    clip-path: inset(var(--grow-t) var(--grow-r) var(--grow-b) var(--grow-l) round 8px);
+    background-color: var(--art-paper);
+  }
+  to {
+    clip-path: inset(0 round 0);
+    background-color: var(--grow-paper);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-launch-invite {
+    animation: none;
+  }
+}

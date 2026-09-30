@@ -1,18 +1,21 @@
 'use client';
 
-// Animated hero: five editor windows on a sliding stage.
-//   1. Flowchart — shared, a teammate cursor, and the theme beat: the Tab
+// Animated hero: six editor windows on a sliding stage.
+//   1. Your canvas — the launch window (hero-launch.tsx): a fresh, empty,
+//      private document. While centred, a click grows it to fill the screen
+//      and lands on a new blank document with Quick Start open.
+//   2. Flowchart — shared, a teammate cursor, and the theme beat: the Tab
 //      Look & Feel dialog opens, a theme card is picked, and the diagram
 //      recolours (the only window that recolours; its canvas tints to match).
-//   2. Slide deck — the same flowchart presented (docs/specs/012-collaboration/presentation-mode.md): full screen, so
+//   3. Slide deck — the same flowchart presented (docs/specs/012-collaboration/presentation-mode.md): full screen, so
 //      no header, tab bar or panels, only the canvas and the presenting HUD;
 //      four slides travel across it a piece at a time and end on the whole
 //      picture.
-//   3. Mind map — shared, a Highlighter swipe across one node, then a laser
+//   4. Mind map — shared, a Highlighter swipe across one node, then a laser
 //      pointer that rings one node then another.
-//   4. Release timeline — private (amber badge, just you, no collaborators),
+//   5. Release timeline — private (amber badge, just you, no collaborators),
 //      with the Layers panel docked beside it.
-//   5. Architecture — shared; a comment thread lands on one service and an
+//   6. Architecture — shared; a comment thread lands on one service and an
 //      assigned action on another, ticked off by the end.
 // The chrome mirrors today's editor: the Editor menu and Share button in the
 // header, the tabbed palette with its search box and labelled tiles, the zoom
@@ -31,36 +34,23 @@
 // first window centred, and reduced-motion settles every build, the canvas
 // tint, and hides the laser.
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import {
-  Brand,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MenuIcon,
-  PREFERS_REDUCED_MOTION,
-  PrivateDotIcon,
-  Chip,
-  SharedDotIcon,
-  TabsLabelIcon,
-  useMediaQuery,
-} from '@livediagram/ui';
+import { useEffect, useState } from 'react';
+import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import {
   ArchitectureDiagram,
   FlowchartDiagram,
   MindMapDiagram,
-  SLIDES,
   SlideDeckDiagram,
   TimelineDiagram,
 } from './hero-diagrams';
+import { EditorWindow, type TabDef } from './hero-editor-window';
 import {
-  EyeGlyph,
-  Shape,
-  ShareGlyph,
-  StarGlyph,
-  TabAvatar,
-  ToolGlyph,
-} from './hero-illustration-glyphs';
+  LAUNCH_HREF,
+  LAUNCH_TAB,
+  LAUNCH_TITLE,
+  LaunchCanvasOverlay,
+  useLaunchGrow,
+} from './hero-launch';
 
 // Geometry: each window is `card`% of the stage with a GAP% gutter, so the
 // centred window sits at translateX = (100 - card) / 2 - i * (card + GAP).
@@ -68,15 +58,6 @@ import {
 const CARD_WIDE = 68;
 const CARD_NARROW = 88;
 const GAP = 3;
-
-type TabDef = { name: string; color: string; active?: boolean };
-
-// Every window sits on the Default scheme's canvas (the --art-* palette in
-// hero-animations.css, its light or dark half with the appearance), dotted as the
-// editor dots it: 1px dots on a 24px grid. The flowchart recolours from it to Forest
-// in light and Pine in dark (the hero-theme / hero-theme-canvas keyframes).
-const CANVAS =
-  'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1px,_transparent_1px)] bg-[size:24px_24px]';
 
 const CARDS: {
   key: string;
@@ -97,7 +78,20 @@ const CARDS: {
   // the palette to its header bar (as the editor does), so the wide
   // timeline has the canvas to itself.
   layers?: boolean;
+  // The launch window: a link that grows into a new document (hero-launch.tsx).
+  launch?: boolean;
 }[] = [
+  {
+    key: 'launch',
+    title: LAUNCH_TITLE,
+    label: 'A fresh canvas of your own: click it to start drawing',
+    tool: 'Select',
+    tabs: [{ name: LAUNCH_TAB, color: '#0ea5e9', active: true }],
+    showCursor: false,
+    shared: false,
+    theming: false,
+    launch: true,
+  },
   {
     key: 'flowchart',
     title: 'Quarterly planning',
@@ -172,81 +166,6 @@ const CARDS: {
   },
 ];
 
-// A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
-// white, as the editor's legibleTabAccent does for the dark bar.
-const TAB_PILL =
-  'flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
-
-// The theme cards the Look & Feel dialog mock offers, each its scheme's canvas ringed
-// in its stroke (packages/document themes-data.ts). Default is what the flowchart
-// wears until the pick. In light the pick is Forest; in dark the dialog shows the
-// Dark category (darkCategorySchemes in apps/live), the Default scheme's dark half
-// first, and the pick is Pine.
-type ThemeCard = {
-  name: string;
-  canvas: string;
-  stroke: string;
-  current?: boolean;
-  picked?: boolean;
-};
-const THEME_CARDS: ThemeCard[] = [
-  { name: 'Default', canvas: '#ffffff', stroke: '#0ea5e9', current: true },
-  { name: 'Forest', canvas: '#f0fdf4', stroke: '#15803d', picked: true },
-  { name: 'Ocean', canvas: '#ecfeff', stroke: '#0e7490' },
-  { name: 'Sunset', canvas: '#fff7ed', stroke: '#c2410c' },
-  { name: 'Lavender', canvas: '#faf5ff', stroke: '#7e22ce' },
-  { name: 'Rose', canvas: '#fff1f2', stroke: '#be123c' },
-];
-const DARK_THEME_CARDS: ThemeCard[] = [
-  { name: 'Default', canvas: '#0d121a', stroke: '#64748b', current: true },
-  { name: 'Midnight', canvas: '#0f172a', stroke: '#94a3b8' },
-  { name: 'Pine', canvas: '#14532d', stroke: '#86efac', picked: true },
-  { name: 'Plum', canvas: '#241436', stroke: '#c4b5fd' },
-  { name: 'Abyss', canvas: '#042f2e', stroke: '#5eead4' },
-  { name: 'Espresso', canvas: '#231a12', stroke: '#d6b78f' },
-];
-
-// A theme card; the current one starts ringed, the picked one takes the ring.
-function ThemeCardView({ card }: { card: ThemeCard }) {
-  return (
-    <span
-      className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 dark:text-slate-300 ${
-        card.picked
-          ? 'hero-dialog-pick border-slate-200 dark:border-slate-700'
-          : card.current
-            ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
-            : 'border-slate-200 dark:border-slate-700'
-      }`}
-    >
-      <span
-        className="h-4 w-4 rounded-full"
-        style={{ backgroundColor: card.canvas, boxShadow: `inset 0 0 0 2px ${card.stroke}` }}
-      />
-      {card.name}
-    </span>
-  );
-}
-
-// The palette mock's Favourites grid: the editor's default go-to tiles.
-const PALETTE_TILES: { kind: string; label: string }[] = [
-  { kind: 'rect', label: 'Square' },
-  { kind: 'circle', label: 'Circle' },
-  { kind: 'diamond', label: 'Diamond' },
-  { kind: 'text', label: 'Text' },
-  { kind: 'arrow', label: 'Arrow' },
-  { kind: 'frame', label: 'Frame' },
-  { kind: 'note', label: 'Note' },
-  { kind: 'image', label: 'Image' },
-  { kind: 'pen', label: 'Shape Pen' },
-];
-
-// The Layers panel rows on the timeline window.
-const LAYER_ROWS: { name: string; swatch: string; hidden: boolean }[] = [
-  { name: 'Milestones', swatch: '#f59e0b', hidden: false },
-  { name: 'Axis', swatch: '#b45309', hidden: false },
-  { name: 'Notes', swatch: '#94a3b8', hidden: true },
-];
-
 // Window width as a % of the stage: narrower peek (wider window) on phones.
 // Phrased as the phone query so the static render (where a media query reads
 // false) keeps the wide layout, as before.
@@ -270,6 +189,8 @@ export function HeroIllustration() {
 
   const tx = (100 - card) / 2 - active * (card + GAP);
 
+  const { launch, layer } = useLaunchGrow();
+
   const current = CARDS[active] ?? CARDS[0]!;
   return (
     <div className="mx-auto mt-16 w-full max-w-6xl">
@@ -283,18 +204,58 @@ export function HeroIllustration() {
         >
           {CARDS.map((c, i) => {
             const playing = i === active;
-            const liveDoc =
-              c.key === 'mindmap' ? (
-                <MindMapDiagram playing={playing} />
-              ) : c.key === 'slides' ? (
-                <SlideDeckDiagram />
-              ) : c.key === 'comments' ? (
-                <ArchitectureDiagram />
-              ) : c.key === 'timeline' ? (
-                <TimelineDiagram />
-              ) : (
-                <FlowchartDiagram />
+            const liveDoc = c.launch ? null : c.key === 'mindmap' ? (
+              <MindMapDiagram playing={playing} />
+            ) : c.key === 'slides' ? (
+              <SlideDeckDiagram />
+            ) : c.key === 'comments' ? (
+              <ArchitectureDiagram />
+            ) : c.key === 'timeline' ? (
+              <TimelineDiagram />
+            ) : (
+              <FlowchartDiagram />
+            );
+            const frame = (
+              <EditorWindow
+                title={c.title}
+                tabs={c.tabs}
+                shared={c.shared}
+                theming={c.theming}
+                showCursor={c.showCursor}
+                layers={c.layers ?? false}
+                presenting={c.presenting ?? false}
+                tool={c.tool}
+                playing={playing}
+                document={liveDoc}
+                overlay={c.launch ? <LaunchCanvasOverlay playing={playing} /> : undefined}
+              />
+            );
+            const cardClassName =
+              'hero-card-dim shrink-0 text-left ' +
+              (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]');
+            // The launch window is a real link (a plain one with JS off): centred, a click grows
+            // it into the editor; off-centre, a click centres it like any other window.
+            if (c.launch) {
+              return (
+                <a
+                  key={c.key}
+                  href={LAUNCH_HREF}
+                  tabIndex={-1}
+                  onClick={(e) => {
+                    if (!playing) {
+                      e.preventDefault();
+                      setActive(i);
+                    } else if (launch(e)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  style={{ width: `${card}%` }}
+                  className={'group block cursor-pointer ' + cardClassName}
+                >
+                  {frame}
+                </a>
               );
+            }
             return (
               <button
                 key={c.key}
@@ -302,28 +263,15 @@ export function HeroIllustration() {
                 tabIndex={-1}
                 onClick={() => setActive(i)}
                 style={{ width: `${card}%` }}
-                className={
-                  'hero-card-dim shrink-0 text-left ' +
-                  (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]')
-                }
+                className={cardClassName}
               >
-                <EditorWindow
-                  title={c.title}
-                  tabs={c.tabs}
-                  shared={c.shared}
-                  theming={c.theming}
-                  showCursor={c.showCursor}
-                  layers={c.layers ?? false}
-                  presenting={c.presenting ?? false}
-                  tool={c.tool}
-                  playing={playing}
-                  document={liveDoc}
-                />
+                {frame}
               </button>
             );
           })}
         </div>
       </div>
+      {layer}
 
       {/* Dot navigation: a label for the centred window, and one dot per
           window so a visitor moves between them at their own pace (the
@@ -349,407 +297,6 @@ export function HeroIllustration() {
             />
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-// One editor-window mock: shared chrome plus a caller-supplied SVG diagram.
-// The diagram group is keyed on `playing` so its build animation restarts each
-// time the window reaches centre; off-centre it gets .hero-static (settled).
-function EditorWindow({
-  title,
-  tabs,
-  document: liveDoc,
-  playing,
-  shared,
-  theming,
-  showCursor,
-  layers,
-  tool,
-  presenting,
-}: {
-  title: string;
-  tabs: TabDef[];
-  document: ReactNode;
-  playing: boolean;
-  shared: boolean;
-  theming: boolean;
-  showCursor: boolean;
-  layers: boolean;
-  tool: string | [string, string];
-  presenting: boolean;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
-      <div className="relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
-        {/* The fade. While playing it lifts from light grey over the first
-            beat and drops back to it over the last second, timed to the 16s cycle,
-            so the window's ending is the same whatever its last beat was and
-            the stage advances behind the grey. When the window stops playing
-            it is remounted to lift once more, so the peeking card doesn't
-            snap from grey to its settled frame. */}
-        <div
-          key={playing ? 'play' : 'idle'}
-          aria-hidden
-          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
-            playing ? 'hero-fade' : 'hero-fade-out'
-          }`}
-        />
-        {/* Presenting is full screen (docs/specs/012-collaboration/presentation-mode.md): no header, no tab bar, no
-            panels, just the slide's canvas and the HUD. */}
-        {presenting ? null : (
-          <>
-            {/* Editor header strip (static chrome) */}
-            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center gap-2">
-                <Brand size="sm" />
-                {/* The Editor menu, as the real header carries it. */}
-                <span className="optical-edges hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                  <MenuIcon size={9} />
-                  <span className="text-optical-line">Editor</span>
-                  <ChevronDownIcon size={8} />
-                </span>
-              </div>
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
-                {/* The editor's own share-state chip (Chip), so the art cannot drift from it. */}
-                {shared ? (
-                  <Chip
-                    height={19}
-                    caps
-                    icon={<SharedDotIcon className="text-emerald-500" />}
-                    className="bg-emerald-50 px-2 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
-                  >
-                    Shared
-                  </Chip>
-                ) : (
-                  <Chip
-                    height={19}
-                    caps
-                    icon={<PrivateDotIcon className="text-amber-500" />}
-                    className="bg-amber-50 px-2 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
-                  >
-                    Private
-                  </Chip>
-                )}
-              </div>
-              <span className="optical-edges inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
-                <ShareGlyph />
-                <span className="text-optical-line">Share</span>
-              </span>
-            </div>
-          </>
-        )}
-
-        {/* Canvas surface. The flowchart additionally animates its theme beat
-            (overriding the resting colour) while it is centred. */}
-        <div
-          className={
-            'relative ' +
-            CANVAS +
-            ' ' +
-            (presenting ? 'h-[382px] sm:h-[442px]' : 'h-[300px] sm:h-[360px]') +
-            (theming && playing ? ' hero-theme-canvas' : '')
-          }
-        >
-          {/* Floating palette mockup (static chrome), as the editor's: the
-              tool + category pickers, the element search, and the Favourites
-              grid of labelled tiles. On the timeline window it is minimised
-              to its header bar, the way a panel folds in the editor. */}
-          {presenting ? (
-            <div className="absolute right-2 top-2 hidden items-center gap-2 rounded-xl bg-slate-900/75 px-2.5 py-1.5 text-[9px] font-medium text-white shadow-lg backdrop-blur sm:flex">
-              <ChevronLeftIcon size={9} />
-              <span className="relative inline-block h-3 w-28 text-left">
-                {(playing ? SLIDES : SLIDES.slice(-1)).map((slide, i) => (
-                  <span
-                    key={slide.name}
-                    className={`absolute inset-0 whitespace-nowrap ${
-                      playing ? `hero-slide-hud hero-slide-hud${i + 1}` : ''
-                    }`}
-                  >
-                    <span className="text-white/60">
-                      {SLIDES.indexOf(slide) + 1} / {SLIDES.length}
-                    </span>
-                    <span className="ml-1.5">{slide.name}</span>
-                  </span>
-                ))}
-              </span>
-              <ChevronRightIcon size={9} />
-              <span className="ml-1 border-l border-white/20 pl-2 text-white/70">Notes</span>
-              <span className="text-white/70">✕</span>
-            </div>
-          ) : null}
-          {layers ? (
-            <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Palette
-              </p>
-              <span className="text-[10px] leading-none text-slate-400">+</span>
-            </div>
-          ) : null}
-          <div
-            className={
-              'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 ' +
-              (layers || presenting ? 'hidden' : 'hidden sm:flex')
-            }
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 dark:border-slate-800">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Palette
-              </p>
-              <span className="flex gap-1 text-slate-300 dark:text-slate-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300">
-              <span className="inline-flex items-center gap-0.5">
-                {typeof tool === 'string' ? (
-                  tool
-                ) : playing ? (
-                  // Two beats: the first name shows, then the second takes
-                  // over when its tool comes into play (hero-tool-a / -b).
-                  <span className="relative inline-block h-3 w-14">
-                    <span className="hero-tool-a absolute inset-0">{tool[0]}</span>
-                    <span className="hero-tool-b absolute inset-0">{tool[1]}</span>
-                  </span>
-                ) : (
-                  tool[1]
-                )}
-                <ChevronDownIcon size={8} />
-              </span>
-              <span className="inline-flex items-center gap-0.5">
-                <StarGlyph />
-                Favourites
-                <ChevronDownIcon size={8} />
-              </span>
-            </div>
-            <div className="px-1.5 pt-1.5">
-              <div className="flex rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-700 dark:bg-slate-800">
-                <span className="text-optical-line">Search all elements</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-0.5 p-1.5">
-              {PALETTE_TILES.map((t) => (
-                <span
-                  key={t.kind}
-                  className="flex flex-col items-center gap-0.5 rounded py-0.5 text-slate-500 dark:text-slate-400"
-                >
-                  <Shape kind={t.kind} />
-                  <span className="text-[7px] leading-none text-slate-500 dark:text-slate-400">
-                    {t.label}
-                  </span>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* The Layers panel (docs/specs/006-document/layers.md), docked on the timeline window: one
-              row per layer with its eye toggle, the hidden one dimmed. */}
-          {layers ? (
-            <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
-              <p className="border-b border-slate-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                Layers
-              </p>
-              {LAYER_ROWS.map((row) => (
-                <span
-                  key={row.name}
-                  className={
-                    'flex items-center gap-1.5 px-2 py-1 text-[9px] font-medium ' +
-                    (row.hidden
-                      ? 'text-slate-300 dark:text-slate-600'
-                      : 'text-slate-600 dark:text-slate-300')
-                  }
-                >
-                  <EyeGlyph off={row.hidden} />
-                  <span className="h-2 w-3 rounded-sm" style={{ backgroundColor: row.swatch }} />
-                  {row.name}
-                </span>
-              ))}
-            </div>
-          ) : null}
-
-          {/* Zoom cluster (static chrome): history, undo / redo, layers, the
-              look-and-feel brush, and the zoom readout. */}
-          <div
-            className={
-              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 dark:text-slate-400 ' +
-              (presenting ? 'hidden' : 'hidden sm:flex')
-            }
-          >
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <ToolGlyph kind="history" small />
-              <ToolGlyph kind="undo" small />
-              <ToolGlyph kind="redo" small />
-            </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <ToolGlyph kind="layers" small />
-            </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <ToolGlyph kind="brush" small />
-            </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <span className="px-1.5">−</span>
-              100%
-              <span className="px-1.5">+</span>
-            </span>
-          </div>
-
-          {/* The diagram centres in the canvas left clear by the open palette
-              (or, on the timeline window, by the Layers panel), so no node
-              sits under a panel. */}
-          <div
-            className={
-              'absolute inset-y-0 left-0 right-0 ' +
-              (layers ? 'sm:left-36' : presenting ? '' : 'sm:right-44')
-            }
-          >
-            <svg
-              className="h-full w-full"
-              viewBox="0 -60 600 400"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              <g key={playing ? 'play' : 'idle'} className={playing ? undefined : 'hero-static'}>
-                {liveDoc}
-              </g>
-            </svg>
-          </div>
-
-          {/* The Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md): opens over the canvas,
-              a theme card is picked (the selection ring moves, the pointer
-              dips), it closes, and the recolour follows. Themed window only. */}
-          {theming && playing ? (
-            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex dark:border-slate-700 dark:bg-slate-900">
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-                  Tab Look &amp; Feel
-                </span>
-                <span className="flex items-center gap-2 text-[10px] text-slate-400">
-                  <span>?</span>
-                  <span>✕</span>
-                </span>
-              </div>
-              <div className="mx-3 flex rounded-md bg-slate-100 p-0.5 text-[9px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                <span className="flex-1 rounded bg-white py-0.5 text-center text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100">
-                  Theme
-                </span>
-                <span className="flex-1 py-0.5 text-center">Canvas</span>
-                <span className="flex-1 py-0.5 text-center">Font</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1.5 p-3 dark:hidden">
-                {THEME_CARDS.map((t) => (
-                  <ThemeCardView key={t.name} card={t} />
-                ))}
-              </div>
-              <div className="hidden grid-cols-3 gap-1.5 p-3 dark:grid">
-                {DARK_THEME_CARDS.map((t) => (
-                  <ThemeCardView key={t.name} card={t} />
-                ))}
-              </div>
-              <span className="hero-dialog-cursor pointer-events-none absolute" aria-hidden>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="#0f172a"
-                  stroke="white"
-                  strokeWidth="1"
-                >
-                  <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
-                </svg>
-              </span>
-            </div>
-          ) : null}
-
-          {/* Remote collaborator's cursor sweeping the canvas (flowchart card
-              only; the mind-map card uses an in-canvas laser pointer, the
-              private timeline has no collaborators). */}
-          {showCursor && playing ? (
-            <span className="hero-cursor pointer-events-none absolute" aria-hidden>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="#ec4899"
-                stroke="white"
-                strokeWidth="1"
-              >
-                <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
-              </svg>
-              <span
-                className="absolute -top-3 left-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
-                style={{ backgroundColor: '#ec4899' }}
-              >
-                JR
-              </span>
-            </span>
-          ) : null}
-        </div>
-
-        {presenting ? null : (
-          <>
-            {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
-                diagram + the toolbelt the page advertises. */}
-            <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900">
-              <span
-                className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
-                aria-hidden
-              >
-                <TabsLabelIcon />
-                Tabs
-              </span>
-              <div className="flex min-w-0 items-center gap-1">
-                {tabs.map((t) => (
-                  <span
-                    key={t.name}
-                    style={
-                      {
-                        '--tab': t.color,
-                        ...(t.active ? { backgroundColor: `${t.color}1a` } : {}),
-                      } as CSSProperties
-                    }
-                    className={TAB_PILL}
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: t.color }}
-                    />
-                    <span className={t.active ? '' : 'text-slate-500 dark:text-slate-400'}>
-                      {t.name}
-                    </span>
-                    {/* Presence lives IN the tab, as the editor's TabPresenceStack
-                        draws it: a stack of small initials between the tab name
-                        and its ellipsis, one per person on that tab (you, and on
-                        a shared document whoever else is there). */}
-                    {t.active ? (
-                      <span className="ml-0.5 flex items-center">
-                        <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />
-                        {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}
-                      </span>
-                    ) : null}
-                    {t.active ? (
-                      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-                        <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-                        <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-                        <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-                      </svg>
-                    ) : null}
-                  </span>
-                ))}
-                <span className="px-1 text-base leading-none text-slate-400">+</span>
-              </div>
-              {/* Toolbelt: hidden on mobile (it clashes with the tabs in the
-                  narrower windows), shown from sm up. */}
-              <div className="ml-auto hidden items-center gap-1 text-slate-400 sm:flex">
-                <ToolGlyph kind="search" small />
-                <ToolGlyph kind="keys" small />
-                <ToolGlyph kind="sliders" small />
-                <ToolGlyph kind="moon" small />
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

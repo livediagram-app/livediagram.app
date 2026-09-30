@@ -41,7 +41,8 @@ import {
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-document-params';
+import { WIZARD_BYPASS_PARAMS, wantsQuickStart, wizardBypassKind } from '@/lib/new-document-params';
+import { markQuickStartPending } from '@/lib/quick-start-pending';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -359,6 +360,9 @@ export default function NewDocumentPage() {
     if (documentCount === 0) {
       markTourPending();
     }
+    // The hero's launch window (/new?blank=1&quickstart=1): land with Quick Start open.
+    if (templateKind === 'blank' && wantsQuickStart(window.location.search))
+      markQuickStartPending();
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
