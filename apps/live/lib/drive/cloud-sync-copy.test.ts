@@ -61,6 +61,18 @@ describe('the status at the top right', () => {
 
   it('says when it last synced, and Syncing only once a pass has lasted a moment', () => {
     expect(said({})).toEqual({ text: 'Last synced just now', warn: false });
+    expect(said({ lastSyncedAt: NOW - 12_000 })).toEqual({
+      text: 'Last synced just now',
+      warn: false,
+    });
+    expect(said({ lastSyncedAt: NOW - 59_999 })).toEqual({
+      text: 'Last synced just now',
+      warn: false,
+    });
+    expect(said({ lastSyncedAt: NOW - 60_000 })).toEqual({
+      text: 'Last synced 1 min ago',
+      warn: false,
+    });
     expect(said({ lastSyncedAt: NOW - 3 * 60_000 })).toEqual({
       text: 'Last synced 3 mins ago',
       warn: false,

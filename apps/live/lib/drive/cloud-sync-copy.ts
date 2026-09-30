@@ -15,7 +15,6 @@ export const DRIVE_NOT_SYNCED_YET = 'Not synced yet';
 // width while connected.
 export const DRIVE_SINCE_SAMPLES = [
   'just now',
-  '59 secs ago',
   '59 mins ago',
   '23 hours ago',
   'yesterday',
@@ -34,6 +33,14 @@ export function driveConnectedText(rootName: string | null): string {
   return rootName
     ? `Your documents are synced to “${rootName}” in Google Drive.`
     : 'Your documents are synced to Google Drive.';
+}
+
+// How long ago the last sync was: "just now" for the whole first minute, so
+// the status does not count seconds; the usual wording after that.
+export const DRIVE_JUST_NOW_MS = 60_000;
+
+export function driveSince(at: number, now: number): string {
+  return now - at < DRIVE_JUST_NOW_MS ? 'just now' : relativeSince(at, now);
 }
 
 export type DriveSyncPhase = 'not-connected' | 'connected' | 'attention';
@@ -166,9 +173,7 @@ export function driveSyncCopy(
   }
   const offline = status.error === 'offline' || status.error === 'failed';
   const since =
-    status.lastSyncedAt === null
-      ? DRIVE_NOT_SYNCED_YET
-      : relativeSince(status.lastSyncedAt, view.now);
+    status.lastSyncedAt === null ? DRIVE_NOT_SYNCED_YET : driveSince(status.lastSyncedAt, view.now);
   const notice = status.notices[0] ?? null;
   const statusText = offline
     ? DRIVE_STATUS.offline
