@@ -80,12 +80,27 @@ With the Path tool in hand:
 
 ## Editing
 
-A path is edited in its own **edit mode**, as in Figma:
+A path is edited in its own **edit mode**, as in Figma, and is a **full pen tool**: every node,
+corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
-- **Enter** by double-clicking a path with Select, or pressing **Enter** with one path selected.
+- **Enter** by double-clicking (double-tapping) a path with Select, pressing **Enter** with one
+  path selected, or pressing **Edit points** in a selected path's selection toolbar. A path just
+  finished with the Path tool can be edited at once the same ways.
   **Leave** with **Escape**, **Enter**, or a click outside the path. The dock shows the edit mode
   by pressing Select with a path glyph; the rest of the canvas stays visible and inert.
 - Edit mode shows every node; the handles of selected nodes and of their neighbours' facing sides.
+  Corner nodes draw as squares, smooth ones (mirrored or aligned) as circles, so the kind of every
+  node reads at a glance.
+- **An edit toolbar** floats above the path while in edit mode, with the selected nodes' **node
+  type** as a three-way choice (**Corner**, **Mirrored**, **Aligned**, showing the shared type or
+  none), **Delete point**, **Close path** / **Open path** (opening cuts the path at the selected
+  node), and **Done**. Every button also has its key: none for the types beyond Alt-click and
+  double-click below, Backspace / Delete, J, Escape. It is how a finger, which has no Alt or
+  keyboard, reaches everything; long-pressing a node selects it and brings the toolbar near it.
+- **Setting the node type** from the toolbar converts the selected nodes: **Corner** removes their
+  handles; **Mirrored** gives each mirrored handles (their own, averaged in angle and length, or
+  auto ones following the neighbours when they had none); **Aligned** keeps each handle's length
+  and lines them up.
 - **Selecting nodes:** click a node; **Shift-click** adds or removes; drag on empty space inside
   edit mode draws a box that selects the nodes inside it (Shift adds). Escape with nodes selected
   first clears them, then leaves.
@@ -103,8 +118,18 @@ A path is edited in its own **edit mode**, as in Figma:
   both of its handles adjust. A straight segment gains handles as it bends.
 - **Deleting nodes:** **Backspace / Delete** removes the selected nodes and joins their neighbours;
   a path left with fewer nodes than it needs is deleted.
-- **Closing an open path:** select both of its end nodes and press **J**. Deleting nodes from a
-  closed path keeps it closed.
+- **Closing an open path:** select both of its end nodes and press **J**, or press **Close path**
+  (with no node selected it joins the two ends). **Opening a closed path:** select a node and press
+  **Open path**; the path is cut there and that node becomes both ends. Deleting nodes from a closed
+  path keeps it closed.
+- **Editing while drawing:** with the Path tool in hand, the path being drawn is editable too, as
+  in Figma: **Ctrl (Cmd on a Mac) held** turns the pointer into the edit pointer for as long as it
+  is held, so a node or handle already placed can be dragged; **Alt-click** a placed node converts
+  it; **dragging a placed node** (not the first, which closes) moves it. Releasing the key resumes
+  drawing from the last node.
+- **Touch:** drag a node or handle with a finger or pen as with a mouse; double-tap a node toggles
+  corner and smooth; every hit target is at least 24 x 24 px on screen, and a finger's target is
+  the nearest node or handle within 16 screen px.
 - **Snapping:** a node dragged within 8 screen px of another node of the same path, or of its own
   original position on either axis, snaps and shows a guide.
 - Every edit gesture (a drag, a toggle, an add, a delete) is **one undo step**; the whole edit mode
