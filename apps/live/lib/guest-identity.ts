@@ -19,8 +19,10 @@ import {
   ensureGuestSelfId,
   getGuestSelfId,
   getGuestSelfSig,
+  getPendingGuestUpgrade,
   reportParticipantCreated,
   setGuestIdentity,
+  setPendingGuestUpgrade,
 } from './local-identity';
 import { apiMintGuestId, apiUpgradeGuestId } from './api/self';
 
@@ -44,6 +46,22 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
   const existingId = getGuestSelfId();
   const existingSig = getGuestSelfSig();
   if (existingId && existingSig) return { id: existingId, sig: existingSig };
+
+  // An upgrade a reload interrupted: the worker may already hold the data under `to`. Repeat the
+  // move for the same pair (moving already-moved data changes nothing) and adopt it; minting a
+  // new id here would strand the data under one this browser never kept.
+  const pending = getPendingGuestUpgrade();
+  if (pending && pending.from === existingId) {
+    if (!(await apiUpgradeGuestId(pending.from, pending.to, pending.sig))) {
+      console.warn('[guest-identity] resuming the signed-id upgrade failed; retrying next load');
+      return { id: existingId, sig: existingSig };
+    }
+    setGuestIdentity(pending.to, pending.sig);
+    setPendingGuestUpgrade(null);
+    console.info('[guest-identity] resumed an interrupted signed-id upgrade');
+    return { id: pending.to, sig: pending.sig };
+  }
+  if (pending) setPendingGuestUpgrade(null);
   // No id at all → this browser has never had a participant: the
   // daily new-visitors signal (docs/specs/017-telemetry/telemetry.md). Emitted per adopted branch
   // below rather than up here so the offline fallback doesn't double
@@ -67,6 +85,9 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
   }
   // Worker returned a SIGNED id. Upgrade legacy data onto it if needed.
   if (existingId && existingId !== minted.ownerId) {
+    // Recorded first: a reload after the worker moves the data but before the id below is kept
+    // resumes this same upgrade on the next load.
+    setPendingGuestUpgrade({ from: existingId, to: minted.ownerId, sig: minted.ownerSig });
     const upgraded = await apiUpgradeGuestId(existingId, minted.ownerId, minted.ownerSig);
     if (!upgraded) {
       // Couldn't move the old data — keep using the old (unsigned) id so
@@ -75,6 +96,7 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
     }
   }
   setGuestIdentity(minted.ownerId, minted.ownerSig);
+  setPendingGuestUpgrade(null);
   if (isNewVisitor) reportParticipantCreated();
   return { id: minted.ownerId, sig: minted.ownerSig };
 }

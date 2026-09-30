@@ -1,4 +1,11 @@
-import { test, expect, expectNoPageErrors } from './fixtures';
+import {
+  test,
+  expect,
+  expectNoPageErrors,
+  guestSigFor,
+  mintSignedGuest,
+  ownerHeaders,
+} from './fixtures';
 
 // The Trash (docs/specs/013-workspace/trash.md), end to end against the real
 // build and api worker: a delete confirms with the one quiet line, the
@@ -16,7 +23,7 @@ async function seed(
 ): Promise<string> {
   const id = crypto.randomUUID();
   const res = await page.request.post(`${apiBase}/documents`, {
-    headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL).origin },
+    headers: ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
     data: { id, name, tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }] },
   });
   expect(res.ok()).toBe(true);
@@ -24,14 +31,18 @@ async function seed(
 }
 
 async function asOwner(page: import('@playwright/test').Page, owner: string) {
-  await page.addInitScript((id) => {
-    localStorage.setItem('livediagram:v2:self-id', id);
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
-  }, owner);
+  await page.addInitScript(
+    ({ id, sig }) => {
+      localStorage.setItem('livediagram:v2:self-id', id);
+      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+    },
+    { id: owner, sig: guestSigFor(owner) },
+  );
 }
 
 test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL, pageErrors }) => {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   const id = await seed(page, baseURL!, owner, 'Quarterly plan');
   await asOwner(page, owner);
 
@@ -48,7 +59,7 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   await expect
     .poll(async () => {
       const list = await page.request.get(`${apiBase}/documents`, {
-        headers: { 'X-Owner-Id': owner },
+        headers: ownerHeaders(owner),
       });
       return ((await list.json()) as { documents: { id: string }[] }).documents.map((d) => d.id);
     })
@@ -67,7 +78,7 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   await group.getByRole('button', { name: 'Restore Quarterly plan' }).click();
   await expect(page.getByText('Nothing in the Trash right now')).toBeVisible();
   const back = await page.request.get(`${apiBase}/documents/${id}`, {
-    headers: { 'X-Owner-Id': owner },
+    headers: ownerHeaders(owner),
   });
   expect(back.status()).toBe(200);
   expectNoPageErrors(pageErrors);
@@ -78,15 +89,15 @@ test('a trashed document shows the deleted card, with Restore for its owner', as
   browser,
   baseURL,
 }) => {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   const id = await seed(page, baseURL!, owner, 'Architecture');
   const link = await page.request.post(`${apiBase}/documents/${id}/share`, {
-    headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
+    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
     data: { role: 'view' },
   });
   const code = ((await link.json()) as { link: { code: string } }).link.code;
   const del = await page.request.delete(`${apiBase}/documents/${id}`, {
-    headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
+    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
   });
   expect(del.status()).toBe(204);
 
@@ -111,8 +122,8 @@ test('a trashed document shows the deleted card, with Restore for its owner', as
 });
 
 test('delete permanently and Empty Trash, each confirmed', async ({ page, baseURL }) => {
-  const owner = crypto.randomUUID();
-  const headers = { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin };
+  const owner = await mintSignedGuest(page.request);
+  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const ids = [
     await seed(page, baseURL!, owner, 'Old sketch'),
     await seed(page, baseURL!, owner, 'Draft A'),
@@ -140,8 +151,8 @@ test('an editor left open is told when the document goes to the Trash', async ({
   page,
   baseURL,
 }) => {
-  const owner = crypto.randomUUID();
-  const headers = { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin };
+  const owner = await mintSignedGuest(page.request);
+  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const id = await seed(page, baseURL!, owner, 'Live board');
   // Shared, so the editor joins its realtime room.
   await page.request.post(`${apiBase}/documents/${id}/share`, { headers, data: { role: 'edit' } });
@@ -162,8 +173,8 @@ test('an editor left open is told when the document goes to the Trash', async ({
 // telling it, so the editor asks the api, which names the reason. The page's WebSockets are held back until
 // after the delete, which is the order a slow join produces.
 test('an editor whose room join is refused is told too', async ({ page, baseURL }) => {
-  const owner = crypto.randomUUID();
-  const headers = { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin };
+  const owner = await mintSignedGuest(page.request);
+  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const id = await seed(page, baseURL!, owner, 'Slow join');
   await page.request.post(`${apiBase}/documents/${id}/share`, { headers, data: { role: 'edit' } });
   await asOwner(page, owner);

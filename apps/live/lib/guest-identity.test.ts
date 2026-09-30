@@ -140,3 +140,62 @@ describe('Participant·Created counts once per browser', () => {
     expect(created()).toBe(0);
   });
 });
+
+// A reload can land after the worker moved the data but before the browser kept the new id
+// (docs/specs/014-identity/auth-and-guest-access.md, "An interrupted upgrade resumes").
+describe('an interrupted guest id upgrade', () => {
+  const PENDING = 'livediagram:v2:pending-signed-id';
+
+  it('records the pending upgrade before asking the worker to move the data', async () => {
+    window.localStorage.setItem(ID, 'legacy');
+    mockMint.mockResolvedValue({ ownerId: 'signed', ownerSig: 'sig' });
+    let seenDuringMove: string | null = null;
+    mockUpgrade.mockImplementation(async () => {
+      seenDuringMove = window.localStorage.getItem(PENDING);
+      return true;
+    });
+    await ensureSignedGuestIdentity();
+    expect(JSON.parse(seenDuringMove!)).toEqual({ from: 'legacy', to: 'signed', sig: 'sig' });
+    expect(window.localStorage.getItem(PENDING)).toBeNull();
+  });
+
+  it('resumes the recorded upgrade on the next load instead of minting another id', async () => {
+    window.localStorage.setItem(ID, 'legacy');
+    window.localStorage.setItem(
+      PENDING,
+      JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
+    );
+    mockUpgrade.mockResolvedValue(true);
+    expect(await ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
+    expect(mockMint).not.toHaveBeenCalled();
+    expect(mockUpgrade).toHaveBeenCalledWith('legacy', 'signed', 'sig');
+    expect(window.localStorage.getItem(ID)).toBe('signed');
+    expect(window.localStorage.getItem(SIG)).toBe('sig');
+    expect(window.localStorage.getItem(PENDING)).toBeNull();
+  });
+
+  it('keeps the record and the old id when the resumed move fails, still without minting', async () => {
+    window.localStorage.setItem(ID, 'legacy');
+    window.localStorage.setItem(
+      PENDING,
+      JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
+    );
+    mockUpgrade.mockResolvedValue(false);
+    expect(await ensureSignedGuestIdentity()).toEqual({ id: 'legacy', sig: null });
+    expect(mockMint).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(PENDING)).not.toBeNull();
+  });
+
+  it('ignores a record that does not start from the id this browser holds', async () => {
+    window.localStorage.setItem(ID, 'other');
+    window.localStorage.setItem(
+      PENDING,
+      JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
+    );
+    mockMint.mockResolvedValue({ ownerId: 'fresh', ownerSig: 'fsig' });
+    mockUpgrade.mockResolvedValue(true);
+    expect(await ensureSignedGuestIdentity()).toEqual({ id: 'fresh', sig: 'fsig' });
+    expect(mockUpgrade).toHaveBeenCalledWith('other', 'fresh', 'fsig');
+    expect(window.localStorage.getItem(PENDING)).toBeNull();
+  });
+});
