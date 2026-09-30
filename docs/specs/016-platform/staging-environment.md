@@ -150,7 +150,7 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 | **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.livediagram.app` would need adding under Domains. |
 | **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
-| **OpenAI** — OFF   | Wired but keyless, same shape. `AI_ALLOWED_ORIGINS` already restricts the endpoint to the staging origin, so `wrangler secret put OPENAI_API_KEY --env staging` is all that is needed. Left unset because it spends real money per request and nothing about the AI path needs rehearsing continuously.                                                                                                                                                                                                                                |
+| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
 
 > **Email warning.** Staging runs the same daily lifecycle-email cron as production
 > (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
@@ -174,7 +174,7 @@ value the deploy workflow syncs, plus the Clerk publishable key:
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 
-`RESEND_API_KEY` and `OPENAI_API_KEY` are **not** in the workflow for either
+`RESEND_API_KEY` and the model keys (`OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`) are **not** in the workflow for either
 environment; they are provisioned once by hand with `wrangler secret put ... --env
 staging`, exactly as production provisions them. Keeping the workflow's secret list
 identical across the two environments is deliberate: a secret that exists in one
@@ -231,7 +231,8 @@ Still outstanding:
 ```bash
 # 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
-cd apps/api && wrangler secret put OPENAI_API_KEY --env staging
+cd apps/api && wrangler secret put OPENAI_API_KEY --env staging            # the assistant
+cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the crop reader
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above

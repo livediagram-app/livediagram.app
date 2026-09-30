@@ -115,8 +115,9 @@ export type Env = {
   APP_BASE_URL?: string;
   // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
   // these keys is set, because a key is provider-specific and its name should
-  // say so — see ai-provider.ts. Exactly one may be set; none = the whole AI
-  // surface is hidden (capabilities reports aiEnabled:false and the AI routes
+  // say so — see ai-provider.ts. Each feature takes its own provider from them
+  // (the assistant prefers OpenAI, the crop reader Google); one key serves
+  // both. None = the whole AI surface is hidden (capabilities reports aiEnabled:false and the AI routes
   // answer 503), which is the self-host default.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
@@ -127,10 +128,10 @@ export type Env = {
   // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
   AI_API_KEY?: string;
   AI_BASE_URL?: string;
-  // Overrides the preset's default model for any provider.
+  // The assistant's model, overriding its provider's default. Reaches the
+  // reader only when the reader runs on the same provider.
   AI_MODEL?: string;
-  // Overrides it for the crop reader only (docs/specs/021-event-storming/event-storming.md Phase 8); defaults to the
-  // resolved AI_MODEL, so a deployment only sets it to split the two apart.
+  // The crop reader's model (docs/specs/021-event-storming/event-storming.md Phase 8), beating every default.
   AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
   // per IP so a single client can't exhaust the operator's model budget.

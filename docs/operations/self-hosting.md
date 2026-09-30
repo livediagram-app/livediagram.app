@@ -193,14 +193,15 @@ If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret
 
 ## AI assistance: off by default, needs an OpenAI key
 
-The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has an OpenAI key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
+The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
 
 To turn it on, set the key as a worker secret:
 
 ```bash
-# Pick ONE, whichever provider you use:
+# One key serves every AI feature:
 pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
-# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars])
+# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars]).
+# Set both named keys to split them: the assistant on OpenAI, the reader on Google.
 ```
 
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
@@ -208,16 +209,20 @@ Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, o
 The provider is inferred from WHICH key you set ([AI Assistance](../specs/007-editor/ai-assistance.md)): a Google AI Studio
 key means Google, an OpenAI key means OpenAI, and `AI_API_KEY` means "anything
 else that speaks the OpenAI wire" — which needs `AI_BASE_URL` too (a local
-llama.cpp is `http://127.0.0.1:8080/v1`). Set exactly one key: two of them is
-refused rather than guessed at.
+llama.cpp is `http://127.0.0.1:8080/v1`). Each AI feature picks its own
+provider from the keys you set: the assistant prefers OpenAI, the sticky-note
+reader prefers Google, each falling back to whichever key exists, and
+`AI_API_KEY` is used only when neither named key is set.
 
-- `AI_MODEL`: overrides the preset's default model (`gemini-3.6-flash` for
-  Google, `gpt-4o` for OpenAI). Required when using `AI_API_KEY`.
+- `AI_MODEL`: the assistant's model, overriding its preset default
+  (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). The reader uses it
+  too when both features run on the same provider. Required when using
+  `AI_API_KEY`.
 - `AI_VISION_MODEL`: model id for reading sticky-note crops
   (`POST /api/ai/read-notes`, [Event storming](../specs/021-event-storming/event-storming.md)). On Google this defaults to
   `gemini-2.5-flash-lite` rather than the assistant's model — it reads
-  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). If you
-  set `AI_MODEL` yourself, the reader uses that unless you set this too.
+  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
+  single provider, setting `AI_MODEL` moves the reader too unless you set this.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 

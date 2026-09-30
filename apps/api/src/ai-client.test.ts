@@ -17,7 +17,6 @@ const provider = {
   baseUrl: GOOGLE_BASE_URL,
   apiKey: 'secret-key',
   model: 'm',
-  visionModel: 'm',
   strictSchema: true,
 };
 
@@ -51,9 +50,11 @@ describe('chatCompletions', () => {
 });
 
 describe('providerOf', () => {
-  it('is the resolver, for a route that has only an Env', () => {
-    expect(providerOf({ GOOGLE_AI_STUDIO_API_KEY: 'k' } as Env)?.provider).toBe('google');
-    expect(providerOf({} as Env)).toBeNull();
+  it('is the resolver, for a route that has an Env and a feature', () => {
+    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' } as Env;
+    expect(providerOf(both, 'assistant')?.provider).toBe('openai');
+    expect(providerOf(both, 'reader')?.provider).toBe('google');
+    expect(providerOf({} as Env, 'reader')).toBeNull();
   });
 });
 
@@ -91,6 +92,29 @@ describe('one retry on a provider spike', () => {
     }) as typeof fetch;
     await chatCompletions(provider, {});
     expect(calls).toBe(1);
+  });
+
+  it.each([
+    ['an Error', new Error('socket hang up'), 'socket hang up'],
+    ['a bare value', 'dropped', 'dropped'],
+  ])('retries a network drop thrown as %s once, and says why', async (_kind, thrown, reason) => {
+    vi.useFakeTimers();
+    try {
+      let calls = 0;
+      globalThis.fetch = vi.fn(async () => {
+        calls += 1;
+        if (calls === 1) throw thrown;
+        return new Response('{"ok":true}', { status: 200 });
+      }) as typeof fetch;
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const pending = chatCompletions(provider, {});
+      await vi.runAllTimersAsync();
+      expect((await pending).status).toBe(200);
+      expect(calls).toBe(2);
+      expect(error.mock.calls[0]).toEqual(['[ai] provider call failed; retrying once:', reason]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
