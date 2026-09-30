@@ -43,6 +43,7 @@ export function useCanvasSurfaceGestures({
   isoCamera,
   canvasLongPress,
   beginPendingDrawGesture,
+  interceptPress,
   onEraseStart,
   onCanvasContextMenu,
   onCanvasDoubleClick,
@@ -71,6 +72,9 @@ export function useCanvasSurfaceGestures({
   // Starts the queued draw-to-size / freehand gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
+  // A mode that owns every primary press on the canvas while it is open (a path's edit mode,
+  // docs/specs/023-whiteboard/path-tool.md "Editing"); true when it claimed the press.
+  interceptPress?: (e: ReactPointerEvent) => boolean;
   onEraseStart?: CanvasProps['onEraseStart'];
   onCanvasContextMenu?: (x: number, y: number) => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
@@ -188,6 +192,14 @@ export function useCanvasSurfaceGestures({
         });
         return;
       }
+    }
+    // A path's edit mode keeps the rest of the canvas inert: its presses are all its own. Held
+    // Space still pans, and the other buttons keep their meaning.
+    if (e.button === 0 && !spaceHeldRef.current && interceptPress?.(e)) {
+      focusCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+      return;
     }
     // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a non-editing presenter mode. Left-click
     // grows the light; right-click shrinks it (the shrink itself runs in

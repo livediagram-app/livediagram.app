@@ -1,20 +1,27 @@
 'use client';
 
-import { useMemo, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, type RefObject } from 'react';
 import {
   continuedPath,
   defaultFillColor,
   defaultStrokeColor,
   inkWhiteboardElement,
+  pathAnchors,
   pathGeometry,
+  reshapePath,
   type Element,
+  type PathAnchor,
   type PathElement,
 } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { rubberBand } from '@/lib/path-draw';
+import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
+import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';
+import type { PathEditView } from './PathEditLayer';
 
 // The id the path being drawn renders under: it has no element yet.
 export const PATH_DRAFT_ID = 'path-draft';
@@ -22,21 +29,31 @@ export const PATH_DRAFT_ID = 'path-draft';
 const identity = <T>(el: T): T => el;
 
 // The Path tool on the canvas (docs/specs/023-whiteboard/path-tool.md): composes the drawing
-// gesture for Canvas, which wires in three things with the smallest edit to itself: the press
-// intercept, the elements it shows (a path being continued is drawn by the draft instead), and the
-// layer that draws the draft in the transformed canvas.
+// gesture and the edit mode for Canvas, which wires in four things with the smallest edit to
+// itself: the press intercepts, the elements it shows (a path being continued is drawn by the
+// draft, a path being edited shows the gesture's anchors), and the two layers it draws in the
+// transformed canvas.
 export function usePathTool({
   pendingDraw,
+  canvasTool,
   elements,
   inertIds,
   wrapperRef,
   viewportZoom,
   activeTabId,
   whiteboardInk,
+  editingId,
+  selectedId,
+  multiSelectCount,
   onCommitPath,
+  onCommitPathEdit,
   onDressPath = identity,
+  onLeaveEdit,
+  onDeselect,
+  onBeginEdit,
 }: {
   pendingDraw: PendingDraw | null;
+  canvasTool: CanvasTool;
   elements: Element[];
   inertIds?: ReadonlySet<string>;
   wrapperRef: RefObject<HTMLDivElement | null>;
@@ -44,8 +61,19 @@ export function usePathTool({
   activeTabId?: string;
   // The board's ink on a whiteboard (undefined elsewhere): an unpainted path draws in it.
   whiteboardInk?: string;
+  editingId: string | null;
+  selectedId: string | null;
+  multiSelectCount: number;
   onCommitPath: (commit: PathCommit) => void;
+  onCommitPathEdit: (
+    id: string,
+    next: { anchors: PathAnchor[]; closed: boolean },
+    kind: PathEditKind,
+  ) => void;
   onDressPath?: <T extends Element>(el: T) => T;
+  onLeaveEdit: () => void;
+  onDeselect: () => void;
+  onBeginEdit: (id: string) => void;
 }) {
   const surface = useCanvasSurface();
   const draw = usePathDrawGesture({
@@ -57,6 +85,38 @@ export function usePathTool({
     activeTabId,
     onCommitPath,
   });
+
+  // Edit mode: the path being edited, while Select is in hand and it can be edited at all.
+  const pathOf = (id: string | null): PathElement | null => {
+    const el = id ? elements.find((e) => e.id === id) : undefined;
+    return el?.type === 'path' && el.locked !== true && !inertIds?.has(el.id) ? el : null;
+  };
+  const editable = canvasTool === 'select' && pendingDraw === null;
+  const edited = pathOf(editingId);
+  const editing = editable ? edited : null;
+  // A tool picked, the path locked, out of reach or deleted (by a peer too): edit mode leaves.
+  const stale =
+    editingId !== null && elements.some((e) => e.id === editingId && e.type === 'path') && !editing;
+  const lastEditedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const vanished = !editing && editingId !== null && editingId === lastEditedRef.current;
+    lastEditedRef.current = editing?.id ?? null;
+    if (!stale && !vanished) return;
+    console.debug(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
+    onLeaveEdit();
+  }, [stale, editing, editingId, onLeaveEdit]);
+  const edit = usePathEditGesture({
+    element: editing,
+    selectedPathId:
+      editingId === null && multiSelectCount === 0 ? (pathOf(selectedId)?.id ?? null) : null,
+    wrapperRef,
+    viewportZoom,
+    onCommitPathEdit,
+    onLeave: onLeaveEdit,
+    onDeselect,
+    onBeginEdit,
+  });
+
   const { draft } = draw;
   const continuingId = draft?.continuing?.id ?? null;
 
@@ -77,12 +137,19 @@ export function usePathTool({
     return whiteboardInk ? inkWhiteboardElement(base, whiteboardInk) : base;
   }, [draft, continuingId, elements, onDressPath, whiteboardInk]);
 
-  const shownElements = useMemo(
-    () => (continuingId ? elements.filter((el) => el.id !== continuingId) : elements),
-    [elements, continuingId],
-  );
+  const editDraft = edit.draft;
+  const editingPathId = editing?.id ?? null;
+  const shownElements = useMemo(() => {
+    if (continuingId) return elements.filter((el) => el.id !== continuingId);
+    if (editingPathId && editDraft) {
+      return elements.map((el) =>
+        el.id === editingPathId && el.type === 'path' ? reshapePath(el, editDraft, el.closed) : el,
+      );
+    }
+    return elements;
+  }, [elements, continuingId, editingPathId, editDraft]);
 
-  const view: PathDraftView | null =
+  const draftView: PathDraftView | null =
     draft && element
       ? {
           element,
@@ -110,10 +177,24 @@ export function usePathTool({
           }
         : null;
 
+  const editView: PathEditView | null = editing
+    ? {
+        frame: editing,
+        anchors: editDraft ?? pathAnchors(editing),
+        closed: editing.closed,
+        selected: edit.selected,
+        box: edit.box,
+        guides: edit.guides,
+        zoom: viewportZoom,
+      }
+    : null;
+
   return {
     beginPathPress: draw.beginPathPress,
-    handlePathDoubleClick: draw.handlePathDoubleClick,
+    beginEditPress: edit.beginEditPress,
+    handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,
     elements: shownElements,
-    draftView: view,
+    draftView,
+    editView,
   };
 }

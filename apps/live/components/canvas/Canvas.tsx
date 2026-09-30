@@ -78,6 +78,7 @@ import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
+import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
@@ -516,14 +517,22 @@ export function Canvas(props: CanvasProps) {
   // The Path tool (docs/specs/023-whiteboard/path-tool.md), in front of both: see usePathTool.
   const pathTool = usePathTool({
     pendingDraw,
+    canvasTool,
     elements,
     inertIds: props.layerInertIds,
     wrapperRef,
     viewportZoom,
     activeTabId: props.activeTabId,
     whiteboardInk: props.whiteboardDock ? props.whiteboardInk : undefined,
+    editingId,
+    selectedId,
+    multiSelectCount: multiSelectedIds.size,
     onCommitPath: props.onCommitPath,
+    onCommitPathEdit: props.onCommitPathEdit,
     onDressPath: props.onDressPath,
+    onLeaveEdit: props.onCancelEdit,
+    onDeselect,
+    onBeginEdit: props.onBeginEdit,
   });
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
@@ -550,6 +559,7 @@ export function Canvas(props: CanvasProps) {
     isoCamera,
     canvasLongPress,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
+    interceptPress: pathTool.beginEditPress,
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onCanvasDoubleClick,
@@ -758,6 +768,7 @@ export function Canvas(props: CanvasProps) {
         ) : null}
         {/* The path being drawn (docs/specs/023-whiteboard/path-tool.md), in the same layer. */}
         {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+        {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
