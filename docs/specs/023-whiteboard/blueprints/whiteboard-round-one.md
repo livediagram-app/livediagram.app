@@ -31,7 +31,10 @@ Scope, by file:
 | `apps/live/lib/whiteboard-tool.ts`                                | Active-tool derivation, pen intent, shapes, pointer routing               |
 | `apps/live/lib/pen-seen.ts`                                       | Session-scoped "a pen has been used" flag                                 |
 | `apps/live/lib/whiteboard-ink.ts`                                 | `createInkProjector`: the ink projection over a list, cached per element  |
-| `apps/live/lib/whiteboard-erase.ts`                               | `strokesTouched`, `partialEraseStep`: one pure eraser step                |
+| `apps/live/lib/whiteboard-erase.ts`                               | `strokesTouched`, `shapesTouched`, `partialEraseStep`: one eraser step    |
+| `packages/document/src/shape-hit.ts`                              | A shape's hit outline: `shapeHitOutline`, `shapeTouchesBrush`             |
+| `packages/document/src/svg-path-outline.ts`                       | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
+| `apps/live/components/canvas/ShapeHitOutline.tsx`                 | `outlineHit`, the invisible outline that picks an unselected shape        |
 | `apps/live/lib/draw-mode.ts`                                      | `PendingDraw` whiteboard pen variant and arrow `ends`; `isHeldPenIntent`  |
 | `apps/live/lib/draw-commit.ts`                                    | `buildDrawnArrow` takes `ends` and `unpainted`                            |
 | `apps/live/hooks/canvas/commit-freehand.ts`                       | The whiteboard pen commit                                                 |
@@ -178,7 +181,9 @@ The canvas host maps the displayed elements through it with a per-object cache
   wrapper, so a client point maps with `pointerToCanvas`.
 - Each pointer sample erases along the segment from the previous sample to this one (a capsule), so a
   fast swipe cannot skip a stroke.
-- **Stroke**: a `freehand` is touched when `strokeTouchesBrush(el, a, b, r)`; any other element when
+- **Stroke**: a `freehand` is touched when `strokeTouchesBrush(el, a, b, r)`; a `shape` when
+  `shapeTouchesBrush(el, a, b, r)` (`shapesTouched`, see [Selecting](#selecting-on-a-whiteboard)), so
+  a brush through an empty inside erases nothing; any other element (note, text, arrow by its hit band) when
   the DOM hit test (centre plus rings, as the Eraser panel's `eraserSamplePoints`) finds it. Touched
   elements are removed whole, arrows pinned to them cascade, as today.
 - **Partial**: only `freehand` elements; each touched one is replaced by `eraseStrokePart(...)`
@@ -371,6 +376,29 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   multi-selected; the wrapper gets `pointer-events: none` and `FreehandSvg` a transparent
   `[data-stroke-hit]` path of `strokeHitWidth(penWidth, zoom)` (`STROKE_HIT_SCREEN_PX` = 6 a side) with
   `pointer-events: stroke`.
+- `BoxedElementView`: `shapeHit` = `outlineHit(element, { onWhiteboard, selected })`, true for a
+  `pickedByOutline` shape on a whiteboard (`useCanvasPicksByOutline`, the still-canvas context) neither
+  selected nor multi-selected. The wrapper gets `pointer-events: none` and renders `ShapeHitOutline`:
+  an svg over the element's own box (stepped out by the wrapper's CSS `borderWidth`), one
+  `[data-shape-hit="line"]` path of `hitOutlinePathData(lines)` at `strokeHitWidth(2 · halfWidth, zoom)`
+  with `pointer-events: stroke`, and one `[data-shape-hit="fill"]` path per fill region with
+  `pointer-events: fill`. Rotation comes from the wrapper.
+- `packages/document/src/shape-hit.ts`, pure, local unrotated px:
+  - `pickedByOutline(el)`: a `shape` whose kind is CSS-drawn (`square`, `circle`, `stadium`,
+    `browser`, `page`) or in `SHAPE_GEOMETRY_KINDS`. Every other kind paints its own face and keeps
+    its box, as notes, text boxes and images do.
+  - `hasVisibleFill(el)`: `fillColor ?? defaultFillColor(el)` is not `transparent`, `none` or empty.
+  - `shapeHitOutline(el)` (cached per element object): `{ lines, fills, halfWidth }`, `halfWidth` =
+    `BORDER_STROKE_PX[strokeWidth] / 2`. Drawn kinds: every part of `shapeGeometry(kind, w / h)` placed
+    by `boxFit` into `0 0 w h` (paths via `svgPathSubpaths`, rects with `rx`, ellipses and circles at
+    `2 · PATH_ARC_SEGMENTS` points); fills are the closed lines of `main`, `outline` and `head` parts.
+    CSS kinds: the border's centre line, inset `halfWidth`, radius `min(r, w / 2, h / 2) - halfWidth`
+    (`r` = `BORDER_RADIUS_PX[borderRadius]`, default 8; stadium half the short side; circle an
+    ellipse); the browser adds its chrome rule at `2 · halfWidth + BROWSER_CHROME.heightPx - 0.5`.
+    Any other kind: its box, filled.
+  - `shapeTouchesBrush(el, a, b, r)`: `a`, `b` unrotated about the centre into local px; true when a
+    line lies within `r + halfWidth` of the segment, or `a` or `b` lies in a fill region. Skipped
+    early beyond `OUTLINE_REACH_FACTOR` half diagonals of the centre.
 - `useCanvasSurfaceGestures.onPointerDownCapture`: on a whiteboard, Select, Shift, primary button, no
   draw intent or held Space, a press on the canvas that is not inside `[data-canvas-handle]` (resize
   handles) starts an `additive` marquee with `clickTarget` = the pressed `[data-element-id]`.
@@ -953,6 +981,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Dock state, entering, telemetry                                                | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                          |
 | Ink projection cache                                                           | `apps/live/lib/whiteboard-ink.test.ts`                                                   |
 | Eraser steps                                                                   | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
+| Shape outline: kinds, fill, radius, rotation, sweep                            | `packages/document/src/shape-hit.test.ts`, `svg-path-outline.test.ts`                    |
+| Unselected whiteboard shape picked by its outline, 6 px a side                 | `apps/live/components/canvas/ShapeHitOutline.test.tsx`                                   |
 | Pen versus touch on the canvas                                                 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                    |
 | A pinch discards a whiteboard stroke                                           | `apps/live/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                   |
 | Line / arrow heads, no colour                                                  | `apps/live/lib/draw-commit.test.ts`                                                      |
@@ -970,6 +1000,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark)  | faint, visible  |
 | `WHITEBOARD_PEN_WIDTHS`           | 1, 1.5, 2.5 px                   | spec             | 1 to 100        |
 | `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6               | 4 to 48         |
+| `PATH_ARC_SEGMENTS`               | 16 per arc                       | anchor outlines  | 8 to 64         |
+| `OUTLINE_REACH_FACTOR`            | 1.5 half diagonals               | speech bubble    | >= 1.4          |
 | Partial densify step              | `max(r / 2, 1)` canvas px        | D7               |                 |
 | Crossing bisection steps          | 12                               | D7               | 8 to 20         |
 | Recognition threshold             | 0.4                              | Shape Pen        |                 |

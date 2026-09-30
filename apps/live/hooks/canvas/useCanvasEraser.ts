@@ -45,7 +45,12 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { WhiteboardEraserMode } from '@/lib/whiteboard-prefs';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
-import { partialEraseStep, pathsTouched, strokesTouched } from '@/lib/whiteboard-erase';
+import {
+  partialEraseStep,
+  pathsTouched,
+  shapesTouched,
+  strokesTouched,
+} from '@/lib/whiteboard-erase';
 
 // Where the transformed canvas sits on screen at the press, so a client point
 // maps to canvas coords for the whiteboard's geometric erase.
@@ -144,17 +149,21 @@ export function useCanvasEraser(deps: EraserDeps) {
       );
       return true;
     }
-    for (const id of strokesTouched(activeTab.elements, from, at, r, isProtected)) {
+    // A shape goes where its outline or visible fill is, never through its empty inside.
+    for (const id of [
+      ...strokesTouched(activeTab.elements, from, at, r, isProtected),
+      ...shapesTouched(activeTab.elements, from, at, r, isProtected),
+    ]) {
       if (erasedRef.current.has(id)) continue;
       erasedRef.current.add(id);
       changed = true;
     }
-    // Everything that is not a stroke is touched as on any tab: by the DOM.
+    // Everything else (a note, a text box, a line by its hit band) is touched as on any tab: by the DOM.
     for (const point of eraserSamplePoints(clientX, clientY, screenRadius)) {
       for (const { id } of elementHostsAtPoint(point.x, point.y)) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
-        if (!el || el.type === 'freehand' || el.type === 'path') continue;
+        if (!el || el.type === 'freehand' || el.type === 'path' || el.type === 'shape') continue;
         if (isProtected(el) || layerInertIds.has(id)) continue;
         erasedRef.current.add(id);
         changed = true;

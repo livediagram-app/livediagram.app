@@ -1,13 +1,16 @@
 // One step of the whiteboard eraser (docs/specs/023-whiteboard/whiteboard.md "Eraser"): a brush of radius
 // `r` swept from `a` to `b`, in canvas coords. Stroke mode removes the strokes
-// whose INK the brush crosses; Partial cuts them. Everything else is the
+// whose INK the brush crosses, and the shapes whose drawn outline or visible fill
+// it touches (shape-hit.ts, the same outline selecting picks by); Partial cuts strokes. Everything else is the
 // gesture's business (checkpoint, cascade, activity entry): these are pure.
 import {
   eraseStrokePart,
   pathTouchesBrush,
+  shapeTouchesBrush,
   strokeTouchesBrush,
   type Element,
   type FreehandElement,
+  type ShapeElement,
 } from '@livediagram/document';
 
 type Point = { x: number; y: number };
@@ -41,6 +44,25 @@ export function pathsTouched(
 ): string[] {
   return elements
     .filter((el) => el.type === 'path' && !isProtected(el) && pathTouchesBrush(el, a, b, r))
+    .map((el) => el.id);
+}
+
+/**
+ * Ids of the unprotected shapes the brush touches where they are drawn: along their
+ * outline, or on a visible fill (docs/specs/023-whiteboard/whiteboard.md "Eraser").
+ */
+export function shapesTouched(
+  elements: readonly Element[],
+  a: Point,
+  b: Point,
+  r: number,
+  isProtected: (el: Element) => boolean,
+): string[] {
+  return elements
+    .filter(
+      (el): el is ShapeElement =>
+        el.type === 'shape' && !isProtected(el) && shapeTouchesBrush(el, a, b, r),
+    )
     .map((el) => el.id);
 }
 

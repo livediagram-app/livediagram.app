@@ -7,7 +7,7 @@ import {
   type FreehandElement,
   type PathElement,
 } from '@livediagram/document';
-import { partialEraseStep, pathsTouched, strokesTouched } from './whiteboard-erase';
+import { partialEraseStep, pathsTouched, shapesTouched, strokesTouched } from './whiteboard-erase';
 
 const line = (id: string, y: number): FreehandElement => ({
   ...createFreehand(
@@ -87,5 +87,46 @@ describe('pathsTouched (docs/specs/023-whiteboard/path-tool.md "Selecting and er
     const els = [path('a', 100), path('b', 300), path('c', 100, { locked: true })];
     const isProtected = (el: { locked?: boolean }) => el.locked === true;
     expect(pathsTouched(els, { x: 50, y: 104 }, { x: 60, y: 104 }, 8, isProtected)).toEqual(['a']);
+  });
+});
+
+describe('shapesTouched', () => {
+  // An unfilled 200 x 100 rectangle, as a whiteboard draws one, and a filled one below it.
+  const board = (): Element[] => [
+    {
+      ...createShape('square', 0, 0),
+      id: 'open',
+      width: 200,
+      height: 100,
+      fillColor: 'transparent',
+    },
+    {
+      ...createShape('circle', 0, 200),
+      id: 'solid',
+      width: 100,
+      height: 100,
+      fillColor: '#fde68a',
+    },
+  ];
+
+  it('names a shape whose outline the brush crosses', () => {
+    expect(shapesTouched(board(), { x: -20, y: 50 }, { x: 20, y: 50 }, 5, free)).toEqual(['open']);
+  });
+
+  it('passes over an empty inside', () => {
+    expect(shapesTouched(board(), { x: 40, y: 50 }, { x: 160, y: 50 }, 5, free)).toEqual([]);
+  });
+
+  it('names a shape whose visible fill the brush is on', () => {
+    expect(shapesTouched(board(), { x: 50, y: 250 }, { x: 50, y: 250 }, 5, free)).toEqual([
+      'solid',
+    ]);
+  });
+
+  it('skips protected shapes and everything that is not a shape', () => {
+    const els: Element[] = [...board(), line('ink', 1)];
+    expect(
+      shapesTouched(els, { x: 0, y: 1 }, { x: 200, y: 1 }, 5, (el) => el.id === 'open'),
+    ).toEqual([]);
   });
 });

@@ -27,6 +27,8 @@ import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
+import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
@@ -255,6 +257,9 @@ function BoxedElementViewImpl({
       element.type === 'path') &&
     !isSelected &&
     !isMultiSelected;
+  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
+  const onWhiteboard = useCanvasPicksByOutline();
+  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
@@ -422,7 +427,7 @@ function BoxedElementViewImpl({
         ...(editLook.raise ? { zIndex: 10 } : {}),
         // Only the drawn line picks a pen stroke not yet selected (its hit
         // line, in FreehandSvg); the rest of its box lets pointers through.
-        ...(lineHit ? { pointerEvents: 'none' as const } : {}),
+        ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -568,6 +573,14 @@ function BoxedElementViewImpl({
         marker={marker}
         iconCaptionBand={iconCaptionBand}
       />
+
+      {shapeHit ? (
+        <ShapeHitOutline
+          element={element}
+          zoom={zoom}
+          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
+        />
+      ) : null}
 
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will

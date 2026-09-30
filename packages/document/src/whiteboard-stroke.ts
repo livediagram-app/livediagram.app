@@ -106,7 +106,8 @@ function segmentsIntersect(p1: Point, p2: Point, q1: Point, q2: Point): boolean 
   return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
 }
 
-function segmentDistance(p1: Point, p2: Point, q1: Point, q2: Point): number {
+/** The shortest distance between segments `p1 p2` and `q1 q2`: 0 when they cross. */
+export function segmentDistance(p1: Point, p2: Point, q1: Point, q2: Point): number {
   if (segmentsIntersect(p1, p2, q1, q2)) return 0;
   return Math.min(
     distToSegment(p1, q1, q2),
@@ -147,8 +148,8 @@ export function strokeTouchesBrush(el: FreehandElement, a: Point, b: Point, r: n
   return false;
 }
 
-// Even-odd: whether `p` lies inside the closed polyline.
-function insidePolygon(p: Point, pts: readonly Point[]): boolean {
+/** Even-odd: whether `p` lies inside the closed polyline. */
+export function insidePolygon(p: Point, pts: readonly Point[]): boolean {
   let inside = false;
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
     const a = pts[i]!;
