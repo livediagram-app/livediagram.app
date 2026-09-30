@@ -153,9 +153,26 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   another tool puts it down.
 - **What you draw is what lands.** While a stroke is being drawn it already
   shows in the pen's colour and **exact thickness** (the main pen in the
-  board's ink) **and already smoothed**: the stroke being drawn and the
-  stroke that lands go through the same simplification and curve, so release
-  changes nothing.
+  board's ink) **and already smoothed**. One live smoothing pipeline shapes
+  the stroke, and the stroke being drawn, the shape recognition preview and
+  the stroke that lands are all its output, so release changes nothing:
+  - **The line stays on the pen tip.** The stroke being drawn always ends
+    exactly at the latest pen position; smoothing adds no lag.
+  - **Ink settles once.** Each point is smoothed over the few milliseconds
+    either side of it, so only the newest few milliseconds of ink (the wet
+    tail) may still settle, by under a pixel; older ink never changes again.
+  - **Smoothing follows the device**: a pen, a mouse and a finger each get
+    their own settings, measured on screen and in time, so a stroke is as
+    smooth at every zoom and whatever rate the device reports at.
+  - **Every sample counts.** Where the browser offers the samples it gathered
+    between frames (coalesced events), the stroke uses all of them.
+  - **Corners stay corners.** A sharp turn (a cusp in handwriting, the corner
+    of a box) keeps its point; curves and small loops stay round.
+- **Every freehand stroke draws through one curve**: a centripetal
+  Catmull-Rom through the stroke's points, broken at its corners, the same on
+  the canvas and in every export. It cannot overshoot into loops or bumps
+  where the points are unevenly spaced. (Strokes drawn before it redraw a
+  little tighter.)
 - **A pen's width is ink on the board.** It is in canvas px, so a stroke
   zooms with the board like everything drawn on it, the same in every
   browser, and the in-flight stroke is drawn at that width times the zoom.
@@ -228,6 +245,10 @@ author sets on an element on purpose still plays.
 - **Two-finger** gestures always pan and pinch-zoom, whatever the tool; a
   stroke the second finger interrupts is discarded rather than committed as a
   fragment.
+- A stroke the browser cancels (`pointercancel`, for example when the system
+  takes the touch over) is discarded.
+- Only the pointer that started a stroke draws it; another finger landing
+  meanwhile is a pinch or pan, never part of the stroke.
 - Palm rejection beyond this is the browser's; no timing heuristics.
 
 ## Eraser
@@ -268,8 +289,9 @@ The eraser offers **both** modes, switched in its flyout:
   pause asks again. A stroke that reads as no shape shows no preview. Half a
   second is long enough that a pause mid-letter does not trigger it and short
   enough to feel like an answer (Procreate's QuickShape and GoodNotes sit
-  around the same). The preview and the commit run the same test on the same
-  smoothed points (`recogniseBoardStroke`), so what shows is what lands.
+  around the same). The preview and the commit run the same test
+  (`recogniseBoardStroke`) on the live smoothing pipeline's points (see
+  [Pens](#pens)), so what shows is what lands.
 - When off, strokes stay as drawn.
 
 ## Board background

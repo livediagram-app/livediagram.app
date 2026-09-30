@@ -13,3 +13,6 @@ One row per default applied where a spec is silent or qualitative.
 | D7  | whiteboard-round-one | How finely Partial cuts a stroke                            | Densify to half the brush radius (at least 1 px); 12 bisection steps per crossing                |
 | D8  | whiteboard-round-one | Whether the eraser mode persists                            | Yes, device-locally with the pens and recognition                                                |
 | D9  | whiteboard-round-one | Where the dock sits beside the bottom-right cluster         | Lifted above the cluster (history, layers, zoom) until the viewport is 1500 px wide              |
+| D10 | whiteboard-round-one | Whether the corner angle differs per pointer kind           | One `CORNER_TURN_DEG` (100) for all: the curve renders stored strokes, which record no pointer   |
+| D11 | whiteboard-round-one | How far one simplifier chord may reach in samples           | `SIMPLIFY_MAX_WINDOW` 256 samples, so a slow stroke's per-point check stays bounded              |
+| D12 | whiteboard-round-one | Samples whose timestamps do not increase                    | Equal time replaces the previous sample (never the first); an earlier time is dropped            |

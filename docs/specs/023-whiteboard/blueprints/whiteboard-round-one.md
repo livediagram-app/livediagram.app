@@ -14,6 +14,12 @@ Scope, by file:
 | `packages/document/src/tab-kind.ts`                        | `TabKind` gains `'whiteboard'`; `tabKindOf` reads it                     |
 | `packages/document/src/whiteboard.ts`                      | Tokens, backgrounds, `isWhiteboardTab`, `inkWhiteboardElement`           |
 | `packages/document/src/whiteboard-stroke.ts`               | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                 |
+| `packages/document/src/stroke-smoother.ts`                 | The live pen pipeline: fixed-lag smoothing and streaming simplification  |
+| `packages/document/src/stroke-path.ts`                     | Incremental, chunked SVG path of a live stroke                           |
+| `packages/document/src/polyline.ts`                        | `catmullRomToBezierPath`: centripetal, broken at corners                 |
+| `apps/live/lib/live-stroke.ts`                             | `LiveStroke`: one stroke's smoother, samples and subscribers             |
+| `apps/live/components/canvas/useWhiteboardPenGesture.ts`   | The whiteboard pen gesture: capture, coalesced samples, commit           |
+| `apps/live/components/canvas/whiteboard/LiveInk.tsx`       | The stroke being drawn, written straight to the DOM                      |
 | `packages/document/src/svg-render-shapes.ts`               | `svgFreehandShape` honours `penWidth` on every stroke                    |
 | `packages/api-schema` + `apps/api/src/openapi`             | `TabKind` enum regenerated; `Whiteboard` telemetry category              |
 | `packages/templates/src/templates.ts`                      | `'whiteboard'` kind, descriptor, category, pattern, overrides            |
@@ -60,6 +66,12 @@ Scope, by file:
 | Ink projection   | `inkWhiteboardElement(el, ink)`                | Display-only colours for unpainted elements                   |
 | Pen seen         | `markPenSeen()`, `penSeen()`                   | A `pen` pointer has been used in this page session            |
 | Whiteboard prefs | `WhiteboardPrefs`                              | Pens, active pen, recognition, eraser mode; device-local      |
+| Live stroke      | `LiveStroke`                                   | The stroke being drawn: its smoother, samples, subscribers    |
+| Pointer kind     | `StrokePointerKind` (`pen/mouse/touch`)        | Which `STROKE_SMOOTHING` settings a stroke uses               |
+| Frozen           | (smoother state)                               | A sample whose smoothed point can no longer change            |
+| Wet tail         | `StrokeSmoother.tail()`                        | The provisional kept points after `kept`, ending at the head  |
+| Kept points      | `StrokeSmoother.kept`                          | The final, append-only output of the simplifier               |
+| Corner           | `isStrokeCorner`                               | A point turning by at least `CORNER_TURN_DEG`                 |
 
 Banned synonyms: "canvas kind" for tab kind, "marker" for a whiteboard pen (the highlighter is the
 marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard look.
@@ -121,9 +133,10 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 
 ### Pen commit (`makeCommitFreehand`, `variant: 'whiteboard'`)
 
-1. Simplify as today (RDP, tolerance `1.2 / zoom`); fewer than 2 points: keep the pen armed, commit
-   nothing.
-2. `recognise` and `recogniseShape(simplified)` with confidence >= 0.4:
+1. The points arrive as the live stroke pipeline's final output (`LiveStroke.end()`, see
+   [Live stroke pipeline](#live-stroke-pipeline)) and are used as they are: no second
+   simplification. Fewer than 2 points: keep the pen armed, commit nothing.
+2. `recognise` and `recogniseBoardStroke(points)` (confidence >= 0.4):
    - `line` → arrow, `arrowEnds: 'none'`, `strokeColor` = pen colour when set, `strokeWidth` =
      `nearestBorderStroke(width)`, no `strokeColor` for Ink.
    - a shape kind → shape at the bbox, `fillColor: 'transparent'`, `strokeColor` = pen colour when
@@ -273,13 +286,16 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - `apps/live/lib/recognition-preview.ts`: `RECOGNITION_THRESHOLD` (0.4), `RECOGNITION_PREVIEW_DWELL_MS`
   (500), `RECOGNITION_PREVIEW_STILL_PX` (4 screen px), `recogniseBoardStroke(points)`, `stillSince`.
   `commit-freehand`'s `whiteboardStroke` uses `recogniseBoardStroke`.
-- `useRecognitionPreview(points, active, zoom)`: restarts a dwell timer whenever the latest sample
-  leaves the still radius of the last anchor; on firing it recognises `simplifyPenStroke(points,
-zoom)` and stores `{ shape, first, count, anchor }`. It returns the shape only while the stroke is
-  the same (`points[0]`) and every sample since `count - 1` stays still. Logs
+- `useRecognitionPreview(stroke, active, zoom)` subscribes to the `LiveStroke`. On each update it
+  walks only the raw samples added since the last update; any sample farther than
+  `RECOGNITION_PREVIEW_STILL_PX / zoom` from the anchor moves the anchor to the newest sample, drops
+  a shown preview and restarts the dwell timer. The first update sets the anchor and starts the
+  timer. On firing it recognises `stroke.points()` (the pipeline's current output) and shows the
+  shape when one is found. A new stroke or `stroke === null` clears everything. Logs
   `[whiteboard] recognition preview <kind>`.
 - `CanvasDrawPreview` renders `RecognisedShapePreview` (`components/canvas/whiteboard/BoardShapePreview.tsx`,
-  beside `PenShapePreview`) instead of the stroke path while a shape is returned.
+  beside `PenShapePreview`) while a shape is returned, and hides (never unmounts) `LiveInk`, whose
+  sealed chunks live only in the DOM.
 
 ### Shapes are plain ink
 
@@ -299,14 +315,97 @@ zoom)` and stores `{ shape, first, count, anchor }`. It returns the shape only w
   the element, points at `nx × width`, `ny × height`, `stroke-width = penWidth`, no
   `vector-effect`: canvas px, scaled by the canvas zoom in every engine. Other strokes keep the
   100-unit viewBox and `non-scaling-stroke`.
-- `CanvasDrawPreview` draws the in-flight pen stroke at `width × zoom`, through the same
-  `simplifyPenStroke` (RDP at `PEN_SIMPLIFY_SCREEN_PX` = 1.2 screen px, `apps/live/lib/pen-smoothing.ts`)
-  and `catmullRomToBezierPath` the committed stroke gets, so release reshapes nothing.
+- `LiveInk` draws the in-flight pen stroke in canvas coordinates inside
+  `<g transform="translate(origin) scale(zoom)">` at `stroke-width = width`, so it is `width × zoom`
+  on screen, as the committed stroke is. Its path is the live stroke pipeline's output through the
+  same curve the committed stroke gets, so release reshapes nothing.
 - `isWhiteboardPenIntent(intent)` (`draw-mode.ts`): `useCanvasDrawGesture` starts the stroke at the
   raw pointer (no `snapDrawStart`) and shows no pre-press dot; `computeDrawGuides` returns no hover
   or stroke guides.
 - Proven by a pixel-coverage probe (Chromium and WebKit, zoom 1 and 0.7): coverage during and
   after a stroke is equal.
+
+### Live stroke pipeline
+
+The whiteboard pen only (`variant: 'whiteboard'`); the highlighter and the diagram pencil keep the
+RDP commit (`simplifyPenStroke`) and share only the curve.
+
+**Capture** (`useWhiteboardPenGesture`, called by `useCanvasDrawGesture`):
+
+1. `beginPendingDrawGesture` with a whiteboard pen intent calls `beginWhiteboardStroke(e, point)`:
+   the pointer kind is `strokePointerKind(e.pointerType)` (`pen`, `touch`, anything else `mouse`),
+   the zoom is `viewportZoom`, the pointer id is `e.pointerId`; the first sample is the press point
+   at `e.timeStamp` (`performance.now()` when absent). `penStroke` state is set once; no React state
+   changes again until release.
+2. Window `pointermove` from the stroke's pointer (any pointer when the id is unknown): read the
+   wrapper rect once per event, then for each of `e.getCoalescedEvents()` (`[e]` when the method is
+   missing or returns nothing) convert with `pointerToCanvas` and `push(x, y, timeStamp)`; then
+   `notify()` once. While `isPinchingRef` is true the stroke is marked pinched and nothing is
+   sampled.
+3. `pointerup` from the stroke's pointer: push its position, `end()`, clear `penStroke`, then
+   commit (`onCommitFreehand(points, false)`) unless pinched (`[whiteboard] stroke discarded: pinch`).
+4. `pointercancel` from the stroke's pointer: clear `penStroke`, commit nothing
+   (`[whiteboard] stroke discarded: cancel`).
+5. Every committed stroke logs
+   `[whiteboard] stroke <pointer> samples=<n> coalesced=<c> kept=<k>` at `console.debug`.
+
+**Samples** (`createStrokeSmoother(smoothing, zoom)`): pixel parameters are screen px, divided by the
+zoom at the press, so the pipeline runs in canvas px and every result scales with `1 / zoom`.
+
+- A sample within `minSamplePx` of the previous one is dropped. A sample earlier than the previous
+  one is dropped. A sample at the same time as the previous one replaces it (the first sample is
+  never replaced: the later one is dropped). Buffers are growable `Float64Array`s (doubling), never
+  copied per sample.
+
+**Smooth** (fixed lag, zero phase), sample `i` of `n`:
+
+- `speed_i` = chord from sample `max(0, i - 2)` to `min(n - 1, i + 2)` over their time span;
+  `sigma_i = min(sigmaMs, capPx / speed_i)` (`sigmaMs` when the speed is 0).
+- `h = min(3 sigma_i, t_i - t_0, t_last - t_i)`; `h <= 0` returns the raw sample (the first and the
+  latest samples are always raw). Otherwise the Gaussian-weighted mean, weight
+  `exp(-dt^2 / (2 sigma_i^2))`, over every sample with `|t_j - t_i| <= h`.
+- **Frozen**: sample `i` freezes, in index order, once `i + 2 <= n - 1` and
+  `t_last >= t_i + 3 sigmaMs`. Its smoothed point is then final (every sample its window and its
+  speed read exists) and enters the simplifier.
+
+**Simplify** (streaming greedy, over frozen smoothed points `S`):
+
+- `S[0]` is kept. With anchor `a` (the last kept index) and a new point `k`, the chord `a..k`
+  **fits** when `k - a == 1`, or when `|S[k] - S[a]| <= maxChordPx`, `k - a <= SIMPLIFY_MAX_WINDOW`
+  and every `S[j]`, `a < j < k`, is within `simplifyTolPx` of the segment `S[a]S[k]`. When it does
+  not fit, `S[k - 1]` is kept and becomes the anchor. Kept points are `kept` (append-only, final).
+- **Tail** (each frame): the same routine, on a scratch copy of the anchor, over the wet points
+  (samples not yet frozen, smoothed with the current `t_last`), then the last point. `tail()` is the
+  scratch's kept points plus the latest sample.
+- `end()` freezes every sample against the final `t_last`, feeds them to the simplifier and keeps
+  the last point: the result equals `[...kept, ...tail()]` of the last frame when no sample arrived
+  since. `points()` is `[...kept, ...tail()]` (`kept` alone after `end()`).
+
+**Curve** (`catmullRomToBezierPath(points, closed, { fmt, scaleX, scaleY })`, `polyline.ts`):
+
+- Point `i` is a **corner** when it has both neighbours, both chords are non-zero and its turning
+  angle is at least `CORNER_TURN_DEG` (`isStrokeCorner`).
+- Segment `i` (from point `i` to `i + 1`, `catmullRomSegment(at, i, fmt)`): centripetal
+  Catmull-Rom, knot spacing `d = sqrt(chord)`:
+  `c1 = p1 + d2/3 * ((p1 - p0)/d1 - (p2 - p0)/(d1 + d2) + (p2 - p1)/d2)`,
+  `c2 = p2 - d2/3 * ((p2 - p1)/d2 - (p3 - p1)/(d2 + d3) + (p3 - p2)/d3)`.
+  A missing neighbour (a stroke end), a zero chord or a corner uses the phantom point
+  `2 p1 - p2` (resp. `2 p2 - p1`), which reduces to `c1 = p1 + (p2 - p1)/3`; a zero `d2` draws
+  `C p1, p2, p2`.
+- Output `M x y` then `C c1x c1y, c2x c2y, x y` per segment; closed paths wrap and end in `Z`.
+  `scaleX` / `scaleY` scale the output after the curve is built in true proportions (the diagram
+  pencil's 100-unit viewBox), `fmt` shapes every number (the SVG export rounds).
+
+**Path** (`createStrokePathBuilder(chunkSegments)`, `stroke-path.ts`): `update(kept, tail)` returns
+`{ sealed, live }`. Segment `j` is final when `j <= kept.length - 3` (its four points and both corner
+tests read only kept points). Final segments join the open chunk; at `chunkSegments` it is sealed
+(`M start` plus its segments) and never rebuilt. `live` is the open chunk plus the wet segments.
+Sealed chunks joined (each after the first without its `M`) with `live` equal
+`catmullRomToBezierPath(points, false)`.
+
+**Render** (`LiveInk`): one sealed `<path>` appended to a React-childless `<g>` per sealed chunk, and
+the live `<path>`'s `d` set, synchronously in the `LiveStroke` subscriber (inside the input handler).
+Colour, width, round caps and joins sit on the enclosing `<g>`.
 
 ### Keyboard
 
@@ -359,6 +458,44 @@ export function eraseStrokePart(
   mintId: () => string,
 ): FreehandElement[] | null;
 export function nearestBorderStroke(px: number): BorderStroke;
+export type StrokePointerKind = 'pen' | 'mouse' | 'touch';
+export type StrokeSmoothing = {
+  sigmaMs: number;
+  capPx: number;
+  minSamplePx: number;
+  simplifyTolPx: number;
+  maxChordPx: number;
+};
+export const STROKE_SMOOTHING: Readonly<Record<StrokePointerKind, StrokeSmoothing>>;
+export const SIMPLIFY_MAX_WINDOW: number;
+export function strokePointerKind(pointerType: string | undefined): StrokePointerKind;
+export type StrokeSmoother = {
+  push(x: number, y: number, t: number): boolean; // false when dropped
+  readonly kept: readonly Point[];
+  readonly sampleCount: number;
+  sample(i: number): Point; // a raw sample, canvas px
+  tail(): Point[];
+  points(): Point[];
+  end(): Point[];
+};
+export function createStrokeSmoother(smoothing: StrokeSmoothing, zoom: number): StrokeSmoother;
+export const STROKE_CHUNK_SEGMENTS: number;
+export type StrokePathFrame = { sealed: string[]; live: string };
+export function createStrokePathBuilder(chunkSegments?: number): {
+  update(kept: readonly Point[], tail: readonly Point[]): StrokePathFrame;
+};
+export const CORNER_TURN_DEG: number;
+export function isStrokeCorner(prev: Point, p: Point, next: Point): boolean;
+export function catmullRomSegment(
+  at: (i: number) => Point | undefined,
+  i: number,
+  fmt?: (n: number) => number,
+): string;
+export function catmullRomToBezierPath(
+  points: Point[],
+  closed: boolean,
+  options?: { fmt?: (n: number) => number; scaleX?: number; scaleY?: number },
+): string;
 
 // apps/live
 export type WhiteboardPenId = 'main' | 'second' | 'third';
@@ -384,6 +521,19 @@ export function whiteboardPointerRoute(i: {
   penSeen: boolean;
   inking: boolean;
 }): 'ink' | 'pan';
+export type LiveStroke = {
+  readonly smoother: StrokeSmoother;
+  readonly pointer: StrokePointerKind;
+  readonly pointerId: number | undefined;
+  subscribe(listener: () => void): () => void;
+  notify(): void;
+};
+export function createLiveStroke(
+  pointerType: string | undefined,
+  pointerId: number | undefined,
+  zoom: number,
+): LiveStroke;
+export function coalescedSamples(e: PointerEvent): PointerEvent[];
 ```
 
 `PendingDraw` gains `{ type: 'freehand'; variant: 'whiteboard'; colour: string | null; width: number; recognise: boolean }`
@@ -419,6 +569,13 @@ No migration: `kind` is an existing optional string field; `penWidth` already ex
 - Rotated stroke under Partial: rotation baked into the pieces, which carry no rotation.
 - Storage unavailable: prefs fall back to defaults (`readLocalStorageSafe`), nothing throws.
 - Narrow viewport: the dock scrolls horizontally; flyouts clamp to the viewport.
+- A pen stroke's pointer is cancelled by the browser: the stroke is discarded and logged.
+- Another pointer's move or release during a stroke: ignored by the stroke.
+- Zoom or pan mid-stroke (wheel): samples convert with the zoom and rect of their event, so ink stays
+  under the pen; the smoothing keeps the press's zoom; `LiveInk` follows the current origin and zoom.
+- Coalesced or ordinary samples with equal or backwards timestamps: see Samples (D12).
+- A tap (one sample): `end()` returns one point and the commit keeps the pen armed.
+- A pen held still: no new samples, so the wet tail waits; the head stays exact.
 
 ## Security and trust
 
@@ -432,6 +589,11 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 - Eraser: per pointer sample, O(strokes) bbox rejects plus O(points) for the survivors; Partial
   densifies only touched strokes. A 2,000-stroke board stays within a frame on the samples tried.
 - Dock: 14 fixed-size buttons, no measurement, no layout effect.
+- Live stroke, per input event: one rect read, O(new samples x smoothing window) smoothing, the
+  simplifier's open window (at most `SIMPLIFY_MAX_WINDOW` distance checks per point), the wet tail
+  re-simplified, and a path string of at most `STROKE_CHUNK_SEGMENTS` plus the wet segments. No
+  whole-stroke copy, no React render of the stroke. `points()` (O(stroke)) runs only on a recognition
+  dwell and at release.
 
 ## Presentation and UX
 
@@ -474,7 +636,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   Microsoft Whiteboard import and not yet emitted. The dashboard charts the four pairs in a
   Whiteboards stack headed by Whiteboards Created.
 - Parse fallbacks log once: `console.warn('[whiteboard] prefs reset: <reason>')`.
-- Discarded pinch strokes: `console.debug('[whiteboard] stroke discarded: pinch')`.
+- Discarded pinch strokes: `console.debug('[whiteboard] stroke discarded: pinch')`; cancelled ones:
+  `[whiteboard] stroke discarded: cancel`.
+- Every committed pen stroke: `[whiteboard] stroke <pointer> samples=<n> coalesced=<c> kept=<k>`.
 
 ## Testing
 
@@ -484,6 +648,11 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Tokens meet contrast                                | `packages/document/src/whiteboard.test.ts`                                               |
 | Ink projection table                                | `packages/document/src/whiteboard.test.ts`                                               |
 | Stroke touch and partial split                      | `packages/document/src/whiteboard-stroke.test.ts`                                        |
+| Centripetal curve, corners, scale                   | `packages/document/src/freehand.test.ts`                                                 |
+| Live pipeline metrics (lag, prefix, wobble, …)      | `packages/document/src/stroke-smoother.test.ts`                                          |
+| Chunked live path equals the committed path         | `packages/document/src/stroke-path.test.ts`                                              |
+| Pen gesture: coalesced, pointer, cancel, commit     | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
+| Live ink and recognition preview                    | `apps/live/components/canvas/CanvasDrawPreview.test.tsx`                                 |
 | `penWidth` honoured on every stroke                 | `svg-render-shapes` test                                                                 |
 | Template kind, overrides, builder                   | `packages/templates` tests                                                               |
 | Prefs parse / defaults / pen colours contrast       | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |
@@ -505,17 +674,25 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Constants and configuration
 
-| Constant                          | Value                            | Provenance      | Safe range      |
-| --------------------------------- | -------------------------------- | --------------- | --------------- |
-| `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#0d121a`            | spec values     | contrast >= 4.5 |
-| `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#e2e8f0`            | spec values     | contrast >= 4.5 |
-| `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark) | faint, visible  |
-| `WHITEBOARD_PEN_WIDTHS`           | 1, 1.5, 2.5 px                   | spec            | 1 to 100        |
-| `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6              | 4 to 48         |
-| Partial densify step              | `max(r / 2, 1)` canvas px        | D7              |                 |
-| Crossing bisection steps          | 12                               | D7              | 8 to 20         |
-| Recognition threshold             | 0.4                              | Shape Pen       |                 |
-| Storage key                       | `livediagram:v2:whiteboard-pens` | spec            |                 |
+| Constant                           | Value                            | Provenance      | Safe range      |
+| ---------------------------------- | -------------------------------- | --------------- | --------------- |
+| `WHITEBOARD_BOARD.light / dark`    | `#fbfaf7` / `#0d121a`            | spec values     | contrast >= 4.5 |
+| `WHITEBOARD_INK.light / dark`      | `#1c1917` / `#e2e8f0`            | spec values     | contrast >= 4.5 |
+| `WHITEBOARD_PATTERN.light / dark`  | `#d6d3cb` / `#1c2735`            | D5, spec (dark) | faint, visible  |
+| `WHITEBOARD_PEN_WIDTHS`            | 1, 1.5, 2.5 px                   | spec            | 1 to 100        |
+| `WHITEBOARD_ERASER_RADIUS_PX`      | stroke 10, partial 16            | D6              | 4 to 48         |
+| Partial densify step               | `max(r / 2, 1)` canvas px        | D7              |                 |
+| Crossing bisection steps           | 12                               | D7              | 8 to 20         |
+| Recognition threshold              | 0.4                              | Shape Pen       |                 |
+| Storage key                        | `livediagram:v2:whiteboard-pens` | spec            |                 |
+| `STROKE_SMOOTHING.*.sigmaMs`       | pen 6, mouse 8, touch 12 ms      | research        | 4 to 16         |
+| `STROKE_SMOOTHING.*.capPx`         | pen 1.5, mouse 1.5, touch 2.5    | research        | 1 to 3          |
+| `STROKE_SMOOTHING.*.minSamplePx`   | pen 0.25, mouse 0.5, touch 0.5   | research        | 0 to 1          |
+| `STROKE_SMOOTHING.*.simplifyTolPx` | pen 0.35, mouse 0.5, touch 0.6   | research        | 0.25 to 1.0     |
+| `STROKE_SMOOTHING.*.maxChordPx`    | 48 (all)                         | research        | 24 to 96        |
+| `SIMPLIFY_MAX_WINDOW`              | 256 samples                      | D11             | 64 to 1024      |
+| `CORNER_TURN_DEG`                  | 100 degrees                      | research, D10   | 80 to 135       |
+| `STROKE_CHUNK_SEGMENTS`            | 64                               | research        | 32 to 256       |
 
 ## Defaults ledger
 
