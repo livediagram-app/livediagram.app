@@ -74,6 +74,13 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   "Pen stroke", "3 pen strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
+- **Dock modes**, chosen under **Settings** (see below) and kept in the
+  user's synced preferences ([User preferences](../007-editor/user-preferences.md);
+  a guest keeps it in this browser): **Simple** (the drawing tools and
+  history groups only), **With shapes** (the default: all three groups, as
+  laid out below) and **Full drawing** (shown disabled, with the note
+  "Coming soon"). Switching mode never moves the groups that stay: the
+  dock re-centres once, and a flyout of a group that goes closes.
 - **The dock is three groups side by side**, centred together at the bottom
   of the canvas with a clear gap between them: **drawing tools** on the left,
   **history** (Undo, Redo) in the middle, **shapes** on the right. Each group
@@ -84,28 +91,29 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
   3. **Eraser**, with its mode (see [Eraser](#eraser)).
-  4. **Settings** (a **cog**): opens **on a press only**, never on hover; a
-     flyout with no title of its own and three sections, each headed in the
-     flyouts' small capitals and a row of the same switch buttons:
-     **Background** (Plain / Dots / Grid), **Drawing** (Basic / Shape
+  4. **Text**.
+  5. **Settings** (a **cog**): opens **on a press only**, never on hover; a
+     flyout with no title of its own and four sections, each headed in the
+     flyouts' small capitals and a row of the same switch buttons: **Mode**
+     (Simple / With shapes / Full drawing, the last disabled with "Coming
+     soon"), **Background** (Plain / Dots / Grid), **Drawing** (Basic / Shape
      recognition) and **Cursor** (Crosshair + nib / Dot).
 - **History:** **Undo** and **Redo**, the same actions as the bottom-right
   cluster and the keyboard; disabled when there is nothing to undo or redo.
-- **Shapes, left to right:**
-  1. **Text**.
-  2. **Sticky note**.
-  3. **Path tool** (see [Path tool](path-tool.md)).
-  4. **Pinned shapes**: up to two shape kinds the user pinned (see
+- **Shapes, left to right** (With shapes mode):
+  1. **Sticky note**.
+  2. **Path tool** (see [Path tool](path-tool.md)).
+  3. **Pinned shapes**: up to two shape kinds the user pinned (see
      [Shape slots](#shape-slots)); none by default.
-  5. A **separator**.
-  6. **Two frequent shape slots**: the two shape kinds this user picks most
+  4. A **separator**.
+  5. **Two frequent shape slots**: the two shape kinds this user picks most
      often that are not already on the bar (see [Shape slots](#shape-slots)).
-  7. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
+  6. **Shapes**: a small flyout of rectangle, ellipse, diamond, cylinder,
      line and arrow (see [Shapes](#shapes)). It opens on hover (a mouse or a
      pen, never a finger) as well as on a press, without taking the keyboard
      focus, and closes a moment after the pointer leaves both it and the
      button; a press on a hover-opened flyout keeps it open.
-  8. **More shapes** (`…`): opens **on a press only**, with its **search
+  7. **More shapes** (`…`): opens **on a press only**, with its **search
      field focused at once**, so typing finds any shape of the palette's shape
      catalogue by name or keyword (flowchart, basic, block and every other
      shape kind the palette offers; not icons, templates or components).
