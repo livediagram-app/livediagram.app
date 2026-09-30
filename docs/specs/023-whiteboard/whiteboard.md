@@ -99,8 +99,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   2. **Sticky note**.
   3. **Path tool** (see [Path tool](path-tool.md)).
 - **Shapes, left to right** (With shapes mode):
-  1. **Pinned shapes**: up to two shape kinds the user pinned (see
-     [Shape slots](#shape-slots)); none by default.
+  1. **Pinned shapes**, the left side of the bar: up to five shape kinds
+     the user keeps there (see [Shape slots](#shape-slots)); by default
+     **Line, Arrow, Rectangle, Diamond, Ellipse**, in that order.
   2. A **separator**.
   3. **Two frequent shape slots**: the two shape kinds this user picks most
      often that are not already on the bar (see [Shape slots](#shape-slots)).
@@ -154,18 +155,28 @@ The shapes group learns and keeps the shapes a user reaches for.
   the Shapes flyout in order, never repeating one on the bar. The slots
   update when a pick changes the ranking, never while a flyout is open or a
   drag is in progress, so a slot never moves under the pointer mid-gesture.
-- **Pinning:** dragging a frequent slot **to the left of the separator** (the start of
-  the shapes bar) pins its kind there, permanently, for this user; up to **two** pinned kinds.
-  Dropping onto a pinned slot when two are pinned replaces that one; dropping
-  elsewhere when two are pinned is refused, and the dragged slot settles back
-  with the hint "Two shapes are pinned. Drag one out to swap." Dragging a
-  pinned shape **to the right of the separator** unpins it. The pointer and
-  the drop position show where it will land while dragging; a drag starts
-  after 6 screen px, so a press still picks.
+- **Pinned side:** the left of the shapes bar, before the separator. A user
+  who has never changed it has five pins, in this order: **Line**, **Arrow**,
+  **Rectangle**, **Diamond**, **Ellipse**. Up to **five** kinds can be pinned.
+- **Pinning:** dragging a frequent slot **to the left of the separator** pins
+  its kind at the drop position. With five pinned, dropping onto a pinned
+  slot replaces that one; dropping elsewhere is refused, and the dragged slot
+  settles back with the hint "Five shapes are pinned. Drag one out to swap."
+  Dragging a pinned shape to another place on the pinned side reorders it.
+  The pointer and the drop position show where it will land while dragging;
+  a drag starts after 6 screen px, so a press still picks.
+- **Unpinning only moves a shape off the pinned side**: dragging it **to the
+  right of the separator**, or **Unpin** in its menu. It is not removed or
+  forgotten: its pick count stays, so if it is among this user's two most
+  picked kinds not pinned, it shows in a **frequent slot** at once; otherwise
+  it is still one press away in Shapes or More shapes. Unpinning every shape
+  leaves the pinned side empty, and that is kept: the defaults never come
+  back on their own.
 - **Pinning without a drag:** a right-click or long-press on a slot, or
   Shift+F10 / the context-menu key on a focused slot, offers **Pin to dock**
   (frequent) or **Unpin** (pinned), with the same limit and refusal.
-- **Stored per user:** the pick counts and the pinned kinds live in the
+- **Stored per user:** the pick counts and the pinned kinds (stored only once
+  the user changes them, so "never changed" still means the defaults) live in the
   user's synced preferences ([User preferences](../007-editor/user-preferences.md)),
   so they follow the user across devices; a guest keeps them in this
   browser. Only kinds from the palette's shape catalogue are stored; unknown
