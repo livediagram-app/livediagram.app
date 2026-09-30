@@ -74,6 +74,7 @@ type ElementItem = {
     | 'sticky'
     | 'image'
     | 'freehand'
+    | 'path'
     | 'table'
     | 'annotation'
     | 'link-card'

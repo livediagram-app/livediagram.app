@@ -6,7 +6,9 @@
 // `meet` for the proportional actor), so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
-import type { BoxedElement, FreehandElement, ShapeKind } from './index';
+import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
+import { pathAnchors } from './path-element';
+import { pathD } from './path-geometry';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
@@ -170,6 +172,20 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
   return (
     `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${strokeWidth}"` +
+    `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
+  );
+}
+
+// A path (docs/specs/023-whiteboard/path-tool.md): the headless twin of the canvas PathSvg, the same
+// curve from the same function at the border preset width, filled only when closed.
+export function svgPathElementShape(el: PathElement, stroke: string, fill: string): string {
+  if (el.nodes.length < 2) return '';
+  const d = pathD(pathAnchors(el), el.closed, r2);
+  const width = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'];
+  const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
+  const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
+  return (
+    `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
   );
 }

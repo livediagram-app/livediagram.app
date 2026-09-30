@@ -22,6 +22,7 @@ export function kindLabel(el: Element): string {
     if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
     return 'Sketch';
   }
+  if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
   if (el.type === 'shape') {
@@ -85,6 +86,10 @@ export function describeMany(elements: Element[]): string {
 // 'Arrow "yes"'. Unlike describeOne this always leads with the kind,
 // so a screen-reader user hears WHAT the thing is before its text.
 export function elementAriaLabel(el: Element): string {
+  // A path is read by its points (docs/specs/023-whiteboard/path-tool.md "Accessibility").
+  if (el.type === 'path') {
+    return `${el.closed ? 'Closed path' : 'Path'}, ${el.nodes.length} points`;
+  }
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;

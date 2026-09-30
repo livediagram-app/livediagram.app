@@ -12,6 +12,7 @@ import {
   nearestBorderStroke,
   whiteboardBackgroundOf,
 } from './whiteboard';
+import { createPath } from './path-element';
 
 const INK = '#123456';
 
@@ -94,6 +95,21 @@ describe('inkWhiteboardElement', () => {
   it('keeps a pen colour as drawn and returns the same object when nothing changes', () => {
     const red = freehand({ strokeColor: '#e11d48', fillColor: 'transparent' });
     expect(inkWhiteboardElement(red, INK)).toBe(red);
+  });
+
+  it('draws an unpainted path in ink, unfilled, and leaves a painted one alone', () => {
+    const path = createPath(
+      [
+        { x: 0, y: 0, mode: 'corner' },
+        { x: 10, y: 10, mode: 'corner' },
+      ],
+      false,
+    );
+    const out = inkWhiteboardElement(path, INK);
+    expect(out.strokeColor).toBe(INK);
+    expect(out.fillColor).toBe('transparent');
+    const painted = { ...path, strokeColor: '#f00', fillColor: '#0f0' };
+    expect(inkWhiteboardElement(painted, INK)).toBe(painted);
   });
 
   it('leaves highlighter strokes alone', () => {

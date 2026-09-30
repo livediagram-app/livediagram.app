@@ -17,6 +17,7 @@ import {
   svgLegendShape,
   svgCodeBlockShape,
   svgFreehandShape,
+  svgPathElementShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { BORDER_RADIUS_PX } from './border-style';
@@ -177,6 +178,10 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
   if (el.type === 'freehand' && shape.kind === 'rect') {
     // The sketch's actual polyline instead of its bounding box.
     return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
+  }
+  if (el.type === 'path' && shape.kind === 'rect') {
+    // The path's own curve (docs/specs/023-whiteboard/path-tool.md "Export").
+    return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, shape.stroke, shape.fill)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {
     // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
@@ -391,7 +396,7 @@ export function boxedNeedsSvgRaster(
   // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
-  if (el.type === 'table' || el.type === 'freehand') return true;
+  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   // Anything whose BODY this module draws and the canvas drawers cannot: a
   // chart's plot, a progress value, a card's face, a lane's gutter, a

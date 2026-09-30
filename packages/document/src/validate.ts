@@ -59,6 +59,11 @@ import { isQuickSwatchSlot } from './quick-swatches';
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
 export const MAX_FREEHAND_POINTS = 20_000;
+// A path (docs/specs/023-whiteboard/path-tool.md): a drawn one rarely passes 50 nodes.
+export const MAX_PATH_NODES = 5_000;
+// A normalised path coordinate: handles may reach beyond the box, never absurdly far.
+export const PATH_COORD_MAX = 1e6;
+const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
 const MAX_TABLE_ROWS = 1_000;
 const MAX_TABLE_COLS = 1_000;
 const MAX_TABLE_CELLS = 50_000;
@@ -73,6 +78,7 @@ export const ELEMENT_TYPES = new Set([
   'sticky',
   'image',
   'freehand',
+  'path',
   'annotation',
   'link-card',
   'video',
@@ -515,8 +521,37 @@ export function isValidElement(el: unknown): el is Element {
       return false;
     return true;
   }
+  if (t === 'path') return isValidPath(el);
   // text / sticky / annotation / link-card carry no extra required fields.
   return true;
+}
+
+// A path's normalised coordinate pair: finite, and never absurdly far outside its box.
+function isPathPoint(p: unknown): boolean {
+  return (
+    isObj(p) &&
+    isNum(p.nx) &&
+    isNum(p.ny) &&
+    Math.abs(p.nx) <= PATH_COORD_MAX &&
+    Math.abs(p.ny) <= PATH_COORD_MAX
+  );
+}
+
+// A path (docs/specs/023-whiteboard/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
+// known mode with optional handles; a closed pair needs a handle to be more than a line.
+function isValidPath(el: Record<string, unknown>): boolean {
+  if (typeof el.closed !== 'boolean' || !boundedArray(el.nodes, MAX_PATH_NODES)) return false;
+  if (el.nodes.length < 2) return false;
+  let handles = false;
+  for (const n of el.nodes) {
+    if (!isPathPoint(n) || !PATH_HANDLE_MODES.has((n as Record<string, unknown>).mode as string))
+      return false;
+    const { handleIn, handleOut } = n as Record<string, unknown>;
+    if (handleIn !== undefined && !isPathPoint(handleIn)) return false;
+    if (handleOut !== undefined && !isPathPoint(handleOut)) return false;
+    if (handleIn !== undefined || handleOut !== undefined) handles = true;
+  }
+  return !el.closed || el.nodes.length >= 3 || handles;
 }
 
 // Structural validity of a tab: id + name + a bounded `elements` array of

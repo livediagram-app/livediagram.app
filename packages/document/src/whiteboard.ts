@@ -64,6 +64,13 @@ export function inkWhiteboardElement<T extends Element>(el: T, ink: string): T {
         strokeColor: el.strokeColor ?? ink,
         fillColor: el.fillColor ?? 'transparent',
       };
+    case 'path':
+      if (el.strokeColor !== undefined && el.fillColor !== undefined) return el;
+      return {
+        ...el,
+        strokeColor: el.strokeColor ?? ink,
+        fillColor: el.fillColor ?? 'transparent',
+      };
     case 'text':
       return el.textColor !== undefined ? el : { ...el, textColor: ink };
     case 'shape':

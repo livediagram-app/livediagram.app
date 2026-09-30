@@ -5,6 +5,7 @@ import {
   type Element,
   type FreehandElement,
   type Padding,
+  type PathElement,
   type ShapeElement,
   type TextAlignX,
   type TextAlignY,
@@ -25,6 +26,7 @@ export function defaultPadding(element: BoxedElement): Padding {
     case 'image':
       return 'none';
     case 'freehand':
+    case 'path':
       return 'none';
     case 'table':
       return 'sm';
@@ -238,6 +240,7 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       case 'text':
       case 'image':
       case 'freehand':
+      case 'path':
       case 'table':
       case 'annotation':
         return DARK_INK.text;
@@ -257,6 +260,7 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
     case 'image':
       return '#1e293b'; // slate-800 (only used for alt-text rendering)
     case 'freehand':
+    case 'path':
       return '#1e293b'; // slate-800 (no inline label today, future-proof)
     case 'table':
       return '#1e293b'; // slate-800
@@ -329,6 +333,7 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
       case 'sticky':
       case 'link-card':
       case 'video':
+      case 'path':
         break; // transparent, or a fill that is the element's identity
     }
   }
@@ -340,6 +345,9 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
     case 'text':
       return 'transparent';
     case 'image':
+      return 'transparent';
+    // A path is plain ink, unfilled until a fill is chosen (docs/specs/023-whiteboard/path-tool.md "Style").
+    case 'path':
       return 'transparent';
     case 'freehand':
       // Closed freehand paths fill with a faint brand tint to match
@@ -367,6 +375,7 @@ export function defaultStrokeColor(
     switch (element.type) {
       case 'shape':
       case 'freehand':
+      case 'path':
       case 'table':
       case 'annotation':
         return DARK_INK.stroke;
@@ -388,6 +397,7 @@ export function defaultStrokeColor(
     case 'image':
       return 'transparent';
     case 'freehand':
+    case 'path':
       return '#0ea5e9'; // brand-500, same accent as shapes
     case 'table':
       return '#94a3b8'; // slate-400 grid lines
@@ -445,6 +455,7 @@ export function supportsColours(element: Element): boolean {
     element.type === 'sticky' ||
     element.type === 'arrow' ||
     element.type === 'freehand' ||
+    element.type === 'path' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
@@ -467,8 +478,10 @@ export function supportsColours(element: Element): boolean {
 // distinct from ArrowElement's `strokeWidth: number` (raw px). A
 // non-narrowing predicate would let setters that write a BorderStroke
 // land on arrows, which TS would (correctly) reject.
-export function supportsBorder(element: Element): element is ShapeElement | FreehandElement {
-  return element.type === 'shape' || element.type === 'freehand';
+export function supportsBorder(
+  element: Element,
+): element is ShapeElement | FreehandElement | PathElement {
+  return element.type === 'shape' || element.type === 'freehand' || element.type === 'path';
 }
 
 // Whether the element exposes the Border CONTROLS (strength / pattern /

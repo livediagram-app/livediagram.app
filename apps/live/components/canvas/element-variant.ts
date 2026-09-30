@@ -208,7 +208,8 @@ export function describeVariant(
         },
       };
     }
-    case 'freehand': {
+    case 'freehand':
+    case 'path': {
       // The freehand element renders its SVG path as the child
       // content. The wrapper here just contributes the selection
       // ring + remote-selector outline, with a transparent

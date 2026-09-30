@@ -1,5 +1,6 @@
 import {
   THEMES,
+  createPath,
   quickSwatchColor,
   shapeColorPresets,
   type ArrowElement,
@@ -220,5 +221,43 @@ describe('the board scope', () => {
   it('survives a round trip through storage', () => {
     const raw = JSON.stringify({ 'board:shape:square': { strokeColor: '#ff0000' } });
     expect(parseStyleMemory(raw)).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+  });
+});
+
+describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+  const path = createPath(
+    [
+      { x: 0, y: 0, mode: 'corner' },
+      { x: 40, y: 0, mode: 'corner' },
+    ],
+    false,
+  );
+
+  it('is its own kind, scoped on a board', () => {
+    expect(styleKindOf(path)).toBe('path');
+    expect(styleKindOf(path, true)).toBe('board:path');
+  });
+
+  it('remembers and applies its line style', () => {
+    const m = recordStyleEdit(
+      {},
+      [path],
+      [{ ...path, strokeColor: '#ff0000', strokeWidth: 'thick' }],
+      forest,
+      true,
+    );
+    expect(m).toEqual({ 'board:path': { strokeColor: '#ff0000', strokeWidth: 'thick' } });
+    const next = createPath(
+      [
+        { x: 5, y: 5, mode: 'corner' },
+        { x: 9, y: 9, mode: 'corner' },
+      ],
+      false,
+    );
+    expect(applyStyleMemory(next, m, forest, true)).toMatchObject({
+      strokeColor: '#ff0000',
+      strokeWidth: 'thick',
+    });
+    expect(parseStyleMemory(JSON.stringify(m))).toEqual(m);
   });
 });

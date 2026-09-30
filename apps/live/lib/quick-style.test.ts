@@ -1,6 +1,7 @@
 import {
   ARROW_THICKNESS_PX,
   THEMES,
+  createPath,
   quickSwatchColor,
   type ArrowElement,
   type Element,
@@ -373,5 +374,55 @@ describe('Text colour: text elements', () => {
     ) as TextElement;
     expect(next.textSwatch).toBeUndefined();
     expect(next.textColor).toBe(forest.elementText ?? undefined);
+  });
+});
+
+describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+  const open = createPath(
+    [
+      { x: 0, y: 0, mode: 'corner' },
+      { x: 40, y: 0, mode: 'corner' },
+      { x: 40, y: 40, mode: 'corner' },
+    ],
+    false,
+  );
+  const closed = { ...open, id: 'closed', closed: true };
+
+  it('styles its line, and its fill only when closed', () => {
+    expect(sections([open])).toEqual(['stroke', 'width', 'style']);
+    expect(sections([closed])).toEqual(['stroke', 'background', 'width', 'style']);
+    expect(quickStyleView([open], forest)!.sections.style!.options).toEqual([
+      'solid',
+      'dashed',
+      'dotted',
+    ]);
+  });
+
+  it('writes stroke, width and style, and a fill on a closed path only', () => {
+    expect(applyQuickWidth(open, 'thick')).toMatchObject({ strokeWidth: 'thick' });
+    expect(applyQuickStrokeStyle(open, 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
+    expect(applyQuickStroke(open, forest, 2)).toMatchObject({
+      strokeColor: quickSwatchColor(forest, 'stroke', 2),
+      strokeSwatch: 2,
+    });
+    expect(applyQuickFill(open, forest, 2)).toBe(open);
+    expect(applyQuickFill(closed, forest, 2)).toMatchObject({ fillSwatch: 2 });
+  });
+
+  it('clears back to plain ink', () => {
+    const styled = {
+      ...closed,
+      strokeColor: '#f00',
+      fillColor: '#0f0',
+      strokeWidth: 'thick' as const,
+    };
+    const cleared = clearQuickStyle(styled, { ...forest, elementStroke: null, elementFill: null });
+    expect(cleared).not.toHaveProperty('strokeColor');
+    expect(cleared).not.toHaveProperty('fillColor');
+    expect(cleared).not.toHaveProperty('strokeWidth');
+  });
+
+  it('is left alone when locked', () => {
+    expect(quickStyleView([{ ...open, locked: true }], forest)).toBeNull();
   });
 });

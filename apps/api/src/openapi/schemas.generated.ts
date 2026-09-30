@@ -797,6 +797,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/FreehandElement"
       },
       {
+        "$ref": "#/components/schemas/PathElement"
+      },
+      {
         "$ref": "#/components/schemas/TableElement"
       },
       {
@@ -3412,6 +3415,196 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "participantId",
       "value",
       "at"
+    ],
+    "type": "object"
+  },
+  "PathElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "closed": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/components/schemas/PathNode"
+        },
+        "type": "array"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "path",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "nodes",
+      "closed"
+    ],
+    "type": "object"
+  },
+  "PathHandleMode": {
+    "enum": [
+      "corner",
+      "mirrored",
+      "aligned"
+    ],
+    "type": "string"
+  },
+  "PathNode": {
+    "additionalProperties": false,
+    "properties": {
+      "handleIn": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "handleOut": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/PathHandleMode"
+      },
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "mode",
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PathPoint": {
+    "additionalProperties": false,
+    "properties": {
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "nx",
+      "ny"
     ],
     "type": "object"
   },

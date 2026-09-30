@@ -16,7 +16,7 @@ import { isQuickStyleTarget } from './quick-style';
 // `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every
 // text element; `board:` before any of them on a whiteboard, which keeps a memory
 // of its own (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays").
-type BaseKindKey = `shape:${string}` | 'arrow' | 'text';
+type BaseKindKey = `shape:${string}` | 'arrow' | 'text' | 'path';
 export type StyleKindKey = BaseKindKey | `board:${BaseKindKey}`;
 const BOARD_PREFIX = 'board:';
 const baseOf = (kind: string): string =>
@@ -46,6 +46,15 @@ const ARROW_MEMORY_FIELDS = {
   strokeStyle: 'string',
   flow: 'string',
 } as const;
+// A path (docs/specs/023-whiteboard/path-tool.md "Style"): its line and its fill.
+const PATH_MEMORY_FIELDS = {
+  strokeColor: 'string',
+  strokeSwatch: 'number',
+  fillColor: 'string',
+  fillSwatch: 'number',
+  strokeWidth: 'string',
+  strokeStyle: 'string',
+} as const;
 const TEXT_MEMORY_FIELDS = {
   textColor: 'string',
   textSwatch: 'number',
@@ -68,21 +77,24 @@ export function styleKindOf(el: Element, board = false): StyleKindKey | null {
       ? 'arrow'
       : el.type === 'text'
         ? 'text'
-        : el.type === 'shape'
-          ? `shape:${el.shape}`
-          : null;
+        : el.type === 'path'
+          ? 'path'
+          : el.type === 'shape'
+            ? `shape:${el.shape}`
+            : null;
   return base && board ? `${BOARD_PREFIX}${base}` : base;
 }
 
 function fieldsFor(scoped: StyleKindKey): FieldTypes {
   const kind = baseOf(scoped);
   if (kind === 'arrow') return ARROW_MEMORY_FIELDS;
+  if (kind === 'path') return PATH_MEMORY_FIELDS;
   return kind === 'text' ? TEXT_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
 }
 
 function isKnownKind(scoped: string): scoped is StyleKindKey {
   const key = baseOf(scoped);
-  if (key === 'arrow' || key === 'text') return true;
+  if (key === 'arrow' || key === 'text' || key === 'path') return true;
   return key.startsWith('shape:') && SHAPE_KINDS.has(key.slice('shape:'.length));
 }
 

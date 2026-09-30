@@ -36,6 +36,7 @@ import type {
   StickyElement,
   ImageElement,
   FreehandElement,
+  PathElement,
   AnnotationElement,
   LinkCardElement,
   VideoElement,
@@ -49,6 +50,10 @@ export type {
   StickyElement,
   ImageElement,
   FreehandElement,
+  PathElement,
+  PathHandleMode,
+  PathNode,
+  PathPoint,
   AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
@@ -237,6 +242,7 @@ export type BoxedElement =
   | StickyElement
   | ImageElement
   | FreehandElement
+  | PathElement
   | TableElement
   | AnnotationElement
   | LinkCardElement
@@ -347,6 +353,7 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'sticky' ||
     element.type === 'image' ||
     element.type === 'freehand' ||
+    element.type === 'path' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
@@ -460,6 +467,8 @@ export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
+export * from './path-geometry';
+export * from './path-element';
 export * from './component-factories';
 export * from './table';
 
