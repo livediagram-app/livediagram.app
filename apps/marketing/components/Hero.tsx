@@ -2,7 +2,7 @@ import { ctaHref } from '@livediagram/api-schema';
 import { buttonClassName, ButtonContent } from '@livediagram/ui';
 import { HeroConnectors } from './HeroConnectors';
 import { HeroIllustration } from './HeroIllustration';
-import { HeroTitleLine } from './HeroRotatingWord';
+import { HeroTitleLine } from './HeroTitleLine';
 import { PROOF_POINTS } from '@/lib/proof-points';
 
 // The proof points live on the stage's launch window now (hero-launch.tsx); the stage is

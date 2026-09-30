@@ -17,7 +17,7 @@ import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 // the first paint has no motion, and reduced motion holds "Diagram". Decorative: the h1 carries
 // the stable text for screen readers.
 
-export const HERO_WORDS = ['Diagram', 'Document', 'Whiteboard'] as const;
+const HERO_WORDS = ['Diagram', 'Document', 'Whiteboard'] as const;
 
 // How long each word holds before the next.
 const WORD_MS = 7000;

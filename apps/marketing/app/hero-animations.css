@@ -1076,7 +1076,7 @@
    (--grow-t/-r/-b/-l, set from the click) to the whole viewport. It is the editor's own blank
    canvas (the Default scheme's paper and 24px dots, which the window already draws), and its dots
    slide from where the window drew them (--grow-x/-y) onto the page grid, so it ends exactly on
-   the quiet landing /new?blank=1&quickstart=1 paints (apps/live BlankCanvasScreen) and the editor
+   the quiet landing /new?blank=1&welcome=1 paints (apps/live BlankCanvasScreen) and the editor
    then loads over it. The page-transition token, 250ms; the navigation follows its end. */
 .hero-grow {
   position: fixed;
@@ -1234,7 +1234,7 @@
   }
 }
 
-/* The headline's rotating first word (components/HeroRotatingWord.tsx), a quiet ticker: the slot
+/* The headline's rotating first word (components/HeroTitleLine.tsx), a quiet ticker: the slot
    clips at the line (hero-word-slot, a clip-path, which unlike overflow keeps the word on the
    headline's baseline; room above and below for accents and descenders), and the leaving word
    slides up out of it as the next slides up into place. No fade, no blur. Content pacing, and

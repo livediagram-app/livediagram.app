@@ -6,17 +6,17 @@
 // flashes a selection ring, a pulse of light runs along it). The page's first line is wired to
 // the canvas it promises, as a diagram would wire them.
 //
-// The geometry is the page's own, so it is measured, not drawn to a fixed picture: the headline's
-// last line of text (a Range, not the h1's box, which is wider than its words) and the stage's
-// centred window, found by their data-hero-anchor within the hero, re-measured on resize. The
-// arrow leaves the right end of that line, sweeps out past the buttons and proof points, and
+// The geometry is the page's own, so it is measured, not drawn to a fixed picture: the headline
+// line (HeroTitleLine), the subhead and the stage's centred window, found by their
+// data-hero-anchor within the hero, re-measured on resize and whenever the headline glides to a
+// new word. The arrow leaves the end of "live.", bows out clear of the subhead and buttons, and
 // comes down into the top of the centred window. Nothing renders until measured, and it is
 // absolutely positioned, so it shifts nothing. Hidden below sm, where there is no room beside the
 // copy for the sweep. It plays once; reduced motion shows it settled. Keyframes live in
 // app/hero-animations.css (hero-conn-*).
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { HERO_TITLE_SHIFT_EVENT } from './HeroRotatingWord';
+import { HERO_TITLE_SHIFT_EVENT } from './HeroTitleLine';
 
 type Point = [number, number];
 type Layout = {
