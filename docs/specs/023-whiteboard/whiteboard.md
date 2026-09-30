@@ -570,22 +570,29 @@ On a whiteboard the plain-key shortcuts are the dock's, and only these
 (the diagram tab's other element and mode keys, the laser on K and so on, do
 not apply: a whiteboard has no palette to mirror):
 
-| Key    | Tool                              |
-| ------ | --------------------------------- |
-| V      | Select                            |
-| Escape | Put the tool down: back to Select |
-| 1      | Marker 1                          |
-| 2      | Marker 2                          |
-| 3      | Marker 3                          |
-| E      | Eraser                            |
-| N      | Sticky note                       |
-| T      | Text box                          |
-| R      | Rectangle                         |
-| O      | Ellipse (circle / oval)           |
-| D      | Diamond                           |
-| C      | Cylinder                          |
-| L      | Line                              |
-| A      | Arrow                             |
+| Key    | Tool                                                    |
+| ------ | ------------------------------------------------------- |
+| V      | Select                                                  |
+| Escape | Put the tool down: back to Select                       |
+| 1      | Marker 1                                                |
+| 2      | Marker 2                                                |
+| 3      | Marker 3                                                |
+| E      | Eraser                                                  |
+| N      | Sticky note                                             |
+| T      | Text box                                                |
+| R      | Rectangle                                               |
+| O      | Ellipse (circle / oval)                                 |
+| D      | Diamond                                                 |
+| C      | Cylinder                                                |
+| L      | Line                                                    |
+| A      | Arrow                                                   |
+| P      | Path tool                                               |
+| S      | Shapes: opens the Shapes flyout with its search focused |
+
+**S** opens the Shapes flyout as a hover would, with its search field focused, so
+the next letters search at once (S then "cyl" finds the cylinder); a second S, or
+Escape, closes it again and gives the focus back to the board. The shape keys
+above still pick their shape directly.
 
 Escape first closes whatever is open (a flyout, a text edit); with nothing
 open it puts down a pen, the eraser or an armed shape, and only with Select
