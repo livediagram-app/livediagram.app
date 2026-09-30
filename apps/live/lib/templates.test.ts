@@ -359,6 +359,68 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // (2 headings, the zone legend, 6 symbol rows of glyph + name).
     // Furniture is the 21 movable pieces.
     'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 64, content: 21 },
+    // The plan 0002 batch. Retro formats share the Retrospective's kit.
+    // Start / Stop / Continue: how-to, rail note, 3 columns + actions panel,
+    // 3 lamp discs + their glyphs, actions glyph, verbs, prompts, actions
+    // header + hint, From Sprint 21 heading. Stickies: title, mood check,
+    // timer + vote, 9 notes, actions + last-sprint checklists.
+    'start-stop-continue': { names: ['Board', 'Stickies'], scaffold: 22, content: 15 },
+    // Mad / Sad / Glad: how-to, 3 columns + actions panel, 3 emoji stickers,
+    // names, prompts, actions header, hint + glyph, check-in line, Kind words
+    // heading. Stickies: title, mood check, idea box, timer + vote, 12 notes,
+    // kind-words note, checklist, heart sticker.
+    'mad-sad-glad': { names: ['Board', 'Stickies'], scaffold: 19, content: 20 },
+    // 4Ls: how-to, rail note, numbers heading, 4 quadrants + strip, glyphs,
+    // names, prompts, strip header + hint. Stickies: title, rocket, mood
+    // check, timer + vote, stat row, 12 notes, 2 checklists.
+    'four-ls': { names: ['Board', 'Stickies'], scaffold: 23, content: 20 },
+    // Sailboat: how-to, rail note, the drawn scene (sky, sea, sun, boat,
+    // rocks, island), 3 gust arrows, 4 zones of panel, name, prompt and glyph,
+    // actions panel, header, hint + glyph, island + Shout-outs headings.
+    // Stickies: title, mood check, agenda, timer + vote, 14 zone notes, 2
+    // shout-outs, checklist, progress bar, clap sticker.
+    sailboat: { names: ['Board', 'Stickies'], scaffold: 63, content: 24 },
+    // Report: caption, 4 section headings, 5 phase headers, the summary card,
+    // the Blameless callout and 3 findings columns. Findings: title, 3 chips,
+    // summary, stat row, 10 timeline cards, the impact spans, 5 whys, the
+    // root cause, chain arrows, 9 stickies, the clover and the actions table.
+    'incident-postmortem': { names: ['Report', 'Findings'], scaffold: 44, content: 84 },
+    // Matrix: caption, 2 section headings, 25 score cells, 20 axis step
+    // lines, 2 axis titles, 4 band chips, checklist + vote labels. Risks:
+    // title, 2 chips, 7 markers (R1 to R6 + R1's residual), the residual
+    // arrow, the register, the review sticky + sticker, checklist and vote.
+    'risk-matrix': { names: ['Matrix', 'Risks'], scaffold: 60, content: 16 },
+    // Levels: how-to, four level bands with rail tile, glyph, name and rule,
+    // and the sub-opportunity rail note. Tree: title, outcome card + ring,
+    // six opportunities with evidence chips, the target ribbon, three
+    // solutions, six tests with verdict chips, and 15 rake lines.
+    'opportunity-solution-tree': { names: ['Levels', 'Tree'], scaffold: 22, content: 47 },
+    // Grid: how-to, four quadrants of tile, glyph, name and rule, two axis
+    // arrows and six labels, the plan heading + note, the stance key. People:
+    // title, nine people and the ghost, the move arrow, the plan table, the
+    // next-step sticky and its pushpin.
+    'stakeholder-map': { names: ['Grid', 'Stakeholders'], scaffold: 36, content: 15 },
+    // Sheet: how-to, prompt card, the four steps, the sheet frame, 8 panel
+    // frames + number chips, the invite line. Sketches: title + meta, prompt,
+    // 2 stickers, timer + vote, done check, sheet name + status, the three
+    // sketches and their captions, 5 empty-panel hints.
+    'crazy-eights': { names: ['Sheet', 'Sketches'], scaffold: 35, content: 54 },
+    // Card: how-to, the profile card's chrome, 5 panels of tint, header,
+    // glyph and prompt, spectrum poles, channel glyphs, How we help band.
+    // Details: title, profile facts, monogram, stat row, tags, quote, 9 notes,
+    // 4 bars, 3 channels + rating, 3 needs + answers.
+    'user-persona': { names: ['Card', 'Details'], scaffold: 49, content: 40 },
+    // Board: how-to, 3 phase bands, 5 column heads, section labels, 4 house
+    // rules, the parking bay and hints. Notes: title + sticker, purpose,
+    // outcomes checklist, 5 attendees, the agenda, 4 parked stickies, 2
+    // decision records, actions checklist, rating gauge, next-sync callout.
+    'meeting-agenda': { names: ['Board', 'Notes'], scaffold: 37, content: 34 },
+    // Planner: how-to, 3 phase bands, 3 column heads, why labels, the formula
+    // guide + rewrite + SMART check, 3 card frames with section labels, the
+    // check-in strip. Objectives: title + sticker, focus, 6 stickies, 2 corner
+    // people, 3 objectives (chip, sticker, sentence, KRs + bars, steps,
+    // support, rating) and the Today chip.
+    'objectives-planner': { names: ['Planner', 'Objectives'], scaffold: 65, content: 44 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {

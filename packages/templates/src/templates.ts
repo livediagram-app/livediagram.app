@@ -541,7 +541,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'opportunity-solution-tree',
     title: 'Opportunity solution tree',
     description:
-      "Product discovery from one outcome: opportunities in the customer's voice, solutions and the tests that de-risk them.",
+      "Product discovery from one outcome: needs in the customer's voice, a target, three solutions and their tests.",
     extra: true,
   },
   {
@@ -562,7 +562,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'risk-matrix',
     title: 'Risk matrix',
     description:
-      'A 5x5 likelihood and impact heatmap with numbered risks, a residual move and a risk register.',
+      'A 5x5 likelihood and impact heatmap with numbered risks, a residual move, and a register with owners and trends.',
     extra: true,
   },
   {
@@ -576,14 +576,14 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'meeting-agenda',
     title: 'Meeting agenda',
     description:
-      'A meeting that runs itself: purpose, roles, a timed agenda, and the parking lot, decisions and actions it produces.',
+      'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
     extra: true,
   },
   {
     kind: 'objectives-planner',
     title: 'Objectives planner',
     description:
-      'Write personal objectives that stick: start with why, a sentence formula and SMART check, key results and check-ins.',
+      'Write personal objectives that stick: start with why, a sentence formula, a SMART test, key results and check-ins.',
     extra: true,
   },
 ];
