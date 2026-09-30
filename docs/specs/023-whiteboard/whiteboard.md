@@ -90,9 +90,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool).
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
-  3. **Text**.
-  4. **Sticky note**.
-  5. **Path tool** (see [Path tool](path-tool.md)).
+  3. **Text**, unless turned off under Settings, Tools.
+  4. **Sticky note**, unless turned off there.
+  5. **Path tool** (see [Path tool](path-tool.md)), unless turned off there.
   6. **Eraser**, with its mode (see [Eraser](#eraser)).
 - **Shapes, left to right** (With shapes mode):
   1. **Pinned shapes**, the left side of the bar: up to seven shape kinds
@@ -127,12 +127,20 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **History:** **Undo** and **Redo**, the same actions as the bottom-right
   cluster and the keyboard; disabled when there is nothing to undo or redo.
 - **Settings**, the last group: a **cog** that opens **on a press only**, never on hover; a
-  flyout with no title of its own and four sections, each headed in the
-  flyouts' small capitals and a row of the same switch buttons, top to
-  bottom: **Background** (Plain / Dots / Grid), **Cursor** (Crosshair +
-  nib, the default / Dot), **Drawing** (Basic / Shape recognition) and
+  flyout with no title of its own and five sections, each headed in the
+  flyouts' small capitals and a row of buttons, top to bottom:
+  **Background** (Plain / Dots / Grid), **Cursor** (Crosshair + nib, the
+  default / Dot), **Drawing** (Basic / Shape recognition), **Tools** and
   **Mode** (Simple / With shapes / Full drawing, the last disabled with
-  "Coming soon").
+  "Coming soon"). The first three and Mode are switch buttons (one of
+  several); **Tools** is three independent toggles, **Text**, **Sticky
+  note** and **Path tool**, each pressed while its button shows in the
+  drawing tools bar. All three are on by default. Turning one off removes its
+  button from the bar (the bar closes the gap; nothing else moves); its key
+  still picks it. The choice is the user's, kept in their synced preferences
+  with the dock mode, and applies to every whiteboard and every mode.
+  Telemetry: `Whiteboard` · `Toggled` · `TextShown` / `TextHidden`,
+  `StickyShown` / `StickyHidden`, `PathShown` / `PathHidden`.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
   diagram tab is put down on arriving at a whiteboard.
