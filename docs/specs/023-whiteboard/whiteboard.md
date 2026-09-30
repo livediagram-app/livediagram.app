@@ -265,6 +265,10 @@ The shapes group learns and keeps the shapes a user reaches for.
     first, kept in the user's synced preferences; using a custom colour puts
     it at the front, so picking it again is one press. A custom colour is one
     exact hex value on both boards.
+    **Removing one:** a right-click (a long-press on touch, Shift+F10 or the
+    context-menu key on a focused swatch) on a custom colour opens a small
+    menu with **Remove**, which takes it out of Your colours. Strokes already
+    drawn in it keep it, and a marker set to it keeps it until changed.
   - **+** at the end of that row opens the custom picker in place: a
     saturation and brightness square, a hue slider, a hex field and, where
     the browser has one, an **eyedropper**; **Use** applies it. When the
@@ -386,7 +390,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   shape with a **visible fill** is also picked anywhere on its fill. Lines and
   arrows are picked by their line, and paths by their line or fill
   ([Path tool](path-tool.md)). **Notes and text boxes** keep their whole box:
-  they are filled or hold text.
+  they are filled or hold text. So does a kind that paints its own face (a
+  chart, a panel, an icon, a web component).
 - The **outline is the one drawn**, not the box: an ellipse by its curve, a
   diamond by its four edges, a cylinder by its body and rim, following the
   shape's rotation.
