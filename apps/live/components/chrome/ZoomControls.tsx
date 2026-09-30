@@ -54,7 +54,7 @@ export function ZoomControls({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className="pointer-events-auto flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {pinchOnly ? null : (
         <HoverCard title="Zoom out" description="Zoom out by 10%.">

@@ -429,6 +429,27 @@ default document name) without walking the wizard:
     (the editor chunk loading, then the document) hold that canvas too
     (`OpeningScreen`); the editor clears the flag once the document has
     loaded, so a later load in the tab shows the usual opening screen.
+  - **One loader on that canvas.** The canvas carries a single loader
+    (`CanvasLoader` in `@livediagram/ui`: the opening screen's drawing loop,
+    "Creating your document" and its progress sweep), centred in the
+    viewport, from `/new`'s first frame until the editor appears. `/new`
+    prerenders it (hidden unless the pre-paint flag is set, and a
+    `visibility: visible` child still paints inside the hidden body), then
+    `BlankCanvasScreen` and the editor's `OpeningScreen` draw it in the same
+    place. The drawing loop (`DiagramBuildAnimation`) keeps its phase across
+    those remounts, reading the phase of the prerendered copy's running
+    animation on first mount, so it never jumps back to the start. The
+    marketing page's grown canvas draws no loader of its own: it only shows
+    for the moment of the navigation, and a copy there flashed and then
+    restarted on this page, reading as a second loader.
+  - **No wasted requests.** The bypass never shows the Settings step, so
+    `/new` does not fetch its placement options (folders, teams) on a bypass
+    (read from the URL when the fetch would start). The participant `/new`
+    loads and saves is remembered for the in-place handoff
+    (`lib/api/self.ts`, 30 seconds), so the editor's identity bootstrap does
+    not ask for it again, and the editor's favourites wait for the real
+    owner id rather than fetching for the `self` placeholder first. Opening
+    a document from the hero makes each request once.
   - **The welcome offer.** The tour's welcome offer
     ([Interactive editor tour ("Show me around")](editor-tour.md)) is queued,
     though the create fires before the document count is known: whoever

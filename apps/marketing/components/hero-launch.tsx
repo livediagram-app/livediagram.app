@@ -48,7 +48,7 @@ export function prefetchLaunch() {
   document.head.appendChild(link);
 }
 
-type GrowFrom = { top: number; right: number; bottom: number; left: number };
+type GrowFrom = { top: number; right: number; bottom: number; left: number; stop: number };
 
 // A plain click grows the window; a modified or non-primary click is the browser's (new tab,
 // new window, download) and follows the link untouched.
@@ -79,11 +79,16 @@ export function useLaunchGrow() {
     }
     const canvas = e.currentTarget.querySelector(`[${HERO_CANVAS_ATTR}]`) ?? e.currentTarget;
     const r = canvas.getBoundingClientRect();
+    // The canvas grows to fill the page BELOW the sticky site header, never over it: the header
+    // stays put, so the new canvas reads as opening in the page rather than replacing the site.
+    const header = document.querySelector('header');
+    const stop = header ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
     setFrom({
       top: r.top,
       left: r.left,
       right: window.innerWidth - r.right,
       bottom: window.innerHeight - r.bottom,
+      stop,
     });
     return true;
   };
@@ -101,11 +106,15 @@ export function useLaunchGrow() {
                 '--grow-r': `${from.right}px`,
                 '--grow-b': `${from.bottom}px`,
                 '--grow-l': `${from.left}px`,
+                '--grow-stop': `${from.stop}px`,
                 // Start the dots where the window drew them, so the canvas grows rather than jumps.
                 '--grow-x': `${from.left}px`,
                 '--grow-y': `${from.top}px`,
               } as CSSProperties
             }
+            // No loader here: the page changes the moment the growth lands, and /new's quiet canvas
+            // shows it from its first frame (CanvasLoader). One drawn here only flashed, then
+            // restarted on the next page, reading as a second loader.
             onAnimationEnd={() => window.location.assign(LAUNCH_HREF)}
           />,
           document.body,

@@ -6,13 +6,14 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
 } from '@livediagram/document';
+import { CanvasLoader } from '@livediagram/ui';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 
 // The quiet opening screen (docs/specs/007-editor/new-document-route.md): the marketing hero's
 // launch window grows into a full-screen blank canvas, and /new?blank=1&welcome=1 holds exactly
 // that canvas, the Default scheme's paper and dots, until the editor is ready, in place of the
-// "Creating your document" screen. So the growth, the create and the editor's load read as one
-// surface. Light and dark are both drawn and the appearance class picks one, so it needs no state.
+// "Creating your document" screen, with the shared CanvasLoader centred on it. So the growth, the
+// create and the editor's load read as one surface. Light and dark are both drawn and the appearance class picks one, so it needs no state.
 const ORIGIN = { x: 0, y: 0 };
 const LIGHT = tabBackgroundStyle('grid', ORIGIN, DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR);
 const DARK = tabBackgroundStyle(
@@ -25,11 +26,13 @@ const DARK = tabBackgroundStyle(
 export function BlankCanvasScreen() {
   return (
     <div aria-busy="true" className="fixed inset-0">
-      <span className="sr-only" role="status">
-        Creating your document
-      </span>
       <div aria-hidden className="absolute inset-0 dark:hidden" style={LIGHT} />
       <div aria-hidden className="absolute inset-0 hidden dark:block" style={DARK} />
+      {/* The same loader the hero's grown canvas shows, in the same place (the viewport's
+          centre), so it carries across the page change rather than the canvas sitting blank. */}
+      <div className="absolute inset-0 flex items-center justify-center px-6">
+        <CanvasLoader />
+      </div>
     </div>
   );
 }

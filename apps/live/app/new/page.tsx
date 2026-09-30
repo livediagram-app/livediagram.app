@@ -45,7 +45,8 @@ import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
 import { WIZARD_BYPASS_PARAMS, wantsWelcome, wizardBypassKind } from '@/lib/new-document-params';
 import { markQuietLanding } from '@/lib/quiet-landing';
-import { QUIET_LANDING_ATTR } from '@/lib/quiet-landing-boot';
+import { QUIET_LANDING_ATTR, QUIET_LANDING_LOADER_CLASS } from '@/lib/quiet-landing-boot';
+import { CanvasLoader } from '@livediagram/ui';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -65,6 +66,7 @@ const EditorPage = dynamic(loadEditor, {
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
+const isBypassUrl = () => bypassKindFromUrl() !== null;
 const welcomeFromUrl = () => wantsWelcome(window.location.search);
 const noWelcome = () => false;
 
@@ -133,15 +135,6 @@ export default function NewDocumentPage() {
   // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Where this document can be filed, and the inline New Folder the Settings
-  // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
-    {
-      selfId: self.id,
-      clerkUserId,
-    },
-  );
-
   // Placement context from the URL: /new?folder=<id> (Explorer's "new document
   // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-documents.md)
   // pre-select the Save In picker, so what the Settings step highlights IS
@@ -173,6 +166,17 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
+
+  // Where this document can be filed, and the inline New Folder the Settings
+  // step offers — see usePlacementOptions.
+  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
+    {
+      selfId: self.id,
+      clerkUserId,
+      // A bypass commits straight away and never shows the Settings step.
+      skip: isBypassUrl,
+    },
+  );
   // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
   // grew into rather than the opening screen, so nothing else paints between the two.
   const quietLanding = useSyncExternalStore(subscribeNever, welcomeFromUrl, noWelcome);
@@ -463,6 +467,11 @@ export default function NewDocumentPage() {
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
+      {/* The quiet landing's loader, prerendered so it paints from the first frame on the
+          hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
+      <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
+        <CanvasLoader />
+      </div>
       <EditorHeader
         documentName="New document"
         hideTitle

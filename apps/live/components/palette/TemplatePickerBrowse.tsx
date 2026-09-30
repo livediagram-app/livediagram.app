@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { TemplateDescriptor, TemplateCategory, TemplateKind } from '@livediagram/templates';
-import { TEMPLATE_CATEGORIES } from '@livediagram/templates';
+import { TEMPLATE_CATEGORIES, TEMPLATES, templateCategory } from '@livediagram/templates';
 import { CloseIcon, SearchIcon, SnapCarousel } from '@livediagram/ui';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { CategoryTile, TemplateCard } from '@/components/palette/template-picker-cards';
@@ -15,6 +15,19 @@ type Shelf = {
   description: string;
   items: TemplateDescriptor[];
 };
+
+// A folded tile's fan, in catalogue order rather than the picker's shuffled
+// one: the page is prerendered in catalogue order and shuffles only once it
+// hydrates, so a fan drawn from the shuffle swapped its previews a moment after
+// load. Blank's dashed square makes a dull fan card, so Popular fans the
+// starters after it.
+function fanKinds(shelf: Shelf): TemplateKind[] {
+  if (shelf.id === 'popular')
+    return shelf.items.filter((t) => t.kind !== 'blank').map((t) => t.kind);
+  return TEMPLATES.filter(
+    (t) => !t.hidden && t.kind !== 'blank' && templateCategory(t.kind) === shelf.id,
+  ).map((t) => t.kind);
+}
 
 // The template step's browse surface, lifted out of TemplatePicker: the
 // search input plus a two-way body (flat search results / the category
@@ -76,17 +89,22 @@ export function TemplatePickerBrowse({
     .filter((shelf) => shelf.id !== 'popular')
     .reduce((n, shelf) => n + shelf.items.length, 0);
 
-  // Opening a folded tile swaps it into the carousel at the top of the step;
-  // bring that row into view if the user had scrolled down to the tiles.
-  const shelfTop = useRef<HTMLDivElement>(null);
-  const openedOnce = useRef(false);
+  // True once the user has opened a tile in this mount. Only then does the
+  // stage replay its entrance and scroll into view: on load the modal's own
+  // entrance is the only motion, so nothing jitters as the page arrives.
+  const [userOpened, setUserOpened] = useState(false);
+  const openShelf = (id: ShelfCategory) => {
+    setUserOpened(true);
+    setOpenCategory(id);
+  };
+  // Opening a folded tile swaps it into the stage at the top of the step, so
+  // scroll the stage itself to the top of the view: on a phone the tiles sit
+  // well below it, and the shelf as a whole is taller than the screen, which a
+  // 'nearest' scroll of the whole shelf treated as already in view.
+  const stageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!openedOnce.current) {
-      openedOnce.current = true;
-      return;
-    }
-    shelfTop.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [openId]);
+    if (userOpened) stageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }, [openId, userOpened]);
 
   return (
     <>
@@ -141,51 +159,57 @@ export function TemplatePickerBrowse({
             </div>
           )
         ) : (
-          <div ref={shelfTop} className="scroll-mt-4">
+          <div>
             {open ? (
-              // The open shelf sits on its own tinted stage and rises into
-              // place each time it changes (keyed on the shelf), so opening a
-              // tile below draws the eye back up to what just opened.
-              <div
-                key={open.id}
-                className="animate-shelf-open rounded-xl border border-brand-100 bg-brand-50/50 p-3 dark:border-brand-500/20 dark:bg-brand-500/5"
-              >
-                <SnapCarousel
-                  label={open.label}
-                  itemsKey={open.id}
-                  heading={
-                    <>
-                      <h3 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {open.label}
-                      </h3>
-                      {/* The PickerCard count badge: the digit's ink centred in the
+              // The scroll anchor stays still while the stage inside it rises in,
+              // so a scroll measured mid-animation lands where the stage settles.
+              <div ref={stageRef} className="scroll-mt-4">
+                {/* The open shelf sits on its own tinted stage and rises into
+                    place each time the user opens one (keyed on the shelf), so
+                    opening a tile below draws the eye back up to what just
+                    opened. Not on load, where it would fight the modal's
+                    entrance. */}
+                <div
+                  key={open.id}
+                  className={`${userOpened ? 'animate-shelf-open ' : ''}rounded-xl border border-brand-100 bg-brand-50/50 p-3 dark:border-brand-500/20 dark:bg-brand-500/5`}
+                >
+                  <SnapCarousel
+                    label={open.label}
+                    itemsKey={open.id}
+                    heading={
+                      <>
+                        <h3 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {open.label}
+                        </h3>
+                        {/* The PickerCard count badge: the digit's ink centred in the
                           pill (text-optical-centre, optical-alignment.md), and the
                           screen-reader word kept outside it so it never skews the
                           pill's content box. */}
-                      <span className="relative top-[0.5px] inline-flex h-3.5 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-[10px] font-semibold leading-none tabular-nums text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-                        <span className="text-optical-centre">{open.items.length}</span>
-                      </span>
-                      <span className="sr-only"> templates</span>
-                      <span className="hidden truncate text-xs text-slate-500 sm:inline dark:text-slate-400">
-                        {open.description}
-                      </span>
-                    </>
-                  }
-                  trackClassName="mt-2"
-                  itemClassName="[&>li]:basis-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-1.5rem)/3)]"
-                >
-                  {open.items.map((t) => (
-                    <li key={t.kind} className="flex">
-                      <TemplateCard
-                        template={t}
-                        large
-                        active={templateKind === t.kind}
-                        onSelect={() => onTemplateCommit(t.kind)}
-                        onCommit={() => onTemplateCommit(t.kind)}
-                      />
-                    </li>
-                  ))}
-                </SnapCarousel>
+                        <span className="relative top-[0.5px] inline-flex h-3.5 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-[10px] font-semibold leading-none tabular-nums text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+                          <span className="text-optical-centre">{open.items.length}</span>
+                        </span>
+                        <span className="sr-only"> templates</span>
+                        <span className="hidden truncate text-xs text-slate-500 sm:inline dark:text-slate-400">
+                          {open.description}
+                        </span>
+                      </>
+                    }
+                    trackClassName="mt-2"
+                    itemClassName="[&>li]:basis-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-1.5rem)/3)]"
+                  >
+                    {open.items.map((t) => (
+                      <li key={t.kind} className="flex">
+                        <TemplateCard
+                          template={t}
+                          large
+                          active={templateKind === t.kind}
+                          onSelect={() => onTemplateCommit(t.kind)}
+                          onCommit={() => onTemplateCommit(t.kind)}
+                        />
+                      </li>
+                    ))}
+                  </SnapCarousel>
+                </div>
               </div>
             ) : null}
 
@@ -204,10 +228,8 @@ export function TemplatePickerBrowse({
                     label={shelf.label}
                     ariaLabel={`Browse ${shelf.label} templates`}
                     count={shelf.items.length}
-                    // Blank's dashed square makes a dull fan card; Popular
-                    // fans the starters after it.
-                    kinds={shelf.items.filter((t) => t.kind !== 'blank').map((t) => t.kind)}
-                    onOpen={() => setOpenCategory(shelf.id)}
+                    kinds={fanKinds(shelf)}
+                    onOpen={() => openShelf(shelf.id)}
                   />
                 </li>
               ))}

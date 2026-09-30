@@ -31,6 +31,7 @@ export function TemplateCard({
       onCommit={onCommit}
       label={template.title}
       description={template.description}
+      clampDescription={false}
       className={large ? 'h-full w-full' : ''}
     >
       {/* An illustrative mini-canvas drawn as light-canvas art. In dark

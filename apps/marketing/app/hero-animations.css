@@ -1096,7 +1096,8 @@
     background-position: var(--grow-x) var(--grow-y);
   }
   to {
-    clip-path: inset(0 round 0);
+    /* Down to the site header's bottom edge, not over it (--grow-stop, measured on click). */
+    clip-path: inset(var(--grow-stop, 0px) 0 0 0 round 0);
     background-position: 0 0;
   }
 }

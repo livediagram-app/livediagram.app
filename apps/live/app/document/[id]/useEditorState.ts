@@ -555,7 +555,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // sends the whole preferences blob, so a stale snapshot would clobber
   // flags another tab wrote.
   // Per-user document stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
-  const { favouriteIds, toggleFavourite } = useFavourites(selfParticipant.id);
+  // Not for the pre-hydration placeholder id, like the folders and preferences
+  // hooks: that fetched the stars once for "self" and again for the real id.
+  const { favouriteIds, toggleFavourite } = useFavourites(
+    selfParticipant.id === 'self' ? null : selfParticipant.id,
+  );
 
   const toggleRecentExclusion = (documentId: string) => {
     const latest = readUserPreferences();
