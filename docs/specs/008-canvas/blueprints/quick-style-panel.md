@@ -297,8 +297,10 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   on screen.
 - Under Minimal chrome (`useMinimalChrome()`): the docked header is not rendered (its title and help
   link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
-- Toolbar / Minimal (compact): the same surface with no header, width `w-max min-w-46` (at least 184 px: seven 24 px
-  targets plus 8 px padding a side), `p-2`; rows at `density="compact"`.
+- Toolbar / Minimal (compact): the same surface with no header, width `w-46` (184 px: seven 24 px
+  targets plus 8 px padding a side), or `w-52` (208 px, eight targets) when the view has pen rows;
+  `p-2`; rows at `density="compact"`. Floating with no Palette on screen is `w-60` (240 px).
+  `panelWidthClass(docked, paletteWidth, penRows)` picks it; the width never follows the content.
 - Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon

@@ -6,7 +6,7 @@ import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
-import { QuickStylePanel } from './QuickStylePanel';
+import { QuickStylePanel, panelWidthClass } from './QuickStylePanel';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
@@ -284,6 +284,23 @@ describe('QuickStylePanel on a whiteboard: the pen rows', () => {
     expect(screen.getByRole('radiogroup', { name: 'Pen width' })).toBeTruthy();
   });
 
+  it('keeps one width for every pen, whatever its colour row holds', () => {
+    const widthOf = (i: number) => {
+      const { unmount } = render(
+        <QuickStylePanel
+          quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, '#1c1917'))}
+          hidden={false}
+          layout="toolbar"
+        />,
+      );
+      const cls = screen.getByTestId('quick-style-panel').className;
+      unmount();
+      return cls.match(/\bw-\S+/g)?.join(' ');
+    };
+    expect(widthOf(0)).toBe('w-52');
+    expect(widthOf(1)).toBe('w-52');
+  });
+
   it('keeps Pen width at the same height for every pen', () => {
     const rowsBefore = (i: number) => {
       const { container, unmount } = render(
@@ -300,5 +317,14 @@ describe('QuickStylePanel on a whiteboard: the pen rows', () => {
       return index;
     };
     expect(new Set([0, 1, 2].map(rowsBefore)).size).toBe(1);
+  });
+});
+
+describe('panelWidthClass', () => {
+  it('is fixed in every form: compact, pen rows, Floating with or without a Palette', () => {
+    expect(panelWidthClass(false, false, false)).toContain('w-46');
+    expect(panelWidthClass(false, false, true)).toContain('w-52');
+    expect(panelWidthClass(true, true, true)).toBe('');
+    expect(panelWidthClass(true, false, true)).toBe('w-60');
   });
 });

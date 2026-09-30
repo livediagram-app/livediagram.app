@@ -178,7 +178,7 @@ export function QuickStylePanel({
             // in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' }
       }
-      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-max min-w-46 gap-2.5 p-2'}`}
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${panelWidthClass(docked, !!spot?.width, !!view.pen)}`}
     >
       {docked && !minimalChrome ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
@@ -244,6 +244,16 @@ export function QuickStylePanel({
       ) : null}
     </div>
   );
+}
+
+// A fixed width, never the content's: switching between a one-colour and a
+// seven-colour row must not resize the panel. Compact is seven 24 px targets
+// (184 px), or eight for a whiteboard's pen rows (the ink and seven colours,
+// 208 px); Floating takes the Palette's width, or 240 px with no Palette on
+// screen (a whiteboard), room for eight spread swatches.
+export function panelWidthClass(docked: boolean, paletteWidth: boolean, penRows: boolean): string {
+  if (docked) return paletteWidth ? '' : 'w-60';
+  return `${penRows ? 'w-52' : 'w-46'} gap-2.5 p-2`;
 }
 
 function QuickStyleSections({
