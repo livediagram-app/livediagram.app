@@ -1,4 +1,9 @@
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { initialsOf } from '@/lib/identity';
+import { PictureDisc } from '@/components/primitives/PictureDisc';
+
+// The pill's leading picture (docs/specs/014-identity/profile-picture.md §5), only when there is one.
+const CURSOR_PICTURE_PX = 14;
 
 // Floating cursor for a remote participant (extracted from Canvas so
 // CanvasElementsLayer can render it inside the transformed wrapper).
@@ -9,7 +14,7 @@ export function RemoteCursor({
   cursor,
   zoom,
 }: {
-  cursor: { id: string; name: string; color: string; x: number; y: number };
+  cursor: { id: string; name: string; color: string; x: number; y: number; picture?: string };
   zoom: number;
 }) {
   return (
@@ -35,9 +40,19 @@ export function RemoteCursor({
         <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
       </svg>
       <span
-        className={`absolute left-3 top-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+        className={`absolute left-3 top-3 flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
         style={identityVars(cursor.color)}
       >
+        {cursor.picture ? (
+          <PictureDisc
+            pictureUrl={cursor.picture}
+            size={CURSOR_PICTURE_PX}
+            aria-hidden
+            className="-ml-0.5 text-[7px]"
+          >
+            {initialsOf(cursor.name)}
+          </PictureDisc>
+        ) : null}
         {cursor.name}
       </span>
     </div>

@@ -131,3 +131,8 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     alignmentGuidesRef,
   };
 }
+
+/** The preferences cached on this device, live: re-renders on a same-tab write or another tab's. */
+export function useCachedPreferences(): UserPreferences {
+  return useSyncExternalStore(subscribeCachedPreferences, getCachedPreferences, getNoPreferences);
+}

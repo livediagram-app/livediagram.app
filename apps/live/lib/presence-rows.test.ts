@@ -327,3 +327,25 @@ describe('resolveOwnerBadge', () => {
     expect(resolveOwnerBadge(base)).toBeNull();
   });
 });
+
+// A peer's published picture rides onto their cursor (docs/specs/014-identity/profile-picture.md §5).
+describe('buildRemoteCursorRows pictures', () => {
+  it('carries the picture from presence, and nothing when there is none', () => {
+    const peer = (id: string, picture?: string) =>
+      ({ id, name: id, color: '#f00', status: 'online', ...(picture ? { picture } : {}) }) as const;
+    const rows = buildRemoteCursorRows(
+      new Map([
+        ['a', { tabId: 't', x: 1, y: 2 }],
+        ['b', { tabId: 't', x: 3, y: 4 }],
+      ]),
+      new Map([
+        ['a', peer('a', 'https://img.clerk.com/a')],
+        ['b', peer('b')],
+      ]),
+      'me',
+      't',
+    );
+    expect(rows.find((r) => r.id === 'a')?.picture).toBe('https://img.clerk.com/a');
+    expect(rows.find((r) => r.id === 'b')).not.toHaveProperty('picture');
+  });
+});

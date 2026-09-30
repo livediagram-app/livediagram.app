@@ -1,14 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  Button,
-  CloseIcon,
-  TrashIcon,
-  useClickOutside,
-  useEscape,
-  GlyphDisc,
-} from '@livediagram/ui';
+import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
@@ -17,6 +10,7 @@ import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import { initialsOf } from '@/lib/identity';
+import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
@@ -285,15 +279,18 @@ function CommentRow({
   const now = useRelativeNow();
   return (
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
-      <GlyphDisc
-        size={24}
-        as="div"
-        aria-hidden
-        style={identityVars(comment.authorColor)}
-        className={`mt-0.5 text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
-      >
-        {initialsOf(comment.authorName)}
-      </GlyphDisc>
+      <span className="mt-0.5 inline-flex">
+        <AuthorDisc
+          authorId={comment.authorId}
+          size={24}
+          as="div"
+          aria-hidden
+          style={identityVars(comment.authorColor)}
+          className={`text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
+        >
+          {initialsOf(comment.authorName)}
+        </AuthorDisc>
+      </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-[11px]">
           <span className="truncate font-semibold text-slate-800 dark:text-slate-100">

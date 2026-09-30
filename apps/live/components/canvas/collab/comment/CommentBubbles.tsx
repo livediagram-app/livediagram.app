@@ -5,6 +5,7 @@
 
 import type { Comment } from '@livediagram/document';
 import { Glyph, GlyphDisc } from '@livediagram/ui';
+import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
@@ -62,14 +63,17 @@ export function CommentBubbles({
             key={first.id}
             className={`flex min-w-0 gap-1.5 ${mine ? 'flex-row-reverse' : 'flex-row'}`}
           >
-            <GlyphDisc
-              size={20}
-              aria-hidden
-              className={`mt-0.5 shrink-0 font-bold text-white ${IDENTITY_FILL}`}
-              style={{ ...identityVars(first.authorColor), fontSize: 10 }}
-            >
-              {first.authorName.trim().charAt(0).toUpperCase() || '?'}
-            </GlyphDisc>
+            <span className="mt-0.5 inline-flex shrink-0">
+              <AuthorDisc
+                authorId={first.authorId}
+                size={20}
+                aria-hidden
+                className={`font-bold text-white ${IDENTITY_FILL}`}
+                style={{ ...identityVars(first.authorColor), fontSize: 10 }}
+              >
+                {first.authorName.trim().charAt(0).toUpperCase() || '?'}
+              </AuthorDisc>
+            </span>
             <div className={`flex min-w-0 flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
               <span
                 className="flex items-baseline gap-1.5 px-1 text-[10px]"

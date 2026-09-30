@@ -3,6 +3,7 @@ import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
+  showProfilePictureEnabled,
   panelEnabled,
   resolvePanelLayout,
   withPanelLayout,
@@ -771,6 +772,19 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'toggle',
+        key: 'showProfilePicture',
+        keywords: 'profile picture photo avatar google show hide privacy collaborators',
+        section: 'You',
+        label: 'Show My Profile Picture',
+        description:
+          'Signed-in collaborators see your picture on presence, cursors, comments and teams. People who open your share links without signing in always see your initials. You always see it yourself.',
+        available: (ctx) => ctx.signedIn,
+        read: (p) => showProfilePictureEnabled(p),
+        write: (p, v) => ({ ...p, showProfilePicture: v }),
+        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
       },
       {
         kind: 'trash',
