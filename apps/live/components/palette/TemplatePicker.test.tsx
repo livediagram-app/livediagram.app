@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -40,5 +40,66 @@ describe('TemplatePicker, the welcome wizard', () => {
     );
     expect(screen.queryByRole('button', { name: /just draw/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /^start blank$/i })).toBeNull();
+  });
+});
+
+// docs/specs/007-editor/new-document-route.md "Escape backs out".
+describe('TemplatePicker, Escape', () => {
+  const renderWelcome = () => {
+    const onPick = vi.fn();
+    const onSkip = vi.fn();
+    const onBackOut = vi.fn();
+    render(
+      <TemplatePicker
+        mode="welcome"
+        participant={participant}
+        currentThemeId="brand"
+        onPick={onPick}
+        onSkip={onSkip}
+        onBackOut={onBackOut}
+      />,
+    );
+    return { onPick, onSkip, onBackOut };
+  };
+
+  it('backs out of the wizard from the Template step, creating nothing', () => {
+    const { onPick, onSkip, onBackOut } = renderWelcome();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onBackOut).toHaveBeenCalledTimes(1);
+    expect(onSkip).not.toHaveBeenCalled();
+    expect(onPick).not.toHaveBeenCalled();
+  });
+
+  it('steps back from Location to Template first', () => {
+    const { onBackOut } = renderWelcome();
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    expect(screen.getByText(/Location/)).toBeTruthy();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onBackOut).not.toHaveBeenCalled();
+    expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
+  });
+
+  it('clears a search first', () => {
+    const { onBackOut } = renderWelcome();
+    const search = screen.getByRole('searchbox', { name: 'Search templates' });
+    fireEvent.change(search, { target: { value: 'kanban' } });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect((search as HTMLInputElement).value).toBe('');
+    expect(onBackOut).not.toHaveBeenCalled();
+  });
+
+  it('keeps closing as before without a back-out (Quick Start over the canvas)', () => {
+    const onSkip = vi.fn();
+    render(
+      <TemplatePicker
+        mode="templates"
+        participant={participant}
+        currentThemeId="brand"
+        onPick={vi.fn()}
+        onSkip={onSkip}
+      />,
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onSkip).toHaveBeenCalledTimes(1);
   });
 });

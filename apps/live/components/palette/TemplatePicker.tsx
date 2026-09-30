@@ -101,6 +101,9 @@ type TemplatePickerProps = {
   // the header (all modes) or the Cancel button (non-welcome modes only:
   // the welcome wizard offers Skip instead, which commits Blank + the Default theme).
   onSkip: () => void;
+  // Escape on the first step of the /new wizard: back to the page that opened it, creating nothing
+  // (docs/specs/007-editor/new-document-route.md "Escape backs out"). Absent: Escape closes as onSkip.
+  onBackOut?: () => void;
   // True while the host is committing the pick (the new-document POST can
   // take a moment). Drives the primary button's spinner + disabled state
   // so the user gets feedback and can't double-submit.
@@ -129,6 +132,7 @@ export function TemplatePicker({
   lockedName,
   onPick,
   onSkip,
+  onBackOut,
   busy = false,
   onOpenExisting,
   folders = [],
@@ -143,7 +147,6 @@ export function TemplatePicker({
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
   // listeners exist.
   useModalGuard(true);
-  useEscape(onSkip);
   const isWelcome = mode === 'welcome';
   const isIdentity = mode === 'identity';
   // Only the welcome (new-document) flow is a wizard (template, then where it
@@ -240,6 +243,21 @@ export function TemplatePicker({
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
+  // Escape backs out of whatever was just clicked, one screen at a time, and never creates anything
+  // (docs/specs/007-editor/new-document-route.md "Escape backs out"): a search first, then the Location
+  // step, then the wizard itself (`onBackOut`, the page that opened /new); without one (Quick Start
+  // over the canvas, the name prompt) it closes as before.
+  useEscape(() => {
+    if (templateQuery) {
+      setTemplateQuery('');
+      return;
+    }
+    if (isWelcome && step === 'settings') {
+      goToStep('template');
+      return;
+    }
+    (onBackOut ?? onSkip)();
+  });
   // The in-editor Quick Start is a panel over the canvas, not a blocking
   // modal: the palette, the Explorer and the canvas stay live around it. A
   // press anywhere outside the card means the user has moved on (to a

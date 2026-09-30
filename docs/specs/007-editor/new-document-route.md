@@ -220,6 +220,46 @@ The new route owns:
   `/document/<id>` so the user lands on the editor with a
   fresh document already persisted.
 
+## Escape backs out
+
+**Escape backs you out of whatever you just clicked**, one screen at a time, and never
+creates anything:
+
+- **With a search typed:** the search clears.
+- **On the Location step:** back to the Template step.
+- **On the Template step of `/new`:** back to the screen that opened it. When the
+  browser came from another page of this site (the home page's Diagram or Brainstorm,
+  the header's Choose Template, the Explorer's New Document), it goes back there,
+  as the browser's Back would (`history.back()`), so that page returns as it was.
+  With nothing of ours to go back to (the URL typed, or opened from another site),
+  it goes to the home page (`/`). Nothing is created: Escape is not Skip, which
+  still commits a blank document, nor the header **X**.
+- **Over the editor** (Quick Start on a new tab or an empty document): the modal
+  closes and the canvas it opened over is there again, empty (as today).
+
+Why. Escape is the one key every desktop user already knows as "get me out of this"
+(literally: escape), and a way out that costs nothing is what makes people feel safe
+clicking around. Opening the template picker from the home page was a question, not a
+commitment: backing out of it must not leave a new document behind.
+
+- Nielsen Norman Group's heuristic #3, **User control and freedom**: "Users often choose
+  system functions by mistake and will need a clearly marked 'emergency exit' to leave
+  the unwanted state without having to go through an extended dialogue", and "allow
+  them to exit a flow or undo their last action and go back to the system's previous
+  state"; "when it's easy for people to back out of a process or undo an action, it
+  fosters a sense of freedom and confidence"
+  ([User control and freedom](https://www.nngroup.com/articles/user-control-and-freedom/),
+  [10 usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/)).
+- The W3C WAI-ARIA Authoring Practices, **Dialog (Modal) pattern**, keyboard
+  interaction: "Escape: Closes the dialog"
+  ([Dialog (Modal) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)).
+- The HTML `<dialog>` element closes on Escape as a **cancel** (`cancel` event, return
+  value unset): the platform treats Escape as "back out without choosing"
+  ([MDN: `<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog)).
+
+Every back-out logs `[new] back out <target>` (`template-step`, `back` or `home`) and
+reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetry.md)).
+
 ## Responsive layout
 
 The TemplatePicker card (`apps/live/components/palette/TemplatePicker.tsx`) is the welcome / template / identity surface used by `/new` AND by per-tab template picks in the editor. On `sm:` and up it renders as a centred floating card (max 44rem for templates, 26rem for identity), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (plus a Cancel button in the in-editor template / identity modes — the welcome screen drops it, leaving only Create and the header X) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
@@ -592,6 +632,9 @@ theme for a new tab.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Document" from Explorer → goes to `/new`.
+- `/new` from the home page, Escape → back on the home page, no document created.
+- `/new` typed in, Escape → the home page.
+- `/new`, Location step, Escape → the Template step.
 - `/new?blank=1` → no wizard; blank document created and editor loads on
   `/document/<id>`.
 - `/new?blank=1&folder=<id>` → the blank document files into that folder.

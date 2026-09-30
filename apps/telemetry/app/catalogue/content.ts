@@ -21,6 +21,16 @@ export const JUST_DRAW = chart(
   { types: ['JustDraw'] },
 );
 
+// Escape in the New Document wizard: back to where they came from, nothing made
+// (docs/specs/007-editor/new-document-route.md "Escape backs out").
+export const NEW_DOCUMENT_BACKED_OUT = chart(
+  'UI',
+  'Closed',
+  'New Document Backed Out',
+  'Escape in the New Document wizard went back to the page that opened it, creating nothing.',
+  { types: ['NewDocument'] },
+);
+
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
@@ -227,7 +237,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline. Those three are part of Documents Created.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
@@ -237,6 +247,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
+    NEW_DOCUMENT_BACKED_OUT,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
