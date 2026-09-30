@@ -106,7 +106,11 @@ export type PendingDraw =
   // drag gesture. The canvas accumulates clicked points; closing on
   // the start vertex or double-click / Enter commits a
   // straight-edged FreehandElement.
-  | { type: 'polygon' };
+  | { type: 'polygon' }
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a vector pen held on a whiteboard. Clicks
+  // place corner nodes and drags pull out curves; the canvas keeps the path being drawn
+  // (usePathDrawGesture) and the tool stays in hand after each path lands.
+  | { type: 'path' };
 
 // Title-cased shape label for the draw-to-size mode banner. Avoids the
 // "a / an" article problem by reading "Drag to draw {Rectangle}"
@@ -172,10 +176,20 @@ export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolea
   return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
 }
 
-// A pen held in the hand rather than armed for one gesture: the highlighter and
-// a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens"). Neither wears the one-shot banner.
+// A pen held in the hand rather than armed for one gesture: the highlighter,
+// a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens") and the Path tool
+// (docs/specs/023-whiteboard/path-tool.md). None wears the one-shot banner.
 export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
-  return isMarkerIntent(intent) || (intent?.type === 'freehand' && intent.variant === 'whiteboard');
+  return (
+    isMarkerIntent(intent) ||
+    (intent?.type === 'freehand' && intent.variant === 'whiteboard') ||
+    isPathIntent(intent)
+  );
+}
+
+// The Path tool in hand (docs/specs/023-whiteboard/path-tool.md).
+export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
+  return intent?.type === 'path';
 }
 
 export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): string {
@@ -221,6 +235,9 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       // button says it is in hand, so this copy only reaches a screen reader.
       if (intent.variant === 'whiteboard') return 'Drag to draw';
       return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';
+    case 'path':
+      // Held like a pen: its dock button says it is in hand, so this reaches a screen reader.
+      return 'Click to place points, drag to curve';
     case 'polygon':
       // The close / finish affordances overflow a phone-width banner,
       // same trade-off as the freehand close hint above.
@@ -339,6 +356,12 @@ export function drawIntentCursor(intent: PendingDraw): string {
     // Open polygon with vertex dots: reads as "place points".
     return drawCursorFromGlyph(
       `<path d="M14 23 L16 15 L23 13 L24 20 L19 24 Z" stroke="black" stroke-width="1.3" stroke-linejoin="round" fill="none" /><circle cx="16" cy="15" r="1.3" fill="black" /><circle cx="23" cy="13" r="1.3" fill="black" /><circle cx="19" cy="24" r="1.3" fill="black" />`,
+    );
+  }
+  if (intent.type === 'path') {
+    // A pen nib over a curve with one anchor: reads as "place points, pull curves".
+    return drawCursorFromGlyph(
+      `<path d='M12 25 C 13 18 19 15 25 15' stroke='black' stroke-width='1.3' fill='none' /><rect x='16.3' y='16.8' width='2.6' height='2.6' fill='white' stroke='black' stroke-width='1' /><path d='M14 21 L21 15' stroke='black' stroke-width='1' />`,
     );
   }
   if (intent.type === 'component') {

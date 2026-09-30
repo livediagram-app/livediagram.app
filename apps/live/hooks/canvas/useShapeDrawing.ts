@@ -162,13 +162,14 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', 'Arrow');
       return;
     }
-    // Freehand / polygon never reach commitDraw: freehand routes
-    // through commitFreehand (with the polyline) and polygon through
-    // commitPolygon (with its vertices). If a future regression
+    // Freehand / polygon / path never reach commitDraw: freehand routes
+    // through commitFreehand (with the polyline), polygon through
+    // commitPolygon (with its vertices) and a path through commitPath
+    // (usePathCommits). If a future regression
     // mis-routes either here, bail rather than fall through into the
     // boxed branch and mint a phantom element where the user expected
     // a sketch.
-    if (intent.type === 'freehand' || intent.type === 'polygon') {
+    if (intent.type === 'freehand' || intent.type === 'polygon' || intent.type === 'path') {
       setPendingDraw(null);
       return;
     }

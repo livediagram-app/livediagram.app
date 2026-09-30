@@ -152,6 +152,7 @@ export type EditorKeyboardShortcutsDeps = {
     pickSticky: () => void;
     pickText: () => void;
     pickShape: (id: WhiteboardShapeId) => void;
+    pickPath: () => void;
   } | null;
   // Per-device disable flag. When false, every shortcut effect
   // below short-circuits before attaching its listener. The
@@ -332,6 +333,8 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   '1': (l) => l.whiteboard?.pickPen('main'),
   '2': (l) => l.whiteboard?.pickPen('second'),
   '3': (l) => l.whiteboard?.pickPen('third'),
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): P, which is the pencil on a diagram tab.
+  p: (l) => l.whiteboard?.pickPath(),
   e: (l) => l.whiteboard?.pickEraser(),
   n: (l) => l.whiteboard?.pickSticky(),
   t: (l) => l.whiteboard?.pickText(),
@@ -350,6 +353,7 @@ export const WHITEBOARD_TOOL_KEYS = {
   main: '1',
   second: '2',
   third: '3',
+  path: 'P',
   eraser: 'E',
   sticky: 'N',
   text: 'T',

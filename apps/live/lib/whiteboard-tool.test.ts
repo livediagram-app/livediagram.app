@@ -27,6 +27,7 @@ describe('activeWhiteboardTool', () => {
     ['highlighter', { type: 'freehand', variant: 'highlighter' }, 'select'],
     ['select', pen, 'pen'],
     ['pan', pen, 'pen'],
+    ['select', { type: 'path' }, 'path'],
     ['select', { type: 'sticky' }, 'sticky'],
     ['select', { type: 'text' }, 'text'],
     ['select', { type: 'shape', kind: 'circle' }, 'shape'],

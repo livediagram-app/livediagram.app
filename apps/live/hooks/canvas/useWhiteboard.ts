@@ -47,6 +47,10 @@ type Deps = {
   beginDraw: (intent: PendingDraw) => void;
   cancelDraw: () => void;
   setBackgroundPattern: (pattern: BackgroundPattern) => void;
+  // A path is open in its edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"), and how to
+  // leave it: the dock presses Select with a path glyph meanwhile.
+  pathEditing: boolean;
+  leavePathEdit: () => void;
 };
 
 export type WhiteboardDockModel = ReturnType<typeof useWhiteboard>;
@@ -68,6 +72,8 @@ export function useWhiteboard(deps: Deps) {
     beginDraw,
     cancelDraw,
     setBackgroundPattern,
+    pathEditing,
+    leavePathEdit,
   } = deps;
   const whiteboard = isWhiteboardTab(activeTab);
   // Read lazily from this browser (readLocalStorageSafe copes with no storage).
@@ -96,7 +102,11 @@ export function useWhiteboard(deps: Deps) {
     const entered = seenRef.current !== key;
     seenRef.current = key;
     if (!whiteboard) {
-      if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') cancelDraw();
+      // A whiteboard pen or the Path tool is put down: neither exists on a diagram tab.
+      const held =
+        (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
+        pendingDraw?.type === 'path';
+      if (held) cancelDraw();
       return;
     }
     if (!entered || editsBlocked || pendingDraw) return;
@@ -142,6 +152,13 @@ export function useWhiteboard(deps: Deps) {
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
     track('Whiteboard', 'Changed', 'PenReset');
+  };
+
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): held like a pen until another tool is picked.
+  const pickPath = () => {
+    setCanvasTool('select');
+    beginDraw({ type: 'path' });
+    track('Whiteboard', 'Selected', 'Path');
   };
 
   const pickEraser = () => {
@@ -201,6 +218,9 @@ export function useWhiteboard(deps: Deps) {
     pickSticky: () => pickIntent({ type: 'sticky' }),
     pickText: () => pickIntent({ type: 'text' }),
     pickShape,
+    pickPath,
+    pathEditing,
+    leavePathEdit,
     setRecognition,
     setCursor,
     setBackground,

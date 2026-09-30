@@ -27,6 +27,7 @@ import {
 } from '@livediagram/document';
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
+import { isPathEditing } from '@/lib/path-edit';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -2403,6 +2404,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginDraw,
     cancelDraw: cancelDrawShape,
     setBackgroundPattern,
+    pathEditing: isPathEditing(activeTab.elements, editingId),
+    leavePathEdit: () => setEditingId(null),
   });
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
@@ -2970,6 +2973,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
           pickSticky: whiteboardDock.pickSticky,
           pickText: whiteboardDock.pickText,
           pickShape: whiteboardDock.pickShape,
+          pickPath: whiteboardDock.pickPath,
         }
       : null,
   });

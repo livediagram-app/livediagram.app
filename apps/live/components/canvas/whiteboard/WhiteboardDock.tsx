@@ -36,6 +36,8 @@ import {
   MoreGlyph,
   PenGlyph,
   OffGlyph,
+  PathEditGlyph,
+  PathToolGlyph,
   RecogniseGlyph,
   RedoGlyph,
   ShapeGlyph,
@@ -433,18 +435,29 @@ export function WhiteboardDock({
         aria-label="Whiteboard tools"
         aria-orientation="horizontal"
         onKeyDown={onKeyDown}
-        className="pointer-events-auto flex animate-pop-in items-center gap-0.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 [scrollbar-width:none] dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className="pointer-events-auto flex animate-pop-in items-center [--dock-glyph-fill:#fff] dark:[--dock-glyph-fill:#0f172a] gap-0.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 [scrollbar-width:none] dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
       >
+        {/* In a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing") Select shows
+            the path glyph, and pressing it leaves the mode. */}
         {item({
           key: 'select',
-          label: 'Select',
+          label: model.pathEditing ? 'Select, editing a path' : 'Select',
           shortcut: WHITEBOARD_TOOL_KEYS.select,
-          icon: <SelectIcon size={DOCK_ICON_PX} />,
+          icon: model.pathEditing ? <PathEditGlyph /> : <SelectIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'select',
-          onPress: () => pickAndClose(model.pickSelect),
+          onPress: () => pickAndClose(model.pathEditing ? model.leavePathEdit : model.pickSelect),
         })}
         {divider('d1')}
         {penItems}
+        {/* The Path tool (docs/specs/023-whiteboard/path-tool.md): after the markers, before the eraser. */}
+        {item({
+          key: 'path',
+          label: 'Path tool',
+          shortcut: WHITEBOARD_TOOL_KEYS.path,
+          icon: <PathToolGlyph />,
+          pressed: tool === 'path',
+          onPress: () => pickAndClose(model.pickPath),
+        })}
         {divider('d2')}
         {item({
           key: 'eraser',

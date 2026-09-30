@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { EMBED_PROVIDERS } from '@livediagram/document';
-import { drawBannerMessage, drawIntentCursor, opensForTyping, type PendingDraw } from './draw-mode';
+import {
+  drawBannerMessage,
+  drawIntentCursor,
+  isHeldPenIntent,
+  isPathIntent,
+  opensForTyping,
+  type PendingDraw,
+} from './draw-mode';
 
 // Every pen variant, keyed so the compiler owns the list: `variant` is an
 // optional union on the freehand intent, and adding a member to it fails
@@ -34,6 +41,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   ],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
+  path: [{ type: 'path' }],
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
   // sample is enough here.
@@ -258,5 +266,18 @@ describe('opensForTyping', () => {
 
   it('leaves shapes selected, not typing', () => {
     expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
+  });
+});
+
+describe('the Path tool (docs/specs/023-whiteboard/path-tool.md)', () => {
+  it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
+    expect(isHeldPenIntent({ type: 'path' })).toBe(true);
+    expect(isPathIntent({ type: 'path' })).toBe(true);
+    expect(isPathIntent({ type: 'polygon' })).toBe(false);
+  });
+
+  it('has its own cursor and screen-reader copy', () => {
+    expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
+    expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
   });
 });

@@ -20,6 +20,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
   'Whiteboard|Selected|Main':
     "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
+  'Whiteboard|Selected|Path':
+    "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
   'Whiteboard|Selected|Second':
     "Someone picked up a whiteboard's second pen (blue unless they changed it).",
   'Whiteboard|Selected|Third':
@@ -229,6 +231,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Nudge':
     'Someone nudged a selected element with the arrow keys. Counted once per burst of presses, not once per key press.',
   'Element|Changed|Padding': "Someone changed a selected element's internal padding.",
+  'Element|Changed|PathEdit':
+    'Someone reshaped a path in its edit mode: moved, added, removed or smoothed a point, or bent a curve. Counted once per change.',
+  'Element|Changed|PathJoin':
+    'Someone closed an open path in its edit mode by joining its two ends.',
   'Element|Changed|Picker':
     'Someone rolled a Picker element, landing on a participant or option from its list, shared with everyone in the room.',
   'Element|Changed|Portal':
@@ -841,7 +847,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Whiteboard|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
-  'Whiteboard|Selected': 'Someone picked up one of the pens on a whiteboard.',
+  'Whiteboard|Selected': 'Someone picked up one of the pens, or the Path tool, on a whiteboard.',
   'Whiteboard|Changed':
     "Someone changed a whiteboard pen's colour or width, the eraser mode or the board background.",
   'Whiteboard|Toggled': 'Someone switched shape recognition on a whiteboard on or off.',

@@ -22,6 +22,9 @@ function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> 
     pickSticky: vi.fn(),
     pickText: vi.fn(),
     pickShape: vi.fn(),
+    pickPath: vi.fn(),
+    pathEditing: false,
+    leavePathEdit: vi.fn(),
     setRecognition: vi.fn(),
     setCursor: vi.fn(),
     setBackground: vi.fn(),
@@ -234,6 +237,35 @@ describe('WhiteboardDock', () => {
     expect(screen.queryByRole('group', { name: 'Shapes' })).toBeNull();
   });
 
+  it('offers the Path tool after the markers and before the eraser', () => {
+    const { m } = renderDock(model('select'));
+    const items = [...document.querySelectorAll<HTMLElement>('[data-dock-item]')].map(
+      (b) => b.dataset.dockItem,
+    );
+    expect(items.indexOf('path')).toBe(items.indexOf('third') + 1);
+    expect(items.indexOf('eraser')).toBe(items.indexOf('path') + 1);
+    const button = screen.getByRole('button', { name: 'Path tool' });
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(button);
+    expect(m.pickPath).toHaveBeenCalled();
+  });
+
+  it('presses the Path tool while it is in hand', () => {
+    renderDock(model('path'));
+    expect(screen.getByRole('button', { name: 'Path tool' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+  });
+
+  it('shows edit mode on Select, which leaves it when pressed', () => {
+    const { m } = renderDock(model('select', { pathEditing: true }));
+    const select = screen.getByRole('button', { name: 'Select, editing a path' });
+    expect(select.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(select);
+    expect(m.leavePathEdit).toHaveBeenCalled();
+    expect(m.pickSelect).not.toHaveBeenCalled();
+  });
+
   it('has no highlighter', () => {
     renderDock();
     expect(screen.queryByRole('button', { name: 'Highlighter' })).toBeNull();
@@ -261,6 +293,7 @@ describe('WhiteboardDock keys', () => {
     expect(keyOf(/^Marker 1/)).toBe('1');
     expect(keyOf(/^Marker 2/)).toBe('2');
     expect(keyOf(/^Marker 3/)).toBe('3');
+    expect(keyOf(/^Path tool/)).toBe('P');
     expect(keyOf(/^Eraser/)).toBe('E');
     expect(keyOf(/^Sticky note/)).toBe('N');
     expect(keyOf(/^Text/)).toBe('T');

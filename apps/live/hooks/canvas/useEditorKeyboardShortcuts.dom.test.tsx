@@ -109,6 +109,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickSticky: vi.fn(),
       pickText: vi.fn(),
       pickShape: vi.fn(),
+      pickPath: vi.fn(),
     };
     const addShape = vi.fn();
     const setCanvasTool = vi.fn();
@@ -148,6 +149,12 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(addShape).not.toHaveBeenCalled();
   });
 
+  it('picks up the Path tool with P, never the pencil', () => {
+    const { wb } = board();
+    press('p');
+    expect(wb.pickPath).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves the other diagram tab keys out: no laser on K, no parallelogram on G', () => {
     const { wb, addShape, setCanvasTool } = board();
     press('k');
@@ -165,6 +172,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickSticky: vi.fn(),
       pickText: vi.fn(),
       pickShape: vi.fn(),
+      pickPath: vi.fn(),
     };
     const onDeselect = vi.fn();
     const { bag } = deps({ selectedId: 'a', whiteboard: wb, canvasTool: 'eraser', onDeselect });
@@ -182,6 +190,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickSticky: vi.fn(),
       pickText: vi.fn(),
       pickShape: vi.fn(),
+      pickPath: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
     renderHook(() => useEditorKeyboardShortcuts(bag));
@@ -203,6 +212,7 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
       pickSticky: vi.fn(),
       pickText: vi.fn(),
       pickShape: vi.fn(),
+      pickPath: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });
     renderHook(() => useEditorKeyboardShortcuts(bag));

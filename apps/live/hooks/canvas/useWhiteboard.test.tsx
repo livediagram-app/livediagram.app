@@ -24,6 +24,8 @@ function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 's
     beginDraw: vi.fn(),
     cancelDraw: vi.fn(),
     setBackgroundPattern: vi.fn(),
+    pathEditing: false,
+    leavePathEdit: vi.fn(),
   };
   const hook = renderHook((d: typeof deps) => useWhiteboard(d), { initialProps: deps });
   return { deps, hook };
@@ -67,6 +69,19 @@ describe('useWhiteboard', () => {
       width: 4,
       recognise: false,
     });
+    expect(deps.cancelDraw).toHaveBeenCalled();
+  });
+
+  it('picks up the Path tool and reports it', () => {
+    const { deps, hook } = setup(board());
+    act(() => hook.result.current.pickPath());
+    expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
+    expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'path' });
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'Path');
+  });
+
+  it('puts the Path tool down on a diagram tab', () => {
+    const { deps } = setup(diagram, { type: 'path' });
     expect(deps.cancelDraw).toHaveBeenCalled();
   });
 
