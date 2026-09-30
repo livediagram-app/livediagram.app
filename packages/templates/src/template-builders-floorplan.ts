@@ -1,6 +1,9 @@
-// Floor plan template: a two-bedroom flat drawn to a real metric scale,
-// with the Furniture icons (docs/specs/008-canvas/canvas-and-palette.md's top-down room symbols) laid out
-// inside each room.
+// Floor plan template: a two-bedroom flat with a study, drawn to a real
+// metric scale, with the Furniture icons (docs/specs/008-canvas/canvas-and-palette.md's top-down room
+// symbols) laid out inside each room. Around the plan sit the conventions a
+// plan is read by: a dimension chain along the top and left walls, a north
+// arrow, a 1 m scale bar, and a key that names the colour zones and the
+// symbols, so a newcomer can read the drawing without asking.
 //
 // The whole plan is authored in METRES and converted once, at the
 // bottom, by PX_PER_M. That is the only way the proportions hold up:
@@ -24,6 +27,13 @@
 
 import { createShape, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import {
+  NORTH_ARROW_H,
+  dimensionChain,
+  northArrow,
+  planKey,
+  scaleBar,
+} from './template-floorplan-drafting';
 
 // One metre of floor, in canvas pixels. 80 keeps a 0.8 m toilet at a
 // still-clickable 64px while the whole 10.2 x 7.4 m flat (816 x 592px)
@@ -51,8 +61,22 @@ type Piece = {
   rotation?: number;
 };
 
+// Colour zones: what each room is FOR, tinted so the plan reads by use at a
+// glance (day rooms warm, bedrooms violet, the wet room blue). The tint is a
+// translucent wash over the theme's own room fill, so it reads on light and
+// dark canvases alike and the theme still owns the walls and the ink.
+const ZONES = {
+  day: { label: 'Living and kitchen', color: '#f59e0b' },
+  night: { label: 'Bedrooms', color: '#8b5cf6' },
+  wet: { label: 'Bathroom', color: '#0ea5e9' },
+  work: { label: 'Study', color: '#10b981' },
+  hall: { label: 'Hall', color: '#94a3b8' },
+} as const;
+const ZONE_OPACITY = 0.2;
+
 type Room = {
   name: string;
+  zone: keyof typeof ZONES;
   // Top-left corner + size in metres, from the flat's top-left corner.
   x: number;
   y: number;
@@ -71,6 +95,7 @@ type Room = {
 const ROOMS: Room[] = [
   {
     name: 'Living room',
+    zone: 'day',
     x: 0,
     y: 0,
     w: 4.4,
@@ -87,7 +112,8 @@ const ROOMS: Room[] = [
     ],
   },
   {
-    name: 'Bedroom',
+    name: 'Main bedroom',
+    zone: 'night',
     x: 4.4,
     y: 0,
     w: 3.2,
@@ -101,7 +127,8 @@ const ROOMS: Room[] = [
     ],
   },
   {
-    name: 'Guest room',
+    name: 'Bedroom 2',
+    zone: 'night',
     x: 7.6,
     y: 0,
     w: 2.6,
@@ -113,6 +140,7 @@ const ROOMS: Room[] = [
   },
   {
     name: 'Hall',
+    zone: 'hall',
     x: 0,
     y: 3.4,
     w: 10.2,
@@ -124,6 +152,7 @@ const ROOMS: Room[] = [
   },
   {
     name: 'Kitchen',
+    zone: 'day',
     x: 0,
     y: 4.6,
     w: 4.4,
@@ -143,6 +172,7 @@ const ROOMS: Room[] = [
   },
   {
     name: 'Bathroom',
+    zone: 'wet',
     x: 4.4,
     y: 4.6,
     w: 2.8,
@@ -155,6 +185,7 @@ const ROOMS: Room[] = [
   },
   {
     name: 'Study',
+    zone: 'work',
     x: 7.2,
     y: 4.6,
     w: 3.0,
@@ -189,7 +220,7 @@ const DOOR_SWING = {
 } as const;
 
 const DOORS: { cx: number; cy: number; opens: keyof typeof DOOR_SWING }[] = [
-  // Hall's north wall: living room, bedroom, guest room.
+  // Hall's north wall: living room and both bedrooms.
   { cx: 2.6, cy: 3.4, opens: 'north' },
   // Each clear of its room's wardrobe.
   { cx: 5.7, cy: 3.4, opens: 'north' },
@@ -202,6 +233,21 @@ const DOORS: { cx: number; cy: number; opens: keyof typeof DOOR_SWING }[] = [
   { cx: 9.65, cy: 4.6, opens: 'south' },
   // Front door, in the west outer wall at the end of the hall.
   { cx: 0, cy: 4.0, opens: 'east' },
+];
+
+// The side panel beside the plan: how far out it sits and how wide it is.
+const KEY_GAP = 56;
+const KEY_W = 200;
+
+// The symbols the key explains: one of each kind a first-time reader might
+// not recognise from above.
+const KEY_SYMBOLS: [iconId: string, name: string][] = [
+  ['door', 'Door and its swing'],
+  ['bed', 'Bed'],
+  ['sofa', 'Sofa'],
+  ['bathtub', 'Bath'],
+  ['stove', 'Hob'],
+  ['desk', 'Desk and chair'],
 ];
 
 // Total floor area, summed from the room table rather than typed out,
@@ -218,7 +264,7 @@ export function buildFloorPlan(cx: number, cy: number): Element[] {
   const px = (metres: number) => metres * PX_PER_M;
   // The flat is centred on the canvas point, so the plan lands where
   // the user clicked rather than hanging off one corner of it.
-  const left = cx - px(FLAT_W) / 2;
+  const left = cx - (px(FLAT_W) + KEY_GAP + KEY_W) / 2;
   const top = cy - px(FLAT_H) / 2;
   const X = (metres: number) => left + px(metres);
   const Y = (metres: number) => top + px(metres);
@@ -229,12 +275,13 @@ export function buildFloorPlan(cx: number, cy: number): Element[] {
   // template's contract with the user: keep adding at 80px per metre and
   // everything stays in proportion.
   elements.push({
-    ...createText(X(0), Y(0) - 76),
-    width: px(FLAT_W),
+    ...createText(X(0), Y(0) - 104),
+    width: px(FLAT_W) + KEY_GAP + KEY_W,
     height: 40,
-    label: `Floor plan · two-bedroom flat · ${Math.round(totalArea())} m²`,
+    label: `Floor plan · two-bed flat with study · ${Math.round(totalArea())} m²`,
     textSize: 'lg',
     textBold: true,
+    textAlignX: 'left',
     layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
@@ -262,6 +309,19 @@ export function buildFloorPlan(cx: number, cy: number): Element[] {
       width: px(room.w),
       height: px(room.h),
       borderRadius: 'none',
+      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+    });
+    // The zone wash over it: borderless, translucent, fill locked so a
+    // theme change keeps the zone colours.
+    elements.push({
+      ...createShape('square', X(room.x), Y(room.y)),
+      width: px(room.w),
+      height: px(room.h),
+      borderRadius: 'none',
+      strokeWidth: 'none',
+      fillColor: ZONES[room.zone].color,
+      themeLockFill: true,
+      opacity: ZONE_OPACITY,
       layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
     });
 
@@ -316,15 +376,39 @@ export function buildFloorPlan(cx: number, cy: number): Element[] {
     });
   }
 
-  elements.push({
-    ...createText(X(0), Y(FLAT_H) + 16),
-    width: px(FLAT_W),
-    height: 32,
-    label: `Scale: 1 m = ${PX_PER_M} px · rooms and furniture are drawn to it`,
-    textSize: 'sm',
-    textAlignX: 'left',
-    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-  });
+  // Dimension chains: the top row's room widths along the north wall, the
+  // three bands' depths down the west wall. Read off the room table, so a
+  // resized room re-dimensions itself.
+  const topRow = ROOMS.filter((r) => r.y === 0);
+  const across = [0, ...topRow.map((r) => r.x + r.w)].map(px);
+  const westRooms = ROOMS.filter((r) => r.x === 0);
+  const down = [0, ...westRooms.map((r) => r.y + r.h)].map(px);
+  elements.push(...dimensionChain(true, Y(0), X(0), across, PX_PER_M));
+  elements.push(...dimensionChain(false, X(0), Y(0), down, PX_PER_M));
+
+  // Scale bar and caption under the plan: the template's contract with the
+  // user. Keep adding at 80px per metre and everything stays in proportion.
+  elements.push(
+    ...scaleBar(
+      X(0),
+      Y(FLAT_H) + 20,
+      PX_PER_M,
+      `Scale: 1 m = ${PX_PER_M} px · rooms and furniture are drawn to it`,
+    ),
+  );
+
+  // The sheet's side panel: north arrow, then the key.
+  const keyX = X(FLAT_W) + KEY_GAP;
+  elements.push(...northArrow(keyX, Y(0)));
+  elements.push(
+    ...planKey(
+      keyX,
+      Y(0) + NORTH_ARROW_H + 24,
+      KEY_W,
+      Object.values(ZONES).map((z) => ({ label: z.label, color: z.color })),
+      KEY_SYMBOLS,
+    ),
+  );
 
   return elements;
 }
