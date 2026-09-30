@@ -75,3 +75,17 @@ describe('CanvasDrawPreview on a whiteboard', () => {
     expect(box.style.backgroundColor).toBe('');
   });
 });
+
+describe('CanvasDrawPreview rectangle corners', () => {
+  it('rounds a pen rectangle as the committed one is, at the zoom', () => {
+    const { container } = render(
+      <CanvasDrawPreview
+        {...base}
+        drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
+        pendingDraw={{ type: 'shape', kind: 'square', pen: { colour: null, width: 4 } }}
+      />,
+    );
+    const box = container.querySelector('[data-pen-preview]') as HTMLElement;
+    expect(box.style.borderRadius).toBe('16px');
+  });
+});

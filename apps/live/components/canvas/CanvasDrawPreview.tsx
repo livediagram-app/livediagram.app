@@ -348,8 +348,12 @@ function PenShapePreview({
         borderStyle: 'solid',
         borderColor: colour,
         borderWidth: widthPx * zoom,
-        borderRadius: radius,
+        // The committed shape's own corners: a rectangle's default 8 canvas px.
+        borderRadius: radius === '4px' ? `${SHAPE_CORNER_PX * zoom}px` : radius,
       }}
     />
   );
 }
+
+// A rectangle's default corner radius on the canvas (element-variant's 8px).
+const SHAPE_CORNER_PX = 8;
