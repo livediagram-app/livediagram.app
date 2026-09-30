@@ -8,7 +8,8 @@
 // per message"). Syncing is automatic, so there is no Sync now.
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, Glyph, StableLabel } from '@livediagram/ui';
+import { lucideCloud, lucideTriangleAlert } from '@livediagram/icons/lucide';
+import { Button, StableLabel, lucideGlyph } from '@livediagram/ui';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
 import { DRIVE_SYNCING_SHOW_DELAY_MS } from '@/lib/drive/cadence';
@@ -36,15 +37,9 @@ function useSyncingLong(status: DriveMirrorStatus): boolean {
   return longPass === status;
 }
 
-function WarningGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M8 2.5l6 10.5H2z" />
-      <path d="M8 6.5v3" />
-      <path d="M8 11.4v.1" />
-    </Glyph>
-  );
-}
+// Vendored Lucide glyphs (docs/specs/004-interface-design/iconography.md).
+const WarningGlyph = lucideGlyph(lucideTriangleAlert, 12);
+const CloudGlyph = lucideGlyph(lucideCloud, 16);
 
 // The status at the top right: plain, muted words, as wide as the widest of the
 // phase; the warning colour and a glyph when something needs the user.
@@ -163,9 +158,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
         >
           <div className="flex items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-              <Glyph size={16} units={16}>
-                <path d="M4.5 12.5h7.2a2.8 2.8 0 0 0 .4-5.6A4 4 0 0 0 4.4 7.3a2.6 2.6 0 0 0 .1 5.2z" />
-              </Glyph>
+              <CloudGlyph />
               {row.label}
             </span>
             <span data-drive-actions className="flex shrink-0 items-center gap-3">
