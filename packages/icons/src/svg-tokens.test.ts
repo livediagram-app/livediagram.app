@@ -26,6 +26,21 @@ describe('svgElements', () => {
     ]);
   });
 
+  it('reads namespaced, dotted and numbered names, single quotes and spaced equals signs', () => {
+    expect(svgElements("<use xlink:href='#a' data.x-1 = \"2\"\n\ty='3'/><H1>")).toEqual([
+      { tag: 'use', attrs: { 'xlink:href': '#a', 'data.x-1': '2', y: '3' } },
+      { tag: 'H1', attrs: {} },
+    ]);
+  });
+
+  it('skips an unquoted value', () => {
+    expect(svgElements('<a b=c d="e">')).toEqual([{ tag: 'a', attrs: { d: 'e' } }]);
+  });
+
+  it('stops at an unterminated value', () => {
+    expect(svgElements('<a b="open')).toEqual([{ tag: 'a', attrs: {} }]);
+  });
+
   it('stays linear on hostile input', () => {
     // CPU time, not wall-clock (cpuMsOf): immune to other suites sharing the box.
     const spent = cpuMsOf(() => {
