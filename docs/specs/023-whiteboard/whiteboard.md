@@ -94,10 +94,11 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   4. **Text**.
   5. **Settings** (a **cog**): opens **on a press only**, never on hover; a
      flyout with no title of its own and four sections, each headed in the
-     flyouts' small capitals and a row of the same switch buttons: **Mode**
-     (Simple / With shapes / Full drawing, the last disabled with "Coming
-     soon"), **Background** (Plain / Dots / Grid), **Drawing** (Basic / Shape
-     recognition) and **Cursor** (Crosshair + nib / Dot).
+     flyouts' small capitals and a row of the same switch buttons, top to
+     bottom: **Background** (Plain / Dots / Grid), **Cursor** (Crosshair +
+     nib, the default / Dot), **Drawing** (Basic / Shape recognition) and
+     **Mode** (Simple / With shapes / Full drawing, the last disabled with
+     "Coming soon").
 - **History:** **Undo** and **Redo**, the same actions as the bottom-right
   cluster and the keyboard; disabled when there is nothing to undo or redo.
 - **Shapes, left to right** (With shapes mode):
@@ -427,8 +428,9 @@ The eraser offers **both** modes, switched in its flyout:
 - **Plain**, **Dots** or **Grid**, chosen per whiteboard from the dock's
   **Settings** flyout and stored on the tab as its `backgroundPattern` (`blank`,
   `grid` and `graph`: the canvas's own dot grid and graph paper), so every
-  participant sees the same board and older readers render it too. Default
-  **Plain**.
+  participant sees the same board and older readers render it too. A new
+  whiteboard starts on **Grid** (`graph`), from the template, a new tab or
+  Quick Start; a whiteboard that already has a background keeps it.
 - The pattern follows the appearance's board colours and scales with zoom, as
   the canvas grid does on diagram tabs.
 
