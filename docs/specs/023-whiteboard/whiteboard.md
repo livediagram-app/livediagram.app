@@ -107,9 +107,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
      (a mouse or a pen, never a finger) as well as on a press, and closes a
      moment after the pointer leaves both it and the button; a press on a
      hover-opened flyout keeps it open. The flyout is small and sweet:
-     - **six slots**, in two rows headed in the flyouts' small capitals:
-       **Most used** (three) and **Recent** (three); see
-       [Shape slots](#shape-slots);
+     - **six slots** in two unlabelled rows of three: the top row the
+       shapes picked **most recently**, the bottom row the shapes picked **most
+       often**; see [Shape slots](#shape-slots);
      - a **search field**, **focused as soon as the flyout opens**, hover
        included, so typing at once finds any shape of the palette's shape
        catalogue by name or keyword (flowchart, basic, block and every other
@@ -150,20 +150,25 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 
 The shapes group learns and keeps the shapes a user reaches for.
 
-- **The six slots** live in the **Shapes** flyout, not on the bar: three
-  **Most used** and three **Recent**. Each arms its shape kind like a dock
+- **The six slots** live in the **Shapes** flyout, not on the bar, in two
+  rows of three with **no labels**: they are meant to become obvious after a
+  few picks. The **top row is recent**, the **bottom row most used**. Each arms its shape kind like a dock
   shape (plain ink, its kind's tool style), with the kind's own preview as its
   icon and its name as its label and tooltip. Picks count from a slot, a
   search result, a pinned shape or a shape key, on whiteboards only.
-  - **Most used:** the three kinds with the most picks that are not pinned,
-    most picked first; ties go to the one picked most recently.
-  - **Recent:** the three kinds picked most recently, newest first, that are
-    neither pinned nor among the most used.
+  - **Most used** (bottom row): the three kinds with the most picks that are
+    not pinned, most picked first; ties go to the one picked most recently.
+    Worked out first.
+  - **Recent** (top row): the three kinds picked most recently, newest first,
+    that are neither pinned nor among the most used. A kind that is both
+    recent and among the most used shows **in the most-used row only**, so
+    the most-used icons stay put while the recent row changes.
   - **No kind shows twice** across the pinned shapes and the six slots. With
     too little history, an empty slot takes the next kind of this order that
     is not already showing: rectangle, ellipse, diamond, cylinder, line,
-    arrow, then the palette catalogue. With the default pins, Most used starts
-    as **Diamond, Cylinder, Line** and Recent as the next three.
+    arrow, then the palette catalogue. With the default pins, the most-used
+    row starts as **Diamond, Cylinder, Line** and the recent row as the next
+    three.
   - The slots update after a pick, never while the flyout is open, so a slot
     never changes under the pointer.
 - **Pinned side:** the left of the shapes bar, up to the separator. A user who has
@@ -180,7 +185,7 @@ The shapes group learns and keeps the shapes a user reaches for.
 - **Unpinning only moves a shape off the pinned side**: dragging it off the
   pinned side (past the separator or off the bar), or **Unpin** in its menu.
   It is not removed or forgotten: its picks stay, so it can show at once in
-  Most used or Recent; otherwise it is still in the
+  either row of the Shapes flyout; otherwise it is still in the
   Shapes flyout, or its search. Unpinning every shape leaves the pinned side
   empty, and that is kept: the defaults never come back on their own.
 - **Pinning without a drag:** a right-click or long-press on a slot, or
@@ -313,6 +318,10 @@ The shapes group learns and keeps the shapes a user reaches for.
   diagram tabs: whiteboarding is a different activity, so a board's styles
   never dress a diagram's next shape, nor a diagram's a board's, for any
   shape kind, tool style or restyle, in the same document or another.
+  Leaving a whiteboard puts its shape, line or arrow tool down, as it puts a
+  pen down, so a diagram tab never previews or names its next shape the
+  board's way; the panel's "Next rectangle" always shows the style of the
+  board in front of you.
 - A **recognised** shape (see [Shape recognition](#shape-recognition)) is
   different: it is a pen stroke tidied up, so it keeps that pen's colour and
   weight.
