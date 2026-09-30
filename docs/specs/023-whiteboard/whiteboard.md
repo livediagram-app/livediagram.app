@@ -64,8 +64,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   drawn, since the pens colour only their own strokes. Its "theme default"
   swatches show the board's ink (and no fill for a background), and a
   restyle on a whiteboard never feeds the style memory diagram tabs use.
-  Selected pen strokes get **Pen colour** and **Pen width** (Fine / Medium /
-  Bold). **Pen colour** is one row of **seven colours**, adaptive like the
+  Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
+  Bold). **Marker colour** is one row of **seven colours**, adaptive like the
   colour picker's grid: the ink, then Red, Orange, Green, Teal, Blue and
   Violet at shade 3; then a last swatch that opens the full picker (the grid,
   Your colours and +). **A second row appears once the user has picked a
@@ -76,10 +76,10 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   row. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
-  **Every pen shows the same rows**, so Pen width stays at the same height
+  **Every pen shows the same rows**, so Marker width stays at the same height
   whichever pen is in hand: Marker 1's colour row holds its one colour,
   the ink. A caption above the rows names whose style it is ("Marker 2",
-  "Pen stroke", "3 pen strokes"); power user mode leaves it out.
+  "Marker stroke", "3 marker strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
 - **One dock, no modes.** Every user sees the same four groups; the shapes
