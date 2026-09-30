@@ -305,9 +305,9 @@ export function TemplatePicker({
   // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
-  // The step rail's "Just Draw" shortcut (docs/specs/007-editor/new-document-route.md) is the same commit with
-  // its own adoption signal (docs/specs/017-telemetry/telemetry.md).
-  const justDraw = () => {
+  // The step rail's "Start Blank" shortcut (docs/specs/007-editor/new-document-route.md) is the same commit
+  // with its own adoption signal (docs/specs/017-telemetry/telemetry.md), whose token stays JustDraw.
+  const startBlank = () => {
     if (busy) return;
     track('UI', 'Used', 'JustDraw');
     skipToDefaults();
@@ -384,7 +384,7 @@ export function TemplatePicker({
           </div>
           {/* Step indicator: a modern two-segment progress rail so the
               wizard reads as 1 of 2 at a glance. Both wizard modes. On the
-              welcome flow the rail row also carries the "Just Draw" shortcut
+              welcome flow the rail row also carries the "Start Blank" shortcut
               (docs/specs/007-editor/new-document-route.md) far right — straight to a blank canvas, no wizard.
               Desktop only (sm+); mobile keeps the footer Skip. The hiding
               is on a wrapper: Button's own `inline-flex` outranks a
@@ -399,12 +399,12 @@ export function TemplatePicker({
                   <Button
                     variant="secondary"
                     size="xs"
-                    onClick={justDraw}
+                    onClick={startBlank}
                     disabled={busy}
                     className="shrink-0 gap-1.5 rounded-lg"
                   >
                     <PencilIcon />
-                    Just Draw
+                    Start Blank
                   </Button>
                 </span>
               ) : null}

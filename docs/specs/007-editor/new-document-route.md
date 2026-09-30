@@ -366,8 +366,8 @@ default document name) without walking the wizard:
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Start Blank straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL that
-  outside surfaces link to (the marketing header + hero "Start Blank"
-  buttons, see [Marketing site](../019-marketing/marketing-site.md)).
+  outside surfaces link to (the site header's "Start Blank" button on
+  marketing and the telemetry dashboard, see [Marketing site](../019-marketing/marketing-site.md)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -378,7 +378,7 @@ default document name) without walking the wizard:
     navigates forward again.
   - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is never queued on
     this path: the create fires before the document count resolves, and a
-    "just draw" user has asked to get straight to the canvas.
+    Start Blank user has asked to get straight to the canvas.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
     the query param is only knowable in the browser. A React-side check

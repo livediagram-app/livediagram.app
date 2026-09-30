@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { test, expect, expectNoPageErrors, openJustDraw, seedTab } from './fixtures';
+import { test, expect, expectNoPageErrors, openStartBlank, seedTab } from './fixtures';
 
 // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection" and "Marquee
 // box-select"): only Shift adds to a selection; a plain click on a member selects it alone, on the
@@ -43,7 +43,7 @@ async function shiftClick(page: Page, p: { x: number; y: number }): Promise<void
 
 test.describe('selection clicks', () => {
   test('follow the click rules', async ({ page, pageErrors }) => {
-    await openJustDraw(page);
+    await openStartBlank(page);
     await seedTab(page, [box('Alpha', 620), box('Beta', 860), box('Gamma', 1100)]);
     const a = await point(page, 'Alpha');
     const b = await point(page, 'Beta');

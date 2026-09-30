@@ -46,7 +46,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  await page.getByRole('button', { name: /^start blank$/i }).click();
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 
@@ -98,7 +98,7 @@ test('Settings reopens deep inside a tall row without drifting', async ({ page, 
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  await page.getByRole('button', { name: /^start blank$/i }).click();
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 

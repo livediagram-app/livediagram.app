@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, test, openJustDraw } from './fixtures';
+import { expect, expectNoPageErrors, test, openStartBlank } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
@@ -17,7 +17,7 @@ async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<v
       localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout }));
     }, layout);
   }
-  await openJustDraw(page);
+  await openStartBlank(page);
 }
 
 // The saved elements of the document's first tab, read through the api.

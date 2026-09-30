@@ -17,7 +17,7 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
   });
   await page.goto('/new');
   await page
-    .getByRole('button', { name: /Just Draw/i })
+    .getByRole('button', { name: /^start blank$/i })
     .first()
     .click();
   await page.waitForURL(/\/document\//);

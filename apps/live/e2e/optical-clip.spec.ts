@@ -38,7 +38,7 @@ test('Settings category labels keep their descenders', async ({ page, pageErrors
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  await page.getByRole('button', { name: /^start blank$/i }).click();
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 

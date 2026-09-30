@@ -159,7 +159,7 @@ export default function NewDocumentPage() {
     return 'unsorted';
   });
 
-  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Just Draw") and
+  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard
   // entirely — the page commits that template (Default theme, the template's
   // default name) the moment it mounts and lands on the editor. The ?folder /
@@ -386,7 +386,7 @@ export default function NewDocumentPage() {
     setOpenedId(documentId);
   };
 
-  // Just-Draw fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
+  // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
   // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
   // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue

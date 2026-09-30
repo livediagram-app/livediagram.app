@@ -12,9 +12,9 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 // The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
-async function justDraw(page: import('@playwright/test').Page): Promise<void> {
+async function startBlank(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  await page.getByRole('button', { name: /^start blank$/i }).click();
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 }
@@ -57,7 +57,7 @@ async function canvasColour(page: import('@playwright/test').Page): Promise<stri
 test.describe('Appearance', () => {
   test('opens on the device setting, then cycles', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await justDraw(page);
+    await startBlank(page);
 
     // A first-time visitor on a dark machine lands dark: System is the default
     // (docs/specs/007-editor/live-app.md), and the pre-hydration script resolves it before first paint.
@@ -111,7 +111,7 @@ test.describe('Appearance', () => {
     // pick time: switching chrome is not an edit. If it were, one reader's
     // appearance would travel to everyone else on the tab.
     await page.emulateMedia({ colorScheme: 'light' });
-    await justDraw(page);
+    await startBlank(page);
     await page.waitForTimeout(1500); // let the create-time autosave settle
 
     const writes: string[] = [];
@@ -141,7 +141,7 @@ test.describe('Appearance', () => {
 
   test('remembers the setting across a reload, before first paint', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
-    await justDraw(page);
+    await startBlank(page);
     await appearanceButton(page).click(); // System -> Light
     await appearanceButton(page).click(); // Light -> Dark
     await expect(page.locator('html')).toHaveClass(/dark/);

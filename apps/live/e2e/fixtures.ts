@@ -154,15 +154,15 @@ export async function dismissQuickTour(page: Page): Promise<void> {
   await decline.waitFor({ state: 'detached' });
 }
 
-// Opens /new and takes "Just Draw" to the editor. Retried, because on a cold server the first click can
+// Opens /new and takes "Start Blank" to the editor. Retried, because on a cold server the first click can
 // land before hydration; but only clicks while the wizard is still up: a click that already worked leaves
 // /new, and hunting for the button again would fail every retry while the editor loads under load.
-export async function openJustDraw(page: Page): Promise<void> {
+export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new');
   const canvas = page.locator('[data-canvas-a11y-root]');
   await expect(async () => {
     if (new URL(page.url()).pathname.replace(/\/$/, '') === '/new') {
-      await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
+      await page.getByRole('button', { name: /^start blank$/i }).click({ timeout: 2_000 });
     }
     await canvas.waitFor({ timeout: 5_000 });
   }).toPass({ timeout: 30_000 });

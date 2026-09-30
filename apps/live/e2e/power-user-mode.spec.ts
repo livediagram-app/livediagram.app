@@ -15,7 +15,7 @@ const header = (page: Page) => page.locator('header');
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  await page.getByRole('button', { name: /^start blank$/i }).click();
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }
