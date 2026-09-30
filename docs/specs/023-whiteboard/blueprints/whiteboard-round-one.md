@@ -285,6 +285,12 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 
 ### Recognition preview
 
+- Locking: when the dwell fires on a recognised shape, `LiveStroke.snapTo(shape)` records it with
+  the pen's position (`grab`); `shaped()` is `adjustRecognised(shape, grab, lastSample)` (lib/recognition-preview:
+  a line moves its end nearer `grab`, a box moves its corner nearer `grab` and keeps the opposite,
+  flipping past it). `useRecognitionPreview` shows `shaped()` on every update once locked, and the
+  commit passes it as `ink.snapped`, which `whiteboardStroke` lands instead of re-reading the stroke.
+
 - `apps/live/lib/recognition-preview.ts`: `RECOGNITION_THRESHOLD` (0.4), `RECOGNITION_PREVIEW_DWELL_MS`
   (500), `RECOGNITION_PREVIEW_STILL_PX` (4 screen px), `recogniseBoardStroke(points)`,
   `stillSince(sample, from, count, anchor, zoom)` (samples `from` to `count - 1` by accessor).

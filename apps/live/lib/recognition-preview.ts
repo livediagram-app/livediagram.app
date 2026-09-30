@@ -40,3 +40,44 @@ export function stillSince(
   }
   return true;
 }
+
+// Once a shape shows, the pen keeps shaping it (docs/specs/023-whiteboard/whiteboard.md "Shape
+// recognition"): dragging on moves the part of the shape the pen rested near, by as much as the
+// pen has moved since, and keeps the rest. A line moves its nearer end; a box moves its nearer
+// corner and keeps the opposite one, flipping cleanly past it.
+export function adjustRecognised(
+  shape: RecognisedShape,
+  grab: Point,
+  pointer: Point,
+): RecognisedShape {
+  const dx = pointer.x - grab.x;
+  const dy = pointer.y - grab.y;
+  if (dx === 0 && dy === 0) return shape;
+  if (shape.kind === 'line') {
+    const from = shape.from ?? { x: shape.bbox.x, y: shape.bbox.y };
+    const to = shape.to ?? {
+      x: shape.bbox.x + shape.bbox.width,
+      y: shape.bbox.y + shape.bbox.height,
+    };
+    const movesTo =
+      Math.hypot(grab.x - to.x, grab.y - to.y) <= Math.hypot(grab.x - from.x, grab.y - from.y);
+    const a = movesTo ? from : { x: from.x + dx, y: from.y + dy };
+    const b = movesTo ? { x: to.x + dx, y: to.y + dy } : to;
+    return { ...shape, from: a, to: b, bbox: boxOf(a, b) };
+  }
+  const { x, y, width, height } = shape.bbox;
+  const right = grab.x >= x + width / 2;
+  const bottom = grab.y >= y + height / 2;
+  const fixed = { x: right ? x : x + width, y: bottom ? y : y + height };
+  const moving = { x: (right ? x + width : x) + dx, y: (bottom ? y + height : y) + dy };
+  return { ...shape, bbox: boxOf(fixed, moving) };
+}
+
+function boxOf(a: Point, b: Point) {
+  return {
+    x: Math.min(a.x, b.x),
+    y: Math.min(a.y, b.y),
+    width: Math.abs(b.x - a.x),
+    height: Math.abs(b.y - a.y),
+  };
+}

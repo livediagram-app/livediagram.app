@@ -289,9 +289,12 @@ The eraser offers **both** modes, switched in its flyout:
 - **A preview while the pen holds still**: with recognition on, keeping the
   pen pressed and still (within 4 screen px) for **half a second** swaps the
   stroke being drawn for the shape it reads as, in the pen's colour and
-  weight, exactly where it will land. Lifting the pen then lands that shape;
-  moving on drops the preview at once and the stroke carries on, and the next
-  pause asks again. A stroke that reads as no shape shows no preview. Half a
+  weight, exactly where it will land. **From then on the stroke is that
+  shape**: it never goes back to the drawing. Dragging on without lifting
+  **reshapes it**: a line's end nearer the pen follows the pen, its other end
+  stays; a shape's corner nearer the pen follows the pen, the opposite corner
+  stays, and dragging past it flips the box. Lifting lands the shape exactly as
+  shown. A stroke that reads as no shape shows no preview. Half a
   second is long enough that a pause mid-letter does not trigger it and short
   enough to feel like an answer (Procreate's QuickShape and GoodNotes sit
   around the same). The preview and the commit run the same test

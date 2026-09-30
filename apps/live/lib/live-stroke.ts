@@ -9,7 +9,9 @@ import {
   penPointerKind,
   type PenPointerKind,
   type PenStroke,
+  type RecognisedShape,
 } from '@livediagram/document';
+import { adjustRecognised } from './recognition-preview';
 
 type Point = { x: number; y: number };
 
@@ -30,6 +32,14 @@ export type LiveStroke = {
   subscribe(listener: () => void): () => void;
   /** Tells the subscribers the stroke changed: once per input event. */
   notify(): void;
+  /**
+   * Locks the stroke to the shape it was recognised as, with the pen where it is now: from then on
+   * the stroke IS that shape, and dragging on reshapes it (docs/specs/023-whiteboard/whiteboard.md
+   * "Shape recognition").
+   */
+  snapTo(shape: RecognisedShape): void;
+  /** The locked shape as the pen has reshaped it so far; null until the stroke is locked. */
+  shaped(): RecognisedShape | null;
 };
 
 /** A live stroke for a press by `pointerType`: a pen records pressure, anything else does not. */
@@ -42,6 +52,7 @@ export function createLiveStroke(
   const points: Point[] = [];
   const pressures: number[] | null = pointer === 'pen' ? [] : null;
   const listeners = new Set<() => void>();
+  let snap: { shape: RecognisedShape; grab: Point } | null = null;
   return {
     pointer,
     pointerId,
@@ -66,6 +77,14 @@ export function createLiveStroke(
     },
     notify() {
       for (const listener of listeners) listener();
+    },
+    snapTo(shape) {
+      const grab = points[points.length - 1];
+      if (grab) snap = { shape, grab };
+    },
+    shaped() {
+      const pointer = points[points.length - 1];
+      return snap && pointer ? adjustRecognised(snap.shape, snap.grab, pointer) : null;
     },
   };
 }

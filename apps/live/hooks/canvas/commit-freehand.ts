@@ -3,6 +3,7 @@ import {
   createShape,
   nearestBorderStroke,
   recogniseShape,
+  type RecognisedShape,
   snapToArrowPoint,
   type ArrowElement,
   type Element,
@@ -232,7 +233,11 @@ export function makeCommitFreehand({
 
 type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 // A whiteboard pen stroke's ink beyond its points: a pressure per point (a pen) and the streamline.
-export type PenInk = Pick<FreehandElement, 'pressures' | 'streamline'>;
+// What the pen drew with, and, when a held-still stroke locked to a recognised shape, that shape
+// as the pen reshaped it: it lands as is, never re-read from the stroke.
+export type PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & {
+  snapped?: RecognisedShape;
+};
 
 // What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape
 // recognition"): with recognition on, a stroke that reads as a shape is the
@@ -255,7 +260,7 @@ function whiteboardStroke(
   };
   // The same test on the same stroke the hold-still preview runs (lib/recognition-preview), so
   // it is what lands.
-  const detected = pen.recognise ? recogniseBoardStroke(stroke) : null;
+  const detected = ink?.snapped ?? (pen.recognise ? recogniseBoardStroke(stroke) : null);
   if (detected) {
     track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
     if (detected.kind === 'line') {
@@ -283,5 +288,6 @@ function whiteboardStroke(
     };
   }
   track('Element', 'Added', 'Freehand');
-  return { ...createFreehand(points, false), penWidth: pen.width, ...ink, ...colour };
+  const { snapped: _shape, ...drawn } = ink ?? {};
+  return { ...createFreehand(points, false), penWidth: pen.width, ...drawn, ...colour };
 }

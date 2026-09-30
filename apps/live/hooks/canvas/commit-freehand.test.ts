@@ -127,6 +127,24 @@ describe('a whiteboard pen stroke', () => {
     expect(s.elements[0]).toMatchObject({ pressures: [0.1, 0.4, 0.8, 1], streamline: 0.2 });
   });
 
+  it('lands the shape the pen locked to and reshaped, not a fresh reading of the stroke', () => {
+    const s = setup(pen({ recognise: true }));
+    const snapped = {
+      kind: 'line' as const,
+      bbox: { x: 0, y: 0, width: 300, height: 40 },
+      confidence: 1,
+      from: { x: 0, y: 0 },
+      to: { x: 300, y: 40 },
+    };
+    s.commit(scribble, false, { streamline: 0.2, snapped });
+    expect(s.elements[0]).toMatchObject({
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 300, y: 40 },
+    });
+    expect('snapped' in s.elements[0]!).toBe(false);
+  });
+
   it('keeps strokes as drawn with recognition off', () => {
     const s = setup(pen({ recognise: false }));
     s.commit(loop, false);

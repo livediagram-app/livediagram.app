@@ -56,9 +56,11 @@ export function useWhiteboardPenGesture({
     console.debug(
       `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
     );
+    const snapped = stroke.shaped();
     onCommitFreehand(stroke.points.slice(), false, {
       ...(stroke.pressures ? { pressures: stroke.pressures.slice() } : {}),
       streamline: stroke.streamline,
+      ...(snapped ? { snapped } : {}),
     });
   });
 

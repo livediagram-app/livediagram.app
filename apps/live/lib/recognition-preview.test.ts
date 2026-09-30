@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  adjustRecognised,
   RECOGNITION_PREVIEW_DWELL_MS,
   RECOGNITION_PREVIEW_STILL_PX,
   recogniseBoardStroke,
@@ -52,5 +53,42 @@ describe('stillSince', () => {
     expect(RECOGNITION_PREVIEW_DWELL_MS).toBeGreaterThanOrEqual(300);
     expect(RECOGNITION_PREVIEW_DWELL_MS).toBeLessThanOrEqual(700);
     expect(RECOGNITION_PREVIEW_STILL_PX).toBeGreaterThan(0);
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": once shown, dragging on resizes.
+describe('adjustRecognised', () => {
+  const box = {
+    kind: 'square' as const,
+    bbox: { x: 0, y: 0, width: 100, height: 60 },
+    confidence: 1,
+  };
+
+  it('moves the corner the pen rests near and keeps the opposite one', () => {
+    const out = adjustRecognised(box, { x: 98, y: 58 }, { x: 148, y: 88 });
+    expect(out.bbox).toEqual({ x: 0, y: 0, width: 150, height: 90 });
+  });
+
+  it('flips cleanly past the fixed corner', () => {
+    const out = adjustRecognised(box, { x: 100, y: 60 }, { x: -50, y: 60 });
+    expect(out.bbox).toEqual({ x: -50, y: 0, width: 50, height: 60 });
+  });
+
+  it('keeps the far end of a line and moves the near one', () => {
+    const line = {
+      kind: 'line' as const,
+      bbox: { x: 0, y: 0, width: 100, height: 0 },
+      confidence: 1,
+      from: { x: 0, y: 0 },
+      to: { x: 100, y: 0 },
+    };
+    const out = adjustRecognised(line, { x: 101, y: 1 }, { x: 201, y: 51 });
+    expect(out.from).toEqual({ x: 0, y: 0 });
+    expect(out.to).toEqual({ x: 200, y: 50 });
+    expect(out.bbox).toEqual({ x: 0, y: 0, width: 200, height: 50 });
+  });
+
+  it('changes nothing while the pen has not moved', () => {
+    expect(adjustRecognised(box, { x: 98, y: 58 }, { x: 98, y: 58 })).toEqual(box);
   });
 });

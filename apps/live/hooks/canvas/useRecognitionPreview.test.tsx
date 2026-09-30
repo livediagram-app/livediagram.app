@@ -41,18 +41,21 @@ describe('useRecognitionPreview', () => {
     expect(result.current?.kind).toBe('square');
   });
 
-  it('drops it the moment the pen moves on, and waits again', () => {
+  it('keeps the shape once shown: dragging on resizes it, and the stroke never comes back', () => {
     const stroke = liveStrokeOf(square());
     const { result } = hook(stroke);
     act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
-    expect(result.current).not.toBeNull();
+    const shown = result.current!;
+    expect(shown.kind).toBe('square');
+    // The pen rests at the top-left corner; dragging it 50 px up and left grows the box there.
     act(() => {
-      stroke.push(60, 200);
+      stroke.push(-50, -50);
       stroke.notify();
     });
-    expect(result.current).toBeNull();
-    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
-    expect(result.current).toBeNull();
+    expect(result.current?.kind).toBe('square');
+    expect(result.current!.bbox.x).toBeCloseTo(shown.bbox.x - 50, 5);
+    expect(result.current!.bbox.width).toBeCloseTo(shown.bbox.width + 50, 5);
+    expect(stroke.shaped()).toEqual(result.current);
   });
 
   it('keeps it while the pen only trembles within the still radius', () => {

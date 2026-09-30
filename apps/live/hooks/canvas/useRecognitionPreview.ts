@@ -2,9 +2,10 @@
 
 // The recognised shape to preview while a whiteboard pen holds still, pressed, with recognition
 // on (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"). Subscribed to the live stroke:
-// each update checks only the samples added since the last one, and any sample beyond the still
-// radius moves the anchor, drops a shown preview and restarts the dwell timer. When it fires, the
-// stroke's centre line is recognised: the same test, on the same stroke, release runs.
+// until a shape shows, each update checks only the samples added since the last one, and any
+// sample beyond the still radius moves the anchor and restarts the dwell timer. When it fires, the
+// stroke's centre line is recognised and the stroke locks to that shape: dragging on reshapes it
+// (LiveStroke.shaped), and the stroke never comes back.
 
 import { useEffect, useState } from 'react';
 import type { RecognisedShape } from '@livediagram/document';
@@ -36,11 +37,18 @@ export function useRecognitionPreview(
       const shape = recogniseBoardStroke(stroke.ink(penWidth));
       if (!shape) return;
       console.debug('[whiteboard] recognition preview', shape.kind);
+      // The stroke is the shape from here on: dragging on reshapes it.
+      stroke.snapTo(shape);
       setPreview({ stroke, shape });
     };
     const onUpdate = () => {
       const count = stroke.points.length;
       if (count === 0) return;
+      const shaped = stroke.shaped();
+      if (shaped) {
+        setPreview({ stroke, shape: shaped });
+        return;
+      }
       const from = checked;
       checked = count;
       if (anchor && stillSince((i) => stroke.points[i]!, from, count, anchor, zoom)) return;
