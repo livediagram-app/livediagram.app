@@ -2,8 +2,8 @@
 // short, because the Trash is the way back. The first line is the question;
 // a second line appears only when there is something the user would not
 // otherwise know: the whole team loses it, its share links stop working, or
-// tabs it shares with other documents stay there. The button is the soft
-// yellow caution, not red: nothing is lost for 30 days.
+// tabs it shares with other documents stay there. The button is not red:
+// nothing is lost for 30 days.
 import { apiListShareLinks } from '@/lib/api-client';
 
 export const DELETE_CONFIRM_TITLE = 'Please confirm';
@@ -34,7 +34,7 @@ export function deleteConfirmation(input: DeleteConfirmationInput) {
     title: DELETE_CONFIRM_TITLE,
     message: deleteConfirmationMessage(input),
     confirmLabel: DELETE_CONFIRM_LABEL,
-    variant: 'caution' as const,
+    variant: 'neutral' as const,
   };
 }
 

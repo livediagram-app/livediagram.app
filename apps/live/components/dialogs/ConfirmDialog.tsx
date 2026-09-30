@@ -28,9 +28,7 @@ export type ConfirmDialogProps = {
   // brand-blue. Default is `danger` because every current caller is
   // a destructive flow, and forgetting to set it would understate
   // the consequences.
-  // Caution: the soft yellow, for an action with a way back (a delete that goes
-  // to the Trash).
-  variant?: 'danger' | 'neutral' | 'caution';
+  variant?: 'danger' | 'neutral';
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -74,7 +72,7 @@ export function ConfirmDialog({
         </Button>
         <Button
           ref={confirmRef}
-          variant={variant === 'neutral' ? 'primary' : variant}
+          variant={variant === 'danger' ? 'danger' : 'primary'}
           onClick={onConfirm}
         >
           {confirmLabel}

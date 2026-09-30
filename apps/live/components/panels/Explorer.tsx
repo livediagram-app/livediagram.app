@@ -420,8 +420,8 @@ function ExplorerImpl({
               team: !personal && !!team,
             });
           })()}
-          // The soft yellow, not red: a delete goes to the Trash.
-          tone="caution"
+          // Not red: a delete goes to the Trash.
+          danger={false}
           confirmLabel="Delete"
           onConfirm={() => {
             const id = deleteConfirm.id;
