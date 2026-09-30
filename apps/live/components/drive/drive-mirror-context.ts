@@ -40,6 +40,7 @@ export const DRIVE_STATUS_INITIAL: DriveMirrorStatus = {
   leaseHeldElsewhere: false,
   notices: [],
   rootName: null,
+  rootFolderId: null,
   mirrored: null,
   failed: [],
 };

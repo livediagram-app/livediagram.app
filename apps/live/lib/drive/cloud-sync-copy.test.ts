@@ -29,6 +29,7 @@ const status = (over: Partial<DriveMirrorStatus> = {}): DriveMirrorStatus => ({
   rootName: 'livediagram (staging)',
   mirrored: {},
   failed: [],
+  rootFolderId: null,
   ...over,
 });
 const IDLE: DriveConnectState = { connecting: false, connectError: null, connectNote: null };

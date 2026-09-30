@@ -50,10 +50,16 @@ this spec does not restate it.
   account menu has no Drive entry. Search finds the row by drive, google,
   sync, backup, mirror and cloud; it links to the help article.
 - **The row is one row:** the cloud and "Google Drive" on the left; on the
-  right, the status and **one button**: **Connect** ("Connecting…" while it
-  starts) when not connected, the neutral grey **Disconnect** when connected
-  or paused (reversible, and the Drive files stay; its confirmation is
-  neutral too). There is no body text and no Sync now: **syncing is
+  right, the status and one button: **Connect** when not connected (held,
+  still reading Connect, while the status says "Connecting…"), the neutral
+  grey **Disconnect** when connected or paused (reversible, and the Drive
+  files stay; its confirmation is neutral too). Connected, the grey line under
+  the card says where the documents go, and the **quoted folder name is a
+  link** to that folder in Google Drive, in a new tab
+  (`https://drive.google.com/drive/folders/<root id>`), once the root's id is
+  known, which our own server tells before any call to Google. On a narrow
+  screen the status and button wrap under the name rather than leave the card.
+  There is no body text and no Sync now: **syncing is
   automatic** (after edits, every 2 minutes, and on returning to the tab,
   retrying by itself; the exact rhythm is in the help article).
 - **The status** is plain, small, muted text: "Checking…", "Not connected",

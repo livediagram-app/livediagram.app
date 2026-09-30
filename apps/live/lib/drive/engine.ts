@@ -53,6 +53,8 @@ export type DriveMirrorStatus = {
   notices: DriveMirrorNotice[];
   // The root folder's Drive name, as the user sees it; null until known.
   rootName: string | null;
+  // The root folder's Drive file id, for Open folder; null until known.
+  rootFolderId: string | null;
   // Every mirrored (Personal Space) document: the savedAt last uploaded to
   // Drive, or null while it has never been. A document not listed is not
   // mirrored (a team, shared or offline document) or is newer than the last
@@ -104,6 +106,7 @@ const INITIAL: DriveMirrorStatus = {
   leaseHeldElsewhere: false,
   notices: [],
   rootName: null,
+  rootFolderId: null,
   mirrored: null,
   failed: [],
 };
@@ -288,7 +291,14 @@ export class DriveMirrorEngine {
   private async publishKnownMirror(): Promise<void> {
     if (this.status.mirrored !== null) return;
     try {
-      this.publish({ mirrored: mirroredFromItems(await this.deps.port.listItems()) });
+      const [items, connection] = await Promise.all([
+        this.deps.port.listItems(),
+        this.deps.port.getConnection(),
+      ]);
+      this.publish({
+        mirrored: mirroredFromItems(items),
+        rootFolderId: connection?.rootFolderId ?? null,
+      });
     } catch (err) {
       driveWarn('known-mirror-failed', { error: String(err) });
     }
@@ -323,6 +333,8 @@ export class DriveMirrorEngine {
       }
       const root = await this.ensureRoot(connection, kind);
       connection = root.connection;
+      if (connection.rootFolderId !== this.status.rootFolderId)
+        this.publish({ rootFolderId: connection.rootFolderId });
       let snapshot = await this.loadSnapshot(connection.rootFolderId!);
       if (root.fresh) {
         await this.adoptExisting(snapshot);

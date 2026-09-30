@@ -112,6 +112,29 @@ describe('GoogleDriveSyncRow', () => {
     expect(v.disconnect).toHaveBeenCalledOnce();
   });
 
+  it('makes the quoted folder name open that folder in Google Drive, in a new tab', () => {
+    show({ state: 'idle', lastSyncedAt: NOW, rootFolderId: 'root-123' });
+    const link = screen.getByRole('link', { name: 'livediagram (staging), open in Google Drive' });
+    expect(link.textContent).toBe('livediagram (staging)');
+    expect(link.getAttribute('href')).toBe('https://drive.google.com/drive/folders/root-123');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(description()).toBe(
+      'Your documents are synced to “livediagram (staging)” in Google Drive. Learn more',
+    );
+    // One row, one button: the link is in the description, not beside Disconnect.
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Disconnect']);
+  });
+
+  it('shows the folder name as plain text until its id is known, and no link when not connected', () => {
+    show({ state: 'idle', lastSyncedAt: NOW, rootFolderId: null });
+    expect(screen.queryByRole('link', { name: /open in Google Drive/ })).toBeNull();
+    expect(description()).toContain('“livediagram (staging)”');
+    cleanup();
+    show({ state: 'disconnected', rootFolderId: 'root-123' });
+    expect(screen.queryByRole('link', { name: /open in Google Drive/ })).toBeNull();
+  });
+
   it('moves from just now to < 1 min ago to 1 min ago on time, without the shared tick', () => {
     show({ state: 'idle', lastSyncedAt: NOW });
     expect(statusText().textContent).toBe('Last synced just now');
