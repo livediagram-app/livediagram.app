@@ -120,7 +120,15 @@ export function svgShapeSilhouette(
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;
   // Mapped into the box rather than nested in a stretched <svg>, so no
   // renderer scales the stroke (svg-shape-fit.ts).
-  const fit = boxFit(geometry, el);
+  // A stroke-inside silhouette lands in the box inset by half the stroke, so
+  // its outline stays inside the box like the canvas overlay's.
+  const inset = geometry.strokeInside ? strokeWidth / 2 : 0;
+  const fit = boxFit(geometry, {
+    x: el.x + inset,
+    y: el.y + inset,
+    width: Math.max(0, el.width - 2 * inset),
+    height: Math.max(0, el.height - 2 * inset),
+  });
   return `<g data-silhouette="${el.shape}">${geometry.parts
     .map((part) => svgShapePart(fitShapePart(part, fit), fill, stroke, strokeWidth, dash))
     .join('')}</g>`;

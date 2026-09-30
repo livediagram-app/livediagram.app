@@ -49,7 +49,8 @@ export type ShapeGeometry = {
   parts: readonly ShapePart[];
   // The art is drawn into the box inset by half the stroke, so the stroke
   // stays inside the box as a CSS border does (the diamond's tips would
-  // otherwise poke past the edge a square of the same box draws).
+  // otherwise poke past the edge a square of the same box draws). Set on
+  // every silhouette whose outline touches the box edge.
   strokeInside?: true;
 };
 
@@ -62,6 +63,10 @@ const stretch = (...parts: ShapePart[]): ShapeGeometry => ({
   viewBox: STRETCH,
   preserveAspectRatio: 'none',
   parts,
+});
+const strokeInside = (geometry: ShapeGeometry): ShapeGeometry => ({
+  ...geometry,
+  strokeInside: true,
 });
 const polygon = (points: string, role: ShapePartRole = 'main'): ShapePart => ({
   tag: 'polygon',
@@ -101,24 +106,30 @@ export const ACTOR_VIEWBOX = { width: 90, height: 130 } as const;
 
 // Every silhouette whose geometry does not depend on the element's size.
 const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
-  diamond: { ...stretch(polygon(DIAMOND_POINTS)), strokeInside: true },
-  parallelogram: stretch(polygon('20,0 100,0 80,100 0,100')),
-  hexagon: stretch(polygon('25,0 75,0 100,50 75,100 25,100 0,50')),
-  document: stretch(path('M 0 0 L 100 0 L 100 92 C 80 109, 65 79, 50 94 C 35 109, 20 79, 0 94 Z')),
-  cylinder: stretch(path('M 0 15 L 100 15 L 100 85 A 50 12 0 0 1 0 85 Z'), {
-    tag: 'ellipse',
-    role: 'main',
-    cx: 50,
-    cy: 15,
-    rx: 50,
-    ry: 12,
-  }),
+  diamond: strokeInside(stretch(polygon(DIAMOND_POINTS))),
+  parallelogram: strokeInside(stretch(polygon('20,0 100,0 80,100 0,100'))),
+  hexagon: strokeInside(stretch(polygon('25,0 75,0 100,50 75,100 25,100 0,50'))),
+  document: strokeInside(
+    stretch(path('M 0 0 L 100 0 L 100 92 C 80 109, 65 79, 50 94 C 35 109, 20 79, 0 94 Z')),
+  ),
+  cylinder: strokeInside(
+    stretch(path('M 0 15 L 100 15 L 100 85 A 50 12 0 0 1 0 85 Z'), {
+      tag: 'ellipse',
+      role: 'main',
+      cx: 50,
+      cy: 15,
+      rx: 50,
+      ry: 12,
+    }),
+  ),
   // Normalised to fill the full 0..100 box (an earlier cut sat in x 12.7..90
   // and could not be lined up against its neighbours). Control points fall
   // outside the box by design: the curve itself reaches the edges.
-  cloud: stretch(
-    path(
-      'M 22.4 100 C 1.7 100, -7.3 71.2, 6.9 55 C -2.2 31.5, 17.2 11.7, 31.4 24.3 C 36.6 -6.3, 70.2 -9.9, 74.1 24.3 C 92.1 11.7, 107.6 38.8, 93.4 58.6 C 107.6 73, 97.3 100, 76.6 100 Z',
+  cloud: strokeInside(
+    stretch(
+      path(
+        'M 22.4 100 C 1.7 100, -7.3 71.2, 6.9 55 C -2.2 31.5, 17.2 11.7, 31.4 24.3 C 36.6 -6.3, 70.2 -9.9, 74.1 24.3 C 92.1 11.7, 107.6 38.8, 93.4 58.6 C 107.6 73, 97.3 100, 76.6 100 Z',
+      ),
     ),
   ),
   triangle: stretch(polygon('50,2 98,98 2,98')),

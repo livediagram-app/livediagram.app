@@ -1,9 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, openJustDraw } from './fixtures';
+import { expect, test, expectNoPageErrors, seedTab, startBlankDocument } from './fixtures';
 
-// A diamond's stroke stays inside its box, as a square's CSS border does
+// A shape drawn to its box edge keeps its stroke inside the box, as a square's CSS border does
 // (docs/specs/008-canvas/canvas-and-palette.md, Shape primitives). The proof is pixels: the ring
-// just outside the element box paints the same with the diamond shown as with it hidden.
+// just outside the element box paints the same with the shape shown as with it hidden.
+
+// The kinds whose outline touches the box edge (shape-geometry.ts `strokeInside`).
+const EDGE_KINDS = ['diamond', 'parallelogram', 'hexagon', 'document', 'cylinder', 'cloud'];
 
 const MARGIN_PX = 6;
 // Summed RGB difference that counts as ink.
@@ -61,20 +64,31 @@ async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
   );
 }
 
-test('a diamond paints no stroke outside its box', async ({ page, pageErrors }) => {
+test('a shape drawn to its box edge paints no stroke outside it', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await openJustDraw(page);
-  const canvas = page.locator('[data-canvas-a11y-root]');
+  await startBlankDocument(page);
+  // Three to a row, 60px apart: wider than both margins, so no neighbour is in the ring.
+  await seedTab(
+    page,
+    EDGE_KINDS.map((shape, i) => ({
+      id: `s-${shape}`,
+      type: 'shape',
+      shape,
+      x: 100 + (i % 3) * 220,
+      y: 100 + Math.floor(i / 3) * 160,
+      width: 160,
+      height: 100,
+    })),
+  );
 
-  await page.getByRole('button', { name: 'Add diamond', exact: true }).click();
-  await canvas.click({ position: { x: 500, y: 300 } });
-  await page.keyboard.press('Escape');
-  const polygon = page.locator('polygon[points="50,0 100,50 50,100 0,50"]');
-  await polygon.waitFor();
-  const element = polygon.locator('xpath=ancestor::*[local-name()="svg"][1]/..');
-
-  expect(await inkOutsideBox(page, element)).toBe(0);
+  const outside: Record<string, number> = {};
+  for (const shape of EDGE_KINDS) {
+    const element = page.locator(`[data-element-id="s-${shape}"] svg`).first().locator('..');
+    await element.waitFor();
+    outside[shape] = await inkOutsideBox(page, element);
+  }
+  expect(outside).toEqual(Object.fromEntries(EDGE_KINDS.map((shape) => [shape, 0])));
 
   expectNoPageErrors(pageErrors);
 });
