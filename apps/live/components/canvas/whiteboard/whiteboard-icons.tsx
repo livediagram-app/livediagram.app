@@ -159,16 +159,3 @@ export function BackgroundGlyph({ id }: { id: string }) {
     </Glyph>
   );
 }
-
-// Select while a path is in its edit mode: the curve, its two nodes and one handle.
-export function PathEditGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <path d="M4.5 19.5 C4.5 9 19.5 15 19.5 4.5" />
-      <path d="M4.5 19.5 V10" strokeWidth={1} />
-      <circle cx="4.5" cy="10" r="1.3" fill="currentColor" stroke="none" />
-      <rect x="2.7" y="17.7" width="3.6" height="3.6" fill="currentColor" />
-      <rect x="17.7" y="2.7" width="3.6" height="3.6" fill="var(--dock-glyph-fill, white)" />
-    </Glyph>
-  );
-}

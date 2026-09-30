@@ -146,3 +146,23 @@ describe('SelectionPopover mind-node growth', () => {
     expect(screen.queryByRole('button', { name: 'Add sibling' })).toBeNull();
   });
 });
+
+describe('Edit points (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+  afterEach(cleanup);
+
+  it('offers Edit points for a path and opens its edit mode', () => {
+    setTouch(false);
+    const onEditPoints = vi.fn();
+    render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        title="Selected Path"
+        onEditPoints={onEditPoints}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Edit points/ }));
+    expect(onEditPoints).toHaveBeenCalled();
+  });
+});

@@ -11,6 +11,7 @@ import {
   TextIcon,
 } from '@/components/canvas/selection-popover-icons';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
+import { EditPointsIcon } from '@/components/palette/palette-icons';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -32,6 +33,8 @@ type SelectionPopoverProps = {
   // True when the element already has text: the button reads "Edit text";
   // false = "Add text". Defaults to edit for older callers.
   hasText?: boolean;
+  // Open a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"): a path only.
+  onEditPoints?: () => void;
   // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
   // The same actions as Tab / Enter and the "+" ring, given a one-click home
   // on the toolbar. Passed only for an editable, unlocked mind node.
@@ -83,6 +86,7 @@ export function SelectionPopover({
   onDelete,
   onEditText,
   hasText = true,
+  onEditPoints,
   onAddMindChild,
   onAddMindSibling,
   onDuplicate,
@@ -113,6 +117,8 @@ export function SelectionPopover({
     <div
       ref={ref}
       data-testid="selection-popover"
+      // A toolbar over the canvas: a held tool's press there is a button press (usePathTool).
+      data-canvas-toolbar=""
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -154,6 +160,19 @@ export function SelectionPopover({
             onClick={onEditText}
           >
             <TextIcon />
+          </PopoverButton>
+          <Divider />
+        </>
+      ) : null}
+
+      {onEditPoints ? (
+        <>
+          <PopoverButton
+            label="Edit points"
+            description="Adjust the path's points, corners and curves."
+            onClick={onEditPoints}
+          >
+            <EditPointsIcon />
           </PopoverButton>
           <Divider />
         </>

@@ -215,7 +215,9 @@ export function useSelectionEditing(opts: {
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
-    const labelable = isBoxed(el) || el.type === 'arrow';
+    // A path takes no typed label (docs/specs/023-whiteboard/blueprints/path-tool.md P1): its edit
+    // mode is its points, never a caret.
+    const labelable = (isBoxed(el) && el.type !== 'path') || el.type === 'arrow';
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;

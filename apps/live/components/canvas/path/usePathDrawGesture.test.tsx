@@ -32,6 +32,7 @@ function setup(elements: Element[] = [], zoom = 1) {
   // Canvas px = client px at zoom 1: the wrapper sits at the origin.
   wrapper.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
   const commits: PathCommit[] = [];
+  const onStartPath = vi.fn();
   const hook = renderHook(
     (p: { pendingDraw: PendingDraw | null; tab: string }) =>
       usePathDrawGesture({
@@ -41,6 +42,7 @@ function setup(elements: Element[] = [], zoom = 1) {
         viewportZoom: zoom,
         activeTabId: p.tab,
         onCommitPath: (c) => commits.push(c),
+        onStartPath,
       }),
     { initialProps: { pendingDraw: PATH as PendingDraw | null, tab: 't' } },
   );
@@ -76,7 +78,7 @@ function setup(elements: Element[] = [], zoom = 1) {
     });
     return e;
   };
-  return { hook, commits, press, move, up, click, key };
+  return { hook, commits, onStartPath, press, move, up, click, key };
 }
 
 describe('usePathDrawGesture', () => {
@@ -266,6 +268,13 @@ describe('usePathDrawGesture', () => {
       expect.objectContaining({ closed: true, continuing: { id: open.id } }),
     ]);
     expect(s.commits[0]!.anchors).toHaveLength(3);
+  });
+
+  it('clears the selection when a new path starts, not while it grows', () => {
+    const s = setup();
+    s.click(0, 0);
+    s.click(50, 0);
+    expect(s.onStartPath).toHaveBeenCalledTimes(1);
   });
 
   it('claims nothing when the tool is not in hand', () => {

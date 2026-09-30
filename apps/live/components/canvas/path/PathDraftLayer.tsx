@@ -78,7 +78,13 @@ export function PathDraftLayer({
         ) : null}
         {activeAnchor ? <HandleMarker anchor={activeAnchor} zoom={zoom} /> : null}
         {anchors.map((a, i) => (
-          <NodeMarker key={i} at={a} zoom={zoom} first={i === 0} selected={i === active} />
+          <NodeMarker
+            key={i}
+            at={a}
+            zoom={zoom}
+            corner={a.mode === 'corner'}
+            selected={i === active}
+          />
         ))}
         {ring ? (
           <circle

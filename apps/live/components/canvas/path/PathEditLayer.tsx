@@ -73,7 +73,13 @@ export function PathEditLayer({
           <HandleMarker key={node} anchor={anchors[node]!} zoom={zoom} sides={sides} />
         ))}
         {anchors.map((a, i) => (
-          <NodeMarker key={i} at={a} zoom={zoom} selected={selected.has(i)} />
+          <NodeMarker
+            key={i}
+            at={a}
+            zoom={zoom}
+            corner={a.mode === 'corner'}
+            selected={selected.has(i)}
+          />
         ))}
       </g>
       {box ? (

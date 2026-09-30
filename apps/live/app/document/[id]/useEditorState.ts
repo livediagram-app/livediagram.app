@@ -2301,6 +2301,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     editsBlocked: createBlocked,
     commit,
     styleNewElement: styleMemory.styleNewElement,
+    setSelectedId,
   });
 
   // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.

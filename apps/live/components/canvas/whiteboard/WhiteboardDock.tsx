@@ -9,7 +9,12 @@
 import { Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/document';
-import { EraserIcon, SelectIcon, ShapePenIcon } from '@/components/palette/palette-icons';
+import {
+  EditPointsIcon,
+  EraserIcon,
+  SelectIcon,
+  ShapePenIcon,
+} from '@/components/palette/palette-icons';
 import {
   WHITEBOARD_PEN_COLOURS,
   WHITEBOARD_PEN_WIDTHS,
@@ -36,7 +41,6 @@ import {
   MoreGlyph,
   PenGlyph,
   OffGlyph,
-  PathEditGlyph,
   RecogniseGlyph,
   RedoGlyph,
   ShapeGlyph,
@@ -434,7 +438,7 @@ export function WhiteboardDock({
         aria-label="Whiteboard tools"
         aria-orientation="horizontal"
         onKeyDown={onKeyDown}
-        className="pointer-events-auto flex animate-pop-in items-center [--dock-glyph-fill:#fff] dark:[--dock-glyph-fill:#0f172a] gap-0.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 [scrollbar-width:none] dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className="pointer-events-auto flex animate-pop-in items-center gap-0.5 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 [scrollbar-width:none] dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
       >
         {/* In a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing") Select shows
             the path glyph, and pressing it leaves the mode. */}
@@ -442,7 +446,11 @@ export function WhiteboardDock({
           key: 'select',
           label: model.pathEditing ? 'Select, editing a path' : 'Select',
           shortcut: WHITEBOARD_TOOL_KEYS.select,
-          icon: model.pathEditing ? <PathEditGlyph /> : <SelectIcon size={DOCK_ICON_PX} />,
+          icon: model.pathEditing ? (
+            <EditPointsIcon size={DOCK_ICON_PX} />
+          ) : (
+            <SelectIcon size={DOCK_ICON_PX} />
+          ),
           pressed: tool === 'select',
           onPress: () => pickAndClose(model.pathEditing ? model.leavePathEdit : model.pickSelect),
         })}

@@ -533,6 +533,7 @@ export function Canvas(props: CanvasProps) {
     onLeaveEdit: props.onCancelEdit,
     onDeselect,
     onBeginEdit: props.onBeginEdit,
+    onCancelDraw: props.onCancelDraw,
   });
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);

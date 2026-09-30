@@ -21,10 +21,11 @@ function setup(initial: Element[] = [], editsBlocked = false) {
     els = map(els);
   });
   const dress = <T extends Element>(el: T): T => ({ ...el, strokeWidth: 'thick' });
+  const setSelectedId = vi.fn();
   const { result } = renderHook(() =>
-    usePathCommits({ editsBlocked, commit, styleNewElement: dress }),
+    usePathCommits({ editsBlocked, commit, styleNewElement: dress, setSelectedId }),
   );
-  return { api: result.current, commit, els: () => els };
+  return { api: result.current, commit, els: () => els, setSelectedId };
 }
 
 describe('usePathCommits', () => {
@@ -35,6 +36,8 @@ describe('usePathCommits', () => {
     expect(s.els()).toHaveLength(1);
     expect(s.els()[0]).toMatchObject({ type: 'path', closed: false, strokeWidth: 'thick' });
     expect(track).toHaveBeenCalledWith('Element', 'Added', 'Path');
+    // Selected, so it can be edited at once (Edit points, Enter).
+    expect(s.setSelectedId).toHaveBeenCalledWith(s.els()[0]!.id);
   });
 
   it('refuses a path that is not whole, and anything while edits are blocked', () => {
@@ -61,6 +64,7 @@ describe('usePathCommits', () => {
     expect(s.els()).toHaveLength(1);
     expect(s.els()[0]).toMatchObject({ id: open.id, closed: true, strokeColor: '#f00' });
     expect((s.els()[0] as typeof open).nodes).toHaveLength(3);
+    expect(s.setSelectedId).toHaveBeenCalledWith(open.id);
   });
 
   it('lands a continuation as a new path when the original has gone', () => {

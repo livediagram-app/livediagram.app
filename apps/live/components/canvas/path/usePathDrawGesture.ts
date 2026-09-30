@@ -55,6 +55,7 @@ export function usePathDrawGesture({
   viewportZoom,
   activeTabId,
   onCommitPath,
+  onStartPath,
 }: {
   pendingDraw: PendingDraw | null;
   elements: readonly Element[];
@@ -63,6 +64,8 @@ export function usePathDrawGesture({
   viewportZoom: number;
   activeTabId?: string;
   onCommitPath: (commit: PathCommit) => void;
+  // A new path's first node: the path that landed before it is no longer the selection.
+  onStartPath?: () => void;
 }) {
   const armed = pendingDraw?.type === 'path';
   const [draft, setDraftState] = useState<PathDraft | null>(null);
@@ -200,6 +203,7 @@ export function usePathDrawGesture({
         return true;
       }
       case 'place': {
+        if (!d) onStartPath?.();
         const next = placeNode(d, p, now, e.shiftKey);
         setDraft(next);
         const count = next.anchors.length;

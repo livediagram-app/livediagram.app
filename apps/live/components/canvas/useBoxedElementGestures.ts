@@ -96,7 +96,12 @@ export function useBoxedElementGestures({
       y: e.clientY,
       wasSelected: isSelected,
     });
-    if (verdict.pairs) return;
+    if (verdict.pairs) {
+      // A path opens its edit mode on the pair itself: a double-tap brings no reliable dblclick
+      // (docs/specs/023-whiteboard/path-tool.md "Editing").
+      if (element.type === 'path') onBeginEdit(element.id);
+      return;
+    }
     // Shift modifier: on an element that is NOT part of the selection it
     // stays the immediate selection toggle (add to the marquee set), the
     // convention every drawing tool uses. On an element that IS selected

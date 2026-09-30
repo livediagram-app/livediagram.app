@@ -20,11 +20,14 @@ export function usePathCommits({
   editsBlocked,
   commit,
   styleNewElement,
+  setSelectedId,
 }: {
   editsBlocked: boolean;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The board's style memory: a new path wears the style chosen for the next path.
   styleNewElement: <T extends Element>(el: T) => T;
+  // A landed path is selected, so it can be edited at once (Edit points, Enter).
+  setSelectedId: (id: string | null) => void;
 }) {
   const commitPath = ({ anchors, closed, continuing }: PathCommit) => {
     if (editsBlocked) {
@@ -46,6 +49,7 @@ export function usePathCommits({
       continued = true;
       return els.map((el) => (el === original ? continuedPath(original, anchors, closed) : el));
     });
+    setSelectedId(continued && continuing ? continuing.id : fresh.id);
     track('Element', 'Added', 'Path');
     console.debug(
       `[path] committed nodes=${anchors.length} closed=${closed ? 'yes' : 'no'} continued=${continued ? 'yes' : 'no'}`,

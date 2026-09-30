@@ -23,6 +23,11 @@ import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
 
+// A press on a toolbar floating over the canvas (the selection toolbar, the edit toolbar) is a
+// button press, never a node.
+const onToolbar = (e: React.PointerEvent) =>
+  !!(e.target as HTMLElement | null)?.closest?.('[data-canvas-toolbar]');
+
 // The id the path being drawn renders under: it has no element yet.
 export const PATH_DRAFT_ID = 'path-draft';
 
@@ -51,6 +56,7 @@ export function usePathTool({
   onLeaveEdit,
   onDeselect,
   onBeginEdit,
+  onCancelDraw,
 }: {
   pendingDraw: PendingDraw | null;
   canvasTool: CanvasTool;
@@ -74,6 +80,8 @@ export function usePathTool({
   onLeaveEdit: () => void;
   onDeselect: () => void;
   onBeginEdit: (id: string) => void;
+  // Puts a held tool down: opening a path's edit mode puts the Path tool down first.
+  onCancelDraw: () => void;
 }) {
   const surface = useCanvasSurface();
   const draw = usePathDrawGesture({
@@ -84,7 +92,12 @@ export function usePathTool({
     viewportZoom,
     activeTabId,
     onCommitPath,
+    onStartPath: onDeselect,
   });
+  const openEdit = (id: string) => {
+    if (pendingDraw) onCancelDraw();
+    onBeginEdit(id);
+  };
 
   // Edit mode: the path being edited, while Select is in hand and it can be edited at all.
   const pathOf = (id: string | null): PathElement | null => {
@@ -114,7 +127,7 @@ export function usePathTool({
     onCommitPathEdit,
     onLeave: onLeaveEdit,
     onDeselect,
-    onBeginEdit,
+    onBeginEdit: openEdit,
   });
 
   const { draft } = draw;
@@ -190,8 +203,8 @@ export function usePathTool({
     : null;
 
   return {
-    beginPathPress: draw.beginPathPress,
-    beginEditPress: edit.beginEditPress,
+    beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
+    beginEditPress: (e: React.PointerEvent) => !onToolbar(e) && edit.beginEditPress(e),
     handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,
     elements: shownElements,
     draftView,

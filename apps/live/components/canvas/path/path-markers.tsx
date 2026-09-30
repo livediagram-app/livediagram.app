@@ -16,23 +16,23 @@ const MARK = 'stroke-brand-600 dark:stroke-brand-300';
 const RIM = 'fill-white dark:fill-[#0d121a]';
 const SOLID = 'fill-brand-600 dark:fill-brand-300';
 
-/** A node: a circle (the first node of a path being drawn, a square), filled when selected. */
+/** A node: a corner a square, a smooth node (mirrored or aligned) a circle; filled when selected. */
 export function NodeMarker({
   at,
   zoom,
-  first = false,
+  corner = false,
   selected = false,
 }: {
   at: Point;
   zoom: number;
-  first?: boolean;
+  corner?: boolean;
   selected?: boolean;
 }) {
   const r = PATH_NODE_RADIUS_PX / zoom;
   const cls = `${selected ? SOLID : RIM} ${MARK}`;
-  return first ? (
+  return corner ? (
     <rect
-      data-path-node=""
+      data-path-node="corner"
       x={at.x - r}
       y={at.y - r}
       width={2 * r}
@@ -41,7 +41,14 @@ export function NodeMarker({
       className={cls}
     />
   ) : (
-    <circle data-path-node="" cx={at.x} cy={at.y} r={r} strokeWidth={1.5 / zoom} className={cls} />
+    <circle
+      data-path-node="smooth"
+      cx={at.x}
+      cy={at.y}
+      r={r}
+      strokeWidth={1.5 / zoom}
+      className={cls}
+    />
   );
 }
 
