@@ -17,6 +17,7 @@
 // live port. SIGINT/SIGTERM tears the whole tree down.
 
 import { spawn } from 'node:child_process';
+import { generateKeyPairSync, sign } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
 import { createReadStream, existsSync, statSync } from 'node:fs';
@@ -24,7 +25,9 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = path.join(ROOT, 'apps', 'live', 'out');
+// E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
+// the signed-in specs run against (apps/live/scripts/build-clerk-stub.mjs).
+const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
@@ -50,6 +53,49 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
 const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
+//   E2E_CLERK_JWKS=1  act as Clerk for the signed-in specs (docs/specs/003-system-architecture/
+//                    e2e-smoke.md): a key made at boot, its JWKS on /e2e/jwks.json for the api
+//                    worker to verify against, and /e2e/token?sub=<id> minting a session token
+//                    for any test account. Test-only: nothing outside this stack trusts the key.
+const CLERK_JWKS = process.env.E2E_CLERK_JWKS === '1';
+const clerkKey = CLERK_JWKS ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
+const CLERK_KID = 'e2e-clerk-stub';
+
+const b64url = (buf) => Buffer.from(buf).toString('base64url');
+
+// An RS256 session token shaped like Clerk's: sub, sid, iat / nbf / exp.
+function mintClerkToken(sub) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = b64url(JSON.stringify({ alg: 'RS256', kid: CLERK_KID, typ: 'JWT' }));
+  const payload = b64url(
+    JSON.stringify({ sub, sid: `sess_${sub}`, iat: now, nbf: now - 5, exp: now + 3600 }),
+  );
+  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), clerkKey.privateKey);
+  return `${header}.${payload}.${b64url(signature)}`;
+}
+
+// Answers the two Clerk stand-in routes, or returns false for anything else.
+function serveClerkStandIn(pathname, url, res) {
+  if (!CLERK_JWKS) return false;
+  if (pathname === '/e2e/jwks.json') {
+    const jwk = clerkKey.publicKey.export({ format: 'jwk' });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ keys: [{ ...jwk, kid: CLERK_KID, alg: 'RS256', use: 'sig' }] }));
+    return true;
+  }
+  if (pathname === '/e2e/token') {
+    const sub = url.searchParams.get('sub') ?? '';
+    if (!/^user_[A-Za-z0-9]+$/.test(sub)) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('sub must look like user_<id>');
+      return true;
+    }
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' });
+    res.end(mintClerkToken(sub));
+    return true;
+  }
+  return false;
+}
 
 const children = [];
 function run(cmd, args, opts = {}) {
@@ -242,6 +288,7 @@ function startLiveServer() {
       });
       return;
     }
+    if (serveClerkStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
     // Match the worker's /explorer → /explorer/recent redirect.
     if (pathname === '/explorer' || pathname === '/explorer/') {
@@ -337,6 +384,11 @@ async function main() {
       // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
       '--var',
       'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
+      // Verify session tokens against the stack's own key (E2E_CLERK_JWKS above), never a real
+      // Clerk instance a developer's .dev.vars may name.
+      ...(CLERK_JWKS
+        ? ['--var', `CLERK_JWKS_URL:http://127.0.0.1:${LIVE_PORT}/e2e/jwks.json`]
+        : []),
     ],
     {
       cwd: ROOT,

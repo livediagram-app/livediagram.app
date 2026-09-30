@@ -51,6 +51,8 @@ import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
+import { useCommentPicturesLoader } from '@/lib/comment-pictures';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -183,6 +185,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // returns are the same ones `useAuth()` would; we read them via the
   // hook so the page has one source of truth.
   const { authLoaded, clerkUserId, clerkDisplayName } = useClerkApiBootstrap();
+  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
+  usePublishPicture(clerkUserId);
 
   const {
     tabs,
@@ -1062,6 +1066,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
+  useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors + laser trails are neither sent nor drawn. Derived here so

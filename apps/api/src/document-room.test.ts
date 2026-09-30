@@ -1842,3 +1842,92 @@ describe('DocumentRoom tab-scoped sessions', () => {
     expect(ws.attachment).toMatchObject({ tabScope: 't2', shareCode: 'CODE2345' });
   });
 });
+
+// Profile pictures on the roster (docs/specs/014-identity/profile-picture.md §5, §6): kept only
+// from a verified account session, sent only to account sessions, updated by a repeat hello.
+describe('DocumentRoom profile pictures', () => {
+  const PICTURE = 'https://img.clerk.com/eyJ0eXBlIjoicHJveHkifQ?width=96&height=96&fit=crop';
+  const hello = (picture?: string) => ({
+    kind: 'hello',
+    participant: { id: 'x', name: 'Ann', color: '#f00', ...(picture ? { picture } : {}) },
+  });
+  const lastRoster = (s: FakeSocket) =>
+    (
+      JSON.parse(s.sent.filter((m) => m.includes('"kind":"presence"')).at(-1)!) as {
+        participants: ParticipantPresence[];
+      }
+    ).participants;
+
+  it('keeps a picture from an account session and drops one from anyone else', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room } = newRoom();
+    const account = makeSocket();
+    const anonymous = makeSocket();
+    room.acceptSession(asWs(account), 'edit', false, null, null, true);
+    room.acceptSession(asWs(anonymous), 'view', false, null, 'CODE', false);
+    sendFrame(room, account, hello(PICTURE));
+    sendFrame(room, anonymous, hello(PICTURE));
+    expect(storedPresence(account)?.picture).toBe(PICTURE);
+    expect(storedPresence(anonymous)?.picture).toBeUndefined();
+  });
+
+  it("drops a picture that is not on Clerk's image host", () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit', false, null, null, true);
+    sendFrame(room, ws, hello('https://evil.example/me.png'));
+    expect(storedPresence(ws)?.picture).toBeUndefined();
+  });
+
+  it('sends pictures to account sessions only: an anonymous share visitor sees none', () => {
+    const { room } = newRoom();
+    const ann = makeSocket();
+    const bob = makeSocket();
+    const visitor = makeSocket();
+    room.acceptSession(asWs(ann), 'edit', false, null, null, true);
+    room.acceptSession(asWs(bob), 'edit', false, null, null, true);
+    room.acceptSession(asWs(visitor), 'view', false, null, 'CODE', false);
+    sendFrame(room, ann, hello(PICTURE));
+    sendFrame(room, bob, hello());
+    sendFrame(room, visitor, hello());
+    expect(lastRoster(bob).find((p) => p.name === 'Ann' && p.picture)?.picture).toBe(PICTURE);
+    expect(lastRoster(visitor).some((p) => 'picture' in p)).toBe(false);
+    expect(visitor.sent.join('\n')).not.toContain('img.clerk.com');
+  });
+
+  it('an identity update replaces the picture and rebroadcasts, without re-running the join', () => {
+    const { room } = newRoom();
+    const ann = makeSocket();
+    const bob = makeSocket();
+    room.acceptSession(asWs(ann), 'edit', false, null, null, true);
+    room.acceptSession(asWs(bob), 'edit', false, null, null, true);
+    sendFrame(room, ann, hello(PICTURE));
+    sendFrame(room, bob, hello());
+    const annCursorFrames = () => ann.sent.filter((m) => m.includes('"kind":"cursor"')).length;
+    const before = annCursorFrames();
+    sendFrame(room, ann, { ...hello(), kind: 'identity' });
+    expect(storedPresence(ann)?.picture).toBeUndefined();
+    expect(lastRoster(bob).some((p) => 'picture' in p)).toBe(false);
+    expect(annCursorFrames()).toBe(before);
+  });
+});
+
+describe('DocumentRoom identity updates', () => {
+  it('are ignored before hello, and keep the tab the session is on', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit', false, null, null, true);
+    sendFrame(room, ws, {
+      kind: 'identity',
+      participant: { id: 'x', name: 'Early', color: '#000' },
+    });
+    expect(storedPresence(ws)).toBeNull();
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'x', name: 'Ann', color: '#f00', tabId: 't2' },
+    });
+    sendFrame(room, ws, { kind: 'identity', participant: { id: 'x', name: 'Ann', color: '#f00' } });
+    expect(storedPresence(ws)?.tabId).toBe('t2');
+  });
+});

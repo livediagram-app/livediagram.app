@@ -509,8 +509,10 @@ export const articles: Article[] = [
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest documents.',
-    keywords: 'login log in sign up register email code google oauth account create migrate',
+    description:
+      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+    keywords:
+      'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

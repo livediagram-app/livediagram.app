@@ -74,6 +74,15 @@ jobs:
       - name: Run smoke suite
         run: pnpm --filter @livediagram/live test:e2e
 
+      # The signed-in specs (docs/specs/014-identity/blueprints/profile-picture.md) need Clerk ON,
+      # a build-time switch, so they run against a second export with a stub key and a fake
+      # window.Clerk; no Clerk account or secret is involved.
+      - name: Build live app with Clerk stubbed
+        run: pnpm --filter @livediagram/live build:clerk-stub
+
+      - name: Run signed-in specs
+        run: pnpm --filter @livediagram/live test:e2e:clerk-stub
+
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@v7

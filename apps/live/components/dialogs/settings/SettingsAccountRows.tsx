@@ -2,10 +2,12 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
+import { Button, SOLID_BRAND_DARK } from '@livediagram/ui';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { PictureDisc } from '@/components/primitives/PictureDisc';
+import { accountInitial } from '@/lib/account-avatar';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
 // The account rows, moved here from the Explorer's /explorer/profile page
@@ -18,6 +20,9 @@ const DeleteAccountDialog = dynamic(
   () => import('@/components/dialogs/DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
   { ssr: false },
 );
+
+// The identity card's avatar diameter.
+const IDENTITY_AVATAR_PX = 44;
 
 // Identity, read from Clerk. Never written here: names and emails are managed
 // in Clerk itself, so this is a card, not a form.
@@ -40,12 +45,14 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
         <div className="flex items-center gap-3.5 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
           {signedIn ? (
             <>
-              <GlyphDisc
-                size={44}
+              <PictureDisc
+                pictureUrl={user?.pictureUrl}
+                size={IDENTITY_AVATAR_PX}
+                aria-hidden
                 className={`bg-brand-500 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
               >
-                {(user?.firstName ?? user?.username ?? '?').slice(0, 1).toUpperCase()}
-              </GlyphDisc>
+                {accountInitial(user)}
+              </PictureDisc>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium text-slate-800 dark:text-slate-100">
                   {name}

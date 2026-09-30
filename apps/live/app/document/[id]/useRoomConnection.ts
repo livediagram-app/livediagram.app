@@ -14,6 +14,8 @@ import {
   type LivePoll,
 } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
   apiCreateRoomTicket,
   connectRoom,
@@ -170,15 +172,30 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
+  //
+  // A signed-in session joins with a room ticket so the room knows it is an account (the only kind
+  // that may publish a profile picture or see others'), and says hello with its published picture
+  // (docs/specs/014-identity/profile-picture.md §6).
+  const { isSignedIn } = useDeferredAuth();
+  const picture = usePublishedPicture();
+  const selfForRoom = () => ({
+    id: selfParticipant.id,
+    key: selfParticipant.key,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    ...(picture ? { picture } : {}),
+  });
   const connectAs = useEffectEvent(() => ({
-    self: {
-      id: selfParticipant.id,
-      key: selfParticipant.key,
-      name: selfParticipant.name,
-      color: selfParticipant.color,
-    },
+    self: selfForRoom(),
     shareCode: sessionShareCode,
+    signedIn: isSignedIn,
   }));
+  // The switch flipped, or the picture changed: tell the open room, which updates the roster in
+  // place (switch off = initials for everyone from this update on).
+  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
+  useEffect(() => {
+    announceSelf();
+  }, [picture]);
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
@@ -210,6 +227,9 @@ export function useRoomConnection(opts: {
           // and stamped it onto the broadcast row). Optional on the
           // wire so a connection without role info still parses.
           ...(p.role ? { role: p.role } : {}),
+          // Only ever present when the room judged us an account session
+          // (docs/specs/014-identity/profile-picture.md §5).
+          ...(p.picture ? { picture: p.picture } : {}),
         })),
       );
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
@@ -487,7 +507,9 @@ export function useRoomConnection(opts: {
     };
     // Team documents need a one-time room ticket (docs/specs/015-api/api.md): membership is
     // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
-    // the ticket is minted over authenticated REST first. Personal /
+    // the ticket is minted over authenticated REST first. A signed-in
+    // session mints one too, because only a ticket can tell the room it is an
+    // account (docs/specs/014-identity/profile-picture.md §6). Guest personal /
     // share-code sessions skip the extra round trip — their legacy query
     // params (`o` exact-owner match, `s` share code) still resolve the
     // role. Connect is async only for the ticket fetch; `cancelled`
@@ -495,10 +517,11 @@ export function useRoomConnection(opts: {
     let cancelled = false;
     let openedRoom: ReturnType<typeof connectRoom> | null = null;
     void (async () => {
-      const { self, shareCode } = connectAs();
-      const ticket = documentTeamId
-        ? await apiCreateRoomTicket(self.id, documentId, shareCode)
-        : null;
+      const { self, shareCode, signedIn } = connectAs();
+      const ticket =
+        documentTeamId || signedIn
+          ? await apiCreateRoomTicket(self.id, documentId, shareCode)
+          : null;
       if (cancelled) return;
       openedRoom = connectRoom(
         documentId,

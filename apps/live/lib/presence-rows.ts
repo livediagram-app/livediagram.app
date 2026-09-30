@@ -14,7 +14,14 @@ import type { LaserConfig } from './laser-config';
 // Row shapes the builders below return. Module-private: only this file's own
 // functions name them, so they carry no `export` (consumers get the inferred
 // return types).
-type CursorRow = { id: string; name: string; color: string; x: number; y: number };
+type CursorRow = {
+  id: string;
+  name: string;
+  color: string;
+  x: number;
+  y: number;
+  picture?: string;
+};
 type LaserTrailRow = {
   participantId: string;
   color: string;
@@ -123,7 +130,14 @@ export function buildRemoteCursorRows(
     if (pos.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
+    rows.push({
+      id,
+      name: p.name,
+      color: p.color,
+      x: pos.x,
+      y: pos.y,
+      ...(p.picture ? { picture: p.picture } : {}),
+    });
   }
   return rows;
 }

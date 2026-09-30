@@ -289,6 +289,9 @@ export type TeamMember = {
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
   name: string | null;
+  // The joined member's published profile picture (docs/specs/014-identity/profile-picture.md §5), or
+  // null (pending invite, no picture, or the switch off).
+  pictureUrl: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -377,6 +380,10 @@ export type ParticipantRecord = {
   name: string;
   color: string;
   createdAt: number;
+  // The published profile picture (docs/specs/014-identity/profile-picture.md §6): set only by the
+  // participant's own verified Clerk session, null when they have none or turned it off, and
+  // returned only to signed-in callers (null for everyone else).
+  pictureUrl: string | null;
 };
 
 // What the realtime room broadcasts as presence. Identical shape to
@@ -419,6 +426,10 @@ export type ParticipantPresence = {
   // older client's hello still parses (the roster falls back to `id`, which
   // simply matches nothing — the behaviour before this field existed).
   key?: string;
+  // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
+  // room keeps it only from a verified account session and sends it only to account sessions;
+  // anonymous recipients get the roster without it.
+  picture?: string;
 };
 
 // ---------------------------------------------------------------------
@@ -573,3 +584,4 @@ export * from './activity';
 export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
+export * from './profile-picture';

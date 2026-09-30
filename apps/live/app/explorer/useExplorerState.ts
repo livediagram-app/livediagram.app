@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
   apiListDocuments,
   apiListSharedWith,
@@ -59,6 +60,8 @@ export function useExplorerState() {
   );
 
   const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
+  usePublishPicture(clerkUserId);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the

@@ -228,6 +228,9 @@ type UserPreferences = {
   // When false, suppress the "someone first opened one of my shared
   // documents" email. Defaults to true (notify).
   notifyDocumentJoin?: boolean;
+  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
+  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT (on).
+  showProfilePicture?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;

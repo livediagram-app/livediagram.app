@@ -150,3 +150,15 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
   });
   await expectOkVoid(res, 'save self');
 }
+
+// Publish or clear this account's profile picture (docs/specs/014-identity/profile-picture.md §6).
+// Clerk-only server-side. Returns the status so the caller can tell "no participant row yet" (404)
+// from a real failure.
+export async function apiSetProfilePicture(id: string, pictureUrl: string | null): Promise<number> {
+  const res = await apiFetch(`${API_BASE}/participants/${id}/picture`, {
+    method: 'PUT',
+    headers: await apiHeaders(id, { body: true }),
+    body: JSON.stringify({ pictureUrl }),
+  });
+  return res.status;
+}

@@ -1,6 +1,7 @@
 import { initialsOf, statusLabel, statusRingColor, type Participant } from '@/lib/identity';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { GlyphDisc, HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livediagram/ui';
+import { PictureDisc } from '@/components/primitives/PictureDisc';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // How far the presence ring paints BEYOND the avatar's layout box, per side.
@@ -47,8 +48,9 @@ export function ParticipantAvatar({
   const ringColor = statusRingColor(participant.status);
   // The ring is drawn as a 2px box-shadow with a 1px white gap inside.
   const avatar = (
-    <GlyphDisc
+    <PictureDisc
       as="div"
+      pictureUrl={participant.picture}
       size={size}
       role="img"
       aria-label={`${participant.name} (${statusLabel(participant.status)})`}
@@ -60,7 +62,7 @@ export function ParticipantAvatar({
       className={`font-semibold text-white ${IDENTITY_FILL}`}
     >
       {initialsOf(participant.name)}
-    </GlyphDisc>
+    </PictureDisc>
   );
   if (!withHoverCard) return avatar;
   // HoverCard description: status + idle duration. Surfaces both at
