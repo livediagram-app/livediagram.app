@@ -73,8 +73,6 @@ describe('SettingsTokensRow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create Token' }));
     const reveal = await screen.findByRole('status', { name: 'New token created' });
     expect(reveal.textContent).toContain('lvd_secret');
-    // The Try It command carries the new token.
-    expect(reveal.textContent).toContain('Authorization: Bearer lvd_secret');
     expect(api.apiCreateToken).toHaveBeenCalledWith('user_1', 'CI Bot');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.queryByText(/lvd_secret/)).toBeNull();

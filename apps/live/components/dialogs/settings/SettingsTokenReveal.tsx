@@ -2,23 +2,15 @@
 
 // The one-time reveal (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category).
 // A credential card in the current theme: an emerald-edged "done" card with
-// the secret and command in monospace fields. Under it, a Try It command with the new
-// token already filled in: the fastest proof that it works is running it.
+// the secret in a monospace field, copied from inside the field.
 import { useState } from 'react';
 import { Button, CheckIcon, CopyIcon, Tooltip, useCopiedFlash } from '@livediagram/ui';
-import { API_BASE } from '@/lib/api/core';
-import { tryItCommand } from './token-status';
 
 const SECRET_PREFIX = 'lvd_';
 
 export function SettingsTokenReveal({ secret, onDone }: { secret: string; onDone: () => void }) {
   // Outlives each 1.5s "Copied" flash: once the secret is safe, Done leads.
   const [secretCopied, setSecretCopied] = useState(false);
-  const command = tryItCommand(
-    secret,
-    API_BASE,
-    typeof window === 'undefined' ? 'http://localhost' : window.location.origin,
-  );
   const hasPrefix = secret.startsWith(SECRET_PREFIX);
 
   return (
@@ -48,16 +40,6 @@ export function SettingsTokenReveal({ secret, onDone }: { secret: string; onDone
         )}
       </CopyField>
 
-      <div className="flex flex-col gap-1">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Try It
-        </span>
-        <CopyField label="Copy command" value={command} multiline>
-          <span className="text-slate-400">$ </span>
-          {command}
-        </CopyField>
-      </div>
-
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
           Store it somewhere safe. We keep only a fingerprint, so it can&apos;t be shown again.
@@ -82,13 +64,11 @@ export function SettingsTokenReveal({ secret, onDone }: { secret: string; onDone
 function CopyField({
   value,
   label,
-  multiline = false,
   onCopied,
   children,
 }: {
   value: string;
   label: string;
-  multiline?: boolean;
   onCopied?: () => void;
   children: React.ReactNode;
 }) {
@@ -104,13 +84,7 @@ function CopyField({
   };
   return (
     <div className="relative">
-      <code
-        className={`block select-all rounded-lg border border-slate-200 bg-slate-50 py-2 pr-10 pl-3 font-mono text-[11px] leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200 ${
-          // A command keeps its own line breaks and scrolls sideways, as it
-          // would in a terminal, rather than wrapping mid-flag.
-          multiline ? 'overflow-x-auto whitespace-pre' : 'break-all'
-        }`}
-      >
+      <code className="block select-all break-all rounded-lg border border-slate-200 bg-slate-50 py-2 pr-10 pl-3 font-mono text-[11px] leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
         {children}
       </code>
       <Tooltip label={copied ? 'Copied' : label}>
@@ -118,9 +92,7 @@ function CopyField({
           type="button"
           onClick={copy}
           aria-label={copied ? 'Copied' : label}
-          className={`absolute right-1 flex h-7 w-7 items-center justify-center rounded-md transition ${
-            multiline ? 'top-1' : 'top-1/2 -translate-y-1/2'
-          } ${
+          className={`absolute top-1/2 right-1 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition ${
             copied
               ? 'text-emerald-600 dark:text-emerald-400'
               : 'text-slate-400 hover:bg-slate-200/70 hover:text-brand-600 dark:hover:bg-slate-700 dark:hover:text-brand-300'

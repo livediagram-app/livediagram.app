@@ -6,7 +6,6 @@ import {
   relativeTime,
   sortTokens,
   tokenStatus,
-  tryItCommand,
   usedRecently,
 } from './token-status';
 
@@ -52,14 +51,5 @@ describe('token-status', () => {
       readOnly: false,
     });
     expect(sortTokens([t('a', 1), t('b', 3), t('c', 2)]).map((x) => x.id)).toEqual(['b', 'c', 'a']);
-  });
-
-  it('builds a runnable curl against a relative or absolute api base', () => {
-    expect(tryItCommand('lvd_x', '/api', 'https://livediagram.app')).toBe(
-      'curl https://livediagram.app/api/documents \\\n  -H "Authorization: Bearer lvd_x"',
-    );
-    expect(tryItCommand('lvd_x', 'http://localhost:8787/api/', 'http://localhost:3002')).toContain(
-      'curl http://localhost:8787/api/documents',
-    );
   });
 });

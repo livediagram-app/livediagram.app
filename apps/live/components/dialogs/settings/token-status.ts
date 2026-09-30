@@ -81,11 +81,3 @@ export function relativeTime(ms: number, now: number): string {
 export function sortTokens(tokens: readonly ApiToken[]): ApiToken[] {
   return [...tokens].sort((a, b) => b.createdAt - a.createdAt);
 }
-
-// The Try It snippet: list your documents with the new token filled in.
-// `apiBase` may be relative (the same-origin '/api'), so it is resolved
-// against the page's origin to give a command that runs from a terminal.
-export function tryItCommand(secret: string, apiBase: string, origin: string): string {
-  const base = new URL(apiBase.replace(/\/$/, ''), origin).toString();
-  return `curl ${base}/documents \\\n  -H "Authorization: Bearer ${secret}"`;
-}

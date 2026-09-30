@@ -228,9 +228,7 @@ out top to bottom:
 - **Reveal.** After a create, the composer becomes an emerald-edged "Token
   Created" card that follows the theme (light in light mode): a "Shown once"
   label and the secret in a monospace field with its `lvd_` prefix picked out.
-  Under it a **Try It** snippet, a `curl` that lists your documents with the
-  new token already filled in. Each field copies the way the Share dialog's
-  pass link does: an icon-only copy button inside the field's right edge, with
+  The field copies the way the Share dialog's pass link does: an icon-only copy button inside the field's right edge, with
   a tooltip, that turns into a check once the clipboard write resolves.
   **Done** drops the secret for good; it becomes the primary action once the
   secret has been copied.
