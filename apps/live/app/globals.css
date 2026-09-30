@@ -13,6 +13,23 @@
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 
+/*
+ * Editor fade-in (docs/specs/004-interface-design/motion.md): the editor's floating chrome and
+ * the canvas content fade in as they mount rather than popping into place, most visibly as a
+ * document opens. Opacity only, so the canvas world's inline transform and a panel's own
+ * position are untouched; `fade-in` has no `to`, so a translucent panel settles at its own
+ * opacity. In the components layer, so a surface's own entrance utility (a panel's pop-in, a
+ * banner's fade) still wins. Reduced motion collapses it with every other animation.
+ */
+@layer components {
+  [data-floating-panel],
+  [data-editor-tabbar],
+  [data-zoom-cluster],
+  [data-canvas-world] {
+    animation: fade-in var(--transition-duration-short) ease-out;
+  }
+}
+
 @layer base {
   button:not(:disabled),
   [role='button']:not([aria-disabled='true']) {
@@ -93,9 +110,8 @@
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
-     "Templates section"): a longer rise than fly-up-in plus a brand ring that
-     pulses out as it lands, so opening a tile below draws the eye back up to
-     what just opened. */
+     "Templates section"): a longer rise than fly-up-in, so opening a tile below
+     draws the eye back up to what just opened. */
   --animate-shelf-open: shelf-open var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* A sheet rising from the bottom edge of the screen. Distinct from
      fly-up-in's 16px lift: this one travels its own full height, so it reads
@@ -256,16 +272,10 @@
   from {
     transform: translateY(28px) scale(0.97);
     opacity: 0;
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-brand-400) 55%, transparent);
-  }
-  60% {
-    opacity: 1;
-    box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-brand-400) 30%, transparent);
   }
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
-    box-shadow: 0 0 0 10px transparent;
   }
 }
 

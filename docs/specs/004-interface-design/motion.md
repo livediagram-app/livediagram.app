@@ -84,6 +84,24 @@ motion is stricter still.
   tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
   on `transitionend`.
 
+## Editor arrival
+
+The editor's floating chrome (the Explorer, Palette and Map panels, the tab bar, the zoom cluster)
+and the canvas content **fade in** as they mount, `fade-in` at the short token (200ms), opacity
+only, so a document opens softly rather than its parts popping into place. It is one rule in
+`apps/live/app/globals.css` keyed on the surfaces' existing markers (`data-floating-panel`,
+`data-editor-tabbar`, `data-zoom-cluster`, `data-canvas-world`), in the components layer so a
+surface's own entrance utility still wins. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
+brush, collaborate / activity, zoom), used to scale in from nothing with an overshoot
+(`pop-in`); a whole panel or toolbar popping read as abrupt, so they fade (`animate-fade-in`)
+instead. `pop-in` stays
+on small controls, where it reads as feedback.
+
+A picker's first paint does not animate: the template picker's open shelf plays its entrance
+(`shelf-open`) only when the person opens a category, not on load, and a carousel reserves its
+arrows' space from the first frame ([Canvas and palette](../008-canvas/canvas-and-palette.md)
+"Templates section"), so nothing shifts as the modal arrives.
+
 ## Layout stability
 
 Shortening motion changes when things settle, never where. Chrome motion animates `opacity` and

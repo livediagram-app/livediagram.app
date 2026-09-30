@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, RefreshIcon } from '@livediagram/ui';
-import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
+import { Button, DiagramBuildAnimation, RefreshIcon } from '@livediagram/ui';
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the
