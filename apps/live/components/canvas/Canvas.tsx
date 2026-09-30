@@ -12,7 +12,8 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
-import { drawIntentCursor } from '@/lib/draw-mode';
+import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
@@ -726,6 +727,17 @@ export function Canvas(props: CanvasProps) {
             />
           </MindGrowProvider>
         </CanvasStillProvider>
+        {/* The whiteboard pen's stroke being drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"):
+            in this transformed layer, after the elements, laid out as the stroke it lands as, so
+            the same layer rasterises both and release changes no pixel. */}
+        {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
+          <WhiteboardPenPreview
+            stroke={penStroke}
+            pen={pendingDraw}
+            ink={props.whiteboardInk ?? 'currentColor'}
+            zoom={viewportZoom}
+          />
+        ) : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
@@ -876,7 +888,6 @@ export function Canvas(props: CanvasProps) {
         drawHover={drawHover}
         stamp={stamp}
         penPoints={penPoints}
-        penStroke={penStroke}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         wrapperRef={wrapperRef}

@@ -174,6 +174,26 @@ export function createImage(x: number, y: number): ImageElement {
   };
 }
 
+// The box a freehand element takes for points spanning these bounds: padded by a
+// pixel on each side, so a perfectly straight line (zero width or height) still
+// has a dimension to normalise against (dividing by 0 would make NaN points).
+// Shared with the whiteboard pen's live ink, which lays itself out in exactly the
+// box its stroke will land in (docs/specs/023-whiteboard/whiteboard.md "Pens").
+export function freehandFrame(
+  minX: number,
+  minY: number,
+  maxX: number,
+  maxY: number,
+): { x: number; y: number; width: number; height: number } {
+  const PAD = 1;
+  return {
+    x: minX - PAD,
+    y: minY - PAD,
+    width: Math.max(1, maxX - minX + PAD * 2),
+    height: Math.max(1, maxY - minY + PAD * 2),
+  };
+}
+
 // Mints a freehand element from raw canvas-coord points. Caller is
 // responsible for the simplification + smoothing decision (see
 // `simplifyPolyline` and `catmullRomToBezierPath` below); this just
@@ -208,15 +228,7 @@ export function createFreehand(
     if (p.y < minY) minY = p.y;
     if (p.y > maxY) maxY = p.y;
   }
-  // Pad the box by a single pixel on each side so a perfectly
-  // straight line (zero width OR zero height) still has a non-zero
-  // dimension to normalise against. Without this, dividing by 0
-  // produces NaN points and the renderer breaks.
-  const PAD = 1;
-  const width = Math.max(1, maxX - minX + PAD * 2);
-  const height = Math.max(1, maxY - minY + PAD * 2);
-  const ox = minX - PAD;
-  const oy = minY - PAD;
+  const { x: ox, y: oy, width, height } = freehandFrame(minX, minY, maxX, maxY);
   const points = rawPoints.map((p) => ({
     nx: (p.x - ox) / width,
     ny: (p.y - oy) / height,

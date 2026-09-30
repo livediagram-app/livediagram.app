@@ -89,6 +89,11 @@ export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: n
 // curve when the user resizes. The stroke colour comes from theme
 // (with the per-element override), matching how other boxed elements
 // pick their accent.
+// The svg a freehand stroke draws in, shared with the whiteboard pen's live ink
+// (whiteboard/LiveInk.tsx), which lays itself out exactly like the stroke it lands as.
+export const FREEHAND_SVG_CLASS =
+  'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
+
 export function FreehandSvg({
   element,
   fill,
@@ -145,7 +150,7 @@ export function FreehandSvg({
   const isHighlighter = element.pen === 'highlighter';
   return (
     <svg
-      className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+      className={FREEHAND_SVG_CLASS}
       viewBox={`0 0 ${vbW} ${vbH}`}
       preserveAspectRatio="none"
       aria-hidden

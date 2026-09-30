@@ -39,7 +39,6 @@ import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
-import type { LiveStroke } from '@/lib/live-stroke';
 import { HoverCard } from '@livediagram/ui';
 import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
@@ -65,8 +64,6 @@ type ChromeExtras = {
   // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4).
   stamp: StampGhost | null;
   penPoints: { x: number; y: number }[] | null;
-  // A whiteboard pen's live stroke (docs/specs/023-whiteboard/whiteboard.md "Pens").
-  penStroke: LiveStroke | null;
   // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
   // the live rubber-band cursor position, both canvas coords.
   polygonVertices: { x: number; y: number }[];
@@ -233,7 +230,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onUndo,
     pendingDraw,
     penPoints,
-    penStroke,
     polygonVertices,
     polygonCursor,
     highlighterColor,
@@ -448,7 +444,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       <CanvasDrawPreview
         drawDrag={drawDrag}
         penPoints={penPoints}
-        penStroke={penStroke}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         highlighterColor={highlighterColor}

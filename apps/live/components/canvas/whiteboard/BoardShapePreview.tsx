@@ -65,33 +65,29 @@ const SHAPE_CORNER_PX = 8;
 // The shape a pen stroke is recognised as, while the pen holds still: drawn
 // where and as it will land (commit-freehand's whiteboardStroke), in the pen's
 // colour and nearest border weight, unfilled; a line in the pen's own width.
+// In canvas px, inside the canvas's transformed layer beside the live ink
+// (WhiteboardPenPreview), so the canvas zoom scales it as it scales the shape
+// that lands.
 export function RecognisedShapePreview({
   shape,
   colour,
   penWidth,
-  zoom,
-  origin,
 }: {
   shape: RecognisedShape;
   colour: string;
   penWidth: number;
-  zoom: number;
-  origin: { left: number; top: number };
 }) {
-  const toScreen = (p: { x: number; y: number }) => ({
-    x: origin.left + p.x * zoom,
-    y: origin.top + p.y * zoom,
-  });
   if (shape.kind === 'line') {
-    const from = toScreen(shape.from ?? { x: shape.bbox.x, y: shape.bbox.y });
-    const to = toScreen(
-      shape.to ?? { x: shape.bbox.x + shape.bbox.width, y: shape.bbox.y + shape.bbox.height },
-    );
+    const from = shape.from ?? { x: shape.bbox.x, y: shape.bbox.y };
+    const to = shape.to ?? {
+      x: shape.bbox.x + shape.bbox.width,
+      y: shape.bbox.y + shape.bbox.height,
+    };
     return (
       <svg
         aria-hidden
         data-recognition-preview="line"
-        className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
+        className="pointer-events-none absolute left-0 top-0 h-px w-px overflow-visible"
       >
         <line
           x1={from.x}
@@ -99,23 +95,21 @@ export function RecognisedShapePreview({
           x2={to.x}
           y2={to.y}
           stroke={colour}
-          strokeWidth={penWidth * zoom}
+          strokeWidth={penWidth}
           strokeLinecap="round"
         />
       </svg>
     );
   }
-  // The committed shape's floor (16 canvas px a side).
-  const width = Math.max(16, shape.bbox.width) * zoom;
-  const height = Math.max(16, shape.bbox.height) * zoom;
-  const box = toScreen(shape.bbox);
+  const width = Math.max(16, shape.bbox.width);
+  const height = Math.max(16, shape.bbox.height);
   const css = shape.kind === 'square' || shape.kind === 'circle';
   return (
     <div
       aria-hidden
       data-recognition-preview={shape.kind}
-      className="pointer-events-none fixed z-[var(--z-chrome)]"
-      style={{ left: box.x, top: box.y, width, height }}
+      className="pointer-events-none absolute"
+      style={{ left: shape.bbox.x, top: shape.bbox.y, width, height }}
     >
       <PenShapePreview
         kind={shape.kind}
@@ -123,7 +117,7 @@ export function RecognisedShapePreview({
         widthPx={BORDER_STROKE_PX[nearestBorderStroke(penWidth)]}
         usesSvg={!css}
         radius={shape.kind === 'circle' ? '50%' : '4px'}
-        zoom={zoom}
+        zoom={1}
         aspect={height > 0 ? width / height : 1}
       />
     </div>

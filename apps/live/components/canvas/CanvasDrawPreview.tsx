@@ -9,24 +9,15 @@ import {
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
-import type { LiveStroke } from '@/lib/live-stroke';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
-import {
-  PenShapePreview,
-  RecognisedShapePreview,
-} from '@/components/canvas/whiteboard/BoardShapePreview';
-import { useRecognitionPreview } from '@/hooks/canvas/useRecognitionPreview';
+import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
-import { LiveInk } from '@/components/canvas/whiteboard/LiveInk';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   penPoints: { x: number; y: number }[] | null;
-  // The whiteboard pen's live stroke (docs/specs/023-whiteboard/whiteboard.md "Pens"): drawn by
-  // LiveInk straight from the pipeline, never through penPoints.
-  penStroke: LiveStroke | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
   // The highlighter banner's live settings (docs/specs/008-canvas/highlighter.md), so the in-flight
@@ -50,7 +41,6 @@ type CanvasDrawPreviewProps = {
 export function CanvasDrawPreview({
   drawDrag,
   penPoints,
-  penStroke,
   polygonVertices,
   polygonCursor,
   highlighterColor,
@@ -61,28 +51,19 @@ export function CanvasDrawPreview({
   wrapperRef,
   whiteboardInk,
 }: CanvasDrawPreviewProps) {
-  // A whiteboard mark previews as it will land (docs/specs/023-whiteboard/whiteboard.md "Pens"): the
-  // pen's colour (the main pen: the board's) and width, solid, unfilled, through the live
-  // stroke pipeline whose output is also what lands.
+  // A whiteboard shape or line previews as it will land (docs/specs/023-whiteboard/whiteboard.md
+  // "Shapes"): in the board's ink, solid, unfilled.
   const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
-  const whiteboardPen = isWhiteboardPenIntent(pendingDraw) ? pendingDraw : null;
-  const showsInk = !!penStroke && !!whiteboardPen;
+  // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
   const showsPen =
-    !whiteboardPen && !!penPoints && pendingDraw?.type === 'freehand' && penPoints.length >= 2;
+    !isWhiteboardPenIntent(pendingDraw) &&
+    !!penPoints &&
+    pendingDraw?.type === 'freehand' &&
+    penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
   const showsBox = !!drawDrag && !!pendingDraw && !stamp;
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
-  const origin = useCanvasClientOrigin(
-    wrapperRef,
-    showsInk || showsPen || showsPolygon || showsBox,
-  );
-  // Recognition on: holding the pen still shows the shape the stroke becomes.
-  const recognising = showsInk && !!whiteboardPen?.recognise;
-  const recognised = useRecognitionPreview(
-    recognising ? penStroke : null,
-    recognising,
-    viewportZoom,
-  );
+  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox);
   return (
     <>
       {stamp && pendingDraw?.type === 'sticky' ? (
@@ -104,32 +85,6 @@ export function CanvasDrawPreview({
           The three simple kinds (square / circle / stadium) bypass
           SVG and use border-radius on the wrapping div, matching
           how BoxedElementView renders them at rest. */}
-      {/* The whiteboard pen's live stroke (docs/specs/023-whiteboard/whiteboard.md "Pens"): the
-          live pipeline's output, drawn by LiveInk outside React per sample. With recognition on,
-          a pause swaps in the shape the stroke reads as; the ink stays mounted underneath,
-          hidden, because its sealed chunks live only in the DOM. */}
-      {showsInk && penStroke && whiteboardPen && origin ? (
-        <>
-          <LiveInk
-            stroke={penStroke}
-            colour={inkOf(whiteboardPen.colour)}
-            width={whiteboardPen.width}
-            zoom={viewportZoom}
-            origin={origin}
-            hidden={!!recognised}
-          />
-          {recognised ? (
-            <RecognisedShapePreview
-              shape={recognised}
-              colour={inkOf(whiteboardPen.colour)}
-              penWidth={whiteboardPen.width}
-              zoom={viewportZoom}
-              origin={origin}
-            />
-          ) : null}
-        </>
-      ) : null}
-
       {/* Pen-gesture live preview for the diagram pencil and the highlighter. While the user
           is drawing freehand, paint the in-progress polyline so they can see what they're
           sketching. Sits on the same z-[var(--z-chrome)] overlay layer as the draw-to-size box
