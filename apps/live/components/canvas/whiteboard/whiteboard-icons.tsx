@@ -19,7 +19,7 @@ export function PenGlyph({ colour, width }: { colour: string; width: number }) {
     <Glyph size={DOCK_ICON_PX} units={24}>
       <path d="M7 15 L15.5 6.5 L18 9 L9.5 17.5 L6.4 18 Z" />
       <path d="M6.4 18 L7 15 L9.5 17.5 Z" fill={colour} stroke={colour} />
-      <path d="M4 21.5 H20" stroke={colour} strokeWidth={Math.min(1 + width / 2, 5)} />
+      <path d="M4 21.5 H20" stroke={colour} strokeWidth={1 + width * 0.75} />
     </Glyph>
   );
 }

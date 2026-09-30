@@ -40,7 +40,7 @@ describe('useWhiteboard', () => {
       type: 'freehand',
       variant: 'whiteboard',
       colour: null,
-      width: 4,
+      width: 2.5,
       recognise: false,
     });
   });
@@ -97,7 +97,7 @@ describe('useWhiteboard', () => {
     expect(deps.beginDraw).toHaveBeenLastCalledWith({
       type: 'shape',
       kind: 'diamond',
-      pen: { colour: '#1d7afc', width: 4 },
+      pen: { colour: '#1d7afc', width: 2.5 },
     });
   });
 

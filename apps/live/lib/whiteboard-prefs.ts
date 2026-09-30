@@ -1,10 +1,12 @@
-// The whiteboard's device-local tool settings (docs/specs/023-whiteboard/whiteboard.md "Pens"): the preset
+// The whiteboard's device-local tool settings (docs/specs/023-whiteboard/whiteboard.md "Pens"): the three
 // pens, which one is in hand, shape recognition and the eraser mode. The user's,
 // not the board's: stored in this browser, never sent with the document.
 
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
-export type WhiteboardPenId = 'ink' | 'red' | 'blue' | 'green';
+export type WhiteboardPenId = 'ink' | 'blue' | 'red';
+// `colour` null is the board's own ink, which follows the appearance; only the
+// Ink pen has it. `width` is in px, derived from a named preset.
 export type WhiteboardPen = { id: WhiteboardPenId; colour: string | null; width: number };
 export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
@@ -14,49 +16,50 @@ export type WhiteboardPrefs = {
   eraserMode: WhiteboardEraserMode;
 };
 
+// Subtle at 100%: a marker line, not a felt tip.
 export const WHITEBOARD_PEN_WIDTHS: readonly { id: string; label: string; px: number }[] = [
-  { id: 'fine', label: 'Fine', px: 2 },
-  { id: 'medium', label: 'Medium', px: 4 },
-  { id: 'bold', label: 'Bold', px: 8 },
+  { id: 'fine', label: 'Fine', px: 1.5 },
+  { id: 'medium', label: 'Medium', px: 2.5 },
+  { id: 'bold', label: 'Bold', px: 4 },
 ];
-const MEDIUM_PX = 4;
+const MEDIUM_PX = 2.5;
 
-// Ink (null: the board's own ink, which follows the appearance) plus named
-// colours that each read at 3:1 or better on both boards.
-export const WHITEBOARD_PEN_COLOURS: readonly { hex: string | null; label: string }[] = [
-  { hex: null, label: 'Ink' },
+// The named colours an adjustable pen can take, each 3:1 or better on both
+// boards. Ink is not among them: it is the first pen's, and only its.
+export const WHITEBOARD_PEN_COLOURS: readonly { hex: string; label: string }[] = [
+  { hex: '#1d7afc', label: 'Blue' },
   { hex: '#e5484d', label: 'Red' },
   { hex: '#d9480f', label: 'Orange' },
   { hex: '#2f9e44', label: 'Green' },
   { hex: '#0c8599', label: 'Teal' },
-  { hex: '#1d7afc', label: 'Blue' },
   { hex: '#9061f9', label: 'Violet' },
   { hex: '#e64980', label: 'Pink' },
 ];
 
 const colourHex = (label: string) => WHITEBOARD_PEN_COLOURS.find((c) => c.label === label)!.hex;
 
+// Left to right in the dock.
 export const DEFAULT_WHITEBOARD_PREFS: WhiteboardPrefs = {
   pens: [
     { id: 'ink', colour: null, width: MEDIUM_PX },
-    { id: 'red', colour: colourHex('Red'), width: MEDIUM_PX },
     { id: 'blue', colour: colourHex('Blue'), width: MEDIUM_PX },
-    { id: 'green', colour: colourHex('Green'), width: MEDIUM_PX },
+    { id: 'red', colour: colourHex('Red'), width: MEDIUM_PX },
   ],
   activePenId: 'ink',
   recognise: false,
   eraserMode: 'stroke',
 };
 
-const PEN_IDS: readonly WhiteboardPenId[] = ['ink', 'red', 'blue', 'green'];
-const PEN_NAMES: Record<WhiteboardPenId, string> = {
-  ink: 'Ink',
-  red: 'Red',
-  blue: 'Blue',
-  green: 'Green',
-};
+const PEN_IDS: readonly WhiteboardPenId[] = ['ink', 'blue', 'red'];
+const PEN_NAMES: Record<WhiteboardPenId, string> = { ink: 'Ink', blue: 'Blue', red: 'Red' };
+
+/** Ink always stays the board's ink; the other pens take any named colour. */
+export function penAdjustsColour(pen: WhiteboardPen): boolean {
+  return pen.id !== 'ink';
+}
 
 export function colourLabel(hex: string | null): string {
+  if (hex === null) return 'Ink';
   return WHITEBOARD_PEN_COLOURS.find((c) => c.hex === hex)?.label ?? 'Custom';
 }
 
@@ -64,7 +67,7 @@ export function widthLabel(px: number): string {
   return WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.label ?? `${px}px`;
 }
 
-/** "Red pen, medium": what the pen draws, for its button's accessible name. */
+/** "Blue pen, medium": what the pen draws, for its button's accessible name. */
 export function penLabel(pen: WhiteboardPen): string {
   return `${colourLabel(pen.colour)} pen, ${widthLabel(pen.width).toLowerCase()}`;
 }
@@ -77,9 +80,11 @@ export function penTelemetryType(pen: WhiteboardPen): string {
 
 // --- Parsing ----------------------------------------------------------------
 
-const isKnownColour = (v: unknown): v is string | null =>
-  WHITEBOARD_PEN_COLOURS.some((c) => c.hex === v);
-const isKnownWidth = (v: unknown): v is number => WHITEBOARD_PEN_WIDTHS.some((w) => w.px === v);
+const isNamedColour = (v: unknown): v is string => WHITEBOARD_PEN_COLOURS.some((c) => c.hex === v);
+// Widths are stored by preset NAME, so retuning a preset's px never
+// reinterprets somebody's choice; anything else (a bare px) falls back.
+const widthPxOf = (v: unknown): number | undefined =>
+  WHITEBOARD_PEN_WIDTHS.find((w) => w.id === v)?.px;
 
 function parsePens(raw: unknown): WhiteboardPen[] {
   const stored = Array.isArray(raw) ? raw : [];
@@ -91,8 +96,9 @@ function parsePens(raw: unknown): WhiteboardPen[] {
     if (!found) return preset;
     return {
       id: preset.id,
-      colour: isKnownColour(found.colour) ? found.colour : preset.colour,
-      width: isKnownWidth(found.width) ? found.width : preset.width,
+      colour:
+        penAdjustsColour(preset) && isNamedColour(found.colour) ? found.colour : preset.colour,
+      width: widthPxOf(found.width) ?? preset.width,
     };
   });
 }
@@ -124,5 +130,12 @@ export function loadWhiteboardPrefs(): WhiteboardPrefs {
 }
 
 export function saveWhiteboardPrefs(prefs: WhiteboardPrefs): void {
-  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(prefs));
+  const stored = {
+    ...prefs,
+    pens: prefs.pens.map((p) => ({
+      ...p,
+      width: WHITEBOARD_PEN_WIDTHS.find((w) => w.px === p.width)?.id ?? 'medium',
+    })),
+  };
+  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(stored));
 }

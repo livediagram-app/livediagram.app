@@ -51,7 +51,7 @@ Scope, by file:
 | Pattern          | `WHITEBOARD_PATTERN[appearance]`               | The colour of the dots and grid lines                    |
 | Background       | `WhiteboardBackground` (`plain/dots/grid`)     | A board's pattern, stored as `backgroundPattern`         |
 | Pen              | `WhiteboardPen`                                | A preset: id, colour (`null` = Ink), width in px         |
-| Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)      | 2, 4, 8 px, recorded as `penWidth`                       |
+| Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)      | 1.5, 2.5, 4 px, recorded as `penWidth`; stored by name   |
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'` | The held pen, with its colour, width and recognition     |
 | Dock             | `WhiteboardDock`                               | The floating bottom-centre toolbar                       |
 | Dock tool        | `WhiteboardTool`                               | `select/pen/eraser/sticky/text/shape`                    |
@@ -86,8 +86,9 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 
 ### Dock state
 
-- `WhiteboardPrefs = { pens: WhiteboardPen[4], activePenId, recognise: boolean, eraserMode }`,
-  defaults `DEFAULT_WHITEBOARD_PREFS` (pens Ink, Red, Blue, Green at Medium; `activePenId: 'ink'`;
+- `WhiteboardPrefs = { pens: WhiteboardPen[3], activePenId, recognise: boolean, eraserMode }`,
+  defaults `DEFAULT_WHITEBOARD_PREFS` (pens Ink, Blue, Red at Medium; only Blue and Red adjust colour,
+  `penAdjustsColour`; `activePenId: 'ink'`;
   `recognise: false`; `eraserMode: 'stroke'`).
 - `activeWhiteboardTool(canvasTool, pendingDraw)`:
   - `canvasTool === 'eraser'` → `eraser` (a stray `highlighter` reads as `select`);
@@ -254,7 +255,7 @@ export function eraseStrokePart(
 export function nearestBorderStroke(px: number): BorderStroke;
 
 // apps/live
-export type WhiteboardPenId = 'ink' | 'red' | 'blue' | 'green';
+export type WhiteboardPenId = 'ink' | 'blue' | 'red';
 export type WhiteboardPen = { id: WhiteboardPenId; colour: string | null; width: number };
 export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
@@ -283,8 +284,9 @@ export function whiteboardPointerRoute(i: {
 and `{ type: 'arrow'; ends?: ArrowEnds }`.
 
 Parsing rejects: a non-object or unparseable prefs value → defaults; a pen whose id is unknown →
-dropped and refilled from defaults; a colour that is not in `WHITEBOARD_PEN_COLOURS` → the pen's
-default colour; a width not in `WHITEBOARD_PEN_WIDTHS` → Medium; an unknown `activePenId` or
+dropped and refilled from defaults; a colour that is not in `WHITEBOARD_PEN_COLOURS`, or any colour on
+the Ink pen → the pen's default colour; a width that is not a preset NAME (`fine`, `medium`, `bold`; widths are stored
+by name so the px can be retuned) → Medium; an unknown `activePenId` or
 `eraserMode` → default; `recognise` not a boolean → `false`.
 
 ## Data and persistence
@@ -336,9 +338,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
   with the `translate` property because the pop-in animation owns `transform`.
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
-- Copy: toolbar label "Whiteboard tools"; buttons "Select", "Ink pen", "Red pen", "Blue pen",
-  "Green pen", "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
-  "Undo", "Redo", "More"; pen flyout "Colour", "Width" with "Fine", "Medium", "Bold"; eraser flyout
+- Copy: toolbar label "Whiteboard tools"; buttons "Select", "Ink pen", "Blue pen", "Red pen", "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition",
+  "Undo", "Redo", "More"; pen flyout "Colour" (Blue and Red only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; More flyout
   "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "A plain board to draw on
   with pens, stickies and shapes."
@@ -403,7 +404,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | `WHITEBOARD_BOARD.light / dark`   | `#fbfaf7` / `#0d121a`            | spec values     | contrast >= 4.5 |
 | `WHITEBOARD_INK.light / dark`     | `#1c1917` / `#e2e8f0`            | spec values     | contrast >= 4.5 |
 | `WHITEBOARD_PATTERN.light / dark` | `#d6d3cb` / `#1c2735`            | D5, spec (dark) | faint, visible  |
-| `WHITEBOARD_PEN_WIDTHS`           | 2, 4, 8 px                       | spec            | 1 to 100        |
+| `WHITEBOARD_PEN_WIDTHS`           | 1.5, 2.5, 4 px                   | spec            | 1 to 100        |
 | `WHITEBOARD_ERASER_RADIUS_PX`     | stroke 10, partial 16            | D6              | 4 to 48         |
 | Partial densify step              | `max(r / 2, 1)` canvas px        | D7              |                 |
 | Crossing bisection steps          | 12                               | D7              | 8 to 20         |

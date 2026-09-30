@@ -22,7 +22,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked up a whiteboard's Ink pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
   'Whiteboard|Selected|Red': "Someone picked up a whiteboard's Red pen.",
   'Whiteboard|Selected|Blue': "Someone picked up a whiteboard's Blue pen.",
-  'Whiteboard|Selected|Green': "Someone picked up a whiteboard's Green pen.",
   'Whiteboard|Selected|Custom':
     'Someone picked up a whiteboard pen after changing its colour, or changed a pen to a new colour.',
   'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
