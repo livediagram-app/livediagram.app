@@ -226,6 +226,50 @@ describe('DriveMirrorProvider', () => {
       expect(engines).toHaveLength(1);
     });
 
+    it('asks again, not takes over, when the clock jumped past the wait (sleep)', async () => {
+      election.elect = false;
+      await signedIn();
+      act(() => void window.dispatchEvent(new Event('focus')));
+      // Asleep: the timer fires long after its time; the answer is not late.
+      vi.setSystemTime(Date.now() + 40_000);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(DRIVE_CHECK_ANSWER_MS);
+      });
+      expect(election.takenOver).toBe(0);
+      expect(checks()).toEqual([
+        { type: 'check', kind: 'focus' },
+        { type: 'check', kind: 'focus' },
+      ]);
+      // Still unanswered on time: now it takes over.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(DRIVE_CHECK_ANSWER_MS);
+      });
+      expect(election.takenOver).toBe(1);
+    });
+
+    it('checks once a running pass ends when Cloud Sync comes into view during it', async () => {
+      election.elect = false;
+      await signedIn();
+      act(() =>
+        election.deliver!({
+          type: 'status',
+          status: status({ state: 'syncing', lastSyncedAt: Date.now() - 60_000 }),
+        }),
+      );
+      act(() => seen.requestCheck());
+      expect(checks()).toEqual([]);
+      act(() =>
+        election.deliver!({
+          type: 'status',
+          status: status({ state: 'idle', lastSyncedAt: Date.now() - 60_000 }),
+        }),
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(checks()).toEqual([{ type: 'check', kind: 'view' }]);
+    });
+
     it('does not take over when the tab that syncs answers', async () => {
       election.elect = false;
       await signedIn();

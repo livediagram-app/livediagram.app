@@ -114,10 +114,17 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   const [checkingSince, setCheckingSince] = useState<number | null>(null);
   const checkingSinceRef = useRef<number | null>(null);
   const statusRef = useRef<DriveMirrorStatus>(DRIVE_STATUS_INITIAL);
+  // Cloud Sync came into view during a pass: check once it ends.
+  const viewCheckPending = useRef(false);
+  const requestCheckRef = useRef<() => void>(() => {});
   const showStatus = useCallback((next: DriveMirrorStatus) => {
     statusRef.current = next;
     setStatus(next);
     if (next.state !== 'starting' && next.state !== 'disconnected') setSettingUp(false);
+    if (viewCheckPending.current && next.state !== 'syncing') {
+      viewCheckPending.current = false;
+      if (next.state === 'idle') queueMicrotask(() => requestCheckRef.current());
+    }
     const since = checkingSinceRef.current;
     if (
       since !== null &&
@@ -223,8 +230,17 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       }
       channel.post({ type: 'check', kind });
       if (answerTimer !== null) return;
+      const askedAt = Date.now();
       answerTimer = window.setTimeout(() => {
         answerTimer = null;
+        // Far later than asked for: the machine slept (or the clock jumped),
+        // and the answer may simply not have arrived yet. Ask again rather
+        // than take the sync from a tab that is fine.
+        if (Date.now() - askedAt > 2 * DRIVE_CHECK_ANSWER_MS) {
+          driveLog('check-reasked', { kind });
+          check(kind);
+          return;
+        }
         driveWarn('check-unanswered', { kind });
         election.takeOver();
       }, DRIVE_CHECK_ANSWER_MS);
@@ -397,6 +413,10 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
   // the last finished moments ago.
   const requestCheck = useCallback(() => {
     const current = statusRef.current;
+    if (current.state === 'syncing') {
+      viewCheckPending.current = true;
+      return;
+    }
     if (current.state !== 'idle' || checkingSinceRef.current !== null) return;
     if (current.lastSyncedAt !== null && Date.now() - current.lastSyncedAt < VIEW_CHECK_MIN_AGE_MS)
       return;
@@ -405,6 +425,9 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     setCheckingSince(since);
     runtime.current?.check('view');
   }, []);
+  useEffect(() => {
+    requestCheckRef.current = requestCheck;
+  }, [requestCheck]);
 
   const disconnect = useCallback(async () => {
     if (!clerkUserId) return;

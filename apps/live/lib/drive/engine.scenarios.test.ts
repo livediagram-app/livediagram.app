@@ -519,3 +519,23 @@ describe('checks asked for by another tab (docs/specs/022-drive-mirror/drive-mir
     expect(calls()).toBe(before + 1);
   });
 });
+
+describe('a check asked for while a flush is queued', () => {
+  it('still runs, after the flush', async () => {
+    const w = world();
+    w.ld.createDocument('d1', 'Plan');
+    const { engine } = makeEngine(w);
+    await engine.start();
+    const calls = () =>
+      w.google.requests.filter((r) => r.path === '/drive/v3/changes/startPageToken').length;
+    w.clock.tick(DRIVE_FOCUS_POLL_MIN_GAP_MS);
+    const before = calls();
+    // A pass runs; the tab hides (a flush queues); the user asks for a check.
+    w.ld.edit('d1');
+    const running = engine.flush();
+    const flushed = engine.flush();
+    const checked = engine.requestCheck('focus');
+    await Promise.all([running, flushed, checked]);
+    expect(calls()).toBe(before + 1);
+  });
+});

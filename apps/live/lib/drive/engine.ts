@@ -209,20 +209,38 @@ export class DriveMirrorEngine {
       return this.running;
     }
     if (this.rerun !== 'flush') this.rerun = kind === 'write' && this.rerun ? this.rerun : kind;
+    // A flush outranks everything, but a flush reads nothing from Drive: a
+    // check asked for meanwhile runs after it, never dropped.
+    else if (kind !== 'write' && kind !== 'flush') {
+      this.checkAfter = kind;
+      this.checkAfterDone ??= new Promise<void>((resolve) => this.checkAfterWaiters.push(resolve));
+      return this.checkAfterDone;
+    }
     this.queued ??= new Promise<void>((resolve) => this.queuedWaiters.push(resolve));
     return this.queued;
   }
 
   private queued: Promise<void> | null = null;
+  private checkAfter: PassKind | null = null;
+  private checkAfterDone: Promise<void> | null = null;
+  private checkAfterWaiters: (() => void)[] = [];
   private queuedWaiters: (() => void)[] = [];
 
   private afterPass(): void {
     this.running = null;
-    const again = this.rerun;
-    const waiters = this.queuedWaiters;
+    let again = this.rerun;
+    let waiters = this.queuedWaiters;
     this.rerun = null;
     this.queued = null;
     this.queuedWaiters = [];
+    // The flush has run; the check asked for behind it runs now.
+    if (again === null && this.checkAfter !== null) {
+      again = this.checkAfter;
+      waiters = [...waiters, ...this.checkAfterWaiters];
+      this.checkAfter = null;
+      this.checkAfterDone = null;
+      this.checkAfterWaiters = [];
+    }
     if (!again || this.stopped) {
       for (const w of waiters) w();
       return;
