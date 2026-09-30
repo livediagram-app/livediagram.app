@@ -5,6 +5,10 @@ import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import type { WhiteboardTool } from '@/lib/whiteboard-tool';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { WhiteboardDock } from './WhiteboardDock';
+import type { ReactElement } from 'react';
+import { ShapePenIcon } from '@/components/palette/palette-icons';
+import { tileById } from '@/components/palette/palette-tile-defs';
+import { DOCK_ICON_PX } from './whiteboard-icons';
 
 function model(tool: WhiteboardTool = 'pen', over: Partial<WhiteboardDockModel> = {}) {
   return {
@@ -335,5 +339,17 @@ describe('WhiteboardDock extras', () => {
     expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Redo' })).toBeNull();
     expect(screen.getByRole('button', { name: 'More' })).toBeTruthy();
+  });
+});
+
+describe('the Path tool icon (docs/specs/023-whiteboard/path-tool.md "Where it lives")', () => {
+  it('is the Shape Pen palette tile’s own icon component, at the dock’s size', () => {
+    const tile = tileById('tools:shape-pen')!;
+    expect((tile.icon as ReactElement).type).toBe(ShapePenIcon);
+    renderDock(model('select'));
+    const button = screen.getByRole('button', { name: 'Path tool' });
+    const svg = button.querySelector('svg')!;
+    const { container } = render(<ShapePenIcon size={DOCK_ICON_PX} />);
+    expect(svg.outerHTML).toBe(container.querySelector('svg')!.outerHTML);
   });
 });

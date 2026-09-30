@@ -9,7 +9,7 @@
 import { Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import { WHITEBOARD_BACKGROUNDS, whiteboardBackgroundOf } from '@livediagram/document';
-import { EraserIcon, SelectIcon } from '@/components/palette/palette-icons';
+import { EraserIcon, SelectIcon, ShapePenIcon } from '@/components/palette/palette-icons';
 import {
   WHITEBOARD_PEN_COLOURS,
   WHITEBOARD_PEN_WIDTHS,
@@ -37,7 +37,6 @@ import {
   PenGlyph,
   OffGlyph,
   PathEditGlyph,
-  PathToolGlyph,
   RecogniseGlyph,
   RedoGlyph,
   ShapeGlyph,
@@ -454,7 +453,8 @@ export function WhiteboardDock({
           key: 'path',
           label: 'Path tool',
           shortcut: WHITEBOARD_TOOL_KEYS.path,
-          icon: <PathToolGlyph />,
+          // The Shape Pen's own icon, unchanged (path-tool.md "Where it lives").
+          icon: <ShapePenIcon size={DOCK_ICON_PX} />,
           pressed: tool === 'path',
           onPress: () => pickAndClose(model.pickPath),
         })}

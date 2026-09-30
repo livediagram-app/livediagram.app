@@ -4,7 +4,6 @@
 import { Glyph, Prims } from '@livediagram/ui';
 import {
   lucideEllipsis,
-  lucidePenTool,
   lucideShapes,
   lucideStickyNote,
   lucideType,
@@ -157,23 +156,6 @@ export function BackgroundGlyph({ id }: { id: string }) {
           )
         : null}
       {id === 'grid' ? <path d="M9 3 V21 M15 3 V21 M3 9 H21 M3 15 H21" /> : null}
-    </Glyph>
-  );
-}
-
-// The Path tool (docs/specs/023-whiteboard/path-tool.md "Where it lives"): the Shape Pen's nib,
-// smaller, drawing a curve through one anchor whose handle lies along it.
-export function PathToolGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <path d="M2.5 21.5 C3 14 5 10.5 8 8 S15 3.5 21.5 2.5" />
-      <path d="M3.5 12.5 L12.5 3.5" strokeWidth={1} />
-      <circle cx="3.5" cy="12.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="12.5" cy="3.5" r="1.2" fill="currentColor" stroke="none" />
-      <rect x="6.3" y="6.3" width="3.4" height="3.4" fill="var(--dock-glyph-fill, white)" />
-      <g transform="translate(11 11) scale(0.54)">
-        <Prims prims={lucidePenTool} />
-      </g>
     </Glyph>
   );
 }

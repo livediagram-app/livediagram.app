@@ -25,6 +25,7 @@ import {
   QaBoardIcon,
   PickerIcon,
   SelectIcon,
+  ShapePenIcon,
   SpotlightIcon,
   SessionPollIcon,
   SessionVoteIcon,
@@ -41,7 +42,6 @@ import {
   lucideImage,
   lucideMoveRight,
   lucidePanelTop,
-  lucidePenTool,
   lucideSquare,
   lucideStickyNote,
   lucideTable,
@@ -499,11 +499,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
     shortcut: '6',
     action: { type: 'shape-pen' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucidePenTool} />
-      </Glyph>
-    ),
+    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:polygon',

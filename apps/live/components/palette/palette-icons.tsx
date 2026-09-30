@@ -19,6 +19,7 @@ import {
   lucideFileDown,
   lucideFileUp,
   lucideLightbulb,
+  lucidePenTool,
   lucideScanEye,
   lucideSpade,
   lucideThermometer,
@@ -85,6 +86,16 @@ export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="pan" size={size} />;
+}
+
+// The Shape Pen (docs/specs/008-canvas/two-pens.md): its palette tile and the whiteboard dock's Path
+// tool (docs/specs/023-whiteboard/path-tool.md "Where it lives") wear this one icon, each at its size.
+export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <Prims prims={lucidePenTool} />
+    </Glyph>
+  );
 }
 
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {

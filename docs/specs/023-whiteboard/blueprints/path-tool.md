@@ -38,7 +38,8 @@ Scope, by file:
 | `apps/live/hooks/canvas/useWhiteboard.ts`                     | `pickPath`, `pathEditing`, `leavePathEdit`                                    |
 | `apps/live/hooks/canvas/editor-shortcut-keys.ts`              | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                              |
 | `apps/live/components/canvas/whiteboard/WhiteboardDock.tsx`   | The Path tool button; Select's edit-mode glyph                                |
-| `apps/live/components/canvas/whiteboard/whiteboard-icons.tsx` | `PathToolGlyph`, `PathEditGlyph`                                              |
+| `apps/live/components/canvas/whiteboard/whiteboard-icons.tsx` | `PathEditGlyph`                                                               |
+| `apps/live/components/palette/palette-icons.tsx`              | `ShapePenIcon`: the Shape Pen tile's icon, shared with the dock               |
 | `apps/telemetry/app/event-explanations.ts`                    | Sentences for the four events                                                 |
 | `apps/help/app/canvas/whiteboards/page.mdx`                   | The Path tool section                                                         |
 
@@ -238,7 +239,8 @@ closed"; a finish "Path finished".
 - `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
   `Whiteboard·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
 - The dock button: after the markers, before the eraser: key `path`, label "Path tool", shortcut `P`,
-  `aria-pressed` when the tool is `path`, icon `PathToolGlyph`.
+  `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component
+  the Shape Pen palette tile renders at `TILE_GLYPH_PX`, never a redrawn copy.
 - `pathEditing` (the edited element is a path): the Select button is pressed, labelled "Select,
   editing a path", icon `PathEditGlyph`; pressing it calls `leavePathEdit`.
 - `WHITEBOARD_EDIT_KEYS.p` → `pickPath`; `WHITEBOARD_TOOL_KEYS.path = 'P'`. Diagram tabs keep `P` as
