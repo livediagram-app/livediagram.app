@@ -8,21 +8,23 @@ import type { Env } from './types';
 // A variable called `OPENAI_API_KEY` holding a Gemini key is a lie every future
 // reader has to decode.
 //
-// Three presets. Exactly one may be set: two keys is an operator mistake with a
-// bill attached, so it resolves to nothing and says so loudly rather than
-// guessing whose budget to spend.
+// Three presets, and two FEATURES that each resolve their own provider from
+// whichever keys are set ("Each feature has its own provider"): one key serves
+// both, two named keys split them.
 
 export type AiProviderName = 'google' | 'openai' | 'generic';
+
+// The assistant is Ask / Clean (`/api/ai`); the reader reads the handwriting on
+// event-storming sticky crops (`/api/ai/read-notes`).
+export type AiFeature = 'assistant' | 'reader';
 
 export type ResolvedAiProvider = {
   provider: AiProviderName;
   // Already normalised: no trailing slash.
   baseUrl: string;
   apiKey: string;
-  // The model the assistant uses.
+  // The model this feature uses on this provider.
   model: string;
-  // The model the crop reader uses; defaults to `model`.
-  visionModel: string;
   // Whether the endpoint honours `response_format: json_schema` with
   // `strict: true`. Known for the google and openai presets; unknown for a
   // generic endpoint, which keeps JSON mode.
@@ -98,49 +100,83 @@ export function trimTrailingSlashes(url: string): string {
   return url.slice(0, end);
 }
 
-export function resolveAiProvider(env: Env): ResolvedAiProvider | null {
-  const present = PRESETS.filter((p) => {
-    const value = env[p.keyVar];
-    return typeof value === 'string' && value.length > 0;
-  });
+// Each feature takes the FIRST present key in its own order. The assistant
+// prefers OpenAI, the model it has always run on; the crop reader prefers
+// Google, whose small model reads handwriting better for less. One key serves
+// both, and the generic key comes last for both, so every feature is either
+// available on every deployment that has a usable key or on none: one
+// `aiEnabled` answers for both.
+const PREFERENCE: Record<AiFeature, AiProviderName[]> = {
+  assistant: ['openai', 'google', 'generic'],
+  reader: ['google', 'openai', 'generic'],
+};
 
-  if (present.length === 0) return null;
-  if (present.length > 1) {
-    // Fail CLOSED and loud: picking one would be spending somebody's money on
-    // a coin flip, and silently picking one is how that goes unnoticed.
+const presetFor = (name: AiProviderName): Preset => PRESETS.find((p) => p.provider === name)!;
+
+function hasKey(env: Env, preset: Preset): boolean {
+  const value = env[preset.keyVar];
+  return typeof value === 'string' && value.length > 0;
+}
+
+function firstPresent(env: Env, feature: AiFeature): Preset | null {
+  for (const name of PREFERENCE[feature]) {
+    const preset = presetFor(name);
+    if (hasKey(env, preset)) return preset;
+  }
+  return null;
+}
+
+export function resolveAiProvider(env: Env, feature: AiFeature): ResolvedAiProvider | null {
+  const preset = firstPresent(env, feature);
+  if (!preset) return null;
+
+  if (preset.provider !== 'generic' && hasKey(env, presetFor('generic'))) {
+    // Outranked for EVERY feature, so the secret is spending nothing and
+    // configuring nothing. Loud, because a dead secret is how an operator ends
+    // up believing a deployment runs on something it does not.
     console.error(
-      `[ai] refusing to guess a provider: ${present.map((p) => String(p.keyVar)).join(' and ')} are both set — keep exactly one`,
+      `[ai] AI_API_KEY is set but unused: ${String(preset.keyVar)} outranks it — remove one`,
     );
-    return null;
   }
 
-  const preset = present[0]!;
   const apiKey = env[preset.keyVar] as string;
   const baseUrl = preset.baseUrl ?? (env.AI_BASE_URL ? trimTrailingSlashes(env.AI_BASE_URL) : '');
-  const model = env.AI_MODEL ?? preset.defaultModel ?? '';
 
-  if (preset.provider === 'generic') {
+  if (preset.provider === 'generic' && (!baseUrl || !env.AI_MODEL)) {
     // A key with nowhere to send it, or somewhere to send it with nothing to
     // ask for, is not a configuration — it is half of one.
-    if (!baseUrl || !model) {
-      console.error(
-        '[ai] AI_API_KEY needs both AI_BASE_URL and AI_MODEL; use GOOGLE_AI_STUDIO_API_KEY or OPENAI_API_KEY for a known provider',
-      );
-      return null;
-    }
+    console.error(
+      '[ai] AI_API_KEY needs both AI_BASE_URL and AI_MODEL; use GOOGLE_AI_STUDIO_API_KEY or OPENAI_API_KEY for a known provider',
+    );
+    return null;
   }
 
   return {
     provider: preset.provider,
     baseUrl,
     apiKey,
-    model,
-    // An operator who NAMED a model means it for everything, so the preset's
-    // reader default only applies when they have named nothing: overriding a
-    // deliberate choice with our own would be the surprising half of a helpful
-    // default. `AI_VISION_MODEL` beats both.
-    visionModel:
-      env.AI_VISION_MODEL ?? (env.AI_MODEL ? model : (preset.defaultVisionModel ?? model)),
+    model: modelFor(env, feature, preset),
     strictSchema: preset.strictSchema,
   };
+}
+
+// `AI_MODEL` names a model of the provider serving the ASSISTANT, so it reaches
+// the reader only when both run on that provider: a `gpt-4o` id sent to Gemini
+// is a guaranteed failure. On one provider, an operator who NAMED a model means
+// it for everything, so the preset's reader default applies only when nothing
+// is named. `AI_VISION_MODEL` beats all of it, for the reader only.
+function modelFor(env: Env, feature: AiFeature, preset: Preset): string {
+  const fallback = preset.defaultModel ?? '';
+  if (feature === 'assistant') return env.AI_MODEL ?? fallback;
+  if (env.AI_VISION_MODEL) return env.AI_VISION_MODEL;
+  const sharesAssistant = firstPresent(env, 'assistant')?.provider === preset.provider;
+  if (sharesAssistant && env.AI_MODEL) return env.AI_MODEL;
+  return preset.defaultVisionModel ?? fallback;
+}
+
+// Is there any AI on this deployment? Both features resolve from the same keys
+// and fall back to each other's provider, so they are available together or
+// not at all; asking the assistant answers for both.
+export function aiConfigured(env: Env): boolean {
+  return resolveAiProvider(env, 'assistant') !== null;
 }

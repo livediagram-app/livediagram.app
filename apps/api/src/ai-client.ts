@@ -1,4 +1,9 @@
-import { resolveAiProvider, trimTrailingSlashes, type ResolvedAiProvider } from './ai-provider';
+import {
+  resolveAiProvider,
+  trimTrailingSlashes,
+  type AiFeature,
+  type ResolvedAiProvider,
+} from './ai-provider';
 import type { Env } from './types';
 
 // The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md).
@@ -54,9 +59,9 @@ export async function chatCompletions(
   return send();
 }
 
-// Convenience for the routes: they have an Env, and they want the provider or
-// nothing. The gate has already refused the "nothing" case by the time a route
+// Convenience for the routes: they have an Env and a feature, and they want that
+// feature's provider or nothing. The gate has already refused the "nothing" case by the time a route
 // asks, so this never returns null in practice — but it is typed honestly.
-export function providerOf(env: Env): ResolvedAiProvider | null {
-  return resolveAiProvider(env);
+export function providerOf(env: Env, feature: AiFeature): ResolvedAiProvider | null {
+  return resolveAiProvider(env, feature);
 }

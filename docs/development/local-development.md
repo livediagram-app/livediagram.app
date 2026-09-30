@@ -130,14 +130,16 @@ Without these set: the api worker silently treats every request as a guest (the 
 
 ## Enabling AI assistance locally (optional)
 
-The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has an OpenAI key. To turn it on locally:
+The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
 
 ```sh
-# apps/api/.dev.vars (gitignored)
-AI_API_KEY=...            # any OpenAI-compatible provider's key
-# AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai  # optional; defaults to OpenAI
-# AI_MODEL=gpt-4o              # optional; defaults to gpt-4o
-# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
+# apps/api/.dev.vars (gitignored). One key serves every AI feature.
+OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=..., or both:
+#                              # the assistant then runs on OpenAI, the reader on Google
+# AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
+# AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
+# AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
+# AI_VISION_MODEL=...          # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
 #                              # On Google this defaults to gemini-2.5-flash-lite,
 #                              # which reads handwriting better than the big model.
 ```

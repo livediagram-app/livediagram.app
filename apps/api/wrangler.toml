@@ -208,10 +208,11 @@ simple = { limit = 10, period = 60 }
 #   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
 #   Production: `wrangler secret put <NAME>`.
 #
-# Exactly one may be set: two is refused rather than guessed at, because
-# guessing spends somebody's money. AI_BASE_URL / AI_MODEL / AI_VISION_MODEL
-# are plain [vars]; AI_MODEL overrides the preset's default model and
-# AI_VISION_MODEL overrides it for /api/ai/read-notes only (docs/specs/021-event-storming/event-storming.md Phase 8).
+# Each feature takes its own provider from the keys that are set: the assistant
+# (/api/ai) prefers OpenAI, the crop reader (/api/ai/read-notes) prefers Google,
+# and one key serves both. Production sets both named keys to split them.
+# AI_BASE_URL / AI_MODEL / AI_VISION_MODEL are plain [vars]; AI_MODEL is the
+# assistant's model and AI_VISION_MODEL the reader's (docs/specs/007-editor/ai-assistance.md).
 #
 # With no key the whole surface is hidden: GET /api/capabilities answers
 # { aiEnabled: false }, the editor shows no AI panel and no photo import, and
@@ -427,8 +428,9 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 crons = ["0 3 * * *"]
 
 # CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and
-# OPENAI_API_KEY are provisioned by hand exactly as they are for production:
+# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
+# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
+# hand exactly as they are for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 # The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:
 #   cd apps/api && wrangler secret put DRIVE_TOKEN_KEY --env staging

@@ -73,7 +73,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
   // The shared admission sequence (docs/specs/007-editor/ai-assistance.md), one answer for both model routes.
-  const refused = await aiGate(ctx);
+  const refused = await aiGate(ctx, 'assistant');
   if (refused) return refused;
 
   let body: AiRequest;
@@ -106,7 +106,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   if (!Array.isArray(history)) return badRequest('history must be an array');
 
   // The gate has already refused a deployment with no usable provider.
-  const provider = providerOf(env)!;
+  const provider = providerOf(env, 'assistant')!;
   const model = provider.model;
   const isTextMode = mode === 'ask';
   const safe = sanitiseElements(elements);
