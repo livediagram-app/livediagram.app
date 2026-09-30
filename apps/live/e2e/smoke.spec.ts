@@ -23,6 +23,25 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
+// The wizard dims nothing, so the header stays live beside it: the header's
+// apps menu must paint (and take clicks) in front of the wizard card, not
+// open invisibly behind it.
+test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
+  await page.goto('/new');
+  await expect(page.getByText('Blank diagram', { exact: false })).toBeVisible();
+
+  await page.getByRole('button', { name: /^switch section/i }).click();
+  const menu = page.getByRole('menu');
+  await expect(menu).toBeVisible();
+  const menuOnTop = await menu.evaluate((panel) => {
+    const r = panel.getBoundingClientRect();
+    const hit = document.elementFromPoint(Math.round(r.right - 8), Math.round(r.y + r.height / 2));
+    return !!hit && panel.contains(hit);
+  });
+  expect(menuOnTop).toBe(true);
+  expectNoPageErrors(pageErrors);
+});
+
 test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
   // The sidebar's quick-find sections are always present for a guest.

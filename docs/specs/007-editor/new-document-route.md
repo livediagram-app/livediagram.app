@@ -224,6 +224,8 @@ The new route owns:
 
 The TemplatePicker card (`apps/live/components/palette/TemplatePicker.tsx`) is the welcome / template / identity surface used by `/new` AND by per-tab template picks in the editor. On `sm:` and up it renders as a centred floating card (max 44rem for templates, 26rem for identity), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (plus a Cancel button in the in-editor template / identity modes — the welcome screen drops it, leaving only Create and the header X) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
 
+The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the apps menu, the account menu) open in front of the card rather than behind it.
+
 This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer / Activity, see [07-live-app](live-app.md)). Those are addressed separately.
 
 ## Jump back in (recent documents card)
