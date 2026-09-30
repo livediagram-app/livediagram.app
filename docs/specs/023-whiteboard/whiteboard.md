@@ -253,6 +253,8 @@ The shapes group learns and keeps the shapes a user reaches for.
 - **The colour picker** (Markers 2 and 3), top to bottom:
   - **Eight stock colours** in one row: **Ink, Blue, Red, Orange, Green,
     Teal, Violet, Pink**, the same eight as the quick style panel's.
+    **Ink comes first: it is the default colour**, and Markers 2 and 3 can
+    take it too (the same ink at another width, say), not only Marker 1.
   - **Every stock colour adapts to the board.** It is stored by name, not as
     a hex value, and drawn in the version tuned for the board it is shown on
     (darker on the light board, lighter on the dark one), at least 4.5:1
