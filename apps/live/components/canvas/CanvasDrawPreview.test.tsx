@@ -41,19 +41,20 @@ describe('CanvasDrawPreview on a whiteboard', () => {
     expect(container.querySelector('path')).toBeNull();
   });
 
-  it('previews a line in the ink at its default width, solid, scaled with the zoom', () => {
-    const { container } = render(
-      <CanvasDrawPreview
-        {...base}
-        drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
-        pendingDraw={{ type: 'arrow', ends: 'none', board: true }}
-      />,
-    );
-    const line = container.querySelector('line')!;
-    expect(line.getAttribute('stroke')).toBe('#1c1917');
-    // The default 2 px line at zoom 2.
-    expect(line.getAttribute('stroke-width')).toBe('4');
-    expect(line.getAttribute('stroke-dasharray')).toBeNull();
+  it('leaves a line or an arrow to the canvas layer: nothing in the overlay', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Shapes": the arrow renderer draws the one that lands
+    // (DrawnArrowPreview); no stand-in line here, on any tab.
+    for (const board of [true, undefined] as const) {
+      const { container, unmount } = render(
+        <CanvasDrawPreview
+          {...base}
+          drawDrag={{ startX: 0, startY: 0, currentX: 50, currentY: 50 }}
+          pendingDraw={{ type: 'arrow', ends: 'to', ...(board ? { board } : {}) }}
+        />,
+      );
+      expect(container.querySelector('svg, line, path')).toBeNull();
+      unmount();
+    }
   });
 
   it('previews a rectangle with a solid outline in the ink and no fill', () => {

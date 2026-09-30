@@ -397,8 +397,28 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - `useShapeDrawing.commitDraw` on a whiteboard applies `boardShape(el)`: a shape gets
   `fillColor: 'transparent'` and nothing else, so it draws in the ink at the default width; a line or
   arrow is left unpainted. Style memory is skipped.
-- `CanvasDrawPreview` previews a board shape in the ink: a line at the default arrow width × zoom, a
-  shape solid and unfilled at the default border width (`PenShapePreview`).
+- `CanvasDrawPreview` previews a board shape in the ink, solid and unfilled at the default border
+  width (`PenShapePreview`). It draws no line or arrow, on any tab kind.
+- A line or an arrow previews as the element it lands. `buildDressedDrawnArrow` (`lib/draw-commit.ts`)
+  builds it for both `useShapeDrawing.commitDraw` and the preview, from the intent, the drag's two
+  points, the board (`elements`, `theme`, `whiteboard`) and `styleNewElement`: `buildDrawnArrow`
+  (unpainted on a whiteboard), then `boardShape` on a whiteboard, then `styleNewElement`.
+- `drawnArrowAsShown` (`lib/drawn-arrow-preview.ts`) adds what the canvas does to a landed element:
+  `inkWhiteboardElement(arrow, ink)` on a whiteboard, and the constant id
+  `DRAWN_ARROW_PREVIEW_ID` so its markers and pass-behind mask keep their ids through the drag.
+  `EditorCanvasHost` hands it to `Canvas` as `previewDrawnArrow`, over the raw tab, its theme, the
+  style memory and `WHITEBOARD_INK[appearance]`.
+- `CanvasElementsLayer` renders `DrawnArrowPreview` while `drawDrag` is set and the intent is an
+  arrow: after every element and before the remote cursors (where the commit appends it), in canvas
+  coordinates. It is `ArrowView` with `isSelected` (the arrow lands selected, so its stroke is the
+  width plus 0.5 over the brand halo), `readOnly` (no grips), no label, the layer's `elementIndex`
+  (an empty map on a board with no arrow), `drawnElements` as occluders, and the shared
+  `ArrowDefs` of its own when `hasArrows` is false. `[&_*]:!pointer-events-none` keeps its hit band
+  from taking the pointer or its cursor.
+- Under 16 px of travel (`isDrawTap`) the builder returns the tap placeholder, so the preview shows the
+  160 px arrow a release would drop there.
+- Tests: `lib/draw-commit.test.ts` (`buildDressedDrawnArrow`), `lib/drawn-arrow-preview.test.ts`,
+  `components/canvas/DrawnArrowPreview.test.tsx`, and `CanvasDrawPreview.test.tsx` (no stand-in).
 - A recognised shape is a pen stroke tidied up and keeps that pen's colour and weight
   (`commit-freehand.ts`).
 

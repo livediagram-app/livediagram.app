@@ -24,7 +24,7 @@ import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
 import { boardShape } from '@/lib/whiteboard-tool';
-import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
+import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
@@ -150,11 +150,15 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     const dress = <T extends Element>(el: T): T =>
       styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
-      const arrow = dress(
-        buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme), {
-          ends: intent.ends,
-          unpainted: whiteboard,
-        }),
+      // Built exactly as the canvas previews it while the drag is in flight.
+      const arrow = buildDressedDrawnArrow(
+        intent,
+        startX,
+        startY,
+        endX,
+        endY,
+        { elements: activeTab.elements, theme: getTheme(activeTab.theme), whiteboard },
+        styleNewElement,
       );
       commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);

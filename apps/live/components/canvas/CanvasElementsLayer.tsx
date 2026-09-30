@@ -15,6 +15,7 @@ import {
   layerOpacityOf,
   snapSeamCoordinate,
   arrowRoutePoints,
+  type ElementIndex,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -22,6 +23,7 @@ import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
+import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
@@ -44,11 +46,16 @@ type Bounds = { x: number; y: number; width: number; height: number };
 // (very common) "no remote participants have this element selected"
 // path, so BoxedElementView's memo isn't invalidated by a fresh [] per
 // render.
+// What a drawn arrow resolves its ends against on a board with no arrows yet.
+const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
+
 const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = [];
 
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.
 type ElementsExtras = {
+  // The draw gesture in flight (canvas coords), for the line or arrow it would land.
+  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
@@ -91,6 +98,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleElementContextSelect,
     hasArrows,
     arrowLabels,
+    drawDrag,
     imageContext,
     isPaintMode,
     laserTrails,
@@ -541,6 +549,25 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           />
         );
       })}
+
+      {/* The line or arrow being drawn (docs/specs/023-whiteboard/whiteboard.md "Shapes"): the
+          element the release lands, after every element, where it will land. */}
+      {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
+        <DrawnArrowPreview
+          arrow={props.previewDrawnArrow(
+            props.pendingDraw,
+            drawDrag.startX,
+            drawDrag.startY,
+            drawDrag.currentX,
+            drawDrag.currentY,
+          )}
+          elementIndex={elementIndex ?? EMPTY_ELEMENT_INDEX}
+          occluders={drawnElements}
+          draftLayout={arrowLabels.draftLayout}
+          fontFamily={tabFontStack}
+          withDefs={!hasArrows}
+        />
+      ) : null}
 
       {remoteCursors.map((c) => (
         <RemoteCursor key={c.id} cursor={c} zoom={viewportZoom} />

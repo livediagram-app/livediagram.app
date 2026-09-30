@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
 import {
   buildDrawnArrow,
+  buildDressedDrawnArrow,
   buildDrawnBoxed,
   buildDrawnComponent,
   NEW_ARROW_THEME_STROKE_FALLBACK,
@@ -20,6 +21,56 @@ const bareTheme = {} as unknown as ThemeDefinition;
 
 const tab = (overrides: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [], ...overrides }) as unknown as Tab;
+
+// docs/specs/023-whiteboard/whiteboard.md "Shapes": the preview and the commit build one arrow.
+describe('buildDressedDrawnArrow', () => {
+  const thick = <T extends Element>(el: T): T => ({
+    ...el,
+    strokeWidth: 6,
+    arrowheadSize: 'large',
+  });
+  const board = { elements: [] as Element[], theme: themed, whiteboard: true };
+
+  it('is the drawn arrow in its tool style, unpainted on a whiteboard', () => {
+    const out = buildDressedDrawnArrow(
+      { type: 'arrow', ends: 'to', board: true },
+      10,
+      20,
+      150,
+      90,
+      board,
+      thick,
+    );
+    const { id: _id, ...rest } = out;
+    const { id: _raw, ...raw } = buildDrawnArrow(10, 20, 150, 90, [], themed, {
+      ends: 'to',
+      unpainted: true,
+    });
+    expect(rest).toEqual({ ...raw, strokeWidth: 6, arrowheadSize: 'large' });
+    expect(out.strokeColor).toBeUndefined();
+  });
+
+  it('paints a diagram arrow in the theme stroke, then dresses it', () => {
+    const out = buildDressedDrawnArrow(
+      { type: 'arrow' },
+      0,
+      0,
+      100,
+      0,
+      { ...board, whiteboard: false },
+      thick,
+    );
+    expect(out.strokeColor).toBe('#123456');
+    expect(out.strokeWidth).toBe(6);
+    expect(out.arrowEnds).toBe('none');
+  });
+
+  it('lands the tap placeholder while the drag is still a tap', () => {
+    const out = buildDressedDrawnArrow({ type: 'arrow' }, 500, 300, 505, 302, board, (el) => el);
+    expect(out.from).toEqual({ kind: 'free', x: 420, y: 300 });
+    expect(out.to).toEqual({ kind: 'free', x: 580, y: 300 });
+  });
+});
 
 describe('buildDrawnArrow', () => {
   it('lays a flat 160px placeholder across a stray click, unsnapped', () => {

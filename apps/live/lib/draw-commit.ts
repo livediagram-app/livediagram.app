@@ -40,6 +40,7 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
 import { placedTextBox } from '@/lib/text-hug';
+import { boardShape } from '@/lib/whiteboard-tool';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -173,6 +174,26 @@ export function buildDrawnArrow(
       ? {}
       : { strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK }),
   };
+}
+
+// The arrow a draw gesture lands, dressed as it lands (docs/specs/023-whiteboard/whiteboard.md
+// "Shapes"): unpainted on a whiteboard so the board's ink shows, then in its tool's remembered
+// style. The live preview and the commit both build it here, so what the drag shows is what the
+// release lands, down to the stroke width and the arrowhead.
+export function buildDressedDrawnArrow(
+  intent: Extract<PendingDraw, { type: 'arrow' }>,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  board: { elements: Element[]; theme: ThemeDefinition; whiteboard: boolean },
+  styleNewElement: <T extends Element>(el: T) => T,
+): ArrowElement {
+  const drawn = buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, {
+    ends: intent.ends,
+    unpainted: board.whiteboard,
+  });
+  return styleNewElement(board.whiteboard ? boardShape(drawn) : drawn);
 }
 
 // Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's

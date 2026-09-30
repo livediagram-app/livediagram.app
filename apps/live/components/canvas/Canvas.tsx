@@ -763,6 +763,7 @@ export function Canvas(props: CanvasProps) {
               handleElementContextSelect={handleElementContextSelect}
               quickRingOpen={quickRingOpen}
               setQuickRingOpen={setQuickRingOpen}
+              drawDrag={drawDrag}
             />
           </MindGrowProvider>
         </CanvasStillProvider>

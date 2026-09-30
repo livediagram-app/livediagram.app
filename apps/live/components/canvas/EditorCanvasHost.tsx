@@ -6,6 +6,7 @@ import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
 import { createInkProjector } from '@/lib/whiteboard-ink';
+import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -479,6 +480,15 @@ export function EditorCanvasHost() {
         tabKind={activeTab.kind}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={WHITEBOARD_INK[appearance]}
+        previewDrawnArrow={(intent, startX, startY, endX, endY) =>
+          drawnArrowAsShown(intent, startX, startY, endX, endY, {
+            elements: activeTab.elements,
+            theme: getTheme(activeTab.theme),
+            whiteboard: isWhiteboardTab(activeTab),
+            styleNewElement,
+            ink: WHITEBOARD_INK[appearance],
+          })
+        }
         layerInertIds={layerInertIds}
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuides={snapGuides}

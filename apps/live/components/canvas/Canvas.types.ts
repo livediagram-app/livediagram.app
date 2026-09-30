@@ -407,6 +407,16 @@ export type CanvasProps = {
     kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
   ) => void;
   onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
+  // The line or arrow a draw would land if released now, as the canvas would show it
+  // (docs/specs/023-whiteboard/whiteboard.md "Shapes"), drawn in place of a stand-in while the drag
+  // is in flight. From lib/drawn-arrow-preview.
+  previewDrawnArrow?: (
+    intent: Extract<PendingDraw, { type: 'arrow' }>,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+  ) => import('@livediagram/document').ArrowElement;
   // Minimal panel layout preference (docs/specs/007-editor/user-preferences.md). When true, the floating
   // panels render as dock popovers on desktop too (always on mobile).
   minimalPanels?: boolean;

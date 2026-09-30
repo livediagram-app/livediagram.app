@@ -1,11 +1,5 @@
 import type { RefObject } from 'react';
-import {
-  ARROW_THICKNESS_PX,
-  BORDER_STROKE_PX,
-  DEFAULT_ARROW_THICKNESS,
-  DEFAULT_BORDER_STROKE,
-  isSelfDrawingShape,
-} from '@livediagram/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
@@ -61,7 +55,9 @@ export function CanvasDrawPreview({
     pendingDraw?.type === 'freehand' &&
     penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
-  const showsBox = !!drawDrag && !!pendingDraw && !stamp;
+  // A line or an arrow previews as the element it lands, in the canvas layer
+  // (DrawnArrowPreview, docs/specs/023-whiteboard/whiteboard.md "Shapes"), not here.
+  const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox);
   return (
@@ -187,47 +183,6 @@ export function CanvasDrawPreview({
         ? (() => {
             const rect = origin;
             if (!rect) return null;
-            // Arrow intent: render the drag as a line from the start
-            // point to the current point, with a small chevron-like
-            // arrowhead near the end so the user sees the direction
-            // they've drawn (the committed arrow defaults to no
-            // arrowheads; this is just preview chrome).
-            if (pendingDraw.type === 'arrow') {
-              const x1 = rect.left + drawDrag.startX * viewportZoom;
-              const y1 = rect.top + drawDrag.startY * viewportZoom;
-              const x2 = rect.left + drawDrag.currentX * viewportZoom;
-              const y2 = rect.top + drawDrag.currentY * viewportZoom;
-              return (
-                <svg
-                  aria-hidden
-                  className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
-                >
-                  {pendingDraw.board ? (
-                    // A whiteboard line: the ink at the default width, which on a
-                    // line scales with the zoom, as the committed line does.
-                    <line
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      stroke={inkOf(null)}
-                      strokeWidth={ARROW_THICKNESS_PX[DEFAULT_ARROW_THICKNESS] * viewportZoom}
-                      strokeLinecap="round"
-                    />
-                  ) : (
-                    <line
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      stroke="rgb(14, 165, 233)"
-                      strokeWidth={1.5}
-                      strokeDasharray="4 3"
-                    />
-                  )}
-                </svg>
-              );
-            }
             // The box the commit will actually mint, not the raw drag: an
             // embed is fitted to 16:9 inside it (docs/specs/009-elements/youtube-video.md), so the outline
             // has to be the fitted one or the user sizes against a rectangle
