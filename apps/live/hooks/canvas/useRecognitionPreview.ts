@@ -37,9 +37,10 @@ export function useRecognitionPreview(
       const shape = recogniseBoardStroke(stroke.ink(penWidth));
       if (!shape) return;
       console.debug('[whiteboard] recognition preview', shape.kind);
-      // The stroke is the shape from here on: dragging on reshapes it.
+      // The stroke is the shape from here on: dragging on reshapes it. Shown as shaped() reads,
+      // so a Shift already held shows it perfect, as release would land it.
       stroke.snapTo(shape);
-      setPreview({ stroke, shape });
+      setPreview({ stroke, shape: stroke.shaped() ?? shape });
     };
     const onUpdate = () => {
       const count = stroke.points.length;

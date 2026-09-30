@@ -36,10 +36,11 @@ export function useWhiteboardPenGesture({
 
   /** Starts a stroke at `at` (canvas px) from the press `e`. */
   const beginWhiteboardStroke = (
-    e: Pick<React.PointerEvent, 'pointerType' | 'pointerId' | 'pressure'>,
+    e: Pick<React.PointerEvent, 'pointerType' | 'pointerId' | 'pressure' | 'shiftKey'>,
     at: Point,
   ) => {
     const stroke = createLiveStroke(e.pointerType, e.pointerId);
+    stroke.constrain(e.shiftKey === true);
     stroke.push(at.x, at.y, e.pressure);
     setPenStroke(stroke);
   };
@@ -77,9 +78,12 @@ export function useWhiteboardPenGesture({
       if (!mine(e)) return;
       if (pinchingNow()) pinched = true;
       if (pinched) return;
+      // Shift reshapes a locked shape perfect, from this move on (whiteboard.md "Shape
+      // recognition"); a move that only changes Shift still redraws.
+      const shiftChanged = stroke.constrain(e.shiftKey);
       const p = canvasPoint(e);
-      if (!p || !stroke.push(p.x, p.y, e.pressure)) return;
-      stroke.notify();
+      const pushed = p !== null && stroke.push(p.x, p.y, e.pressure);
+      if (pushed || shiftChanged) stroke.notify();
     };
     const onUp = (e: PointerEvent) => {
       if (!mine(e)) return;
@@ -90,7 +94,8 @@ export function useWhiteboardPenGesture({
         return;
       }
       // Where the pen lifted, if it moved since the last sample. A lifted pen reports no
-      // pressure, so the sample keeps the last one.
+      // pressure, so the sample keeps the last one. Shift keeps what the last move set, so the
+      // shape lands as it showed.
       const p = canvasPoint(e);
       if (p) stroke.push(p.x, p.y);
       commitStroke(stroke);

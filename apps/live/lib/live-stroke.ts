@@ -38,6 +38,11 @@ export type LiveStroke = {
    * "Shape recognition").
    */
   snapTo(shape: RecognisedShape): void;
+  /**
+   * Sets whether Shift is held, as the latest pointer event says: while it is, reshaping keeps the
+   * shape perfect (`adjustRecognised`'s `constrain`). True when that changed.
+   */
+  constrain(on: boolean): boolean;
   /** The locked shape as the pen has reshaped it so far; null until the stroke is locked. */
   shaped(): RecognisedShape | null;
 };
@@ -53,6 +58,7 @@ export function createLiveStroke(
   const pressures: number[] | null = pointer === 'pen' ? [] : null;
   const listeners = new Set<() => void>();
   let snap: { shape: RecognisedShape; grab: Point } | null = null;
+  let constrained = false;
   return {
     pointer,
     pointerId,
@@ -82,9 +88,14 @@ export function createLiveStroke(
       const grab = points[points.length - 1];
       if (grab) snap = { shape, grab };
     },
+    constrain(on) {
+      if (on === constrained) return false;
+      constrained = on;
+      return true;
+    },
     shaped() {
       const pointer = points[points.length - 1];
-      return snap && pointer ? adjustRecognised(snap.shape, snap.grab, pointer) : null;
+      return snap && pointer ? adjustRecognised(snap.shape, snap.grab, pointer, constrained) : null;
     },
   };
 }

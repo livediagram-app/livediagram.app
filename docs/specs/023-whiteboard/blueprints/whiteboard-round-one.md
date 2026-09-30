@@ -288,8 +288,18 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 - Locking: when the dwell fires on a recognised shape, `LiveStroke.snapTo(shape)` records it with
   the pen's position (`grab`); `shaped()` is `adjustRecognised(shape, grab, lastSample)` (lib/recognition-preview:
   a line moves its end nearer `grab`, a box moves its corner nearer `grab` and keeps the opposite,
-  flipping past it). `useRecognitionPreview` shows `shaped()` on every update once locked, and the
-  commit passes it as `ink.snapped`, which `whiteboardStroke` lands instead of re-reading the stroke.
+  flipping past it). `useRecognitionPreview` shows `shaped()` on every update once locked (the lock
+  itself included), and the commit passes it as `ink.snapped`, which `whiteboardStroke` lands
+  instead of re-reading the stroke.
+- Shift: `adjustRecognised(shape, grab, pointer, constrain)`. With `constrain` a box's moving corner
+  goes to the larger of `|dx|`, `|dy|` from the fixed corner on each axis, on the side it is on (the
+  box's own side when lined up on that axis), so width equals height, even where the pen has not
+  moved; a line's moving end goes to the nearest point on the nearest 45 degree ray from its fixed
+  end (whole-step direction vectors, so axis snaps are exact). Without it, a pen that has not moved
+  changes nothing. `LiveStroke.constrain(on)` stores the flag `shaped()` passes and returns whether
+  it changed. `useWhiteboardPenGesture` seeds it from the press's `shiftKey` and sets it from every
+  `pointermove`'s `shiftKey` before pushing the sample, notifying when either the sample or the flag
+  changed; `pointerup` leaves it, so what lands is what the last move showed.
 
 - `apps/live/lib/recognition-preview.ts`: `RECOGNITION_THRESHOLD` (0.4), `RECOGNITION_PREVIEW_DWELL_MS`
   (500), `RECOGNITION_PREVIEW_STILL_PX` (4 screen px), `recogniseBoardStroke(points)`,

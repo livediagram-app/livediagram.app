@@ -61,3 +61,32 @@ describe('createLiveStroke', () => {
     expect(b).toHaveBeenCalledTimes(2);
   });
 });
+
+// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Shift while reshaping.
+describe('createLiveStroke, constrained', () => {
+  const circle = {
+    kind: 'circle' as const,
+    bbox: { x: 0, y: 0, width: 100, height: 60 },
+    confidence: 1,
+  };
+
+  it('says whether Shift changed', () => {
+    const s = createLiveStroke('mouse', 1);
+    expect(s.constrain(false)).toBe(false);
+    expect(s.constrain(true)).toBe(true);
+    expect(s.constrain(true)).toBe(false);
+    expect(s.constrain(false)).toBe(true);
+  });
+
+  it('reshapes perfect while Shift is held and free again once it is not', () => {
+    const s = createLiveStroke('mouse', 1);
+    s.push(100, 60);
+    s.snapTo(circle);
+    s.push(150, 70);
+    expect(s.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 150, height: 70 });
+    s.constrain(true);
+    expect(s.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 150, height: 150 });
+    s.constrain(false);
+    expect(s.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 150, height: 70 });
+  });
+});

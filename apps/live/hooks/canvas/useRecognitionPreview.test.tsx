@@ -81,4 +81,26 @@ describe('useRecognitionPreview', () => {
     rerender({ stroke: null, active: true });
     expect(result.current).toBeNull();
   });
+
+  it('shows the shape perfect at once when Shift is already held as it locks', () => {
+    const stroke = liveStrokeOf(square());
+    stroke.constrain(true);
+    const { result } = hook(stroke);
+    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    expect(result.current!.bbox.width).toBe(result.current!.bbox.height);
+    expect(stroke.shaped()).toEqual(result.current);
+  });
+
+  it('reshapes perfect once Shift is held: what shows is what shaped() commits', () => {
+    const stroke = liveStrokeOf(square());
+    const { result } = hook(stroke);
+    act(() => vi.advanceTimersByTime(RECOGNITION_PREVIEW_DWELL_MS + 10));
+    act(() => {
+      stroke.constrain(true);
+      stroke.push(-50, -20);
+      stroke.notify();
+    });
+    expect(result.current!.bbox.width).toBeCloseTo(result.current!.bbox.height, 9);
+    expect(stroke.shaped()).toEqual(result.current);
+  });
 });

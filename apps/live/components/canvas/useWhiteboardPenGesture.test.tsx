@@ -16,11 +16,11 @@ const PEN: PendingDraw = {
   recognise: false,
 };
 
-type Init = { x: number; y: number; id?: number; pressure?: number };
+type Init = { x: number; y: number; id?: number; pressure?: number; shift?: boolean };
 
-/** A pointer event as the browser sends it: position, pointer id, pressure. */
-function pointer(type: string, { x, y, id = 1, pressure }: Init): Event {
-  const e = new MouseEvent(type, { clientX: x, clientY: y });
+/** A pointer event as the browser sends it: position, pointer id, pressure, Shift. */
+function pointer(type: string, { x, y, id = 1, pressure, shift = false }: Init): Event {
+  const e = new MouseEvent(type, { clientX: x, clientY: y, shiftKey: shift });
   Object.defineProperty(e, 'pointerId', { value: id });
   if (pressure !== undefined) Object.defineProperty(e, 'pressure', { value: pressure });
   return e;
@@ -165,5 +165,86 @@ describe('useWhiteboardPenGesture', () => {
     s.send(pointer('pointermove', { x: 30, y: 20, pressure: 0.5 }));
     s.send(pointer('pointerup', { x: 30, y: 20 }));
     expect(debug).toHaveBeenCalledWith('[whiteboard] stroke pen samples=3 pressure=yes');
+  });
+
+  // docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Shift while reshaping.
+  describe('with Shift while reshaping a locked shape', () => {
+    const circle = {
+      kind: 'circle' as const,
+      bbox: { x: 0, y: 0, width: 100, height: 60 },
+      confidence: 1,
+    };
+    // Canvas px = client px - (10, 20) at zoom 1.
+    const locked = () => {
+      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      const s = setup();
+      s.press(110, 80);
+      const stroke = s.hook.result.current.penStroke!;
+      stroke.snapTo(circle);
+      const notified = vi.fn();
+      stroke.subscribe(notified);
+      return { ...s, stroke, notified };
+    };
+
+    it('commits the shape perfect, exactly as it showed', () => {
+      const s = locked();
+      s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
+      const shown = s.stroke.shaped();
+      expect(shown!.bbox).toEqual({ x: 0, y: 0, width: 150, height: 150 });
+      s.send(pointer('pointerup', { x: 160, y: 90, shift: true }));
+      expect(s.onCommitFreehand.mock.calls[0]![2].snapped).toEqual(shown);
+    });
+
+    it('lets it free again on the next move once Shift is released', () => {
+      const s = locked();
+      s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
+      s.send(pointer('pointermove', { x: 161, y: 90 }));
+      s.send(pointer('pointerup', { x: 161, y: 90 }));
+      expect(s.onCommitFreehand.mock.calls[0]![2].snapped.bbox).toEqual({
+        x: 0,
+        y: 0,
+        width: 151,
+        height: 70,
+      });
+    });
+
+    it('redraws on a move that only changes Shift', () => {
+      const s = locked();
+      s.send(pointer('pointermove', { x: 160, y: 90 }));
+      expect(s.notified).toHaveBeenCalledTimes(1);
+      s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
+      expect(s.notified).toHaveBeenCalledTimes(2);
+      expect(s.stroke.shaped()!.bbox.width).toBe(150);
+      expect(s.stroke.shaped()!.bbox.height).toBe(150);
+      s.send(pointer('pointermove', { x: 160, y: 90, shift: true }));
+      expect(s.notified).toHaveBeenCalledTimes(2);
+    });
+
+    it('lands what showed even when Shift changes on the lift itself', () => {
+      const s = locked();
+      s.send(pointer('pointermove', { x: 160, y: 90 }));
+      const shown = s.stroke.shaped();
+      s.send(pointer('pointerup', { x: 160, y: 90, shift: true }));
+      expect(s.onCommitFreehand.mock.calls[0]![2].snapped).toEqual(shown);
+    });
+
+    it('takes Shift held on the press as held from the start', () => {
+      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      const s = setup();
+      act(() => {
+        s.hook.result.current.beginWhiteboardStroke(
+          {
+            pointerType: 'mouse',
+            pointerId: 1,
+            pressure: 0.5,
+            shiftKey: true,
+          } as ReactPointerEvent,
+          { x: 100, y: 60 },
+        );
+      });
+      const stroke = s.hook.result.current.penStroke!;
+      stroke.snapTo(circle);
+      expect(stroke.shaped()!.bbox).toEqual({ x: 0, y: 0, width: 100, height: 100 });
+    });
   });
 });
