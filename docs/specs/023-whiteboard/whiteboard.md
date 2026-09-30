@@ -136,7 +136,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   keep their place and name whatever colour they are given.
 - **Widths**, on every pen including the main pen: **Fine** (1 px),
   **Medium** (1.5 px, the default) and **Bold** (2.5 px),
-  `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip. (Tuned with
+  `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip (the width at
+  medium pressure). (Tuned with
   the operator: Medium is what Fine was, each step one notch thinner.) The width is recorded as the stroke's `penWidth`, which every
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
@@ -151,34 +152,31 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   highlighter is ([Highlighter](../008-canvas/highlighter.md)): the next drag
   draws again, and the stroke just drawn is not selected. Select, Escape or
   another tool puts it down.
+- **Ink like Excalidraw's, with pressure.** A pen stroke is drawn the way
+  [Excalidraw](https://excalidraw.com) draws freehand, with
+  [perfect-freehand](https://github.com/steveruizok/perfect-freehand) (MIT):
+  from the stroke's raw samples, streamlined (a little behind the pointer, so
+  the hand's tremor irons out), as a filled outline with round ends.
+  - **Pressure.** With a pen (stylus) the line swells as it is pressed harder
+    and thins as it lightens: at medium pressure it is exactly the preset
+    width, from under half of it at the lightest touch to about 1.35 times it
+    at the firmest.
+  - **Without pressure** (a mouse, or a finger without force sensing) a stroke
+    keeps exactly the preset width all along; so do pen strokes drawn before
+    pressure was recorded.
+  - **Streamline** follows the pointer: a mouse is streamlined more (0.5) than
+    a pen or a finger (0.2), whose samples are steadier. A stroke keeps the
+    streamline it was drawn with.
 - **What you draw is what lands.** While a stroke is being drawn it already
-  shows in the pen's colour and **exact thickness** (the main pen in the
-  board's ink) **and already smoothed**. One live smoothing pipeline shapes
-  the stroke, and the stroke being drawn, the shape recognition preview and
-  the stroke that lands are all its output, so release changes nothing:
-  - **The line stays on the pen tip.** The stroke being drawn always ends
-    exactly at the latest pen position; smoothing adds no lag.
-  - **Ink settles once.** Each point is smoothed over the few milliseconds
-    either side of it, so only the newest few milliseconds of ink (the wet
-    tail) may still settle, by under a pixel; older ink never changes again.
-  - **Smoothing follows the device**: a pen, a mouse and a finger each get
-    their own settings, measured on screen and in time, so a stroke is as
-    smooth at every zoom and whatever rate the device reports at.
-  - **Every sample counts.** Where the browser offers the samples it gathered
-    between frames (coalesced events), the stroke uses all of them.
-  - **Corners stay corners.** A sharp turn (a cusp in handwriting, the corner
-    of a box) keeps its point, also where the pen paused on it; curves and
-    small loops stay round.
+  shows in the pen's colour, width and pressure (the main pen in the board's
+  ink), finished at every moment: its end is always where the pointer is. One
+  function draws the stroke being drawn and the stroke that lands, on the
+  canvas and in every export, so release changes nothing.
   - **Release moves no pixel.** The stroke being drawn is drawn in the canvas
     itself, beside the elements, laid out exactly as the stroke it becomes, so
     the browser rasterises both alike. (Drawn in a separate overlay, a line
     shifted by up to a device pixel or two on release, differently per engine
     and zoom.) The shape recognition preview is drawn in the canvas too.
-- **Every freehand stroke draws through one curve**: a centripetal
-  Catmull-Rom through the stroke's points, broken at its corners, the same on
-  the canvas and in every export. It cannot overshoot into loops or bumps
-  where the points are unevenly spaced. (Strokes drawn before it redraw a
-  little tighter.)
 - **A pen's width is ink on the board.** It is in canvas px, so a stroke
   zooms with the board like everything drawn on it, the same in every
   browser, and the in-flight stroke is drawn at that width times the zoom.
@@ -195,7 +193,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
-  drawn. The **main pen** records no explicit colour, so its strokes follow the
+  drawn, with its raw samples, a pressure per sample when a pen drew it, and
+  its streamline. The **main pen** records no explicit colour, so its strokes follow the
   appearance; every other pen records its colour, which stays as drawn.
 
 ## Shapes
@@ -296,7 +295,7 @@ The eraser offers **both** modes, switched in its flyout:
   second is long enough that a pause mid-letter does not trigger it and short
   enough to feel like an answer (Procreate's QuickShape and GoodNotes sit
   around the same). The preview and the commit run the same test
-  (`recogniseBoardStroke`) on the live smoothing pipeline's points (see
+  (`recogniseBoardStroke`) on the same stroke's streamlined centre line (see
   [Pens](#pens)), so what shows is what lands.
 - When off, strokes stay as drawn.
 
@@ -431,7 +430,6 @@ The whiteboard is built in rounds and tuned with the operator between them.
 - Converting an existing tab between kinds.
 - Microsoft Whiteboard extras (reactions, ruler, templates gallery, ink
   beautification) until use asks for them.
-- Pressure-sensitive stroke width; strokes have one width.
 
 ## References
 
