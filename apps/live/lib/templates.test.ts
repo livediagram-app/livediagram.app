@@ -23,7 +23,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "50 templates (10 default + 40 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "62 templates (10 default + 52 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -82,25 +82,37 @@ describe('TEMPLATES catalogue', () => {
     'uml-class',
     'state-machine',
     'event-storming',
+    'start-stop-continue',
+    'mad-sad-glad',
+    'four-ls',
+    'sailboat',
+    'incident-postmortem',
+    'opportunity-solution-tree',
+    'crazy-eights',
+    'stakeholder-map',
+    'risk-matrix',
+    'user-persona',
+    'meeting-agenda',
+    'objectives-planner',
     'floor-plan',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "50 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "62 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 50 templates (10 default + 40 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(50);
+  it('lists exactly 62 templates (10 default + 52 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(62);
   });
 
-  it('splits cleanly into 10 default + 40 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 52 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(40);
+    expect(extras).toHaveLength(52);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -158,19 +170,28 @@ describe('templateCanvasOverrides', () => {
   });
 
   it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
-    expect(templateCanvasOverrides('flowchart')).toEqual({ backgroundPattern: 'graph' });
-    expect(templateCanvasOverrides('orgchart')).toEqual({ backgroundPattern: 'graph' });
+    expect(templateCanvasOverrides('flowchart')).toEqual({
+      backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
+    });
+    expect(templateCanvasOverrides('orgchart')).toEqual({
+      backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
+    });
     // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: templateLayers('swot'),
     });
     expect(templateCanvasOverrides('gantt')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: templateLayers('gantt'),
     });
     expect(templateCanvasOverrides('mobile-wireframe')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: templateLayers('mobile-wireframe'),
     });
   });
@@ -183,19 +204,25 @@ describe('templateCanvasOverrides', () => {
   it('gives the slide deck a crosshatch backdrop', () => {
     expect(templateCanvasOverrides('slide-deck')).toEqual({
       backgroundPattern: 'crosshatch',
+      backgroundOpacity: 0.5,
       layers: templateLayers('slide-deck'),
     });
   });
 
   it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
-    expect(templateCanvasOverrides('logo-design')).toEqual({ backgroundPattern: 'checkerboard' });
+    expect(templateCanvasOverrides('logo-design')).toEqual({
+      backgroundPattern: 'checkerboard',
+      backgroundOpacity: 0.6,
+    });
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
+      backgroundOpacity: 0.6,
       layers: templateLayers('timeline'),
     });
     expect(templateCanvasOverrides('journey')).toEqual({
       backgroundPattern: 'lines',
-      backgroundOpacity: 0.8,
+      // The quieter of the lines rule (0.6) and the stage softening (0.8).
+      backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
     });
   });
@@ -207,6 +234,7 @@ describe('templateCanvasOverrides', () => {
   it('ships the kanban board with its Board / Cards layers (docs/specs/006-document/layers.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
       layers: [
         { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: 'Board' },
         { id: TEMPLATE_CONTENT_LAYER_ID, name: 'Cards' },
@@ -347,6 +375,69 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // (2 headings, the zone legend, 6 symbol rows of glyph + name).
     // Furniture is the 21 movable pieces.
     'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 64, content: 21 },
+    // The plan 0002 batch. Retro formats share the Retrospective's kit.
+    // Start / Stop / Continue: how-to, rail note, 3 columns + actions panel,
+    // 3 lamp discs + their glyphs, actions glyph, verbs, prompts, actions
+    // header + hint, From Sprint 21 heading. Stickies: title, mood check,
+    // timer + vote, 18 notes (6 per column), actions + last-sprint checklists.
+    'start-stop-continue': { names: ['Board', 'Stickies'], scaffold: 22, content: 24 },
+    // Mad / Sad / Glad: how-to, 3 columns + actions panel, 3 emoji stickers,
+    // names, prompts, actions header, hint + glyph, check-in line, Kind words
+    // heading. Stickies: title, mood check, idea box, timer + vote, 18 notes
+    // (6 per column), kind-words note, checklist, heart sticker.
+    'mad-sad-glad': { names: ['Board', 'Stickies'], scaffold: 19, content: 26 },
+    // 4Ls: how-to, rail note, numbers heading, 4 quadrants + strip, glyphs,
+    // names, prompts, strip header + hint. Stickies: title, rocket, mood
+    // check, timer + vote, stat row, 24 notes (6 per quadrant), 2 checklists.
+    'four-ls': { names: ['Board', 'Stickies'], scaffold: 23, content: 32 },
+    // Sailboat: how-to, rail note, the drawn scene (sky, sea + wake, setting
+    // sun, gulls, boat, rocks, island), 3 gust arrows, 4 zones of panel, name,
+    // prompt and glyph, the anchor rope + drawn anchor, actions panel, header,
+    // hint + glyph, island + Shout-outs headings. Stickies: title, mood check,
+    // agenda, timer + vote, 32 zone notes (8 per zone), 3 shout-outs,
+    // checklist, progress bar, clap sticker.
+    sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 43 },
+    // Report: caption, 4 section headings, 5 phase headers, the summary card,
+    // the Blameless callout and 3 findings columns. Findings: title, 3 chips,
+    // summary, stat row, 10 timeline cards, the impact spans, 5 whys, the
+    // root cause, chain arrows, 9 stickies, the clover and the actions table.
+    'incident-postmortem': { names: ['Report', 'Findings'], scaffold: 44, content: 84 },
+    // Matrix: caption, 2 section headings, 25 score cells, 20 axis step
+    // lines, 2 axis titles, 4 band chips, checklist + vote labels. Risks:
+    // title, 2 chips, 7 markers (R1 to R6 + R1's residual), the residual
+    // arrow, the register, the review sticky + sticker, checklist and vote.
+    'risk-matrix': { names: ['Matrix', 'Risks'], scaffold: 60, content: 16 },
+    // Levels: how-to, four level bands with rail tile, glyph, name and rule,
+    // and the sub-opportunity rail note. Tree: title, outcome card + ring,
+    // six opportunities with evidence chips, the target ribbon, three
+    // solutions, six tests with verdict chips, and 15 rake lines.
+    'opportunity-solution-tree': { names: ['Levels', 'Tree'], scaffold: 22, content: 47 },
+    // Grid: how-to, four quadrants of tile, glyph, name and rule, two axis
+    // arrows and six labels, the plan heading + note, the stance key. People:
+    // title, nine people and the ghost, the move arrow, the plan table, the
+    // next-step sticky and its pushpin.
+    'stakeholder-map': { names: ['Grid', 'Stakeholders'], scaffold: 36, content: 15 },
+    // Sheet: how-to, prompt card, the four steps, the sheet frame, 8 panel
+    // frames + number chips, the invite line. Sketches: title + meta, prompt,
+    // 2 stickers, timer + vote, done check, sheet name + status, the three
+    // sketches and their captions, 5 empty-panel hints.
+    'crazy-eights': { names: ['Sheet', 'Sketches'], scaffold: 35, content: 54 },
+    // Card: how-to, the profile card's chrome, 5 panels of tint, header,
+    // glyph and prompt, spectrum poles, channel glyphs, How we help band.
+    // Details: title, profile facts, monogram, stat row, tags, quote, 9 notes,
+    // 4 bars, 3 channels + rating, 3 needs + answers.
+    'user-persona': { names: ['Card', 'Details'], scaffold: 49, content: 40 },
+    // Board: how-to, 3 phase bands, 5 column heads, section labels, 4 house
+    // rules, the parking bay and hints. Notes: title + sticker, purpose,
+    // outcomes checklist, 5 attendees, the agenda, 4 parked stickies, 2
+    // decision records, actions checklist, rating gauge, next-sync callout.
+    'meeting-agenda': { names: ['Board', 'Notes'], scaffold: 37, content: 34 },
+    // Planner: how-to, 3 phase bands, 3 column heads, why labels, the formula
+    // guide + rewrite + SMART check, 3 card frames with section labels, the
+    // check-in strip. Objectives: title + sticker, focus, 6 stickies, 2 corner
+    // people, 3 objectives (chip, sticker, sentence, KRs + bars, steps,
+    // support, rating) and the Today chip.
+    'objectives-planner': { names: ['Planner', 'Objectives'], scaffold: 65, content: 44 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {
@@ -428,9 +519,13 @@ describe('buildTemplatedTab', () => {
     expect(tab.backgroundOpacity).toBe(0.8);
   });
 
-  it('leaves non-mindmap templates without a backdrop opacity override', () => {
-    const tab = buildTemplatedTab('flowchart', 'brand', 'tab-1', 'flow');
-    expect(tab.backgroundOpacity).toBeUndefined();
+  it('steps loud patterns back behind the content and leaves quiet ones alone', () => {
+    // Graph paper is the loudest, so it recedes furthest.
+    expect(buildTemplatedTab('flowchart', 'brand', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
+    // The dot grid is already quiet: no override.
+    expect(
+      buildTemplatedTab('retrospective', 'brand', 'tab-1', 'retro').backgroundOpacity,
+    ).toBeUndefined();
   });
 
   it('recolours shape elements with the chosen theme palette', () => {

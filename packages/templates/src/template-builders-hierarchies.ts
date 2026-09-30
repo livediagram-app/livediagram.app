@@ -40,6 +40,13 @@ type KeyResult = {
   initiatives: [string, string][];
 };
 
+// Each status's deep ink, for text laid over a card in that status's pale
+// preset: readable on the preset's fill on a light or a dark canvas alike.
+const KR_INK: Record<KeyResult['status'], string> = {
+  success: '#14532d',
+  warning: '#78350f',
+};
+
 const KEY_RESULTS: KeyResult[] = [
   {
     result: 'KR1 · NPS 40 → 55',
@@ -173,6 +180,10 @@ export function buildOkrTree(cx: number, cy: number): Element[] {
       textSize: 'sm',
       textAlignX: 'left',
       textAlignY: 'middle',
+      // The card's status preset stays pale on every canvas, but this text
+      // is its own element, so it would take the canvas ink (white on a dark
+      // canvas). Ink it the status's own deep hue instead.
+      textColor: KR_INK[kr.status],
     });
     const [anchor, fx] = BOTTOM_EXITS[i]!;
     arrows.push({

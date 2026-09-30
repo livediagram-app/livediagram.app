@@ -126,7 +126,36 @@ export type TemplateKind =
   // exploring a business domain — orange domain events first, the rest
   // of the notation arrives incrementally. Colours ARE the semantics,
   // so its stickies pin their fills with `themeLockFill`.
-  | 'event-storming';
+  | 'event-storming'
+  // Retro formats (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Retrospective's siblings, run
+  // with the same opening rail and closing actions so a team can rotate
+  // formats without relearning the ritual. Columns (Start / Stop /
+  // Continue, Mad / Sad / Glad), a 2x2 (4Ls) and a picture (Sailboat).
+  | 'start-stop-continue'
+  | 'mad-sad-glad'
+  | 'four-ls'
+  | 'sailboat'
+  // A blameless incident postmortem: impact, a phased timeline, five whys,
+  // what helped and hurt, and prioritised follow-ups.
+  | 'incident-postmortem'
+  // Product discovery's opportunity solution tree: outcome, opportunities,
+  // solutions and assumption tests, one hue per level.
+  | 'opportunity-solution-tree'
+  // Crazy 8s: the design-sprint sketching exercise, eight one-minute frames
+  // beside an 8-minute timer, a vote and a done check.
+  | 'crazy-eights'
+  // Power / interest stakeholder grid with stances and an engagement plan.
+  | 'stakeholder-map'
+  // 5x5 likelihood x impact heatmap beside a risk register.
+  | 'risk-matrix'
+  // A research-backed user persona laid out as a profile sheet.
+  | 'user-persona'
+  // A meeting that runs itself: purpose, attendees, a live agenda element,
+  // and the parking lot, decisions and actions it produces.
+  | 'meeting-agenda'
+  // Personal objectives, written with a sentence formula and a SMART check,
+  // balanced across life areas, with key results and a check-in rhythm.
+  | 'objectives-planner';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -152,7 +181,7 @@ export type TemplateDescriptor = {
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank',
-    title: 'Blank diagram',
+    title: 'Blank Canvas',
     description: 'An empty canvas to start with whatever you like.',
   },
   {
@@ -473,6 +502,90 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'Explore a business domain with the sticky-note workshop notation: orange domain events on a left-to-right timeline.',
     extra: true,
   },
+  {
+    kind: 'start-stop-continue',
+    title: 'Start, Stop, Continue',
+    description:
+      'The plainest retro: what to begin, what to drop and what to keep, with a vote and owned actions.',
+    extra: true,
+  },
+  {
+    kind: 'mad-sad-glad',
+    title: 'Mad, Sad, Glad',
+    description:
+      'A feelings-first retro with an anonymous idea box, emoji-led columns and actions that ask what would help.',
+    extra: true,
+  },
+  {
+    kind: 'four-ls',
+    title: '4Ls retrospective',
+    description:
+      'Liked, Learned, Lacked and Longed for in a 2x2: the reflective retro for after a milestone.',
+    extra: true,
+  },
+  {
+    kind: 'sailboat',
+    title: 'Sailboat retrospective',
+    description:
+      'The picture retro: wind that pushes us, anchors that hold us back, rocks ahead and the island we sail for.',
+    extra: true,
+  },
+  {
+    kind: 'incident-postmortem',
+    title: 'Incident postmortem',
+    description:
+      'A blameless postmortem: impact, a phased timeline, five whys, what helped and prioritised follow-ups.',
+    extra: true,
+  },
+  {
+    kind: 'opportunity-solution-tree',
+    title: 'Opportunity solution tree',
+    description:
+      "Product discovery from one outcome: needs in the customer's voice, a target, three solutions and their tests.",
+    extra: true,
+  },
+  {
+    kind: 'crazy-eights',
+    title: 'Crazy 8s',
+    description:
+      'Eight ideas in eight minutes: a sketch sheet of one-minute frames, a timer, a done check and a vote.',
+    extra: true,
+  },
+  {
+    kind: 'stakeholder-map',
+    title: 'Stakeholder map',
+    description:
+      'Power vs interest: who to manage closely, keep satisfied, inform or monitor, with stances and an engagement plan.',
+    extra: true,
+  },
+  {
+    kind: 'risk-matrix',
+    title: 'Risk matrix',
+    description:
+      'A 5x5 likelihood and impact heatmap with numbered risks, a residual move, and a register with owners and trends.',
+    extra: true,
+  },
+  {
+    kind: 'user-persona',
+    title: 'User persona',
+    description:
+      'A research-backed persona: profile and quote, goals, frustrations, behaviours, personality and how we help.',
+    extra: true,
+  },
+  {
+    kind: 'meeting-agenda',
+    title: 'Meeting agenda',
+    description:
+      'A weekly sync that runs itself: purpose and roles, a timed agenda, then parking lot, decisions and actions.',
+    extra: true,
+  },
+  {
+    kind: 'objectives-planner',
+    title: 'Objectives planner',
+    description:
+      'Write personal objectives that stick: start with why, a sentence formula, a SMART test, key results and check-ins.',
+    extra: true,
+  },
 ];
 
 // Picker grouping. Templates are organised into a handful of
@@ -518,8 +631,8 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; descrip
   },
   {
     id: 'project-management',
-    label: 'Project Management',
-    description: 'Timelines, Gantt charts and roadmaps.',
+    label: 'Projects',
+    description: 'Plans, timelines, risks and meeting agendas.',
   },
   {
     id: 'strategy',
@@ -558,10 +671,15 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   pyramid: 'hierarchies',
   fishbone: 'hierarchies',
   'okr-tree': 'hierarchies',
+  'opportunity-solution-tree': 'hierarchies',
   sitemap: 'hierarchies',
   // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
   retrospective: 'planning',
+  'start-stop-continue': 'planning',
+  'mad-sad-glad': 'planning',
+  'four-ls': 'planning',
+  sailboat: 'planning',
   'prioritization-matrix': 'planning',
   'user-story-map': 'planning',
   'affinity-map': 'planning',
@@ -569,13 +687,16 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   // category's retros already make a home for.
   'lean-coffee': 'planning',
   'town-hall': 'planning',
-  // Project Management: time-ordered schedules, roadmaps + ownership.
+  // Projects: time-ordered schedules, roadmaps + ownership.
   gantt: 'project-management',
   timeline: 'project-management',
   'milestone-timeline': 'project-management',
   'milestone-timeline-vertical': 'project-management',
   roadmap: 'project-management',
   'raci-matrix': 'project-management',
+  'risk-matrix': 'project-management',
+  'meeting-agenda': 'project-management',
+  'objectives-planner': 'project-management',
   // Strategy: business / product analysis, decision frameworks + set
   // relationships (Venn).
   swot: 'strategy',
@@ -585,6 +706,8 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   venn: 'strategy',
   'business-model-canvas': 'strategy',
   'empathy-map': 'strategy',
+  'user-persona': 'strategy',
+  'stakeholder-map': 'strategy',
   funnel: 'strategy',
   // Design: wireframes, slides + visual mock-ups.
   'mobile-wireframe': 'design',
@@ -597,6 +720,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   // A floor plan is a layout drawing, so it sits with the wireframes and
   // mock-ups rather than with the developer diagrams in Technical.
   'floor-plan': 'design',
+  'crazy-eights': 'design',
   // Technical / developer diagrams.
   'system-architecture': 'technical',
   'cloud-architecture': 'technical',
@@ -605,7 +729,21 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'uml-class': 'technical',
   'state-machine': 'technical',
   'event-storming': 'technical',
+  'incident-postmortem': 'technical',
 };
+
+// The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
+// most people start, open by default above the categories. Not a category of
+// its own (every kind here still lives in its real one); Blank Canvas leads it,
+// so the picker needs no separate blank card.
+export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
+  'blank',
+  'mindmap',
+  'sailboat',
+  'flowchart',
+  'kanban',
+  'orgchart',
+];
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
@@ -718,6 +856,39 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   storyboard: 'crosshatch',
+  // The twelve-starter batch follows the same split: the retro formats,
+  // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
+  // boards on the dot grid, as is the postmortem (a dense written report,
+  // where graph lines behind every card read as noise); the matrices and
+  // tree ride graph paper;
+  // the Sailboat's drawn scene gets a blank canvas like the flywheel.
+  'start-stop-continue': 'grid',
+  'mad-sad-glad': 'grid',
+  'four-ls': 'grid',
+  sailboat: 'blank',
+  'incident-postmortem': 'grid',
+  'opportunity-solution-tree': 'graph',
+  'crazy-eights': 'grid',
+  'stakeholder-map': 'graph',
+  'risk-matrix': 'graph',
+  'user-persona': 'grid',
+  'meeting-agenda': 'grid',
+  // A personal planning sheet, read closely like a page: even dots behind
+  // its cards read as noise, so it gets a clean canvas.
+  'objectives-planner': 'blank',
+};
+
+// How far each loud backdrop pattern steps back behind a template's content
+// (the tab's `backgroundOpacity`, which dims only the pattern layer). Graph
+// paper is the loudest (two line weights across the whole page), so it drops
+// the most; ruled lines, crosshatch and the checkerboard sit between. The dot
+// grid and a blank canvas are already quiet and keep full strength. The user
+// can still turn any of them back up in the Canvas controls.
+const TEMPLATE_PATTERN_OPACITY: Partial<Record<BackgroundPattern, number>> = {
+  graph: 0.4,
+  crosshatch: 0.5,
+  lines: 0.6,
+  checkerboard: 0.6,
 };
 
 // Tab-level overrides a specific template ships with, applied on top
@@ -732,13 +903,21 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   const overrides: Partial<Tab> = {};
   const pattern = TEMPLATE_PATTERNS[kind];
   if (pattern) overrides.backgroundPattern = pattern;
-  if (
+  // The pattern recedes behind the content: a template is read, so its
+  // backdrop should organise the page rather than compete with it. The
+  // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
+  // a few radial / stage layouts soften further still, and the lower of the
+  // two wins.
+  const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
     kind === 'journey' ||
     kind === 'prioritization-matrix'
-  )
-    overrides.backgroundOpacity = 0.8;
+      ? 0.8
+      : undefined;
+  const opacity = Math.min(quiet ?? 1, soft ?? 1);
+  if (opacity < 1) overrides.backgroundOpacity = opacity;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
   // A template can also declare what KIND of board it makes (docs/specs/021-event-storming/event-storming.md).

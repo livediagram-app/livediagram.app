@@ -4,3 +4,4 @@
 // so a template's card looks the same wherever it is offered and a new
 // kind gets its artwork in one place.
 export { TemplatePreview } from './template-preview';
+export { PreviewFan } from './PreviewFan';

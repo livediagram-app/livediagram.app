@@ -57,6 +57,20 @@ import {
 import { buildDataFlow } from './template-builders-dataflow';
 import { buildFlowchart, buildOrgChart } from './template-builders-trees';
 import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
+import {
+  buildStartStopContinue,
+  buildMadSadGlad,
+  buildFourLs,
+  buildSailboat,
+} from './template-builders-retro-formats';
+import { buildIncidentPostmortem } from './template-builders-postmortem';
+import { buildRiskMatrix } from './template-builders-risk';
+import { buildOpportunitySolutionTree } from './template-builders-opportunity-tree';
+import { buildStakeholderMap } from './template-builders-stakeholders';
+import { buildCrazyEights } from './template-builders-crazy-eights';
+import { buildUserPersona } from './template-builders-persona';
+import { buildMeetingAgenda } from './template-builders-meeting';
+import { buildObjectivesPlanner } from './template-builders-objectives';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -126,6 +140,30 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildSequenceDiagram(cx, cy);
     case 'prioritization-matrix':
       return buildPrioritizationMatrix(cx, cy);
+    case 'start-stop-continue':
+      return buildStartStopContinue(cx, cy);
+    case 'mad-sad-glad':
+      return buildMadSadGlad(cx, cy);
+    case 'four-ls':
+      return buildFourLs(cx, cy);
+    case 'sailboat':
+      return buildSailboat(cx, cy);
+    case 'incident-postmortem':
+      return buildIncidentPostmortem(cx, cy);
+    case 'risk-matrix':
+      return buildRiskMatrix(cx, cy);
+    case 'opportunity-solution-tree':
+      return buildOpportunitySolutionTree(cx, cy);
+    case 'stakeholder-map':
+      return buildStakeholderMap(cx, cy);
+    case 'crazy-eights':
+      return buildCrazyEights(cx, cy);
+    case 'user-persona':
+      return buildUserPersona(cx, cy);
+    case 'meeting-agenda':
+      return buildMeetingAgenda(cx, cy);
+    case 'objectives-planner':
+      return buildObjectivesPlanner(cx, cy);
     case 'roadmap':
       return buildRoadmap(cx, cy);
     case 'raci-matrix':
@@ -165,6 +203,6 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
   }
 }
 
-// The "Blank diagram" template is truly blank — no seeded element. The user
+// The "Blank Canvas" template is truly blank — no seeded element. The user
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.

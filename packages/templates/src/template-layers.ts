@@ -39,7 +39,27 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     case 'kanban':
       return layered('Board', 'Cards');
     case 'retrospective':
+    case 'start-stop-continue':
+    case 'mad-sad-glad':
+    case 'four-ls':
+    case 'sailboat':
       return layered('Board', 'Stickies');
+    case 'incident-postmortem':
+      return layered('Report', 'Findings');
+    case 'opportunity-solution-tree':
+      return layered('Levels', 'Tree');
+    case 'crazy-eights':
+      return layered('Sheet', 'Sketches');
+    case 'stakeholder-map':
+      return layered('Grid', 'Stakeholders');
+    case 'risk-matrix':
+      return layered('Matrix', 'Risks');
+    case 'user-persona':
+      return layered('Card', 'Details');
+    case 'meeting-agenda':
+      return layered('Board', 'Notes');
+    case 'objectives-planner':
+      return layered('Planner', 'Objectives');
     case 'prioritization-matrix':
       return layered('Axes', 'Items');
     case 'affinity-map':

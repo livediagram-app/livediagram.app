@@ -246,7 +246,7 @@ The template and theme grids shuffle their order **once per open** of
 the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
-- **Pinned defaults stay first.** Blank diagram (templates) and the
+- **Pinned defaults stay first.** Blank Canvas (templates) and the
   `brand` scheme, labelled "Default" (theme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.
@@ -275,13 +275,17 @@ and the pattern controls in `components/palette/palette-controls.tsx`)
 
 The welcome screen is a **two-step wizard** rather than one long page:
 
-- **Step 1: Template.** The template browse (search, categories, drill-in).
-  Footer: **Skip** and **Next**. Double-clicking a template card advances to
-  step 2 (it does not commit the whole wizard, so the user still picks a theme).
-- **Step 2: Theme.** The theme browse (below). Footer: **Back** (left arrow),
-  **Skip**, and **Create Document**.
+- **Step 1: Template.** The template browse (search, one open category's carousel, the other categories folded as tiles beneath it).
+  Footer: **Skip** and **Next**. Clicking a template card advances to step 2.
+- **Step 2: Location.** Where the document lives (the Settings step in code:
+  name, save location, placement). Footer: **Create**.
+- **There is no theme step.** A new document starts on the **Default** theme,
+  and the Theme and canvas controls change it later; asking for a theme before
+  anything is on the canvas was a decision most people could not yet make. (It
+  was step 2 of three, with a two-level theme browse and the custom-theme
+  builder; retired.)
 - A **two-segment progress rail** at the top shows the current step; clicking
-  either segment ("1 Template" / "2 Theme") jumps straight to that step.
+  either segment ("1 Template" / "2 Location") jumps straight to that step.
   The step number and each category card's template-count badge centre the
   digit's ink in their circle / pill (`text-optical-centre`,
   [Optical alignment](../004-interface-design/optical-alignment.md)), in both
@@ -290,7 +294,7 @@ The welcome screen is a **two-step wizard** rather than one long page:
   4px from the circle to the pill's left edge, the same as top and bottom
   ([Colour scheme](../004-interface-design/color-scheme.md#usage-rules)). The
   rail's first circle lines up with the dialog heading.
-- **Skip** (either step) commits the documented defaults straight away: the
+- **Skip** (on the template step) commits the documented defaults straight away: the
   **Blank** template and the **Default** theme. (This is why the welcome screen now
   has a Skip control where it previously had none.) The header **X** still
   dismisses.
@@ -309,11 +313,11 @@ isn't the placeholder. (The template-order shuffle moved to a mount effect, off
 the lazy `useState` initializer, so the statically-prerendered HTML matches
 hydration.)
 
-The in-editor template flow — titled **Quick Start** — uses the **same two-step
-wizard**, with mode-appropriate controls: its far-left escape is **Cancel** (not
-Open Existing), it has no Skip, and its primary action is **Apply** (not Create
-Document). Only the visitor identity prompt stays a single-section, non-wizard
-surface.
+The in-editor template flow — titled **Quick Start** — is a **single page**: the
+same template browse, no step rail, and picking a template applies it straight
+away, keeping the tab's current theme (a new tab carries its source tab's). Its
+footer is **Cancel** and **Apply** (which applies the selected card). The visitor
+identity prompt is the other single-section surface.
 
 **Quick Start opens only on an explicit request** — adding a tab
 (`useTabActions.addTab`) or the empty-canvas banner's **Quick Start** button,
@@ -331,6 +335,15 @@ tab changes (a ref, not an activeId diff — `addTab` switches tab and opens the
 picker in one commit, which a naive diff would close immediately).
 `chooseTemplate` carries the matching backstop: a confirm that would land on a
 tab with elements dismisses the picker and writes nothing.
+
+**Quick Start closes when you reach past it.** It is a panel over the canvas,
+not a blocking modal: the palette, the Explorer, the bottom toolbars and the
+canvas stay live around it, and what they open or add would land hidden behind
+it. So a press anywhere outside the card (the shared `useClickOutside`) closes
+it exactly as Cancel does, and the press still reaches what it landed on (a
+palette tool arms as normal). Presses inside the card, including its search
+and carousel, keep it open. The first-run welcome and the name prompt ask for
+an answer and never close this way.
 
 The **empty-canvas hint** is a subdued **bottom banner** (`EmptyCanvasBanner`),
 shown while the active tab has no elements — not the old centre-of-canvas card,
@@ -432,15 +445,14 @@ default document name) without walking the wizard:
   can't count the arrival twice. Whichever path commits the document (Create,
   Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
-- **A "Just Draw" button on the wizard's step rail** (welcome mode only):
-  far right on the same line as the Template / Theme / Settings chips,
-  desktop (`sm+`) only — mobile keeps the footer Skip as the compact
-  escape. One click commits the Skip defaults immediately (disabled while
-  a create is in flight, like Create).
+- **No "Just Draw" button inside the wizard.** It used to sit on the step
+  rail; the footer's **Skip** already commits the same blank defaults, and
+  Just Draw now lives only on the outside surfaces that link to
+  `/new?blank=1`.
 
 ### In-place handoff to the editor
 
-Every commit from `/new` (Create, Skip, Just Draw, and both bypass URLs)
+Every commit from `/new` (Create, Skip, and both bypass URLs)
 opens the editor **without a page load**. Once the document is persisted and
 placed, the page rewrites the address bar to `/document/<id>` with
 `history.replaceState` and renders the editor component (`EditorPage`, the
@@ -505,31 +517,23 @@ document"**; everything else stays put.
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
 
-Skip and Just Draw honour the URL placement context (the `?folder` /
+Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's
 picker would have defaulted, not silently into personal Unsorted.
 
-Telemetry: both Just Draw surfaces fire `UI / Used / JustDraw` alongside
+Telemetry: the Just Draw bypass (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so wizard-bypass adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-## Custom themes in the picker
+## Custom themes
 
-The theme step shows the owner's **custom themes** ([Custom themes](../011-theme/custom-themes.md))
-as a **Custom** category in the browse, alongside the built-in colour categories.
-Its drill-in lists the saved themes (apply / edit / delete) plus a **+ New theme**
-card that opens the builder in place. This is the same `CustomThemePicker` the
-right-click Tab Look & Feel dialog renders, so the two surfaces (and the
-create/edit flow) stay identical. The `/new` route mounts a `CustomThemeProvider`
-so the saved themes load here. The chosen theme (built-in or `custom:<uuid>`)
-flows through the unchanged create path; the theme-id types along it (`onPick`,
-`commitNewDocument`, `buildTemplatedTab`) are `string` rather than `ThemeId` to
-carry the custom id.
-
-Inside a category drill-in, each built-in theme card shows a short **description**
-under its label (now that the theme step has room), sourced from an exhaustive
-`Record<ThemeId, string>` (`themeDescription`) so the compiler forces every theme
-to carry one. Custom theme cards show just the saved name.
+With the theme step retired, the picker no longer shows themes at all. Custom
+themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
+the Tab Look & Feel dialog, which renders the same `CustomThemePicker` the theme
+step used. The create path still carries a theme id (`onPick`,
+`commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
+passes through), now always the caller's: `brand` on `/new`, the source tab's
+theme for a new tab.
 
 ## API impact
 
@@ -553,8 +557,6 @@ to carry one. Custom theme cards show just the saved name.
 - `/new?template=kanban` → no wizard; a Kanban diagram created and the
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` → the plain wizard.
-- "Just Draw" on the wizard's step rail → blank document created
-  immediately, same as Skip.
 
 ## Out of scope for V1
 

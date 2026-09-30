@@ -31,12 +31,8 @@ test.describe('Contrast audit, dark mode', () => {
     expectAA(await auditContrast(page), 'wizard, template step');
 
     await page.getByRole('button', { name: /^next$/i }).click();
-    await page
-      .getByText('All themes', { exact: false })
-      .or(page.getByText('Default').first())
-      .first()
-      .waitFor();
-    expectAA(await auditContrast(page), 'wizard, theme step');
+    await page.getByText('Name your document', { exact: false }).first().waitFor();
+    expectAA(await auditContrast(page), 'wizard, location step');
     expectNoPageErrors(pageErrors);
   });
 

@@ -14,6 +14,7 @@ export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { HoverCard, type HoverCardProps } from './HoverCard';
+export { SnapCarousel } from './SnapCarousel';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';

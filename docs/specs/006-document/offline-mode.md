@@ -17,7 +17,7 @@ Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upser
 
 Offline Mode is **off by default**. You choose it when creating a document:
 
-- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) runs three steps: Template, Theme, then
+- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) runs two steps: Template, then
   **Location** (the Settings step in code). It carries the **Save location** chooser
   ([Save Locations](save-locations.md)), alongside the document name and where it is saved (a personal
   folder or a team library). **livediagram** (the default) = a normal cloud
