@@ -2901,7 +2901,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // otherwise. Written by the canvas host on every pointer move; read by paste
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane": a paste lands at the pointer).
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
-  const { copySelection, pasteFromClipboard, hasClipboard } = useClipboard({
+  const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
     selectedId,
@@ -2918,6 +2918,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toast,
     onPastePhoto: readPhotoFile,
     canvasPointerRef,
+    // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
+    insertBoardScene: (scene, at) => void boardSceneInsert.insertScene(scene, at),
   });
   // Board scenes pasted or dropped from another tool (docs/specs/020-import-export/board-scene.md
   // "In the editor"): one commit at the pointer, selected, with its notice.
@@ -3062,6 +3064,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
     pasteFromClipboard,
+    dropBoardFile,
     hasClipboard,
     boardSceneInsert,
     ...panelLayout,

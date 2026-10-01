@@ -36,3 +36,9 @@ One row per default applied where a spec is silent or qualitative.
 | M5  | ms-whiteboard-import  | A line head value other than none                                       | An open arrowhead                                                                               |
 | M6  | ms-whiteboard-import  | Which date names an untitled board                                      | Its created date (the day it was made), else its last edit                                      |
 | M7  | ms-whiteboard-import  | The earliest date a board can carry                                     | 2016-01-01; earlier is damage and is dropped                                                    |
+| X1  | excalidraw-import     | Default font size of a text without `fontSize`                          | 20 px, Excalidraw's own default                                                                 |
+| X2  | excalidraw-import     | Key of an element without an `id`                                       | `excalidraw-<position>`; it cannot be bound to                                                  |
+| X3  | excalidraw-import     | Element opacity on a scene without an opacity slot                      | Multiplied into every colour the element paints                                                 |
+| X4  | excalidraw-import     | Font of families outside hand-drawn and code                            | `sans`                                                                                          |
+| X5  | excalidraw-import     | Paste of Excalidraw text that fails to read                             | Error toast with the rejection's message; nothing lands                                         |
+| X6  | excalidraw-import     | Fill of a sticky note whose colour cannot be read                       | `#ffdf6b`, Excalidraw's sticky yellow                                                           |

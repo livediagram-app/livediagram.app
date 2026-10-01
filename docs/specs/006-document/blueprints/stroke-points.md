@@ -156,8 +156,9 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
     the stroke had pressures, its interpolated pressures.
   - The style preset that drops pen ink (`style-presets.ts`): re-packs the same points without
     pressures.
-  - Imports: the Excalidraw file importer; the board-scene landing (track F) adopts
-    `packFreehandPoints` when it rebases.
+  - Imports: every board scene (Excalidraw files, pastes and drops; Microsoft Whiteboard boards)
+    lands its strokes through the board-scene landing (`land-marks.ts`, `land-diagram.ts`), which
+    packs them with `packFreehandPoints`.
 - **Live ink:** the stroke being drawn keeps its raw samples (`freehandGeometry`, unpacked, through
   `PenStrokeSource`'s `points` form), so settled ink never re-quantises as the box grows; the landed
   stroke is within `STROKE_POINT_MAX_ERROR` of it, the only difference release makes.
@@ -200,7 +201,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Pen commit          | `apps/live/hooks/canvas/commit-freehand.ts`                                          | pressures to `createFreehand`                                                       |
 | Style presets       | `apps/live/lib/style-presets.ts`                                                     | re-pack without pressures                                                           |
 | Excalidraw export   | `apps/live/lib/excalidraw-export.ts`                                                 | decode                                                                              |
-| Excalidraw import   | `apps/live/lib/excalidraw-import.ts`                                                 | `packFreehandPoints`                                                                |
+| Board-scene imports | `apps/live/lib/board-scene/land-marks.ts`, `land-diagram.ts`                         | `packFreehandPoints`                                                                |
 | Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                                          |
 | Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
 | Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                                                     |

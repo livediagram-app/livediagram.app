@@ -160,6 +160,19 @@ ops shouldn't ride a visitor's share code.
      merged entry the same way.
    - Overridden-summary and `undoable: false` emits never coalesce.
 
+   **An entry too large to store becomes a summary.** The server refuses an
+   entry whose JSON is over `MAX_CHANGE_LOG_ENTRY_BYTES` (256 KB, shared by the
+   worker and the client from `@livediagram/api-schema`). A change that big
+   (pasting a whole board, a large import-like edit) is logged as a **summary
+   entry** instead: the same id, kind, author, time and summary line (its counts,
+   "Added 658 elements"), with no `element_ids` and empty `before_state` /
+   `after_state`. It shows in the panel and on peers like any row, pairs with
+   undo and redo as usual, and offers **no Revert** (nothing to revert to),
+   like a tab-meta row. The same rule applies to a coalesced entry that grows
+   past the cap. A failed append or delete is never swallowed: it logs
+   `[activity-log] append failed` / `delete failed` / `clear failed` with the
+   entry (or tab) id and the error, so a missing row is traceable.
+
 2. `useDocumentHistory.undo` / `redo` are paired with the activity log
    via a **marker stack** (`lib/entry-history`): every history push
    (commit / checkpoint) pushes a `null` marker, and an emit fills the
@@ -286,7 +299,7 @@ cluster in every layout, and the change log is still recorded.
 
 ## Performance
 
-- Append is fire-and-forget — UI doesn't await it.
+- Append is fire-and-forget (the UI does not await it); a failure is logged, never silent.
 - List fetch is debounced into hydration; subsequent appends update
   the in-memory list. We do not poll the server.
 - Server caps the list response at 30 entries (`CHANGE_LOG_LIST_LIMIT`). Older entries are still in D1; V1 doesn't expose pagination UI.

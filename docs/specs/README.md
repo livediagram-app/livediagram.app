@@ -27,7 +27,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on Markdown, Mermaid or Excalidraw import/export, imported images, board imports from Miro or Microsoft Whiteboard, or export fidelity
+- ./020-import-export/README.md - when working on Markdown, Mermaid or Excalidraw import/export, pasting from Excalidraw, imported images, board imports from Miro or Microsoft Whiteboard, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of Personal Space
 - ./023-whiteboard/README.md - when working on the whiteboard tab kind

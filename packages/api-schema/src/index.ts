@@ -488,6 +488,12 @@ export type ChangeLogEntry = {
 // Older entries stay in D1 for audit completeness; the UI just pages to N.
 export const CHANGE_LOG_LIST_LIMIT = 30;
 
+// One change-log entry's JSON (docs/specs/012-collaboration/activity-and-audit.md). The before/after
+// payloads are per-gesture element diffs, a few KB in practice, so this bounds a hostile near-8MB
+// entry from bloating both storage and the capped list response (30 entries per GET). The worker
+// refuses anything larger; the client logs a larger change as a summary entry instead.
+export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
+
 // The 409 `error` token `POST .../log` answers when the entry names a tab
 // that isn't (yet) linked to the document. The common cause is benign: the
 // editor logs an edit the moment it happens, but a brand-new tab only

@@ -8,7 +8,7 @@ import {
   connectRoom,
   type ChangeLogEntry,
 } from '@/lib/api-client';
-import { applyRevert } from '@/lib/change-log';
+import { applyRevert, changeLogFailure } from '@/lib/change-log';
 import { entryHistoryRedo, entryHistoryUndo, type EntryHistory } from '@/lib/entry-history';
 import { announce } from '@/lib/announcer';
 import { track } from '@/lib/telemetry';
@@ -106,11 +106,11 @@ export function useEditorHistory(opts: {
     if (!documentId) return;
     const targetTabId = activeId;
     setChangeLog((prev) => prev.filter((entry) => entry.tabId !== targetTabId));
-    apiDeleteChangeLogForTab(selfId, documentId, targetTabId, sessionShareCode).catch(() => {
-      // Best-effort. Stale rows in D1 are harmless; the next list
-      // fetch reconciles. We don't want a transient error to block
-      // the local clear that already happened.
-    });
+    // Best-effort: the local clear already happened, and stale rows in D1 reconcile on the next
+    // list fetch. A failure is logged, not hidden.
+    apiDeleteChangeLogForTab(selfId, documentId, targetTabId, sessionShareCode).catch(
+      changeLogFailure('clear', targetTabId),
+    );
   };
 
   // Surgical revert: replay the entry's `before` payload onto the
@@ -134,11 +134,10 @@ export function useEditorHistory(opts: {
     // fire-and-forget the API delete.
     setChangeLog((prev) => prev.filter((e) => e.id !== entry.id));
     if (documentId) {
-      apiDeleteChangeLogEntry(selfId, documentId, entry.id, sessionShareCode).catch(() => {
-        // Best-effort. A stale row in D1 surfaces on the next list
-        // fetch — at which point the entry would reappear; acceptable
-        // tradeoff for the lighter UX.
-      });
+      // Best-effort: a stale row in D1 reappears on the next list fetch. Logged, not hidden.
+      apiDeleteChangeLogEntry(selfId, documentId, entry.id, sessionShareCode).catch(
+        changeLogFailure('delete', entry.id),
+      );
     }
     roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: entry.id } });
   };
@@ -166,10 +165,10 @@ export function useEditorHistory(opts: {
     if (popped) {
       setChangeLog((prev) => prev.filter((e) => e.id !== popped.id));
       if (documentId) {
-        apiDeleteChangeLogEntry(selfId, documentId, popped.id, sessionShareCode).catch(() => {
-          // Best-effort. A redo will re-POST the same id so a stale
-          // duplicate is unlikely.
-        });
+        // Best-effort: a redo re-POSTs the same id. Logged, not hidden.
+        apiDeleteChangeLogEntry(selfId, documentId, popped.id, sessionShareCode).catch(
+          changeLogFailure('delete', popped.id),
+        );
       }
       roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: popped.id } });
     }
@@ -192,7 +191,9 @@ export function useEditorHistory(opts: {
         // it had before the undo. Idempotent: the API upserts an
         // existing id from the same author (docs/specs/012-collaboration/activity-and-audit.md), so a redo that
         // beats its undo's DELETE doesn't fail.
-        apiAppendChangeLogEntry(selfId, documentId, shifted, sessionShareCode).catch(() => {});
+        apiAppendChangeLogEntry(selfId, documentId, shifted, sessionShareCode).catch(
+          changeLogFailure('append', shifted.id),
+        );
       }
       roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: shifted } });
     }

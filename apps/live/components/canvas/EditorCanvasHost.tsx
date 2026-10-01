@@ -115,6 +115,7 @@ export function EditorCanvasHost() {
     photoImportBlocked,
     openPhotoImport,
     readPhotoFile,
+    dropBoardFile,
     photoDraft,
     createBlocked,
     addTable,
@@ -700,6 +701,7 @@ export function EditorCanvasHost() {
         }}
         onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
+        onDropFile={isReadOnly ? undefined : dropBoardFile}
         createBlocked={createBlocked}
         onAddImage={addImage}
         onAddArrow={addArrow}

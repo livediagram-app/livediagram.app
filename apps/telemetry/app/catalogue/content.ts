@@ -650,10 +650,18 @@ export const TAB_IMPORTS = chart(
   'A tab imported from Excalidraw, Mermaid, Markdown or JSON.',
 );
 
+export const PASTES_FROM_EXCALIDRAW = chart(
+  'Element',
+  'Imported',
+  'Pasted from Excalidraw',
+  'Drawings copied in Excalidraw and pasted or dropped onto the canvas.',
+);
+
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
-  blurb: 'Diagrams leaving livediagram as files and text, and tabs coming in from other tools.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
+  blurb:
+    'Diagrams leaving livediagram as files and text, and tabs and drawings coming in from other tools.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
   seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };
