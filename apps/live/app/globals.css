@@ -113,6 +113,10 @@
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
      draws the eye back up to what just opened. */
   --animate-shelf-open: shelf-open var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  /* The template shelf's expand toggle (same spec): the cards the flip
+     reveals rise in as a cascade (with .stagger-enter), so the layout change
+     reads as cards arriving rather than a jump. One cascade item, so micro. */
+  --animate-card-rise: card-rise var(--transition-duration-micro) cubic-bezier(0.16, 1, 0.3, 1);
   /* A sheet rising from the bottom edge of the screen. Distinct from
      fly-up-in's 16px lift: this one travels its own full height, so it reads
      as arriving from off-screen rather than settling into place. */
@@ -271,6 +275,17 @@
 @keyframes shelf-open {
   from {
     transform: translateY(28px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes card-rise {
+  from {
+    transform: translateY(16px) scale(0.96);
     opacity: 0;
   }
   to {

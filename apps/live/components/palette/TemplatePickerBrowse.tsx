@@ -142,15 +142,7 @@ export function TemplatePickerBrowse({
           grouping (it's a "start from scratch", not a category template) and
           leads the Popular shelf instead. */}
       <AnimatedHeightBox
-        viewKey={
-          templateFilter
-            ? 'search'
-            : collection
-              ? 'collection'
-              : shelfExpanded
-                ? 'shelf-expanded'
-                : 'shelf'
-        }
+        viewKey={templateFilter ? 'search' : collection ? 'collection' : 'shelf'}
         className="mt-4"
       >
         {templateFilter ? (

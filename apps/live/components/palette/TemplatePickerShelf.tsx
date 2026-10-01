@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type {
   TemplateCategory,
   TemplateCollection,
@@ -94,11 +94,35 @@ export function TemplatePickerShelf({
     .filter((shelf) => shelf.id !== 'popular')
     .reduce((n, shelf) => n + shelf.items.length, 0);
 
+  // What the last layout change revealed, so only that cascades in and the
+  // change reads as cards arriving rather than a jump. A toggle flip reveals
+  // shelf cards and re-forms the tiles; a tile opening the shelf expanded
+  // re-forms only the tiles (the stage has its own shelf-open rise). Never on load.
+  const [cascade, setCascade] = useState<'none' | 'flip' | 'tiles'>('none');
+  // Picking a category is asking to see it, so it opens expanded on desktop.
+  const openShelf = (id: ShelfCategory) => {
+    setCascade(expanded || !desktop ? 'none' : 'tiles');
+    setExpanded(true);
+    onOpenShelf(id);
+  };
+  // A revealed card's entrance, `order` beats into the cascade. Three cascade
+  // steps a card so the rise reads as a sweep; the delay still caps at the
+  // cascade cap, inside the motion budget (docs/specs/004-interface-design/motion.md).
+  const rise = (order: number, of: 'cards' | 'tiles') =>
+    cascade === 'flip' || (cascade === 'tiles' && of === 'tiles')
+      ? {
+          className: 'animate-card-rise stagger-enter',
+          style: { '--stagger-i': order * 3 } as CSSProperties,
+        }
+      : {};
+
   const toggle = (
     <ExpandToggle
       expanded={expanded}
+      animate={cascade === 'flip'}
       onToggle={() => {
         track('UI', 'Toggled', expanded ? 'TemplateShelfCollapsed' : 'TemplateShelfExpanded');
+        setCascade('flip');
         setExpanded(!expanded);
       }}
     />
@@ -115,20 +139,22 @@ export function TemplatePickerShelf({
     />
   ));
 
+  // Both layouts re-form the tiles (a grid into a carousel, or back), so they
+  // all cascade in after a flip.
   const tiles = [
-    ...folded.map((shelf) => (
-      <li key={shelf.id}>
+    ...folded.map((shelf, i) => (
+      <li key={shelf.id} {...rise(i, 'tiles')}>
         <CategoryTile
           label={shelf.label}
           ariaLabel={`Browse ${shelf.label} templates`}
           count={shelf.items.length}
           kinds={fanKinds(shelf)}
-          onOpen={() => onOpenShelf(shelf.id)}
+          onOpen={() => openShelf(shelf.id)}
         />
       </li>
     )),
     whiteboardTemplate ? (
-      <li key="whiteboard">
+      <li key="whiteboard" {...rise(folded.length, 'tiles')}>
         <CategoryTile
           label={whiteboardTemplate.title}
           ariaLabel={`Start a whiteboard: ${whiteboardTemplate.description}`}
@@ -172,20 +198,20 @@ export function TemplatePickerShelf({
                   <div className="flex min-w-0 items-center gap-2">
                     <ShelfHeading shelf={open} />
                   </div>
-                  {/* The carousel's arrows are gone, but their space is kept
-                      (two 32px arrows and their gap) so the toggle stays under
-                      the pointer and a second click puts the shelf back. */}
-                  <div className="flex shrink-0 items-center gap-4">
-                    {toggle}
-                    <div aria-hidden className="w-[70px]" />
-                  </div>
+                  {/* No arrows to sit beside, so the toggle takes the right edge. */}
+                  <div className="shrink-0">{toggle}</div>
                 </div>
                 <ul className="mt-2 grid grid-cols-3 gap-3">
-                  {cards.map((card) => (
-                    <li key={card.key} className="flex">
-                      {card}
-                    </li>
-                  ))}
+                  {/* The first row was already on show in the carousel; the
+                      rest are what expanding revealed, so they rise in. */}
+                  {cards.map((card, i) => {
+                    const { className = '', style } = i >= 3 ? rise(i - 3, 'cards') : {};
+                    return (
+                      <li key={card.key} className={`flex ${className}`} style={style}>
+                        {card}
+                      </li>
+                    );
+                  })}
                 </ul>
               </>
             ) : (
@@ -263,7 +289,16 @@ function ShelfHeading({ shelf }: { shelf: Shelf }): ReactNode {
 
 // Inverts the shelf's flow. Desktop only: hidden below `sm`, where the
 // expanded layout never applies either.
-function ExpandToggle({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) {
+// After a flip its new glyph pops in (keyed on the state), echoing the change.
+function ExpandToggle({
+  expanded,
+  animate,
+  onToggle,
+}: {
+  expanded: boolean;
+  animate: boolean;
+  onToggle: () => void;
+}) {
   const label = expanded ? 'Show Fewer Templates' : 'Show All Templates';
   return (
     <Tooltip label={label}>
@@ -273,7 +308,9 @@ function ExpandToggle({ expanded, onToggle }: { expanded: boolean; onToggle: () 
         aria-label={label}
         className="hidden h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 sm:flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-white"
       >
-        {expanded ? <MinimizeIcon size={16} /> : <MaximizeIcon size={16} />}
+        <span key={String(expanded)} className={`flex ${animate ? 'animate-pop-in' : ''}`}>
+          {expanded ? <MinimizeIcon size={16} /> : <MaximizeIcon size={16} />}
+        </span>
       </button>
     </Tooltip>
   );

@@ -125,17 +125,47 @@ describe('the expand toggle', () => {
     const cards = within(screen.getAllByRole('list')[0]!).getAllByRole('listitem');
     expect(cards).toHaveLength(popular.length);
     expect(screen.getByRole('button', { name: 'Next more categories', hidden: true })).toBeTruthy();
+    // The flip animates: the first row was already on show, the rest rise in.
+    const rising = (li: HTMLElement) => li.className.includes('animate-card-rise');
+    expect(cards.map(rising)).toEqual(popular.map((_, i) => i >= 3));
 
-    // Opening a tile keeps the flow inverted.
+    // Opening a tile keeps it expanded.
     fireEvent.click(screen.getByRole('button', { name: 'Browse Technical templates' }));
     expect(stage().textContent).toContain('Technical');
     expect(screen.getByRole('button', { name: 'Show Fewer Templates' })).toBeTruthy();
+    // A tile plays only the stage's own rise, not the flip's cascade.
+    expect(document.querySelector('.animate-card-rise')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Show Fewer Templates' }));
     expect(trackMock).toHaveBeenCalledWith('UI', 'Toggled', 'TemplateShelfCollapsed');
     expect(
       screen.getByRole('button', { name: 'Next Technical templates', hidden: true }),
     ).toBeTruthy();
+  });
+
+  it('opens a picked category expanded on desktop, its tiles re-forming as a carousel', () => {
+    setDesktop(true);
+    render(<Shelf />);
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Agile templates' }));
+    expect(stage().textContent).toContain('Agile');
+    expect(screen.getByRole('button', { name: 'Show Fewer Templates' })).toBeTruthy();
+    const cards = within(screen.getAllByRole('list')[0]!).getAllByRole('listitem');
+    expect(cards).toHaveLength(categoryTemplates('planning').length);
+    expect(screen.getByRole('button', { name: 'Next more categories', hidden: true })).toBeTruthy();
+    // The stage has its own rise, so only the re-formed tiles cascade.
+    expect(cards.some((li) => li.className.includes('animate-card-rise'))).toBe(false);
+    const tiles = within(screen.getAllByRole('list')[1]!).getAllByRole('listitem');
+    expect(tiles.every((li) => li.className.includes('animate-card-rise'))).toBe(true);
+    // Not a toggle flip, so no toggle event.
+    expect(trackMock).not.toHaveBeenCalled();
+  });
+
+  it('opens a picked category as the carousel on a phone', () => {
+    setDesktop(false);
+    render(<Shelf />);
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Agile templates' }));
+    expect(screen.getByRole('button', { name: 'Next Agile templates', hidden: true })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Next more categories', hidden: true })).toBeNull();
   });
 
   it('never inverts on a phone, even with the flag held', () => {
