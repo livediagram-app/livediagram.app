@@ -54,10 +54,11 @@ test('a multi-page draw.io file becomes a tab per page, with a summary', async (
   await dismissQuickTour(page);
   await importFile(page, 'multi-page.drawio');
 
-  const summary = page.getByTestId('import-report');
+  const summary = page.getByTestId('import-image-report');
   await expect(summary).toBeVisible();
-  await expect(summary).toContainText('3 pages became 3 tabs, 17 elements.');
-  await expect(summary).toContainText('1 group was dropped; its shapes kept their places.');
+  // The one import report every importer shares: what landed, then each change with its count.
+  await expect(summary).toContainText('Import complete');
+  await expect(summary).toContainText('Groups were dropped');
   await shot(page, 'multi-page.drawio-2-summary');
   await page.getByRole('button', { name: 'Done' }).click();
 
@@ -102,7 +103,7 @@ for (const file of [
     await startBlankDocument(page);
     await dismissQuickTour(page);
     await importFile(page, file);
-    const summary = page.getByTestId('import-report');
+    const summary = page.getByTestId('import-image-report');
     // A clean import closes the dialog; one that changed anything summarises.
     const dialogs = page.getByRole('dialog');
     await expect
@@ -110,9 +111,9 @@ for (const file of [
       .toBe(true);
     if (await summary.isVisible()) {
       if (file === 'cloud-architecture.drawio.svg') {
-        await expect(summary.getByTestId('import-report-images')).toContainText('1 image imported');
-        await expect(summary.getByTestId('import-report-notes')).toContainText(
-          '1 image links to a file outside the diagram',
+        await expect(summary).toContainText('1 image imported');
+        await expect(summary).toContainText(
+          'Images linked outside the diagram came in as placeholders or were left out',
         );
       }
       await shot(page, `${file}-2-summary`);

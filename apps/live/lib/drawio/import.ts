@@ -7,7 +7,7 @@
 
 import type { Element, Layer } from '@livediagram/document';
 import type { ImportImageRequest } from '@/lib/import-images';
-import { ReportTally, type ImportReport } from '@/lib/import-report';
+import { ReportTally, type DrawioReport } from './notes';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';
 import { readDrawioPages, type DrawioInput } from './envelope';
@@ -31,7 +31,7 @@ export type ImportedPage = {
 };
 
 export type DrawioImportResult =
-  | { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: ImportReport }
+  | { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: DrawioReport }
   | { ok: false; error: string };
 
 export type DrawioImportOptions = {
@@ -80,8 +80,7 @@ export async function importDrawio(
       });
     }
 
-    const report: ImportReport = {
-      source: 'drawio',
+    const report: DrawioReport = {
       pages: pages.length,
       elements: pages.reduce((n, p) => n + p.elements.length, 0),
       notes: tally.notes(),

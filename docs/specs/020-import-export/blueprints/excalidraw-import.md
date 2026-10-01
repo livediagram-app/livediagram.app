@@ -274,31 +274,26 @@ failed', error)`.
 
 ### Dialog
 
-- `ImportOutcome` `done` carries `report?: ImportReport` (`lib/import-report.ts`), whose `images` is the
-  pipeline's `ImportImageReport`: one report shape for every importer.
+- `ImportOutcome` `done` gains `images?: ImportImageReport`.
 - `TextImportPanel`: runners receive `onProgress`. While busy with `progress.total > 0` the
   footer's left slot (where a format's note sits) reads `Importing images {done} of {total}…` in an
   `aria-live="polite"` region; the primary button reads `Importing…` and has a minimum width
   (`min-w-[7.5rem]`) so neither label swap moves a button. On `done` it calls `onDone(outcome)`.
-- `ImportTabDialog`: `onDone(outcome)` with `outcome.report` → the dialog shows
-  `<ImportSummary report onDone={onClose} />` in place of the panel; otherwise `onClose()`.
+- `ImportTabDialog`: `onDone(outcome)` with `outcome.images` → the dialog shows
+  `<ImportImageReport report onDone={onClose} />` in place of the panel; otherwise `onClose()`.
 
 ## Presentation and UX
 
-`ImportSummary` view (shared with draw.io, [draw.io import blueprint](drawio-import.md) "Presentation
-and UX"), inside the existing dialog body (the amber warning stays out: the replace has happened):
+`ImportImageReport` view, inside the existing dialog body (the amber warning stays out: the
+replace has happened):
 
-- Heading `Import complete` (`h3`, `text-sm font-semibold`), then the summary line
-  (`importSummaryLine`: "Imported n elements.").
-- The images block (`data-testid="import-report-images"`), when the report met images:
+- Heading `Import complete` (`h3`, `text-sm font-semibold`).
 - One line per `describeImportImageReport(report).lines`, in a list (`text-sm`).
 - When failures exist: a list, each `"{count} · {sentence}"`, muted (`text-xs text-slate-600`,
   dark `text-slate-300`).
 - `hint` as a final muted line.
 - Footer: primary `Done` button, right-aligned, closing the dialog.
-- Notes, when the report has any (none for Excalidraw today).
-- Subtitle of the dialog: `Here's how your images came across.` (a report with notes says `Here is
-what changed on the way in.` instead).
+- Subtitle of the dialog: `Here's how your images came across.`
 
 Copy is the pipeline spec's; pluralisation `1 image` / `2 images`, `1 placeholder` /
 `2 placeholders`.

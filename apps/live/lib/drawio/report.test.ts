@@ -3,7 +3,7 @@ import type { Element } from '@livediagram/document';
 import { emptyImportImageReport } from '@/lib/import-images';
 import type { ImportedPage } from './import';
 import { DRAWIO_RULES, drawioOutcome, drawioSceneReport } from './report';
-import type { ImportReport } from '../import-report';
+import type { DrawioReport } from './notes';
 
 // docs/specs/020-import-export/drawio-import.md "The import report": draw.io reports through the
 // one import report every importer shares (docs/specs/020-import-export/board-scene.md).
@@ -19,8 +19,7 @@ const el = (type: string, extra: Record<string, unknown> = {}) =>
     ...extra,
   }) as unknown as Element;
 const page = (elements: Element[]): ImportedPage => ({ tabId: 't', name: 'Page', elements });
-const report = (notes: ImportReport['notes']): ImportReport => ({
-  source: 'drawio',
+const report = (notes: DrawioReport['notes']): DrawioReport => ({
   pages: 2,
   elements: 6,
   notes,

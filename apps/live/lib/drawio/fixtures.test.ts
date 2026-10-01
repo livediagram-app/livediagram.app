@@ -9,7 +9,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livediagram/document';
-import type { ImportNote } from '@/lib/import-report';
+import type { ImportNote } from './notes';
 import { importDrawio, type ImportedPage } from './import';
 import { fixtureBytes } from './test-support';
 
@@ -52,7 +52,7 @@ describe('flowchart.drawio', () => {
     const { pages, report } = await load('flowchart.drawio');
     const [page] = pages;
     expectSound(page!);
-    expect(report).toEqual({ source: 'drawio', pages: 1, elements: 17, notes: FLOWCHART_NOTES });
+    expect(report).toEqual({ pages: 1, elements: 17, notes: FLOWCHART_NOTES });
     expect(page!.name).toBe('Order flow');
     // draw.io's white page is its default paper: the theme decides.
     expect(page!.backgroundColor).toBeUndefined();
@@ -170,7 +170,6 @@ describe('uml.drawio', () => {
     const page = pages[0]!;
     expectSound(page);
     expect(report).toEqual({
-      source: 'drawio',
       pages: 1,
       elements: 13,
       notes: [
@@ -232,7 +231,6 @@ describe('cloud-architecture.drawio', () => {
       const page = pages[0]!;
       expectSound(page);
       expect(report).toEqual({
-        source: 'drawio',
         pages: 1,
         elements: 20,
         notes: [
@@ -304,7 +302,6 @@ describe('multi-page.drawio', () => {
         ['tab-3', 'Scratch', 0],
       ]);
       expect(report).toEqual({
-        source: 'drawio',
         pages: 3,
         elements: 17,
         notes: [

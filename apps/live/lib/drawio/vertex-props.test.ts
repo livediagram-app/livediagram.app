@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { ReportTally } from '@/lib/import-report';
+import { ReportTally } from './notes';
 import { readGraph } from './cells';
 import { parseStyle } from './style';
 import { model } from './test-support';

@@ -11,8 +11,8 @@ import {
   IMPORT_NOTE_ORDER,
   type ImportNote,
   type ImportNoteKind,
-  type ImportReport,
-} from '../import-report';
+  type DrawioReport,
+} from './notes';
 import type { ImportedPage } from './import';
 
 /** Each draw.io note's rule: final copy, the count shown before it. */
@@ -67,7 +67,7 @@ function landedKind(el: Element): SceneItemKind {
 }
 
 export function drawioSceneReport(
-  report: ImportReport,
+  report: DrawioReport,
   pages: readonly ImportedPage[],
 ): BoardSceneReport {
   const landed: BoardSceneReport['landed'] = {};
@@ -93,7 +93,7 @@ export function drawioSceneReport(
 
 /** The Import dialog's outcome: the report when something changed or images came along. */
 export function drawioOutcome(
-  report: ImportReport,
+  report: DrawioReport,
   pages: readonly ImportedPage[],
   images?: ImportImageReport,
 ): ImportOutcome {
