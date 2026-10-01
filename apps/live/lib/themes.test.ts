@@ -34,6 +34,7 @@ import {
   registerCustomTheme,
   unregisterCustomTheme,
 } from './custom-theme-registry';
+import { encodeStrokePoints } from '@livediagram/document';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {
@@ -370,10 +371,10 @@ describe('recolourElementForTheme', () => {
     y: 0,
     width: 100,
     height: 100,
-    points: [
+    packedPoints: encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
-    ],
+    ]),
     closed: true,
   };
 
@@ -641,10 +642,10 @@ describe('switchThemeElement', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: true,
       fillColor: '#ff00ff', // customised: must survive
       strokeColor: prev.elementStroke ?? undefined, // on old theme: must flip
@@ -806,10 +807,10 @@ describe('resetThemeElement', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: true,
       fillColor: '#ff00ff',
       strokeColor: '#003366',

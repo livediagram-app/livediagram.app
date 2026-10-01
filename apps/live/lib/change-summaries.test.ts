@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ArrowElement, Element, ShapeElement } from '@livediagram/document';
 import { summarizeChange, summarizeEdits } from './change-summaries';
+import { encodeStrokePoints } from '@livediagram/document';
 
 // The activity panel's one-line vocabulary (docs/specs/012-collaboration/activity-and-audit.md): each field group
 // gets a verb a user recognises, so entries never degrade to a vague
@@ -192,7 +193,7 @@ describe('summarizeChange — mixed commits', () => {
       y: 0,
       width: 50,
       height: 50,
-      points: [{ nx: 0, ny: 0 }],
+      packedPoints: encodeStrokePoints([{ nx: 0, ny: 0 }]),
       closed: false,
     } as Element;
     expect(summarizeChange('edit', [shape('a')], [sketch], [])).toBe(

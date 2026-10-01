@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { resetDocumentFormatForTests, serverDocumentFormat } from '../document-format';
 import { connectRoom, roomQueryString } from './room';
 
 describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
@@ -122,6 +124,21 @@ describe('connectRoom reconnect cursor', () => {
       epoch: 'E',
       lastSeq: 7,
     });
+  });
+
+  it('notes the document format number the room sends on joining', () => {
+    // docs/specs/016-platform/new-version-prompt.md.
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    socket.fire('message', { kind: 'format', format: DOCUMENT_FORMAT + 1 });
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+    room.close();
+    resetDocumentFormatForTests();
   });
 
   it("ignores another epoch's cursor, leaving the catch-up to reconcile", () => {

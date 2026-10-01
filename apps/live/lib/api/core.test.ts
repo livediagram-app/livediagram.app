@@ -1,5 +1,7 @@
 import type { Tab } from '@livediagram/document';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
+import { resetDocumentFormatForTests, serverDocumentFormat } from '../document-format';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
 // it so the guest-signature header is deterministic per case.
@@ -264,4 +266,33 @@ describe('tabForWire — tab kind', () => {
 
   // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) are BOARD state, not UI state: the
   // facilitator turns them on for the room, so the field has to reach the
+});
+
+// docs/specs/016-platform/new-version-prompt.md: every response's format header is noted, so an open
+// editor learns of a newer server from traffic it already has.
+describe('apiFetch and the document format header', () => {
+  afterEach(() => {
+    resetDocumentFormatForTests();
+    vi.unstubAllGlobals();
+  });
+
+  it('notes the number every response carries, failed ones included', async () => {
+    const newer = String(DOCUMENT_FORMAT + 1);
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response('{}', { status: 404, headers: { [DOCUMENT_FORMAT_HEADER]: newer } }),
+        ),
+    );
+    await apiFetch(`${API_BASE}/documents/d1`);
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+  });
+
+  it('notes nothing from a response without the header', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
+    await apiFetch(`${API_BASE}/documents`);
+    expect(serverDocumentFormat()).toBeNull();
+  });
 });

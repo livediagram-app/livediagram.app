@@ -57,10 +57,10 @@ import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow } from './mind-flow';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
+import { parseStrokePoints } from './stroke-points';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-export const MAX_FREEHAND_POINTS = 20_000;
 // A path (docs/specs/023-whiteboard/path-tool.md): a drawn one rarely passes 50 nodes.
 export const MAX_PATH_NODES = 5_000;
 // A normalised path coordinate: handles may reach beyond the box, never absurdly far.
@@ -511,19 +511,16 @@ export function isValidElement(el: unknown): el is Element {
     return true;
   }
   if (t === 'freehand') {
-    if (typeof el.closed !== 'boolean' || !boundedArray(el.points, MAX_FREEHAND_POINTS))
-      return false;
-    for (const p of el.points) if (!isObj(p) || !isNum(p.nx) || !isNum(p.ny)) return false;
+    if (typeof el.closed !== 'boolean') return false;
+    // Packed points (docs/specs/006-document/stroke-points.md): the block must decode, and the
+    // former fields never pass (every entry point migrates them first).
+    if (!parseStrokePoints(el.packedPoints).ok) return false;
+    if ('points' in el || 'pressures' in el) return false;
     // Optional pen recipe (docs/specs/008-canvas/highlighter.md) + straight-edge flag (docs/specs/008-canvas/polygon-tool.md).
     if (el.pen !== undefined && el.pen !== 'highlighter') return false;
     if (el.penWidth !== undefined && (!isNum(el.penWidth) || el.penWidth < 1 || el.penWidth > 100))
       return false;
     if (el.straightEdges !== undefined && typeof el.straightEdges !== 'boolean') return false;
-    // Whiteboard pen ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): a pressure per point.
-    if (el.pressures !== undefined) {
-      if (!Array.isArray(el.pressures) || el.pressures.length !== el.points.length) return false;
-      for (const p of el.pressures) if (!isNum(p) || p < 0 || p > 1) return false;
-    }
     if (
       el.streamline !== undefined &&
       (!isNum(el.streamline) || el.streamline < 0 || el.streamline > 1)

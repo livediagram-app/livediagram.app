@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import type { ParticipantPresence } from '@livediagram/api-schema';
 import {
   MUTATION_OP_KINDS,
@@ -346,6 +347,17 @@ describe('DocumentRoom hello frame role forcing', () => {
     // (docs/specs/015-api/public-api-and-tokens.md §6), so the spoofed value never reaches presence.
     expect(stored?.id).not.toBe('lying-peer');
     expect(stored?.id).toBeTruthy();
+  });
+
+  it('tells a joining socket the document format number', () => {
+    // docs/specs/016-platform/new-version-prompt.md: a deploy restarts the room, so every editor
+    // hears the server's number again on reconnect.
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
+    const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT });
   });
 
   it('replaces the client participant id with a server-assigned ephemeral id', () => {

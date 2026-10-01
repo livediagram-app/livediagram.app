@@ -150,8 +150,8 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
      `nearestBorderStroke(width)`, no `strokeColor` for Ink.
    - a shape kind → shape at the bbox, `fillColor: 'transparent'`, `strokeColor` = pen colour when
      set, `strokeWidth` = `nearestBorderStroke(width)`; track as the Shape Pen does.
-3. Otherwise a freehand element: `createFreehand(points, false)` (raw samples), `penWidth: width`,
-   `pressures` when a pen drew it, `streamline`, `strokeColor` = pen colour when set (the main pen
+3. Otherwise a freehand element: `createFreehand(points, false, pressures)` (raw samples, packed with
+   the pressures when a pen drew it, docs/specs/006-document/stroke-points.md), `penWidth: width`, `streamline`, `strokeColor` = pen colour when set (the main pen
    records none). Track `Element / Added / Freehand`.
 4. The pen stays armed; nothing is selected.
 
@@ -193,10 +193,11 @@ The canvas host maps the displayed elements through it with a per-object cache
 
 ### Stroke geometry (`whiteboard-stroke.ts`)
 
-- `freehandAbsolutePoints(el)`: `x + nx * width`, `y + ny * height`, rotated about the centre by
+- `freehandAbsolutePoints(el)`: the decoded points (`freehandCanvasPoints`), `x + nx * width`,
+  `y + ny * height`, rotated about the centre by
   `rotation` degrees clockwise when set.
-- Ink half-width: a pen stroke's `penPressureWidth(penWidth, max(pressures))` (the middle pressure
-  without pressures), else `BORDER_STROKE_PX[strokeWidth ?? DEFAULT_BORDER_STROKE]` (highlighter:
+- Ink half-width: a pen stroke's `penPressureWidth(penWidth, max(pressures))` over its decoded
+  pressures (the middle pressure without them), else `BORDER_STROKE_PX[strokeWidth ?? DEFAULT_BORDER_STROKE]` (highlighter:
   `penWidth ?? 14`), halved.
 - `strokeTouchesBrush(el, a, b, r)`: true when any polyline segment lies within `r + halfWidth` of
   segment `ab` (segment-to-segment distance); a bbox reject first.
@@ -208,9 +209,9 @@ The canvas host maps the displayed elements through it with a per-object cache
   4. Split into runs of outside points; at each inside/outside boundary insert the crossing point,
      found by bisection (12 steps) on the segment. A closed stroke's first and last runs join.
   5. Drop runs with fewer than 2 points or a length under 1 canvas px.
-  6. Each run → `createFreehand(points, false)` with a fresh id, carrying `strokeColor`,
+  6. Each run → `createFreehand(points, false, pressures?)` (a fresh packed block) with a fresh id, carrying `strokeColor`,
      `strokeWidth`, `strokeStyle`, `penWidth`, `pen`, `streamline`, `layerId`, `opacity`,
-     `fillColor`, `locked` false, and its own `pressures` when the stroke had them. The longest run also carries `label`, `link`, `note`, `commentThread` and `action` (D3).
+     `fillColor`, `locked` false, and its own interpolated pressures when the stroke had them. The longest run also carries `label`, `link`, `note`, `commentThread` and `action` (D3).
 
 ### Pen versus touch
 
@@ -547,8 +548,9 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   after the element layer, via `WhiteboardPenPreview`) as exactly the committed `FreehandSvg`: each
   update takes `freehandGeometry(points)` (what `createFreehand` gives), writes a `div.absolute` at
   its box and sets the svg's viewBox and path from
-  `penStrokeSvg({ ...geometry, penWidth, pressures, streamline })`. The same input, function and
-  layout in the same layer: release changes no pixel.
+  `penStrokeSvg({ ...geometry, penWidth, pressures, streamline })`. The same function and layout in
+  the same layer; the landed stroke's packed points are within `STROKE_POINT_MAX_ERROR` of the box
+  of the raw samples (docs/specs/006-document/stroke-points.md), the only difference release makes.
 - **Settled ink stays still** (spec "Ink the smoothing has settled never moves while drawing"). The
   tip is the stretch of the centre line from the last streamlined point to the pointer, with its end
   cap; perfect-freehand joins each point's sides along the average of its own and the next
@@ -624,8 +626,9 @@ other pointer records none (D10, D14). `streamline = PEN_STREAMLINE[pointer]`.
   `M p0 Q p0 mid(p0,p1) p1 mid(p1,p2) … pn mid(pn,p0) L p0 Z` (Excalidraw's getSvgPathFromStroke);
   no points: `''`.
 - `penStrokeCentreline` = `getStrokePoints(input, options)`'s points: what recognition reads.
-- `freehandPenStroke(el, origin = {0, 0})`: points `origin + (nx · max(width, 1), ny · max(height,
-1))`, `pressures`, `width = penWidth`, `streamline = el.streamline ?? 0` (D11).
+- `freehandPenStroke(el, origin = {0, 0})`: the decoded points (or the live ink's unpacked geometry)
+  as `origin + (nx · max(width, 1), ny · max(height, 1))`, the decoded pressures, `width = penWidth`,
+  `streamline = el.streamline ?? 0` (D11).
 - `penStrokeSvg(el)`: `{ viewBox: "x y max(w,1) max(h,1)", d: penStrokePath(freehandPenStroke(el, { x, y })) }`.
 
 **Render** (`LiveInk`, inside the canvas's transformed layer): see "Pen strokes" above; the whole
@@ -683,8 +686,11 @@ export function eraseStrokePart(
   mintId: () => string,
 ): FreehandElement[] | null;
 export function nearestBorderStroke(px: number): BorderStroke;
-// FreehandElement gains `pressures?: number[]` (one per point, 0 to 1) and `streamline?: number` (0 to 1).
-export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height' | 'points'>;
+// FreehandElement gains `streamline?: number` (0 to 1); its pressures (one per point, 0 to 1) ride in
+// `packedPoints` (docs/specs/006-document/stroke-points.md).
+export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'height'> & {
+  points: NormalisedPoint[];
+};
 export function freehandGeometry(rawPoints: readonly Point[]): FreehandGeometry; // createFreehand's box, whole px
 export type PenPointerKind = 'pen' | 'mouse' | 'touch';
 export const PEN_STREAMLINE: Readonly<Record<PenPointerKind, number>>;
@@ -696,7 +702,7 @@ export function penStrokeSize(width: number): number;
 export function penPressureWidth(width: number, pressure: number): number;
 export type PenStroke = {
   points: readonly Point[];
-  pressures?: readonly number[];
+  pressures?: ArrayLike<number>;
   width: number;
   streamline: number;
 };
@@ -706,8 +712,12 @@ export function penStrokeCentreline(stroke: PenStroke): Point[];
 export function isPenStroke(el: FreehandElement): boolean;
 export type PenStrokeSource = Pick<
   FreehandElement,
-  'points' | 'width' | 'height' | 'pressures' | 'penWidth' | 'streamline'
->;
+  'width' | 'height' | 'penWidth' | 'streamline'
+> &
+  (
+    | Pick<FreehandElement, 'packedPoints'>
+    | { points: readonly NormalisedPoint[]; pressures?: readonly number[] }
+  );
 export function freehandPenStroke(el: PenStrokeSource, origin?: Point): PenStroke;
 export function penStrokeSvg(el: PenStrokeSource & Pick<FreehandElement, 'x' | 'y'>): {
   viewBox: string;
@@ -783,7 +793,7 @@ export function flipStrokeRecognition(
   via: 'key' | 'chip',
 ): 'recognised' | 'broken' | null; // + notify, telemetry, log
 // CanvasProps.onCommitFreehand(points, recogniseShapes, ink?: PenInk)
-// PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & { snapped?: RecognisedShape; keepInk?: true }
+// PenInk = Pick<FreehandElement, 'streamline'> & { pressures?: number[]; snapped?: RecognisedShape; keepInk?: true }
 export const FREEHAND_SVG_CLASS: string; // the svg a freehand stroke, live or landed, draws in
 ```
 
@@ -799,18 +809,18 @@ by name so the px can be retuned) → Medium; an unknown `activePenId` or
 
 ## Data and persistence
 
-| Field                                | Where                                           | Class        | Travels  |
-| ------------------------------------ | ----------------------------------------------- | ------------ | -------- |
-| `Tab.kind = 'whiteboard'`            | tab body (D1, IndexedDB)                        | document     | yes      |
-| `Tab.backgroundPattern`              | tab body                                        | document     | yes      |
-| `FreehandElement.penWidth`           | element                                         | document     | yes      |
-| `FreehandElement.pressures`          | element (a pen's; one per point, 0 to 1)        | document     | yes      |
-| `FreehandElement.streamline`         | element (0 to 1)                                | document     | yes      |
-| `FreehandElement.strokeColor`        | element (a custom colour)                       | document     | yes      |
-| `penColour` (freehand, shape, arrow) | element (a named colour)                        | document     | yes      |
-| Your colours                         | user preferences blob                           | synced       | per user |
-| `WhiteboardPrefs`                    | `localStorage` `livediagram:v2:whiteboard-pens` | device-local | never    |
-| pen seen                             | module memory                                   | session      | never    |
+| Field                                | Where                                                                            | Class        | Travels  |
+| ------------------------------------ | -------------------------------------------------------------------------------- | ------------ | -------- |
+| `Tab.kind = 'whiteboard'`            | tab body (D1, IndexedDB)                                                         | document     | yes      |
+| `Tab.backgroundPattern`              | tab body                                                                         | document     | yes      |
+| `FreehandElement.penWidth`           | element                                                                          | document     | yes      |
+| `FreehandElement.packedPoints`       | element (points and a pen's pressures, docs/specs/006-document/stroke-points.md) | document     | yes      |
+| `FreehandElement.streamline`         | element (0 to 1)                                                                 | document     | yes      |
+| `FreehandElement.strokeColor`        | element (a custom colour)                                                        | document     | yes      |
+| `penColour` (freehand, shape, arrow) | element (a named colour)                                                         | document     | yes      |
+| Your colours                         | user preferences blob                                                            | synced       | per user |
+| `WhiteboardPrefs`                    | `localStorage` `livediagram:v2:whiteboard-pens`                                  | device-local | never    |
+| pen seen                             | module memory                                                                    | session      | never    |
 
 No migration: `kind` is an existing optional string field; `penWidth` already exists and validates
 1 to 100; `penColour` is new and optional, and strokes drawn before it keep their `strokeColor`. Older readers show a whiteboard as an ordinary tab with the same elements.
@@ -842,8 +852,8 @@ No migration: `kind` is an existing optional string field; `penWidth` already ex
 - A chip tap when the ink no longer reads as a shape (reshaped past it): the chip left when the
   offer turned round to none, so there is no dead button.
 - A pen stroke stored before pressures and streamline: drawn at the middle pressure with no
-  streamline (D11). A preset border width chosen later drops `penWidth`, `pressures` and
-  `streamline` together: the stroke becomes a plain freehand.
+  streamline (D11). A preset border width chosen later drops `penWidth`, the pressures (the points
+  are re-packed without them) and `streamline` together: the stroke becomes a plain freehand.
 
 ## Security and trust
 

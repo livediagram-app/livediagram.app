@@ -361,6 +361,12 @@ The shapes group learns and keeps the shapes a user reaches for.
     the browser rasterises both alike. (Drawn in a separate overlay, a line
     shifted by up to a device pixel or two on release, differently per engine
     and zoom.) The shape recognition preview is drawn in the canvas too.
+    The stroke being drawn keeps its raw samples; the stroke that lands
+    stores them packed ([Stroke points](../006-document/stroke-points.md)),
+    each within 1 / 131,070 of the stroke's size of where it was drawn
+    (under a hundredth of a pixel on a stroke 1,000 px across), so release
+    moves the ink by no more than that, which no eye can see. Quantising the
+    stroke being drawn instead would move settled ink each time its box grows.
 - **A pen's width is ink on the board.** It is in canvas px, so a stroke
   zooms with the board like everything drawn on it, the same in every
   browser, and the in-flight stroke is drawn at that width times the zoom.
@@ -377,8 +383,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
-  drawn, with its raw samples, a pressure per sample when a pen drew it, and
-  its streamline. A stroke in the **Ink** (Marker 1's, or any marker's) records
+  drawn, with its raw samples, a pressure per sample when a pen drew it (both
+  packed into one block, [Stroke points](../006-document/stroke-points.md)), and its streamline. A stroke in the **Ink** (Marker 1's, or any marker's) records
   no explicit colour, so it follows the appearance; a stock colour is recorded
   by name, so it adapts to each viewer's board, and a custom colour as its
   hex, which stays as drawn. A recognised shape or line keeps its pen's colour

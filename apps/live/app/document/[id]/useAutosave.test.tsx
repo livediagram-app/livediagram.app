@@ -161,3 +161,33 @@ describe('useAutosave after a failed save', () => {
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
   });
 });
+
+// docs/specs/016-platform/new-version-prompt.md: "Reload" waits until nothing edited is unsaved.
+describe('hasUnsavedChanges', () => {
+  it('is true while an edit waits out the debounce or its save is in flight, false once saved', async () => {
+    let finish: () => void = () => {};
+    apiSaveTab.mockImplementationOnce(() => new Promise<void>((resolve) => (finish = resolve)));
+    const { useSubject } = setup();
+    const { result } = renderHook(({ tabs, n }) => useSubject(tabs, n), {
+      initialProps: { tabs: [tab('mine')], n: 0 },
+    });
+    expect(result.current.hasUnsavedChanges()).toBe(true);
+    act(() => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenCalledTimes(1);
+    expect(result.current.hasUnsavedChanges()).toBe(true);
+    await act(async () => {
+      finish();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(result.current.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('is false when nothing differs from the last save', () => {
+    const { useSubject } = setup();
+    const { result } = renderHook(({ tabs, n }) => useSubject(tabs, n), {
+      initialProps: { tabs: [tab('saved')], n: 0 },
+    });
+    expect(result.current.hasUnsavedChanges()).toBe(false);
+  });
+});

@@ -12,7 +12,8 @@ import type {
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
-import { isClerkIdShape } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT_HEADER, isClerkIdShape } from '@livediagram/api-schema';
+import { noteServerDocumentFormat } from '../document-format';
 import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
@@ -83,6 +84,8 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
     throw err;
   }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
+  // The server's document format number rides every response (docs/specs/016-platform/new-version-prompt.md).
+  noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
   return res;
 }
 

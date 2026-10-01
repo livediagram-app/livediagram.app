@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FakeGoogle } from '@livediagram/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import { createFreehand, type FreehandElement } from '@livediagram/document';
 import { documentToEnvelopeText } from '../export-document-text';
 import { createDriveRestClient } from './drive-rest-client';
 import {
@@ -139,5 +140,39 @@ describe('importOpenWithCopy', () => {
     await expect(
       importOpenWithCopy(s.deps, s.file({}, { content: 'not json' }), 'foreign'),
     ).rejects.toBeInstanceOf(OpenWithImportError);
+  });
+});
+
+// docs/specs/006-document/stroke-points.md: a whiteboard mirrored to Drive comes back with its
+// strokes exactly as packed, through the document file and a copy.
+describe('a mirrored whiteboard', () => {
+  it('round-trips its packed strokes through Drive byte for byte', async () => {
+    const s = setup();
+    const stroke = {
+      ...createFreehand(
+        [
+          { x: 10.25, y: 20.5 },
+          { x: 64.75, y: 31.125 },
+          { x: 120.5, y: 8 },
+        ],
+        false,
+        [0.2, 0.6, 0.9],
+      ),
+      penWidth: 2.5,
+      streamline: 0.2,
+    };
+    const content = documentToEnvelopeText(
+      { id: 'd1', name: 'Board', presentation: null },
+      [{ id: 't1', name: 'Board', kind: 'whiteboard', elements: [stroke] }],
+      1,
+    );
+    const id = await importOpenWithCopy(
+      s.deps,
+      s.file({ ldDocumentId: 'd1', ldOrigin: HOST }, { content }),
+      'foreign',
+    );
+    const back = s.ld.document(id)!.tabs[0]!.elements[0] as FreehandElement;
+    expect(back.packedPoints).toBe(stroke.packedPoints);
+    expect(back).toEqual(stroke);
   });
 });

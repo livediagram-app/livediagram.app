@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, ShapeElement, Tab } from '@livediagram/document';
+import {
+  STROKE_PRESSURE_MAX_ERROR,
+  freehandPressures,
+  strokePointCount,
+  type Element,
+  type FreehandElement,
+  type ShapeElement,
+  type Tab,
+} from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { makeCommitFreehand } from './commit-freehand';
 
@@ -126,13 +134,18 @@ describe('a whiteboard pen stroke', () => {
     const s = setup(pen());
     s.commit(drawn, false);
     const stroke = s.elements[0] as FreehandElement;
-    expect(stroke.points).toHaveLength(drawn.length);
+    expect(strokePointCount(stroke.packedPoints)).toBe(drawn.length);
   });
 
   it('keeps the pen\u2019s pressures and streamline, the ink it drew with', () => {
     const s = setup(pen());
     s.commit(scribble, false, { pressures: [0.1, 0.4, 0.8, 1], streamline: 0.2 });
-    expect(s.elements[0]).toMatchObject({ pressures: [0.1, 0.4, 0.8, 1], streamline: 0.2 });
+    const stroke = s.elements[0] as FreehandElement;
+    expect(stroke.streamline).toBe(0.2);
+    const pressures = freehandPressures(stroke)!;
+    [0.1, 0.4, 0.8, 1].forEach((p, i) =>
+      expect(Math.abs(pressures[i]! - p)).toBeLessThanOrEqual(STROKE_PRESSURE_MAX_ERROR),
+    );
   });
 
   it('lands the shape the pen locked to and reshaped, not a fresh reading of the stroke', () => {

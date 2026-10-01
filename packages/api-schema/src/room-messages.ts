@@ -282,9 +282,14 @@ export type ServerMessage =
   // replayed its own ops back at it (and, having heard nothing, the whole log).
   // Harmless for idempotent element ops; a `vote` op is a delta, so every
   // replayed dot was counted twice.
-  | CursorMessage;
+  | CursorMessage
+  | FormatMessage;
 
 export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
+
+// The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
+// each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
+export type FormatMessage = { kind: 'format'; format: number };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
@@ -563,4 +568,5 @@ export type RoomIncoming =
     }
   // Addressed by being sent at all — see ServerMessage above.
   | { kind: 'selection-released'; elementId: string; by: string }
-  | CursorMessage;
+  | CursorMessage
+  | FormatMessage;

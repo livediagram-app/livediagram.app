@@ -17,6 +17,7 @@ import {
 } from './whiteboard';
 import { createPath } from './path-element';
 import { penColourHex } from './pen-colours';
+import { encodeStrokePoints } from './stroke-points';
 
 const INK = '#123456';
 
@@ -27,10 +28,10 @@ const freehand = (over: Partial<FreehandElement> = {}): FreehandElement => ({
   y: 0,
   width: 10,
   height: 10,
-  points: [
+  packedPoints: encodeStrokePoints([
     { nx: 0, ny: 0 },
     { nx: 1, ny: 1 },
-  ],
+  ]),
   closed: false,
   ...over,
 });

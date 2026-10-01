@@ -323,6 +323,8 @@ D1 holds the document; the room holds ordering and collaboration state. Tab cont
 
 A tab `PUT` is not relayed to the room. A REST writer that isn't a connected editor (the MCP server, an API-token script) therefore reaches D1 without reaching connected peers: they see the change only when they next load the tab, and a connected editor's next save of that tab, built from a copy without it, replaces it. Only the comment and Q&A endpoints tell the room about their writes.
 
+Every tab the api receives (document create, tab save) runs the stored-tab migration (`migrateStoredTab`) before `isValidTab`, as every tab read does, so an element in a former stored shape (for example freehand points before [Stroke points](../006-document/stroke-points.md)) from a browser loaded before a deploy, an API-token script or a Google Drive copy is stored in the current shape rather than refused.
+
 ## Data model
 
 The schema starts at `0001_init.sql` and evolves migration-by-migration; the migration files double as commit history of the shape. Today, in broad strokes:

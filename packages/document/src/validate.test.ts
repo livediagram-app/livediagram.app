@@ -4,7 +4,6 @@ import {
   isValidElement,
   isValidTab,
   MAX_ELEMENTS_PER_TAB,
-  MAX_FREEHAND_POINTS,
   MAX_PATH_NODES,
   PATH_COORD_MAX,
   TEXT_SCALE_MAX,
@@ -12,6 +11,7 @@ import {
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
+import { MAX_FREEHAND_POINTS, encodeStrokePoints } from './stroke-points';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };
 
@@ -39,7 +39,7 @@ describe('isValidElement', () => {
         id: 'f',
         type: 'freehand',
         closed: false,
-        points: [{ nx: 0, ny: 0 }],
+        packedPoints: encodeStrokePoints([{ nx: 0, ny: 0 }]),
         ...box,
       }),
     ).toBe(true);
@@ -60,7 +60,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
-    const freehand = { id: 'f', type: 'freehand', closed: false, points: [], ...box };
+    const freehand = { id: 'f', type: 'freehand', closed: false, packedPoints: 'AQA=', ...box };
     // Highlighter recipe (docs/specs/008-canvas/highlighter.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
     expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
@@ -71,29 +71,26 @@ describe('isValidElement', () => {
     expect(isValidElement({ ...freehand, penWidth: 101 })).toBe(false);
   });
 
-  it('accepts a whiteboard pen stroke\u2019s pressures and streamline, rejects junk', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pressure per point, 0 to 1.
+  it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
     ];
-    const pen = { id: 'f', type: 'freehand', closed: false, points, penWidth: 1.5, ...box };
-    expect(isValidElement({ ...pen, pressures: [0, 1], streamline: 0.2 })).toBe(true);
-    expect(isValidElement({ ...pen, pressures: [0.5] })).toBe(false);
-    expect(isValidElement({ ...pen, pressures: [0.5, 1.2] })).toBe(false);
-    expect(isValidElement({ ...pen, pressures: [0.5, 'hard'] })).toBe(false);
-    expect(isValidElement({ ...pen, pressures: 'firm' })).toBe(false);
+    const packedPoints = encodeStrokePoints(points, [0, 1]);
+    const pen = { id: 'f', type: 'freehand', closed: false, packedPoints, penWidth: 1.5, ...box };
+    expect(isValidElement({ ...pen, streamline: 0.2 })).toBe(true);
     expect(isValidElement({ ...pen, streamline: -0.1 })).toBe(false);
     expect(isValidElement({ ...pen, streamline: 2 })).toBe(false);
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
     // docs/specs/023-whiteboard/whiteboard.md "The colour picker": stored by name.
-    const points = [
+    const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
-    ];
-    const pen = { id: 'f', type: 'freehand', closed: false, points, penWidth: 1.5, ...box };
+    ]);
+    const pen = { id: 'f', type: 'freehand', closed: false, packedPoints, penWidth: 1.5, ...box };
     const shape = { id: 's', type: 'shape', shape: 'circle', ...box };
     const line = {
       id: 'l',
@@ -169,10 +166,26 @@ describe('isValidElement', () => {
   });
 
   it('rejects over-cap arrays (freehand points, table cells)', () => {
-    const points = Array.from({ length: MAX_FREEHAND_POINTS + 1 }, () => ({ nx: 0, ny: 0 }));
-    expect(isValidElement({ id: 'f', type: 'freehand', closed: false, points, ...box })).toBe(
+    const bytes = new Uint8Array(2 + (MAX_FREEHAND_POINTS + 1) * 4);
+    bytes[0] = 1;
+    const packedPoints = Buffer.from(bytes).toString('base64');
+    expect(isValidElement({ id: 'f', type: 'freehand', closed: false, packedPoints, ...box })).toBe(
       false,
     );
+  });
+
+  it('accepts packed stroke points and rejects the former shape or a corrupt block', () => {
+    // docs/specs/006-document/stroke-points.md "Validation".
+    const stroke = { id: 'f', type: 'freehand', closed: false, ...box };
+    const packedPoints = encodeStrokePoints([{ nx: 0.5, ny: 0.5 }], [0.5]);
+    expect(isValidElement({ ...stroke, packedPoints })).toBe(true);
+    expect(isValidElement({ ...stroke, packedPoints: 'AQA=' })).toBe(true);
+    expect(isValidElement(stroke)).toBe(false);
+    expect(isValidElement({ ...stroke, points: [{ nx: 0, ny: 0 }] })).toBe(false);
+    expect(isValidElement({ ...stroke, packedPoints, points: [] })).toBe(false);
+    expect(isValidElement({ ...stroke, packedPoints, pressures: [0.5] })).toBe(false);
+    expect(isValidElement({ ...stroke, packedPoints: 'AQ*=' })).toBe(false);
+    expect(isValidElement({ ...stroke, packedPoints: 'AgA=' })).toBe(false);
   });
 });
 

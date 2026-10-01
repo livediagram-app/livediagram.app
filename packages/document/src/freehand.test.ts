@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   catmullRomToBezierPath,
   createFreehand,
+  encodeStrokePoints,
   freehandGeometry,
+  freehandNormalisedPoints,
+  freehandPressures,
   simplifyPolyline,
 } from './index';
 
@@ -157,7 +160,7 @@ describe('createFreehand', () => {
     // by zero on the bounds.
     const el = createFreehand([], false);
     expect(el.type).toBe('freehand');
-    expect(el.points).toEqual([]);
+    expect(el.packedPoints).toBe('AQA=');
     expect(el.width).toBe(1);
     expect(el.height).toBe(1);
   });
@@ -219,7 +222,8 @@ describe('createFreehand', () => {
       ],
       false,
     );
-    for (const p of el.points) {
+    const points = freehandNormalisedPoints(el);
+    for (const p of points) {
       expect(p.nx).toBeGreaterThanOrEqual(0);
       expect(p.nx).toBeLessThanOrEqual(1);
       expect(p.ny).toBeGreaterThanOrEqual(0);
@@ -227,8 +231,8 @@ describe('createFreehand', () => {
     }
     // First sample sits in the top-left padded slot; last in the
     // bottom-right padded slot.
-    const first = el.points[0]!;
-    const last = el.points[el.points.length - 1]!;
+    const first = points[0]!;
+    const last = points[points.length - 1]!;
     expect(first.nx).toBeLessThan(0.1);
     expect(first.ny).toBeLessThan(0.1);
     expect(last.nx).toBeGreaterThan(0.9);
@@ -248,7 +252,7 @@ describe('createFreehand', () => {
       false,
     );
     expect(el.height).toBeGreaterThan(0);
-    for (const p of el.points) {
+    for (const p of freehandNormalisedPoints(el)) {
       expect(Number.isFinite(p.nx)).toBe(true);
       expect(Number.isFinite(p.ny)).toBe(true);
     }
@@ -299,8 +303,23 @@ describe('freehandGeometry', () => {
       { x: 40.75, y: 20.5 },
       { x: 33.1, y: 60.9 },
     ];
-    const { x, y, width, height, points: normalised } = createFreehand(points, false);
-    expect(freehandGeometry(points)).toEqual({ x, y, width, height, points: normalised });
+    const { x, y, width, height, packedPoints } = createFreehand(points, false);
+    const geometry = freehandGeometry(points);
+    expect(geometry).toMatchObject({ x, y, width, height });
+    expect(encodeStrokePoints(geometry.points)).toBe(packedPoints);
+  });
+
+  it('packs the pressures with the points', () => {
+    const el = createFreehand(
+      [
+        { x: 0, y: 0 },
+        { x: 10, y: 10 },
+      ],
+      false,
+      [0, 1],
+    );
+    expect(freehandPressures(el)).toEqual([0, 1]);
+    expect(freehandPressures(createFreehand([{ x: 0, y: 0 }], false))).toBeUndefined();
   });
 
   it('gives no points a 1x1 box at the origin', () => {

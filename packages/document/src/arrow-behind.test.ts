@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ROUTE_BEHIND_MARGIN, arrowRoutesBehind, routeBehindHoles } from './arrow-behind';
 import type { ArrowElement, Element, ShapeElement } from './index';
+import { encodeStrokePoints } from './stroke-points';
 
 const M = ROUTE_BEHIND_MARGIN;
 
@@ -152,10 +153,10 @@ describe('routeBehindHoles', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: false,
       penWidth: 1.5,
     } as Element;

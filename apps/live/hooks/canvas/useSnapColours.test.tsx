@@ -15,7 +15,7 @@ const stroke = (id: string, strokeColor?: string): Element =>
     y: 0,
     width: 10,
     height: 10,
-    points: [],
+    packedPoints: 'AQA=',
     closed: false,
     penWidth: 1.5,
     ...(strokeColor ? { strokeColor } : {}),

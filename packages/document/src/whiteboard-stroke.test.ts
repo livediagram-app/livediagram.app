@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
+import { freehandPressures } from './freehand-points';
+import { STROKE_POINT_MAX_ERROR, STROKE_PRESSURE_MAX_ERROR } from './stroke-points';
 import type { FreehandElement } from './index';
 import {
   eraseStrokePart,
@@ -9,14 +11,15 @@ import {
 } from './whiteboard-stroke';
 import { createPath } from './path-element';
 
-// A horizontal stroke from (0, 100) to (200, 100), 4px wide.
-const line = (over: Partial<FreehandElement> = {}): FreehandElement => ({
+// A horizontal stroke from (0, 100) to (200, 100), 4px wide, with a pen's pressures when given.
+const line = (over: Partial<FreehandElement> = {}, pressures?: number[]): FreehandElement => ({
   ...createFreehand(
     [
       { x: 0, y: 100 },
       { x: 200, y: 100 },
     ],
     false,
+    pressures,
   ),
   id: 'line',
   penWidth: 4,
@@ -30,10 +33,13 @@ const xs = (el: FreehandElement) => freehandAbsolutePoints(el).map((p) => Math.r
 
 describe('freehandAbsolutePoints', () => {
   it('maps normalised points back onto the canvas', () => {
-    const pts = freehandAbsolutePoints(line());
-    expect(pts[0]!.x).toBeCloseTo(0, 5);
-    expect(pts[0]!.y).toBeCloseTo(100, 5);
-    expect(pts[1]!.x).toBeCloseTo(200, 5);
+    const el = line();
+    const pts = freehandAbsolutePoints(el);
+    // Within the packed points' precision guarantee of where they were drawn.
+    const bound = Math.max(el.width, el.height) * STROKE_POINT_MAX_ERROR;
+    expect(Math.abs(pts[0]!.x - 0)).toBeLessThanOrEqual(bound);
+    expect(Math.abs(pts[0]!.y - 100)).toBeLessThanOrEqual(bound);
+    expect(Math.abs(pts[1]!.x - 200)).toBeLessThanOrEqual(bound);
   });
 
   it('bakes a rotation in, about the centre', () => {
@@ -77,7 +83,7 @@ describe('eraseStrokePart', () => {
     const pieces = eraseStrokePart(line(), { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
     expect(pieces).toHaveLength(2);
     const [left, right] = pieces;
-    expect(xs(left!)[0]).toBe(0);
+    expect(Math.abs(xs(left!)[0]!)).toBe(0);
     // The ink edge is brush radius plus half the pen width from the centre.
     expect(Math.max(...xs(left!))).toBeGreaterThanOrEqual(87);
     expect(Math.max(...xs(left!))).toBeLessThanOrEqual(88);
@@ -98,14 +104,20 @@ describe('eraseStrokePart', () => {
 
   it('keeps a pressure for every point of each piece, interpolated, and the streamline', () => {
     // docs/specs/023-whiteboard/whiteboard.md "Pens": a pen stroke's ink survives a partial erase.
-    const src = line({ pressures: [0.2, 1], streamline: 0.2 });
+    const src = line({ streamline: 0.2 }, [0.2, 1]);
     const pieces = eraseStrokePart(src, { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
     expect(pieces).toHaveLength(2);
     for (const piece of pieces) {
       expect(piece.streamline).toBe(0.2);
-      expect(piece.pressures).toHaveLength(piece.points.length);
+      const pressures = freehandPressures(piece)!;
       const xsOf = freehandAbsolutePoints(piece);
-      piece.pressures!.forEach((p, i) => expect(p).toBeCloseTo(0.2 + (0.8 * xsOf[i]!.x) / 200, 6));
+      expect(pressures).toHaveLength(xsOf.length);
+      // Each piece re-packs its interpolated pressures: within one pressure step of the line.
+      pressures.forEach((p, i) =>
+        expect(Math.abs(p - (0.2 + (0.8 * xsOf[i]!.x) / 200))).toBeLessThanOrEqual(
+          2 * STROKE_PRESSURE_MAX_ERROR,
+        ),
+      );
     }
   });
 
@@ -123,7 +135,7 @@ describe('eraseStrokePart', () => {
 
   it('leaves a stroke without pressures without them', () => {
     const pieces = eraseStrokePart(line(), { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
-    for (const piece of pieces) expect(piece.pressures).toBeUndefined();
+    for (const piece of pieces) expect(freehandPressures(piece)).toBeUndefined();
   });
 
   it('gives the longest piece the annotations', () => {

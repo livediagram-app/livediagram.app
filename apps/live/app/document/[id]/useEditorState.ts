@@ -789,7 +789,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Per-tab autosave (debounced + beforeunload flush). See useAutosave;
   // the last-saved mirror refs above are seeded by the hydration effect.
-  useAutosave({
+  const { hasUnsavedChanges } = useAutosave({
     hydrated,
     documentId,
     isReadOnly,
@@ -3025,6 +3025,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   return {
     whiteboardDock,
+    // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
+    // (docs/specs/016-platform/new-version-prompt.md).
+    hasUnsavedChanges,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,

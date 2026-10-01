@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useEffectEvent,
   useRef,
@@ -101,6 +102,26 @@ export function useAutosave(opts: {
   // seeing only a toast blaming their connection — and each edit fired another
   // doomed PUT, which is what produced hundreds of 403s in a single day.
   const writesForbiddenRef = useRef(false);
+
+  // What `hasUnsavedChanges` reads when called (docs/specs/016-platform/new-version-prompt.md): the
+  // inputs as of the last commit, and how many saves are still on the wire.
+  const savesInFlightRef = useRef(0);
+  const currentRef = useRef({ hydrated, documentId, isReadOnly, tabs, documentName });
+  useEffect(() => {
+    currentRef.current = { hydrated, documentId, isReadOnly, tabs, documentName };
+  }, [hydrated, documentId, isReadOnly, tabs, documentName]);
+  const hasUnsavedChanges = useCallback((): boolean => {
+    const now = currentRef.current;
+    if (!now.hydrated || !now.documentId || now.isReadOnly) return false;
+    if (savesInFlightRef.current > 0) return true;
+    return computeTabSaveDiff(
+      lastSavedTabsRef.current,
+      now.tabs,
+      lastSavedNameRef.current,
+      now.documentName,
+      loadedTabIdsRef.current,
+    ).hasChanges;
+  }, [lastSavedTabsRef, lastSavedNameRef, loadedTabIdsRef]);
 
   // Saves can overlap (a PUT slower than the debounce). Only the NEWEST one to
   // land may move the baseline, or a slow older save would roll it back.
@@ -218,6 +239,7 @@ export function useAutosave(opts: {
       }
 
       setSaveStatus('saving');
+      savesInFlightRef.current++;
       const journal = remoteOpJournalRef.current;
       const mark = openSaveWindow(journal);
       const gen = ++saveGenRef.current;
@@ -321,7 +343,10 @@ export function useAutosave(opts: {
             }, delay);
           }
         })
-        .finally(() => closeSaveWindow(journal));
+        .finally(() => {
+          savesInFlightRef.current--;
+          closeSaveWindow(journal);
+        });
     }, 600);
     return () => window.clearTimeout(handle);
   }, [
@@ -344,6 +369,8 @@ export function useAutosave(opts: {
     setSaveStatus,
     setSavedAt,
   ]);
+
+  return { hasUnsavedChanges };
 }
 
 // 5s, 10s, 20s, 40s, then a minute between attempts.

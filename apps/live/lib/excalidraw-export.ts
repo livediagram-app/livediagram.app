@@ -9,6 +9,7 @@
 // the container) so they stay attached when edited in Excalidraw.
 
 import {
+  freehandStrokePoints,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
@@ -144,7 +145,9 @@ export function tabToExcalidrawText(tab: Tab): string {
 
     // Freehand strokes keep their real geometry as freedraw / line points.
     if (el.type === 'freehand') {
-      const pts: [number, number][] = el.points.map((p) => [p.nx * el.width, p.ny * el.height]);
+      const { count, nx, ny, pressures } = freehandStrokePoints(el);
+      const pts: [number, number][] = [];
+      for (let i = 0; i < count; i++) pts.push([nx[i]! * el.width, ny[i]! * el.height]);
       if (el.closed && pts.length > 0) pts.push([pts[0]![0], pts[0]![1]]);
       out.push(
         chassis(el, seq++, {
@@ -153,8 +156,8 @@ export function tabToExcalidrawText(tab: Tab): string {
           backgroundColor: el.closed ? fill : 'transparent',
           points: pts,
           // A whiteboard pen stroke's real pressures travel; without them Excalidraw simulates.
-          pressures: el.pressures ?? [],
-          simulatePressure: !el.pressures,
+          pressures: pressures ? Array.from(pressures) : [],
+          simulatePressure: !pressures,
           lastCommittedPoint: null,
         }),
       );

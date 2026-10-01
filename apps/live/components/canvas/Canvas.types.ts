@@ -9,7 +9,6 @@ import type {
   EsSide,
   EventStormingNoteKind,
   FrameHandle,
-  FreehandElement,
   RecognisedShape,
 } from '@livediagram/document';
 import type {
@@ -395,7 +394,7 @@ export type CanvasProps = {
     points: { x: number; y: number }[],
     recogniseShapes: boolean,
     // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke).
-    ink?: Pick<FreehandElement, 'pressures' | 'streamline'> & { snapped?: RecognisedShape },
+    ink?: { pressures?: number[]; streamline?: number; snapped?: RecognisedShape },
   ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed

@@ -4,7 +4,7 @@
 // under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
-import { isValidTab } from '@livediagram/document';
+import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
 import {
   MAX_CHANGE_LOG_ENTRY_BYTES,
@@ -102,6 +102,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
       if (Array.isArray(body.tabs)) {
+        // Former stored shapes (a Google Drive copy, an offline sync, an API-token script) are
+        // migrated before validation, as every tab read migrates them (docs/specs/015-api/api.md).
+        body.tabs = body.tabs.map((tab) => migrateIncomingTab(tab) as Tab);
         for (const tab of body.tabs) {
           if (!isValidTab(tab)) return badRequest('invalid tab');
           if (byteLength(JSON.stringify(tab)) > MAX_TAB_BYTES) {

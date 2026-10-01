@@ -273,9 +273,9 @@ describe('type predicates', () => {
     // freehand: structurally a boxed element + a normalised polyline.
     // The runtime guard must match the type-union membership; a recent
     // bug left it false here and crashed elementBounds on commit.
-    expect(isBoxed({ ...shape('e'), type: 'freehand', points: [], closed: false } as Element)).toBe(
-      true,
-    );
+    expect(
+      isBoxed({ ...shape('e'), type: 'freehand', packedPoints: 'AQA=', closed: false } as Element),
+    ).toBe(true);
     expect(isBoxed(arrow)).toBe(false);
   });
 
@@ -287,7 +287,7 @@ describe('type predicates', () => {
       supportsColours({
         ...shape('c'),
         type: 'freehand',
-        points: [],
+        packedPoints: 'AQA=',
         closed: false,
       } as Element),
     ).toBe(true);
@@ -313,7 +313,7 @@ describe('type predicates', () => {
       supportsBorder({
         ...shape('b'),
         type: 'freehand',
-        points: [],
+        packedPoints: 'AQA=',
         closed: false,
       } as Element),
     ).toBe(true);

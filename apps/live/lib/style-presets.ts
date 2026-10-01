@@ -10,6 +10,8 @@
 // theme binding, so they only touch their own fields.
 
 import {
+  encodeStrokePoints,
+  freehandNormalisedPoints,
   ARROW_THICKNESS_PX,
   clampShadow,
   DEFAULT_ANIMATION_SPEED,
@@ -176,9 +178,14 @@ export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element
   // drawn, so choosing a preset must drop it or the choice would do nothing.
   // A highlighter never draws the preset, so its width stays.
   if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {
-    // Its pen ink (pressures, streamline) goes with it: the preset draws a plain stroke.
-    const { penWidth: _dropped, pressures: _p, streamline: _s, ...rest } = el;
-    return { ...rest, strokeWidth: value };
+    // Its pen ink (pressures, streamline) goes with it: the preset draws a plain stroke, so the
+    // same points are re-packed without their pressures.
+    const { penWidth: _dropped, streamline: _s, ...rest } = el;
+    return {
+      ...rest,
+      packedPoints: encodeStrokePoints(freehandNormalisedPoints(el)),
+      strokeWidth: value,
+    };
   }
   return supportsBorder(el) || el.type === 'table' ? { ...el, strokeWidth: value } : el;
 }

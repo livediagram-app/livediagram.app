@@ -12,7 +12,12 @@ import type {
   TabResponse,
 } from '@livediagram/api-schema';
 import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/document';
-import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
+import {
+  lanesToFront,
+  mergeElementUpdate,
+  normaliseElement,
+  normaliseElements,
+} from './element-normalise';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { TRASH_RETENTION_DAYS, type TrashedDocument } from '@livediagram/api-schema';
 import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
@@ -368,8 +373,7 @@ export function registerTools(server: McpServer, env: Env): void {
             byId.set(el.id, el);
             touched.add(el.id);
           } else if (op.op === 'update' && op.elementId) {
-            const prev = (byId.get(op.elementId) as Record<string, unknown>) ?? {};
-            byId.set(op.elementId, { ...prev, ...(el ?? {}) });
+            byId.set(op.elementId, mergeElementUpdate(byId.get(op.elementId), el));
             touched.add(op.elementId);
           }
         }

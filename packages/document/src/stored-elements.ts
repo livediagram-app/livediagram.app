@@ -3,8 +3,9 @@
 
 import { dropLegacyDocks } from './legacy-docks';
 import { migrateLegacyGroups } from './legacy-groups';
+import { migrateLegacyStrokePoints } from './legacy-stroke-points';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
-  return dropLegacyDocks(migrateLegacyGroups(elements));
+  return migrateLegacyStrokePoints(dropLegacyDocks(migrateLegacyGroups(elements)));
 }

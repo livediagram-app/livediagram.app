@@ -45,6 +45,7 @@ import {
   VOTING,
   WELCOME_TOUR,
   POWER_USER_OFFER,
+  NEW_VERSION_PROMPT,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { ViewKey } from './view-keys';
@@ -77,6 +78,7 @@ export const GROUPS: MetricGroup[] = [
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
       POWER_USER_OFFER,
+      NEW_VERSION_PROMPT,
     ],
   },
   {

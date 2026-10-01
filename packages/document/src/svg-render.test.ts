@@ -5,6 +5,7 @@ import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
 import { arrowLabelFontStack } from './svg-render-arrows';
 import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
+import { encodeStrokePoints } from './stroke-points';
 
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -322,11 +323,11 @@ describe('renderElementsToSvg', () => {
         width: 100,
         height: 50,
         closed: false,
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0 },
           { nx: 0.5, ny: 1 },
           { nx: 1, ny: 0.5 },
-        ],
+        ]),
         penWidth: 2.5,
         pressures: [0.2, 0.8, 0.5],
         streamline: 0.2,
@@ -346,10 +347,10 @@ describe('renderElementsToSvg', () => {
         width: 100,
         height: 100,
         closed: false,
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0 },
           { nx: 1, ny: 0.5 },
-        ],
+        ]),
         strokeColor: '#333333',
       } as Tab['elements'][number];
       const svg = renderElementsToSvg(tab([el]));
@@ -373,14 +374,17 @@ describe('renderElementsToSvg', () => {
       const polygon = {
         ...base,
         straightEdges: true,
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0 },
           { nx: 1, ny: 0 },
           { nx: 1, ny: 1 },
-        ],
+        ]),
       } as Tab['elements'][number];
       expect(renderElementsToSvg(tab([polygon]))).toContain('d="M 0 0 L 100 0 L 100 100 Z"');
-      const dot = { ...base, points: [{ nx: 0.5, ny: 0.5 }] } as Tab['elements'][number];
+      const dot = {
+        ...base,
+        packedPoints: encodeStrokePoints([{ nx: 0.5, ny: 0.5 }]),
+      } as Tab['elements'][number];
       expect(renderElementsToSvg(tab([dot]))).not.toContain('<path');
     });
 
@@ -433,10 +437,10 @@ describe('renderElementsToSvg', () => {
         height: 10,
         closed: false,
         pen: 'highlighter',
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0.5 },
           { nx: 1, ny: 0.5 },
-        ],
+        ]),
         strokeColor: '#fde047',
       } as Tab['elements'][number];
       const svg = renderElementsToSvg(tab([el]));

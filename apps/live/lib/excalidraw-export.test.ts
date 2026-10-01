@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { tabToExcalidrawText } from './excalidraw-export';
 import type { Element, Tab } from '@livediagram/document';
 import { createPath } from '@livediagram/document';
+import { STROKE_PRESSURE_MAX_ERROR, encodeStrokePoints } from '@livediagram/document';
 
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
   id: 'tab-1',
@@ -215,17 +216,24 @@ describe('boxed element degradation', () => {
             height: 50,
             closed: false,
             penWidth: 1.5,
-            pressures: [0.2, 0.9],
             streamline: 0.2,
-            points: [
-              { nx: 0, ny: 0 },
-              { nx: 1, ny: 1 },
-            ],
+            packedPoints: encodeStrokePoints(
+              [
+                { nx: 0, ny: 0 },
+                { nx: 1, ny: 1 },
+              ],
+              [0.2, 0.9],
+            ),
           },
         ]),
       ),
     );
-    expect(scene.elements[0]).toMatchObject({ pressures: [0.2, 0.9], simulatePressure: false });
+    const freedraw = scene.elements[0] as { pressures: number[]; simulatePressure: boolean };
+    expect(freedraw.simulatePressure).toBe(false);
+    expect(freedraw.pressures).toHaveLength(2);
+    [0.2, 0.9].forEach((p, i) =>
+      expect(Math.abs(freedraw.pressures[i]! - p)).toBeLessThanOrEqual(STROKE_PRESSURE_MAX_ERROR),
+    );
   });
 
   it('exports a path as a line sampled along its curve (docs/specs/023-whiteboard/path-tool.md)', () => {
@@ -263,11 +271,11 @@ describe('boxed element degradation', () => {
             width: 100,
             height: 50,
             closed: false,
-            points: [
+            packedPoints: encodeStrokePoints([
               { nx: 0, ny: 0 },
               { nx: 0.5, ny: 1 },
               { nx: 1, ny: 0 },
-            ],
+            ]),
           },
           {
             id: 'p1',
@@ -279,18 +287,21 @@ describe('boxed element degradation', () => {
             closed: true,
             straightEdges: true,
             fillColor: '#b2f2bb',
-            points: [
+            packedPoints: encodeStrokePoints([
               { nx: 0, ny: 0 },
               { nx: 1, ny: 0 },
               { nx: 0.5, ny: 1 },
-            ],
+            ]),
           },
         ]),
       ),
     );
     const [draw, poly] = scene.elements;
     expect(draw!.type).toBe('freedraw');
-    expect(draw!.points).toEqual([
+    // Within the packed points' precision (a hundredth of a px here).
+    expect(
+      draw!.points!.map(([x, y]) => [Math.round(x! * 100) / 100, Math.round(y! * 100) / 100]),
+    ).toEqual([
       [0, 0],
       [50, 50],
       [100, 0],

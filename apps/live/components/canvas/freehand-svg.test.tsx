@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
   createFreehand,
+  encodeStrokePoints,
   freehandPenStroke,
   penStrokePath,
   type FreehandElement,
@@ -23,7 +24,17 @@ const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
 describe('FreehandSvg', () => {
   it('draws a pen stroke as its filled pressure outline in canvas px, zooming with the board', () => {
     // docs/specs/023-whiteboard/whiteboard.md "Pens": ink on the board, drawn by perfect-freehand.
-    const el = stroke({ penWidth: 2.5, pressures: [0.3, 0.9], streamline: 0.2 });
+    const el = stroke({
+      penWidth: 2.5,
+      streamline: 0.2,
+      packedPoints: encodeStrokePoints(
+        [
+          { nx: 0, ny: 0 },
+          { nx: 1, ny: 1 },
+        ],
+        [0.3, 0.9],
+      ),
+    });
     const { container } = render(<FreehandSvg element={el} fill="none" stroke="#000" />);
     const svg = container.querySelector('svg')!;
     const path = container.querySelector('path')!;

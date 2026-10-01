@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   PEN_STREAMLINE,
+  STROKE_POINT_MAX_ERROR,
+  STROKE_PRESSURE_MAX_ERROR,
   createFreehand,
+  freehandGeometry,
   freehandPenStroke,
   isPenStroke,
   penPointerKind,
@@ -181,8 +184,9 @@ describe('settled ink', () => {
 
   it('keeps the settled ink on the canvas through the growing box, as the live ink draws it', () => {
     const points = wobbly(3, -1);
+    // The live ink lays its raw samples out unpacked (freehandGeometry), never re-quantised.
     const onCanvas = (n: number) => {
-      const el = createFreehand(points.slice(0, n), false);
+      const el = freehandGeometry(points.slice(0, n));
       return penStrokeOutline(
         freehandPenStroke({ ...el, penWidth: 1.5, streamline: 0.5 }, { x: el.x, y: el.y }),
       );
@@ -221,21 +225,25 @@ describe('freehandPenStroke', () => {
     { x: 50, y: 60 },
   ];
   const el = {
-    ...createFreehand(raw, false),
+    ...createFreehand(raw, false, [0.2, 0.5, 0.9]),
     penWidth: 2.5,
-    pressures: [0.2, 0.5, 0.9],
     streamline: 0.2,
   };
 
   it('reads a pen stroke in its own box, or on the canvas from an origin', () => {
+    // Within the packed points' precision guarantee of the samples drawn.
+    const bound = Math.max(el.width, el.height) * STROKE_POINT_MAX_ERROR;
     const local = freehandPenStroke(el);
-    expect(local.points[0]!.x).toBeCloseTo(raw[0]!.x - el.x, 9);
+    expect(Math.abs(local.points[0]!.x - (raw[0]!.x - el.x))).toBeLessThanOrEqual(bound);
     const onCanvas = freehandPenStroke(el, { x: el.x, y: el.y });
     onCanvas.points.forEach((p, i) => {
-      expect(p.x).toBeCloseTo(raw[i]!.x, 9);
-      expect(p.y).toBeCloseTo(raw[i]!.y, 9);
+      expect(Math.abs(p.x - raw[i]!.x)).toBeLessThanOrEqual(bound);
+      expect(Math.abs(p.y - raw[i]!.y)).toBeLessThanOrEqual(bound);
     });
-    expect(local).toMatchObject({ width: 2.5, pressures: [0.2, 0.5, 0.9], streamline: 0.2 });
+    expect(local).toMatchObject({ width: 2.5, streamline: 0.2 });
+    [0.2, 0.5, 0.9].forEach((p, i) =>
+      expect(Math.abs(local.pressures![i]! - p)).toBeLessThanOrEqual(STROKE_PRESSURE_MAX_ERROR),
+    );
   });
 
   it('draws in canvas coordinates: a viewBox on its own box, the outline where it is on the board', () => {
