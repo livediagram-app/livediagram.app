@@ -29,3 +29,8 @@ One row per default applied where a spec is silent or qualitative.
 | B10 | board-scene           | Text colour on a fill that does not adapt                               | Its exact hex, never ink or a stock name (a black label stays black on its pale fill)           |
 | B11 | board-scene           | A stroke longer than an element holds                                   | Sampled evenly along its points, both ends kept, and reported                                   |
 | B13 | board-scene           | How finely boxes, free arrow ends and bends are kept                    | A hundredth of a canvas px                                                                      |
+| M1  | ms-whiteboard-import  | Order of changes with equal timestamps                                  | Their sync order (`changeOrder`)                                                                |
+| M2  | ms-whiteboard-import  | A sticky colour value never seen in real boards                         | Yellow, Whiteboard's default note colour                                                        |
+| M3  | ms-whiteboard-import  | Which end of a pen stroke carries its arrowhead                         | The last point (strokes are drawn towards what they point at)                                   |
+| M4  | ms-whiteboard-import  | Order of boards in the list                                             | Last modified, newest first; then title                                                         |
+| M5  | ms-whiteboard-import  | A line head value other than none                                       | An open arrowhead                                                                               |
