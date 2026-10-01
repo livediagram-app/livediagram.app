@@ -711,6 +711,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
   'UI|Declined|PowerUserOffer':
     'Someone said no thanks to the power user mode offer, or closed it.',
+  'UI|Opened|NewVersionPrompt':
+    'An open editor learned the server now serves a newer document format and offered "A new version of livediagram is ready".',
+  'UI|Used|NewVersionPrompt':
+    'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
   'UI|Opened|activity':

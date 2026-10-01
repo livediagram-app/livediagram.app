@@ -650,6 +650,14 @@ export const POWER_USER_OFFERED = opened(
   (t) => t === 'PowerUserOffer',
 );
 
+// The new version prompt (docs/specs/016-platform/new-version-prompt.md); charted with its reloads
+// on the Visitors tab.
+export const NEW_VERSION_OFFERED = opened(
+  'New Version Offered',
+  'An open editor heard the server serves a newer document format, and offered a reload.',
+  (t) => t === 'NewVersionPrompt',
+);
+
 export const SLIDE_DECK_OPENED = opened(
   'Slide Deck Opened',
   'The Slide Deck panel or presentation settings opened.',

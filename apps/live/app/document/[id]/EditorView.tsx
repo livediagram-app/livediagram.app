@@ -2,6 +2,7 @@
 
 import { isWhiteboardTab, truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { canvasSurface } from '@livediagram/document';
 import { getTheme, resolveTabBackdrop } from '@/lib/themes';
@@ -619,6 +620,10 @@ export function EditorView() {
                 onChange={onPhotoPicked}
               />
             ) : null}
+
+            {/* An editor older than the server's document format offers a reload, once its edits
+            are saved (docs/specs/016-platform/new-version-prompt.md). */}
+            <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
           </div>
         </UiScaleProvider>
       </MinimalChromeProvider>

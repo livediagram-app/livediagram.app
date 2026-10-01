@@ -62,3 +62,8 @@ No request is made for it; it rides traffic the editor already has.
 The frontends and the api deploy in parallel. An editor loaded in the few seconds between the
 api's deploy and the editor's may reload into the same older build and see the prompt again on
 its next api response; once the editor is deployed a reload ends it.
+
+## Help
+
+The troubleshooting article "My Changes Are Missing" explains the prompt under "How saving works":
+what it means, that Reload saves first, and that Not now is always safe.
