@@ -1,6 +1,6 @@
 # Microsoft Whiteboard import
 
-A **Microsoft Whiteboard** card in the Import dialog brings boards made in
+**Import from Microsoft Whiteboard**, in the Explorer, brings boards made in
 Microsoft Whiteboard across as **documents**, one per board, each holding one
 whiteboard tab ([Whiteboard](../023-whiteboard/whiteboard.md)): pressure ink as marker
 strokes, colours that follow light and dark boards, text, sticky notes, shapes,
@@ -45,7 +45,7 @@ A **board folder** holds, by name:
 | `screenshot.png`     | The board as Whiteboard drew it                                                               | Not read                     |
 
 - A folder is a board when it holds `manifest.json`, `session.json` and
-  `changes.json`. The card accepts **one board folder**, **a folder of board
+  `changes.json`. The import accepts **one board folder**, **a folder of board
   folders**, or a **`.zip`** of either; other files beside the boards are
   ignored.
 - The board's **title** is `metadata.json`'s, else `manifest.json`'s; its
@@ -192,9 +192,27 @@ parser normalises:
 - The document's one tab is the board's whiteboard tab, its background and
   pattern the board's; the tab is named after the board too.
 
-## Importing in the dialog
+## Where it lives
 
-- The card reads a `.zip` (stored or deflated entries) or a folder (a directory
+- In the **Explorer**, beside creating a document, because each board becomes
+  a document ([Folders](../013-workspace/folders.md)):
+  - the floating Explorer panel's **⋯** menu, row **Import from Microsoft
+    Whiteboard** after New Document;
+  - the full-page Explorer's **+ Create** menu, wherever the section offers
+    New document, as a full-width entry under the tiles.
+- Either opens the **Import from Microsoft Whiteboard** dialog holding the import
+  panel. The panel is self-contained (input, board list, progress, report), so
+  a host only supplies the commit and what closing does.
+- Documents land where a new document would: from a folder section of the
+  full-page Explorer, in that folder; from the floating panel of an Offline
+  Mode document, as Offline Mode documents; otherwise as the owner's documents.
+  The Explorer's lists refresh once they exist.
+- Not in the tab-scoped Import dialog: that dialog replaces a tab, and this
+  import makes documents.
+
+## Importing
+
+- The panel reads a `.zip` (stored or deflated entries) or a folder (a directory
   pick or a dropped folder), finds every board in it, and shows the list.
 - **One board** imports straight away as a new document.
 - **Several boards** list first, each with its document name, its last-edited

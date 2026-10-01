@@ -173,7 +173,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 14,
+    articleCount: 15,
     kind: 'feature',
   },
   {
@@ -205,7 +205,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
-    articleCount: 9,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -1290,16 +1290,6 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
-    slug: 'microsoft-whiteboard-import',
-    title: 'Importing Microsoft Whiteboard boards',
-    description:
-      'Bring Microsoft Whiteboard boards across as editable whiteboard tabs: ink with pressure, colours, notes, text, shapes and images.',
-    keywords:
-      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
-    category: 'Tabs',
-    categorySlug: 'tabs',
-  },
-  {
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
@@ -1363,6 +1353,16 @@ export const articles: Article[] = [
     title: 'Explorer Page',
     description: 'The full-page library: the sidebar sections, list view, and folders.',
     keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'microsoft-whiteboard-import',
+    title: 'Importing Microsoft Whiteboard boards',
+    description:
+      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
+    keywords:
+      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
