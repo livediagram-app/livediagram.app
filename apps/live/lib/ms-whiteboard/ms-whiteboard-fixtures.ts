@@ -560,11 +560,12 @@ export function boardFiles(d: BoardDescription, dir = 'board'): Map<string, Uint
   d.edit?.(h);
   const id = d.id ?? 'board-id';
   const json = (v: unknown) => new TextEncoder().encode(JSON.stringify(v));
+  const p = (name: string) => (dir ? `${dir}/${name}` : name);
   const files = new Map<string, Uint8Array>([
-    [`${dir}/session.json`, json({ id, treeInit: treeInit() })],
-    [`${dir}/changes.json`, json(h.changes)],
+    [p('session.json'), json({ id, treeInit: treeInit() })],
+    [p('changes.json'), json(h.changes)],
     [
-      `${dir}/manifest.json`,
+      p('manifest.json'),
       json({
         id,
         title: d.title ?? null,
@@ -580,7 +581,7 @@ export function boardFiles(d: BoardDescription, dir = 'board'): Map<string, Uint
       }),
     ],
     [
-      `${dir}/metadata.json`,
+      p('metadata.json'),
       json({
         id,
         title: d.title ?? null,
@@ -589,7 +590,7 @@ export function boardFiles(d: BoardDescription, dir = 'board'): Map<string, Uint
       }),
     ],
   ]);
-  for (const img of d.images ?? []) files.set(`${dir}/objects/${img.file}`, img.bytes);
+  for (const img of d.images ?? []) files.set(p(`objects/${img.file}`), img.bytes);
   return files;
 }
 
@@ -598,3 +599,12 @@ export const PNG_BYTES = Uint8Array.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 1,
   0, 0, 0, 1, 8, 6, 0, 0, 0,
 ]);
+
+/** Files as the import reads them: each read on demand. */
+export function fileSet(
+  ...maps: Map<string, Uint8Array>[]
+): Map<string, () => Promise<Uint8Array>> {
+  const set = new Map<string, () => Promise<Uint8Array>>();
+  for (const m of maps) for (const [path, bytes] of m) set.set(path, () => Promise.resolve(bytes));
+  return set;
+}
