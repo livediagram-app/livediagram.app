@@ -142,20 +142,20 @@ Coordinates are canvas px and stay absolute; every item's `key` is the
 Excalidraw element id (the landing re-mints ids). `authoredOn` is `unknown`:
 neither envelope records a theme. Items keep the scene's z-order (below).
 
-| Excalidraw                                         | Board scene item                                                                                                                                                                                                                                                              |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rectangle`                                        | `shape` `rectangle`; `rounded` when `roundness` is set (type 1 legacy, 2 proportional, 3 adaptive)                                                                                                                                                                            |
-| `ellipse`                                          | `shape` `ellipse`                                                                                                                                                                                                                                                             |
-| `diamond`                                          | `shape` `diamond`; `rounded` when `roundness` is set                                                                                                                                                                                                                          |
-| `text` with a `containerId`                        | the container's `label` (`shape`, `sticky`) or the arrow's `label` (`connector`); consumed. A container that is not in the scene leaves it standalone                                                                                                                         |
-| `text` standalone                                  | `text` with the element's box; `autoWidth` from `autoResize` (absent reads `true`); the unwrapped `originalText` (else `text`)                                                                                                                                                |
-| `freedraw`                                         | `ink`: absolute points; `p` from `pressures` when `simulatePressure` is `false` and there is one pressure per point; `closed` when the ends coincide (within `EXCALIDRAW_CLOSE_EPSILON_PX`), the repeated end point dropped; a non-transparent background is the ink's `fill` |
-| `line`                                             | `polyline`: absolute points; `closed` when `polygon` is `true` or the ends coincide (3+ points); `curved` when `roundness` is set and there are 3+ points; a non-transparent background on a closed line is its `fill`; arrowheads as `heads`                                 |
-| `arrow`                                            | `connector`: absolute points; `from` / `to` the keys of the bound elements when they are in the scene; `curved` when `roundness` is set, there are 3+ points and it is not `elbowed`; `heads` per the table below; bound text as `label`                                      |
-| `stickynote`                                       | `sticky` with the element's box and `backgroundColor` as `fill`; its bound text as `text`                                                                                                                                                                                     |
-| `frame` / `magicframe`                             | `frame` with its `name`; the elements inside it (`frameId`) stay ordinary items                                                                                                                                                                                               |
-| `image`                                            | `image` with `asset` = `fileId` (the element id when absent); a `crop` sets `crop`. Its `files` entry with a `dataURL` becomes a `data-url` asset, once per `fileId`                                                                                                          |
-| `embeddable`, `iframe`, `selection`, anything else | skipped, counted in a note by its type                                                                                                                                                                                                                                        |
+| Excalidraw                                         | Board scene item                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `rectangle`                                        | `shape` `rectangle`; `rounded` when `roundness` is set (type 1 legacy, 2 proportional, 3 adaptive)                                                                                                                                                                                                                                                                 |
+| `ellipse`                                          | `shape` `ellipse`                                                                                                                                                                                                                                                                                                                                                  |
+| `diamond`                                          | `shape` `diamond`; `rounded` when `roundness` is set                                                                                                                                                                                                                                                                                                               |
+| `text` with a `containerId`                        | the container's `label` (`shape`, `sticky`) or the arrow's `label` (`connector`); consumed. A container that is not in the scene leaves it standalone                                                                                                                                                                                                              |
+| `text` standalone                                  | `text` with the element's box; `autoWidth` from `autoResize` (absent reads `true`); the unwrapped `originalText` (else `text`)                                                                                                                                                                                                                                     |
+| `freedraw`                                         | `ink`: absolute points; `p` from `pressures` when `simulatePressure` is `false` and there is one pressure per point; `closed` when the ends coincide (within `EXCALIDRAW_CLOSE_EPSILON_PX`), the repeated end point dropped; `streamline` from `strokeOptions.streamline` (Excalidraw's default 0.5 when absent); a non-transparent background is the ink's `fill` |
+| `line`                                             | `polyline`: absolute points; `closed` when `polygon` is `true` or the ends coincide (3+ points); `curved` when `roundness` is set and there are 3+ points; a non-transparent background on a closed line is its `fill`; arrowheads as `heads`                                                                                                                      |
+| `arrow`                                            | `connector`: absolute points; `from` / `to` the keys of the bound elements when they are in the scene; `curved` when `roundness` is set and it is not `elbowed` (an elbow or sharp arrow is not curved; the landing draws its bends as a curve and says so); `heads` per the table below; bound text as `label`                                                    |
+| `stickynote`                                       | `sticky` with the element's box and `backgroundColor` as `fill`; its bound text as `text`                                                                                                                                                                                                                                                                          |
+| `frame` / `magicframe`                             | `frame` with its `name`; the elements inside it (`frameId`) stay ordinary items                                                                                                                                                                                                                                                                                    |
+| `image`                                            | `image` with `asset` = `fileId` (the element id when absent); a `crop` sets `crop`. Its `files` entry with a `dataURL` becomes a `data-url` asset, once per `fileId`                                                                                                                                                                                               |
+| `embeddable`, `iframe`, `selection`, anything else | skipped, counted in a note by its type                                                                                                                                                                                                                                                                                                                             |
 
 Properties, applied wherever present:
 
@@ -202,26 +202,29 @@ Properties, applied wherever present:
 
 ## What degrades
 
-Each degradation is a scene note, counted, and shown by the shared report
-(import) or paste notice (paste). The copy is final:
+Each degradation is a scene note: a rule (its final, user-facing sentence), a
+count and a kind, shown by the shared report (import) or paste notice (paste)
+as "count · rule". The landing adds its own rules on top ([Board scene](board-scene.md):
+dashed pen strokes, bar heads, sharp bends, filled pen strokes, links).
 
-| Note rule                       | When                                                           | Copy (n = count)                                     |
-| ------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------- |
-| `excalidraw.group`              | per distinct group id among the items                          | "n groups came in as separate items"                 |
-| `excalidraw.simulated-pressure` | freedraw with `variability: 'variable'` and simulated pressure | "n tapered strokes drawn at an even width"           |
-| `excalidraw.crowfoot`           | per crow's-foot arrowhead                                      | "n crow's-foot heads drawn as arrowheads"            |
-| `excalidraw.label-position`     | an arrow label whose `labelPosition` is set and not 0.5        | "n arrow labels moved to the middle of their arrow"  |
-| `excalidraw.colour`             | per unreadable colour value                                    | "n colours couldn't be read and use the default ink" |
-| `excalidraw.missing-image`      | per image whose `fileId` has no `dataURL` in `files`           | "n images came without their picture"                |
-| `excalidraw.skipped:<type>`     | per skipped element, by its type                               | "n <type> elements skipped"                          |
+| Rule (copy)                                        | Kind     | Counted                                                            |
+| -------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| "Groups were dropped"                              | degraded | per distinct group id among the items                              |
+| "Tapered strokes drawn at an even width"           | degraded | per freedraw with `variability: 'variable'` and simulated pressure |
+| "Crow's-foot arrowheads drawn as plain arrowheads" | degraded | per crow's-foot head                                               |
+| "Arrow labels moved to the middle of their arrow"  | degraded | per arrow label whose `labelPosition` is set and not 0.5           |
+| "Colours that couldn't be read use the ink"        | degraded | per unreadable colour value                                        |
+| "<Type> elements were skipped"                     | skipped  | per skipped element, by its type (e.g. "Embeddable elements…")     |
+
+An image whose `fileId` has no `dataURL` is not a note: it is the image
+pipeline's `missing-bytes` placeholder, reported there.
 
 Accepted loss, by design and without a note (it is a matter of look, not
 content): the hand-drawn wobble (`roughness`, `seed`), hachure / cross-hatch /
-zigzag fill styles (drawn solid), the frame's clipping of its children, an
-elbow arrow's routing (kept as its straight segments), a sticky note's
-creation-date footer, an image's exact `crop` rectangle and its flip
-(`scale` of -1), and the Excalifont typeface itself (drawn in our hand-drawn
-font).
+zigzag fill styles (drawn solid), the frame's clipping of its children, a
+sticky note's creation-date footer, an image's exact `crop` rectangle and its
+flip (`scale` of -1), and the Excalifont typeface itself (drawn in our
+hand-drawn font).
 
 ## Landing, per profile
 

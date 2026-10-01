@@ -50,6 +50,7 @@ Scope, by file:
 | `EXCALIDRAW_DETECT_PREFIX_CHARS`   | `256`                                         | Room for an indented saved file's opening `"type"` line plus leading whitespace           | 64 to 1024          |
 | `EXCALIDRAW_CLOSE_EPSILON_PX`      | `1`                                           | Our exporter repeats the first point exactly; 1 px absorbs float noise only               | 0 to 2              |
 | `EXCALIDRAW_FREEDRAW_WIDTH_FACTOR` | `{ constant: 2.8, variable: 4.25 }`           | Excalidraw `shape.ts`: laser-pointer radius `1.4 × w`; perfect-freehand size `4.25 × w`   | fixed by the source |
+| `EXCALIDRAW_DEFAULT_STREAMLINE`    | `0.5`                                         | Excalidraw `DEFAULT_STROKE_STREAMLINE`                                                    | fixed by the source |
 | `EXCALIDRAW_LABEL_POSITION_MIDDLE` | `0.5`                                         | Excalidraw's default `labelPosition`                                                      | fixed by the source |
 | `EXCALIDRAW_CLIPBOARD_MIME`        | `'application/vnd.excalidraw.clipboard+json'` | Excalidraw `MIME_TYPES.excalidrawClipboard`                                               | fixed by the source |
 | `EXCALIDRAW_FILE_MIME`             | `'application/vnd.excalidraw+json'`           | Excalidraw `MIME_TYPES.excalidraw`                                                        | fixed by the source |
@@ -109,7 +110,9 @@ export function isExcalidrawFileCandidate(file: File): boolean;
    lands as an item (not consumed, not skipped) → `from` / `to`.
 9. **Heads**: `startArrowhead` / `endArrowhead` mapped per the spec; for `arrow`, an absent
    `endArrowhead` key is `arrow`.
-10. **Notes**: counted per the spec's degradation table, in rule order; zero counts omitted.
+10. **Notes**: counted per the spec's degradation table, in its row order; zero counts omitted; skipped
+    types in first-seen order. `streamline` on ink = `strokeOptions.streamline` if a finite number in
+    0..1, else `EXCALIDRAW_DEFAULT_STREAMLINE`.
 11. **Background**: `appState.viewBackgroundColor` a readable colour → `background.colour`;
     `appState.gridModeEnabled === true` → `background.pattern: 'grid'`.
 12. `source: 'excalidraw'`, `authoredOn: 'unknown'`, `assets` from `files` once per `fileId`
@@ -121,7 +124,7 @@ export function isExcalidrawFileCandidate(file: File): boolean;
   `{ hex: lower-case '#rrggbb', alpha? }` (alpha `aa / 255`, omitted when 1); anything else →
   `unreadable`. A stroke `none` on a shape → `stroke: null`; on a linear item → `ink` + no note
   (an invisible line has no colour to keep). `unreadable` → `ink` (stroke, text) or no fill + a
-  `excalidraw.colour` note.
+  colour note.
 - `opacity` (0..100) → factor `o / 100` clamped to 0..1, applied to stroke `opacity`, fill and
   text `alpha` (multiplied into any alpha the colour carries). Factor 1 omits the field.
 - Widths per the spec; dash `strokeStyle` `dashed` / `dotted` → same, else `solid` omitted.
@@ -242,7 +245,7 @@ Copy is the pipeline spec's; pluralisation `1 image` / `2 images`, `1 placeholde
 | Element without `id`                           | Synthetic key; it cannot be bound to                            |
 | Freedraw with 0 or 1 points                    | An ink item with what there is; the landing draws a dot         |
 | Some elements lack `index`                     | Array order for all                                             |
-| Unknown type                                   | Skipped with an `excalidraw.skipped:<type>` note                |
+| Unknown type                                   | Skipped with a "<Type> elements were skipped" note              |
 | PNG without the chunk                          | `NO_SCENE` inline error (dialog); ordinary image (paste / drop) |
 | Truncated PNG / bad base64 / bad inflate       | `BAD_SCENE` inline error                                        |
 | SVG not from Excalidraw                        | `NO_SCENE`                                                      |
@@ -296,7 +299,7 @@ must read `Imported from Excalidraw`, which the tests assert.
 | Lines: two-point, multi-point, polygon, curved     | `apps/live/lib/excalidraw-scene.test.ts`                                 |
 | Arrows: bindings, heads, curved, elbowed, label    | `apps/live/lib/excalidraw-scene.test.ts`                                 |
 | Sticky note, frame, groups note                    | `apps/live/lib/excalidraw-scene.test.ts`                                 |
-| Images and assets, missing bytes                   | `apps/live/lib/excalidraw-scene.test.ts`                                 |
+| Images and assets, no missing note                 | `apps/live/lib/excalidraw-scene.test.ts`                                 |
 | Colours, opacity, unreadable colour note           | `apps/live/lib/excalidraw-scene-style.test.ts`                           |
 | Rotation baked into linear points                  | `apps/live/lib/excalidraw-scene-geometry.test.ts`                        |
 | Unknown types noted, never thrown                  | `apps/live/lib/excalidraw-scene.test.ts`                                 |
