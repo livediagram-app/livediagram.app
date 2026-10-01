@@ -76,7 +76,9 @@ handles.
   since there is nothing to scale.
 - **The frame stands down while a handle reshapes the arrow** (a bend, curve, elbow or endpoint
   drag) and comes back when the drag ends: it grew with every bend and read as a selection box
-  being dragged out.
+  being dragged out. Nor does any focus outline show: a handle focused by the press (whose node
+  React may reuse as a plain group mid-drag) shows no ring unless focused from the keyboard
+  (`svg :focus:not(:focus-visible)`), where it drew a dark box round the whole arrow.
 - Arrow keys still nudge a selected free arrow. Arrows with an attached end have no frame, as
   before, since they follow their elements.
 
