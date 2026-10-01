@@ -4,9 +4,8 @@ import {
   EXCALIDRAW_FILE_MIME,
   excalidrawTextFromPaste,
   isExcalidrawFileCandidate,
-  readExcalidrawFile,
-  sceneFromExcalidrawText,
 } from './excalidraw-paste';
+import { readExcalidrawFile, sceneFromExcalidrawText } from './excalidraw-paste-read';
 import { excalidrawBuilder, excalidrawText } from './excalidraw-fixtures';
 
 const data = (entries: Record<string, string>) => ({

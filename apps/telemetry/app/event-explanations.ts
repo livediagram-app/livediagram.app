@@ -494,6 +494,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
+  'Element|Imported|Excalidraw':
+    'Someone pasted or dropped a drawing copied from Excalidraw onto the canvas.',
   'Tab|Imported|ExcalidrawPng':
     'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
   'Tab|Imported|ExcalidrawSvg':
@@ -951,6 +953,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted': 'An element was removed from the canvas.',
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
+  'Element|Imported': 'Someone pasted or dropped a drawing from another tool onto the canvas.',
   'Element|Grouped': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked':
     'Someone linked an element to something: another element, a web address, a document or a tab.',

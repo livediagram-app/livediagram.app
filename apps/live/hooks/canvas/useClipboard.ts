@@ -36,6 +36,8 @@ import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDocument } from '@/lib/upload-image';
+import { excalidrawTextFromPaste, isExcalidrawFileCandidate } from '@/lib/excalidraw-paste';
+import type { BoardScene } from '@/lib/board-scene/scene';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -82,6 +84,10 @@ type ClipboardDeps = {
   // board a paste holding a workshop note lands there
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
+  // Lands a board scene pasted from another tool (an Excalidraw copy or file,
+  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
+  // the tab's profile. Absent, such a paste is left alone.
+  insertBoardScene?: (scene: BoardScene) => void;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -102,6 +108,7 @@ export function useClipboard(deps: ClipboardDeps) {
     toast,
     onPastePhoto,
     canvasPointerRef,
+    insertBoardScene,
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
@@ -223,11 +230,41 @@ export function useClipboard(deps: ClipboardDeps) {
       toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
     }
   };
+  // An Excalidraw copy or file: read lazily (the parser stays out of the editor bundle), then
+  // landed by the board-scene insert. A file that turns out not to hold a scene is `otherwise`'s.
+  const pasteExcalidrawText = async (text: string) => {
+    if (!insertBoardScene) return;
+    const { sceneFromExcalidrawText } = await import('@/lib/excalidraw-paste-read');
+    const read = sceneFromExcalidrawText(text);
+    if (!read.ok) {
+      toast.error(read.error);
+      return;
+    }
+    insertBoardScene(read.scene);
+    track('Element', 'Imported', 'Excalidraw');
+  };
+  const pasteExcalidrawFile = async (file: File, otherwise: () => void) => {
+    if (!insertBoardScene) return otherwise();
+    const { readExcalidrawFile } = await import('@/lib/excalidraw-paste-read');
+    const read = await readExcalidrawFile(file);
+    if (read.kind === 'not-excalidraw') return otherwise();
+    if (read.kind === 'error') return toast.error(read.error);
+    insertBoardScene(read.scene);
+    track('Element', 'Imported', 'Excalidraw');
+  };
+
   // Single mutable ref holding the latest paste functions. The paste
   // event listener is only re-registered when isReadOnly/editingId
   // changes, so without this the listener would call stale closures
   // that see clipboard=null even after the user has copied elements.
-  const pasteRef = useLatest({ pasteFromClipboard, pasteImageFile, onPastePhoto });
+  const pasteRef = useLatest({
+    pasteFromClipboard,
+    pasteImageFile,
+    onPastePhoto,
+    pasteExcalidrawText,
+    pasteExcalidrawFile,
+    canPasteScene: !!insertBoardScene,
+  });
 
   // A middle-button release pastes the Linux primary selection. It is never a
   // request to paste on the canvas: with an empty selection it used to drop
@@ -306,12 +343,22 @@ export function useClipboard(deps: ClipboardDeps) {
           // goes to the reader instead. Only for a declared image, only on
           // that board, only when the reader is available: everything else
           // pastes exactly as it always has.
-          const readPhoto = pasteRef.current.onPastePhoto;
-          if (readPhoto && chosen.type.startsWith('image/')) {
-            readPhoto(chosen);
+          const file = chosen;
+          const asImage = () => {
+            const readPhoto = pasteRef.current.onPastePhoto;
+            if (readPhoto && file.type.startsWith('image/')) {
+              readPhoto(file);
+              return;
+            }
+            void pasteRef.current.pasteImageFile(file);
+          };
+          // An Excalidraw file, or a PNG / SVG export holding a scene, lands as that scene;
+          // anything else pastes exactly as before.
+          if (pasteRef.current.canPasteScene && isExcalidrawFileCandidate(file)) {
+            void pasteRef.current.pasteExcalidrawFile(file, asImage);
             return;
           }
-          void pasteRef.current.pasteImageFile(chosen);
+          asImage();
           return;
         }
       }
@@ -345,6 +392,15 @@ export function useClipboard(deps: ClipboardDeps) {
       // event's data needs no permission prompt and arrives synchronously, so
       // the paste cannot land a frame later than the preventDefault that
       // claimed it.
+      // An Excalidraw copy, before our own payload (their envelopes cannot be confused).
+      const excalidraw = pasteRef.current.canPasteScene
+        ? excalidrawTextFromPaste(e.clipboardData ?? null)
+        : null;
+      if (excalidraw) {
+        e.preventDefault();
+        void pasteRef.current.pasteExcalidrawText(excalidraw);
+        return;
+      }
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
@@ -386,6 +442,16 @@ export function useClipboard(deps: ClipboardDeps) {
       const target = e.target as Element | null;
       if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
       if (!target.closest('[data-canvas-a11y-root]')) return;
+      const excalidraw = pasteRef.current.canPasteScene
+        ? excalidrawTextFromPaste(e.clipboardData ?? null)
+        : null;
+      if (excalidraw) {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditingId(null);
+        void pasteRef.current.pasteExcalidrawText(excalidraw);
+        return;
+      }
       const elements = parseElementsPayload(e.clipboardData?.getData('text/plain'));
       if (!elements) return;
       e.preventDefault();
