@@ -1,9 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SceneItem } from '@/lib/board-scene/scene';
 import { boardScene, inkStroke } from '@/lib/board-scene/test-scenes';
+import type { Element, Tab } from '@livediagram/document';
 import {
   BOARD_TOO_BIG,
   importBoardsAsDocuments,
+  importDocuments,
+  type ImportDocumentSource,
   type NewBoardDocument,
 } from './board-scene-import';
 import { ApiError } from '@/lib/api/core';
@@ -162,5 +165,112 @@ describe('importBoardsAsDocuments', () => {
     });
     expect(made[0]!.folderId).toBeUndefined();
     expect(made[0]!.tabs[0]).toMatchObject({ kind: 'whiteboard' });
+  });
+});
+
+// docs/specs/020-import-export/drawio-import.md "Import as new documents": the new-document target
+// for importers whose documents arrive as ready tabs (draw.io: one tab per page).
+describe('importDocuments', () => {
+  const tab = (name: string, label = 'x'): Tab => ({
+    id: crypto.randomUUID(),
+    name,
+    elements: [
+      {
+        id: crypto.randomUUID(),
+        type: 'text',
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10,
+        label,
+      } as Element,
+    ],
+  });
+  const landed = { landed: { text: 2 }, degraded: [], skipped: [] };
+  const source = (
+    name: string,
+    tabs: Tab[],
+    extra: Partial<ImportDocumentSource> = {},
+  ): ImportDocumentSource => ({
+    name,
+    kind: 'diagram',
+    createdAt: '2026-03-01T10:00:00Z',
+    modifiedAt: '2026-03-12T10:00:00Z',
+    prepare: async () => ({ tabs, report: landed }),
+    ...extra,
+  });
+
+  it('makes one document per source with its ready tabs, named and dated as given', async () => {
+    const made: NewBoardDocument[] = [];
+    const outcome = await importDocuments([source('Plan', [tab('Overview'), tab('Detail')])], {
+      ownerId: 'o',
+      offline: false,
+      createDocument: async (doc) => void made.push(doc),
+    });
+    expect(made).toHaveLength(1);
+    expect(made[0]).toMatchObject({
+      name: 'Plan',
+      createdAt: Date.parse('2026-03-01T10:00:00Z'),
+      savedAt: Date.parse('2026-03-12T10:00:00Z'),
+    });
+    expect(made[0]!.tabs.map((t) => t.name)).toEqual(['Overview', 'Detail']);
+    expect(outcome).toMatchObject({
+      status: 'done',
+      documents: [{ name: 'Plan' }],
+      scene: { landed: { text: 2 } },
+    });
+  });
+
+  it('leaves out a page too large to store, names it, and lands the rest', async () => {
+    const huge = tab('Network', 'x'.repeat(MAX_TAB_BYTES));
+    const made: NewBoardDocument[] = [];
+    const outcome = await importDocuments([source('Plan', [tab('Overview'), huge])], {
+      ownerId: 'o',
+      offline: false,
+      createDocument: async (doc) => void made.push(doc),
+    });
+    expect(made[0]!.tabs.map((t) => t.name)).toEqual(['Overview']);
+    expect(outcome).toMatchObject({
+      status: 'done',
+      failures: [{ title: 'Plan', message: "Page 'Network' is too large to store" }],
+    });
+  });
+
+  it('fails a document none of whose pages fit, and keeps the others', async () => {
+    const huge = tab('Only', 'x'.repeat(MAX_TAB_BYTES));
+    const made: NewBoardDocument[] = [];
+    const outcome = await importDocuments([source('Big', [huge]), source('Small', [tab('One')])], {
+      ownerId: 'o',
+      offline: false,
+      createDocument: async (doc) => void made.push(doc),
+    });
+    expect(made.map((d) => d.name)).toEqual(['Small']);
+    expect(outcome).toMatchObject({ failures: [{ title: 'Big', message: BOARD_TOO_BIG }] });
+  });
+
+  it('lists a source that could not be prepared, with its reason', async () => {
+    const outcome = await importDocuments(
+      [
+        source('Broken', [], { prepare: async () => ({ error: 'This file is damaged.' }) }),
+        source('Fine', [tab('One')]),
+      ],
+      { ownerId: 'o', offline: false, createDocument: async () => {} },
+    );
+    expect(outcome).toMatchObject({
+      status: 'done',
+      documents: [{ name: 'Fine' }],
+      failures: [{ title: 'Broken', message: 'This file is damaged.' }],
+    });
+  });
+
+  it('has no size limit offline', async () => {
+    const huge = tab('Network', 'x'.repeat(MAX_TAB_BYTES));
+    const made: NewBoardDocument[] = [];
+    await importDocuments([source('Plan', [huge])], {
+      ownerId: 'o',
+      offline: true,
+      createDocument: async (doc) => void made.push(doc),
+    });
+    expect(made[0]!.tabs).toHaveLength(1);
   });
 });

@@ -136,12 +136,38 @@ function defaultCreateDocument(ownerId: string, offline: boolean) {
   };
 }
 
+/** What a source document is made of once prepared: its tabs, what landed and changed, its images. */
+export type PreparedDocument = {
+  tabs: Tab[];
+  report: BoardSceneReport;
+  images?: ImportImageReport;
+};
+
 /**
- * Make every scene its own new document with one whiteboard tab, named and dated as its board,
- * filed in `folderId`. A board that cannot land is listed with its reason; the rest still do.
+ * One document an import makes, before it is prepared: its name and dates (ISO, checked by the
+ * board date rule), its kind for telemetry, and how to prepare it (images stored, tabs built). A
+ * source that cannot be prepared answers its reason.
  */
-export async function importBoardsAsDocuments(
-  scenes: readonly BoardScene[],
+export type ImportDocumentSource = {
+  name: string;
+  kind: 'whiteboard' | 'diagram';
+  createdAt?: string;
+  modifiedAt?: string;
+  prepare: (
+    onProgress: (p: ImportImageProgress) => void,
+  ) => Promise<PreparedDocument | { error: string }>;
+};
+
+const pageTooLarge = (name: string) => `Page '${name}' is too large to store`;
+
+/**
+ * Make every source its own new document, filed in `folderId` (docs/specs/020-import-export/
+ * board-import.md "new-document"). A tab too large for one database row is left out and named; a
+ * document left with no tab, or that cannot be prepared or created, is listed with its reason; the
+ * rest still land.
+ */
+export async function importDocuments(
+  sources: readonly ImportDocumentSource[],
   o: BoardDocumentsImport,
 ): Promise<ImportOutcome> {
   const createDocument = o.createDocument ?? defaultCreateDocument(o.ownerId, o.offline);
@@ -149,51 +175,37 @@ export async function importBoardsAsDocuments(
   const failures: { title: string; message: string }[] = [];
   let report: BoardSceneReport | undefined;
   let images: ImportImageReport | undefined;
-  for (const [i, scene] of scenes.entries()) {
-    const dates = boardDocumentDates(scene, Date.now());
-    const name = boardDocumentName(scene, dates.createdAt);
-    const landed = landBoardScene(scene, {
-      profile: 'whiteboard',
-      placement: { kind: 'origin' },
-      mintId: () => crypto.randomUUID(),
-    });
-    if (!landed.ok) {
-      failures.push({ title: name, message: landed.message });
+  for (const [i, source] of sources.entries()) {
+    const dates = boardDocumentDates(source, Date.now());
+    const { name } = source;
+    const prepared = await source.prepare((p) =>
+      o.onProgress?.({ ...p, board: i + 1, boards: sources.length }),
+    );
+    if ('error' in prepared) {
+      failures.push({ title: name, message: prepared.error });
       continue;
     }
-    const done = await finishLanding(landed, {
-      ownerId: o.ownerId,
-      documentId: null,
-      offline: o.offline,
-      whiteboard: true,
-      tabFont: undefined,
-      createImageSession: o.createImageSession,
-      hugText: o.hugText,
-      onProgress: (p) => o.onProgress?.({ ...p, board: i + 1, boards: scenes.length }),
-    });
-    const { kind, backgroundPattern } = landed.tabPatch;
-    const id = crypto.randomUUID();
-    const tab: Tab = {
-      id: crypto.randomUUID(),
-      name: UNTITLED_BOARD_NAME,
-      kind,
-      backgroundPattern,
-      elements: done.elements,
-      templateChosen: true,
-    };
     // The worker's own cap (D1's row, docs/specs/015-api/api.md "Tab size"), checked here first so a
-    // board that cannot fit is named at once. This browser's store has no row cap: offline, it lands.
-    const bytes = tabDataBytes(tab);
-    if (!o.offline && bytes > MAX_TAB_BYTES) {
-      console.warn('[board-scene] board too big', { board: i + 1, bytes, cap: MAX_TAB_BYTES });
+    // tab that cannot fit is named at once. This browser's store has no row cap: offline, it lands.
+    const tabs: Tab[] = [];
+    const omitted: string[] = [];
+    for (const tab of prepared.tabs) {
+      const bytes = tabDataBytes(tab);
+      if (!o.offline && bytes > MAX_TAB_BYTES) {
+        console.warn('[board-scene] board too big', { board: i + 1, bytes, cap: MAX_TAB_BYTES });
+        omitted.push(tab.name);
+      } else tabs.push(tab);
+    }
+    if (tabs.length === 0) {
       failures.push({ title: name, message: BOARD_TOO_BIG });
       continue;
     }
+    const id = crypto.randomUUID();
     try {
       await createDocument({
         id,
         name,
-        tabs: [tab],
+        tabs,
         ...(o.folderId ? { folderId: o.folderId } : {}),
         ...(dates.createdAt !== undefined ? { createdAt: dates.createdAt } : {}),
         ...(dates.savedAt !== undefined ? { savedAt: dates.savedAt } : {}),
@@ -201,6 +213,7 @@ export async function importBoardsAsDocuments(
     } catch (error) {
       if (error instanceof ApiError && error.status === 413) {
         // The server refused it as too large after all: no retry will help, so say what it is.
+        const bytes = tabs.reduce((n, tab) => n + tabDataBytes(tab), 0);
         console.warn('[board-scene] board too big', { board: i + 1, bytes, cap: MAX_TAB_BYTES });
         failures.push({ title: name, message: BOARD_TOO_BIG });
         continue;
@@ -210,20 +223,26 @@ export async function importBoardsAsDocuments(
       continue;
     }
     documents.push({ id, name });
+    // A multi-tab document whose other pages landed: each page left out is named.
+    if (prepared.tabs.length > 1) {
+      for (const page of omitted) failures.push({ title: name, message: pageTooLarge(page) });
+    }
     track('Document', 'Created', o.offline ? 'Offline' : 'Cloud');
-    track('Whiteboard', 'Created', 'Import');
+    if (source.kind === 'whiteboard') track('Whiteboard', 'Created', 'Import');
     const boardReport: BoardSceneReport = dates.unreadable
-      ? addReports(landed.report, {
+      ? addReports(prepared.report, {
           landed: {},
           degraded: [{ rule: UNREADABLE_DATES_RULE, count: 1 }],
           skipped: [],
         })
-      : landed.report;
+      : prepared.report;
     report = report ? addReports(report, boardReport) : boardReport;
-    if (done.images) images = addImageReports(images ?? emptyImportImageReport(), done.images);
+    if (prepared.images) {
+      images = addImageReports(images ?? emptyImportImageReport(), prepared.images);
+    }
   }
   console.info('[board-scene] import', {
-    boards: scenes.length,
+    boards: sources.length,
     target: 'new-document',
     offline: o.offline,
     documents: documents.length,
@@ -240,4 +259,58 @@ export async function importBoardsAsDocuments(
     ...(report ? { scene: report } : {}),
     ...(failures.length > 0 ? { failures } : {}),
   };
+}
+
+/**
+ * Make every scene its own new document with one whiteboard tab, named and dated as its board,
+ * filed in `folderId`. A board that cannot land is listed with its reason; the rest still do.
+ */
+export async function importBoardsAsDocuments(
+  scenes: readonly BoardScene[],
+  o: BoardDocumentsImport,
+): Promise<ImportOutcome> {
+  return importDocuments(
+    scenes.map((scene): ImportDocumentSource => {
+      const dates = boardDocumentDates(scene, Date.now());
+      return {
+        name: boardDocumentName(scene, dates.createdAt),
+        kind: 'whiteboard',
+        ...(scene.createdAt !== undefined ? { createdAt: scene.createdAt } : {}),
+        ...(scene.modifiedAt !== undefined ? { modifiedAt: scene.modifiedAt } : {}),
+        prepare: async (onProgress) => {
+          const landed = landBoardScene(scene, {
+            profile: 'whiteboard',
+            placement: { kind: 'origin' },
+            mintId: () => crypto.randomUUID(),
+          });
+          if (!landed.ok) return { error: landed.message };
+          const done = await finishLanding(landed, {
+            ownerId: o.ownerId,
+            documentId: null,
+            offline: o.offline,
+            whiteboard: true,
+            tabFont: undefined,
+            createImageSession: o.createImageSession,
+            hugText: o.hugText,
+            onProgress,
+          });
+          const { kind, backgroundPattern } = landed.tabPatch;
+          const tab: Tab = {
+            id: crypto.randomUUID(),
+            name: UNTITLED_BOARD_NAME,
+            kind,
+            backgroundPattern,
+            elements: done.elements,
+            templateChosen: true,
+          };
+          return {
+            tabs: [tab],
+            report: landed.report,
+            ...(done.images ? { images: done.images } : {}),
+          };
+        },
+      };
+    }),
+    o,
+  );
 }

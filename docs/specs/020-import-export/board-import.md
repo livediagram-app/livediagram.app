@@ -54,7 +54,10 @@ throws. Only the parse stage has to be pure.
      do; an open document is left as it
      was. It needs no open document: from the editor, an Offline Mode document
      makes Offline Mode documents too, as a copy does; from the Explorer, the
-     caller says which;
+     caller says which. A source may also bring its document as **ready tabs**
+     ([draw.io](drawio-import.md): one diagram tab per page): a tab over the cap
+     is left out and named ("Page 'Network' is too large to store") while the
+     document's other tabs land, and a document left with no tab fails as above;
    - **insert-at-point**: the elements join the active tab at a point and are
      selected (a paste or a drop).
 

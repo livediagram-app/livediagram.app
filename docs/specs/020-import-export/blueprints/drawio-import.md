@@ -6,36 +6,38 @@ cited as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                     | Role                                                                                            |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                               |
-| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget       |
-| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                      |
-| `lib/drawio/refusals.ts`                 | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                            |
-| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources        |
-| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                        |
-| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                      |
-| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                           |
-| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                      |
-| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                          |
-| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                       |
-| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                             |
-| `lib/drawio/vertices.ts`                 | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes  |
-| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                        |
-| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                                   |
-| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                                 |
-| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                                 |
-| `lib/drawio/notes.ts`                    | `DrawioReport`, `ImportNoteKind`, `ImportNote`, `ReportTally`: what changed, tallied by kind    |
-| `lib/drawio/report.ts`                   | `DRAWIO_RULES`, `drawioSceneReport`, `drawioOutcome`: the notes as the one shared import report |
-| `lib/drawio/images.ts`                   | `attachDrawioImages`: every page's image requests through one pipeline pass                     |
-| `lib/import-tab.ts`                      | `pickTabFile` also returns the picked `File`; `ImportOutcome.done` gains `report`               |
-| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                            |
-| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                     |
-| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                      |
-| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                               |
-| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                                    |
-| `lib/drawio/test-support.ts`             | DOM test helpers: a model from XML, a vertex, fixture bytes                                     |
-| `e2e/drawio-import.spec.ts`              | The corpus through the real dialog on the production build, persistence and undo                |
+| File                                     | Role                                                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                                                       |
+| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget                               |
+| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                                              |
+| `lib/drawio/refusals.ts`                 | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                                                    |
+| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources                                |
+| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                                                |
+| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                                              |
+| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                                                   |
+| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                                              |
+| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                                                  |
+| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                                               |
+| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                                                     |
+| `lib/drawio/vertices.ts`                 | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                          |
+| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                                                |
+| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                                                           |
+| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                                                         |
+| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                                                         |
+| `lib/drawio/notes.ts`                    | `DrawioReport`, `ImportNoteKind`, `ImportNote`, `ReportTally`: what changed, tallied by kind                            |
+| `lib/drawio/report.ts`                   | `DRAWIO_RULES`, `drawioSceneReport`, `drawioOutcome`: the notes as the one shared import report                         |
+| `lib/drawio/new-document.ts`             | `drawioDocumentSource`: a file's pages as the ready tabs of its own document                                            |
+| `lib/board-scene-import.ts`              | `importDocuments`: the foundation's new-document target, taking ready tabs (each source prepared, oversized tabs named) |
+| `lib/drawio/images.ts`                   | `attachDrawioImages`: every page's image requests through one pipeline pass                                             |
+| `lib/import-tab.ts`                      | `pickTabFile` also returns the picked `File`; `ImportOutcome.done` gains `report`                                       |
+| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                                                    |
+| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                                             |
+| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                                              |
+| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                                                       |
+| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                                                            |
+| `lib/drawio/test-support.ts`             | DOM test helpers: a model from XML, a vertex, fixture bytes                                                             |
+| `e2e/drawio-import.spec.ts`              | The corpus through the real dialog on the production build, persistence and undo                                        |
 
 ## Domain and naming
 
@@ -474,8 +476,8 @@ failures: { title, message }[] }`, pick order, never throws: `sniffDrawio` null 
 createdAt, modifiedAt, pages, images, report, pageCount }` or failure; `library` →
   `importDrawioLibrary` → `{ title (library naming, `DRAWIO_GENERIC_LIBRARY_NAME` →
 "draw.io library"), items, report }` or failure.
-- The commit: diagrams through `importDocumentsWithTabs` (the foundation's new-document target
-  generalised in P3 to ready tabs: each page a diagram tab named after its page, oversized pages
+- The commit: diagrams through `importDocuments` (`lib/board-scene-import.ts`, the foundation's
+  new-document target for ready tabs) with `drawioDocumentSource` (`new-document.ts`: each page a diagram tab named after its page, oversized pages
   left out and named, images through one pipeline pass per document); libraries through the shape
   library api ([Shape libraries](../../013-workspace/shape-libraries.md) "API").
   One `track('Tab', 'Imported', 'Drawio')` per document made.
@@ -724,6 +726,8 @@ Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-
 | Sniffing: every form, Drive saves without an extension, libraries, other files                                               | `envelope.test.ts`                                                  |
 | JSON export: the `data` path, the laid-out graph, labels, links, auto-layout rule                                            | `json-export.test.ts`                                               |
 | Libraries: items, image items, unreadable items, refusals, the tab dialog refusal                                            | `library.test.ts`                                                   |
+| Pages as the tabs of a new document, images in one pass                                                                      | `new-document.test.ts`                                              |
+| New documents from ready tabs: oversized tabs named, empty documents failed, per-source failures, offline                    | `board-scene-import.test.ts`                                        |
 | Files to documents: names, dates, kinds, failures, pick order                                                                | `files.test.ts`                                                     |
 | The Explorer flow and panel                                                                                                  | `useDrawioFileImport.test.ts`, `DrawioImportPanel.test.tsx`         |
 | Dialog routing (close vs summary)                                                                                            | `ImportTabDialog.test.tsx`                                          |
