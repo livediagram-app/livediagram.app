@@ -23,6 +23,8 @@ export const STROKE_EXT = {
 export type PenPoint = { x: number; y: number; p?: number };
 
 export type PenStroke = {
+  /** Where the points start, in canvas px from the stroke's place (arrowheads carry one). */
+  originPx: { x: number; y: number };
   /** Canvas px per stored unit. */
   unitScale: number;
   /** The line's width in stored units. */
@@ -37,7 +39,7 @@ export type PenStroke = {
 export function decodePenStroke(bytes: Uint8Array): PenStroke | null {
   let at = 0;
   const flags = bytes[at++];
-  if (flags === undefined || flags & STROKE_FLAG.perPointExtra) return null;
+  if (flags === undefined) return null;
   let ext = 0;
   if (flags & STROKE_FLAG.extension) {
     if (at >= bytes.length) return null;
@@ -56,6 +58,8 @@ export function decodePenStroke(bytes: Uint8Array): PenStroke | null {
   }
   if (!(flags & STROKE_FLAG.unitScale)) return null;
   const unitScale = doubles[flags & STROKE_FLAG.origin ? 2 : 0]!;
+  const originPx = flags & STROKE_FLAG.origin ? { x: doubles[0]!, y: doubles[1]! } : { x: 0, y: 0 };
+  if (!Number.isFinite(originPx.x) || !Number.isFinite(originPx.y)) return null;
   if (!Number.isFinite(unitScale) || unitScale <= 0) return null;
 
   const values: number[] = [];
@@ -76,7 +80,12 @@ export function decodePenStroke(bytes: Uint8Array): PenStroke | null {
     (ext & STROKE_EXT.threeHeaderValues ? 3 : 0) +
     (ext & STROKE_EXT.oneHeaderValue ? 1 : 0);
   const hasTiming = (flags & STROKE_FLAG.timing) !== 0;
-  const record = 2 + (hasTiming ? 1 : 0) + (hasPressure ? 1 : 0) + extChannels;
+  const record =
+    2 +
+    (hasTiming ? 1 : 0) +
+    (hasPressure ? 1 : 0) +
+    (flags & STROKE_FLAG.perPointExtra ? 1 : 0) +
+    extChannels;
   if (k > values.length || (values.length - k) % record !== 0) return null;
 
   const points: PenPoint[] = [];
@@ -90,5 +99,5 @@ export function decodePenStroke(bytes: Uint8Array): PenStroke | null {
       points.push({ x, y, p: Math.min(1, p) });
     } else points.push({ x, y });
   }
-  return { unitScale, width, pressureMax, points };
+  return { originPx, unitScale, width, pressureMax, points };
 }

@@ -48,7 +48,11 @@ describe('readBoard', () => {
         scale: 2,
         rotation: 15,
         strokes: [
-          { colour: '#e71224', stroke: { width: 512, points: pts }, arrowhead: true },
+          {
+            colour: '#e71224',
+            stroke: { width: 512, points: pts },
+            arrowhead: { layout: 'arrowhead', origin: [5, 6], width: 512, points: pts },
+          },
           {
             preset: 'highlighter',
             colour: '#fcfc00',
@@ -84,12 +88,13 @@ describe('readBoard', () => {
     ]);
     expect(el.strokes[0]).toMatchObject({
       colour: { hex: '#e71224' },
-      arrowhead: true,
       widthFactor: 1,
+      unreadableArrowheads: 0,
     });
+    expect(el.strokes[0]!.arrowheads[0]).toMatchObject({ originPx: { x: 5, y: 6 }, points: pts });
     expect(el.strokes[1]!.colour).toEqual({ hex: '#fcfc00', alpha: 102 / 255 });
     expect(el.strokes[2]!.colour).toBeUndefined();
-    expect(el.strokes[4]).toMatchObject({ widthFactor: 0.5, dx: 3, dy: 4, arrowhead: false });
+    expect(el.strokes[4]).toMatchObject({ widthFactor: 0.5, dx: 3, dy: 4, arrowheads: [] });
   });
 
   it('counts strokes it cannot read', () => {

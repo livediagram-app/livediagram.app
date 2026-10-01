@@ -100,7 +100,7 @@ listed with their ids in the [blueprint](blueprints/ms-whiteboard-import.md).
 An ink stroke's payload is a header then the points:
 
 - A **flags** byte, then an **extension** byte when flag `0x80` is set.
-- Flag `0x01`: an origin (two packed doubles). `0x02`: the **unit scale**
+- Flag `0x01`: an origin (two packed doubles, canvas px from the stroke's place). `0x02`: the **unit scale**
   (packed double): canvas px per stored unit (1/128 in current boards, about
   1/26.46 in older ones). `0x04`: one more packed double.
 - Then varints: the **pressure maximum** (flag `0x10`), the **width** in units,
@@ -108,8 +108,10 @@ An ink stroke's payload is a header then the points:
   three for `0x02`; one for `0x04`).
 - Then one record per point, every value a varint: x and y as zig-zag deltas
   from the previous point, a timing channel (flag `0x08`, ignored), the
-  **pressure** as an absolute value out of the maximum (flag `0x10`), and one
+  **pressure** as an absolute value out of the maximum (flag `0x10`), a width channel (flag `0x20`, ignored), and one
   channel per extension bit `0x08` and `0x10` (ignored).
+- An **arrowhead** is a small stroke of its own in the same encoding (with an origin and a width
+  channel), drawn in its stroke's colour.
 - A stroke may carry a **width factor** (older boards: the width multiplies by
   it) and a **translation** (older boards, after the stroke was moved); current
   boards carry an identity transform.
@@ -154,20 +156,20 @@ parser normalises:
 
 ## Mapping
 
-| Whiteboard                 | Board scene                                                                                                                                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pen stroke                 | `ink`: points with pressures, width, colour; the group's position, scale and rotation applied                                                     |
-| Pen stroke with arrowhead  | `ink`, plus its arrowhead as a short open `ink` V at the stroke's end, same colour and width (degraded: "Arrowheads on pen strokes were redrawn") |
-| Highlighter stroke         | `ink` with `highlighter`, its colour's alpha as opacity                                                                                           |
-| Rainbow and galaxy strokes | `ink` with colour stops (the preset's); the landing degrades multicolour per [Board scene](board-scene.md)                                        |
-| Shape                      | `shape` rectangle, its border (width, dash, colour) and fill, its text as the label (size, bold, alignment)                                       |
-| Sticky note                | `sticky`, its colour as the fill, its text                                                                                                        |
-| Text box                   | `text`: auto-width when it has no fixed size, its font size times its scale, its colour                                                           |
-| Image                      | `image` with its asset from `objects/`; a missing file is noted ("Images missing from the export")                                                |
-| Ink-to-shape polygon       | closed `polyline` through its corners, border colour, no fill                                                                                     |
-| Line                       | `polyline` from start to end with its heads, width, dash and colour                                                                               |
-| Table                      | One `shape` rectangle per cell (border colour, no fill), cell ink as `ink` (degraded: "Tables became rectangles")                                 |
-| Canvas                     | `background`: appearance per Colours, pattern Plain, Dots or Grid; `authoredOn` the same appearance                                               |
+| Whiteboard                 | Board scene                                                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Pen stroke                 | `ink`: points with pressures, width, colour; the group's position, scale and rotation applied                     |
+| Pen stroke with arrowhead  | `ink`, plus its arrowhead as a second `ink` stroke in the same colour (an arrowhead is a small stroke of its own) |
+| Highlighter stroke         | `ink` with `highlighter`, its colour's alpha as opacity                                                           |
+| Rainbow and galaxy strokes | `ink` with colour stops (the preset's); the landing degrades multicolour per [Board scene](board-scene.md)        |
+| Shape                      | `shape` rectangle, its border (width, dash, colour) and fill, its text as the label (size, bold, alignment)       |
+| Sticky note                | `sticky`, its colour as the fill, its text                                                                        |
+| Text box                   | `text`: auto-width when it has no fixed size, its font size times its scale, its colour                           |
+| Image                      | `image` with its asset from `objects/`; a missing file is noted ("Images missing from the export")                |
+| Ink-to-shape polygon       | closed `polyline` through its corners, border colour, no fill                                                     |
+| Line                       | `polyline` from start to end with its heads, width, dash and colour                                               |
+| Table                      | One `shape` rectangle per cell (border colour, no fill), cell ink as `ink` (degraded: "Tables became rectangles") |
+| Canvas                     | `background`: appearance per Colours, pattern Plain, Dots or Grid; `authoredOn` the same appearance               |
 
 - The scene's `title` is the board's title; `sourceId` is the board id.
 - **Text** families are sans-serif (Whiteboard's notes and text use its UI

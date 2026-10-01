@@ -40,7 +40,7 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 | Element       | `WbElement`     | A decoded board item (union by `kind`, below)                         |
 | Board         | `WbBoard`       | `{ background, appearance, elements }`                                |
 | Board summary | `BoardSummary`  | `{ path, title, modified, elementCount }` for the dialog's list       |
-| Pen stroke    | `PenStroke`     | `{ unitScale, width, pressureMax, points: { x, y, p? }[] }`           |
+| Pen stroke    | `PenStroke`     | `{ originPx, unitScale, width, pressureMax, points: { x, y, p? }[] }` |
 
 Ids are compared in full; the tables below abbreviate to the first 8 hex digits, `format.ts`
 holds the full UUIDs.
@@ -160,7 +160,8 @@ type WbStroke = {
   widthFactor: number;
   dx: number;
   dy: number;
-  arrowhead: boolean;
+  arrowheads: PenStroke[];
+  unreadableArrowheads: number;
 };
 type WbText = { text: string; fontPx: number; bold: boolean; colour: SceneColour };
 ```
@@ -184,9 +185,9 @@ decode is dropped and counted (`unreadableStrokes`).
   Pressure kept when every point has one.
 - Presets: highlighter → `highlighter: true`, opacity from alpha; rainbow → `stops` `RAINBOW_STOPS`,
   colour the first stop; galaxy → `stops` `GALAXY_STOPS`.
-- Arrowhead: an extra `ink` V at the last point: arms of `ARROWHEAD_LENGTH_FACTOR · widthPx` at
-  ±`ARROWHEAD_ANGLE_DEG` from the reversed direction of the last `ARROWHEAD_TANGENT_PX` of the
-  stroke; note `RULES.arrowheads`.
+- Arrowhead: decoded with `decodePenStroke` (flags `0xff`/`0xef`: origin, width channel); an extra
+  `ink` item keyed `…-head`, its points `g + s·(origin + p·u + d)`, same colour, its own width; one
+  that does not decode counts as unreadable.
 - Boxes: `x, y` the position, `width, height` size × scale; text `fontPx` × scale.
 - Image: `asset` key = the object id found by the image node's id in the changes' `deferred`;
   the bytes from `objects/<file>` per `manifest.objects`; MIME from the file's magic bytes
@@ -201,7 +202,6 @@ Rules (`RULES`, user-facing):
 
 | Key           | Kind     | Copy                                                    |
 | ------------- | -------- | ------------------------------------------------------- |
-| `arrowheads`  | degraded | "Arrowheads on pen strokes were redrawn"                |
 | `tables`      | degraded | "Tables became rectangles"                              |
 | `invisible`   | skipped  | "Strokes drawn in the board's own colour were left out" |
 | `unreadable`  | skipped  | "Pen strokes that couldn't be read were skipped"        |
@@ -266,9 +266,6 @@ scene` (items per kind, notes).
 | `GALAXY_STOPS`                  | 881f7c 3a9fb4                             | Measured on screenshots                               | n/a           |
 | `STICKY_YELLOW`                 | `#f6dc67`                                 | Measured                                              | n/a           |
 | `POLYGON_WIDTH_PX`              | 4                                         | Whiteboard's default pen                              | 1 to 8        |
-| `ARROWHEAD_LENGTH_FACTOR`       | 4                                         | Hand-drawn heads on real boards                       | 2 to 8        |
-| `ARROWHEAD_ANGLE_DEG`           | 30                                        | Open V                                                | 20 to 45      |
-| `ARROWHEAD_TANGENT_PX`          | 6                                         | Ignores the last wobble of a stroke                   | 2 to 20       |
 | `MAX_IMPORT_BYTES`              | 512 MB                                    | The real 83-board export is 245 MB                    | 64 MB to 1 GB |
 | `MAX_BOARD_JSON_BYTES`          | 64 MB                                     | Largest real `changes.json` about 2 MB; frames larger | 8 to 256 MB   |
 

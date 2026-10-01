@@ -62,7 +62,7 @@ export function encodeNumber(value: number, length: 1 | 2 | 4 | 8 = 8): Uint8Arr
  * `older` (x, y, pressure and two extension channels at HIMETRIC), `olderPlain` (x, y, pressure),
  * `olderTimed` (x, y, timing, pressure and two extension channels).
  */
-export type StrokeLayout = 'current' | 'older' | 'olderPlain' | 'olderTimed';
+export type StrokeLayout = 'current' | 'older' | 'olderPlain' | 'olderTimed' | 'arrowhead';
 
 export type StrokeDescription = {
   layout?: StrokeLayout;
@@ -73,6 +73,8 @@ export type StrokeDescription = {
   points: { x: number; y: number; p?: number }[];
   /** Extension header values (older layouts with extension bits 0x02 and 0x04). */
   extraHeaders?: boolean;
+  /** In canvas px (the arrowhead layout's origin). */
+  origin?: [number, number];
 };
 
 export const CURRENT_UNIT_SCALE = 1 / 128;
@@ -80,7 +82,7 @@ export const OLDER_UNIT_SCALE = 1 / 26.458333333333332;
 
 export function encodePenStroke(d: StrokeDescription): Uint8Array {
   const layout = d.layout ?? 'current';
-  const pressureMax = layout === 'olderTimed' ? 1024 : 8192;
+  const pressureMax = layout === 'olderTimed' ? 1024 : layout === 'arrowhead' ? 2 : 8192;
   let flags = STROKE_FLAG.unitScale | STROKE_FLAG.pressure | 0x40;
   let ext = 0;
   if (layout === 'current')
@@ -91,10 +93,15 @@ export function encodePenStroke(d: StrokeDescription): Uint8Array {
     if (d.extraHeaders) ext |= STROKE_EXT.threeHeaderValues | STROKE_EXT.oneHeaderValue;
   }
   if (layout === 'olderTimed') flags |= STROKE_FLAG.timing;
+  if (layout === 'arrowhead') {
+    flags = 0xff;
+    ext = STROKE_EXT.channelA | STROKE_EXT.channelB;
+  }
   const unitScale = d.unitScale ?? (layout === 'current' ? CURRENT_UNIT_SCALE : OLDER_UNIT_SCALE);
   const out: number[] = [flags];
   if (flags & STROKE_FLAG.extension) out.push(ext);
-  if (flags & STROKE_FLAG.origin) out.push(...encodePackedDouble(0), ...encodePackedDouble(0));
+  if (flags & STROKE_FLAG.origin)
+    out.push(...encodePackedDouble(d.origin?.[0] ?? 0), ...encodePackedDouble(d.origin?.[1] ?? 0));
   out.push(...encodePackedDouble(unitScale));
   if (flags & STROKE_FLAG.extraDouble) out.push(...encodePackedDouble(0));
   out.push(...encodeVarint(pressureMax), ...encodeVarint(d.width));
@@ -111,6 +118,7 @@ export function encodePenStroke(d: StrokeDescription): Uint8Array {
     py = pt.y;
     if (flags & STROKE_FLAG.timing) out.push(...encodeVarint(encodeZigzag(i === 0 ? 1000 : 1)));
     out.push(...encodeVarint(Math.round((pt.p ?? 0.5) * pressureMax)));
+    if (flags & STROKE_FLAG.perPointExtra) out.push(...encodeVarint(d.width));
     if (ext & STROKE_EXT.channelA) out.push(...encodeVarint(i === 0 ? 90 : 0));
     if (ext & STROKE_EXT.channelB) out.push(...encodeVarint(i === 0 ? 360 : 0));
   });
@@ -178,7 +186,8 @@ export type StrokeNodeDescription = {
   stroke: StrokeDescription;
   widthFactor?: number;
   translate?: [number, number];
-  arrowhead?: boolean;
+  /** The arrowhead's own stroke (layout 'arrowhead'). */
+  arrowhead?: StrokeDescription;
 };
 
 export function strokeNode(d: StrokeNodeDescription): RawNode {
@@ -206,11 +215,8 @@ export function strokeNode(d: StrokeNodeDescription): RawNode {
         ]),
       ),
     ];
-  // The arrowhead's own geometry is not decoded; its presence is what the import reads.
   if (d.arrowhead)
-    traits[MSWB_TRAIT.arrowhead] = [
-      node(MSWB_TYPE.arrowhead, {}, Uint8Array.from([0xff, 0x06, 0, 0])),
-    ];
+    traits[MSWB_TRAIT.arrowhead] = [node(MSWB_TYPE.arrowhead, {}, encodePenStroke(d.arrowhead))];
   return node(MSWB_TYPE[preset], traits, encodePenStroke(d.stroke));
 }
 

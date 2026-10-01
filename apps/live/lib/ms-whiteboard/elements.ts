@@ -17,7 +17,10 @@ export type WbStroke = {
   widthFactor: number;
   dx: number;
   dy: number;
-  arrowhead: boolean;
+  /** The arrowhead drawn with the stroke: its own small stroke, from its origin. */
+  arrowheads: PenStroke[];
+  /** Arrowheads whose payload could not be read. */
+  unreadableArrowheads: number;
 };
 
 export type WbText = { text: string; fontPx: number; bold: boolean; colour: SceneColour };
@@ -132,6 +135,17 @@ function leadingDoubles(bytes: Uint8Array | undefined, count: number): number[] 
   return out;
 }
 
+function arrowheadsOf(node: WbNode) {
+  const arrowheads: PenStroke[] = [];
+  let unreadableArrowheads = 0;
+  for (const head of children(node, T.arrowhead)) {
+    const decoded = head.payload ? decodePenStroke(head.payload) : null;
+    if (decoded) arrowheads.push(decoded);
+    else unreadableArrowheads++;
+  }
+  return { arrowheads, unreadableArrowheads };
+}
+
 function readStroke(node: WbNode): WbStroke | null {
   const preset = PRESETS[node.type];
   const stroke = node.payload ? decodePenStroke(node.payload) : null;
@@ -147,7 +161,7 @@ function readStroke(node: WbNode): WbStroke | null {
     widthFactor: factor && factor > 0 ? factor : 1,
     dx: translate?.[0] ?? 0,
     dy: translate?.[1] ?? 0,
-    arrowhead: children(node, T.arrowhead).length > 0,
+    ...arrowheadsOf(node),
   };
 }
 

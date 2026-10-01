@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { WbBoard, WbElement, WbInk } from './elements';
-import { GALAXY_STOPS, RAINBOW_STOPS, arrowheadAt, inkToScene } from './ink-scene';
+import { GALAXY_STOPS, RAINBOW_STOPS, inkToScene } from './ink-scene';
 import { POLYGON_WIDTH_PX, RULES, boardToScene } from './to-scene';
 
 const unit = 1 / 128;
 const stroke = (over: Partial<WbInk['strokes'][number]> = {}): WbInk['strokes'][number] => ({
   preset: 'pen',
   stroke: {
+    originPx: { x: 0, y: 0 },
     unitScale: unit,
     width: 512,
     pressureMax: 8192,
@@ -19,7 +20,8 @@ const stroke = (over: Partial<WbInk['strokes'][number]> = {}): WbInk['strokes'][
   widthFactor: 1,
   dx: 0,
   dy: 0,
-  arrowhead: false,
+  arrowheads: [],
+  unreadableArrowheads: 0,
   ...over,
 });
 const group = (over: Partial<WbInk> = {}): WbInk => ({
@@ -40,7 +42,7 @@ const scene = (elements: WbElement[], over: Partial<WbBoard> = {}) =>
   });
 const ctx = () => ({
   appearance: 'light' as const,
-  notes: { invisible: 0, arrowheads: 0, unreadable: 0 },
+  notes: { invisible: 0, unreadable: 0 },
 });
 
 // docs/specs/020-import-export/whiteboard-import.md "Mapping".
@@ -106,19 +108,40 @@ describe('inkToScene', () => {
     expect(items[2]!.stroke.stops).toEqual([...GALAXY_STOPS]);
   });
 
-  it("draws an arrowhead as an open V at the stroke's end, counted", () => {
+  it('draws an arrowhead as its own stroke from its origin, in the stroke colour', () => {
+    const head = {
+      originPx: { x: 10, y: -2 },
+      unitScale: 0.5,
+      width: 8,
+      pressureMax: 2,
+      points: [
+        { x: 0, y: 0, p: 0.5 },
+        { x: 4, y: 4, p: 0.5 },
+      ],
+    };
     const c = ctx();
-    const items = inkToScene(group({ strokes: [stroke({ arrowhead: true })] }), 'k', c);
-    expect(items.map((i) => i.key)).toEqual(['k-0', 'k-0-head']);
-    expect(items[1]!.points[1]).toEqual({ x: 110, y: 50 });
-    expect(c.notes.arrowheads).toBe(1);
+    const items = inkToScene(group({ strokes: [stroke({ arrowheads: [head], dx: 1 })] }), 'k', c);
+    expect(items.map((i) => i.key)).toEqual(['k-0', 'k-1-head']);
+    expect(items[1]).toMatchObject({
+      points: [
+        { x: 111, y: 48, p: 0.5 },
+        { x: 113, y: 50, p: 0.5 },
+      ],
+      stroke: { colour: { hex: '#e71224' }, widthPx: 4 },
+    });
+  });
+
+  it('counts arrowheads it cannot read', () => {
+    const c = ctx();
+    inkToScene(group({ strokes: [stroke({ unreadableArrowheads: 2 })] }), 'k', c);
+    expect(c.notes.unreadable).toBe(2);
   });
 
   it("on a dark board: near-white is ink, the board's own colour is left out and counted", () => {
     const c = {
       appearance: 'dark' as const,
       background: { hex: '#1f1f1f' },
-      notes: { invisible: 0, arrowheads: 0, unreadable: 2 },
+      notes: { invisible: 0, unreadable: 2 },
     };
     const items = inkToScene(
       group({
@@ -129,13 +152,6 @@ describe('inkToScene', () => {
     );
     expect(items.map((i) => i.stroke.colour)).toEqual(['ink']);
     expect(c.notes.invisible).toBe(1);
-  });
-});
-
-describe('arrowheadAt', () => {
-  it('needs a direction', () => {
-    expect(arrowheadAt([{ x: 1, y: 1 }], 4)).toBeNull();
-    expect(arrowheadAt([], 4)).toBeNull();
   });
 });
 
@@ -357,13 +373,12 @@ describe('boardToScene', () => {
         { kind: 'polygon', cx: 0, cy: 0, corners: [] },
         group({
           unreadable: 2,
-          strokes: [stroke({ arrowhead: true }), stroke({ colour: { hex: '#000000' } })],
+          strokes: [stroke(), stroke({ colour: { hex: '#000000' } })],
         }),
       ],
       { background: { hex: '#1f1f1f' } },
     );
     expect(s.notes).toEqual([
-      { rule: RULES.arrowheads, count: 1, kind: 'degraded' },
       { rule: RULES.invisible, count: 1, kind: 'skipped' },
       { rule: RULES.unreadable, count: 2, kind: 'skipped' },
       { rule: RULES.unsupported, count: 2, kind: 'skipped' },

@@ -27,6 +27,22 @@ describe('decodePenStroke', () => {
     expect(stroke!.points).toEqual(points);
   });
 
+  it('reads the arrowhead layout: an origin in px and a per-point width channel', () => {
+    const stroke = decodePenStroke(
+      encodePenStroke({ layout: 'arrowhead', origin: [-38.5, 87.25], width: 93, points }),
+    );
+    expect(stroke).toMatchObject({ originPx: { x: -38.5, y: 87.25 }, width: 93, pressureMax: 2 });
+    expect(stroke!.points.map(({ x, y }) => ({ x, y }))).toEqual(
+      points.map(({ x, y }) => ({ x, y })),
+    );
+  });
+
+  it('starts at the origin 0, 0 when the stroke carries none', () => {
+    expect(
+      decodePenStroke(encodePenStroke({ layout: 'older', width: 105, points }))!.originPx,
+    ).toEqual({ x: 0, y: 0 });
+  });
+
   it('skips the extension header values', () => {
     const stroke = decodePenStroke(
       encodePenStroke({ layout: 'older', width: 105, points, extraHeaders: true }),
@@ -48,7 +64,7 @@ describe('decodePenStroke', () => {
     expect(decodePenStroke(new Uint8Array())).toBeNull();
   });
 
-  it('refuses a payload without a unit scale, or with per-point extras it cannot read', () => {
+  it('refuses a payload without a unit scale, or one cut short in its header', () => {
     expect(decodePenStroke(Uint8Array.from([0x50, 0x80, 0x40, 0x10]))).toBeNull();
     expect(decodePenStroke(Uint8Array.from([0xff, 0x06, 0, 0]))).toBeNull();
   });
