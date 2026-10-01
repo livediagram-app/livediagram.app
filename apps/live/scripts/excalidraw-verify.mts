@@ -74,6 +74,11 @@ paths.forEach((path, i) => {
         .filter((el) => el.type === 'arrow')
         .flatMap((el) => [el.from, el.to])
         .filter((end) => end.kind === 'pinned').length,
+      // Strokes land as one packed block of points, never a points array.
+      strokes: countBy(
+        landed.elements.filter((el) => el.type === 'freehand'),
+        (el) => ('points' in el ? 'unpacked' : 'packedPoints' in el ? 'packed' : 'none'),
+      ),
       invalid,
       report: landed.report,
       landMs: Math.round(performance.now() - t),
