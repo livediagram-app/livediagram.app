@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, createShape, penColourHex, type Element } from '@livediagram/document';
+import {
+  createFreehand,
+  createPath,
+  createShape,
+  penColourHex,
+  type Element,
+} from '@livediagram/document';
 import { DEFAULT_WHITEBOARD_PREFS } from './whiteboard-prefs';
 import {
   applyPenStyle,
@@ -107,6 +113,36 @@ describe('tabCustomColours', () => {
     expect(tabCustomColours(many)).toHaveLength(8);
     expect(tabCustomColours(many)[0]).toBe('#000011');
     expect(tabCustomColours([stroke()])).toEqual([]);
+  });
+});
+
+describe('tabCustomColours on imported boards', () => {
+  // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the custom colours of the
+  // tab's lines, arrows, paths and text too, so an imported board's own colours are one press away.
+  it('reads arrows, paths and text boxes, never named stock colours or fills', () => {
+    const els = [
+      {
+        ...createPath(
+          [
+            { x: 0, y: 0, mode: 'corner' },
+            { x: 9, y: 9, mode: 'corner' },
+          ],
+          false,
+        ),
+        strokeColor: '#868e96',
+      },
+      {
+        id: 'a',
+        type: 'arrow',
+        from: { kind: 'free', x: 0, y: 0 },
+        to: { kind: 'free', x: 9, y: 9 },
+        strokeColor: '#9c36b5',
+      },
+      { id: 't', type: 'text', x: 0, y: 0, width: 9, height: 9, textColor: '#0c8599' },
+      { id: 'n', type: 'text', x: 0, y: 0, width: 9, height: 9, penTextColour: 'blue' },
+      { ...createShape('square', 0, 0), fillColor: '#ffc9c9' },
+    ] as Element[];
+    expect(tabCustomColours(els)).toEqual(['#0c8599', '#9c36b5', '#868e96']);
   });
 });
 

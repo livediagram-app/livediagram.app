@@ -223,17 +223,16 @@ Derived from the spec's Multi-selection rules for any mix of kinds (a whole impo
   rows. Every other element is passed over: it is neither a target nor counted, and never empties the
   view of the rest. One pure function names the whole answer for a selection,
   `quickStyleApplicability(selected) => { targets: QuickStyleTarget[]; strokes: FreehandElement[] }`
-  (`apps/live/lib/quick-style-applicability.ts`), read by `quickStyleView`, `strokesPenStyle` and the
-  caption.
+  (`apps/live/lib/quick-style-applicability.ts`), read by the caption; `quickStyleView` and
+  `strokesPenStyle` apply the same two predicates.
 - **Named colours**: in `swatchValue`, a target whose role colour is unset but carries a stock name
   (`penColour` for stroke, `penTextColour` for text) has value `null` (it marks no swatch), never
   slot 0. `applyQuickStroke` removes `penColour`; `applyQuickTextColour` removes `penTextColour`;
   `clearQuickStyle` removes `penColour` and `penTextColour` (shapes, arrows, paths, text).
-- **Caption** (whiteboard only, `quickStyleCaption(targets, strokes)`): no styled element →
-  none; only strokes → the existing "Marker stroke" / "N marker strokes"; otherwise "1 element" /
-  "N elements" where N counts the distinct styled elements (targets plus strokes). The pen subject
-  keeps its own name for the pen in hand. It replaces `view.pen.subject.name` as the caption when
-  the selection mixes kinds.
+- **Caption** (whiteboard only, `quickStyleCaption(applicability)`): no marker stroke → none; only
+  strokes → "Marker stroke" / "N marker strokes"; strokes with other targets → "N elements", N the
+  targets plus the strokes. `useQuickStyle` sets it as `view.caption` on a selection; the panel shows
+  `view.caption ?? view.pen.subject.name`.
 - **Telemetry** is unchanged: the row's own token, once per choice.
 
 ## Style memory

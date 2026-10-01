@@ -257,10 +257,11 @@ over, never refused, so they never hide the panel from the rest.
   stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
   style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
   strokes; the others never touch a stroke.
-- **The caption** above the rows on a whiteboard names what they style: "Marker stroke" or
-  "3 marker strokes" when only strokes are styled, and the count of styled elements otherwise
-  ("12 elements"). Elements passed over are not counted. Power user mode leaves it out, as it
-  does every caption.
+- **The caption** above the rows on a whiteboard names what they style when marker strokes are
+  among it: "Marker stroke" or "3 marker strokes" when only strokes are styled, and the count of
+  styled elements when strokes mix with other kinds ("12 elements"). Elements passed over are not
+  counted, and a selection without strokes keeps no caption: its rows name themselves. Power user
+  mode leaves it out, as it does every caption.
 - **Stroke style on a mixed selection** of shapes and arrows offers the shape row (Solid / Dashed /
   Dotted): each of those means something for both kinds (arrows draw dotted lines too), whereas
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an

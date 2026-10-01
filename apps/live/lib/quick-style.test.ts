@@ -435,3 +435,75 @@ describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
     expect(quickStyleView([{ ...open, locked: true }], forest)).toBeNull();
   });
 });
+
+// docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
+// name marks no theme swatch, and a choice or Clear styles replaces it.
+describe('named stock colours', () => {
+  const theme = THEMES.find((t) => t.id === 'brand')!;
+  it('marks no swatch for a named stroke or text colour', () => {
+    const view = quickStyleView(
+      [shape('s', { penColour: 'blue' }), arrow('a', { penColour: 'blue' })],
+      theme,
+    )!;
+    expect(view.sections.stroke!.value).toBeNull();
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      penTextColour: 'red',
+    } as TextElement;
+    expect(quickStyleView([text], theme)!.sections.textColour!.value).toBeNull();
+  });
+
+  it('replaces the name when a swatch is chosen', () => {
+    const named = shape('s', { penColour: 'blue' });
+    const out = applyQuickStroke(named, theme, 0) as ShapeElement;
+    expect(out.penColour).toBeUndefined();
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      penTextColour: 'red',
+    } as TextElement;
+    expect((applyQuickTextColour(text, theme, 2) as TextElement).penTextColour).toBeUndefined();
+    const path = {
+      ...createPath(
+        [
+          { x: 0, y: 0, mode: 'corner' },
+          { x: 9, y: 9, mode: 'corner' },
+        ],
+        false,
+      ),
+      penColour: 'green' as const,
+    };
+    expect((applyQuickStroke(path, theme, 1) as typeof path).penColour).toBeUndefined();
+  });
+
+  it('clears names with Clear styles', () => {
+    const out = clearQuickStyle(
+      shape('s', { penColour: 'blue', penTextColour: 'red' }),
+      theme,
+    ) as ShapeElement;
+    expect(out.penColour).toBeUndefined();
+    expect(out.penTextColour).toBeUndefined();
+    expect(
+      (clearQuickStyle(arrow('a', { penColour: 'teal' }), theme) as ArrowElement).penColour,
+    ).toBeUndefined();
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      penTextColour: 'red',
+    } as TextElement;
+    expect((clearQuickStyle(text, theme) as TextElement).penTextColour).toBeUndefined();
+  });
+});

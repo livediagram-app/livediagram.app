@@ -61,19 +61,26 @@ export function isPenStroke(el: Element): el is FreehandElement {
   );
 }
 
+// The colour an element is drawn in, for the tab's custom colours: a marker stroke's, a shape's,
+// line's, arrow's or path's line, a text box's text. Fills are washes, never marker colours.
+function drawnColour(el: Element): string | undefined {
+  if (el.type === 'freehand') {
+    return el.penWidth !== undefined && el.pen !== 'highlighter' ? el.strokeColor : undefined;
+  }
+  if (el.type === 'shape' || el.type === 'arrow' || el.type === 'path') return el.strokeColor;
+  if (el.type === 'text') return el.textColor;
+  return undefined;
+}
+
 /**
  * The custom (hex) colours used on a whiteboard tab, most recently drawn first (the later in the
- * tab, the more recent), at most eight: its marker strokes' and its shapes' and lines' own colours.
+ * tab, the more recent), at most eight: the own colours of its marker strokes, shapes, lines,
+ * arrows, paths and text, imported ones included.
  */
 export function tabCustomColours(elements: readonly Element[]): string[] {
   const out: string[] = [];
   for (let i = elements.length - 1; i >= 0 && out.length < TAB_CUSTOM_COLOURS_MAX; i--) {
-    const el = elements[i]!;
-    const drawn =
-      (el.type === 'freehand' && el.penWidth !== undefined && el.pen !== 'highlighter') ||
-      el.type === 'shape' ||
-      el.type === 'arrow';
-    const colour = drawn ? (el as { strokeColor?: string }).strokeColor : undefined;
+    const colour = drawnColour(elements[i]!);
     if (!isCustomPenColour(colour)) continue;
     const hex = colour.toLowerCase();
     if (!out.includes(hex)) out.push(hex);

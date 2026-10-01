@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createFreehand, defaultScheme, type Element, type Tab } from '@livediagram/document';
+import {
+  createFreehand,
+  createShape,
+  defaultScheme,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import { DEFAULT_WHITEBOARD_PREFS, type WhiteboardPen } from '@/lib/whiteboard-prefs';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { whiteboardShapeIntent } from '@/lib/whiteboard-tool';
@@ -26,8 +32,9 @@ function setup(
   held: WhiteboardPen | null = DEFAULT_WHITEBOARD_PREFS.pens[1]!,
   toolIntent: PendingDraw | null = null,
   memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el },
+  initial: Element[] = [stroke],
 ) {
-  let elements: Element[] = [stroke];
+  let elements: Element[] = initial;
   const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements } as unknown as Tab;
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
@@ -91,6 +98,38 @@ describe('useQuickStyle pen rows', () => {
   });
 });
 
+// docs/specs/008-canvas/quick-style-panel.md "Multi-selection": any mix of kinds on a whiteboard.
+describe('useQuickStyle on a mixed whiteboard selection', () => {
+  const square = { ...createShape('square', 0, 0), id: 'q1', penColour: 'blue' } as Element;
+  const sticky = { id: 'n1', type: 'sticky', x: 0, y: 0, width: 9, height: 9 } as Element;
+  const memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el };
+
+  it('shows the marker rows and the shape rows, captioned by the styled count', () => {
+    const { result } = setup(['s1', 'q1', 'n1'], null, null, memory, [stroke, square, sticky]);
+    const view = result.current.view!;
+    expect(view.pen?.subject).toMatchObject({ kind: 'strokes', ids: ['s1'] });
+    expect(view.sections.stroke).toBeDefined();
+    // The shape's named blue marks no theme swatch.
+    expect(view.sections.stroke!.value).toBeNull();
+    expect(view.targetIds).toEqual(['q1']);
+    expect(view.caption).toBe('2 elements');
+  });
+
+  it('restyles only what each row fits, leaving the sticky as it was', () => {
+    const { result, commit, elements } = setup(['s1', 'q1', 'n1'], null, null, memory, [
+      stroke,
+      square,
+      sticky,
+    ]);
+    act(() => result.current.setStroke(0));
+    expect(commit).toHaveBeenCalledTimes(1);
+    const [s, q, n] = elements();
+    expect(s).toBe(stroke);
+    expect(n).toBe(sticky);
+    expect((q as { penColour?: string }).penColour).toBeUndefined();
+  });
+});
+
 describe('useQuickStyle for a tool in hand', () => {
   it('styles the next rectangle: remembered, nothing on the board changes', () => {
     const { result, commit, memory } = setup([], null, whiteboardShapeIntent('rectangle'));
@@ -111,6 +150,7 @@ describe('useQuickStyle for a tool in hand', () => {
 
   it('gives the selection priority over the tool', () => {
     const { result } = setup(['s1'], null, whiteboardShapeIntent('rectangle'));
-    expect(result.current.view?.caption).toBeUndefined();
+    // The selection's caption, never the tool's "Next rectangle".
+    expect(result.current.view?.caption).toBe('Marker stroke');
   });
 });

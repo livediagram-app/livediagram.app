@@ -19,6 +19,7 @@ import type {
 import { track } from '@/lib/telemetry';
 import { isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
 import { onWhiteboard } from '@/lib/quick-style-whiteboard';
+import { quickStyleApplicability, quickStyleCaption } from '@/lib/quick-style-applicability';
 import {
   applyPenStyle,
   heldPenStyle,
@@ -138,7 +139,12 @@ export function useQuickStyle(deps: {
     const pen =
       strokesPenStyle(selected, palette) ??
       (selected.length === 0 && held ? heldPenStyle(held, palette) : undefined);
-    return pen ? { ...(board ?? { targetIds: [], sections: {} }), pen } : board;
+    // A mixed selection's caption counts what the rows style (docs/specs/008-canvas/quick-style-panel.md
+    // "Multi-selection"); strokes alone keep the pen rows' own name.
+    const caption = quickStyleCaption(quickStyleApplicability(selected));
+    return pen
+      ? { ...(board ?? { targetIds: [], sections: {} }), pen, ...(caption ? { caption } : {}) }
+      : board;
   }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held, phantom, intent, palette]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.
