@@ -2,7 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
-import { noteServerDocumentFormat, resetDocumentFormatForTests } from '@/lib/document-format';
+import { noteServerDocumentFormat, resetServerReleaseForTests } from '@/lib/server-release';
 import { RELOAD_SAVE_WAIT_MS } from '@/lib/reload-when-saved';
 
 const track = vi.fn();
@@ -17,7 +17,7 @@ beforeEach(() => {
   track.mockClear();
 });
 afterEach(() => {
-  resetDocumentFormatForTests();
+  resetServerReleaseForTests();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });

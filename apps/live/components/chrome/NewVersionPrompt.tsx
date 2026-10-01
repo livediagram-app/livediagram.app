@@ -10,8 +10,8 @@ import { Button } from '@livediagram/ui';
 import {
   newVersionAvailable,
   serverDocumentFormat,
-  subscribeDocumentFormat,
-} from '@/lib/document-format';
+  subscribeServerRelease,
+} from '@/lib/server-release';
 import { reloadWhenSaved } from '@/lib/reload-when-saved';
 import { track } from '@/lib/telemetry';
 
@@ -32,7 +32,7 @@ export function NewVersionPrompt({
   hasUnsavedChanges: () => boolean;
   reload?: () => void;
 }) {
-  const server = useSyncExternalStore(subscribeDocumentFormat, getServerFormat, () => null);
+  const server = useSyncExternalStore(subscribeServerRelease, getServerFormat, () => null);
   const [phase, setPhase] = useState<Phase>('offered');
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
   const announced = useRef(false);
