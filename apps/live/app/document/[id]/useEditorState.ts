@@ -57,6 +57,7 @@ import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import { useCommentPicturesLoader } from '@/lib/comment-pictures';
+import { useBoardSceneInsert } from '@/hooks/canvas/useBoardSceneInsert';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -1959,6 +1960,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importSceneIntoActiveTab,
+    importScenesAsNewWhiteboards,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
@@ -2916,6 +2919,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onPastePhoto: readPhotoFile,
     canvasPointerRef,
   });
+  // Board scenes pasted or dropped from another tool (docs/specs/020-import-export/board-scene.md
+  // "In the editor"): one commit at the pointer, selected, with its notice.
+  const boardSceneInsert = useBoardSceneInsert({
+    activeTab,
+    editsBlocked,
+    commit,
+    setSelectedId,
+    setMultiSelectedIds,
+    canvasPointerRef,
+    getViewportCenter,
+    ownerId: selfParticipant.id,
+    documentId,
+  });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
   // the toggle telemetry BEFORE the state change (matches the dark-mode /
@@ -3047,6 +3063,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     copySelection,
     pasteFromClipboard,
     hasClipboard,
+    boardSceneInsert,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
     // tab bar, panels and palette all gone, so a projector shows the document
@@ -3261,6 +3278,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     imagePickerOpenFor,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importSceneIntoActiveTab,
+    importScenesAsNewWhiteboards,
     isPinchingRef,
     isReadOnly,
     laserTrailRows,

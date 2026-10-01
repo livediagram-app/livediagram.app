@@ -14,6 +14,7 @@ import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
@@ -70,6 +71,7 @@ export function EditorView() {
   const {
     pasteFromClipboard,
     hasClipboard,
+    boardSceneInsert,
     activeId,
     activeTab,
     addTab,
@@ -522,6 +524,11 @@ export function EditorView() {
             {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md) — replaces the old centre-of-canvas card
           with a subdued, dismissible bottom banner so a blank document reads as
           intentionally blank. */}
+            {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
+            <BoardSceneNotice
+              notice={boardSceneInsert.notice}
+              onClose={boardSceneInsert.dismissNotice}
+            />
             {showEmptyCanvasBanner ? (
               <EmptyCanvasBanner
                 tabName={activeTab.name}

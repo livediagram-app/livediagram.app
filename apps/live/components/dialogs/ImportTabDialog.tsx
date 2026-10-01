@@ -5,7 +5,8 @@ import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
-import type { ImportImageProgress, ImportImageReport as Report } from '@/lib/import-images';
+import type { ImportImageProgress } from '@/lib/import-images';
+import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
 import { DialogHeader } from './DialogHeader';
 import { Glyph } from '@livediagram/ui';
@@ -82,6 +83,17 @@ const FORMATS: {
 // with a warning before the format cards. Every format is text, so each card
 // opens the same two-step panel: paste/write the content, or pick a file
 // (docs/specs/020-import-export/mermaid.md). Errors render inline; on success the dialog closes.
+type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
+
+// An import shows its report when it met images, changed or dropped anything, or left a board out.
+function needsReport(outcome: DoneOutcome): boolean {
+  return (
+    outcome.images !== undefined ||
+    (outcome.scene !== undefined && reportHasLosses(outcome.scene)) ||
+    (outcome.failures?.length ?? 0) > 0
+  );
+}
+
 export function ImportTabDialog({
   tabName,
   onImportFile,
@@ -89,9 +101,9 @@ export function ImportTabDialog({
   onClose,
 }: ImportTabDialogProps) {
   const [active, setActive] = useState<Format | null>(null);
-  // Set once an import that met images has replaced the tab: the dialog then
-  // shows how they came across instead of closing.
-  const [report, setReport] = useState<Report | null>(null);
+  // Set once an import that met images, or brought a board across with changes, has landed: the
+  // dialog then shows how it came across instead of closing.
+  const [report, setReport] = useState<DoneOutcome | null>(null);
   const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
 
   return (
@@ -100,7 +112,9 @@ export function ImportTabDialog({
         title="Import to tab"
         subtitle={
           report
-            ? "Here's how your images came across."
+            ? report.scene
+              ? "Here's how your board came across."
+              : "Here's how your images came across."
             : activeFormat
               ? `Paste your ${activeFormat.title}, or import a file.`
               : 'Pick a format to import into the current tab.'
@@ -111,7 +125,12 @@ export function ImportTabDialog({
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {report ? (
-          <ImportImageReport report={report} onDone={onClose} />
+          <ImportImageReport
+            report={report.images}
+            scene={report.scene}
+            failures={report.failures}
+            onDone={onClose}
+          />
         ) : (
           <ImportChooser
             tabName={tabName}
@@ -119,7 +138,7 @@ export function ImportTabDialog({
             onPick={setActive}
             onImportFile={onImportFile}
             onImportText={onImportText}
-            onDone={(outcome) => (outcome.images ? setReport(outcome.images) : onClose())}
+            onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
           />
         )}
       </div>

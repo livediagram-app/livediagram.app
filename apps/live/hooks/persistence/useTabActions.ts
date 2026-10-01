@@ -24,6 +24,7 @@ import {
 } from '@livediagram/document';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintElementIds, useTabImport } from './useTabImport';
 import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
@@ -143,7 +144,7 @@ export function useTabActions(deps: TabActionsDeps) {
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
   // lives in useTabImport; remintElementIds is shared with the
   // cross-document link below.
-  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
+  const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
     tabs,
     ownerId,
     documentId,
@@ -153,6 +154,23 @@ export function useTabActions(deps: TabActionsDeps) {
     setEditingId,
     setFormatSourceId,
     setImportError,
+    requestFit,
+  });
+  // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
+  // active tab, or open each board as a new whiteboard tab.
+  const { importSceneIntoActiveTab, importScenesAsNewWhiteboards } = useBoardSceneImport({
+    tabs,
+    activeId,
+    ownerId,
+    documentId,
+    createTab,
+    commitTabs,
+    markTabLoaded,
+    setActiveId,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    replaceActiveTabContent,
     requestFit,
   });
 
@@ -366,6 +384,8 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importSceneIntoActiveTab,
+    importScenesAsNewWhiteboards,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
