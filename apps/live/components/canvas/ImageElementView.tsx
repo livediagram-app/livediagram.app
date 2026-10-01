@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { BORDER_RADIUS_PX, type ImageElement } from '@livediagram/document';
+import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx, type ImageElement } from '@livediagram/document';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { Glyph } from '@livediagram/ui';
 
@@ -58,7 +58,13 @@ function ImageElementViewImpl({
   // base `rounded` class) on every state so the placeholder + skeleton match
   // the final shape. `objectFit` defaults to 'contain' (whole image shows);
   // the hero + avatar set 'cover' so a photo fills the box / circle.
-  const radius = element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 4;
+  // Never more than a quarter of the shorter side (docs/specs/008-canvas/corner-radius.md).
+  const radius = cornerRadiusPx(
+    element.borderRadius,
+    element.width,
+    element.height,
+    IMAGE_DEFAULT_RADIUS_PX,
+  );
   const radiusStyle = { borderRadius: radius };
   const fit = element.objectFit ?? 'contain';
 
