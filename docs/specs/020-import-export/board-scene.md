@@ -206,15 +206,16 @@ A board of thousands of strokes must fit one tab (the api's tab cap,
 `MAX_TAB_BYTES`, just under 2 MB: [Tab size](../015-api/api.md#tab-size)), so
 the landing writes no more than the drawing needs:
 
-- **Points to the error that cannot be seen.** A stroke's or path's points are
-  stored normalised to its box; each is rounded to the fewest decimals that
-  keep its position within `LANDED_POINT_TOLERANCE_PX` (a twentieth of a canvas
-  pixel) at that element's own size. A 10 px stroke needs two or three
-  decimals, a 4,000 px one five; never a fixed number for every size.
-- **Pressures to a thousandth**, which no pen reports more finely.
-- **Boxes** (x, y, width, height) to a hundredth of a canvas pixel.
+- **Strokes as packed points.** Every landed stroke, from every source, is
+  written through the one stroke points codec
+  ([Stroke points](../006-document/stroke-points.md)): its box, and its points
+  and pressures as one packed block, quantised by the codec (a point within
+  1 / 131,070 of its box, a pressure within 1 / 510). The landing rounds no
+  point and no pressure of its own.
+- **Boxes** (x, y, width, height) of the other kinds, and an arrow's free ends
+  and bends, to a hundredth of a canvas pixel.
 - **No defaults written out.** A field the renderer reads as its default when
-  absent is left absent: a streamline of 0, a border at the default width, full
+  absent is left absent: no streamline, a border at the default width, full
   opacity, a solid line. What lands draws exactly as if it had been written.
 
 ## Limits and rejections

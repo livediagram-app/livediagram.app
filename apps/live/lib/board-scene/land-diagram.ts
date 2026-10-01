@@ -4,6 +4,7 @@
 // buckets, ink as a pencil freehand, multi-point lines as straight-edged freehands.
 import {
   MAX_FREEHAND_POINTS,
+  packFreehandPoints,
   type BorderStroke,
   type FreehandElement,
   type ShapeElement,
@@ -11,7 +12,7 @@ import {
   type TextElement,
 } from '@livediagram/document';
 import { colourAlpha } from './colour';
-import { boxOfPoints, commonFields, endsMeet, limitPoints } from './common';
+import { commonFields, endsMeet, limitPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';
 import { CLOSED_END_EPSILON_PX, strokeOpacity } from './land-marks';
 import type {
@@ -86,7 +87,7 @@ export function diagramFreehand(
   return {
     id,
     type: 'freehand',
-    ...boxOfPoints(points),
+    ...packFreehandPoints(points),
     closed: meet || item.closed === true,
     fillColor: fillOf(item.fill),
     ...strokeFields(item.stroke, ctx),

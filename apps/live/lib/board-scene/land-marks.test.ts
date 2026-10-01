@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAX_FREEHAND_POINTS,
+  STROKE_POINT_MAX_ERROR,
+  STROKE_PRESSURE_MAX_ERROR,
+  freehandCanvasPoints,
+  freehandNormalisedPoints,
+  freehandPressures,
   isValidElement,
   pathAnchors,
   penColourHex,
@@ -42,15 +47,19 @@ describe('landInk', () => {
       createLandContext(),
     );
     expect(isValidElement(el)).toBe(true);
-    expect(el).toMatchObject({ type: 'freehand', closed: false, penWidth: 1, streamline: 0 });
+    expect(el).toMatchObject({ type: 'freehand', closed: false, penWidth: 1 });
+    // No streamline written: absent is none, the renderer's own default.
+    expect('streamline' in el).toBe(false);
     expect(el.strokeColor).toBeUndefined();
     expect(el.penColour).toBeUndefined();
-    expect(el.pressures).toBeUndefined();
+    expect(freehandPressures(el)).toBeUndefined();
+    // The codec's box (docs/specs/006-document/stroke-points.md): the points' bounds padded a
+    // pixel and grown to whole px.
     expect({ x: el.x, y: el.y, width: el.width, height: el.height }).toEqual({
-      x: 10,
-      y: 10,
-      width: 30,
-      height: 20,
+      x: 9,
+      y: 9,
+      width: 32,
+      height: 22,
     });
   });
 
@@ -66,7 +75,9 @@ describe('landInk', () => {
       'id',
       createLandContext(),
     );
-    expect(el.pressures).toEqual([0.2, 1]);
+    const pressures = freehandPressures(el)!;
+    expect(pressures[0]).toBeCloseTo(0.2, 2);
+    expect(pressures[1]).toBe(1);
     expect(el.streamline).toBe(0.5);
     const partial = landInk(
       ink({
@@ -78,7 +89,7 @@ describe('landInk', () => {
       'id',
       createLandContext(),
     );
-    expect(partial.pressures).toBeUndefined();
+    expect(freehandPressures(partial)).toBeUndefined();
   });
 
   it('lands a stock colour by name and a custom one as its hex', () => {
@@ -94,8 +105,9 @@ describe('landInk', () => {
 
   it('returns a closed stroke to its start, once', () => {
     const el = landInk(ink({ closed: true }), 'i', createLandContext());
-    expect(el.points).toHaveLength(4);
-    expect(el.points[3]).toEqual(el.points[0]);
+    const pts = freehandNormalisedPoints(el);
+    expect(pts).toHaveLength(4);
+    expect(pts[3]).toEqual(pts[0]);
     const already = landInk(
       ink({
         closed: true,
@@ -109,7 +121,7 @@ describe('landInk', () => {
       'i',
       createLandContext(),
     );
-    expect(already.points).toHaveLength(4);
+    expect(freehandNormalisedPoints(already)).toHaveLength(4);
   });
 
   it('draws multicolour ink in its first stop, says so, and multiplies opacity', () => {
@@ -181,9 +193,34 @@ describe('landInk', () => {
     const points = Array.from({ length: MAX_FREEHAND_POINTS + 50 }, (_, i) => ({ x: i, y: i % 7 }));
     const ctx = createLandContext();
     const el = landInk(ink({ points }), 'i', ctx);
-    expect(el.points.length).toBeLessThanOrEqual(MAX_FREEHAND_POINTS);
+    expect(freehandNormalisedPoints(el).length).toBeLessThanOrEqual(MAX_FREEHAND_POINTS);
     expect(isValidElement(el)).toBe(true);
     expect(ctx.notes()).toEqual([{ rule: LANDING_RULES.longStroke, count: 1, kind: 'degraded' }]);
+  });
+});
+
+// docs/specs/006-document/stroke-points.md: the landing writes a stroke through the codec, so its
+// precision is the codec's: every point within STROKE_POINT_MAX_ERROR of its box, every pressure
+// within STROKE_PRESSURE_MAX_ERROR.
+describe('landed ink precision', () => {
+  it('lands every point and pressure within the codec’s guarantee', () => {
+    const points = Array.from({ length: 200 }, (_, i) => ({
+      x: 1234.5678 + i * 7.123,
+      y: 987.654 + Math.sin(i / 9) * 321.987,
+      p: 0.3 + 0.4 * Math.abs(Math.sin(i / 4)),
+    }));
+    const el = landInk(ink({ points }), 'i', createLandContext());
+    const drawn = freehandCanvasPoints(el);
+    const pressures = freehandPressures(el)!;
+    points.forEach((p, i) => {
+      expect(Math.abs(drawn[i]!.x - p.x)).toBeLessThanOrEqual(
+        STROKE_POINT_MAX_ERROR * el.width + 1e-9,
+      );
+      expect(Math.abs(drawn[i]!.y - p.y)).toBeLessThanOrEqual(
+        STROKE_POINT_MAX_ERROR * el.height + 1e-9,
+      );
+      expect(Math.abs(pressures[i]! - p.p)).toBeLessThanOrEqual(STROKE_PRESSURE_MAX_ERROR + 1e-9);
+    });
   });
 });
 

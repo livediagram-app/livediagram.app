@@ -209,15 +209,15 @@ describe('landBoardScene', () => {
   });
 });
 
-// docs/specs/020-import-export/board-scene.md "Compact output": a big hand-drawn board writes
-// about 30 bytes a point (a full double is 18 digits alone), so thousands of strokes fit a tab.
+// docs/specs/020-import-export/board-scene.md "Compact output": a big hand-drawn board lands its
+// points through the stroke points codec, so thousands of strokes fit a tab.
 describe('a large board', () => {
-  it('lands compactly: about 30 bytes a pressure point', () => {
+  it('lands packed: under 8 bytes a pressure point, the codec’s 5 as base64 plus the element', () => {
     const scene = syntheticInkBoard(200, 120);
     const r = landBoardScene(scene, options());
     if (!r.ok) throw new Error('rejected');
     const bytes = JSON.stringify(r.elements).length;
-    expect(bytes / (200 * 120)).toBeLessThan(36);
+    expect(bytes / (200 * 120)).toBeLessThan(8);
     expect(r.elements.every((el) => !('streamline' in el))).toBe(true);
   });
 });

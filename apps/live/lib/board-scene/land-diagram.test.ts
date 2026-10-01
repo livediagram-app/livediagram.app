@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   isValidElement,
   type ArrowElement,
+  STROKE_POINT_MAX_ERROR,
+  freehandCanvasPoints,
+  freehandNormalisedPoints,
   type FreehandElement,
   type ShapeElement,
   type StickyElement,
@@ -169,7 +172,7 @@ describe('the diagram profile', () => {
       closed: true,
       fillColor: '#b2f2bb',
     });
-    expect(p!.points).toHaveLength(3);
+    expect(freehandNormalisedPoints(p!)).toHaveLength(3);
   });
 
   it('maps ink to a normalised pencil freehand, closed when its ends meet', () => {
@@ -197,19 +200,23 @@ describe('the diagram profile', () => {
         fill: { hex: '#ffd43b' },
       },
     ]) as FreehandElement[];
+    // The codec's box (docs/specs/006-document/stroke-points.md): bounds padded a pixel, whole px.
     expect(f).toMatchObject({
       closed: false,
-      x: 10,
-      y: 10,
-      width: 80,
-      height: 20,
+      x: 9,
+      y: 9,
+      width: 82,
+      height: 22,
       strokeColor: '#1971c2',
     });
     expect(f!.straightEdges).toBeUndefined();
     expect(f!.penWidth).toBeUndefined();
-    expect(f!.points[1]).toEqual({ nx: 0.5, ny: 1 });
+    const middle = freehandCanvasPoints(f!)[1]!;
+    // Within the codec's guarantee: 1 / 131,070 of the box on each axis.
+    expect(Math.abs(middle.x - 50)).toBeLessThanOrEqual(STROKE_POINT_MAX_ERROR * f!.width);
+    expect(Math.abs(middle.y - 30)).toBeLessThanOrEqual(STROKE_POINT_MAX_ERROR * f!.height);
     expect(g).toMatchObject({ closed: true, fillColor: '#ffd43b' });
-    expect(g!.points).toHaveLength(3);
+    expect(freehandNormalisedPoints(g!)).toHaveLength(3);
   });
 
   it('pins arrows and carries their label', () => {

@@ -46,36 +46,6 @@ export function commonFields(
   };
 }
 
-/**
- * The box around points, at least 1 px each way (a flat line keeps its centre), and the points
- * normalised into it: the freehand storage shape.
- */
-export function boxOfPoints(points: readonly Point[]): {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  points: { nx: number; ny: number }[];
-} {
-  const xs = points.map((p) => p.x);
-  const ys = points.map((p) => p.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const width = Math.max(1, maxX - minX);
-  const height = Math.max(1, maxY - minY);
-  const x = minX - (width - (maxX - minX)) / 2;
-  const y = minY - (height - (maxY - minY)) / 2;
-  return {
-    x,
-    y,
-    width,
-    height,
-    points: points.map((p) => ({ nx: (p.x - x) / width, ny: (p.y - y) / height })),
-  };
-}
-
 /** At most `max` points, sampled evenly along the list with both ends kept. */
 export function limitPoints<P extends ScenePoint | Point>(points: readonly P[], max: number): P[] {
   if (points.length <= max) return points as P[];

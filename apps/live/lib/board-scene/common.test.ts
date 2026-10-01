@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createLandContext, LANDING_RULES } from './context';
-import { boxOfPoints, commonFields, limitPoints, normaliseRotation } from './common';
+import { commonFields, limitPoints, normaliseRotation } from './common';
 
 // docs/specs/020-import-export/board-scene.md "Kinds": rotation, locks and links carry over.
 describe('normaliseRotation', () => {
@@ -42,26 +42,6 @@ describe('commonFields', () => {
     expect(commonFields({ key: 'b', link: 'javascript:alert(1)' }, ctx, 1).link).toBeUndefined();
     expect(commonFields({ key: 'c', link: 'data:text/html,x' }, ctx, 1).link).toBeUndefined();
     expect(ctx.notes()).toEqual([{ rule: LANDING_RULES.unsafeLink, count: 2, kind: 'degraded' }]);
-  });
-});
-
-describe('boxOfPoints', () => {
-  it('normalises points into a box at least 1 px each way', () => {
-    expect(
-      boxOfPoints([
-        { x: 10, y: 20 },
-        { x: 30, y: 20 },
-      ]),
-    ).toEqual({
-      x: 10,
-      y: 19.5,
-      width: 20,
-      height: 1,
-      points: [
-        { nx: 0, ny: 0.5 },
-        { nx: 1, ny: 0.5 },
-      ],
-    });
   });
 });
 

@@ -3,6 +3,7 @@
 import {
   MAX_FREEHAND_POINTS,
   MAX_PATH_NODES,
+  packFreehandPoints,
   pathGeometry,
   penColourHex,
   type ArrowElement,
@@ -11,7 +12,7 @@ import {
   type PathElement,
 } from '@livediagram/document';
 import { colourAlpha, lineColourFields, resolveFill } from './colour';
-import { boxOfPoints, commonFields, endsMeet, limitPoints, turnPoints } from './common';
+import { commonFields, endsMeet, limitPoints, turnPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';
 import type { SceneInk, ScenePoint, ScenePolyline, SceneStroke } from './scene';
 import { arrowWidthPx, borderStrokeOf, markerWidthPx } from './width';
@@ -43,8 +44,13 @@ export function landInk(item: SceneInk, id: string, ctx: LandContext): FreehandE
   let points: ScenePoint[] = limitPoints(item.points, MAX_FREEHAND_POINTS - 1);
   if (points.length < item.points.length) ctx.degrade(LANDING_RULES.longStroke);
   if (item.closed && !endsMeet(points, CLOSED_END_EPSILON_PX)) points = [...points, points[0]!];
-  const box = boxOfPoints(points);
   const pressured = points.every((p) => p.p !== undefined && Number.isFinite(p.p));
+  // The one writer of a stroke's points (docs/specs/006-document/stroke-points.md): its box and the
+  // packed block, quantised by the codec.
+  const packed = packFreehandPoints(
+    points,
+    pressured && !item.highlighter ? points.map((p) => Math.min(1, Math.max(0, p.p!))) : undefined,
+  );
   const resolved = ctx.colour(colour);
   const common = commonFields(item, ctx, strokeOpacity(stroke, colour));
   if (item.highlighter) {
@@ -58,7 +64,7 @@ export function landInk(item: SceneInk, id: string, ctx: LandContext): FreehandE
     return {
       id,
       type: 'freehand',
-      ...box,
+      ...packed,
       closed: false,
       pen: 'highlighter',
       penWidth: stroke.widthPx > 0 ? stroke.widthPx : markerWidthPx(stroke.widthPx),
@@ -69,11 +75,13 @@ export function landInk(item: SceneInk, id: string, ctx: LandContext): FreehandE
   return {
     id,
     type: 'freehand',
-    ...box,
+    ...packed,
     closed: false,
     penWidth: markerWidthPx(stroke.widthPx),
-    streamline: item.streamline !== undefined && item.streamline > 0 ? item.streamline : 0,
-    ...(pressured ? { pressures: points.map((p) => Math.min(1, Math.max(0, p.p!))) } : {}),
+    // Absent reads as none, the renderer's default (freehandPenStroke).
+    ...(item.streamline !== undefined && item.streamline > 0
+      ? { streamline: item.streamline }
+      : {}),
     ...lineColourFields(resolved),
     ...common,
   };
