@@ -4,7 +4,7 @@
 // shown only while the board has custom colours to snap, naming how many, with one button that
 // snaps them all to stock colours. Afterwards it says what happened, until the flyout closes.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SnapColoursApi } from '@/hooks/canvas/useSnapColours';
 import { TAB_CUSTOM_COLOURS_MAX } from '@/lib/quick-style-pen';
 import { FlyoutHeading } from './WhiteboardFlyout';
@@ -15,6 +15,11 @@ export function SnapColoursSection({ snap }: { snap: SnapColoursApi }) {
   const { colours, blocked } = snap;
   // The last snap: how many colours, and the board's colours as they were when it was pressed.
   const [done, setDone] = useState<{ count: number; from: string[] } | null>(null);
+  // The button goes once pressed: the focus moves to the confirmation, so it is not lost.
+  const statusRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (done) statusRef.current?.focus();
+  }, [done]);
   // The board has custom colours again since the snap (an undo, a peer): offer them afresh.
   if (done && colours.length > 0 && colours !== done.from) setDone(null);
   if (colours.length === 0 && !done) return null;
@@ -56,7 +61,12 @@ export function SnapColoursSection({ snap }: { snap: SnapColoursApi }) {
         </div>
       )}
       {/* Present while the offer shows, so the confirmation is announced when it lands. */}
-      <p role="status" className="text-sm text-slate-700 dark:text-slate-200">
+      <p
+        ref={statusRef}
+        role="status"
+        tabIndex={-1}
+        className="rounded text-sm text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-200"
+      >
         {done ? `${customColours(done.count)} snapped to stock colours` : ''}
       </p>
     </div>

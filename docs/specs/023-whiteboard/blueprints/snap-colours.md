@@ -85,7 +85,8 @@ A kind gaining a named colour (text colour, path stroke) adds one row; nothing e
   `blocked`.
 - Done copy: "1 custom colour snapped to stock colours" / "N custom colours snapped to stock
   colours", in a `role="status"` paragraph that is present (empty) in the offer state so the
-  announcement is polite and reliable.
+  announcement is polite and reliable. The button goes once pressed, so the focus moves to that
+  paragraph (`tabIndex={-1}`) instead of being lost.
 
 ## Interfaces and contracts
 
@@ -144,7 +145,8 @@ export function snapTabColours(
 ## Accessibility
 
 - Button reachable by Tab inside the flyout, accessible name "Snap to stock colours"; the count
-  sentence is plain text in the group; result announced by `role="status"`. Swatches are
+  sentence is plain text in the group; result announced by `role="status"`. After a press the focus
+  moves to that status, since the button is gone. Swatches are
   decorative. Text uses the flyouts' existing slate colours (AA in light and dark).
 
 ## Web Experience
@@ -160,21 +162,21 @@ export function snapTabColours(
 
 ## Testing
 
-| Rule                                                       | Test                                           |
-| ---------------------------------------------------------- | ---------------------------------------------- |
-| Each stock hue's own colours map to it                     | `pen-colours.test.ts` "nearestPenColour" table |
-| Neutrals (black, white, greys, slate) map to Ink           | same                                           |
-| Near-boundary hues go to the nearer; ties to the earlier   | same                                           |
-| Invalid input is null; case-insensitive                    | same                                           |
-| Each field-table row snaps; Ink removes the named field    | `snap-colours.test.ts`                         |
-| Untouched elements by identity; counts                     | same                                           |
-| Highlighter, stock, ink, locked, skipped, fills, text kept | same                                           |
-| `strokeSwatch` cleared                                     | same                                           |
-| Snappable colours: distinct, lower-cased, newest first     | same                                           |
-| Hook: one commit, telemetry, blocked no-op                 | `useSnapColours.test.tsx`                      |
-| Section: hidden, offer copy, press, done status, disabled  | `SnapColoursSection.test.tsx`                  |
-| Settings flyout shows the section only with custom colours | `WhiteboardDock.test.tsx`                      |
-| End to end: snap, undo, light and dark                     | Playwright run (S4), synthesised board         |
+| Rule                                                       | Test                                            |
+| ---------------------------------------------------------- | ----------------------------------------------- |
+| Each stock hue's own colours map to it                     | `pen-colours.test.ts` "nearestPenColour" table  |
+| Neutrals (black, white, greys, slate) map to Ink           | same                                            |
+| Near-boundary hues go to the nearer; ties to the earlier   | same                                            |
+| Invalid input is null; case-insensitive                    | same                                            |
+| Each field-table row snaps; Ink removes the named field    | `snap-colours.test.ts`                          |
+| Untouched elements by identity; counts                     | same                                            |
+| Highlighter, stock, ink, locked, skipped, fills, text kept | same                                            |
+| `strokeSwatch` cleared                                     | same                                            |
+| Snappable colours: distinct, lower-cased, newest first     | same                                            |
+| Hook: one commit, telemetry, blocked no-op                 | `useSnapColours.test.tsx`                       |
+| Section: hidden, offer copy, press, done status, disabled  | `SnapColoursSection.test.tsx`                   |
+| Settings flyout shows the section only with custom colours | `WhiteboardDock.test.tsx`                       |
+| End to end: snap, undo, light and dark                     | `apps/live/e2e/whiteboard-snap-colours.spec.ts` |
 
 ## Constants and configuration
 
