@@ -41,3 +41,4 @@ One row per default applied where a spec is silent or qualitative.
 | X3  | excalidraw-import     | Element opacity on a scene without an opacity slot                      | Multiplied into every colour the element paints                                                 |
 | X4  | excalidraw-import     | Font of families outside hand-drawn and code                            | `sans`                                                                                          |
 | X5  | excalidraw-import     | Paste of Excalidraw text that fails to read                             | Error toast with the rejection's message; nothing lands                                         |
+| X6  | excalidraw-import     | Fill of a sticky note whose colour cannot be read                       | `#ffdf6b`, Excalidraw's sticky yellow                                                           |
