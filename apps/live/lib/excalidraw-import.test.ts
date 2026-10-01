@@ -7,6 +7,11 @@ import type {
   ShapeElement,
   TextElement,
 } from '@livediagram/document';
+import {
+  encodeStrokePoints,
+  freehandNormalisedPoints,
+  strokePointCount,
+} from '@livediagram/document';
 
 // Minimal scene wrapper — only the fields the importer reads.
 const scene = (elements: unknown[], appState?: Record<string, unknown>) =>
@@ -380,7 +385,7 @@ describe('arrow + line mapping', () => {
     expect(poly.type).toBe('freehand');
     expect(poly.straightEdges).toBe(true);
     expect(poly.closed).toBe(true);
-    expect(poly.points).toHaveLength(3); // closing duplicate dropped
+    expect(strokePointCount(poly.packedPoints)).toBe(3); // closing duplicate dropped
     expect(poly.fillColor).toBe('#b2f2bb');
   });
 
@@ -407,8 +412,10 @@ describe('arrow + line mapping', () => {
     expect(fh.closed).toBe(false);
     expect(fh.straightEdges).toBeUndefined();
     expect(fh).toMatchObject({ x: 10, y: 10, width: 80, height: 20 });
-    expect(fh.points[0]).toEqual({ nx: 0, ny: 0 });
-    expect(fh.points[1]).toEqual({ nx: 0.5, ny: 1 });
+    const [first, second] = freehandNormalisedPoints(fh);
+    expect(first).toEqual({ nx: 0, ny: 0 });
+    expect(second!.nx).toBeCloseTo(0.5, 4);
+    expect(second!.ny).toBe(1);
   });
 
   it('closes a freedraw stroke whose ends coincide', () => {
@@ -441,7 +448,7 @@ describe('arrow + line mapping', () => {
     // Still a pencil stroke, not a polygon: corners stay smoothed.
     expect(fh.straightEdges).toBeUndefined();
     // The repeated closing point is dropped rather than kept as a sample.
-    expect(fh.points).toHaveLength(3);
+    expect(strokePointCount(fh.packedPoints)).toBe(3);
   });
 
   it('round-trips a closed pencil sketch through export and back', () => {
@@ -458,11 +465,11 @@ describe('arrow + line mapping', () => {
       height: 80,
       closed: true,
       fillColor: '#ffd43b',
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 0.5 },
         { nx: 0.4, ny: 1 },
-      ],
+      ]),
     } as FreehandElement;
 
     const r = buildElementsFromExcalidraw(
@@ -475,7 +482,7 @@ describe('arrow + line mapping', () => {
     expect(back.straightEdges).toBeUndefined();
     // Sample count preserved: the closing point the exporter appends is
     // dropped again on the way in, not kept as a fourth sample.
-    expect(back.points).toHaveLength(3);
+    expect(strokePointCount(back.packedPoints)).toBe(3);
   });
 
   it('attaches a bound label to an arrow', () => {

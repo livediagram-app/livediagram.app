@@ -3,6 +3,7 @@
 // and the pieces of a stroke that survive a Partial erase. Pure; canvas coords.
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from './border-style';
 import { createFreehand } from './factories';
+import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';
 import type { FreehandElement, PathElement } from './index';
 import { pathWorldAnchors } from './path-element';
@@ -63,7 +64,7 @@ const ANNOTATION_FIELDS = [
 
 /** The stroke's polyline in canvas coords, with any rotation baked in. */
 export function freehandAbsolutePoints(el: FreehandElement): Point[] {
-  const pts = el.points.map((p) => ({ x: el.x + p.nx * el.width, y: el.y + p.ny * el.height }));
+  const pts = freehandCanvasPoints(el);
   const deg = el.rotation ?? 0;
   if (deg % 360 === 0) return pts;
   const rad = (deg * Math.PI) / 180;
@@ -82,7 +83,9 @@ function inkHalfWidth(el: FreehandElement): number {
   if (el.penWidth === undefined)
     return BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE] / 2;
   // A pen stroke is widest where it was pressed hardest.
-  const hardest = el.pressures?.length ? Math.max(...el.pressures) : PEN_MID_PRESSURE;
+  const { pressures } = freehandStrokePoints(el);
+  let hardest = pressures?.length ? 0 : PEN_MID_PRESSURE;
+  if (pressures) for (const p of pressures) if (p > hardest) hardest = p;
   return penPressureWidth(el.penWidth, hardest) / 2;
 }
 
@@ -230,7 +233,7 @@ export function eraseStrokePart(
   r: number,
   mintId: () => string,
 ): FreehandElement[] | null {
-  const pressures = el.pressures?.length === el.points.length ? el.pressures : undefined;
+  const { pressures } = freehandStrokePoints(el);
   const raw: InkPoint[] = freehandAbsolutePoints(el).map((q, i) =>
     pressures ? { ...q, p: pressures[i]! } : q,
   );
@@ -277,8 +280,11 @@ export function eraseStrokePart(
   const style = pickFields(el, STYLE_FIELDS);
   const annotations = pickFields(el, ANNOTATION_FIELDS);
   return kept.map((points, i) => ({
-    ...createFreehand(points, false),
-    ...(pressures ? { pressures: points.map((q) => q.p ?? PEN_MID_PRESSURE) } : {}),
+    ...createFreehand(
+      points,
+      false,
+      pressures ? points.map((q) => q.p ?? PEN_MID_PRESSURE) : undefined,
+    ),
     ...style,
     ...(i === longest ? annotations : {}),
     id: mintId(),

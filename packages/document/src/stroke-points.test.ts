@@ -6,7 +6,6 @@ import {
   STROKE_PRESSURE_MAX_ERROR,
   encodeStrokePoints,
   parseStrokePoints,
-  quantiseStrokePoints,
   strokePointCount,
   type NormalisedPoint,
   type StrokePoints,
@@ -188,18 +187,6 @@ describe('parseStrokePoints', () => {
     const packed = packedOf(bytes);
     expect(packed.length).toBeLessThanOrEqual(MAX_PACKED_POINTS_LENGTH);
     expect(parseStrokePoints(packed)).toEqual({ ok: false, rejection: 'too-many-points' });
-  });
-});
-
-describe('quantiseStrokePoints', () => {
-  it('gives exactly what decoding the encoded block gives', () => {
-    const points = wobble(120);
-    const pressures = points.map((p) => p.ny);
-    const direct = quantiseStrokePoints(points, pressures);
-    const viaBlock = decoded(encodeStrokePoints(points, pressures));
-    expect([...direct.nx]).toEqual([...viaBlock.nx]);
-    expect([...direct.ny]).toEqual([...viaBlock.ny]);
-    expect([...direct.pressures!]).toEqual([...viaBlock.pressures!]);
   });
 });
 

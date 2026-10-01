@@ -21,15 +21,15 @@ spec.
 
 ## Modules
 
-| File                                                | Responsibility                                                                                                                  |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/stroke-points.ts`            | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `quantiseStrokePoints`, `strokePointCount`, base64             |
-| `packages/document/src/stroke-points-cache.ts`      | `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                           |
-| `packages/document/src/stroke-points-debug.ts`      | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                 |
-| `packages/document/src/freehand-points.ts`          | Element-level helpers over the codec: `freehandStrokePoints`, `freehandCanvasPoints`, `freehandPressures`, `packFreehandPoints` |
-| `packages/document/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                 |
-| `packages/document/scripts/expand-stroke-points.ts` | The debug script: a tab or document JSON file with every block expanded                                                         |
-| `scripts/stroke-points-bench.mts`                   | The bench behind `pnpm bench:stroke-points`                                                                                     |
+| File                                                | Responsibility                                                                                                                                           |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/stroke-points.ts`            | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
+| `packages/document/src/stroke-points-cache.ts`      | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
+| `packages/document/src/stroke-points-debug.ts`      | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
+| `packages/document/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
+| `packages/document/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
+| `packages/document/scripts/expand-stroke-points.ts` | The debug script: a tab or document JSON file with every block expanded                                                                                  |
+| `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
 
 ## Interfaces and contracts
 
@@ -69,15 +69,19 @@ export function encodeStrokePoints(
   pressures?: readonly number[],
 ): string;
 export function parseStrokePoints(packed: unknown): StrokePointsParse; // uncached, full checks
-export function quantiseStrokePoints(
-  points: readonly NormalisedPoint[],
-  pressures?: readonly number[],
-): StrokePoints; // what decode(encode(...)) returns, without the string
 export function strokePointCount(packed: string): number; // from the length alone
+export const EMPTY_STROKE_POINTS: StrokePoints; // frozen, count 0
 
 // stroke-points-cache.ts
 export const STROKE_DECODE_CACHE_POINTS = 500_000;
-export function decodeStrokePoints(packed: string): StrokePoints; // memoised; corrupt: empty + log
+export type StrokePointsDecoder = {
+  decode(packed: string): StrokePoints;
+  has(packed: string): boolean;
+  size(): { entries: number; points: number };
+  clear(): void;
+};
+export function createStrokePointsDecoder(budgetPoints: number): StrokePointsDecoder;
+export function decodeStrokePoints(packed: string): StrokePoints; // the shared decoder
 
 // stroke-points-debug.ts
 export type DescribedStrokePoints =
@@ -98,7 +102,12 @@ export function freehandCanvasPoints(
   el: Box & Pick<FreehandElement, 'packedPoints'>,
   minSide?: number, // a box side below this counts as this (the pen draws with max(side, 1))
 ): Point[];
+export function freehandNormalisedPoints(
+  el: Pick<FreehandElement, 'packedPoints'>,
+): NormalisedPoint[];
 export function freehandPressures(el: Pick<FreehandElement, 'packedPoints'>): number[] | undefined;
+export type FreehandGeometry = Box & { points: NormalisedPoint[] }; // unpacked, the live ink's
+export function freehandGeometry(rawPoints: readonly Point[]): FreehandGeometry;
 export function packFreehandPoints(
   rawPoints: readonly Point[],
   pressures?: readonly number[],
@@ -143,9 +152,9 @@ export function migrateLegacyStrokePoints(elements: Element[]): Element[]; // id
     pressures.
   - Imports: the Excalidraw file importer; the board-scene landing (track F) adopts
     `packFreehandPoints` when it rebases.
-- **Live ink exactness:** the stroke being drawn quantises its points with
-  `quantiseStrokePoints` before drawing, so the ink on screen is the ink that lands and release
-  changes no pixel.
+- **Live ink:** the stroke being drawn keeps its raw samples (`freehandGeometry`, unpacked, through
+  `PenStrokeSource`'s `points` form), so settled ink never re-quantises as the box grows; the landed
+  stroke is within `STROKE_POINT_MAX_ERROR` of it, the only difference release makes.
 - **Readers** (each decodes through the cache): canvas freehand view (pen outline and the
   100-unit polyline), SVG export (`svgFreehandShape`), the pen outline helpers
   (`freehandPenStroke`, `penStrokeSvg`), the eraser (`freehandAbsolutePoints`,
@@ -172,7 +181,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | SVG export          | `packages/document/src/svg-render-shapes.ts`                                         | decode                                                        |
 | Stored migration    | `packages/document/src/stored-elements.ts`                                           | adds `migrateLegacyStrokePoints`                              |
 | Canvas view         | `apps/live/components/canvas/boxed-element-overlays.tsx`                             | decode                                                        |
-| Live ink            | `apps/live/components/canvas/whiteboard/LiveInk.tsx`                                 | quantised geometry                                            |
+| Live ink            | `apps/live/components/canvas/whiteboard/LiveInk.tsx`                                 | unchanged: raw geometry through `PenStrokeSource`             |
 | Pen gesture         | `apps/live/components/canvas/useWhiteboardPenGesture.ts`                             | ink type                                                      |
 | Commit types        | `apps/live/components/canvas/Canvas.types.ts`                                        | `PenInk` owns `pressures`                                     |
 | Pen commit          | `apps/live/hooks/canvas/commit-freehand.ts`                                          | pressures to `createFreehand`                                 |
@@ -247,7 +256,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
   before, a fifth of the former JSON).
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
-- Encode on commit and erase: linear in the stroke; the live ink quantises without encoding.
+- Encode on commit and erase: linear in the stroke; the live ink never encodes.
 - The bench records tab bytes, `JSON.parse` time, decode and first-draw time and allocations
   before and after (spec, "Measured wins").
 
@@ -279,11 +288,9 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Pen outline unchanged                                                  | `packages/document/src/pen-stroke.test.ts`                                          |
 | SVG export within the bound                                            | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
 | Api migrates former shape on create and save                           | `apps/api/src/routes/documents.test.ts`                                             |
-| Room ops migrated on receipt                                           | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
 | Clipboard and tab import migrate                                       | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
 | Change-log entries migrate                                             | `apps/live/lib/api/change-log.test.ts`                                              |
-| Live ink equals landed ink                                             | `apps/live/components/canvas/whiteboard/LiveInk.test.tsx`                           |
-| End to end: draw, erase, undo, reload, collaborate, export             | `apps/live/e2e/whiteboard-stroke-points.spec.ts`                                    |
+| Live ink matches landed ink within the bound                           | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
 
 ## Constants and configuration
 

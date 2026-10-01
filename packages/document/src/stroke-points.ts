@@ -152,23 +152,6 @@ export function encodeStrokePoints(
   return toBase64(bytes);
 }
 
-/** What decoding the encoded block gives, without building the string (the live ink's points). */
-export function quantiseStrokePoints(
-  points: readonly NormalisedPoint[],
-  pressures?: readonly number[],
-): StrokePoints {
-  checkInput(points, pressures);
-  const nx = new Float64Array(points.length);
-  const ny = new Float64Array(points.length);
-  const ps = pressures ? new Float64Array(points.length) : null;
-  for (let i = 0; i < points.length; i++) {
-    nx[i] = unitStep(points[i]!.nx, STROKE_POINT_STEPS) / STROKE_POINT_STEPS;
-    ny[i] = unitStep(points[i]!.ny, STROKE_POINT_STEPS) / STROKE_POINT_STEPS;
-    if (ps) ps[i] = unitStep(pressures![i]!, STROKE_PRESSURE_STEPS) / STROKE_PRESSURE_STEPS;
-  }
-  return { count: points.length, nx, ny, pressures: ps };
-}
-
 /** Decodes and checks a block from anywhere (untrusted included); never cached. */
 export function parseStrokePoints(packed: unknown): StrokePointsParse {
   if (typeof packed !== 'string') return { ok: false, rejection: 'not-a-string' };

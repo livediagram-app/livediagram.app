@@ -13,6 +13,7 @@ import { r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
+import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { codeTheme } from './code-themes';
 import { chartPaletteColors } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
@@ -143,14 +144,14 @@ export function svgShapeSilhouette(
 // edges, and nothing for a lone point. Closed paths fill like the canvas;
 // open ones render stroke-only.
 export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
-  if (el.points.length < 2) return '';
+  if (freehandStrokePoints(el).count < 2) return '';
   // A whiteboard pen stroke (docs/specs/023-whiteboard/whiteboard.md "Pens"): the filled
   // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
   if (isPenStroke(el)) {
     const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
     return `<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
   }
-  const pts = el.points.map((p) => ({ x: el.x + p.nx * el.width, y: el.y + p.ny * el.height }));
+  const pts = freehandCanvasPoints(el);
   const d = el.straightEdges
     ? pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r2(p.x)} ${r2(p.y)}`).join(' ') +
       (el.closed ? ' Z' : '')

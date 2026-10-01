@@ -14,6 +14,8 @@ import {
 } from 'perfect-freehand';
 import type { Point } from './geometry-primitives';
 import type { FreehandElement } from './element-types';
+import { decodeStrokePoints } from './stroke-points-cache';
+import type { NormalisedPoint, StrokePoints } from './stroke-points';
 
 export type PenPointerKind = 'pen' | 'mouse' | 'touch';
 
@@ -62,7 +64,7 @@ export function penPressureWidth(width: number, pressure: number): number {
 export type PenStroke = {
   points: readonly Point[];
   /** One per point, 0 to 1; absent when the pointer reported none (a constant width). */
-  pressures?: readonly number[];
+  pressures?: ArrayLike<number>;
   /** The pen's width in canvas px at the middle pressure. */
   width: number;
   streamline: number;
@@ -141,11 +143,27 @@ export function isPenStroke(el: FreehandElement): boolean {
   return el.penWidth !== undefined && el.pen !== 'highlighter';
 }
 
-// The fields of a freehand its pen ink reads (so the live ink can pass its geometry).
+// What a pen stroke's ink reads: an element's packed points, or the live ink's freehand geometry
+// (its raw samples laid out in the box they land in, and the pen's pressures), unpacked: the
+// stroke being drawn never re-quantises its settled ink as its box grows.
 export type PenStrokeSource = Pick<
   FreehandElement,
-  'points' | 'width' | 'height' | 'pressures' | 'penWidth' | 'streamline'
->;
+  'width' | 'height' | 'penWidth' | 'streamline'
+> &
+  (
+    | Pick<FreehandElement, 'packedPoints'>
+    | { points: readonly NormalisedPoint[]; pressures?: readonly number[] }
+  );
+
+function sourcePoints(el: PenStrokeSource): StrokePoints {
+  if ('packedPoints' in el) return decodeStrokePoints(el.packedPoints);
+  return {
+    count: el.points.length,
+    nx: Float64Array.from(el.points, (p) => p.nx),
+    ny: Float64Array.from(el.points, (p) => p.ny),
+    pressures: el.pressures ? Float64Array.from(el.pressures) : null,
+  };
+}
 
 /**
  * A pen stroke element as perfect-freehand input: its points in its own box, or on the canvas
@@ -156,9 +174,13 @@ export type PenStrokeSource = Pick<
 export function freehandPenStroke(el: PenStrokeSource, origin: Point = { x: 0, y: 0 }): PenStroke {
   const w = Math.max(el.width, 1);
   const h = Math.max(el.height, 1);
+  const { count, nx, ny, pressures } = sourcePoints(el);
+  const points = new Array<Point>(count);
+  for (let i = 0; i < count; i++)
+    points[i] = { x: origin.x + nx[i]! * w, y: origin.y + ny[i]! * h };
   return {
-    points: el.points.map((p) => ({ x: origin.x + p.nx * w, y: origin.y + p.ny * h })),
-    pressures: el.pressures,
+    points,
+    pressures: pressures ?? undefined,
     width: el.penWidth ?? 1,
     streamline: el.streamline ?? 0,
   };

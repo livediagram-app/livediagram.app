@@ -547,8 +547,9 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   after the element layer, via `WhiteboardPenPreview`) as exactly the committed `FreehandSvg`: each
   update takes `freehandGeometry(points)` (what `createFreehand` gives), writes a `div.absolute` at
   its box and sets the svg's viewBox and path from
-  `penStrokeSvg({ ...geometry, penWidth, pressures, streamline })`. The same input, function and
-  layout in the same layer: release changes no pixel.
+  `penStrokeSvg({ ...geometry, penWidth, pressures, streamline })`. The same function and layout in
+  the same layer; the landed stroke's packed points are within `STROKE_POINT_MAX_ERROR` of the box
+  of the raw samples (docs/specs/006-document/stroke-points.md), the only difference release makes.
 - **Settled ink stays still** (spec "Ink the smoothing has settled never moves while drawing"). The
   tip is the stretch of the centre line from the last streamlined point to the pointer, with its end
   cap; perfect-freehand joins each point's sides along the average of its own and the next

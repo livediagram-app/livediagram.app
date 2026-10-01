@@ -1,4 +1,11 @@
-import { ARROW_THICKNESS_PX, DEFAULT_ANIMATION_SPEED, type Element } from '@livediagram/document';
+import {
+  ARROW_THICKNESS_PX,
+  DEFAULT_ANIMATION_SPEED,
+  encodeStrokePoints,
+  freehandPressures,
+  type Element,
+  type FreehandElement,
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {
@@ -27,6 +34,7 @@ const el = (type: string, over: Record<string, unknown> = {}): Element =>
     id: 'e',
     type,
     ...(type === 'shape' ? { shape: 'square' } : {}),
+    ...(type === 'freehand' ? { packedPoints: 'AQA=' } : {}),
     ...over,
   }) as unknown as Element;
 
@@ -234,11 +242,21 @@ describe('border field setters', () => {
   });
 
   it('drops a pen stroke\u2019s pressures and streamline with its pen width', () => {
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
     const pen = applyBorderStrokeToEl(
-      el('freehand', { penWidth: 2.5, pressures: [0.2, 0.9], streamline: 0.2 }),
+      el('freehand', {
+        penWidth: 2.5,
+        packedPoints: encodeStrokePoints(points, [0.2, 0.9]),
+        streamline: 0.2,
+      }),
       'thin',
-    );
-    expect('pressures' in pen).toBe(false);
+    ) as FreehandElement;
+    // The same points, re-packed without their pressures.
+    expect(pen.packedPoints).toBe(encodeStrokePoints(points));
+    expect(freehandPressures(pen)).toBeUndefined();
     expect('streamline' in pen).toBe(false);
   });
 

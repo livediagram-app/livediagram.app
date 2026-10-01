@@ -95,7 +95,7 @@ const FIXTURES: Record<string, Record<string, unknown>> = {
   table: { ...MINIMAL_BOX, cells: [['a', 'b']] },
   sticky: { ...MINIMAL_BOX },
   image: { ...MINIMAL_BOX, imageId: 'img_1' },
-  freehand: { ...MINIMAL_BOX, closed: false, points: [{ nx: 0, ny: 0 }] },
+  freehand: { ...MINIMAL_BOX, closed: false, packedPoints: 'AQAAAAAA' },
   path: {
     ...MINIMAL_BOX,
     closed: false,

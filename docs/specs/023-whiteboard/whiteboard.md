@@ -361,6 +361,12 @@ The shapes group learns and keeps the shapes a user reaches for.
     the browser rasterises both alike. (Drawn in a separate overlay, a line
     shifted by up to a device pixel or two on release, differently per engine
     and zoom.) The shape recognition preview is drawn in the canvas too.
+    The stroke being drawn keeps its raw samples; the stroke that lands
+    stores them packed ([Stroke points](../006-document/stroke-points.md)),
+    each within 1 / 131,070 of the stroke's size of where it was drawn
+    (under a hundredth of a pixel on a stroke 1,000 px across), so release
+    moves the ink by no more than that, which no eye can see. Quantising the
+    stroke being drawn instead would move settled ink each time its box grows.
 - **A pen's width is ink on the board.** It is in canvas px, so a stroke
   zooms with the board like everything drawn on it, the same in every
   browser, and the in-flight stroke is drawn at that width times the zoom.

@@ -2916,6 +2916,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opacity": {
         "type": "number"
       },
+      "packedPoints": {
+        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
+        "format": "byte",
+        "type": "string"
+      },
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
@@ -2928,31 +2933,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "penWidth": {
         "type": "number"
-      },
-      "points": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "nx": {
-              "type": "number"
-            },
-            "ny": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "nx",
-            "ny"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "pressures": {
-        "items": {
-          "type": "number"
-        },
-        "type": "array"
       },
       "rotation": {
         "type": "number"
@@ -3017,7 +2997,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "y",
       "width",
       "height",
-      "points",
+      "packedPoints",
       "closed"
     ],
     "type": "object"

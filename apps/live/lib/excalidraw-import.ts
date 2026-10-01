@@ -10,6 +10,7 @@
 // already on the document.
 
 import {
+  encodeStrokePoints,
   anchorPosition,
   offeredAnchors,
   type Anchor,
@@ -453,7 +454,9 @@ function freehandFrom(
     y: minY,
     width,
     height,
-    points: samples.map((p) => ({ nx: (p.x - minX) / width, ny: (p.y - minY) / height })),
+    packedPoints: encodeStrokePoints(
+      samples.map((p) => ({ nx: (p.x - minX) / width, ny: (p.y - minY) / height })),
+    ),
     closed,
     ...(straightEdges ? { straightEdges: true } : {}),
   };

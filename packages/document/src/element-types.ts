@@ -868,10 +868,13 @@ export type FreehandElement = {
   y: number;
   width: number;
   height: number;
-  // Smoothed, normalised polyline. Each point is { nx, ny } in
-  // [0, 1] relative to the bounding box's top-left. Two values per
-  // sample (not flat-array form) so JSON shape is debuggable.
-  points: { nx: number; ny: number }[];
+  /**
+   * The stroke's points, normalised into its box, and a pen's pressure at each when it reported
+   * one, packed into one block: base64 of a version byte, a flags byte and a little-endian record
+   * per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.
+   * @format byte
+   */
+  packedPoints: string;
   // True when the path auto-closes (release-near-start). The
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
@@ -883,11 +886,9 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // A whiteboard pen stroke's ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): one pressure
-  // per point, 0 to 1, when the pen reported one (absent: a constant width), and the
-  // perfect-freehand streamline it was drawn with (absent: a stroke stored before either was
-  // recorded, drawn with none). A pen stroke's points are its raw samples.
-  pressures?: number[];
+  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-whiteboard/whiteboard.md
+  // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
+  // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
   streamline?: number;
   // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.

@@ -3,6 +3,7 @@ import {
   BORDER_STROKE_PX,
   BROWSER_CHROME,
   catmullRomToBezierPath,
+  freehandCanvasPoints,
   isPenStroke,
   penStrokeSvg,
   DEFAULT_BORDER_STROKE,
@@ -143,7 +144,7 @@ export function FreehandSvg({
   // Every other stroke keeps a 100-unit viewBox and its non-scaling preset.
   const vbW = 100;
   const vbH = 100;
-  const vbPoints = element.points.map((p) => ({ x: p.nx * vbW, y: p.ny * vbH }));
+  const vbPoints = freehandCanvasPoints({ ...element, x: 0, y: 0, width: vbW, height: vbH });
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md) keep their deliberate corners:
   // straight M/L segments instead of the Catmull-Rom smoothing the
   // sampled pencil strokes want.
