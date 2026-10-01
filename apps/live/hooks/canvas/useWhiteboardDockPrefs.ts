@@ -4,7 +4,7 @@
 // "Where the dock sits"): the pinned shapes, the pick counts and the dock's position, written the way the other synced preferences are (the same owner, guest or signed in). The logic is pure, in
 // lib/whiteboard-dock-prefs and lib/whiteboard-shape-slots.
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { track } from '@/lib/telemetry';
 import { readUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
@@ -35,9 +35,6 @@ export function useWhiteboardDockPrefs({
   );
   // Set in Settings (Editor, Whiteboard); read here so the dock follows a change at once.
   const position = readWhiteboardDockPosition(userPreferences);
-  useEffect(() => {
-    console.debug('[whiteboard-dock] position', position);
-  }, [position]);
   // The Shapes flyout's slots: Most used and Recent.
   const slots = useMemo(() => shapeSlots(picks, pinned), [picks, pinned]);
 

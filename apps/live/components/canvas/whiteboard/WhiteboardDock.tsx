@@ -70,6 +70,12 @@ export function WhiteboardDock({
 }: WhiteboardDockProps) {
   const { appearance } = useAppearance();
   const fly = useDockFlyout();
+
+  // Where the dock is, logged only while one is shown: on mount and on every move.
+  const { position } = model;
+  useEffect(() => {
+    console.debug('[whiteboard-dock] position', position);
+  }, [position]);
   const [hint, setHint] = useState<{ left: number } | null>(null);
 
   // S asks for the Shapes flyout: opened as a hover opens it (its field focused, the focus going back

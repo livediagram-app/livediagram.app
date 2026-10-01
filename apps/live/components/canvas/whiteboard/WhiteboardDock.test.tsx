@@ -391,3 +391,24 @@ describe('WhiteboardDock position', () => {
     expect(screen.getByRole('button', { name: 'Select' })).toBe(before);
   });
 });
+
+describe('WhiteboardDock position log', () => {
+  it('logs the position once the dock is shown, and again when it moves', () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const { view } = renderDock();
+    expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'top');
+    debug.mockClear();
+    view.rerender(
+      <WhiteboardDock
+        model={model('pen', { position: 'bottom' })}
+        ink="#1c1917"
+        canUndo
+        canRedo={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+      />,
+    );
+    expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'bottom');
+    debug.mockRestore();
+  });
+});
