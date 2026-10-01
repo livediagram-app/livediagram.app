@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { render, screen, within } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { Hero, HERO_CTAS } from './Hero';
+import { Hero } from './Hero';
+import { HERO_CTAS } from './hero-ctas';
 
 // The set is under test, not the animated stage, headline or connector around it, which need
 // layout jsdom has not got.

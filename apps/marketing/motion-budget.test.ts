@@ -10,6 +10,7 @@ const CONTENT_STYLESHEETS = [
   'app/hero-animations.css',
   'app/feature-art-animations.css',
   'app/page-motion.css',
+  'app/hero-preview.css',
   'components/ShowcaseStagger.module.css',
 ];
 

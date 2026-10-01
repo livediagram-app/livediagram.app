@@ -30,7 +30,7 @@ export type TabDef = { name: string; color: string; active?: boolean };
 // hero-animations.css, its light or dark half with the appearance), dotted as the
 // editor dots it: 1px dots on a 24px grid. The flowchart recolours from it to Forest
 // in light and Pine in dark (the hero-theme / hero-theme-canvas keyframes).
-const CANVAS =
+export const HERO_CANVAS_CLASS =
   'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1px,_transparent_1px)] bg-[size:24px_24px]';
 
 // A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
@@ -168,7 +168,7 @@ export function EditorWindow({
           {...{ [HERO_CANVAS_ATTR]: '' }}
           className={
             'relative ' +
-            CANVAS +
+            HERO_CANVAS_CLASS +
             ' ' +
             (presenting ? 'h-[382px] sm:h-[442px]' : 'h-[300px] sm:h-[360px]') +
             (theming && playing ? ' hero-theme-canvas' : '')

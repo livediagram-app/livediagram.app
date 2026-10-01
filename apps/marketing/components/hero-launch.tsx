@@ -52,7 +52,7 @@ type GrowFrom = { top: number; right: number; bottom: number; left: number; stop
 
 // A plain click grows the window; a modified or non-primary click is the browser's (new tab,
 // new window, download) and follows the link untouched.
-function isPlainClick(e: MouseEvent) {
+export function isPlainClick(e: MouseEvent) {
   return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 }
 
