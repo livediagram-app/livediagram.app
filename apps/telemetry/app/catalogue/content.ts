@@ -27,7 +27,7 @@ export const NEW_DOCUMENT_BACKED_OUT = chart(
   'UI',
   'Closed',
   'New Document Backed Out',
-  'Escape in the New Document wizard went back to the page that opened it, creating nothing.',
+  'Escape or the X in the New Document wizard went back to the page that opened it, creating nothing.',
   { types: ['NewDocument'] },
 );
 

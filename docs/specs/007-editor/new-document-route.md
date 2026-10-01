@@ -146,9 +146,9 @@ knowing about when adding another.
 1. User clicks **New Document** in the Explorer (or lands on `/live`).
 2. Browser navigates to `/new`.
 3. `/new` renders the welcome card immediately — no spinner.
-4. User picks name + template + theme and clicks **Create** (the welcome
-   screen has no Skip button; the header **X** still dismisses to a blank
-   canvas).
+4. User picks name + template + theme and clicks **Create** (the header **X** backs
+   out to the page that opened `/new`, creating nothing, as Escape does;
+   see [Escape backs out](#escape-backs-out)).
 5. Page mints a UUID, POSTs `/api/documents` with the seeded tab(s),
    then `window.location.assign('/document/<id>')` to land on
    the editor with the new document already on the server.
@@ -216,7 +216,7 @@ The new route owns:
   `livediagram:v2:name-confirmed` localStorage key).
 - On commit: mint a UUID, POST `/api/documents` with the
   templated tab(s) inline, navigate to `/document/<id>`.
-- On skip / X: mint a UUID, POST an empty-tab document, navigate to
+- On Skip: mint a UUID, POST an empty-tab document, navigate to
   `/document/<id>` so the user lands on the editor with a
   fresh document already persisted.
 
@@ -233,7 +233,12 @@ creates anything:
   as the browser's Back would (`history.back()`), so that page returns as it was.
   With nothing of ours to go back to (the URL typed, or opened from another site),
   it goes to the home page (`/`). Nothing is created: Escape is not Skip, which
-  still commits a blank document, nor the header **X**.
+  still commits a blank document.
+- **The header X backs out the same way, from any step:** it closes the wizard
+  and goes back to the page that opened `/new` (or home), creating nothing. A
+  close button and Escape mean the same thing ("Escape: Closes the dialog", and
+  a close button "that closes the dialog", in the WAI-ARIA dialog pattern), so
+  they never do different things.
 - **Over the editor** (Quick Start on a new tab or an empty document): the modal
   closes and the canvas it opened over is there again, empty (as today).
 
@@ -336,8 +341,8 @@ The welcome screen is a **two-step wizard** rather than one long page:
   rail's first circle lines up with the dialog heading.
 - **Skip** (on the template step) commits the documented defaults straight away: the
   **Blank** template and the **Default** theme. (This is why the welcome screen now
-  has a Skip control where it previously had none.) The header **X** still
-  dismisses.
+  has a Skip control where it previously had none.) The header **X** backs
+  out without creating anything ([Escape backs out](#escape-backs-out)).
 - A bottom-left **Open Existing Document** button navigates to `/explorer`. The
   `/new` route therefore does **not** render an Explorer panel of its own (it
   used to float one as the escape hatch); the button is the single, unambiguous
@@ -626,8 +631,8 @@ theme for a new tab.
 - `/live` with no params → redirects to `/new`, no flash.
 - `/new` → welcome card on first paint.
 - Pick template → Create → editor loads on `/document/<id>`.
-- Dismiss welcome via the header X → editor loads on `/document/<id>`
-  with an empty starter tab (the welcome screen has no Skip button).
+- Close the welcome via the header X → back to the page that opened `/new`
+  (or home), no document created.
 - `/document/<id>` (existing) → editor hydrates as before.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.

@@ -88,6 +88,15 @@ describe('TemplatePicker, Escape', () => {
     expect(onBackOut).not.toHaveBeenCalled();
   });
 
+  it('backs out with the X too, from any step, creating nothing', () => {
+    const { onPick, onSkip, onBackOut } = renderWelcome();
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onBackOut).toHaveBeenCalledTimes(1);
+    expect(onSkip).not.toHaveBeenCalled();
+    expect(onPick).not.toHaveBeenCalled();
+  });
+
   it('keeps closing as before without a back-out (Quick Start over the canvas)', () => {
     const onSkip = vi.fn();
     render(
