@@ -202,7 +202,7 @@ export function usePaletteCatalogue({
   // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  const tabs = paletteCategoryTabs({
+  const allTabs = paletteCategoryTabs({
     pendingDraw,
     tileActions,
     // Only on an ES board: the category renders elsewhere too (a favourited
@@ -222,6 +222,9 @@ export function usePaletteCatalogue({
     setTechQuery,
     techResults,
   });
+  // Event Storming is the ES board's own category (docs/specs/021-event-storming/event-storming.md),
+  // where it is the only one: an ordinary tab's category picker does not offer it.
+  const tabs = esBoard ? allTabs : allTabs.filter((t) => t.id !== 'event-storming');
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current

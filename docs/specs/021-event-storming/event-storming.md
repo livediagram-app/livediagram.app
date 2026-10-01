@@ -87,8 +87,9 @@ semantic colour:
   `tools:es-<kind>` prefix — Favourites persist ids, so a rename would
   silently drop saved favourites ([Palette Favourites](../010-palette/palette-favourites.md)). **On an event-storming board
   the palette OPENS on this category** instead of Favourites (keyed on
-  the board-ness of the active tab); everywhere else Favourites stays
-  the landing view. Help article: `palette/event-storming` (registered,
+  the board-ness of the active tab), and it is the board's only category. **On any other tab
+  the category picker does not offer it**, nor does the Edit Favourites dialog: the notation
+  belongs to the event-storming mode. Favourites stays the landing view there. Help article: `palette/event-storming` (registered,
   with card art).
 - **The kind is stored.** Every note carries `esKind` on the element: the
   colour says it visually, but the kind is domain data — it names the
