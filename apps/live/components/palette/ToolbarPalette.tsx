@@ -94,7 +94,6 @@ export function ToolbarPalette(props: Props) {
       return next;
     });
   }, []);
-  const recentState = useMemo(() => ({ recent, onUse }), [recent, onUse]);
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
     ...props,
     // The Icons / Stickers / Technology bodies place a glyph straight
@@ -141,6 +140,10 @@ export function ToolbarPalette(props: Props) {
       ? phoneStripTileLimit(viewportWidth)
       : desktopStripTileLimit(viewportWidth / scale),
   });
+  const recentState = useMemo(
+    () => ({ recent, limit: stripLimit, onUse }),
+    [recent, stripLimit, onUse],
+  );
   const { tiles, hasMore } = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,

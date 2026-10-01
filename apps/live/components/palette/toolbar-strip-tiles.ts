@@ -14,7 +14,8 @@ import { visibleTiles } from './PaletteTileGrid';
 // Which tiles the Toolbar layout's strip shows for a category (docs/specs/007-editor/toolbar-layout.md):
 // the first STRIP_TILE_LIMIT of it, and whether a More button is needed to
 // reach the rest. "First" is by use: recently-used tiles lead, most recent
-// first, and the rest follow in the category's own order.
+// first, and the rest follow in the category's own order. A category whose
+// tiles all fit keeps its own order.
 //
 // Pure so the rule is testable without rendering the strip. The catalogues
 // it reads for Icons / Stickers / Technology are async (lib/icon-registry),
@@ -148,9 +149,22 @@ export function stripTilesFor(
   const extra = recentCatalogueTiles(categoryId, recent).filter(
     (t) => !base.some((b) => b.id === t.id),
   );
-  const all = orderByRecent(visibleTiles([...extra, ...base], hasImage), recent);
+  const all = orderByUseWhenOverflowing(visibleTiles([...extra, ...base], hasImage), recent, limit);
   return {
     tiles: all.slice(0, limit),
     hasMore: all.length > limit || ALWAYS_MORE.has(categoryId),
   };
+}
+
+// Reordering by use only earns its keep when it decides which tiles stay on the strip and which
+// go behind More. A category that fits whole keeps its own order, so its tiles never shuffle
+// under the pointer after a pick. Favourites' More button (always there for its body) doesn't
+// count: the rule is about tiles that don't fit. Shared with the Favourites More body, so the
+// strip stays the first tiles of what More shows.
+export function orderByUseWhenOverflowing(
+  tiles: PaletteTileDef[],
+  recent: readonly string[],
+  limit: number,
+): PaletteTileDef[] {
+  return tiles.length > limit ? orderByRecent(tiles, recent) : tiles;
 }

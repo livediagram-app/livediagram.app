@@ -1751,9 +1751,10 @@ export const articles: Article[] = [
   {
     slug: 'drawing',
     title: 'Drawing and Sketch',
-    description: 'The Freehand and Shape Pen and the Polygon tool, plus shape recognition.',
+    description:
+      'The Freehand and Shape Pen, the Path tool, the three markers and the Polygon tool, plus shape recognition.',
     keywords:
-      'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition',
+      'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition path bezier curve vector marker markers',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

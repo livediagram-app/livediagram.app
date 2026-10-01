@@ -248,6 +248,19 @@ The shapes group learns and keeps the shapes a user reaches for.
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
+- **The markers on diagram tabs.** Markers 1, 2 and 3 are also tiles in the editor palette's
+  **Draw** category ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Freehand and the
+  Shape Pen"), ahead of the Path tool. They are **the same three device-local pens**, not copies: the
+  same colour and width, so a marker set up on a board draws the same on a diagram and the other
+  way round. A tile arms its marker for **one stroke**, as Freehand is armed: the
+  stroke commits selected and the marker goes down, so the next press selects rather than inks
+  (held, as on a board, made every press on a diagram a new stroke). It wears the one-shot "Drag
+  to draw" banner with Cancel, and the tile shows pressed while it is armed, wearing the marker's own glyph in its colour; with a marker in hand and nothing selected,
+  the quick style panel offers its colour and width as it does on a board. Two more differences
+  from a board: a diagram tab's markers **never recognise shapes**, whatever the dock's Drawing setting
+  (on a diagram the Shape Pen is the recognising pen, a tile you choose rather than a remembered
+  mode, [Two pens](../008-canvas/two-pens.md)), and **Marker 1's ink is the tab theme's**
+  default element colour, the diagram's counterpart of a board's ink.
 - **Right-clicking a pen resets it** to how it started (its starting colour
   and Medium), without picking it up; a pen already as it started is left
   alone. The context-menu key and Shift+F10 on the focused button do the same.

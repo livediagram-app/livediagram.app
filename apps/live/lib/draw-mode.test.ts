@@ -269,6 +269,23 @@ describe('opensForTyping', () => {
   });
 });
 
+describe('a whiteboard marker (docs/specs/023-whiteboard/whiteboard.md)', () => {
+  const marker = {
+    type: 'freehand',
+    variant: 'whiteboard',
+    colour: null,
+    width: 4,
+    recognise: false,
+  } as const;
+  it('is held on a whiteboard', () => {
+    expect(isHeldPenIntent(marker)).toBe(true);
+  });
+
+  it('is armed for one stroke, with the banner, on a diagram tab', () => {
+    expect(isHeldPenIntent({ ...marker, oneShot: true })).toBe(false);
+  });
+});
+
 describe('the Path tool (docs/specs/023-whiteboard/path-tool.md)', () => {
   it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
     expect(isHeldPenIntent({ type: 'path' })).toBe(true);

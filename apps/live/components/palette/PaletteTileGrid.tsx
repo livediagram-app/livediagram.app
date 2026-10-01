@@ -13,6 +13,7 @@ import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
 import { usePaletteRecent } from './palette-recent-context';
 import { tilesInSection } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs,
 // docs/specs/010-palette/palette-favourites.md): maps each tile's action descriptor to the editor's add-handler
@@ -36,6 +37,10 @@ export type PaletteTileActions = {
   beginFreehand: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
+  // The Path tool and the three markers (docs/specs/023-whiteboard/whiteboard.md "The markers on
+  // diagram tabs"): held tools, picked up rather than armed for one gesture.
+  beginPath: () => void;
+  pickMarker: (pen: WhiteboardPenId) => void;
   addArrow: () => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
@@ -79,6 +84,10 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
+    case 'path':
+      return actions.beginPath;
+    case 'marker':
+      return () => actions.pickMarker(a.pen);
     case 'arrow':
       return actions.addArrow;
     case 'sticky':
@@ -135,6 +144,15 @@ export function tileActive(
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
+    case 'path':
+      return pendingDraw.type === 'path';
+    // The three markers share the whiteboard-pen intent, split by which pen it is.
+    case 'marker':
+      return (
+        pendingDraw.type === 'freehand' &&
+        pendingDraw.variant === 'whiteboard' &&
+        pendingDraw.penId === a.pen
+      );
     // The Media tab has a tile per service and they all arm one `video`
     // intent, so match on the provider too or picking Loom would light up
     // Vimeo alongside it (the same trap the shape branch above avoids).

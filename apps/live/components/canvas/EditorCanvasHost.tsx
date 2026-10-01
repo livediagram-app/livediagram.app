@@ -698,6 +698,8 @@ export function EditorCanvasHost() {
         onBeginFreehand={beginFreehand}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
+        onBeginPath={whiteboardDock.pickPath}
+        onPickMarker={whiteboardDock.pickPen}
         highlighterColor={highlighterColor}
         highlighterWidth={highlighterWidth}
         onSetHighlighterColor={setHighlighterColor}

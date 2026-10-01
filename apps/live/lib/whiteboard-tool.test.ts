@@ -42,13 +42,24 @@ describe('activeWhiteboardTool', () => {
 
 describe('whiteboardPenIntent', () => {
   it('carries the pen colour, width and recognition', () => {
-    expect(whiteboardPenIntent({ id: 'third', colour: '#e5484d', width: 8 }, true)).toEqual({
+    expect(
+      whiteboardPenIntent({ id: 'third', colour: '#e5484d', width: 8 }, { recognise: true }),
+    ).toEqual({
       type: 'freehand',
       variant: 'whiteboard',
       colour: '#e5484d',
       width: 8,
       recognise: true,
+      penId: 'third',
     });
+  });
+
+  it('marks a pen armed for one stroke', () => {
+    const intent = whiteboardPenIntent(
+      { id: 'main', colour: null, width: 4 },
+      { recognise: false, oneShot: true },
+    );
+    expect(intent).toMatchObject({ oneShot: true });
   });
 });
 

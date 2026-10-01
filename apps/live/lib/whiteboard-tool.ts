@@ -32,13 +32,20 @@ export function activeWhiteboardTool(
   }
 }
 
-export function whiteboardPenIntent(pen: WhiteboardPen, recognise: boolean): PendingDraw {
+// On a whiteboard a pen is held; on a diagram tab it is armed for one stroke and never recognises
+// shapes (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+export function whiteboardPenIntent(
+  pen: WhiteboardPen,
+  { recognise, oneShot = false }: { recognise: boolean; oneShot?: boolean },
+): PendingDraw {
   return {
     type: 'freehand',
     variant: 'whiteboard',
     colour: pen.colour,
     width: pen.width,
     recognise,
+    penId: pen.id,
+    ...(oneShot ? { oneShot: true } : {}),
   };
 }
 

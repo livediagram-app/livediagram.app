@@ -51,7 +51,14 @@ export function useStripTileLimit(
       if (tileWidth <= 0 || cardWidth <= 0) return;
       const gap = parseFloat(getComputedStyle(tile.parentElement!).columnGap) || 0;
       const pitch = tileWidth + gap;
-      const chrome = cardWidth - rail.getBoundingClientRect().width;
+      // The rail's negative side margins give its ring gutter back
+      // (ToolbarStripRail), so its footprint in the card is width + margins.
+      const railStyle = getComputedStyle(rail);
+      const railFootprint =
+        rail.getBoundingClientRect().width +
+        (parseFloat(railStyle.marginLeft) || 0) +
+        (parseFloat(railStyle.marginRight) || 0);
+      const chrome = cardWidth - railFootprint;
       const vw = window.innerWidth;
       let available = vw - PHONE_GUTTERS_PX;
       if (!isMobile) {

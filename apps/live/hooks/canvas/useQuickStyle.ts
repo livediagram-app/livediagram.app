@@ -132,7 +132,15 @@ export function useQuickStyle(deps: {
       return tool && { ...tool, caption: toolCaption(intent) };
     }
     const plain = quickStyleView(selected, theme, overrides);
-    if (!whiteboard) return plain;
+    // On a diagram tab a marker is picked up from the palette's Draw category
+    // (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs"): with nothing selected,
+    // the panel styles the marker in hand, as on a board. A selection keeps the ordinary rows.
+    if (!whiteboard) {
+      if (selected.length === 0 && held) {
+        return { targetIds: [], sections: {}, pen: heldPenStyle(held, palette) };
+      }
+      return plain;
+    }
     const board = onWhiteboard(plain, selected, ink);
     // Selected strokes first; with nothing selected, the pen in hand.
     const pen =

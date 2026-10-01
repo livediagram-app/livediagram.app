@@ -64,7 +64,34 @@ describe('useWhiteboard', () => {
       colour: null,
       width: 1.5,
       recognise: false,
+      penId: 'main',
     });
+  });
+
+  // The palette's Draw tiles pick the markers up on a diagram tab too, where shape recognition
+  // stays the Shape Pen's job (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+  it('never recognises shapes with a marker picked up on a diagram tab', () => {
+    const { deps, hook } = setup(diagram);
+    act(() => hook.result.current.setRecognition(true));
+    act(() => hook.result.current.pickPen('second'));
+    expect(deps.beginDraw).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        variant: 'whiteboard',
+        penId: 'second',
+        recognise: false,
+        oneShot: true,
+      }),
+    );
+  });
+
+  it('keeps the dock recognition setting for a marker on a whiteboard', () => {
+    const { deps, hook } = setup(board());
+    act(() => hook.result.current.setRecognition(true));
+    act(() => hook.result.current.pickPen('second'));
+    expect(deps.beginDraw).toHaveBeenLastCalledWith(
+      expect.objectContaining({ penId: 'second', recognise: true }),
+    );
+    expect(deps.beginDraw.mock.lastCall![0]).not.toHaveProperty('oneShot');
   });
 
   it('puts the pen in hand when the open tab becomes a whiteboard (Quick Start)', () => {

@@ -91,11 +91,13 @@ export function makeCommitFreehand({
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, ink?: PenInk) => {
     // Disarm on a gesture too short to be a stroke — unless the marker is
     // HELD, where a stray tap must not silently put the tool down.
-    // A whiteboard pen is held too (docs/specs/023-whiteboard/whiteboard.md "Pens").
+    // A whiteboard pen is held too (docs/specs/023-whiteboard/whiteboard.md "Pens"), unless a
+    // diagram tab armed it for one stroke.
     const whiteboardPen =
       pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
+    const heldPen = whiteboardPen !== null && !whiteboardPen.oneShot;
     const disarm = () => {
-      if (!holdingMarker && !whiteboardPen) setPendingDraw(null);
+      if (!holdingMarker && !heldPen) setPendingDraw(null);
     };
     if (editsBlocked || rawPoints.length < 2) {
       disarm();
@@ -135,7 +137,13 @@ export function makeCommitFreehand({
     }
 
     if (whiteboardPen) {
-      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen, ink)]);
+      const stroke = whiteboardStroke(simplified, whiteboardPen, ink);
+      commit((els) => [...els, stroke]);
+      // One-shot (a diagram tab's marker): put down and select the stroke, as Freehand does.
+      if (whiteboardPen.oneShot) {
+        setSelectedId(stroke.id);
+        setPendingDraw(null);
+      }
       return;
     }
 

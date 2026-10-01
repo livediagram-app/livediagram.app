@@ -7,20 +7,20 @@ import { PolygonDraw } from '@/components/illustrations/palette-tools-drawing';
 export const metadata = helpMetadata({
   title: 'Drawing and Sketch',
   description:
-    'Sketch with the Freehand pen, snap rough sketches to real shapes with the Shape Pen, and place clean point-by-point outlines with the Polygon tool.',
+    'Sketch with the Freehand pen, snap rough sketches to real shapes with the Shape Pen, draw smooth curves with the Path tool, pick up a marker, and place clean point-by-point outlines with the Polygon tool.',
   path: '/help/palette/tools/drawing/',
 });
 
 <ArticleLayout
   title="Drawing and Sketch"
-  description="Sketch with the Freehand pen, snap rough sketches into real shapes with the Shape Pen, and place point-by-point polygons."
+  description="Sketch with the Freehand pen, snap rough sketches into real shapes with the Shape Pen, draw smooth curves with the Path tool, pick up a marker, and place point-by-point polygons."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: "Tools", slug: "tools" }}
   subArticles={getSubArticles("drawing")}
 >
 
-Sometimes the fastest way to capture an idea is to draw it. The palette's **Draw** category holds the drawing tools: **Freehand** for smooth strokes kept exactly as drawn, the **Shape Pen** for rough sketches that snap to real shapes, and the **Polygon** tool for clean point-by-point outlines (plus **Arrow**, covered in its own guide). Everything they draw is a regular element you can move, resize, and style.
+Sometimes the fastest way to capture an idea is to draw it. The palette's **Draw** category holds the drawing tools: **Freehand** for smooth strokes kept exactly as drawn, the **Shape Pen** for rough sketches that snap to real shapes, the **Path tool** for smooth editable curves, **Marker 1**, **Marker 2** and **Marker 3** (the same pens as a whiteboard's), and the **Polygon** tool for clean point-by-point outlines (plus **Arrow**, covered in its own guide). Everything they draw is a regular element you can move, resize, and style.
 
 Looking for the marker? The **Highlighter** is a canvas mode now, not a draw tool: see [Highlighter](/help/selection-modes/highlighter/).
 
@@ -41,6 +41,16 @@ On release, your raw points are smoothed into a clean, hand-drawn curve rather t
 <Figure caption="Freehand in draw mode, with a smoothed stroke and the Drag to draw banner.">
   <PencilStroke />
 </Figure>
+
+## The Path tool and the markers
+
+The whiteboard's own pens are in the **Draw** category too, so you can use them on any diagram.
+
+The **Path tool** draws smooth vector paths: click to place a corner, press and drag to pull out a curve, and keep placing points until you click the first one to close the path or press Enter to finish. Every point and handle stays editable afterwards. See [Whiteboards](/help/canvas/whiteboards/) for the full set of path gestures.
+
+**Marker 1**, **Marker 2** and **Marker 3** are the same three pens a whiteboard's dock holds, with the same colours and widths: set one up on a board and it draws the same on a diagram. Marker 1 draws in your theme's ink; Markers 2 and 3 start blue and red. With a marker in hand, the quick style panel sets its colour and width.
+
+A marker draws one stroke, like Freehand: the stroke is selected when you finish and you are back to selecting, so pick the marker again for the next stroke. (On a whiteboard the markers stay in your hand.) The Path tool does stay in your hand: each path you draw keeps it ready for the next, until you pick another tool or press Escape. On a diagram the markers never turn sketches into shapes; that is the Shape Pen's job.
 
 ## Styling a sketch
 

@@ -14,6 +14,8 @@ const actions = {
   beginFreehand: noop,
   beginShapePen: noop,
   beginPolygon: noop,
+  beginPath: noop,
+  pickMarker: noop,
   addArrow: noop,
   addSticky: noop,
   addTable: noop,

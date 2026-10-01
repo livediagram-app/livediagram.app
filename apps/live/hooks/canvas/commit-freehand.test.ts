@@ -56,6 +56,27 @@ const scribble = [
 ];
 
 describe('a whiteboard pen stroke', () => {
+  it('stays in hand after its stroke, with nothing selected', () => {
+    const s = setup(pen());
+    s.commit(scribble, false);
+    expect(s.setPendingDraw).not.toHaveBeenCalled();
+    expect(s.setSelectedId).not.toHaveBeenCalled();
+  });
+
+  // A diagram tab's marker (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+  it('puts a one-shot marker down after its stroke and selects the stroke', () => {
+    const s = setup(pen({ oneShot: true }));
+    s.commit(scribble, false);
+    expect(s.setPendingDraw).toHaveBeenCalledWith(null);
+    expect(s.setSelectedId).toHaveBeenCalledWith(s.elements[0]!.id);
+  });
+
+  it('puts a one-shot marker down on a stray tap too', () => {
+    const s = setup(pen({ oneShot: true }));
+    s.commit([{ x: 0, y: 0 }], false);
+    expect(s.setPendingDraw).toHaveBeenCalledWith(null);
+  });
+
   it('records the pen width and no colour for the main pen', () => {
     const s = setup(pen());
     s.commit(scribble, false);

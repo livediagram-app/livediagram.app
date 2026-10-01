@@ -40,6 +40,10 @@ const REORDER_MS = MOTION_MS.short;
 const itemKey = (item: ReactNode, i: number): string =>
   isValidElement(item) && item.key !== null ? String(item.key) : `#${i}`;
 
+// Room either side of the tiles for a pressed tile's ring, inside the rail's
+// sideways clip.
+const RING_GUTTER = 'px-[3px]';
+
 type Dropped = { key: string; node: ReactNode; left: number };
 
 export function ToolbarStripRail({
@@ -148,14 +152,22 @@ export function ToolbarStripRail({
   return (
     <div
       // Clipped sideways only, so a shrinking rail hides the outgoing tiles
-      // past its edge while pressed rings and the pop's overshoot still show.
+      // past its edge while pressed rings and the pop's overshoot still show
+      // above and below. Sideways, the rings get room from RING_GUTTER's padding
+      // (pulled back out by the negative margin, so the strip doesn't move):
+      // overflow-clip-margin would do it, but Chrome ignores it unless BOTH axes
+      // clip, which cut the first and last tiles' rings flush.
       data-strip-rail=""
-      className={`relative flex items-center overflow-x-clip [overflow-clip-margin:3px]${
+      className={`relative -mx-[3px] flex items-center overflow-x-clip${
         animate ? ' transition-[width] duration-short ease-out' : ''
       }`}
       style={{ width: width ?? undefined }}
     >
-      <div key={railKey} ref={contentRef} className="flex w-max items-center gap-0.5">
+      <div
+        key={railKey}
+        ref={contentRef}
+        className={`flex w-max items-center gap-0.5 ${RING_GUTTER}`}
+      >
         {items.map((item, i) => (
           <span
             // Keyed by the item, so a tile that moves within a category
@@ -196,7 +208,7 @@ export function ToolbarStripRail({
         <div
           aria-hidden
           inert
-          className="pointer-events-none absolute left-0 top-0 flex h-full w-max items-center gap-0.5"
+          className={`pointer-events-none absolute left-0 top-0 flex h-full w-max items-center gap-0.5 ${RING_GUTTER}`}
         >
           {leavingItems.map((item, i) => (
             <span

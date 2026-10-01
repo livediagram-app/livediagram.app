@@ -28,6 +28,8 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onBeginFreehand',
   'onBeginShapePen',
   'onBeginPolygon',
+  'onBeginPath',
+  'onPickMarker',
 ] as const satisfies readonly (keyof CommandPaletteProps)[];
 
 export type PaletteAddHandlers = Pick<

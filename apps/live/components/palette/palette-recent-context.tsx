@@ -3,8 +3,9 @@
 import { createContext, useContext } from 'react';
 
 // The Toolbar layout's usage ordering (docs/specs/007-editor/toolbar-layout.md), handed down to every tile
-// the strip and its More popover render: the recently-used tile ids, and the
-// call a tile makes when it is used. Null outside the Toolbar layout, so the
+// the strip and its More popover render: the recently-used tile ids, the
+// strip's tile limit (ordering by use applies only past it), and the call a
+// tile makes when it is used. Null outside the Toolbar layout, so the
 // floating Palette's tiles record nothing and keep their own order.
 //
 // A context rather than a prop because the More popover renders each
@@ -12,6 +13,7 @@ import { createContext, useContext } from 'react';
 // components below the strip that owns the list.
 export type PaletteRecentState = {
   recent: readonly string[];
+  limit: number;
   onUse: (tileId: string) => void;
 };
 

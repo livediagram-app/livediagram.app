@@ -15,9 +15,18 @@ export const DOCK_ICON_PX = 20;
 
 // A marker seen from the side: the body in the dock's ink, the nib and the
 // band below in the pen's own colour, the band as thick as the pen draws.
-export function PenGlyph({ colour, width }: { colour: string; width: number }) {
+export function PenGlyph({
+  colour,
+  width,
+  size = DOCK_ICON_PX,
+}: {
+  colour: string;
+  width: number;
+  // The dock's size by default; the palette's marker tiles draw it at a tile's size.
+  size?: number;
+}) {
   return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
+    <Glyph size={size} units={24}>
       <path d="M7 15 L15.5 6.5 L18 9 L9.5 17.5 L6.4 18 Z" />
       <path d="M6.4 18 L7 15 L9.5 17.5 Z" fill={colour} stroke={colour} />
       <path d="M4 21.5 H20" stroke={colour} strokeWidth={1 + width * 0.75} />

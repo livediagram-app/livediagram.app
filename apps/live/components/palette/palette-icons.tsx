@@ -20,6 +20,7 @@ import {
   lucideFileUp,
   lucideLightbulb,
   lucidePenTool,
+  lucideSpline,
   lucideScanEye,
   lucideSpade,
   lucideThermometer,
@@ -94,6 +95,17 @@ export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
       <Prims prims={lucidePenTool} />
+    </Glyph>
+  );
+}
+
+// The Path tool's palette tile (docs/specs/023-whiteboard/path-tool.md "Where it lives"): a curve
+// between two nodes. Not the Shape Pen's nib, which the dock wears for it: in the palette the two
+// sit side by side, so they need telling apart.
+export function PathToolIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideSpline} />
     </Glyph>
   );
 }

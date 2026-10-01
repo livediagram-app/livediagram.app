@@ -34,6 +34,7 @@ import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -353,6 +354,11 @@ export type CanvasProps = {
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
+  // The whiteboard's pens in the Draw category (docs/specs/008-canvas/canvas-and-palette.md "The
+  // whiteboard's pens in the Draw category"): the Path tool, and Markers 1 to 3 picked up by id.
+  // Both are held, not one-shot (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+  onBeginPath: () => void;
+  onPickMarker: (pen: WhiteboardPenId) => void;
   // Highlighter banner settings (docs/specs/008-canvas/highlighter.md): the colour + stroke width the
   // next marker strokes commit with, plus their setters for the banner's
   // two popovers. Session-local editor state, not a persisted preference.

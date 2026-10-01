@@ -24,8 +24,8 @@ import { PaletteToolRows } from './PaletteToolRows';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesDialog';
 import { PaletteFavouritesReorder } from './PaletteFavouritesReorder';
-import { orderByRecent } from '@/lib/toolbar-recent-tiles';
 import { usePaletteRecent } from './palette-recent-context';
+import { orderByUseWhenOverflowing } from './toolbar-strip-tiles';
 import { Glyph } from '@livediagram/ui';
 
 // The Favourites category (docs/specs/010-palette/palette-favourites.md): the user's go-to creation tiles in one
@@ -122,7 +122,9 @@ export function PaletteFavouritesTab({
       .filter((t): t is PaletteTileDef => t !== undefined),
     actions.hasImage,
   );
-  const favouriteTiles = recent ? orderByRecent(savedTiles, recent.recent) : savedTiles;
+  const favouriteTiles = recent
+    ? orderByUseWhenOverflowing(savedTiles, recent.recent, recent.limit)
+    : savedTiles;
   const favouriteSet = useMemo(() => new Set(favourites), [favourites]);
   const showEmptyHint =
     favouriteTiles.length === 0 && (iconCatalogsLoaded || favourites.length === 0);

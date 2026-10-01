@@ -102,7 +102,13 @@ export function useWhiteboard(deps: Deps) {
   const armPen = (next: WhiteboardPrefs) => {
     const pen = next.pens.find((p) => p.id === next.activePenId) ?? next.pens[0]!;
     if (canvasTool !== 'select' && canvasTool !== 'pan') setCanvasTool('select');
-    beginDraw(whiteboardPenIntent(pen, next.recognise));
+    // On a diagram tab (the palette's Draw tiles) a marker never recognises shapes, whatever the
+    // dock's Drawing setting: there the Shape Pen is the recognising pen, a tile chosen rather than
+    // a remembered mode. It is also armed for one stroke, as Freehand is, so the press after it
+    // selects rather than inks (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+    beginDraw(
+      whiteboardPenIntent(pen, { recognise: whiteboard && next.recognise, oneShot: !whiteboard }),
+    );
   };
 
   // Entering a whiteboard puts the active pen in hand (D2): "pick up a pen and

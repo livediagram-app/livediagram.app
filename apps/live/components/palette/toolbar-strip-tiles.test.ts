@@ -60,6 +60,22 @@ describe('stripTilesFor', () => {
     expect(strip.tiles.map((t) => t.id)).toEqual([used, ...favouriteIds.slice(0, -2)]);
   });
 
+  it('keeps a category that fits whole in its own order, however its tiles were used', () => {
+    const own = stripTilesFor('draw', NONE).tiles.map((t) => t.id);
+    const used = own[own.length - 1]!;
+    const strip = stripTilesFor('draw', { ...NONE, recent: [used] });
+    expect(strip.tiles.map((t) => t.id)).toEqual(own);
+    expect(strip.hasMore).toBe(false);
+  });
+
+  it('orders by use once the category overflows the strip', () => {
+    const own = stripTilesFor('draw', NONE).tiles.map((t) => t.id);
+    const used = own[own.length - 1]!;
+    const strip = stripTilesFor('draw', { ...NONE, limit: own.length - 1, recent: [used] });
+    expect(strip.tiles[0]!.id).toBe(used);
+    expect(strip.hasMore).toBe(true);
+  });
+
   it('ignores a used tile that is not in the category', () => {
     const shapes = stripTilesFor('shapes', NONE).tiles.map((t) => t.id);
     const strip = stripTilesFor('shapes', { ...NONE, recent: ['tools:session-timer'] });

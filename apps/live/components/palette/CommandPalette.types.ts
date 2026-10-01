@@ -6,6 +6,7 @@ import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 export type CanvasTool =
   | 'pan'
@@ -126,6 +127,11 @@ export type CommandPaletteProps = {
   onBeginShapePen: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
+  // The whiteboard's pens in the Draw category (docs/specs/008-canvas/canvas-and-palette.md "The
+  // whiteboard's pens in the Draw category"): the Path tool, and Markers 1 to 3 picked up by id.
+  // Both are held, not one-shot (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+  onBeginPath: () => void;
+  onPickMarker: (pen: WhiteboardPenId) => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

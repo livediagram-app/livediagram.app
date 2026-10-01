@@ -17,9 +17,15 @@ editable.
 
 ## Where it lives
 
-- **Whiteboards only.** The Path tool is a dock button and a key on a whiteboard; diagram tabs do
-  not offer it. A path element that reaches a diagram tab (paste, a tab that stops being a
-  whiteboard) renders, selects, moves, styles and edits there like any element.
+- **On whiteboards and on diagram tabs.** On a whiteboard it is a dock button and a key (below). On
+  a diagram tab it is a tile in the palette's **Draw** category
+  ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Freehand and the Shape Pen"), after the
+  Shape Pen, with **no key** there (P stays the pencil) and the **spline** icon (Lucide `spline`):
+  the dock's icon is the Shape Pen's, which would read as a second Shape Pen in the tile beside it.
+  It draws, edits and commits exactly as on a board; an unpainted path takes the tab theme's
+  element colours where a board's takes its ink. A path element that reaches a diagram tab any
+  other way (paste, a tab that stops being a whiteboard) renders, selects, moves, styles and edits
+  there like any element.
 - **Dock:** in the Shapes group, after the sticky note (see
   [Whiteboard](whiteboard.md) "What a whiteboard shows"), labelled **Path tool**, key **P**
   (shown on the button and in `aria-keyshortcuts`). Its icon is **the Shape Pen's own palette

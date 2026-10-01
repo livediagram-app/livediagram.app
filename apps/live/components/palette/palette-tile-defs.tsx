@@ -25,6 +25,7 @@ import {
   QaBoardIcon,
   PickerIcon,
   SelectIcon,
+  PathToolIcon,
   ShapePenIcon,
   SpotlightIcon,
   SessionPollIcon,
@@ -57,6 +58,8 @@ import {
   VimeoTileArt,
   YouTubeTileArt,
 } from '@/components/palette/palette-tile-art';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import { MarkerTileIcon } from './MarkerTileIcon';
 
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.
@@ -136,6 +139,10 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
+  // The whiteboard's pens in the Draw category (docs/specs/008-canvas/canvas-and-palette.md): the
+  // Path tool, and a marker picked up by id. Both are held until another tool is picked.
+  | { type: 'path' }
+  | { type: 'marker'; pen: WhiteboardPenId }
   | { type: 'arrow' }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
@@ -463,6 +470,88 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
+  // The Draw category, in the order people reach for it (docs/specs/008-canvas/canvas-and-palette.md
+  // "The whiteboard's pens in the Draw category"): the three markers first, then the Path tool,
+  // Arrow and Polygon, then the pencils. The markers and the Path tool are held until another tool
+  // is picked, and have no keys here: P and 6 stay the pencil and the Shape Pen on a diagram tab.
+  {
+    id: 'tools:marker-1',
+    blurb: 'A pen in the theme ink',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Marker 1',
+    description:
+      'Draw in the theme ink, held until you pick another tool. Set its width in the quick style panel.',
+    action: { type: 'marker', pen: 'main' },
+    icon: <MarkerTileIcon pen="main" size={TILE_GLYPH_PX} />,
+  },
+  {
+    id: 'tools:marker-2',
+    blurb: 'Your second pen',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Marker 2',
+    description:
+      'Draw with your second marker (blue to start), held until you pick another tool. Set its colour and width in the quick style panel.',
+    action: { type: 'marker', pen: 'second' },
+    icon: <MarkerTileIcon pen="second" size={TILE_GLYPH_PX} />,
+  },
+  {
+    id: 'tools:marker-3',
+    blurb: 'Your third pen',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Marker 3',
+    description:
+      'Draw with your third marker (red to start), held until you pick another tool. Set its colour and width in the quick style panel.',
+    action: { type: 'marker', pen: 'third' },
+    icon: <MarkerTileIcon pen="third" size={TILE_GLYPH_PX} />,
+  },
+  {
+    id: 'tools:path',
+    blurb: 'Clicks for corners, drags for curves',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Path tool',
+    description:
+      'Draw a smooth vector path: click to place corners, drag to pull out curves, and edit every point afterwards.',
+    action: { type: 'path' },
+    icon: <PathToolIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    id: 'tools:arrow',
+    blurb: 'A connector you place by hand',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Add arrow',
+    description: 'Plain connector. Add pointers in the Pointer accordion.',
+    shortcut: 'A',
+    action: { type: 'arrow' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideMoveRight} />
+      </Glyph>
+    ),
+  },
+  {
+    id: 'tools:polygon',
+    blurb: 'Straight edges, point by point',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Polygon',
+    description: 'Click to place points. Click the start to close, double-click to finish a line.',
+    action: { type: 'polygon' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={18}>
+        {/* Irregular polygon with visible vertex dots: reads as
+            "place points", distinct from the fixed shape tiles. */}
+        <path d="M4 14 L5.5 6 L12.5 4 L15 10 L10 15 Z" />
+        <circle cx="5.5" cy="6" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="12.5" cy="4" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="10" cy="15" r="1.4" fill="currentColor" stroke="none" />
+      </Glyph>
+    ),
+  },
   {
     id: 'tools:pencil',
     blurb: 'Sketch a stroke, left as drawn',
@@ -500,40 +589,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '6',
     action: { type: 'shape-pen' },
     icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:polygon',
-    blurb: 'Straight edges, point by point',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Polygon',
-    description: 'Click to place points. Click the start to close, double-click to finish a line.',
-    action: { type: 'polygon' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={18}>
-        {/* Irregular polygon with visible vertex dots: reads as
-            "place points", distinct from the fixed shape tiles. */}
-        <path d="M4 14 L5.5 6 L12.5 4 L15 10 L10 15 Z" />
-        <circle cx="5.5" cy="6" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="12.5" cy="4" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="10" cy="15" r="1.4" fill="currentColor" stroke="none" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:arrow',
-    blurb: 'A connector you place by hand',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Add arrow',
-    description: 'Plain connector. Add pointers in the Pointer accordion.',
-    shortcut: 'A',
-    action: { type: 'arrow' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideMoveRight} />
-      </Glyph>
-    ),
   },
   {
     id: 'tools:sticky',

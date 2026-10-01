@@ -11,6 +11,7 @@ import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
+import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
@@ -66,6 +67,8 @@ export function usePaletteCatalogue({
   onBeginFreehand,
   onBeginShapePen,
   onBeginPolygon,
+  onBeginPath,
+  onPickMarker,
   pendingDraw,
   esBoard,
   esBoardControls,
@@ -136,6 +139,8 @@ export function usePaletteCatalogue({
   const beginFreehand = armed(onBeginFreehand);
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
+  const beginPath = armed(onBeginPath);
+  const pickMarker = (pen: WhiteboardPenId) => armed(() => onPickMarker(pen))();
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -165,6 +170,8 @@ export function usePaletteCatalogue({
       beginFreehand,
       beginShapePen,
       beginPolygon,
+      beginPath,
+      pickMarker,
       addArrow,
       addSticky,
       addTable,

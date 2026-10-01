@@ -1,4 +1,5 @@
 import { DEFAULT_PEN_CURSOR, penCursor } from './whiteboard-pen-cursor';
+import type { WhiteboardPenId } from './whiteboard-prefs';
 import type {
   ArrowEnds,
   ComponentKind,
@@ -106,6 +107,13 @@ export type PendingDraw =
       colour: PenColour | null;
       width: number;
       recognise: boolean;
+      // Which of the three markers this is, so the palette's Draw tile for it (and only it) shows
+      // pressed (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+      penId?: WhiteboardPenId;
+      // Armed for one stroke rather than held: a marker picked from the palette on a diagram tab
+      // goes down after its stroke, as Freehand does, so the next press selects instead of inking
+      // (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+      oneShot?: boolean;
     }
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): click-to-place vertices rather than a
   // drag gesture. The canvas accumulates clicked points; closing on
@@ -174,9 +182,11 @@ export function isWhiteboardPenIntent(
   return intent?.type === 'freehand' && intent.variant === 'whiteboard';
 }
 
-// A tool that exists on a whiteboard only (docs/specs/023-whiteboard/whiteboard.md "Shapes"): a pen,
-// the Path tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so
-// the board's tools and their look never reach a diagram tab.
+// A tool held the board's way (docs/specs/023-whiteboard/whiteboard.md "Shapes"): a pen, the Path
+// tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so a dock
+// shape's look never reaches a diagram tab. The pens and the Path tool are also picked up from the
+// palette's Draw category on a diagram tab; one carried off a board is still put down, as the
+// board is.
 export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
   if (!intent) return false;
   if (isWhiteboardPenIntent(intent) || isPathIntent(intent)) return true;
@@ -192,11 +202,12 @@ export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolea
 
 // A pen held in the hand rather than armed for one gesture: the highlighter,
 // a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens") and the Path tool
-// (docs/specs/023-whiteboard/path-tool.md). None wears the one-shot banner.
+// (docs/specs/023-whiteboard/path-tool.md). None wears the one-shot banner. A marker armed
+// one-shot on a diagram tab is not held: it wears the banner and goes down after its stroke.
 export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
   return (
     isMarkerIntent(intent) ||
-    (intent?.type === 'freehand' && intent.variant === 'whiteboard') ||
+    (isWhiteboardPenIntent(intent) && !intent.oneShot) ||
     isPathIntent(intent)
   );
 }

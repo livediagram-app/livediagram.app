@@ -63,6 +63,11 @@ there, the others slide right one, and the tile pushed past the last slot
 shrinks away and lives behind More until it is used again. Using a tile from
 More that wasn't on the strip does the same.
 
+- **Only when the category overflows.** Reordering by use applies only to a
+  category with more tiles than the strip shows at once. A category whose
+  tiles all fit keeps its own order, so its tiles never shuffle under the
+  pointer after a pick. Favourites' More button, there for its search and
+  Edit footer, doesn't count: the test is the tiles alone.
 - **One recently-used list** of tile ids, most recent first, across every
   category (`lib/toolbar-recent-tiles.ts`, capped at 40). Each category shows
   its used tiles first, in that order, then the rest in the category's own
