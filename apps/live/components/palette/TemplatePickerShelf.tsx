@@ -60,7 +60,6 @@ export function TemplatePickerShelf({
   userOpened,
   expanded: expandedFlag,
   setExpanded,
-  whiteboardTemplate,
   templateKind,
   onTemplateCommit,
 }: {
@@ -72,7 +71,6 @@ export function TemplatePickerShelf({
   userOpened: boolean;
   expanded: boolean;
   setExpanded: (expanded: boolean) => void;
-  whiteboardTemplate?: TemplateDescriptor;
   templateKind: TemplateKind;
   onTemplateCommit: (kind: TemplateKind) => void;
 }) {
@@ -156,17 +154,6 @@ export function TemplatePickerShelf({
         />
       </li>
     )),
-    whiteboardTemplate ? (
-      <li key="whiteboard" {...rise(folded.length, 'tiles')}>
-        <CategoryTile
-          label={whiteboardTemplate.title}
-          ariaLabel={`Start a whiteboard: ${whiteboardTemplate.description}`}
-          description={whiteboardTemplate.description}
-          kinds={['whiteboard']}
-          onOpen={() => onTemplateCommit('whiteboard')}
-        />
-      </li>
-    ) : null,
   ];
 
   const moreHeading = (

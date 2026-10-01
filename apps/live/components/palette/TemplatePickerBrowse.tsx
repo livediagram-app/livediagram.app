@@ -18,8 +18,8 @@ import {
 
 export type { ShelfCategory };
 
-// Whiteboard is a different activity from the diagram templates: never on a category shelf (it
-// leads Popular's starters, third), its own tile closes the category grid (docs/specs/023-whiteboard/whiteboard.md "Creating one").
+// Whiteboard is a different activity from the diagram templates, and not a category: never on a
+// category shelf or a tile of its own, only on Popular (third) (docs/specs/023-whiteboard/whiteboard.md "Creating one").
 const onShelf = (t: TemplateDescriptor) => t.kind !== 'whiteboard';
 
 // The template step's browse surface, lifted out of TemplatePicker: the
@@ -46,7 +46,6 @@ export function TemplatePickerBrowse({
   setShelfExpanded,
   popularTemplates,
   categoryTemplates,
-  whiteboardTemplate,
   templateKind,
   onTemplateCommit,
 }: {
@@ -66,7 +65,6 @@ export function TemplatePickerBrowse({
   setShelfExpanded: (expanded: boolean) => void;
   popularTemplates: TemplateDescriptor[];
   categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
-  whiteboardTemplate?: TemplateDescriptor;
   templateKind: TemplateKind;
   // Single-click a template card: select it AND move on (the welcome wizard to Location, Quick Start applies it)
   // (docs/specs/006-document/offline-mode.md). The same handler backs double-click, so either gesture works.
@@ -193,7 +191,6 @@ export function TemplatePickerBrowse({
             userOpened={userOpened}
             expanded={shelfExpanded}
             setExpanded={setShelfExpanded}
-            whiteboardTemplate={whiteboardTemplate}
             templateKind={templateKind}
             onTemplateCommit={onTemplateCommit}
           />
