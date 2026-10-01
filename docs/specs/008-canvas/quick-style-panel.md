@@ -250,7 +250,11 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **A colour stored by name** (a whiteboard stock colour, such as an imported blue line) matches no
+- **On a whiteboard the Stroke and Text colour rows are the whiteboard's colours**: Ink, the seven
+  stock colours and the tab's custom colours, as Marker colour offers them
+  ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel stays"); a stock colour is
+  stored by name and marked by name. Background keeps the theme's fills.
+- **A colour stored by name** on a diagram tab (a whiteboard element pasted there) matches no
   theme swatch, so it marks none; choosing a swatch replaces the name with the swatch's colour.
 - **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
   its marker strokes ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel

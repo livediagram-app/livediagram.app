@@ -66,9 +66,14 @@ centred across the **top** of the canvas by default (see
   they are about the document, not about drawing.
 - **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
   it is how a shape, line or text box gets another colour or width once
-  drawn, since the pens colour only their own strokes. Its "theme default"
-  swatches show the board's ink (and no fill for a background), and a
-  restyle on a whiteboard never feeds the style memory diagram tabs use.
+  drawn, since the pens colour only their own strokes. A whiteboard has no
+  theme, so its **Stroke** and **Text colour** rows offer the **whiteboard's
+  colours**, the same choices as Marker colour: **Ink** first, then the seven
+  stock colours (stored by name, adaptive per board), then the tab's custom
+  colours section when there is one. Ink clears the element's own colour, so
+  it draws in the board's ink. **Background** keeps its fills, "no fill" first.
+  A restyle on a whiteboard never feeds the style memory diagram tabs use; the
+  board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
   Bold). The quick style panel is **quick choices only**: no colour picker in
   it. **Marker colour** is the same **eight stock colours** as the marker's
