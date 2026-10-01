@@ -68,6 +68,11 @@ More that wasn't on the strip does the same.
   tiles all fit keeps its own order, so its tiles never shuffle under the
   pointer after a pick. Favourites' More button, there for its search and
   Edit footer, doesn't count: the test is the tiles alone.
+- **Fixed dividers** (a tile's `dividerAfter`, such as Draw's after Marker 3
+  and after Polygon) show on the strip only while the category is whole and
+  in its own order. They count as one more tile's room when the category is
+  fitted; short of it they are dropped before any tile goes behind More, and
+  a category ordered by use shows none.
 - **One recently-used list** of tile ids, most recent first, across every
   category (`lib/toolbar-recent-tiles.ts`, capped at 40). Each category shows
   its used tiles first, in that order, then the rest in the category's own

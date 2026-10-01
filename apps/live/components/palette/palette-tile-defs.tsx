@@ -140,7 +140,7 @@ type PaletteTileAction =
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   // The whiteboard's pens in the Draw category (docs/specs/008-canvas/canvas-and-palette.md): the
-  // Path tool, and a marker picked up by id. Both are held until another tool is picked.
+  // Path tool (held until another tool is picked), and a marker picked up by id (one stroke).
   | { type: 'path' }
   | { type: 'marker'; pen: WhiteboardPenId }
   | { type: 'arrow' }
@@ -234,6 +234,10 @@ export type PaletteTileDef = {
   // Tile only renders when the editor supplies onAddImage (image uploads
   // available) — the Image / Avatar / Hero / Header tiles.
   needsImage?: boolean;
+  // Ends a cluster of its category: a fixed divider follows it on the Toolbar strip and in the
+  // category's list, when another tile follows and the category shows in its own order
+  // (docs/specs/008-canvas/canvas-and-palette.md "The whiteboard's pens in the Draw category").
+  dividerAfter?: true;
   action: PaletteTileAction;
 };
 
@@ -472,8 +476,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   // The Draw category, in the order people reach for it (docs/specs/008-canvas/canvas-and-palette.md
   // "The whiteboard's pens in the Draw category"): the three markers first, then the Path tool,
-  // Arrow and Polygon, then the pencils. The markers and the Path tool are held until another tool
-  // is picked, and have no keys here: P and 6 stay the pencil and the Shape Pen on a diagram tab.
+  // Arrow and Polygon, then the pencils, with a divider after the markers and after Polygon. A
+  // marker draws one stroke (Shift at the lift keeps it), the Path tool is held until another tool
+  // is picked, and none has a key here: P and 6 stay the pencil and the Shape Pen on a diagram tab.
   {
     id: 'tools:marker-1',
     blurb: 'A pen in the theme ink',
@@ -481,7 +486,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'draw',
     label: 'Marker 1',
     description:
-      'Draw in the theme ink, held until you pick another tool. Set its width in the quick style panel.',
+      'Draw a stroke in the theme ink. Hold Shift as you finish to keep drawing. Set its width in the quick style panel.',
     action: { type: 'marker', pen: 'main' },
     icon: <MarkerTileIcon pen="main" size={TILE_GLYPH_PX} />,
   },
@@ -492,7 +497,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'draw',
     label: 'Marker 2',
     description:
-      'Draw with your second marker (blue to start), held until you pick another tool. Set its colour and width in the quick style panel.',
+      'Draw a stroke with your second marker (blue to start). Hold Shift as you finish to keep drawing. Set its colour and width in the quick style panel.',
     action: { type: 'marker', pen: 'second' },
     icon: <MarkerTileIcon pen="second" size={TILE_GLYPH_PX} />,
   },
@@ -503,7 +508,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'draw',
     label: 'Marker 3',
     description:
-      'Draw with your third marker (red to start), held until you pick another tool. Set its colour and width in the quick style panel.',
+      'Draw a stroke with your third marker (red to start). Hold Shift as you finish to keep drawing. Set its colour and width in the quick style panel.',
+    dividerAfter: true,
     action: { type: 'marker', pen: 'third' },
     icon: <MarkerTileIcon pen="third" size={TILE_GLYPH_PX} />,
   },
@@ -540,6 +546,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'draw',
     label: 'Polygon',
     description: 'Click to place points. Click the start to close, double-click to finish a line.',
+    dividerAfter: true,
     action: { type: 'polygon' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={18}>

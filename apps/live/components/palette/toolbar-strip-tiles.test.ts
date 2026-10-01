@@ -76,6 +76,26 @@ describe('stripTilesFor', () => {
     expect(strip.hasMore).toBe(true);
   });
 
+  it("draws Draw's fixed dividers after the markers and after Polygon while it fits whole", () => {
+    const strip = stripTilesFor('draw', NONE);
+    expect([...strip.dividersAfter]).toEqual(['tools:marker-3', 'tools:polygon']);
+  });
+
+  it('counts the dividers as one more tile, and drops them before any tile', () => {
+    const count = stripTilesFor('draw', NONE).tiles.length;
+    expect(stripTilesFor('draw', { ...NONE, limit: count + 1 }).dividersAfter.size).toBe(2);
+    const tight = stripTilesFor('draw', { ...NONE, limit: count });
+    expect(tight.tiles).toHaveLength(count);
+    expect(tight.hasMore).toBe(false);
+    expect(tight.dividersAfter.size).toBe(0);
+  });
+
+  it('drops the dividers once the category is ordered by use', () => {
+    const own = stripTilesFor('draw', NONE).tiles.map((t) => t.id);
+    const strip = stripTilesFor('draw', { ...NONE, limit: 4, recent: [own[6]!] });
+    expect(strip.dividersAfter.size).toBe(0);
+  });
+
   it('ignores a used tile that is not in the category', () => {
     const shapes = stripTilesFor('shapes', NONE).tiles.map((t) => t.id);
     const strip = stripTilesFor('shapes', { ...NONE, recent: ['tools:session-timer'] });

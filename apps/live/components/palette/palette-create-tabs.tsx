@@ -89,7 +89,12 @@ export function PaletteEventStormingTab({
 // drop and type into.
 export function PaletteDrawTab({ pendingDraw, actions }: TabProps) {
   return (
-    <PaletteToolRows tiles={tilesInToolGroup('draw')} actions={actions} pendingDraw={pendingDraw} />
+    <PaletteToolRows
+      tiles={tilesInToolGroup('draw')}
+      actions={actions}
+      pendingDraw={pendingDraw}
+      dividers
+    />
   );
 }
 

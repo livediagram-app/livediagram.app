@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useEffectEvent,
@@ -144,7 +145,7 @@ export function ToolbarPalette(props: Props) {
     () => ({ recent, limit: stripLimit, onUse }),
     [recent, stripLimit, onUse],
   );
-  const { tiles, hasMore } = stripTilesFor(category?.id ?? defaultId, {
+  const { tiles, hasMore, dividersAfter } = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,
     limit: stripLimit,
@@ -365,27 +366,39 @@ export function ToolbarPalette(props: Props) {
                 <ToolbarStripRail
                   railKey={category?.id ?? defaultId}
                   items={[
-                    ...tiles.map((def) => (
-                      <PaletteTile
-                        key={def.id}
-                        def={def}
-                        actions={tileActions}
-                        pendingDraw={pendingDraw}
-                        compact
-                      />
-                    )),
+                    ...tiles.map((def) => {
+                      const tile = (
+                        <PaletteTile
+                          def={def}
+                          actions={tileActions}
+                          pendingDraw={pendingDraw}
+                          compact
+                        />
+                      );
+                      // A fixed divider rides with the tile it follows, so it slides with it.
+                      return dividersAfter.has(def.id) ? (
+                        <span key={def.id} className="flex items-center">
+                          {tile}
+                          <Divider />
+                        </span>
+                      ) : (
+                        <Fragment key={def.id}>{tile}</Fragment>
+                      );
+                    }),
                   ]}
                   leavingItems={
                     leaving
                       ? [
                           ...leaving.tiles.map((def) => (
-                            <PaletteTile
-                              key={def.id}
-                              def={def}
-                              actions={tileActions}
-                              pendingDraw={null}
-                              compact
-                            />
+                            <span key={def.id} className="flex items-center">
+                              <PaletteTile
+                                def={def}
+                                actions={tileActions}
+                                pendingDraw={null}
+                                compact
+                              />
+                              {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
+                            </span>
                           )),
                         ]
                       : null

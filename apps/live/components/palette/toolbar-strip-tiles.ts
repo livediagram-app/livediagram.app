@@ -144,17 +144,34 @@ export function stripTilesFor(
     limit?: number;
     recent?: readonly string[];
   },
-): { tiles: PaletteTileDef[]; hasMore: boolean } {
+): { tiles: PaletteTileDef[]; hasMore: boolean; dividersAfter: ReadonlySet<string> } {
   const base = allTilesFor(categoryId, favouriteIds);
   const extra = recentCatalogueTiles(categoryId, recent).filter(
     (t) => !base.some((b) => b.id === t.id),
   );
-  const all = orderByUseWhenOverflowing(visibleTiles([...extra, ...base], hasImage), recent, limit);
+  const candidates = visibleTiles([...extra, ...base], hasImage);
+  // A category's fixed dividers show only while it is whole on the strip, in its own order: by
+  // use, the clusters they mark are broken up. They take room too, so a category with any counts
+  // one tile more when it is fitted (a divider is a fifth of a tile; a category has two at most).
+  // Short of that room the dividers go first: the tiles alone may still fit whole.
+  const dividers = candidates.slice(0, -1).filter((t) => t.dividerAfter);
+  const fitsWhole = candidates.length + (dividers.length > 0 ? 1 : 0) <= limit;
+  if (fitsWhole) {
+    return {
+      tiles: candidates,
+      hasMore: ALWAYS_MORE.has(categoryId),
+      dividersAfter: new Set(dividers.map((t) => t.id)),
+    };
+  }
+  const all = orderByUseWhenOverflowing(candidates, recent, limit);
   return {
     tiles: all.slice(0, limit),
     hasMore: all.length > limit || ALWAYS_MORE.has(categoryId),
+    dividersAfter: NO_DIVIDERS,
   };
 }
+
+const NO_DIVIDERS: ReadonlySet<string> = new Set();
 
 // Reordering by use only earns its keep when it decides which tiles stay on the strip and which
 // go behind More. A category that fits whole keeps its own order, so its tiles never shuffle

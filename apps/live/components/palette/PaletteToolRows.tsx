@@ -14,7 +14,7 @@
 
 import { Tooltip } from '@livediagram/ui';
 import { StarIcon } from '@/components/primitives/explorer-icons';
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -180,6 +180,7 @@ export function PaletteToolRows({
   optionIdPrefix,
   favouriteIds,
   onToggleFavourite,
+  dividers = false,
 }: {
   tiles: PaletteTileDef[];
   actions: PaletteTileActions;
@@ -194,21 +195,32 @@ export function PaletteToolRows({
   activeIndex?: number;
   // Prefix for the per-row DOM ids the caller points aria-activedescendant at.
   optionIdPrefix?: string;
+  // Draws the category's fixed dividers (PaletteTileDef.dividerAfter). Only a category's own list
+  // asks: in search results or Favourites the clusters they mark aren't there.
+  dividers?: boolean;
 }) {
   const defs = visibleTiles(tiles, actions.hasImage);
   return (
     <div className="flex flex-col gap-0.5" role={optionIdPrefix ? 'listbox' : undefined}>
       {defs.map((def, i) => (
-        <PaletteToolRow
-          key={def.id}
-          def={def}
-          actions={actions}
-          pendingDraw={pendingDraw}
-          id={optionIdPrefix ? `${optionIdPrefix}-${i}` : undefined}
-          highlighted={activeIndex === i}
-          favourite={favouriteIds?.has(def.id)}
-          onToggleFavourite={onToggleFavourite}
-        />
+        <Fragment key={def.id}>
+          <PaletteToolRow
+            def={def}
+            actions={actions}
+            pendingDraw={pendingDraw}
+            id={optionIdPrefix ? `${optionIdPrefix}-${i}` : undefined}
+            highlighted={activeIndex === i}
+            favourite={favouriteIds?.has(def.id)}
+            onToggleFavourite={onToggleFavourite}
+          />
+          {dividers && def.dividerAfter && i < defs.length - 1 ? (
+            <div
+              aria-hidden
+              data-palette-divider=""
+              className="mx-2 my-1 h-px shrink-0 bg-slate-200 dark:bg-slate-700"
+            />
+          ) : null}
+        </Fragment>
       ))}
     </div>
   );
