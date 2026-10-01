@@ -97,12 +97,13 @@ type TemplatePickerProps = {
   onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   // Dismiss the modal without picking a template or theme. The document
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
-  // and the empty-state card prompts the next step. Triggered by the X in
-  // the header (all modes) or the Cancel button (non-welcome modes only:
-  // the welcome wizard offers Skip instead, which commits Blank + the Default theme).
+  // and the empty-state card prompts the next step. Triggered by Skip
+  // (Blank + the Default theme), the Cancel button (non-welcome modes), and the X
+  // and Escape when there is no onBackOut.
   onSkip: () => void;
-  // Escape on the first step of the /new wizard: back to the page that opened it, creating nothing
-  // (docs/specs/007-editor/new-document-route.md "Escape backs out"). Absent: Escape closes as onSkip.
+  // The X, and Escape on the first step of the /new wizard: back to the page that opened it,
+  // creating nothing (docs/specs/007-editor/new-document-route.md "Escape backs out"). Absent: both close
+  // as onSkip.
   onBackOut?: () => void;
   // True while the host is committing the pick (the new-document POST can
   // take a moment). Drives the primary button's spinner + disabled state
@@ -375,7 +376,9 @@ export function TemplatePicker({
               ) : null}
               <button
                 type="button"
-                onClick={onSkip}
+                // The X backs out as Escape does, from any step, creating nothing
+                // (docs/specs/007-editor/new-document-route.md "Escape backs out").
+                onClick={onBackOut ?? onSkip}
                 aria-label="Close"
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
