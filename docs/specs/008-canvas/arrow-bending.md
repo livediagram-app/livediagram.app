@@ -47,6 +47,16 @@ The curve and elbow handles stay: they are the precise controls. The "+" add-poi
 removed. Right-clicking a bend point still deletes it, and deleting the last one still reverts the
 arrow to a straight line.
 
+## Angled legs stay square
+
+An angled arrow's bend points are stored as deltas from its chord midpoint, so moving an end
+(snapping it onto an anchor, the fan, the box it is pinned to moving) shifts every corner by half
+that move. The leg into a box then slanted and its head pointed in at an angle. So wherever an
+angled arrow's corners are worked out (`angledCornerPoints`: the drawn path, its handles, the
+export, hit-testing), the corner next to each **pinned** end is lined up with that end on the leg's
+axis: an end on a top or bottom edge leaves vertically, one on a side horizontally. Only that one
+coordinate moves, so the next segment keeps its direction. A free end's leg is drawn as stored.
+
 ## Bends line up
 
 A dragged bend snaps to **other arrows' bends**, so a set of angled arrows can turn on the same line:

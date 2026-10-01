@@ -251,6 +251,25 @@ describe('angledElbow', () => {
     expect(d.endsWith('30 5')).toBe(true);
   });
 
+  // docs/specs/008-canvas/arrow-bending.md "Angled legs stay square": an end pinned to a top edge
+  // keeps a vertical last leg however its stored corner drifted.
+  it('keeps a pinned end\u2019s leg square when its stored corner has drifted', () => {
+    const pinnedTop = { kind: 'pinned', elementId: 'box', anchor: 'n' } as const;
+    // Chord (0,0) → (120,100), midpoint (60,50): the stored corner is (117, 0), 3 px left of the
+    // head, so drawn as stored the last leg slants. Squared, it sits straight above the head.
+    const d = arrowPathD(
+      'angled',
+      { x: 0, y: 0 },
+      { x: 120, y: 100 },
+      free(0, 0),
+      pinnedTop,
+      undefined,
+      undefined,
+      [{ dx: 57, dy: -50 }],
+    );
+    expect(d).toBe('M 0 0 L 120 0 L 120 100');
+  });
+
   it('angled with curve points renders a straight polyline through them (stays angled)', () => {
     const d = arrowPathD(
       'angled',

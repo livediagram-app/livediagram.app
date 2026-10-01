@@ -3,7 +3,13 @@
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
 // paths. svg-render re-exports everything so importers keep resolving.
-import { angledElbow, arrowPathD, curveAnchorPoints, curveControlPoint } from './arrow-path';
+import {
+  angledElbow,
+  arrowPathD,
+  angledCornerPoints,
+  curveAnchorPoints,
+  curveControlPoint,
+} from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
   arrowheadShapeOf,
@@ -33,7 +39,10 @@ export function arrowHeadRefs(
   const style = arrowStyleOf(arrow);
   const pts = arrow.curvePoints;
   if (pts && pts.length > 0 && (style === 'curved' || style === 'angled')) {
-    const anchors = curveAnchorPoints(from, to, pts);
+    const anchors =
+      style === 'angled'
+        ? angledCornerPoints(from, to, pts, arrow.from, arrow.to)
+        : curveAnchorPoints(from, to, pts);
     return { toRef: anchors[anchors.length - 1]!, fromRef: anchors[0]! };
   }
   if (style === 'curved') {

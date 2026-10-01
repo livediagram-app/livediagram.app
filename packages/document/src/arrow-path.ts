@@ -83,6 +83,38 @@ export function curveAnchorPoints(
   return curvePoints.map((p) => ({ x: mx + p.dx, y: my + p.dy }));
 }
 
+// An angled arrow's corners, with its first and last legs kept square to their ends
+// (docs/specs/008-canvas/arrow-bending.md "Angled legs stay square"). The stored corners are
+// chord-midpoint deltas, so moving an end (snapping it onto an anchor, the fan, the box moving)
+// shifts them by half that move and left the leg into the box slanted, its head pointing in at
+// an angle. The corner next to each PINNED end is lined up with it on the leg's axis instead: an
+// end on a top or bottom edge leaves vertically, one on a side horizontally. Only that coordinate
+// moves, so the next segment keeps its direction. A free end's leg is drawn as stored (it has no
+// face to meet square). With one corner and both ends wanting the same axis, the head's end wins.
+export function angledCornerPoints(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  curvePoints: { dx: number; dy: number }[],
+  fromEp?: Endpoint,
+  toEp?: Endpoint,
+): { x: number; y: number }[] {
+  const corners = curveAnchorPoints(from, to, curvePoints);
+  if (corners.length === 0) return corners;
+  const square = (
+    corner: { x: number; y: number },
+    end: { x: number; y: number },
+    ep: Endpoint | undefined,
+  ) => {
+    const anchor = anchorOf(ep);
+    if (!anchor) return;
+    if (onHorizontalEdge(anchor)) corner.x = end.x;
+    else corner.y = end.y;
+  };
+  square(corners[0]!, from, fromEp);
+  square(corners[corners.length - 1]!, to, toEp);
+  return corners;
+}
+
 // Smooth path through every point (a uniform Catmull-Rom spline expressed as
 // cubic Beziers, ends clamped). Passes THROUGH each point, so dragging a
 // control point moves the curve onto it. Used for multi-bend curves; the
@@ -181,7 +213,7 @@ export function arrowPathD(
   // points (so adding a bend keeps the angled look rather than smoothing it);
   // the single-elbow case keeps the auto right-angle corner.
   if (curvePoints && curvePoints.length > 0) {
-    const anchors = curveAnchorPoints(from, to, curvePoints);
+    const anchors = angledCornerPoints(from, to, curvePoints, fromEp, toEp);
     return `M ${from.x} ${from.y} ${anchors.map((a) => `L ${a.x} ${a.y}`).join(' ')} L ${to.x} ${to.y}`;
   }
   const elbow = angledElbow(from, to, fromEp, toEp, elbowOffset);
@@ -226,7 +258,8 @@ export function arrowPathMidpoint(
 ): { x: number; y: number } {
   if (style === 'angled') {
     if (curvePoints && curvePoints.length > 0) {
-      return polylineAt([from, ...curveAnchorPoints(from, to, curvePoints), to], 0.5).point;
+      return polylineAt([from, ...angledCornerPoints(from, to, curvePoints, fromEp, toEp), to], 0.5)
+        .point;
     }
     return angledElbow(from, to, fromEp, toEp, elbowOffset);
   }
@@ -287,7 +320,7 @@ export function arrowPathPolyline(
   }
   if (style === 'angled') {
     if (curvePoints && curvePoints.length > 0) {
-      return [from, ...curveAnchorPoints(from, to, curvePoints), to];
+      return [from, ...angledCornerPoints(from, to, curvePoints, fromEp, toEp), to];
     }
     return [from, angledElbow(from, to, fromEp, toEp, elbowOffset), to];
   }

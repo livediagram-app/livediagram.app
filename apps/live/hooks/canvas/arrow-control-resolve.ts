@@ -1,4 +1,5 @@
 import {
+  angledCornerPoints,
   arrowStyleOf,
   curveAnchorPoints,
   endpointPosition,
@@ -34,7 +35,11 @@ function snapArrowControlPoint(
   if (!arrow) return { point: raw, guides: [] };
   const from = endpointPosition(arrow.from, els);
   const to = endpointPosition(arrow.to, els);
-  const anchors = arrow.curvePoints ? curveAnchorPoints(from, to, arrow.curvePoints) : [];
+  const anchors = !arrow.curvePoints
+    ? []
+    : arrowStyleOf(arrow) === 'angled'
+      ? angledCornerPoints(from, to, arrow.curvePoints, arrow.from, arrow.to)
+      : curveAnchorPoints(from, to, arrow.curvePoints);
   const poly = [from, ...anchors, to];
   const neighbours =
     pointIndex != null && arrow.curvePoints
