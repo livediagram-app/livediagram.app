@@ -100,11 +100,22 @@ Top to bottom, each a small title over one row of option buttons:
 |                | Arrows                                             | Solid / Dashed / Flowing           |
 | Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
 | Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
+| Corners        | Free-corner shapes (whiteboards only)              | None / Small / Medium / Large      |
 | Actions        | Shapes + arrows + text elements                    | Clear styles                       |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
+- **Corners** (whiteboards only) sets the corner preset ([Corner radius](corner-radius.md)) of
+  every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
+  the web components with a rectangular surface) and leaves the rest. It earns its place on a
+  whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the
+  only place a board's corners can change, and every imported or drawn rectangle carries them.
+  On a diagram tab the menu's Border category already holds them and corners are not among the
+  most-used choices, so the row is not shown there. It offers four options, not three: dropping
+  None would leave no way back to square, and Full is a pill rather than a corner, so it stays in
+  the menu's set. That one row of four is the operator's decision; the rhythm rule below still
+  holds for every other row. An element with no preset (its kind's default corner) marks none.
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
   arrangement, and a fourth option would break the row rhythm.
@@ -355,7 +366,7 @@ WCAG 2.2 AA.
 Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), each panel choice emits
 `Element·Changed` with its own token, distinct from the context menu's, so panel use can be read
 against menu use (which is the evidence the Actions section asks for): `QuickStroke`,
-`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, and
+`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, `QuickCorners`, and
 `QuickClearStyles`. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
 when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared, both
 counted as Custom Swatches in the dashboard's Look & Feel stack.

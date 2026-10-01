@@ -168,6 +168,14 @@ neither envelope records a theme. Items keep the scene's z-order (below).
 | `image`                                            | `image` with `asset` = `fileId` (the element id when absent); a `crop` sets `crop`. Its `files` entry with a `dataURL` becomes a `data-url` asset, once per `fileId`                                                                                                                                                                                               |
 | `embeddable`, `iframe`, `selection`, anything else | skipped, counted in a note by its type                                                                                                                                                                                                                                                                                                                             |
 
+**Rounded corners.** A rounded rectangle (`roundness` type 2 or 3; type 1, the legacy one, the
+same) lands with the **Large** corner preset on both profiles. Excalidraw rounds a corner by 25%
+of the shorter side, capped at 32 px (type 3); our corners are never more than a quarter of the
+shorter side either ([Corner radius](../008-canvas/corner-radius.md)), so through Large (24 px)
+every rectangle up to 96 px across matches Excalidraw exactly, and larger ones round a little less
+(24 px against 32). A 14 px rounded square lands with corners of about 3.5 px, a rounded square,
+not a circle. Export mirrors it: any corner preset but None writes `roundness: { type: 3 }`.
+
 Properties, applied wherever present:
 
 - **Colours** are passed through as light-reference `SceneColour`s: Excalidraw
@@ -247,7 +255,7 @@ The landing is [Board scene](board-scene.md)'s, one for every source:
   pinned to their shapes, the frame.
 - **Diagram profile** (a diagram or event-storming tab, and the Import
   dialog on such a tab): the element mapping this importer has always had:
-  rectangles as `square` shapes (rounded corners as `md`), ellipses as
+  rectangles as `square` shapes (rounded corners as `lg`, see below), ellipses as
   `circle`, diamonds, frames, text elements, arrows with pinned ends and curve
   points, two-point lines as headless arrows, longer lines and freedraw as
   `freehand` (straight-edged for lines), images, and the scene background as
@@ -328,7 +336,7 @@ tab's background colour, and an empty `files` map. Kind by kind:
 
 | livediagram                                                                                                | Excalidraw                                                                                                                                                                                                                                         |
 | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `square`                                                                                                   | `rectangle` (`borderRadius: 'none'` → sharp, else rounded)                                                                                                                                                                                         |
+| `square`                                                                                                   | `rectangle` (`borderRadius: 'none'` → sharp, else `roundness` type 3)                                                                                                                                                                              |
 | `circle`, `annotation`                                                                                     | `ellipse`                                                                                                                                                                                                                                          |
 | `diamond`                                                                                                  | `diamond`                                                                                                                                                                                                                                          |
 | `stadium`                                                                                                  | `rectangle` with rounded corners                                                                                                                                                                                                                   |

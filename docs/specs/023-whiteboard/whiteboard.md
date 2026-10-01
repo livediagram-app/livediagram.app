@@ -71,7 +71,9 @@ centred across the **top** of the canvas by default (see
   colours**, the same choices as Marker colour: **Ink** first, then the seven
   stock colours (stored by name, adaptive per board), then the tab's custom
   colours section when there is one. Ink clears the element's own colour, so
-  it draws in the board's ink. **Background** keeps its fills, "no fill" first.
+  it draws in the board's ink. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
+  Medium, Large) rounds the selected rectangles, which the menu does not
+  offer on a whiteboard ([Corner radius](../008-canvas/corner-radius.md)).
   A restyle on a whiteboard never feeds the style memory diagram tabs use; the
   board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /

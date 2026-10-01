@@ -62,3 +62,5 @@ One row per default applied where a spec is silent or qualitative.
 | D57 | selection-clicks  | Which selection a click is settled against                             | The selection at release, read through a ref; a press never changes a selected element's membership                 |
 | D58 | selection-clicks  | How long a mouse or pen press may be held and still click              | No limit; only touch hands a held press to the long-press                                                           |
 | D59 | quick-style-panel | What the whiteboard caption counts on a mixed selection                | The styled elements (targets and marker strokes); passed-over kinds are not counted                                 |
+| D60 | corner-radius     | Which kinds the quarter cap covers                                     | Every drawn corner, presets and kind defaults alike; only Full is exempt                                            |
+| D61 | quick-style-panel | What the Corners row marks for an element with no preset               | Nothing: its kind's default corner is none of the four                                                              |
