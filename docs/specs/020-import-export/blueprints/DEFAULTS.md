@@ -28,3 +28,5 @@ One row per default applied where a spec is silent or qualitative.
 | B9  | board-scene           | A paste whose tab is left while its images upload                       | It does not land: it belonged to the tab it was made on                                         |
 | B10 | board-scene           | Text colour on a fill that does not adapt                               | Its exact hex, never ink or a stock name (a black label stays black on its pale fill)           |
 | B11 | board-scene           | A stroke longer than an element holds                                   | Sampled evenly along its points, both ends kept, and reported                                   |
+| B12 | board-scene           | How finely landed points are kept                                       | Within 0.05 canvas px at the element's own size (a screen pixel at 5x zoom is 0.2)              |
+| B13 | board-scene           | How finely boxes, free arrow ends and bends are kept                    | A hundredth of a canvas px                                                                      |
