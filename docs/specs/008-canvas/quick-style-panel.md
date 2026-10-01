@@ -116,6 +116,8 @@ Top to bottom, each a small title over one row of option buttons:
   None would leave no way back to square, and Full is a pill rather than a corner, so it stays in
   the menu's set. That one row of four is the operator's decision; the rhythm rule below still
   holds for every other row. An element with no preset (its kind's default corner) marks none.
+  On a whiteboard, Clear styles returns corners to the kind's default too, and the board's style
+  memory remembers them for the next rectangle.
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
   arrangement, and a fourth option would break the row rhythm.

@@ -4,12 +4,18 @@
 // stock colours (stored by name, adaptive per board), then the tab's custom colours. Background
 // keeps the theme's fills, its first swatch "no fill": an unpainted shape there is drawn unfilled
 // (inkWhiteboardElement), so a shape left unfilled reads as that default.
-import type { Element, PenColourName } from '@livediagram/document';
-import { isPenColourName } from '@livediagram/document';
+import {
+  isPenColourName,
+  supportsBorderRadius,
+  type Element,
+  type PenColourName,
+  type ShapeElement,
+} from '@livediagram/document';
 import {
   isQuickStyleTarget,
   supportsQuickSection,
   type BoardColourSection,
+  type QuickCorners,
   type QuickStyleView,
 } from './quick-style';
 import {
@@ -57,6 +63,9 @@ export function onWhiteboard(
   const ids = new Set(view.targetIds);
   const targets = selected.filter((el) => ids.has(el.id));
   const { stroke, textColour, background, ...rest } = view.sections;
+  // Corners (docs/specs/008-canvas/quick-style-panel.md "Corners"): whiteboards only; every
+  // selected element that takes a corner preset.
+  const cornered = targets.filter(takesCorners);
   return {
     ...view,
     sections: {
@@ -89,8 +98,34 @@ export function onWhiteboard(
             ),
           }
         : {}),
+      ...(cornered.length > 0 ? { corners: { value: shared(cornered.map(cornersOf)) } } : {}),
     },
   };
+}
+
+/** The Corners row's choices, in order: None, Small, Medium, Large. */
+export const QUICK_CORNERS: readonly QuickCorners[] = ['none', 'sm', 'md', 'lg'];
+
+// An unlocked element that takes a corner preset (the free-corner rectangles).
+const takesCorners = (el: Element): el is ShapeElement =>
+  supportsBorderRadius(el) && el.locked !== true;
+
+// The preset a target shows: its own among the four, else none (a kind default, a pill).
+const cornersOf = (el: ShapeElement): QuickCorners | null =>
+  (QUICK_CORNERS as readonly string[]).includes(el.borderRadius ?? '')
+    ? (el.borderRadius as QuickCorners)
+    : null;
+
+/** The Corners row: a corner preset on every selected element that takes one, the rest kept. */
+export function applyQuickCorners(el: Element, corners: QuickCorners): Element {
+  return takesCorners(el) ? { ...el, borderRadius: corners } : el;
+}
+
+/** Clear styles on a whiteboard: the corners back to the kind's own default. */
+export function clearQuickCorners(el: Element): Element {
+  if (!takesCorners(el) || el.borderRadius === undefined) return el;
+  const { borderRadius: _r, ...rest } = el;
+  return rest;
 }
 
 function unfilled(targets: readonly Element[]): boolean {

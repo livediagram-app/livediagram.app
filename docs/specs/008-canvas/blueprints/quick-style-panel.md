@@ -251,12 +251,14 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
 
 ## Corners row (whiteboards only)
 
-- `QuickSectionId` gains `'corners'`; `supportsQuickSection(el, 'corners')` = `supportsBorderRadius(el)`.
-  `quickStyleView` builds `sections.corners` only when its `whiteboard` option is set (the hook
-  passes it); value = the shared preset of the supporting targets among `none`, `sm`, `md`, `lg`
+- `onWhiteboard` (`lib/quick-style-whiteboard.ts`, so diagram tabs never see it) builds
+  `sections.corners` (`{ value: QuickCorners | null }`) when any target takes a corner preset
+  (`supportsBorderRadius`, unlocked); value = their shared preset among `none`, `sm`, `md`, `lg`
   (unset or `full` → `null`, so no option is marked).
-- `QUICK_CORNERS` = `['none', 'sm', 'md', 'lg']` named None / Small / Medium / Large, drawn as a
-  rounded-corner glyph; `applyQuickCorners(el, c)` sets `borderRadius` on supporting elements only.
+- `QUICK_CORNERS` = `['none', 'sm', 'md', 'lg']` named None / Small / Medium / Large, drawn with the
+  menu's `BorderRadiusIcon`; `applyQuickCorners(el, c)` sets `borderRadius` on supporting elements only;
+  `clearQuickCorners` removes it, composed into Clear styles on a whiteboard. `QuickRadioRow`'s
+  `columns` sets a button row's count (four here; unset three).
 - `useQuickStyle.setCorners`, token `QuickCorners` (dashboard sentence in
   `apps/telemetry/app/event-explanations.ts`). The board's style memory records `borderRadius` for
   shape kinds (`board:shape:*` only), so "Next rectangle" keeps its corners; diagram memory is unchanged.

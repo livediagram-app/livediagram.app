@@ -46,7 +46,8 @@ export function QuickRadioRow<V extends string | number>({
   density?: QuickRowDensity;
   testId: string;
   // Swatches on a grid of this many 24 px columns (spread in the roomy layout, touching in the
-  // compact one), so a shorter row lines up under a full one. Unset: a flex row.
+  // compact one), so a shorter row lines up under a full one. Unset: a flex row. On a row of
+  // buttons, how many share the row (unset: three).
   columns?: number;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -106,7 +107,9 @@ export function QuickRadioRow<V extends string | number>({
               ? compact
                 ? 'flex'
                 : 'flex justify-between gap-1'
-              : 'grid grid-cols-3 gap-1'
+              : columns
+                ? 'grid gap-1'
+                : 'grid grid-cols-3 gap-1'
         }
         style={
           isSwatchRow && columns
@@ -114,7 +117,9 @@ export function QuickRadioRow<V extends string | number>({
                 gridTemplateColumns: `repeat(${columns}, ${QUICK_TARGET_PX}px)`,
                 justifyContent: compact ? 'start' : 'space-between',
               }
-            : undefined
+            : columns
+              ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }
+              : undefined
         }
       >
         {options.map((o, i) => {
