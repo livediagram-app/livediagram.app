@@ -246,7 +246,9 @@ Local `wrangler dev` does not enforce it, so the api enforces it itself:
   would refuse: document create, the tab save, a comment added or deleted
   through the api, and a Q&A board write. A tab over the cap is refused with
   the named 413 (`payload_too_large`) and nothing is written; the worker logs
-  `[tab-size] refused` with the route, the bytes and the cap. The routes
+  `[tab-size] refused` with the write (`create`, `upsertTab`, `seedTabs`,
+  `swapTabData`), the tab id, the bytes and the cap. The comment routes list
+  413 among their answers in the OpenAPI manifest. The routes
   also check the request up front, so a create never leaves a document
   without its tabs.
 - The cap is not raised and the storage format is unchanged; a tab that needs
