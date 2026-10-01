@@ -4,8 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 
 // The headline's first word cycles through what livediagram is for
-// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Whiteboard ... together,
-// live. The headline stays on one line, and a change never moves anything in layout
+// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Whiteboard, Brainstorm ...
+// together, live. The headline stays on one line, and a change never moves anything in layout
 // (docs/specs/004-interface-design/layout-stability.md): every word sits in the same grid cell, so
 // the slot is as wide as the widest, and each word is right-aligned in it, snug against
 // "together". A shorter word would leave the line off-centre by half the difference, so the whole
@@ -19,10 +19,10 @@ import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 // (the current one in brand) and holds the cycle while it is up. Decorative: the h1 carries the stable
 // text for screen readers.
 
-const HERO_WORDS = ['Diagram', 'Document', 'Whiteboard'] as const;
+const HERO_WORDS = ['Diagram', 'Document', 'Whiteboard', 'Brainstorm'] as const;
 
 // How long each word holds before the next.
-const WORD_MS = 7000;
+const WORD_MS = 1500;
 
 // Half the gap between "Whiteboard" and "Diagram", in em: the first word's glide before anything
 // is measured (0.694em at 72px, 0.710em at 24px).
