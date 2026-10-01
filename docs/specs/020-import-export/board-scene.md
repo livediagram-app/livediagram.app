@@ -140,6 +140,9 @@ Each scene colour resolves to one of three things, in this order:
   drawn in one colour").
 - **Filled ink** lands without its fill (degraded: "Filled pen strokes drawn
   without their fill").
+- **Very long strokes** (more points than a stroke or path holds) are sampled
+  evenly along their length, both ends kept (degraded: "Very long strokes were
+  simplified").
 - **Rotation** carries over on every boxed kind and on strokes and paths; an
   arrow's points are turned by it instead.
 - **Links** are kept when they are web or email addresses (http, https,
@@ -205,7 +208,8 @@ under a skipped rule.
   the [Import image pipeline](import-image-pipeline.md) first (insert mode: the
   board is not replaced), then the elements land at once, **selected**, with
   their text boxes hugging their text in our fonts. While images upload, the
-  paste notice says "Pasting images 3 of 12…".
+  paste notice says "Pasting images 3 of 12…". A paste whose tab is left while
+  its images upload belongs to that tab, so it does not land on another.
 - **Import a board** (the Import dialog): replace the active tab (the
   Excalidraw card) or open each board as a **new whiteboard tab** after the
   active one (the Microsoft Whiteboard card), all in one undo step, the first
@@ -217,6 +221,8 @@ under a skipped rule.
   - Heading: "Pasted from Excalidraw with some changes" (the source's name).
   - One line per rule, the count first: "2 · Groups were dropped".
   - Image placeholders as the image pipeline words them.
+  - A refused paste (too big for the tab) says "Couldn't paste from Excalidraw"
+    and the rejection's sentence.
   - A Close button ("Close", Escape when focused). It stays until closed,
     replaced by the next paste's, or the tab changes: it never times out under
     the reader.

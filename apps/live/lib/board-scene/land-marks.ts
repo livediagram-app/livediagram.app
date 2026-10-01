@@ -38,6 +38,7 @@ export function landInk(item: SceneInk, id: string, ctx: LandContext): FreehandE
   if (item.fill) ctx.degrade(LANDING_RULES.filledInk);
   if (stroke.dash && stroke.dash !== 'solid') ctx.degrade(LANDING_RULES.dashedInk);
   let points: ScenePoint[] = limitPoints(item.points, MAX_FREEHAND_POINTS - 1);
+  if (points.length < item.points.length) ctx.degrade(LANDING_RULES.longStroke);
   if (item.closed && !endsMeet(points, CLOSED_END_EPSILON_PX)) points = [...points, points[0]!];
   const box = boxOfPoints(points);
   const pressured = points.every((p) => p.p !== undefined && Number.isFinite(p.p));
@@ -114,6 +115,7 @@ function curveAnchors(pts: readonly ScenePoint[], closed: boolean): PathAnchor[]
 export function landPath(item: ScenePolyline, id: string, ctx: LandContext): PathElement {
   const closed = item.closed === true;
   let pts: ScenePoint[] = limitPoints(item.points, MAX_PATH_NODES);
+  if (pts.length < item.points.length) ctx.degrade(LANDING_RULES.longStroke);
   if (closed && endsMeet(pts, CLOSED_END_EPSILON_PX)) pts = pts.slice(0, -1);
   const anchors: PathAnchor[] = item.curved
     ? curveAnchors(pts, closed)

@@ -15,6 +15,7 @@ export const LANDING_RULES = {
   unsafeLink: "Links that aren't web addresses were dropped",
   unsized: 'Elements without a size were skipped',
   emptyText: 'Empty text boxes were skipped',
+  longStroke: 'Very long strokes were simplified',
 } as const;
 
 export type LandContext = {

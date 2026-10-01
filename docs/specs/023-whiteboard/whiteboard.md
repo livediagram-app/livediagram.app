@@ -494,9 +494,11 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
   viewer's board. Anything else keeps its exact hex, a custom colour, and shows
   in the quick style panel's custom colours.
 - **Named colours on every mark:** a stock colour is stored by name on a
-  stroke, shape, line, arrow and path (its line colour) and on a text box and a
-  shape's label (its text colour), each drawn in its board's version when no
-  explicit colour overrides it.
+  stroke, shape, line, arrow and path (its line colour) and on a text box, a
+  shape's label, a sticky note's text and an arrow's label (its text colour),
+  each drawn in its board's version when no explicit colour overrides it. Text
+  on a fill (a filled shape's label, a sticky note's own text colour) keeps its
+  exact colour instead, since the fill does not adapt.
 - **Text hugs:** every landed text box hugs its text in our fonts, at the size
   it had (the nearest size times a text scale); hand-drawn fonts land in Caveat.
 - **A paste selects its result**, lands at the pointer (or the middle of the

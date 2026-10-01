@@ -101,8 +101,9 @@ case-insensitively, else `null`.
   colour on every branch (D34).
 - Cleared by: `applyFillColorToEl` (`fillSwatch`), `applyStrokeColorToEl` (`strokeSwatch`, shapes and
   arrows), `applyTextColorToEl` (`textSwatch`, text elements), `applyColorPresetToEl` (both),
-  `resetColorsSelected` (shape both, arrow stroke, text `textSwatch`), `resetShapeStyleSelected` (both).
-- Format painter: `paintableFields` carries `fillSwatch` (group Fill) and `strokeSwatch` (group Border)
+  `resetColorsSelected` through `resetElementColours` (shape both, arrow stroke, text `textSwatch`; and
+  every whiteboard stock name), `resetShapeStyleSelected` (both).
+- Format painter: `paintableBoxedFields` carries `fillSwatch` (group Fill) and `strokeSwatch` (group Border)
   for shapes and `textSwatch` (group Text) for text elements, `paintableArrowFields` carries
   `strokeSwatch`. `applyPaint` keeps a binding only when its
   colour was painted with a defined binding; a painted colour without one deletes it.

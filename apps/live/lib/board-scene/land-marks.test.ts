@@ -162,9 +162,11 @@ describe('landInk', () => {
 
   it('samples a stroke longer than the freehand limit', () => {
     const points = Array.from({ length: MAX_FREEHAND_POINTS + 50 }, (_, i) => ({ x: i, y: i % 7 }));
-    const el = landInk(ink({ points }), 'i', createLandContext());
+    const ctx = createLandContext();
+    const el = landInk(ink({ points }), 'i', ctx);
     expect(el.points.length).toBeLessThanOrEqual(MAX_FREEHAND_POINTS);
     expect(isValidElement(el)).toBe(true);
+    expect(ctx.notes()).toEqual([{ rule: LANDING_RULES.longStroke, count: 1, kind: 'degraded' }]);
   });
 });
 

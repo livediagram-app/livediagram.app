@@ -25,3 +25,6 @@ One row per default applied where a spec is silent or qualitative.
 | B6  | board-scene           | Default title of a landed whiteboard tab                                | "Whiteboard", the template's title                                                              |
 | B7  | board-scene           | How long the paste notice stays                                         | Until closed, replaced by the next paste, or the tab changes (no timer: WCAG 2.2.1)             |
 | B8  | board-scene           | Serif source fonts                                                      | Lora, the catalogue's serif                                                                     |
+| B9  | board-scene           | A paste whose tab is left while its images upload                       | It does not land: it belonged to the tab it was made on                                         |
+| B10 | board-scene           | Text colour on a fill that does not adapt                               | Its exact hex, never ink or a stock name (a black label stays black on its pale fill)           |
+| B11 | board-scene           | A stroke longer than an element holds                                   | Sampled evenly along its points, both ends kept, and reported                                   |

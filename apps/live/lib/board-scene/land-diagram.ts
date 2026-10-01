@@ -12,7 +12,7 @@ import {
 } from '@livediagram/document';
 import { colourAlpha } from './colour';
 import { boxOfPoints, commonFields, endsMeet, limitPoints } from './common';
-import type { LandContext } from './context';
+import { LANDING_RULES, type LandContext } from './context';
 import { CLOSED_END_EPSILON_PX, strokeOpacity } from './land-marks';
 import type {
   SceneColour,
@@ -71,6 +71,7 @@ export function diagramFreehand(
   ctx: LandContext,
 ): FreehandElement {
   let points = limitPoints(item.points, MAX_FREEHAND_POINTS);
+  if (points.length < item.points.length) ctx.degrade(LANDING_RULES.longStroke);
   const meet = endsMeet(points, CLOSED_END_EPSILON_PX);
   if (meet) points = points.slice(0, -1);
   return {
