@@ -9,7 +9,7 @@ import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
-import { isHeldPenIntent } from '@/lib/draw-mode';
+import { inkPenOf, isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 
@@ -168,13 +168,17 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
-    // Whiteboard (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input"): once a pen has been
-    // used, a single finger pans instead of inking, so a resting palm never
-    // draws. The pen itself, and a mouse, always ink.
-    if (whiteboard && e.button === 0) {
+    // Palm rejection, on every tab (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input"):
+    // once a pen has been used, a single finger pans instead of inking, so a resting palm never
+    // draws. The pen itself, and a mouse, always ink. Inking is any pen in hand: a held one, or a
+    // one-shot one (the Freehand pencil, the Shape Pen, a diagram tab's marker).
+    if (e.button === 0) {
       if (e.pointerType === 'pen') markPenSeen();
       const inking =
-        canvasTool === 'eraser' || canvasTool === 'highlighter' || isHeldPenIntent(pendingDraw);
+        canvasTool === 'eraser' ||
+        canvasTool === 'highlighter' ||
+        isHeldPenIntent(pendingDraw) ||
+        inkPenOf(pendingDraw) !== null;
       const route = whiteboardPointerRoute({
         pointerType: e.pointerType,
         penSeen: penSeen(),

@@ -75,11 +75,18 @@ describe('whiteboard pen versus touch', () => {
     expect(s.beginPendingDrawGesture).toHaveBeenCalledTimes(1);
   });
 
-  it('never changes a diagram tab', () => {
-    const s = setup(false);
+  it('rejects a palm on a diagram tab too, with the one-shot pencil in hand', () => {
+    const s = setup(false, { type: 'freehand' });
+    s.press('pen');
+    s.press('touch');
+    expect(s.setPan).toHaveBeenCalledTimes(1);
+    expect(s.beginPendingDrawGesture).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves a finger alone when nothing inks', () => {
+    const s = setup(false, { type: 'shape', kind: 'square' });
     s.press('pen');
     s.press('touch');
     expect(s.setPan).not.toHaveBeenCalled();
-    expect(s.beginPendingDrawGesture).toHaveBeenCalledTimes(2);
   });
 });

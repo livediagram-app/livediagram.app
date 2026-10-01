@@ -64,6 +64,8 @@ diagram's:
 - **Strokes stay open**, as on a board: a loop is ink, not a filled shape. Close-to-fill went with
   the old pencil; a filled shape is the Shape Pen's or the palette's.
 - **No guides or start snap**: a pen draws where it presses.
+- **Palm rejection**: once a stylus has been used, a single finger pans instead of drawing
+  ([Whiteboard](../023-whiteboard/whiteboard.md) "Touch and pen input").
 - **The pen cursor** (the dock's Cursor setting: crosshair and nib, or a dot as wide as the stroke)
   in the tab's ink.
 - **The Shape Pen previews while you hold still**: half a second with the pen pressed and still

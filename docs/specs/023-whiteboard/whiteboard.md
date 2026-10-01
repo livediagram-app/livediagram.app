@@ -450,6 +450,10 @@ author sets on an element on purpose still plays.
 
 ## Touch and pen input
 
+These rules hold **on every tab**, not only a whiteboard: on a diagram tab the finger that pans
+once a pen has been seen is one pressed with any pen in hand (held or one-shot, the Freehand pencil,
+the Shape Pen and a marker included), the eraser or the highlighter.
+
 - **Pen** (`pointerType: 'pen'`) always draws with the active pen.
 - **Mouse** draws with the active pen on primary drag; middle drag and space
   drag pan, as on every tab.
