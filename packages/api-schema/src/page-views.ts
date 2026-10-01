@@ -84,11 +84,17 @@ export function pageViewPath(pathname: string): string | null {
   return isValidPageViewPath(path) ? path : null;
 }
 
+// The first path segments another app serves; every other path is a marketing page.
+const APP_SEGMENTS: ReadonlyMap<string, PageViewApp> = new Map<string, PageViewApp>([
+  ['help', 'Help'],
+  ['telemetry', 'Dashboard'],
+  ...[...LIVE_ROUTE_SEGMENTS].map((segment): [string, PageViewApp] => [segment, 'Live']),
+]);
+
+/** First path segments served by an app other than marketing. */
+export const NON_MARKETING_SEGMENTS: readonly string[] = [...APP_SEGMENTS.keys()];
+
 /** Which app serves a normalised page path (the router's routing, docs/specs/016-platform/router-app.md). */
 export function pageViewApp(path: string): PageViewApp {
-  const first = path.split('/')[1] ?? '';
-  if (first === 'help') return 'Help';
-  if (first === 'telemetry') return 'Dashboard';
-  if (LIVE_ROUTE_SEGMENTS.has(first)) return 'Live';
-  return 'Marketing';
+  return APP_SEGMENTS.get(path.split('/')[1] ?? '') ?? 'Marketing';
 }
