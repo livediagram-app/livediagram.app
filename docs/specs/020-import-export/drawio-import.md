@@ -26,7 +26,7 @@ Two promises shape the design:
 - `apps/live/lib/drawio/report.ts`: draw.io's notes turned into the one import report every
   importer shares ([Board scene](board-scene.md) "The report"): what landed, counted by kind, and
   each change as a rule with its count.
-- `apps/live/lib/drawio/json-export.ts` (the JSON export, below), `library.ts` (shape libraries,
+- In the same folder: `json-export.ts` (the JSON export, below), `library.ts` (shape libraries,
   below) and `files.ts` (many files to documents, "Import as new documents" below).
 - Nothing lives in `packages/`: only the editor imports draw.io files, and the importer leans on the
   browser's `DOMParser` and `DecompressionStream`, which the Workers runtime lacks.
