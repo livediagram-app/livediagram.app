@@ -10,7 +10,12 @@ import {
   type ShapeElement,
   type TextElement,
 } from '@livediagram/document';
-import { encodeStrokePoints, freehandCanvasPoints, strokePointCount } from '@livediagram/document';
+import {
+  cornerRadiusPx,
+  encodeStrokePoints,
+  freehandCanvasPoints,
+  strokePointCount,
+} from '@livediagram/document';
 
 // Excalidraw text through the one parser and the shared landing, as the Import dialog runs it
 // (useTabImport, useBoardSceneImport), at the tab's own coordinates.
@@ -93,6 +98,46 @@ describe('Excalidraw import envelope', () => {
   });
 });
 
+// docs/specs/020-import-export/excalidraw-import-export.md "Rounded corners": the operator's case,
+// a 13.9 x 14.6 px rounded square, stays a rounded square of about 3.5 px corners, not a circle.
+describe('rounded corners', () => {
+  const small = rect({ width: 13.9, height: 14.6, roundness: { type: 3 } });
+  it.each(['whiteboard', 'diagram'] as const)(
+    'land Large on a %s, drawn at a quarter of the side',
+    (profile) => {
+      const r = build(scene([small]), profile);
+      if (!r.ok) throw new Error(r.error);
+      const [s] = r.elements as ShapeElement[];
+      expect(s!.borderRadius).toBe('lg');
+      expect(cornerRadiusPx(s!.borderRadius, s!.width, s!.height, 8)).toBeCloseTo(3.475, 6);
+    },
+  );
+
+  it('treats the proportional and legacy types the same', () => {
+    for (const type of [1, 2]) {
+      const r = importOnDiagram(scene([rect({ roundness: { type } })]));
+      if (!r.ok) throw new Error(r.error);
+      expect((r.elements[0] as ShapeElement).borderRadius).toBe('lg');
+    }
+  });
+
+  it('match Excalidraw exactly up to 96 px, and round less beyond it', () => {
+    // Excalidraw type 3: 25% of the shorter side, capped at 32 px.
+    const excalidraw = (w: number, h: number) => Math.min(0.25 * Math.min(w, h), 32);
+    for (const side of [14, 40, 96]) {
+      expect(cornerRadiusPx('lg', side, side * 2, 8)).toBeCloseTo(excalidraw(side, side * 2), 9);
+    }
+    expect(cornerRadiusPx('lg', 200, 200, 8)).toBe(24);
+  });
+
+  it('export a rounded corner back as roundness type 3', () => {
+    const r = importOnDiagram(scene([small]));
+    if (!r.ok) throw new Error(r.error);
+    const back = JSON.parse(tabToExcalidrawText({ id: 't', name: 'T', elements: r.elements }));
+    expect(back.elements[0].roundness).toEqual({ type: 3 });
+  });
+});
+
 describe('boxed element mapping', () => {
   it('maps rectangle/ellipse/diamond to the matching shapes', () => {
     const r = importOnDiagram(
@@ -105,7 +150,9 @@ describe('boxed element mapping', () => {
     if (!r.ok) throw new Error(r.error);
     const shapes = r.elements as ShapeElement[];
     expect(shapes.map((s) => s.shape)).toEqual(['square', 'circle', 'diamond']);
-    expect(shapes[0]!.borderRadius).toBe('md');
+    // Rounded lands Large: through the quarter cap it matches Excalidraw's own rounding
+    // (docs/specs/008-canvas/corner-radius.md).
+    expect(shapes[0]!.borderRadius).toBe('lg');
     expect(shapes[1]!.borderRadius).toBeUndefined();
     expect(shapes[0]!).toMatchObject({
       x: 10,

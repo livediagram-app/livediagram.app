@@ -50,7 +50,7 @@ describe('the diagram profile', () => {
       rect({ key: 'd', shape: 'diamond', rounded: false } as Partial<SceneItem>),
     ]) as ShapeElement[];
     expect(shapes.map((s) => s.shape)).toEqual(['square', 'circle', 'diamond']);
-    expect(shapes[0]!.borderRadius).toBe('md');
+    expect(shapes[0]!.borderRadius).toBe('lg');
     expect(shapes[1]!.borderRadius).toBeUndefined();
     expect(shapes[0]).toMatchObject({
       x: 10,
