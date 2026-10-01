@@ -440,7 +440,7 @@ These differ from draw.io for every file and are not worth a line each time:
 - **Import dialog.** A fifth format card, **draw.io**: "A .drawio file, or a PNG / SVG with the diagram
   inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further
   page." Its panel is the shared paste-or-file panel: paste XML, or pick a file; the picker accepts
-  `.drawio`, `.xml`, `.svg`, `.png` and `.drawio.*`.
+  `.drawio`, `.xml`, `.json`, `.svg`, `.png` and `.drawio.*`.
 - **The report.** Every importer ends in the same view ("The import report" above): after an
   import with a rule or images, the dialog replaces its warning and panel with it, its **Done** button
   taking focus; the subtitle reads "Here's how your board came across." ("Here's how your images came

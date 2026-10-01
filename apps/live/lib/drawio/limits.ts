@@ -24,3 +24,9 @@ export const DRAWIO_CAPTION_PADDING_PX = 16;
 export const DRAWIO_LABEL_CENTRE_EPSILON = 0.05;
 /** Unmatched stencil names the summary lists (D25). */
 export const DRAWIO_REPORT_NAMES_MAX = 5;
+/**
+ * What the Import dialog's draw.io file picker offers. The Explorer's picker sets no filter: a
+ * Google Drive save has no extension, so every file is read by its content.
+ */
+export const DRAWIO_TAB_FILE_ACCEPT =
+  '.drawio,.xml,.json,.svg,.png,application/xml,text/xml,application/json,image/svg+xml,image/png';

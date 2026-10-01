@@ -467,16 +467,17 @@ picture repeated across pages is stored once. This runs before the one `commitTa
 - `drawioFileTitle(fileName, meta, firstPageName, modified)`: strip the first matching extension
   (`DRAWIO_EXTENSIONS`, longest first, any case); generic (`DRAWIO_GENERIC_NAME`) → `meta.name` when
   not generic → the first page's name when not `Page n` → `"draw.io diagram, 12 Apr 2026"` by the date
-  (`en-GB`, day month year) → `"draw.io diagram"`.
+  (`en-GB`, day month year, UTC) → `"draw.io diagram"`.
 - `drawioFileDates(meta.modified, file.lastModified)` → ISO `{ createdAt, modifiedAt }`: the
   `modified` attribute when it parses, else `lastModified` when finite and positive; created equals
   modified. Checked downstream by `boardDocumentDates`.
-- `readDrawioFiles(files)` → `{ diagrams: DrawioDiagramFile[], libraries: DrawioLibraryFile[],
-failures: { title, message }[] }`, pick order, never throws: `sniffDrawio` null → failure "This file
-  isn't a draw.io diagram or library."; `diagram` → `importDrawio` (fresh tab ids) → `{ title,
-createdAt, modifiedAt, pages, images, report, pageCount }` or failure; `library` →
-  `importDrawioLibrary` → `{ title (library naming, `DRAWIO_GENERIC_LIBRARY_NAME` →
-"draw.io library"), items, report }` or failure.
+- `readDrawioFiles(files)` → `{ diagrams, libraries, failures }` (`DrawioDocumentFile[]`,
+  `DrawioLibraryFile[]`, `{ title, message }[]`), pick order, never throws. Per file: `sniffDrawio` null → failure
+  "This file isn't a draw.io diagram or library."; `diagram` → `importDrawio` (fresh tab ids) →
+  `{ name, createdAt, modifiedAt, pages, images, report }` or failure; `library` →
+  `importDrawioLibrary` → `{ name, items, images, report }` (`drawioLibraryTitle`: the file name,
+  or "draw.io library" when `DRAWIO_GENERIC_LIBRARY_NAME` matches) or failure. A failure's title is
+  the file name without its extension (the whole name for a file that is not draw.io's).
 - The commit: diagrams through `importDocuments` (`lib/board-scene-import.ts`, the foundation's
   new-document target for ready tabs) with `drawioDocumentSource` (`new-document.ts`: each page a diagram tab named after its page, oversized pages
   left out and named, images through one pipeline pass per document); libraries through the shape
@@ -487,8 +488,8 @@ createdAt, modifiedAt, pages, images, report, pageCount }` or failure; `library`
 
 - `IMPORT_SOURCES` gains `{ id: 'drawio', name: 'draw.io', icon: <DrawioSourceIcon /> }` after
   Excalidraw; `useExplorerImport` maps it to `useDrawioImportLauncher(importDocuments)`.
-- The flow mirrors the Microsoft Whiteboard panel: pick (files: `multiple`, accept
-  `DRAWIO_FILE_ACCEPT`; a folder: `webkitdirectory`; drop: files and folders through `readDrop`)
+- The flow mirrors the Microsoft Whiteboard panel: pick (files: `multiple`, no `accept`
+  filter (Drive saves have no extension); a folder: `webkitdirectory`; drop: files and folders through `readDrop`)
   → reading → list (one row per diagram and library, ticked; one readable file skips the list) →
   importing ("Importing 3 of 12…", then images) → the shared report (`ImportImageReport`, documents
   and libraries as links, failures listed).
@@ -511,6 +512,8 @@ export type ImportNoteKind =
   | 'collapsed-skipped'
   | 'link-dropped'
   | 'text-truncated'
+  | 'auto-layout'
+  | 'library-item-unreadable'
   | 'content-truncated';
 export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[]; // the spec table's order
 export type ImportNote = {
@@ -560,12 +563,84 @@ export type ImportedPage = {
   backgroundColor?: string;
 };
 export type DrawioImportResult =
-  | { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: DrawioReport }
+  | {
+      ok: true;
+      pages: ImportedPage[];
+      images: ImportImageRequest[];
+      report: DrawioReport;
+      meta: DrawioMeta;
+    }
   | { ok: false; error: string };
 export function importDrawio(
   input: DrawioInput,
   options: { tabIdForPage: (index: number) => string },
 ): Promise<DrawioImportResult>;
+
+// lib/drawio/envelope.ts
+export type DrawioMeta = { name?: string; modified?: string };
+export function readDrawioSource(
+  input: DrawioInput,
+  budget: ByteBudget,
+): Promise<{ pages: DrawioPageSource[]; meta: DrawioMeta }>;
+export function sniffDrawio(input: DrawioInput): 'diagram' | 'library' | null;
+
+// lib/drawio/json-export.ts
+export function readJsonExport(
+  text: string,
+): { kind: 'xml'; text: string } | { kind: 'graph'; pages: JsonExportPage[] };
+export function jsonLabelText(html: string): string;
+export function jsonPageElements(page: JsonExportPage, tally: ReportTally): Element[];
+
+// lib/drawio/library.ts
+export type ImportedLibraryItem = {
+  title: string;
+  width: number;
+  height: number;
+  elements: Element[];
+};
+export function importDrawioLibrary(
+  input: DrawioInput,
+): Promise<
+  | { ok: true; items: ImportedLibraryItem[]; images: ImportImageRequest[]; report: DrawioReport }
+  | { ok: false; error: string }
+>;
+
+// lib/drawio/files.ts
+export function drawioFileTitle(
+  fileName: string,
+  meta: DrawioMeta,
+  firstPageName: string,
+  modified: string | undefined,
+): string;
+export function drawioLibraryTitle(fileName: string): string;
+export function drawioFileDates(
+  modified: string | undefined,
+  lastModified: number,
+): { createdAt?: string; modifiedAt?: string };
+export function readDrawioFiles(files: readonly File[]): Promise<{
+  diagrams: DrawioDocumentFile[];
+  libraries: {
+    name: string;
+    items: ImportedLibraryItem[];
+    images: ImportImageRequest[];
+    report: DrawioReport;
+  }[];
+  failures: { title: string; message: string }[];
+}>;
+
+// lib/drawio/new-document.ts
+export type DrawioDocumentFile = {
+  name: string;
+  createdAt?: string;
+  modifiedAt?: string;
+  pages: ImportedPage[];
+  images: ImportImageRequest[];
+  report: DrawioReport;
+};
+export function drawioDocumentSource(
+  file: DrawioDocumentFile,
+  o: { ownerId: string; offline: boolean; createImageSession?: CreateImageSession },
+): ImportDocumentSource;
 
 // lib/import-tab.ts (the foundation's, shared by every importer)
 export type ImportOutcome =
@@ -668,7 +743,7 @@ Refusals (the `error` string, final copy):
   further page.", placeholder `<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>`,
   format icon label `drawio`, `note` linking the `importTabs` help article, label "See what carries
   over from draw.io".
-- File picker `accept`: `.drawio,.xml,.svg,.png,application/xml,text/xml,image/svg+xml,image/png`.
+- File picker `accept`: `DRAWIO_TAB_FILE_ACCEPT` (`limits.ts`).
 - `TextImportPanel.onDone(outcome)`; `ImportTabDialog` closes on `done` without `scene` or counted
   `images`, else shows the shared report view (`ImportImageReport`: `data-testid="import-image-report"`,
   `role="status"`, heading "Import complete", the landed counts and rules through
@@ -740,29 +815,29 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 
 ## Constants and configuration
 
-| Constant                                            | Value                                                                                                                                                       | Provenance / safe range                                         |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `DRAWIO_MAX_FILE_BYTES`                             | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                                             |
-| `DRAWIO_MAX_INFLATED_BYTES`                         | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                   |
-| `DRAWIO_MAX_PAGES`                                  | 100                                                                                                                                                         | Spec; 1 to 500                                                  |
-| `MAX_ELEMENTS_PER_TAB`                              | 10 000                                                                                                                                                      | `@livediagram/document` validate.ts                             |
-| `DRAWIO_DEFAULT_ARC_SIZE`                           | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`               |
-| `DRAWIO_SHADOW`                                     | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                 |
-| `DRAWIO_CAPTION_LINE_PX`                            | 18                                                                                                                                                          | One `sm` caption line with leading, D23; 14 to 24               |
-| `DRAWIO_CAPTION_CHAR_PX`                            | 7                                                                                                                                                           | `sm` average glyph width, D23; 6 to 9                           |
-| `DRAWIO_CAPTION_PADDING_PX`                         | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D23; 8 to 24 |
-| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 9, 16                                                                                                                                                       | A lane title reading across, D23; 7 to 10, 8 to 24              |
-| `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts)     | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D29      |
-| `WHITE` (convert-page.ts)                           | `#fff`, `#ffffff`, `#ffffffff`                                                                                                                              | draw.io's default page                                          |
-| `DRAWIO_LABEL_CENTRE_EPSILON`                       | 0.05                                                                                                                                                        | D24; 0 to 0.2                                                   |
-| `DRAWIO_REPORT_NAMES_MAX`                           | 5                                                                                                                                                           | D25; 3 to 10                                                    |
-| `DRAWIO_ANGLED_EDGE_STYLES`                         | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                                 |
-| `DRAWIO_EXTENSIONS`                                 | `.drawio.svg`, `.drawio.png`, `.drawio`, `.xml`, `.json`, `.svg`, `.png`                                                                                    | The spec's names rule                                           |
-| `DRAWIO_GENERIC_NAME`                               | `untitled`, `untitled diagram`, `diagram` or `drawing`, any case, with an optional ` (n)` or `-n`                                                           | draw.io's default names; the spec                               |
-| `DRAWIO_GENERIC_LIBRARY_NAME`                       | `untitled library`, any case, with an optional ` (n)` or `-n`                                                                                               | draw.io's default library name                                  |
-| `DRAWIO_SNIFF_CHARS`                                | 4096                                                                                                                                                        | Room for a BOM, an XML declaration and the root element         |
-| `DRAWIO_FILE_ACCEPT`                                | `.drawio,.xml,.json,.svg,.png` plus files with no extension (all files allowed)                                                                             | The spec                                                        |
-| `DRAWIO_MARKERS`                                    | the table in step 12.4                                                                                                                                      | draw.io's marker names                                          |
+| Constant                                            | Value                                                                                                                                                       | Provenance / safe range                                                                              |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `DRAWIO_MAX_FILE_BYTES`                             | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                                                                                  |
+| `DRAWIO_MAX_INFLATED_BYTES`                         | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                                                        |
+| `DRAWIO_MAX_PAGES`                                  | 100                                                                                                                                                         | Spec; 1 to 500                                                                                       |
+| `MAX_ELEMENTS_PER_TAB`                              | 10 000                                                                                                                                                      | `@livediagram/document` validate.ts                                                                  |
+| `DRAWIO_DEFAULT_ARC_SIZE`                           | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`                                                    |
+| `DRAWIO_SHADOW`                                     | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                                                      |
+| `DRAWIO_CAPTION_LINE_PX`                            | 18                                                                                                                                                          | One `sm` caption line with leading, D23; 14 to 24                                                    |
+| `DRAWIO_CAPTION_CHAR_PX`                            | 7                                                                                                                                                           | `sm` average glyph width, D23; 6 to 9                                                                |
+| `DRAWIO_CAPTION_PADDING_PX`                         | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D23; 8 to 24                                      |
+| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 9, 16                                                                                                                                                       | A lane title reading across, D23; 7 to 10, 8 to 24                                                   |
+| `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts)     | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D29                                           |
+| `WHITE` (convert-page.ts)                           | `#fff`, `#ffffff`, `#ffffffff`                                                                                                                              | draw.io's default page                                                                               |
+| `DRAWIO_LABEL_CENTRE_EPSILON`                       | 0.05                                                                                                                                                        | D24; 0 to 0.2                                                                                        |
+| `DRAWIO_REPORT_NAMES_MAX`                           | 5                                                                                                                                                           | D25; 3 to 10                                                                                         |
+| `DRAWIO_ANGLED_EDGE_STYLES`                         | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                                                                      |
+| `DRAWIO_EXTENSIONS`                                 | `.drawio.svg`, `.drawio.png`, `.drawio`, `.xml`, `.json`, `.svg`, `.png`                                                                                    | The spec's names rule                                                                                |
+| `DRAWIO_GENERIC_NAME`                               | `untitled`, `untitled diagram`, `diagram` or `drawing`, any case, with an optional ` (n)` or `-n`                                                           | draw.io's default names; the spec                                                                    |
+| `DRAWIO_GENERIC_LIBRARY_NAME`                       | `untitled library`, any case, with an optional ` (n)` or `-n`                                                                                               | draw.io's default library name                                                                       |
+| `DRAWIO_SNIFF_CHARS`                                | 4096                                                                                                                                                        | Room for a BOM, an XML declaration and the root element                                              |
+| `DRAWIO_TAB_FILE_ACCEPT`                            | `.drawio,.xml,.json,.svg,.png` and their MIME types                                                                                                         | The spec (the Import dialog card); the Explorer picker sets no filter, Drive saves have no extension |
+| `DRAWIO_MARKERS`                                    | the table in step 12.4                                                                                                                                      | draw.io's marker names                                                                               |
 
 ## Assets and external resources
 

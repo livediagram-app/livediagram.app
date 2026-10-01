@@ -9,6 +9,7 @@
 import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
+import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -253,7 +254,7 @@ export function useTabImport({
           : format === 'excalidraw'
             ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
             : format === 'drawio'
-              ? '.drawio,.xml,.svg,.png,application/xml,text/xml,image/svg+xml,image/png'
+              ? DRAWIO_TAB_FILE_ACCEPT
               : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
