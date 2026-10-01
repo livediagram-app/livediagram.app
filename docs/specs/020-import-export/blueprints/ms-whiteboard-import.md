@@ -30,8 +30,10 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 | `apps/live/components/dialogs/MsWhiteboardImportDialog.tsx`     | The "Import from Microsoft Whiteboard" dialog hosting the panel                           |
 | `apps/live/hooks/persistence/useMsWhiteboardImportLauncher.tsx` | `openMicrosoftWhiteboardImport` and the dialog element, for any host                      |
 | `apps/live/app/explorer/import-sources.tsx`                     | `IMPORT_SOURCES`: the shipped sources (id, name, icon), one entry each                    |
+| `apps/live/components/dialogs/import-source-icons.tsx`          | `MsWhiteboardSourceIcon`, the original glyph (art, on the raw-svg allowlist)              |
+| `apps/live/app/explorer/useExplorerImport.tsx`                  | The page host: toolbar, launcher, `importBoardsAsDocuments` with the folder, list refresh |
 | `apps/live/app/explorer/ImportFromToolbar.tsx`                  | The page header's "Import from" toolbar                                                   |
-| `apps/live/app/explorer/ExplorerPane.tsx`                       | Mounts the toolbar beside New document and the launcher over the commit                   |
+| `apps/live/app/explorer/ExplorerPane.tsx`                       | Puts the toolbar in `headerActions` wherever the section offers New document              |
 | `apps/live/e2e/ms-whiteboard-board.ts`                          | The synthesised export the end-to-end spec imports                                        |
 | `apps/live/scripts/ms-whiteboard-verify.mts`                    | Local verification over real exports (path argument; prints counts only)                  |
 | `file-sets.ts`                                                  | A `.zip` or a folder pick as an `ExportFileSet` (`MAX_IMPORT_BYTES`)                      |

@@ -19,7 +19,6 @@ test('Microsoft Whiteboard boards open as their own documents with a report', as
 }) => {
   await startBlankDocument(page);
   await dismissQuickTour(page);
-  test.fixme(true, 'the Explorer page needs the editor-free commit (plan 0033, Requests to F)');
   await openMsWhiteboardImport(page);
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Choose a .zip' }).click();
