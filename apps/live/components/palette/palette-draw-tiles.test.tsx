@@ -29,6 +29,7 @@ describe('the Draw category', () => {
       'tools:polygon',
       'tools:pencil',
       'tools:shape-pen',
+      'tools:highlighter',
     ]);
   });
 

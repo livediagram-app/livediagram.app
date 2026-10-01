@@ -138,6 +138,7 @@ export function usePaletteCatalogue({
   const addArrow = armed(onAddArrow);
   const beginFreehand = armed(onBeginFreehand);
   const beginShapePen = armed(onBeginShapePen);
+  const pickHighlighter = armed(() => onSetCanvasTool('highlighter'));
   const beginPolygon = armed(onBeginPolygon);
   const beginPath = armed(onBeginPath);
   const pickMarker = (pen: WhiteboardPenId) => armed(() => onPickMarker(pen))();
@@ -169,6 +170,7 @@ export function usePaletteCatalogue({
       addText,
       beginFreehand,
       beginShapePen,
+      pickHighlighter,
       beginPolygon,
       beginPath,
       pickMarker,

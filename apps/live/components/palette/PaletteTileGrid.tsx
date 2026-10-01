@@ -36,6 +36,8 @@ export type PaletteTileActions = {
   addText: () => void;
   beginFreehand: () => void;
   beginShapePen: () => void;
+  // Picks up the held Highlighter tool (docs/specs/008-canvas/highlighter.md).
+  pickHighlighter: () => void;
   beginPolygon: () => void;
   // The Path tool and the three markers (docs/specs/023-whiteboard/whiteboard.md "The markers on
   // diagram tabs"): held tools, picked up rather than armed for one gesture.
@@ -82,6 +84,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.beginFreehand;
     case 'shape-pen':
       return actions.beginShapePen;
+    case 'highlighter':
+      return actions.pickHighlighter;
     case 'polygon':
       return actions.beginPolygon;
     case 'path':
@@ -142,6 +146,8 @@ export function tileActive(
     // payload — each tile lights only for its own arm (docs/specs/008-canvas/two-pens.md).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
+    case 'highlighter':
+      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     case 'path':

@@ -17,6 +17,7 @@ const actions = {
   addText: noop,
   beginFreehand: noop,
   beginShapePen: noop,
+  pickHighlighter: noop,
   beginPolygon: noop,
   beginPath: noop,
   pickMarker: noop,

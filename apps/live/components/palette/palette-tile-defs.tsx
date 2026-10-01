@@ -143,6 +143,8 @@ type PaletteTileAction =
   // Path tool (held until another tool is picked), and a marker picked up by id (one stroke).
   | { type: 'path' }
   | { type: 'marker'; pen: WhiteboardPenId }
+  // The highlighter (docs/specs/008-canvas/highlighter.md): picks up the held Highlighter tool.
+  | { type: 'highlighter' }
   | { type: 'arrow' }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
@@ -596,6 +598,19 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '6',
     action: { type: 'shape-pen' },
     icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
+  },
+  // The highlighter, last of the pencils: a held tool (its settings panel opens with it), here
+  // rather than in the selection-mode picker since it makes content (docs/specs/008-canvas/highlighter.md).
+  {
+    id: 'tools:highlighter',
+    blurb: 'A translucent marker over anything',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Highlighter',
+    description:
+      'Mark up the canvas with a translucent marker, held until you pick another tool. Set its colour and strength in its panel.',
+    action: { type: 'highlighter' },
+    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:sticky',

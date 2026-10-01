@@ -25,8 +25,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 
 ## The tool
 
-- It lives in the palette's **canvas-tool dropdown**, in the **Edit** group (group 0) beside Select, Hand, Eraser and Format — `'highlighter'` on the editor's `CanvasTool` union, built in `canvas-tool-options.tsx`.
-- **It is the one tool in that dropdown that stays live on an empty canvas.** Everything from the Eraser down acts on existing content, so it disables with nothing to act on; the highlighter MAKES content, so an empty canvas is a fine place to start.
+- It lives in the palette's **Draw** category, last of the pencils (`tools:highlighter`, after Freehand and the Shape Pen): it makes content, so it sits with the pens rather than in the canvas-tool dropdown it started in, whose other tools act on what is already there. The tile picks up the held tool (`'highlighter'` on the editor's `CanvasTool` union, so its settings panel and held behaviour are unchanged) and shows pressed while it is in hand. The ⌘K search finds it as that tile, not as a tool command.
 - **It is held.** Entering the tool arms the freehand-marker gesture, **every committed stroke re-arms it**, and leaving the tool drops it (and only it — the marker's own intent, so putting the tool down never cancels a draw armed from the palette while holding it). A stray tap on the canvas no longer disarms anything.
 - **Strokes are not auto-selected after drawing.** The old one-shot selected the stroke it had just committed, which was helpful when the tool was over; on a held marker it means the next drag drags the thing you just drew instead of highlighting.
 - Each pass is its own undo, as it always was.

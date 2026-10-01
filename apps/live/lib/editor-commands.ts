@@ -149,14 +149,6 @@ const CANVAS_TOOLS: {
     mutates: true,
   },
   {
-    // The marker (docs/specs/008-canvas/highlighter.md). The one tool here that MAKES content, so unlike
-    // its neighbours it stays offered on an empty canvas.
-    id: 'highlighter',
-    name: 'Highlighter',
-    keywords: 'highlighter highlight marker pen mark up annotate emphasise emphasize yellow',
-    mutates: true,
-  },
-  {
     id: 'laser',
     name: 'Laser pointer',
     keywords: 'laser pointer present point highlight temporary trail k',
@@ -198,7 +190,8 @@ const CANVAS_TOOLS: {
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['highlighter', 'format']);
+// (The Highlighter is a Draw tile now, docs/specs/008-canvas/highlighter.md, found as a tile.)
+const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
 
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
