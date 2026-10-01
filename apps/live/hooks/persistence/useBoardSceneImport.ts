@@ -1,8 +1,7 @@
 // The Import dialog's commit paths for board scenes (docs/specs/020-import-export/board-import.md
 // "Stages", docs/specs/020-import-export/board-scene.md "In the editor"): replace the active tab
-// with a scene (the Excalidraw card), or open each scene as a new whiteboard tab after the active
-// one (the Microsoft Whiteboard card). Either way the images are stored first and the tabs change
-// in ONE undoable step.
+// with a scene in one undoable step (the Excalidraw card), or make each scene its own new document,
+// named and dated as its board (the Microsoft Whiteboard card). Images are stored first either way.
 
 import { isWhiteboardTab, type Element, type Tab } from '@livediagram/document';
 import { landBoardScene, type LandedBoardScene } from '@/lib/board-scene/land';
@@ -17,6 +16,14 @@ import {
 } from '@/lib/import-images';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
+import { apiCreateDocument } from '@/lib/api-client';
+import { isOfflineId, offlineCreateDocument } from '@/lib/offline/offline-store';
+import {
+  boardDocumentDates,
+  boardDocumentName,
+  UNREADABLE_DATES_RULE,
+  UNTITLED_BOARD_NAME,
+} from '@/lib/board-scene/board-document';
 import {
   browserHugText,
   browserImageSession,
@@ -27,25 +34,44 @@ import {
 /** Image progress, and which board of how many it belongs to when several import at once. */
 export type BoardImportProgress = ImportImageProgress & { board?: number; boards?: number };
 
+/** A new document as the import creates it. */
+export type NewBoardDocument = {
+  id: string;
+  name: string;
+  tabs: Tab[];
+  createdAt?: number;
+  savedAt?: number;
+};
+
 export type BoardSceneImportDeps = {
   tabs: Tab[];
   activeId: string;
   ownerId: string;
+  // The open document: an Offline Mode one makes Offline Mode documents, as a copy does.
   documentId: string | null;
-  createTab: (name: string) => Tab;
-  commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  markTabLoaded: (id: string) => void;
-  setActiveId: (id: string) => void;
-  setSelectedId: (id: string | null) => void;
-  setEditingId: (id: string | null) => void;
-  setFormatSourceId: (id: string | null) => void;
   // The existing replace (useTabImport): merge onto the active tab, one undo step, then frame it.
   replaceActiveTabContent: (imported: Tab) => void;
-  requestFit: () => void;
-  // Seams for tests; the defaults are the browser's.
+  // New documents were made: the Explorer's list refreshes.
+  onDocumentsCreated?: () => void;
+  // Seams for tests; the defaults are the browser's (and the api's, or this browser's store).
   createImageSession?: CreateImageSession;
   hugText?: HugText;
+  createDocument?: (doc: NewBoardDocument) => Promise<void>;
 };
+
+// Creates a document on the server, or in this browser for an Offline Mode one.
+function defaultCreateDocument(ownerId: string, offline: boolean) {
+  return async (doc: NewBoardDocument): Promise<void> => {
+    if (offline) {
+      await offlineCreateDocument({ id: doc.id, name: doc.name, tabs: doc.tabs }, Date.now(), {
+        createdAt: doc.createdAt,
+        savedAt: doc.savedAt,
+      });
+      return;
+    }
+    await apiCreateDocument(ownerId, doc);
+  };
+}
 
 // Adds b's counts into a.
 function addImageReports(a: ImportImageReport, b: ImportImageReport): ImportImageReport {
@@ -132,73 +158,91 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
     return { status: 'done', ...(images ? { images } : {}), scene: landed.report };
   };
 
-  /** Open every scene as a new whiteboard tab after the active one, in one undo step. */
-  const importScenesAsNewWhiteboards = async (
+  /**
+   * Make every scene its own new document with one whiteboard tab, named and dated as its board
+   * (docs/specs/020-import-export/board-import.md "new-document"). The open document is not touched;
+   * a board that cannot land is listed with its reason and the rest still do.
+   */
+  const importScenesAsNewDocuments = async (
     scenes: BoardScene[],
     onProgress?: (p: BoardImportProgress) => void,
   ): Promise<ImportOutcome> => {
-    const tabs: Tab[] = [];
+    const offline = deps.documentId !== null && (await isOfflineId(deps.documentId));
+    const createDocument = deps.createDocument ?? defaultCreateDocument(deps.ownerId, offline);
+    const documents: { id: string; name: string }[] = [];
     const failures: { title: string; message: string }[] = [];
     let report: BoardSceneReport | undefined;
     let images: ImportImageReport | undefined;
     for (const [i, scene] of scenes.entries()) {
+      const dates = boardDocumentDates(scene, Date.now());
+      const name = boardDocumentName(scene, dates.createdAt);
       const landed = landBoardScene(scene, {
         profile: 'whiteboard',
         placement: { kind: 'origin' },
         mintId: () => crypto.randomUUID(),
       });
-      const title = scene.title?.trim() || 'Untitled board';
       if (!landed.ok) {
-        failures.push({ title, message: landed.message });
+        failures.push({ title: name, message: landed.message });
         continue;
       }
       const done = await finish(landed, true, undefined, (p) =>
         onProgress?.({ ...p, board: i + 1, boards: scenes.length }),
       );
-      const { kind, name, backgroundPattern } = landed.tabPatch;
-      tabs.push({
-        ...deps.createTab(name),
+      const { kind, backgroundPattern } = landed.tabPatch;
+      const id = crypto.randomUUID();
+      const tab: Tab = {
+        id: crypto.randomUUID(),
+        name: UNTITLED_BOARD_NAME,
         kind,
         backgroundPattern,
         elements: done.elements,
         templateChosen: true,
-      });
-      report = report ? addReports(report, landed.report) : landed.report;
+      };
+      try {
+        await createDocument({
+          id,
+          name,
+          tabs: [tab],
+          ...(dates.createdAt !== undefined ? { createdAt: dates.createdAt } : {}),
+          ...(dates.savedAt !== undefined ? { savedAt: dates.savedAt } : {}),
+        });
+      } catch (error) {
+        console.warn('[board-scene] import board failed', { board: i + 1, error: String(error) });
+        failures.push({ title: name, message: "The document couldn't be created. Try again." });
+        continue;
+      }
+      documents.push({ id, name });
+      track('Document', 'Created', offline ? 'Offline' : 'Cloud');
+      track('Whiteboard', 'Created', 'Import');
+      const boardReport: BoardSceneReport = dates.unreadable
+        ? addReports(landed.report, {
+            landed: {},
+            degraded: [{ rule: UNREADABLE_DATES_RULE, count: 1 }],
+            skipped: [],
+          })
+        : landed.report;
+      report = report ? addReports(report, boardReport) : boardReport;
       if (done.images) images = addImageReports(images ?? emptyImportImageReport(), done.images);
     }
     console.info('[board-scene] import', {
       boards: scenes.length,
-      target: 'new-whiteboard-tab',
+      target: 'new-document',
+      offline,
+      documents: documents.length,
       failures: failures.length,
     });
-    if (tabs.length === 0) {
-      return {
-        status: 'error',
-        error: failures[0]?.message ?? 'There was no board to import.',
-      };
+    if (documents.length === 0) {
+      return { status: 'error', error: failures[0]?.message ?? 'There was no board to import.' };
     }
-    deps.commitTabs((ts) => {
-      const at = ts.findIndex((t) => t.id === deps.activeId);
-      const next = [...ts];
-      next.splice(at < 0 ? next.length : at + 1, 0, ...tabs);
-      return next;
-    });
-    for (const tab of tabs) {
-      deps.markTabLoaded(tab.id);
-      track('Whiteboard', 'Created', 'Import');
-    }
-    deps.setActiveId(tabs[0]!.id);
-    deps.setSelectedId(null);
-    deps.setEditingId(null);
-    deps.setFormatSourceId(null);
-    deps.requestFit();
+    deps.onDocumentsCreated?.();
     return {
       status: 'done',
+      documents,
       ...(images ? { images } : {}),
       ...(report ? { scene: report } : {}),
       ...(failures.length > 0 ? { failures } : {}),
     };
   };
 
-  return { importSceneIntoActiveTab, importScenesAsNewWhiteboards };
+  return { importSceneIntoActiveTab, importScenesAsNewDocuments };
 }

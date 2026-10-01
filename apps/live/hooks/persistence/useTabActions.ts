@@ -158,20 +158,13 @@ export function useTabActions(deps: TabActionsDeps) {
   });
   // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
   // active tab, or open each board as a new whiteboard tab.
-  const { importSceneIntoActiveTab, importScenesAsNewWhiteboards } = useBoardSceneImport({
+  const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
     tabs,
     activeId,
     ownerId,
     documentId,
-    createTab,
-    commitTabs,
-    markTabLoaded,
-    setActiveId,
-    setSelectedId,
-    setEditingId,
-    setFormatSourceId,
     replaceActiveTabContent,
-    requestFit,
+    onDocumentsCreated: () => refreshDocumentList(ownerId),
   });
 
   const toggleActiveTabLock = () => {
@@ -385,7 +378,7 @@ export function useTabActions(deps: TabActionsDeps) {
     importIntoActiveTab,
     importTextIntoActiveTab,
     importSceneIntoActiveTab,
-    importScenesAsNewWhiteboards,
+    importScenesAsNewDocuments,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

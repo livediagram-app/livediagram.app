@@ -133,13 +133,15 @@ export async function apiCreateDocument(
   ownerId: string,
   // `folderId` / `createdAt` / `presentation` are for an Offline Mode sync
   // (docs/specs/006-document/offline-mode.md), which must carry what the offline record held: the server
-  // copy is all that is left once the local one is deleted.
+  // copy is all that is left once the local one is deleted. `createdAt` / `savedAt` also date an
+  // imported board as the board (docs/specs/015-api/api.md "Document dates").
   d: {
     id: string;
     name: string;
     tabs?: Tab[];
     folderId?: string | null;
     createdAt?: number;
+    savedAt?: number;
     presentation?: string | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
@@ -158,6 +160,7 @@ export async function apiCreateDocument(
       tabs: (d.tabs ?? []).map(tabForWire),
       ...(d.folderId ? { folderId: d.folderId } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
+      ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
     }),
   });

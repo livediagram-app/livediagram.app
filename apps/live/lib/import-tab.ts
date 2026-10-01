@@ -18,6 +18,8 @@ export type ImportOutcome =
       scene?: BoardSceneReport;
       // Boards of a several-board import that could not land (the rest did).
       failures?: { title: string; message: string }[];
+      // The documents an import made, one per board (docs/specs/020-import-export/board-import.md).
+      documents?: { id: string; name: string }[];
     }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };

@@ -13,11 +13,14 @@ export function ImportImageReport({
   report,
   scene,
   failures,
+  documents,
   onDone,
 }: {
   report?: Report;
   scene?: BoardSceneReport;
   failures?: { title: string; message: string }[];
+  // The documents an import made, one per board, each opened from here.
+  documents?: { id: string; name: string }[];
   onDone: () => void;
 }) {
   const doneRef = useRef<HTMLButtonElement>(null);
@@ -33,6 +36,25 @@ export function ImportImageReport({
       {scene ? (
         <div className="mt-2">
           <BoardSceneReportList report={scene} showLanded />
+        </div>
+      ) : null}
+      {documents && documents.length > 0 ? (
+        <div className="mt-3">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
+            {documents.length === 1 ? 'New document:' : `${documents.length} new documents:`}
+          </p>
+          <ul className="mt-1 space-y-1 text-sm" data-testid="import-documents">
+            {documents.map((d) => (
+              <li key={d.id}>
+                <a
+                  href={`/document/${encodeURIComponent(d.id)}`}
+                  className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300 dark:hover:text-brand-200"
+                >
+                  {d.name}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
       {failures && failures.length > 0 ? (

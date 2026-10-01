@@ -592,3 +592,6 @@ export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
 export * from './drive';
 export * from './profile-picture';
+// A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
+// check, and the editor's before it sends an imported board's dates.
+export * from './document-dates';

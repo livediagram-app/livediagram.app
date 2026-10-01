@@ -172,6 +172,12 @@ export type BoardScene = {
   title?: string;
   /** Tool plus the tool's board id, when it has one. */
   sourceId?: string;
+  /**
+   * The board's own created and last-modified dates, ISO 8601 (Microsoft Whiteboard's
+   * `createdTime` / `lastModifiedTime`): an imported board's document is dated as the board.
+   */
+  createdAt?: string;
+  modifiedAt?: string;
   authoredOn: SceneAppearance | 'unknown';
   background?: {
     appearance?: SceneAppearance;

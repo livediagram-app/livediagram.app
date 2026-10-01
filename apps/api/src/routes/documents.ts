@@ -52,7 +52,7 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
-import { documentDates } from '../document-dates';
+import { documentDates } from '@livediagram/api-schema';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { emailEnabled } from '../email/client';

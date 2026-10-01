@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/live/lib/board-scene/land.ts`                                       | `landBoardScene`: validation, limits, ordering, ids, tab patch, logging                           |
 | `apps/live/lib/board-scene/attach.ts`                                     | `sceneImageSource`: a `SceneAsset` as an `ImportImageSource`                                      |
 | `apps/live/hooks/canvas/useBoardSceneInsert.ts`                           | Paste / drop: land at a point, images, one commit, select, notice state                           |
-| `apps/live/hooks/persistence/useBoardSceneImport.ts`                      | Import commit paths: replace-tab, new-whiteboard-tab                                              |
+| `apps/live/hooks/persistence/useBoardSceneImport.ts`                      | Import commit paths: replace-tab, new-document                                                    |
 | `apps/live/lib/board-scene-hug.ts`                                        | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
 | `apps/live/hooks/canvas/board-scene-browser.ts`                           | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
 | `apps/live/components/dialogs/ImportImageReport.tsx`                      | The dialog's result view: scene report, board failures, images                                    |
@@ -68,6 +68,8 @@ coordinator; none is required of a parser):
 - `ink.streamline?: number`: perfect-freehand streamline the points are drawn with; absent is `0`
   (the points are final geometry).
 - `BoardScene.sourceId?: string`: tool plus the tool's board id, for bulk readiness.
+- `BoardScene.createdAt?: string` / `modifiedAt?: string`: the board's own dates, ISO 8601; a
+  new-document import dates its document with them.
 - `BoardScene.background.colour?: SceneColour`: the source's canvas colour (the diagram profile's
   tab background).
 - `SceneNote.kind?: 'degraded' | 'skipped'`: absent is `'degraded'`.
@@ -318,16 +320,40 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
   Composed in `useTabActions` (with `useTabImport`'s `replaceActiveTabContent`) and returned through
   `useEditorState`.
 
-- `importScenesAsNewWhiteboards(scenes, onProgress)`: each scene landed `whiteboard` / `origin`,
-  its images (progress reported per board: `BoardImportProgress` `{ board, boards, done, total }`),
-  its text hugged in the default face, then ONE
-  `commitTabs` inserting every new tab after the active one; the first new tab becomes active and
-  is framed; `track('Whiteboard', 'Created', 'Import')` once per tab. A board whose landing is rejected is left out and listed in the outcome's `failures` (`{ title, message }`, an untitled
-  board "Untitled board"); the rest still land; none landing is an `error` outcome. New tabs carry
-  `templateChosen: true`.
+- `importScenesAsNewDocuments(scenes, onProgress)`: per scene, `boardDocumentDates(scene, now)`
+  and `boardDocumentName(scene, createdAt)` (`lib/board-scene/board-document.ts`), the landing
+  (`whiteboard` / `origin`), its images (progress per board: `BoardImportProgress` `{ board, boards,
+done, total }`) and text hug, then `createDocument({ id, name, tabs: [tab], createdAt?, savedAt? })`
+  with one tab `{ name: 'Whiteboard', kind, backgroundPattern, elements, templateChosen: true }`.
+  `createDocument` defaults to `apiCreateDocument` (cloud), or `offlineCreateDocument(.., dates)`
+  when the open document is an Offline Mode one (`isOfflineId`); the image session takes the open
+  document's id, so an offline import embeds. Per document: `track('Document', 'Created',
+'Cloud' | 'Offline')` and `track('Whiteboard', 'Created', 'Import')`. A rejected landing or a failed
+  create is listed in `failures` (`{ title: name, message }`; a failed create "The document couldn't
+  be created. Try again."), the rest still land; none landing is an `error` outcome. Reports and
+  image reports add up; unreadable dates add the degraded rule `UNREADABLE_DATES_RULE`. Afterwards
+  `onDocumentsCreated` (the Explorer list refresh). The open document is not touched.
+- `boardDocumentDates`: ISO `createdAt` / `modifiedAt` parsed with `Date.parse`, then the api's own
+  rule (`documentDates`, `@livediagram/api-schema`): both when both hold; `createdAt` alone when only
+  it does (`unreadable` when a modified date was given); none, `unreadable` when any date was given.
+- `boardDocumentName`: the trimmed title, else `UNTITLED_BOARD_NAME` ("Whiteboard") and the created
+  date as `en-GB` `{ day: 'numeric', month: 'short', year: 'numeric' }` ("Whiteboard, 14 Aug 2020"),
+  else "Whiteboard".
 
-`ImportOutcome`'s `done` arm gains `scene?: BoardSceneReport` and `failures?: { title: string;
-message: string }[]`.
+`ImportOutcome`'s `done` arm gains `scene?: BoardSceneReport`, `failures?: { title: string;
+message: string }[]` and `documents?: { id: string; name: string }[]`; the dialog's result view
+(`ImportImageReport`) lists the new documents as links (`/document/<id>`) and shows whenever there
+are images, losses, failures or new documents.
+
+### Document dates (api)
+
+`documentDates(body, now)` (`packages/api-schema/src/document-dates.ts`, used by the worker's
+`POST /api/documents` and by the editor): `DOCUMENT_DATE_MIN` = 1 January 2000 UTC,
+`DOCUMENT_DATE_SKEW_MS` = one day; rules per [the api spec](../../015-api/api.md#document-dates).
+The worker refuses invalid dates with 400 "invalid document dates" before any write; a genuine
+create stores them (`upsertDocumentMeta`, and `seedTabs(env, id, tabs, savedAt)` keeps
+`saved_at`); a re-commit is modified now. The OpenAPI manifest's request schema lists `createdAt`
+and `savedAt` (integers). `apiCreateDocument` sends `savedAt` when given.
 
 ### `BoardSceneNotice`
 
@@ -336,7 +362,7 @@ max wide. Its `bottom` comes from `useNoticeSlot` (`components/canvas/useNoticeS
 `[data-whiteboard-dock]` top plus `NOTICE_GAP_PX` (8), or, with no dock, the canvas bottom less
 `DOCKLESS_LIFT_PX` (68; `DOCKLESS_WIDE_LIFT_PX` 16 from `DOCKLESS_WIDE_MIN_PX` 1760, mirroring the
 dock), via the pure `noticeBottom` (`lib/board-scene-notice-slot.ts`); measured in a layout effect
-and on resize (ResizeObserver on the dock and canvas), hidden until measured. The panel dress the panel dress (border, radius, shadow, light and dark);
+and on resize (ResizeObserver on the dock and canvas), hidden until measured. The panel dress (border, radius, shadow, light and dark);
 heading per the spec, `BoardSceneReportList` rows, the image placeholder sentences, a Close button
 (Escape when focus is inside). Never steals focus; reduced motion removes its fade.
 
@@ -395,29 +421,32 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 
 ## Testing
 
-| Rule                                                                   | Test                                                                                            |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Ink threshold, stock match, hex fallback, every real Excalidraw colour | `colour.test.ts` (table-driven)                                                                 |
-| Alpha to opacity; fills; sticky fill to nearest preset                 | `colour.test.ts`                                                                                |
-| Marker, border and arrow widths                                        | `width.test.ts`                                                                                 |
-| Font px to size + scale, clamping, families, alignment, styles         | `text.test.ts`                                                                                  |
-| ink (pressures, streamline, closed, highlighter, stops, fill, dash)    | `land-marks.test.ts`                                                                            |
-| polyline (line, path corners, curved, closed fill, headed)             | `land-marks.test.ts`, `land-connectors.test.ts`                                                 |
-| shape, text, sticky, image, frame                                      | `land-boxes.test.ts`                                                                            |
-| connector ends, heads, bends, label, rotation                          | `land-connectors.test.ts`                                                                       |
-| z-order, ids, links, locks, rotation, unusable items                   | `land.test.ts`                                                                                  |
-| placement at / origin, tab patch                                       | `placement.test.ts`, `land.test.ts`                                                             |
-| report merge                                                           | `report.test.ts`                                                                                |
-| diagram profile reproduces the Excalidraw file mapping                 | `land-diagram.test.ts`                                                                          |
-| element limit at the boundary                                          | `land.test.ts`                                                                                  |
-| `penTextColour` / path `penColour` validation                          | `packages/document/src/validate.test.ts`                                                        |
-| projection of named text colours                                       | `packages/document/src/whiteboard.test.ts`, `apps/live/lib/export-as-seen.test.ts` (SVG export) |
-| `hexOklch`                                                             | `packages/document/src/pen-colours.test.ts`                                                     |
-| reset to theme drops named colours                                     | `apps/live/lib/reset-colours.test.ts`                                                           |
-| rotation, links, point helpers                                         | `common.test.ts`                                                                                |
-| text hug of landed boxes                                               | `apps/live/lib/board-scene-hug.test.ts`                                                         |
-| quick style on a mixed whiteboard selection, dark mode                 | `apps/live/e2e/quick-style-mixed.spec.ts`                                                       |
-| insert: one commit, selection, images, notice, point                   | `apps/live/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                    |
-| import: replace-tab, new whiteboard tabs, failures                     | `apps/live/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                               |
-| notice slot above the dock at every width                              | `apps/live/lib/board-scene-notice-slot.test.ts`                                                 |
-| notice copy and role                                                   | `apps/live/components/canvas/BoardSceneNotice.test.tsx`                                         |
+| Rule                                                                   | Test                                                                                                                                           |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ink threshold, stock match, hex fallback, every real Excalidraw colour | `colour.test.ts` (table-driven)                                                                                                                |
+| Alpha to opacity; fills; sticky fill to nearest preset                 | `colour.test.ts`                                                                                                                               |
+| Marker, border and arrow widths                                        | `width.test.ts`                                                                                                                                |
+| Font px to size + scale, clamping, families, alignment, styles         | `text.test.ts`                                                                                                                                 |
+| ink (pressures, streamline, closed, highlighter, stops, fill, dash)    | `land-marks.test.ts`                                                                                                                           |
+| polyline (line, path corners, curved, closed fill, headed)             | `land-marks.test.ts`, `land-connectors.test.ts`                                                                                                |
+| shape, text, sticky, image, frame                                      | `land-boxes.test.ts`                                                                                                                           |
+| connector ends, heads, bends, label, rotation                          | `land-connectors.test.ts`                                                                                                                      |
+| z-order, ids, links, locks, rotation, unusable items                   | `land.test.ts`                                                                                                                                 |
+| placement at / origin, tab patch                                       | `placement.test.ts`, `land.test.ts`                                                                                                            |
+| report merge                                                           | `report.test.ts`                                                                                                                               |
+| diagram profile reproduces the Excalidraw file mapping                 | `land-diagram.test.ts`                                                                                                                         |
+| element limit at the boundary                                          | `land.test.ts`                                                                                                                                 |
+| `penTextColour` / path `penColour` validation                          | `packages/document/src/validate.test.ts`                                                                                                       |
+| projection of named text colours                                       | `packages/document/src/whiteboard.test.ts`, `apps/live/lib/export-as-seen.test.ts` (SVG export)                                                |
+| `hexOklch`                                                             | `packages/document/src/pen-colours.test.ts`                                                                                                    |
+| reset to theme drops named colours                                     | `apps/live/lib/reset-colours.test.ts`                                                                                                          |
+| rotation, links, point helpers                                         | `common.test.ts`                                                                                                                               |
+| text hug of landed boxes                                               | `apps/live/lib/board-scene-hug.test.ts`                                                                                                        |
+| quick style on a mixed whiteboard selection, dark mode                 | `apps/live/e2e/quick-style-mixed.spec.ts`                                                                                                      |
+| insert: one commit, selection, images, notice, point                   | `apps/live/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                                                                   |
+| board document name and dates                                          | `apps/live/lib/board-scene/board-document.test.ts`                                                                                             |
+| document dates rule; the worker's create with dates (real schema)      | `packages/api-schema/src/document-dates.test.ts`, `apps/api/src/routes/document-create-dates.test.ts`, `apps/api/src/routes/documents.test.ts` |
+| result view lists new documents and failures                           | `apps/live/components/dialogs/ImportImageReport.test.tsx`                                                                                      |
+| import: replace-tab, new documents (cloud and offline), failures       | `apps/live/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                                              |
+| notice slot above the dock at every width                              | `apps/live/lib/board-scene-notice-slot.test.ts`                                                                                                |
+| notice copy and role                                                   | `apps/live/components/canvas/BoardSceneNotice.test.tsx`                                                                                        |

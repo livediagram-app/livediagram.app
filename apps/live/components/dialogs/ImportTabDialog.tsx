@@ -90,7 +90,8 @@ function needsReport(outcome: DoneOutcome): boolean {
   return (
     outcome.images !== undefined ||
     (outcome.scene !== undefined && reportHasLosses(outcome.scene)) ||
-    (outcome.failures?.length ?? 0) > 0
+    (outcome.failures?.length ?? 0) > 0 ||
+    (outcome.documents?.length ?? 0) > 0
   );
 }
 
@@ -129,6 +130,7 @@ export function ImportTabDialog({
             report={report.images}
             scene={report.scene}
             failures={report.failures}
+            documents={report.documents}
             onDone={onClose}
           />
         ) : (
