@@ -1,6 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { MAX_CHANGE_LOG_ENTRY_BYTES, type ChangeLogEntry } from '@livediagram/api-schema';
 import type { ShapeElement } from '@livediagram/document';
-import { applyRevert, coalesceDiff, diffElements } from './change-log';
+import {
+  applyRevert,
+  changeLogFailure,
+  coalesceDiff,
+  diffElements,
+  fitChangeLogEntry,
+} from './change-log';
 
 // Helper — every test wants a basic shape element with a stable id.
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
@@ -156,5 +163,68 @@ describe('applyRevert', () => {
     const b = shape('b');
     const next = applyRevert([b], { a });
     expect(next).toEqual([b, a]);
+  });
+});
+
+describe('fitChangeLogEntry', () => {
+  const entry = (elementCount: number): ChangeLogEntry => {
+    const after: Record<string, unknown> = {};
+    const ids: string[] = [];
+    for (let i = 0; i < elementCount; i++) {
+      const id = `el-${i}`;
+      ids.push(id);
+      after[id] = { id, type: 'text', x: i, y: i, width: 100, height: 20, label: 'x'.repeat(200) };
+    }
+    return {
+      id: 'entry-1',
+      tabId: 'tab-1',
+      participantId: 'p',
+      participantName: 'Pat',
+      participantColor: '#123456',
+      kind: 'add',
+      summary: `Added ${elementCount} elements`,
+      elementIds: ids,
+      beforeState: Object.fromEntries(ids.map((id) => [id, null])),
+      afterState: after,
+      createdAt: 1,
+    };
+  };
+
+  it('keeps an entry that fits, unchanged', () => {
+    const small = entry(3);
+    expect(fitChangeLogEntry(small)).toBe(small);
+  });
+
+  it('turns an entry over the cap into a summary with no Revert payload', () => {
+    const big = entry(2000);
+    expect(new TextEncoder().encode(JSON.stringify(big)).length).toBeGreaterThan(
+      MAX_CHANGE_LOG_ENTRY_BYTES,
+    );
+    expect(fitChangeLogEntry(big)).toEqual({
+      ...big,
+      elementIds: [],
+      beforeState: {},
+      afterState: {},
+    });
+  });
+
+  it('measures bytes, not characters', () => {
+    const wide = entry(1);
+    // Each '€' is 3 bytes in UTF-8: a third of the cap in characters is just over it in bytes.
+    wide.afterState = {
+      'el-0': { id: 'el-0', label: '€'.repeat(Math.ceil(MAX_CHANGE_LOG_ENTRY_BYTES / 3) + 1) },
+    };
+    expect(JSON.stringify(wide).length).toBeLessThan(MAX_CHANGE_LOG_ENTRY_BYTES);
+    expect(fitChangeLogEntry(wide).elementIds).toEqual([]);
+  });
+});
+
+describe('changeLogFailure', () => {
+  it('logs which write failed, for which id, and why', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const error = new Error('append change log: 413');
+    changeLogFailure('append', 'entry-1')(error);
+    expect(warn).toHaveBeenCalledWith('[activity-log] append failed', { id: 'entry-1', error });
+    warn.mockRestore();
   });
 });

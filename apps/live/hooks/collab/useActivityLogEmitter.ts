@@ -8,7 +8,7 @@ import {
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
 import { apiAppendChangeLogEntry, apiDeleteChangeLogEntry } from '@/lib/api-client';
-import { coalesceDiff, diffElements } from '@/lib/change-log';
+import { changeLogFailure, coalesceDiff, diffElements, fitChangeLogEntry } from '@/lib/change-log';
 import { entryHistoryFill, type EntryHistory } from '@/lib/entry-history';
 
 // Activity-log entry emission lifted out of editor-page.tsx. The
@@ -119,7 +119,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // chains could interleave (del1, del2, app1, app2-hits-existing-id),
   // leaving D1 on the older span while the panel and the room show the
   // newer one until a reload. One serial queue keeps the pairs atomic
-  // relative to each other; failures inside stay swallowed as before.
+  // relative to each other; failures inside are logged and the chain carries on.
   const d1QueueRef = useRef<Promise<void>>(Promise.resolve());
   const enqueueD1 = (task: () => Promise<void>) => {
     d1QueueRef.current = d1QueueRef.current.then(task, task);
@@ -129,16 +129,19 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // panel list, D1 (delete + re-append under the SAME id, so the undo
   // marker that holds the original still pairs with the merged row),
   // and the room (remove + add, in order, so peers converge).
-  const replaceLogEntry = (merged: ChangeLogEntry, key: string) => {
+  const replaceLogEntry = (grown: ChangeLogEntry, key: string) => {
+    const merged = fitChangeLogEntry(grown);
     deps.setChangeLog((prev) => prev.map((e) => (e.id === merged.id ? merged : e)));
     if (deps.documentId) {
       const { id: pid } = deps.selfParticipant;
       const documentId = deps.documentId;
       enqueueD1(() =>
         apiDeleteChangeLogEntry(pid, documentId, merged.id, deps.sessionShareCode)
-          .catch(() => {})
+          .catch(changeLogFailure('delete', merged.id))
           .then(() =>
-            apiAppendChangeLogEntry(pid, documentId, merged, deps.sessionShareCode).catch(() => {}),
+            apiAppendChangeLogEntry(pid, documentId, merged, deps.sessionShareCode).catch(
+              changeLogFailure('append', merged.id),
+            ),
           )
           .then(() => undefined),
       );
@@ -159,7 +162,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
       const documentId = deps.documentId;
       enqueueD1(() =>
         apiDeleteChangeLogEntry(pid, documentId, entryId, deps.sessionShareCode)
-          .catch(() => {})
+          .catch(changeLogFailure('delete', entryId))
           .then(() => undefined),
       );
     }
@@ -172,7 +175,9 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // Optimistic local append + fire-and-forget API + room
   // broadcast + fill the step's undo marker so the entry pops
   // cleanly on undo (skipped for non-undoable emits).
-  const appendLogEntry = (entry: ChangeLogEntry, opts?: EmitOpts, coalesceKey?: string) => {
+  const appendLogEntry = (full: ChangeLogEntry, opts?: EmitOpts, coalesceKey?: string) => {
+    // Too large for the server to store: logged as a summary entry, everywhere alike.
+    const entry = fitChangeLogEntry(full);
     // Cap the in-session list at the same limit the server hydrates
     // (docs/specs/012-collaboration/activity-and-audit.md), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
@@ -185,7 +190,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
         deps.documentId,
         entry,
         deps.sessionShareCode,
-      ).catch(() => {});
+      ).catch(changeLogFailure('append', entry.id));
     }
     deps.roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry } });
     lastEmitRef.current = coalesceKey ? { key: coalesceKey, entryId: entry.id } : null;
