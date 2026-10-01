@@ -3,6 +3,8 @@
 // the file, ready for the shared new-document target (importBoardsAsDocuments).
 
 import type { BoardScene } from './board-scene/scene';
+import type { ExcalidrawContainer } from './excalidraw-embedded';
+import { isExcalidrawFileCandidate } from './excalidraw-paste';
 import { readExcalidrawFile, type ExcalidrawFileRead } from './excalidraw-read';
 
 /** An untitled board's name; its date follows when Excalidraw's default name gives one. */
@@ -68,6 +70,8 @@ export function excalidrawFileIdentity(name: string, lastModified: number): Exca
 
 export type ExcalidrawBoardFiles = {
   scenes: BoardScene[];
+  // Where each scene was found (its file's kind), parallel to `scenes`.
+  containers: ExcalidrawContainer[];
   failures: { title: string; message: string }[];
 };
 
@@ -75,9 +79,14 @@ export type ExcalidrawBoardFiles = {
 export async function readExcalidrawBoardFiles(
   files: readonly File[],
 ): Promise<ExcalidrawBoardFiles> {
-  const out: ExcalidrawBoardFiles = { scenes: [], failures: [] };
+  const out: ExcalidrawBoardFiles = { scenes: [], containers: [], failures: [] };
   for (const file of files) {
     const identity = excalidrawFileIdentity(file.name, file.lastModified);
+    // Another kind of file holds no scene: turned away without reading it.
+    if (!isExcalidrawFileCandidate(file) && !file.name.toLowerCase().endsWith('.json')) {
+      out.failures.push({ title: identity.title, message: EXCALIDRAW_NOT_A_SCENE });
+      continue;
+    }
     let read: ExcalidrawFileRead;
     try {
       read = await readExcalidrawFile(file);
@@ -88,6 +97,7 @@ export async function readExcalidrawBoardFiles(
     }
     if (read.kind === 'scene') {
       out.scenes.push({ ...read.scene, ...identity, sourceId: `excalidraw:${file.name}` });
+      out.containers.push(read.container);
     } else {
       out.failures.push({
         title: identity.title,

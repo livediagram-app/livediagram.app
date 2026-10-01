@@ -3,6 +3,7 @@
 import { useCallback, type ReactNode } from 'react';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
 import { useMsWhiteboardImportLauncher } from '@/hooks/persistence/useMsWhiteboardImportLauncher';
+import { useExcalidrawImportLauncher } from '@/hooks/persistence/useExcalidrawImportLauncher';
 import { ImportFromToolbar } from './ImportFromToolbar';
 import { IMPORT_SOURCES, type ImportSourceId } from './import-sources';
 
@@ -32,14 +33,23 @@ export function useExplorerImport(opts: {
     [ownerId, folderId, onDocumentsCreated],
   );
   const msWhiteboard = useMsWhiteboardImportLauncher(ownerId ? importScenes : undefined);
+  const excalidraw = useExcalidrawImportLauncher(ownerId ? importScenes : undefined);
   const openers: Partial<Record<ImportSourceId, () => void>> = {
     'microsoft-whiteboard': msWhiteboard.openMicrosoftWhiteboardImport,
+    excalidraw: excalidraw.openExcalidrawImport,
   };
   const sources = IMPORT_SOURCES.filter((s) => openers[s.id]);
   return {
     toolbar: sources.length ? (
       <ImportFromToolbar sources={sources} onImport={(id) => openers[id]?.()} />
     ) : null,
-    dialogs: msWhiteboard.dialog,
+    // Null while no import is open.
+    dialogs:
+      msWhiteboard.dialog || excalidraw.dialog ? (
+        <>
+          {msWhiteboard.dialog}
+          {excalidraw.dialog}
+        </>
+      ) : null,
   };
 }

@@ -80,6 +80,7 @@ describe('readExcalidrawBoardFiles', () => {
       file(excalidrawText([excalidrawBuilder().diamond()]), 'Untitled-2026-04-12-1430.excalidraw'),
     ]);
     expect(r.failures).toEqual([]);
+    expect(r.containers).toEqual(['json', 'json']);
     expect(r.scenes.map((s) => [s.title, s.items.length, s.source])).toEqual([
       ['First', 2, 'excalidraw'],
       [`${EXCALIDRAW_BOARD_NAME}, 12 Apr 2026`, 1, 'excalidraw'],
@@ -109,12 +110,20 @@ describe('readExcalidrawBoardFiles', () => {
     ]);
   });
 
+  it('turns away a file of another kind without reading it', async () => {
+    const text = file('hello', 'notes.txt', 'text/plain');
+    text.arrayBuffer = () => Promise.reject(new Error('should not be read'));
+    const r = await readExcalidrawBoardFiles([text]);
+    expect(r.failures).toEqual([{ title: 'notes.txt', message: EXCALIDRAW_NOT_A_SCENE }]);
+  });
+
   it('never throws on a file that cannot be read at all', async () => {
     const unreadable = file(saved(), 'Gone.excalidraw');
     unreadable.arrayBuffer = () => Promise.reject(new Error('NotReadableError'));
     const r = await readExcalidrawBoardFiles([unreadable]);
     expect(r).toEqual({
       scenes: [],
+      containers: [],
       failures: [{ title: 'Gone', message: "This file couldn't be read." }],
     });
   });

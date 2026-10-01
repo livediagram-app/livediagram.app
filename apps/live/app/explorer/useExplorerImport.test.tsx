@@ -26,3 +26,16 @@ describe('useExplorerImport', () => {
     expect(result.current.dialogs).not.toBeNull();
   });
 });
+
+describe('the Excalidraw source', () => {
+  it('opens its own dialog from its button', () => {
+    const { result, rerender } = renderHook(() =>
+      useExplorerImport({ ownerId: 'owner', folderId: null, onDocumentsCreated: vi.fn() }),
+    );
+    expect(result.current.dialogs).toBeNull();
+    render(<>{result.current.toolbar}</>);
+    fireEvent.click(screen.getByRole('button', { name: 'Import from Excalidraw' }));
+    rerender();
+    expect(result.current.dialogs).not.toBeNull();
+  });
+});

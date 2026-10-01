@@ -237,7 +237,9 @@ zoom)`, `onDropFile(file, at)`.
   4. `modifiedAt` = `lastModified` as ISO. A `lastModified` that is not a finite positive number
      sets neither date from it.
 - `readExcalidrawBoardFiles(files)` → `{ scenes: BoardScene[], failures: { title, message }[] }`,
-  files in pick order, each through `readExcalidrawFile`: `scene` → the scene with the identity's
+  files in pick order. A file that is neither an Excalidraw candidate (`isExcalidrawFileCandidate`) nor
+  `.json` is the failure `EXCALIDRAW_NOT_A_SCENE` without being read; the rest go through
+  `readExcalidrawFile`, with the scene's container kept in a parallel `containers` list: `scene` → the scene with the identity's
   `title`, `createdAt`, `modifiedAt` and `sourceId: 'excalidraw:<file name>'`;
   `not-excalidraw` → failure `EXCALIDRAW_NOT_A_SCENE`; `error` → failure with its message. Never
   throws (a read that throws is a failure with "This file couldn't be read.").
