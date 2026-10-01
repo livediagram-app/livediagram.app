@@ -60,7 +60,10 @@ diagram's:
   keeps the pen for another stroke, as for a diagram tab's markers.
 - **The tab's ink:** no colour of their own, so they draw in the theme's element stroke (recorded on
   the stroke, as the pencil always did) or, with none, the canvas's default freehand colour. Width
-  2 canvas px (`DIAGRAM_PEN_WIDTH`), the default border's weight.
+  2.5 canvas px (`DIAGRAM_PEN_WIDTH`): the pens' Bold preset, nearest the 2 px border the pencil
+  drew at.
+- **Styled as pen ink:** a selected stroke gets the quick style panel's pen rows (Marker colour,
+  Marker width), as on a whiteboard, the colour row's ink swatch in the tab's ink.
 - **Strokes stay open**, as on a board: a loop is ink, not a filled shape. Close-to-fill went with
   the old pencil; a filled shape is the Shape Pen's or the palette's.
 - **No guides or start snap**: a pen draws where it presses.

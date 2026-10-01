@@ -218,7 +218,7 @@ describe('the diagram pencil and Shape Pen', () => {
     const stroke = s.elements[0] as FreehandElement;
     expect(stroke.type).toBe('freehand');
     expect(stroke.closed).toBe(false);
-    expect(stroke.penWidth).toBe(2);
+    expect(stroke.penWidth).toBe(2.5);
     expect(stroke.streamline).toBe(0.5);
     expect(s.setSelectedId).toHaveBeenCalledWith(stroke.id);
     expect(s.setPendingDraw).toHaveBeenCalledWith(null);
@@ -250,6 +250,6 @@ describe('the diagram pencil and Shape Pen', () => {
   it('lands a Shape Pen stroke that reads as no shape as ink', () => {
     const s = setup({ type: 'freehand', variant: 'shape-pen' }, diagram);
     s.commit(scribble, true, { ...ink, keepInk: true });
-    expect(s.elements[0]).toMatchObject({ type: 'freehand', penWidth: 2 });
+    expect(s.elements[0]).toMatchObject({ type: 'freehand', penWidth: 2.5 });
   });
 });

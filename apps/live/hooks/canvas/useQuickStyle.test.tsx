@@ -26,9 +26,10 @@ function setup(
   held: WhiteboardPen | null = DEFAULT_WHITEBOARD_PREFS.pens[1]!,
   toolIntent: PendingDraw | null = null,
   memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el },
+  kind: 'whiteboard' | 'diagram' = 'whiteboard',
 ) {
   let elements: Element[] = [stroke];
-  const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements } as unknown as Tab;
+  const tab = { id: 't', name: 'Board', kind, elements } as unknown as Tab;
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
   });
@@ -88,6 +89,17 @@ describe('useQuickStyle pen rows', () => {
     act(() => result.current.setPenColour('ink'));
     expect(update).toHaveBeenCalledWith('second', { colour: null });
     expect(commit).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/008-canvas/two-pens.md "Ink": a pen stroke on a diagram tab (a marker's, the Freehand
+// pencil's) gets the pen rows too; before, it had no panel at all.
+describe('useQuickStyle pen rows on a diagram tab', () => {
+  it('styles a selected pen stroke with the pen rows', () => {
+    const { result, elements } = setup(['s1'], null, null, undefined, 'diagram');
+    expect(result.current.view?.pen?.subject).toMatchObject({ kind: 'strokes', ids: ['s1'] });
+    act(() => result.current.setPenWidth('bold'));
+    expect(elements()[0]).toMatchObject({ penWidth: 2.5 });
   });
 });
 

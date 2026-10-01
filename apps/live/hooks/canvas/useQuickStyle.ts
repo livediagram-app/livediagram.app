@@ -17,7 +17,9 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { canvasSurface, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { penInkFor } from '@/lib/pen-ink';
+import { resolveTabBackdrop } from '@/lib/themes';
 import { onWhiteboard } from '@/lib/quick-style-whiteboard';
 import {
   applyPenStyle,
@@ -105,14 +107,22 @@ export function useQuickStyle(deps: {
   const { appearance } = useAppearance();
   const ink = WHITEBOARD_INK[appearance];
   const held = deps.pen?.held ?? null;
+  // The colour a colourless pen stroke shows on this tab (lib/pen-ink): the board's ink, or on a
+  // diagram tab the theme's element stroke or the canvas's default freehand colour.
+  const penInk = penInkFor({
+    whiteboard,
+    appearance,
+    themeStroke: theme.elementStroke ?? undefined,
+    surface: canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor),
+  });
   // The custom colours used on this tab, the Marker colour row's second section.
   const palette = useMemo(
     () => ({
       board: appearance,
-      ink,
+      ink: penInk,
       custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
     }),
-    [appearance, ink, whiteboard, activeTab.elements],
+    [appearance, penInk, whiteboard, activeTab.elements],
   );
   // A tool's choices land in memory, not the document: a version to re-read it.
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
@@ -146,12 +156,15 @@ export function useQuickStyle(deps: {
     const plain = quickStyleView(selected, theme, overrides);
     // On a diagram tab a marker is picked up from the palette's Draw category
     // (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs"): with nothing selected,
-    // the panel styles the marker in hand, as on a board. A selection keeps the ordinary rows.
+    // the panel styles the marker in hand, as on a board. Selected pen strokes (a marker's, and the
+    // Freehand pencil's and Shape Pen's ink, docs/specs/008-canvas/two-pens.md "Ink") get the pen
+    // rows as on a board, beside the ordinary rows of anything else selected.
     if (!whiteboard) {
       if (selected.length === 0 && held) {
         return { targetIds: [], sections: {}, pen: heldPenStyle(held, palette) };
       }
-      return plain;
+      const strokes = strokesPenStyle(selected, palette);
+      return strokes ? { ...(plain ?? { targetIds: [], sections: {} }), pen: strokes } : plain;
     }
     const board = onWhiteboard(plain, selected, ink);
     // Selected strokes first; with nothing selected, the pen in hand.

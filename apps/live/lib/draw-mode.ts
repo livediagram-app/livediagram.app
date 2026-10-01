@@ -182,9 +182,10 @@ export function isWhiteboardPenIntent(
   return intent?.type === 'freehand' && intent.variant === 'whiteboard';
 }
 
-// The diagram pencil's and the Shape Pen's ink width, canvas px: the default border's weight, which
-// the pencil drew at before it took the pen ink.
-export const DIAGRAM_PEN_WIDTH = 2;
+// The diagram pencil's and the Shape Pen's ink width, canvas px: the whiteboard pens' Bold preset
+// (WHITEBOARD_PEN_WIDTHS), the one nearest the 2 px default border the pencil drew at before it
+// took the pen ink, and a preset so the quick style panel's Marker width row shows it chosen.
+export const DIAGRAM_PEN_WIDTH = 2.5;
 
 // The pen a draw intent inks with, when it draws live pen ink (docs/specs/008-canvas/two-pens.md
 // "Ink"): a whiteboard pen as it is, and on a diagram tab the Freehand pencil and the Shape Pen as
