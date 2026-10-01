@@ -6,33 +6,33 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                         | Role                                                                             |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                    | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`               | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
-| `packages/document/src/shape-factory.ts`                     | Default sizes and starting content per kind                                      |
-| `packages/document/src/svg-render-web.ts`                    | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
-| `packages/document/src/themes.ts`                            | `themeColourFields`: accent bars retheme only their stroke                       |
-| `packages/document/src/colors.ts`                            | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                       | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                          | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
-| `packages/document/src/legacy-groups.ts`                     | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
-| `packages/document/src/stored-elements.ts`                   | `migrateStoredElements`: legacy groups, then legacy docks                        |
-| `packages/document/src/stored-tab.ts`                        | `migrateStoredTab`: every stored-tab entry point runs it                         |
-| `apps/api/src/tab-row.ts`                                    | `rowToTab` runs the migration                                                    |
-| `apps/api/src/thumbnail.ts`                                  | The thumbnail render runs the migration on the tab it parses                     |
-| `apps/live/lib/offline/offline-store.ts`                     | `offlineLoadTab` runs the migration                                              |
-| `apps/live/lib/import-merge.ts`                              | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
-| `apps/live/components/canvas/web/*.tsx`                      | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `apps/live/components/canvas/InlineTextLine.tsx`             | The in-place single-line editor                                                  |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`          | Routes faces; computes `editable`                                                |
-| `apps/live/hooks/canvas/useWebComponentSetters.ts`           | Row writes, ring append, hero caption writes                                     |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
-| `apps/live/components/palette/context-menu-web-editors.tsx`  | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
-| `apps/live/components/palette/ElementContentSections.tsx`    | The image menu's "Caption Card" toggle                                           |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`        | `WEB_ROW_ACTION`: the ring's add-row action                                      |
-| `apps/live/lib/element-telemetry.ts`                         | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
-| `apps/live/lib/excalidraw-scene.ts`, `excalidraw-export.ts`  | No group mapping                                                                 |
+| File                                                        | Role                                                                             |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `packages/document/src/web-components.ts`                   | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `packages/document/src/component-factories.ts`              | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
+| `packages/document/src/shape-factory.ts`                    | Default sizes and starting content per kind                                      |
+| `packages/document/src/svg-render-web.ts`                   | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `packages/document/src/themes.ts`                           | `themeColourFields`: accent bars retheme only their stroke                       |
+| `packages/document/src/colors.ts`                           | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
+| `packages/document/src/data-shapes.ts`                      | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `packages/document/src/validate.ts`                         | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
+| `packages/document/src/legacy-groups.ts`                    | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
+| `packages/document/src/stored-elements.ts`                  | `migrateStoredElements`: legacy groups, then legacy docks                        |
+| `packages/document/src/stored-tab.ts`                       | `migrateStoredTab`: every stored-tab entry point runs it                         |
+| `apps/api/src/tab-row.ts`                                   | `rowToTab` runs the migration                                                    |
+| `apps/api/src/thumbnail.ts`                                 | The thumbnail render runs the migration on the tab it parses                     |
+| `apps/live/lib/offline/offline-store.ts`                    | `offlineLoadTab` runs the migration                                              |
+| `apps/live/lib/import-merge.ts`                             | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
+| `apps/live/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
+| `apps/live/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
+| `apps/live/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
+| `apps/live/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
+| `apps/live/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
+| `apps/live/components/palette/context-menu-web-editors.tsx` | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
+| `apps/live/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
+| `apps/live/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
+| `apps/live/lib/excalidraw-scene.ts`, `excalidraw-export.ts` | No group mapping                                                                 |
 
 ## Domain and naming
 
