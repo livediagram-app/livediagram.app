@@ -120,7 +120,7 @@ An ink stroke's payload is a header then the points:
 
 | Whiteboard kind      | Holds                                                                                                   |
 | -------------------- | ------------------------------------------------------------------------------------------------------- |
-| Ink group            | Position (top-left), scale, rotation (degrees), its strokes                                             |
+| Ink group            | Position (top-left), scale, rotation (degrees clockwise about the position), its strokes                |
 | Pen stroke           | Geometry, colour, optional width factor, translation, arrowhead                                         |
 | Highlighter stroke   | Geometry, colour (translucent)                                                                          |
 | Rainbow stroke       | Geometry; a preset spectrum, no stored colour                                                           |

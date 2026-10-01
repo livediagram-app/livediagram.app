@@ -76,11 +76,11 @@ describe('inkToScene', () => {
     ]);
   });
 
-  it('rotates about the centre of the group', () => {
-    const [ink] = inkToScene(group({ rotationDeg: 180 }), 'k', ctx());
+  it('rotates about the group position, clockwise', () => {
+    const [ink] = inkToScene(group({ rotationDeg: 90 }), 'k', ctx());
     expect(ink!.points.map((p) => [Math.round(p.x), Math.round(p.y)])).toEqual([
-      [110, 50],
       [100, 50],
+      [100, 60],
     ]);
   });
 

@@ -62,15 +62,6 @@ export function inkToScene(group: WbInk, key: string, ctx: Context): SceneInk[] 
       widthPx: widthOf(s, pen),
     }));
   });
-  let cx = 0;
-  let cy = 0;
-  if (group.rotationDeg) {
-    const all = placed.flatMap((p) => p.points);
-    const xs = all.map((p) => p.x);
-    const ys = all.map((p) => p.y);
-    cx = (Math.min(...xs) + Math.max(...xs)) / 2;
-    cy = (Math.min(...ys) + Math.max(...ys)) / 2;
-  }
   const items: SceneInk[] = [];
   placed.forEach(({ stroke, head, points: raw, widthPx }, i) => {
     const colour = strokeColour(stroke, ctx);
@@ -78,7 +69,8 @@ export function inkToScene(group: WbInk, key: string, ctx: Context): SceneInk[] 
       ctx.notes.invisible++;
       return;
     }
-    const points = rotateAbout(raw, group.rotationDeg, cx, cy);
+    // A group turns about its position (checked against real boards' screenshots).
+    const points = rotateAbout(raw, group.rotationDeg, group.x, group.y);
     const multicolour =
       stroke.preset === 'rainbow'
         ? RAINBOW_STOPS
