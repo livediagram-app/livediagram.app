@@ -136,7 +136,8 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
-  | { type: 'arrow' }
+  // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
+  | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
   // `fill` + `esKind` ride the sticky action for the Event Storming tiles
@@ -526,12 +527,29 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'draw',
     label: 'Add arrow',
-    description: 'Plain connector. Add pointers in the Pointer accordion.',
+    description:
+      'A connector with a pointer at its end. Change its pointers in the Pointer accordion.',
     shortcut: 'A',
     action: { type: 'arrow' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideMoveRight} />
+      </Glyph>
+    ),
+  },
+  // The Line: the arrow tool without its heads (docs/specs/008-canvas/canvas-and-palette.md
+  // "Arrows and lines"), the same element, connector and gesture.
+  {
+    id: 'tools:line',
+    blurb: 'A plain line, no pointers',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Line',
+    description: 'A line you place by hand, with no pointers. Add them in the Pointer accordion.',
+    action: { type: 'arrow', ends: 'none' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M5 19 19 5" />
       </Glyph>
     ),
   },

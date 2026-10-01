@@ -347,7 +347,8 @@ export type CanvasProps = {
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
-  onAddArrow: () => void;
+  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
+  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   onBeginFreehand: () => void;
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.

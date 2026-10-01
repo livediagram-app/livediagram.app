@@ -327,7 +327,8 @@ The **Tools tab** also carries a **Frame** (`frame`): a 360×260 transparent out
 **Tools tab** (other element kinds):
 
 - **Text** — adds a free-floating text element (see [Text element](#text-element)).
-- **Arrow** ("Add arrow") — drops / draws a plain straight connector, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
+- **Arrow** ("Add arrow") — drops / draws a straight connector **with a pointer at its end**, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
+- **Line** — the same tool without the heads (`arrowEnds: 'none'`): the same element, gesture and click-to-connect, so a plain line and an arrow are both one tile away. No key (`A` is the Arrow). Its pointers are added in the Pointer accordion like any arrow's. Telemetry: `Element·Added·Line`.
 - **Sticky note** — adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
 - **Annotation** — drops a note marker (a fixed-size themed circle + note glyph) at the viewport centre: hover to read its note above everything, click to edit it. See [Annotations](../009-elements/annotations.md).
 - **Link card** — draws a rectangular bookmark (same tap-or-drag gesture as a shape); double-click to set its URL (the normal link picker), and the worker unfurls a preview (favicon / title / site / image). See [Link cards](../009-elements/link-cards.md).
@@ -394,7 +395,7 @@ There are three ways to create an arrow:
    - **Press-and-drag** from the ring's Arrow option to start creating an arrow: the `from` endpoint is immediately pinned to that anchor, and the `to` endpoint follows the cursor. An arrow drawn this way takes the **tab theme's** element stroke (so it matches the theme, not black, and not the source shape: a red box used to sprout red arrows, which stopped connectors reading as one system).
    - Release on **another element's anchor** (within snap distance, ~24 px) → that endpoint becomes pinned. Release on **empty canvas** → that endpoint stays free.
    - Releasing without any drag movement creates a tiny "stub" arrow at that anchor.
-2. **The palette "Add arrow" button** with nothing selected: drops / draws (draw-to-size) a plain connector with free endpoints — drag the endpoints onto shapes afterwards to pin them.
+2. **The palette "Add arrow" button** with nothing selected: drops / draws (draw-to-size) a connector with free endpoints and **a pointer at its end** (`arrowEnds: 'to'`; the **Line** tile draws the same with none) — drag the endpoints onto shapes afterwards to pin them.
 3. **Click-to-connect**: with a shape **selected**, pick the palette **Add arrow** tool (or press `A`) to arm a connect gesture — a hint banner appears — then **click another shape** and a pinned connector is drawn between the two, anchored on the facing sides (`bestAnchorTowards`) and inheriting the source's stroke. Clicking empty canvas (or the banner) cancels.
 
 Snapping during the drag considers every anchor each shape offers (sixteen on a box), so an arrow drag from a midpoint can still snap to and pin at a corner or a quarter point ([Arrow anchors and auto-rebind](arrow-anchors.md)).

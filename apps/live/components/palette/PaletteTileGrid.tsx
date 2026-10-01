@@ -36,7 +36,7 @@ export type PaletteTileActions = {
   beginFreehand: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
-  addArrow: () => void;
+  addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
   // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add sticky note" passes nothing.
@@ -80,7 +80,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
     case 'polygon':
       return actions.beginPolygon;
     case 'arrow':
-      return actions.addArrow;
+      // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
+      return () => actions.addArrow(a.ends);
     case 'sticky':
       // Wrapped so the button's MouseEvent can't land in the optional fill
       // parameter; the tile's own fill + kind (if any) ride instead.
