@@ -180,6 +180,46 @@ export function penColourHardToSee(hex: string): Appearance[] {
   return (['light', 'dark'] as const).filter((b) => !(penContrast(hex, b) >= PEN_MIN_CONTRAST));
 }
 
+/** A `#rrggbb` colour in OKLCH (lightness 0..1, chroma, hue in degrees), or null for anything else. */
+export function hexOklch(hex: string): { l: number; c: number; h: number } | null {
+  const rgb = hexRgb(hex);
+  return rgb ? rgbOklch(rgb) : null;
+}
+
+// Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): under this OKLCH chroma a
+// colour is neutral (black, grey, white, slate) and becomes the ink. Greys measure 0 to 0.03 and
+// slates about 0.04; dusty pastels start near 0.06. Safe range 0.03 to 0.08.
+export const PEN_NEUTRAL_CHROMA = 0.05;
+
+/** What a custom colour snaps to: a stock colour, or the board's own ink. */
+export type SnapTarget = PenColourName | 'ink';
+
+/** The stock colour nearest a hue (degrees, round the circle); a tie goes to the earlier one. */
+export function penColourAtHue(hue: number): PenColourName {
+  let best: PenColourName = PEN_COLOURS[0].id;
+  let bestDist = Infinity;
+  for (const c of PEN_COLOURS) {
+    const d = Math.abs((((hue - c.hue) % 360) + 360) % 360);
+    const dist = Math.min(d, 360 - d);
+    if (dist < bestDist) {
+      best = c.id;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
+/**
+ * The stock colour a custom `#rrggbb` snaps to: the ink when it is neutral, else the stock colour
+ * nearest in hue (lightness is not compared: each stock colour takes its own per board). Null for
+ * anything that is not `#rrggbb`.
+ */
+export function nearestPenColour(hex: string): SnapTarget | null {
+  const oklch = hexOklch(hex);
+  if (!oklch) return null;
+  return oklch.c < PEN_NEUTRAL_CHROMA ? 'ink' : penColourAtHue(oklch.h);
+}
+
 /**
  * A nearby version of a custom colour that is at least 3:1 on both boards: the same OKLCH hue and
  * chroma, its lightness moved the least that reaches it. The colour itself when it already is.
