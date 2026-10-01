@@ -10,9 +10,11 @@ import {
   MAX_CHANGE_LOG_ENTRY_BYTES,
   MAX_DECK_LEN,
   MAX_TAB_BYTES,
-  byteLength,
+  TabTooLargeError,
   bodyExceedsCap,
   declaredBodyBytes,
+  logTabRefused,
+  tabDataBytes,
 } from '../limits';
 import {
   CHANGE_LOG_TAB_NOT_SAVED,
@@ -112,7 +114,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         body.tabs = body.tabs.map((tab) => migrateIncomingTab(tab) as Tab);
         for (const tab of body.tabs) {
           if (!isValidTab(tab)) return badRequest('invalid tab');
-          if (byteLength(JSON.stringify(tab)) > MAX_TAB_BYTES) {
+          // The cap D1's row sets (docs/specs/015-api/api.md "Tab size"), measured as stored,
+          // before anything is written, so a create never leaves a document without its tabs.
+          const bytes = tabDataBytes(tab);
+          if (bytes > MAX_TAB_BYTES) {
+            logTabRefused('create', tab.id, bytes);
             return payloadTooLarge();
           }
         }
@@ -203,7 +209,12 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
       if (seeded) {
-        await seedTabs(env, body.id, seeded.tabs, savedAt);
+        try {
+          await seedTabs(env, body.id, seeded.tabs, savedAt);
+        } catch (error) {
+          if (error instanceof TabTooLargeError) return payloadTooLarge();
+          throw error;
+        }
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

@@ -7,6 +7,18 @@ import {
   type NewBoardDocument,
 } from './board-scene-import';
 import { ApiError } from '@/lib/api/core';
+import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
+
+const textItem = (text: string): SceneItem => ({
+  key: 't',
+  kind: 'text',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 20,
+  autoWidth: false,
+  text: { text: text || ' x', fontPx: 22, family: 'sans', colour: 'ink' },
+});
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/offline/offline-store', () => ({ offlineCreateDocument: vi.fn() }));
@@ -104,6 +116,36 @@ describe('importBoardsAsDocuments', () => {
       '[board-scene] board too big',
       expect.objectContaining({ board: 1, bytes: expect.any(Number) }),
     );
+    warn.mockRestore();
+  });
+
+  it('refuses a cloud board over the tab cap before asking the server, at the boundary', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const made: NewBoardDocument[] = [];
+    const run = async (label: string, offline: boolean) =>
+      importBoardsAsDocuments([boardScene([textItem(label)], { title: 'Big' })], {
+        ownerId: 'o',
+        offline,
+        createDocument: async (d) => {
+          made.push(d);
+        },
+        ...seams,
+      });
+    // Find the label length that lands the tab exactly at the cap.
+    await run('', true);
+    const base = tabDataBytes(made.pop()!.tabs[0]!);
+    const atCap = 'x'.repeat(MAX_TAB_BYTES - base);
+    expect((await run(atCap, false)).status).toBe('done');
+    expect(tabDataBytes(made.pop()!.tabs[0]!)).toBe(MAX_TAB_BYTES);
+    const over = await run(atCap + 'x', false);
+    expect(over).toMatchObject({ status: 'error', error: BOARD_TOO_BIG });
+    expect(made).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(
+      '[board-scene] board too big',
+      expect.objectContaining({ bytes: MAX_TAB_BYTES + 1, cap: MAX_TAB_BYTES }),
+    );
+    // In this browser there is no row cap: an Offline Mode board of that size still lands.
+    expect((await run(atCap + 'x', true)).status).toBe('done');
     warn.mockRestore();
   });
 
