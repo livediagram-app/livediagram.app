@@ -83,6 +83,14 @@ describe('useBoardSceneInsert', () => {
     expect(state.multi.size).toBe(0);
   });
 
+  it('lands at a given point before the pointer', async () => {
+    const { state, hook } = setup();
+    await act(async () => {
+      await hook.result.current.insertScene(boardScene([square('a', 0)]), { x: 50, y: 25 });
+    });
+    expect(state.elements[0]).toMatchObject({ x: 0, y: 0 });
+  });
+
   it('hugs text boxes on a whiteboard only', async () => {
     const text: SceneItem = {
       key: 't',

@@ -153,7 +153,8 @@ Each scene colour resolves to one of three things, in this order:
 ## Placement
 
 - **At a point** (a paste or a drop): the scene's bounds are centred on the
-  point: the pointer when it is over the canvas, else the viewport's centre.
+  point: where a file is dropped, or the canvas menu's Paste was opened, else
+  the pointer when it is over the canvas, else the viewport's centre.
 - **At the origin** (an import filling a tab): the scene's coordinates are the
   tab's, unchanged; the editor then frames the tab.
 

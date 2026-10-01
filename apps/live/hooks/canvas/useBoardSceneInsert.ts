@@ -60,8 +60,12 @@ export type BoardSceneInsertDeps = {
 };
 
 export type BoardSceneInsertApi = {
-  /** Lands a scene on the active tab; resolves true when anything landed. */
-  insertScene: (scene: BoardScene) => Promise<boolean>;
+  /**
+   * Lands a scene on the active tab, centred on `at` (a drop's release point, the canvas menu's
+   * point) when given, else the pointer, else the middle of the view; resolves true when anything
+   * landed.
+   */
+  insertScene: (scene: BoardScene, at?: Point) => Promise<boolean>;
   notice: BoardSceneNoticeState | null;
   dismissNotice: () => void;
 };
@@ -76,7 +80,7 @@ export function useBoardSceneInsert(deps: BoardSceneInsertDeps): BoardSceneInser
     setNotice(null);
   }, [tabId]);
 
-  const insertScene = async (scene: BoardScene): Promise<boolean> => {
+  const insertScene = async (scene: BoardScene, point?: Point): Promise<boolean> => {
     const d = latest.current;
     const tab = d.activeTab;
     if (d.editsBlocked || tab.locked) {
@@ -84,7 +88,7 @@ export function useBoardSceneInsert(deps: BoardSceneInsertDeps): BoardSceneInser
       return false;
     }
     const whiteboard = isWhiteboardTab(tab);
-    const at = d.canvasPointerRef?.current ?? d.getViewportCenter();
+    const at = point ?? d.canvasPointerRef?.current ?? d.getViewportCenter();
     const result = landBoardScene(scene, {
       profile: whiteboard ? 'whiteboard' : 'diagram',
       placement: { kind: 'at', x: at.x, y: at.y },
