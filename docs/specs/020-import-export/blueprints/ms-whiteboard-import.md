@@ -181,7 +181,7 @@ decode is dropped and counted (`unreadableStrokes`).
 
 - Ink group: each stroke's points `x = gx + s·(px·u + dx)`, `y = gy + s·(py·u + dy)` where `g` is
   the group's position, `s` its scale, `u` the stroke's unit scale; then the group's rotation turns
-  every point about the centre of the group's unrotated bounds. `widthPx = width · u · s · factor`.
+  every point clockwise about the group's position. `widthPx = width · u · s · factor`.
   Pressure kept when every point has one.
 - Presets: highlighter → `highlighter: true`, opacity from alpha; rainbow → `stops` `RAINBOW_STOPS`,
   colour the first stop; galaxy → `stops` `GALAXY_STOPS`.
