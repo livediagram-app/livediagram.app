@@ -9,7 +9,7 @@ import {
 } from '@livediagram/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
 
 // Shared styling for the toolbar's plain icon buttons (More / Duplicate /
 // Export). Lock (active brand fill) and Delete (rose / disabled) compose
@@ -62,10 +62,11 @@ export function MultiSelectionToolbar({
   // Same rule as the single-selection popover (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
   const touch = useCoarsePointer();
   const minimalChrome = useMinimalChrome();
+  const powerUser = usePowerUser();
   const showDelete = touch || !minimalChrome;
   return (
     <>
-      {onOpenContextMenu && touch ? (
+      {onOpenContextMenu && (touch || !powerUser) ? (
         <>
           <HoverCard title="More" description="Open the selection menu.">
             <button
