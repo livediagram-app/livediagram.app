@@ -92,6 +92,12 @@ export function uiScaleStyle(scale: number): CSSProperties | undefined {
   return scale === 1 ? undefined : { zoom: scale };
 }
 
+// The style a menu opened inside a scaled surface spreads onto its root to
+// cancel that surface's zoom (zooms multiply), so it draws at design size.
+export function uiUnscaleStyle(scale: number): CSSProperties | undefined {
+  return scale === 1 ? undefined : { zoom: 1 / scale };
+}
+
 // Inside a zoomed surface every length, its own left / top / insets included,
 // is multiplied by the zoom, while measurements (getBoundingClientRect,
 // clientX) are in screen px. Converts a screen-px length to the px to write.

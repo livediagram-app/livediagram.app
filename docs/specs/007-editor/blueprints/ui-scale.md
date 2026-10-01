@@ -93,9 +93,10 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
   → `toSurfacePx`.
 - **`ToolbarPalette`**: zoom on the root, which is `inset-x-0` and still spans
   the canvas when zoomed, so the card stays centred; `top` is restated as
-  `toSurfacePx(12)`. `moreRight` (screen px) → `toSurfacePx`; the popover's
-  `max-h-[calc(100dvh-14rem)]` becomes inline `calc(100dvh / scale - 14rem)`
-  so its screen bottom gap is `14rem × scale`.
+  `toSurfacePx(12)`. The More popover sits inside the zoomed root but does not
+  scale: it spreads `uiUnscaleStyle(scale)` (`zoom: 1 / scale`, nothing at 1),
+  so its effective zoom is 1 and `moreRight` (screen px), its `w-[26rem]` and
+  its `max-h-[calc(100dvh-14rem)]` all apply as written.
 - **`SnapWidth`**: divides measured widths by the element's
   `currentCSSZoom` (1 where unsupported), so it writes surface px.
 - **The bottom-right cluster** (`[data-zoom-cluster]`): zoom on the root;
@@ -216,6 +217,7 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 | Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set    |
 | A panel reads only the panels part   | `MovablePanel` test, provider with differing parts       |
 | Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                 |
+| Toolbar More popover stays unscaled  | `apps/live/lib/ui-scale.test.ts` `uiUnscaleStyle`        |
 | Bottom-right clearance scales        | `apps/live/lib/panel-layout.test.ts`                     |
 
 Verified in a real browser across the range: drag, corner snap, Toolbar More
