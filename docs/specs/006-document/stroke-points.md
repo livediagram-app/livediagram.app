@@ -75,8 +75,8 @@ pen's pressure at each point when it reported one. It replaces the former `point
   their extent first, so no point moves by more than the precision guarantee. A pressure list
   whose length differs from the points is dropped, and the stroke draws at the middle pressure.
 - The former shape is accepted **only as migration input**, at every place a stored or foreign
-  element arrives: the api's tab writes (create and save, which also serve the MCP server and
-  the Google Drive mirror's copies), realtime element operations from peers, clipboard pastes,
+  element arrives: the api's tab writes (create and save, which also serve API-token scripts and
+  the Google Drive mirror's copies), the MCP server's own validation of what a model writes, realtime element operations from peers, clipboard pastes,
   tab file imports, and change-log entries applied by Revert. Each runs the same migration
   before validation, so nothing downstream ever sees the former shape.
 - The migration is idempotent: a stroke already carrying `packedPoints` is returned unchanged.
@@ -96,7 +96,8 @@ pen's pressure at each point when it reported one. It replaces the former `point
 
 ## Validation
 
-A freehand element is valid only when `packedPoints` decodes. Each failure has a name:
+A freehand element is valid only when `packedPoints` decodes and it carries neither former field
+(`points`, `pressures`); every entry point migrates those first. Each decoding failure has a name:
 
 | Rejection         | When                                                             |
 | ----------------- | ---------------------------------------------------------------- |
@@ -143,3 +144,5 @@ doubles); timings are medians on a developer machine and move with it, the ratio
   block is cheaper than the point objects it replaces. What packing removes is the cost of
   everything not drawn: a stroke outside the view is never decoded.
 - **Migrating** the former tab on load takes 18 ms, once: the next save stores it packed.
+- **In the editor**, the same board (912 KB packed) loads and draws all 3,300 strokes 0.78 s
+  after a reload, with no errors (a one-off Playwright measurement against the local stack).

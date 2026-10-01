@@ -117,6 +117,10 @@ export function packFreehandPoints(
 
 // legacy-stroke-points.ts
 export function migrateLegacyStrokePoints(elements: Element[]): Element[]; // identity when none
+
+// stored-tab.ts: the untrusted-input guards
+export function migrateIncomingTab(tab: unknown): unknown; // non-tabs pass through for validation
+export function migrateIncomingElements(elements: readonly unknown[]): Element[]; // non-objects dropped
 ```
 
 - **Encoder input:** `nx`, `ny` clamped into `[0, 1]` (writers derive them from the box, so only
@@ -282,31 +286,32 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 ## Testing
 
-| Spec rule                                                                     | Test                                                                                |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Byte layout, version, flags, little-endian                                    | `packages/document/src/stroke-points.test.ts`                                       |
-| Round trip and precision bound (tiny, huge, degenerate, single, empty)        | `stroke-points.test.ts`                                                             |
-| Pressure present and absent, pressure precision                               | `stroke-points.test.ts`                                                             |
-| Re-encoding a decoded block is stable                                         | `stroke-points.test.ts`                                                             |
-| Every named rejection                                                         | `stroke-points.test.ts`                                                             |
-| Encoder throws on non-finite, length mismatch, too many                       | `stroke-points.test.ts`                                                             |
-| Memoised decode: same arrays, bounded, LRU, oversize                          | `packages/document/src/stroke-points-cache.test.ts`                                 |
-| Corrupt block draws nothing and logs once                                     | `stroke-points-cache.test.ts`                                                       |
-| Debug decoder and expansion                                                   | `packages/document/src/stroke-points-debug.test.ts`                                 |
-| Migration: shape, extent widening, pressures, idempotent                      | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| Validation accepts packed, rejects former shape and corrupt                   | `packages/document/src/validate.test.ts`                                            |
-| Eraser split behaviour unchanged                                              | `packages/document/src/whiteboard-stroke.test.ts`                                   |
-| Pen outline unchanged                                                         | `packages/document/src/pen-stroke.test.ts`                                          |
-| SVG export within the bound                                                   | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
-| Api migrates former shape on create and save                                  | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
-| Clipboard and tab import migrate                                              | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Room ops migrated on receipt                                                  | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
-| Untrusted tabs and elements: migrated or passed through                       | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| Change-log entries migrate                                                    | `apps/live/lib/change-log-migrate.test.ts`                                          |
-| MCP packs a model's former-shape stroke; an update's points replace the block | `apps/mcp/src/element-normalise.test.ts`                                            |
-| Every template builds a valid tab with packed strokes (MCP and editor)        | `apps/mcp/src/tab-builders.test.ts`                                                 |
-| Drive mirror round trip keeps packed strokes byte for byte                    | `apps/live/lib/drive/open-with.test.ts`                                             |
-| Live ink matches landed ink within the bound                                  | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
+| Spec rule                                                                                                                       | Test                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Byte layout, version, flags, little-endian                                                                                      | `packages/document/src/stroke-points.test.ts`                                       |
+| Round trip and precision bound (tiny, huge, degenerate, single, empty)                                                          | `stroke-points.test.ts`                                                             |
+| Pressure present and absent, pressure precision                                                                                 | `stroke-points.test.ts`                                                             |
+| Re-encoding a decoded block is stable                                                                                           | `stroke-points.test.ts`                                                             |
+| Every named rejection                                                                                                           | `stroke-points.test.ts`                                                             |
+| Encoder throws on non-finite, length mismatch, too many                                                                         | `stroke-points.test.ts`                                                             |
+| Memoised decode: same arrays, bounded, LRU, oversize                                                                            | `packages/document/src/stroke-points-cache.test.ts`                                 |
+| Corrupt block draws nothing and logs once                                                                                       | `stroke-points-cache.test.ts`                                                       |
+| Debug decoder and expansion                                                                                                     | `packages/document/src/stroke-points-debug.test.ts`                                 |
+| Migration: shape, extent widening, pressures, idempotent                                                                        | `packages/document/src/legacy-stroke-points.test.ts`                                |
+| Validation accepts packed, rejects former shape and corrupt                                                                     | `packages/document/src/validate.test.ts`                                            |
+| Eraser split behaviour unchanged                                                                                                | `packages/document/src/whiteboard-stroke.test.ts`                                   |
+| Pen outline unchanged                                                                                                           | `packages/document/src/pen-stroke.test.ts`                                          |
+| SVG export within the bound                                                                                                     | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
+| Api migrates former shape on create and save                                                                                    | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
+| Clipboard and tab import migrate                                                                                                | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
+| Room ops migrated on receipt                                                                                                    | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
+| Untrusted tabs and elements: migrated or passed through                                                                         | `packages/document/src/legacy-stroke-points.test.ts`                                |
+| Change-log entries migrate                                                                                                      | `apps/live/lib/change-log-migrate.test.ts`                                          |
+| MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `apps/mcp/src/element-normalise.test.ts`                                            |
+| Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `apps/mcp/src/tab-builders.test.ts`                                                 |
+| Drive mirror round trip keeps packed strokes byte for byte                                                                      | `apps/live/lib/drive/open-with.test.ts`                                             |
+| End to end: draw, partial erase, undo, reload, former shape on the way in, a peer's stroke live, SVG and PNG export (dark mode) | `apps/live/e2e/whiteboard-stroke-points.spec.ts`                                    |
+| Live ink matches landed ink within the bound                                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
 
 ## Constants and configuration
 

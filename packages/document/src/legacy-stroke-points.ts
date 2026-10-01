@@ -7,7 +7,7 @@
 import { encodeStrokePoints, type NormalisedPoint } from './stroke-points';
 import type { Element, FreehandElement } from './index';
 
-type LegacyFields = { points?: unknown; pressures?: unknown };
+type LegacyFreehandPoints = { points?: unknown; pressures?: unknown };
 
 const isFiniteNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
@@ -72,7 +72,7 @@ function migrateStroke(el: Element): Element {
     points: rawPoints,
     pressures: rawPressures,
     ...rest
-  } = el as FreehandElement & LegacyFields;
+  } = el as FreehandElement & LegacyFreehandPoints;
   const stroke = rest as FreehandElement;
   if (typeof stroke.packedPoints === 'string') return stroke;
   const samples = legacySamples(rawPoints, rawPressures);
