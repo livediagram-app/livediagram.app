@@ -137,7 +137,10 @@ Each scene colour resolves to one of three things, in this order:
 - **Bends**: an arrow through more than two points is drawn as a smooth curve
   through them; a sharp-cornered one says so (degraded: "Bent arrows drawn as
   curves").
-- **Multicolour ink** lands in its first colour (degraded: "Multicolour ink
+- **Multicolour ink** lands in the one colour its parser picked as
+  representative (its stroke colour, the stops kept on the item; the parser
+  reports it in its own words, e.g. "Rainbow ink drawn in pink"); when the
+  parser picked none (the ink), in its first stop (degraded: "Multicolour ink
   drawn in one colour").
 - **Filled ink** lands without its fill (degraded: "Filled pen strokes drawn
   without their fill").

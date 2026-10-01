@@ -33,8 +33,11 @@ const dashOf = (stroke: SceneStroke) =>
 /** An ink item as a marker (or highlighter) stroke. */
 export function landInk(item: SceneInk, id: string, ctx: LandContext): FreehandElement {
   const { stroke } = item;
-  const colour = stroke.stops?.length ? stroke.stops[0]! : stroke.colour;
-  if (stroke.stops?.length) ctx.degrade(LANDING_RULES.multicolourInk);
+  // Multicolour ink lands in the representative colour its parser picked (and reported); with
+  // none picked (the ink), in its first stop, with the generic rule.
+  const unpicked = !!stroke.stops?.length && stroke.colour === 'ink';
+  const colour = unpicked ? stroke.stops![0]! : stroke.colour;
+  if (unpicked) ctx.degrade(LANDING_RULES.multicolourInk);
   if (item.fill) ctx.degrade(LANDING_RULES.filledInk);
   if (stroke.dash && stroke.dash !== 'solid') ctx.degrade(LANDING_RULES.dashedInk);
   let points: ScenePoint[] = limitPoints(item.points, MAX_FREEHAND_POINTS - 1);

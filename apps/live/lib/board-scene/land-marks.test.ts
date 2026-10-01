@@ -133,6 +133,23 @@ describe('landInk', () => {
     ]);
   });
 
+  it('lands multicolour ink in the colour its parser picked, saying nothing more', () => {
+    const ctx = createLandContext();
+    const el = landInk(
+      ink({
+        stroke: {
+          colour: { hex: '#c2255c' },
+          widthPx: 2,
+          stops: [{ hex: '#e03131' }, { hex: '#2f9e44' }],
+        },
+      }),
+      'i',
+      ctx,
+    );
+    expect(el.penColour).toBe('pink');
+    expect(ctx.notes()).toEqual([]);
+  });
+
   it('drops a fill and a dash, saying so', () => {
     const ctx = createLandContext();
     landInk(

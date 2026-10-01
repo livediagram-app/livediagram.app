@@ -200,8 +200,9 @@ omitted), `locked: true`, `link` (see Security), `opacity`.
   already coincide (`CLOSED_END_EPSILON_PX`). `penWidth: markerWidthPx(widthPx)`, `streamline` (absent: 0), `pressures` when every point has a finite `p` (clamped 0..1), else absent. More
   points than `MAX_FREEHAND_POINTS` (paths: `MAX_PATH_NODES`) are sampled evenly with both ends
   kept (`limitPoints`), degraded "Very long strokes were simplified". Colour:
-  `stops` present → the first stop, note degraded "Multicolour ink drawn in one colour"; else the
-  stroke colour. `highlighter: true` → `pen: 'highlighter'`, `penWidth: widthPx` (the highlighter
+  `stops` present with the stroke colour `'ink'` (no representative picked) → the first stop, note
+  degraded "Multicolour ink drawn in one colour"; else the stroke colour (with `stops`, the
+  parser's representative pick, no landing note). `highlighter: true` → `pen: 'highlighter'`, `penWidth: widthPx` (the highlighter
   keeps its px), `strokeColor` the hex of the resolved colour (a stock name lands as its light
   version: the highlighter has no named field). `fill` → dropped, degraded "Filled pen strokes drawn
   without their fill". `dash` other than solid → degraded "Dashed pen strokes drawn solid".
