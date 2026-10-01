@@ -18,7 +18,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 | File                                               | Responsibility                                                                                        |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/document-format.ts`       | `DOCUMENT_FORMAT`, `DOCUMENT_FORMAT_HEADER`, `parseDocumentFormat`                                    |
-| `apps/api/src/server-release-header.ts`            | `withDocumentFormat(response)`: the header on every response but a 101                                |
+| `apps/api/src/server-release-header.ts`            | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
 | `apps/api/src/index.ts`                            | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
 | `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                                                     |
 | `apps/api/src/document-room.ts`                    | Sends the room format message on `hello`                                                              |

@@ -12,8 +12,8 @@ load of where the user was going.
 
 ## Knowing which build is live
 
-- **The build id** is the deploy's commit (`github.sha`), baked into the editor's static export as
-  `NEXT_PUBLIC_BUILD_ID` and given to the api worker as `BUILD_ID`, in the same deploy run. A build
+- **The build id** is the commit the deploy built (the build job's checkout), baked into the editor's static export as
+  `NEXT_PUBLIC_BUILD_ID` (and exposed in every page as `<meta name="livediagram-build">`) and given to the api worker as `BUILD_ID`, in the same deploy run. A build
   without one (local development, a self-host that sets neither) disables this layer; the safety
   net still works.
 - **The running app learns the live one** from the server release signal it already hears for the
@@ -62,7 +62,7 @@ uncaught error or rejection, an area error boundary, or the app's root error bou
 
 - The failure keeps its event, as today: `Error·Client·Uncaught.<Page>.ChunkLoadError` or
   `Error·Client·Render.<Area>.ChunkLoadError`.
-- A recovery adds `Error·Client·StaleChunkReload.<Page>`: a recovery, charted beside realtime
+- A recovery adds `Error·Client·StaleChunkReload` (the failure's own event names the page): a recovery, charted beside realtime
   resyncs, not counted as an exception.
 
 ## Deploy window and failure modes
