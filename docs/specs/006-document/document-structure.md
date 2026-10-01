@@ -99,7 +99,8 @@ type Tab = {
 //   StickyElement    (optionally esKind — the event-storming note kind, docs/specs/021-event-storming/event-storming.md)
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
-//   FreehandElement  (boxed, carries a normalised polyline + optional auto-close flag for
+//   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,
+//                     + optional auto-close flag for
 //                     filled custom shapes; rendered as an SVG path inside its bounding box;
 //                     see docs/specs/008-canvas/canvas-and-palette.md's Pencil (freehand) subsection)
 //

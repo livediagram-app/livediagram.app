@@ -377,8 +377,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
   panels, and never travel with the document.
 - A stroke records the pen's colour and width on its `freehand` element when
-  drawn, with its raw samples, a pressure per sample when a pen drew it, and
-  its streamline. A stroke in the **Ink** (Marker 1's, or any marker's) records
+  drawn, with its raw samples, a pressure per sample when a pen drew it (both
+  packed into one block, [Stroke points](../006-document/stroke-points.md)), and its streamline. A stroke in the **Ink** (Marker 1's, or any marker's) records
   no explicit colour, so it follows the appearance; a stock colour is recorded
   by name, so it adapts to each viewer's board, and a custom colour as its
   hex, which stays as drawn. A recognised shape or line keeps its pen's colour
