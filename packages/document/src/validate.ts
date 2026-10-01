@@ -247,6 +247,9 @@ export function isValidElement(el: unknown): el is Element {
   if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
   // A marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): one of the 60.
   if (el.penColour !== undefined && !isPenColourName(el.penColour)) return false;
+  // A text box's or shape label's stock colour (docs/specs/023-whiteboard/whiteboard.md "Imported
+  // and pasted content"): one of the names too.
+  if (el.penTextColour !== undefined && !isPenColourName(el.penTextColour)) return false;
 
   if (t === 'arrow') {
     return isValidEndpoint(el.from) && isValidEndpoint(el.to);

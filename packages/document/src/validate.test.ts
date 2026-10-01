@@ -98,10 +98,33 @@ describe('isValidElement', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 9, y: 9 },
     };
-    for (const el of [pen, shape, line]) {
+    const path = {
+      id: 'p',
+      type: 'path',
+      closed: false,
+      nodes: [
+        { nx: 0, ny: 0, mode: 'corner' },
+        { nx: 1, ny: 1, mode: 'corner' },
+      ],
+      ...box,
+    };
+    for (const el of [pen, shape, line, path]) {
       expect(isValidElement({ ...el, penColour: 'blue' })).toBe(true);
       expect(isValidElement({ ...el, penColour: 'blue-3' })).toBe(false);
       expect(isValidElement({ ...el, penColour: '#1d7afc' })).toBe(false);
+    }
+  });
+
+  // docs/specs/023-whiteboard/whiteboard.md "Imported and pasted content": a text box's and a
+  // shape label's stock colour, stored by name.
+  it('accepts a named text colour and rejects anything else in its place', () => {
+    const text = { id: 't', type: 'text', label: 'Hi', ...box };
+    const shape = { id: 's', type: 'shape', shape: 'square', label: 'Hi', ...box };
+    for (const el of [text, shape]) {
+      expect(isValidElement({ ...el, penTextColour: 'green' })).toBe(true);
+      expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(false);
+      expect(isValidElement({ ...el, penTextColour: '#2f9e44' })).toBe(false);
+      expect(isValidElement({ ...el, penTextColour: 3 })).toBe(false);
     }
   });
 

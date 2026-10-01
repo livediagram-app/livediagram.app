@@ -3701,6 +3701,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "rotation": {
         "type": "number"
       },
@@ -4310,6 +4313,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
       "pickerOptions": {
@@ -5835,6 +5841,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "padding": {
         "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "richText": {
         "items": {

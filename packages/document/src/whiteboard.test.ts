@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { DARK_CANVAS_BACKGROUND_COLOR, DARK_CANVAS_PATTERN_COLOR } from './canvas-colors';
 import { contrastRatio } from './colors';
-import type { ArrowElement, Element, FreehandElement, ShapeElement, StickyElement } from './index';
+import type {
+  ArrowElement,
+  Element,
+  FreehandElement,
+  PathElement,
+  ShapeElement,
+  StickyElement,
+  TextElement,
+} from './index';
 import {
   WHITEBOARD_BACKGROUNDS,
   WHITEBOARD_BOARD,
@@ -179,6 +187,57 @@ describe('projectWhiteboardElement', () => {
       ).toBe(hex);
       expect(projectWhiteboardElement(line, board).strokeColor).toBe(hex);
     }
+  });
+
+  it('draws a named text colour on a text box and a shape label for the board', () => {
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      label: 'Hi',
+      penTextColour: 'green',
+    } as TextElement;
+    for (const board of ['light', 'dark'] as const) {
+      const hex = penColourHex('green', board);
+      expect(projectWhiteboardElement(text, board).textColor).toBe(hex);
+      const labelled = projectWhiteboardElement(shape({ penTextColour: 'green' }), board);
+      expect(labelled.textColor).toBe(hex);
+      expect(labelled.strokeColor).toBe(WHITEBOARD_INK[board]);
+    }
+  });
+
+  it('keeps an explicit text colour over a named one', () => {
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      textColor: '#ff6b00',
+      penTextColour: 'green',
+    } as TextElement;
+    expect(projectWhiteboardElement(text, 'dark').textColor).toBe('#ff6b00');
+  });
+
+  it('draws a path in its named colour', () => {
+    const path = {
+      id: 'p',
+      type: 'path',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      closed: false,
+      nodes: [],
+      penColour: 'violet',
+    } as PathElement;
+    expect(projectWhiteboardElement(path, 'light').strokeColor).toBe(
+      penColourHex('violet', 'light'),
+    );
   });
 
   it('keeps an explicit colour, and inks an unpainted stroke in the board ink', () => {

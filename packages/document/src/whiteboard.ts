@@ -102,11 +102,18 @@ export function inkWhiteboardElement<T extends Element>(el: T, ink: string): T {
 // explicit stroke colour overrides it, then the board's ink for anything unpainted. Display-only,
 // and `el` itself when nothing changes.
 export function projectWhiteboardElement<T extends Element>(el: T, board: Appearance): T {
-  const named = (el as { penColour?: PenColourName }).penColour;
-  const coloured =
-    named !== undefined && (el as { strokeColor?: string }).strokeColor === undefined
-      ? { ...el, strokeColor: penColourHex(named, board) }
+  const named = el as { penColour?: PenColourName; strokeColor?: string };
+  const stroked =
+    named.penColour !== undefined && named.strokeColor === undefined
+      ? { ...el, strokeColor: penColourHex(named.penColour, board) }
       : el;
+  // A text box's or shape label's named text colour (docs/specs/023-whiteboard/whiteboard.md
+  // "Imported and pasted content"), likewise under an explicit `textColor`.
+  const text = stroked as { penTextColour?: PenColourName; textColor?: string };
+  const coloured =
+    text.penTextColour !== undefined && text.textColor === undefined
+      ? { ...stroked, textColor: penColourHex(text.penTextColour, board) }
+      : stroked;
   return inkWhiteboardElement(coloured, WHITEBOARD_INK[board]);
 }
 

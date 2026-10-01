@@ -9,6 +9,7 @@
 
 import type { Element, ElementShadow, Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
+import { resetElementColours } from '@/lib/reset-colours';
 import {
   applyFillColorToEl,
   applyShadowToEl,
@@ -128,75 +129,7 @@ export function useColorStyleSetters(deps: {
     // brand look). For any other theme we need to explicitly set the
     // colours since `addBoxed` is what normally writes them on create.
     const theme = getTheme(activeTab.theme);
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id)) return el;
-        if (el.type === 'shape') {
-          return {
-            ...el,
-            ...(theme.elementFill !== null
-              ? { fillColor: theme.elementFill }
-              : { fillColor: undefined }),
-            ...(theme.elementStroke !== null
-              ? { strokeColor: theme.elementStroke }
-              : { strokeColor: undefined }),
-            ...(theme.elementText !== null
-              ? { textColor: theme.elementText }
-              : { textColor: undefined }),
-            // Reset-to-theme also drops any colour-preset binding (docs/specs/010-palette/style-presets.md)
-            // and any quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md).
-            colorPreset: undefined,
-            strokeSwatch: undefined,
-            fillSwatch: undefined,
-          };
-        }
-        if (el.type === 'text') {
-          return {
-            ...el,
-            ...(theme.elementText !== null
-              ? { textColor: theme.elementText }
-              : { textColor: undefined }),
-            fillColor: undefined,
-            strokeColor: undefined,
-            textSwatch: undefined,
-          };
-        }
-        if (el.type === 'sticky') {
-          // Sticky's amber palette is iconic — wipe any user overrides
-          // but DON'T apply theme colours.
-          const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
-          return rest as typeof el;
-        }
-        if (el.type === 'table') {
-          // Reset to theme grid + text; clear cell fill + header overrides.
-          return {
-            ...el,
-            ...(theme.elementStroke !== null
-              ? { strokeColor: theme.elementStroke }
-              : { strokeColor: undefined }),
-            ...(theme.elementText !== null
-              ? { textColor: theme.elementText }
-              : { textColor: undefined }),
-            fillColor: undefined,
-            headerFill: undefined,
-            headerTextColor: undefined,
-            // The look goes with the colours it painted: this is the
-            // "back to plain theme colours" button, not "this theme's Banded".
-            tablePreset: undefined,
-          };
-        }
-        if (el.type === 'arrow') {
-          return {
-            ...el,
-            ...(theme.elementStroke !== null
-              ? { strokeColor: theme.elementStroke }
-              : { strokeColor: undefined }),
-            strokeSwatch: undefined,
-          };
-        }
-        return el;
-      }),
-    );
+    commit((els) => els.map((el) => (ids.has(el.id) ? resetElementColours(el, theme) : el)));
   };
 
   return {
