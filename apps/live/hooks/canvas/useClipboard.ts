@@ -36,7 +36,11 @@ import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDocument } from '@/lib/upload-image';
-import { excalidrawTextFromPaste, isExcalidrawFileCandidate } from '@/lib/excalidraw-paste';
+import {
+  DROP_NOT_A_SCENE,
+  excalidrawTextFromPaste,
+  isExcalidrawFileCandidate,
+} from '@/lib/excalidraw-paste';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
@@ -87,7 +91,7 @@ type ClipboardDeps = {
   // Lands a board scene pasted from another tool (an Excalidraw copy or file,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
   // the tab's profile. Absent, such a paste is left alone.
-  insertBoardScene?: (scene: BoardScene) => void;
+  insertBoardScene?: (scene: BoardScene, at?: { x: number; y: number }) => void;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -243,14 +247,27 @@ export function useClipboard(deps: ClipboardDeps) {
     insertBoardScene(read.scene);
     track('Element', 'Imported', 'Excalidraw');
   };
-  const pasteExcalidrawFile = async (file: File, otherwise: () => void) => {
+  const pasteExcalidrawFile = async (
+    file: File,
+    otherwise: () => void,
+    at?: { x: number; y: number },
+  ) => {
     if (!insertBoardScene) return otherwise();
     const { readExcalidrawFile } = await import('@/lib/excalidraw-read');
     const read = await readExcalidrawFile(file);
     if (read.kind === 'not-excalidraw') return otherwise();
     if (read.kind === 'error') return toast.error(read.error);
-    insertBoardScene(read.scene);
+    insertBoardScene(read.scene, at);
     track('Element', 'Imported', 'Excalidraw');
+  };
+
+  // A file dropped on the canvas, at its canvas point: an Excalidraw file or export lands as its
+  // scene there; any other file is not something the canvas takes, and says so.
+  const dropBoardFile = (file: File, at: { x: number; y: number }) => {
+    if (isReadOnly || !insertBoardScene) return;
+    const refuse = () => toast.info(DROP_NOT_A_SCENE);
+    if (!isExcalidrawFileCandidate(file)) return refuse();
+    void pasteExcalidrawFile(file, refuse, at);
   };
 
   // Single mutable ref holding the latest paste functions. The paste
@@ -469,5 +486,10 @@ export function useClipboard(deps: ClipboardDeps) {
   // in-app buffer only; a copy made in another window lives on the OS
   // clipboard, which can't be read synchronously while rendering a menu, and
   // Cmd+V still pastes it.
-  return { copySelection, pasteFromClipboard, hasClipboard: (clipboard?.length ?? 0) > 0 };
+  return {
+    copySelection,
+    pasteFromClipboard,
+    dropBoardFile,
+    hasClipboard: (clipboard?.length ?? 0) > 0,
+  };
 }

@@ -151,3 +151,40 @@ test.describe('ordinary text', () => {
     expectNoPageErrors(pageErrors);
   });
 });
+
+test.describe('dropping an Excalidraw file', () => {
+  test.use({ colorScheme: 'dark', viewport: { width: 1400, height: 900 } });
+
+  test('lands its scene where it is released', async ({ page, pageErrors }) => {
+    await page.goto('/new?template=whiteboard');
+    await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+    await dismissQuickTour(page);
+    const sample = sampleCopy();
+    const drop = await page.evaluateHandle((text) => {
+      const data = new DataTransfer();
+      data.items.add(new File([text], 'board.excalidraw'));
+      return data;
+    }, sample.text);
+    const canvas = page.locator('[data-canvas-a11y-root]');
+    await canvas.dispatchEvent('dragover', { dataTransfer: drop, clientX: 700, clientY: 450 });
+    await canvas.dispatchEvent('drop', { dataTransfer: drop, clientX: 700, clientY: 450 });
+    await expect.poll(() => countElements(page)).toBe(sample.items);
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('refuses another file and says so', async ({ page, pageErrors }) => {
+    await page.goto('/new?template=whiteboard');
+    await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+    await dismissQuickTour(page);
+    const drop = await page.evaluateHandle(() => {
+      const data = new DataTransfer();
+      data.items.add(new File(['hello'], 'notes.txt', { type: 'text/plain' }));
+      return data;
+    });
+    const canvas = page.locator('[data-canvas-a11y-root]');
+    await canvas.dispatchEvent('drop', { dataTransfer: drop, clientX: 700, clientY: 450 });
+    await expect(page.getByText('Only Excalidraw files', { exact: false })).toBeVisible();
+    expect(await countElements(page)).toBe(0);
+    expectNoPageErrors(pageErrors);
+  });
+});

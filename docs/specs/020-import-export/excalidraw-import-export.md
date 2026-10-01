@@ -128,11 +128,16 @@ exposes the custom type only to pages in the same browser engine, so:
   paste notice; a lossless paste is silent.
 - A text that looks like Excalidraw but fails to read shows the rejection's
   message as an error toast; the paste does nothing else.
-- **Files**: a pasted or dropped `.excalidraw` file (by name or by the
+- **Pasted files**: a `.excalidraw` file (by name or by the
   `application/vnd.excalidraw+json` type) is read and lands the same way. A
-  pasted or dropped PNG or SVG is checked for an embedded scene first: with
-  one, the scene lands; without one, it is an ordinary image paste or drop, as
-  before.
+  pasted PNG or SVG is checked for an embedded scene first: with one, the scene
+  lands; without one, it is an ordinary image paste, as before.
+- **Dropped files** (on a tab that is not read-only): the same files land at the point
+  they are released. Any other dropped file (a photo, a PNG or SVG without a scene) is
+  refused with an info toast: _"Only Excalidraw files, or images exported from
+  Excalidraw with the scene embedded, can be dropped on the canvas."_ A photo dropped on
+  an event-storming board still goes to the wall reader first
+  ([Event storming](../021-event-storming/event-storming.md)).
 
 ## Scene mapping (Excalidraw to board scene)
 
@@ -207,14 +212,14 @@ count and a kind, shown by the shared report (import) or paste notice (paste)
 as "count · rule". The landing adds its own rules on top ([Board scene](board-scene.md):
 dashed pen strokes, bar heads, sharp bends, filled pen strokes, links).
 
-| Rule (copy)                                        | Kind     | Counted                                                            |
-| -------------------------------------------------- | -------- | ------------------------------------------------------------------ |
-| "Groups were dropped"                              | degraded | per distinct group id among the items                              |
-| "Tapered strokes drawn at an even width"           | degraded | per freedraw with `variability: 'variable'` and simulated pressure |
-| "Arrowheads with no match here drawn as plain arrowheads" | degraded | per crow's-foot or unknown head |
-| "Arrow labels moved to the middle of their arrow"  | degraded | per arrow label whose `labelPosition` is set and not 0.5           |
-| "Colours that couldn't be read use the ink"        | degraded | per unreadable colour value                                        |
-| "<Type> elements were skipped"                     | skipped  | per skipped element, by its type (e.g. "Embeddable elements…")     |
+| Rule (copy)                                               | Kind     | Counted                                                            |
+| --------------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| "Groups were dropped"                                     | degraded | per distinct group id among the items                              |
+| "Tapered strokes drawn at an even width"                  | degraded | per freedraw with `variability: 'variable'` and simulated pressure |
+| "Arrowheads with no match here drawn as plain arrowheads" | degraded | per crow's-foot or unknown head                                    |
+| "Arrow labels moved to the middle of their arrow"         | degraded | per arrow label whose `labelPosition` is set and not 0.5           |
+| "Colours that couldn't be read use the ink"               | degraded | per unreadable colour value                                        |
+| "<Type> elements were skipped"                            | skipped  | per skipped element, by its type (e.g. "Embeddable elements…")     |
 
 An image whose `fileId` has no `dataURL` is not a note: it is the image
 pipeline's `missing-bytes` placeholder, reported there.

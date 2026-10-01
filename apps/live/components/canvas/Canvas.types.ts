@@ -338,6 +338,9 @@ export type CanvasProps = {
   // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
   // Present only on an event-storming board with the model configured.
   onDropPhoto?: (file: File) => void;
+  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
+  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
+  onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.

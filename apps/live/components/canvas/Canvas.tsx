@@ -192,6 +192,7 @@ export function Canvas(props: CanvasProps) {
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropPhoto: props.onDropPhoto,
+    onDropFile: props.onDropFile,
     // A tile DRAGGED onto the canvas is an edit too (docs/specs/008-canvas/avatar-mode.md), so it leaves
     // Avatar mode the same way a tile click does — otherwise the element
     // landed while the canvas still read as read-only.

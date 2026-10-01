@@ -5,7 +5,7 @@ import type { Element, StickyElement, Tab } from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { excalidrawBuilder, excalidrawText } from '@/lib/excalidraw-fixtures';
-import { EXCALIDRAW_CLIPBOARD_MIME } from '@/lib/excalidraw-paste';
+import { DROP_NOT_A_SCENE, EXCALIDRAW_CLIPBOARD_MIME } from '@/lib/excalidraw-paste';
 import { track } from '@/lib/telemetry';
 import { useClipboard } from './useClipboard';
 
@@ -35,11 +35,11 @@ function harness(
   } = {},
 ) {
   let elements: Element[] = [];
-  const insertBoardScene = vi.fn<(scene: BoardScene) => void>();
+  const insertBoardScene = vi.fn<(scene: BoardScene, at?: { x: number; y: number }) => void>();
   const addImageFromGallery = vi.fn();
-  const toast = { error: vi.fn() };
+  const toast = { error: vi.fn(), info: vi.fn() };
   const setEditingId = vi.fn();
-  renderHook(() =>
+  const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: options.isReadOnly ?? false,
       embedMode: false,
@@ -60,7 +60,14 @@ function harness(
       ...(options.withInsert === false ? {} : { insertBoardScene }),
     }),
   );
-  return { elements: () => elements, insertBoardScene, toast, setEditingId, addImageFromGallery };
+  return {
+    elements: () => elements,
+    insertBoardScene,
+    toast,
+    setEditingId,
+    addImageFromGallery,
+    dropBoardFile: result.current.dropBoardFile,
+  };
 }
 
 function paste(target: EventTarget, entries: Record<string, string>, files: File[] = []): Event {
@@ -197,5 +204,39 @@ describe('pasting an Excalidraw file', () => {
     await settle();
     await vi.waitFor(() => expect(h.toast.error).toHaveBeenCalledWith("File isn't valid JSON."));
     expect(h.insertBoardScene).not.toHaveBeenCalled();
+  });
+});
+
+describe('dropping a file on the canvas', () => {
+  const at = { x: 120, y: -40 };
+
+  it('lands an Excalidraw file where it was dropped', async () => {
+    const h = harness();
+    const file = new File([copy()], 'board.excalidraw');
+    h.dropBoardFile(file, at);
+    await vi.waitFor(() => expect(h.insertBoardScene).toHaveBeenCalledTimes(1));
+    expect(h.insertBoardScene.mock.calls[0]![1]).toEqual(at);
+    expect(track).toHaveBeenCalledWith('Element', 'Imported', 'Excalidraw');
+  });
+
+  it('says a dropped file without a scene is not something the canvas takes', async () => {
+    const h = harness();
+    const png = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0, 73, 69, 78, 68, 0, 0, 0, 0,
+    ]);
+    h.dropBoardFile(new File([png], 'photo.png', { type: 'image/png' }), at);
+    h.dropBoardFile(new File(['hello'], 'notes.txt', { type: 'text/plain' }), at);
+    await vi.waitFor(() => expect(h.toast.info).toHaveBeenCalledTimes(2));
+    expect(h.toast.info).toHaveBeenCalledWith(DROP_NOT_A_SCENE);
+    expect(h.insertBoardScene).not.toHaveBeenCalled();
+    expect(upload).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when read-only', async () => {
+    const h = harness({ isReadOnly: true });
+    h.dropBoardFile(new File([copy()], 'board.excalidraw'), at);
+    await settle();
+    expect(h.insertBoardScene).not.toHaveBeenCalled();
+    expect(h.toast.info).not.toHaveBeenCalled();
   });
 });
