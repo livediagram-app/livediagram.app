@@ -205,7 +205,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
-    articleCount: 8,
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -1286,6 +1286,16 @@ export const articles: Article[] = [
       'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene or PNG / SVG export, images included, into the active tab (it replaces the contents).',
     keywords:
       'import json mermaid markdown excalidraw file paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
+    slug: 'microsoft-whiteboard-import',
+    title: 'Importing Microsoft Whiteboard boards',
+    description:
+      'Bring Microsoft Whiteboard boards across as editable whiteboard tabs: ink with pressure, colours, notes, text, shapes and images.',
+    keywords:
+      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

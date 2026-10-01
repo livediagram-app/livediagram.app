@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Importing Microsoft Whiteboard boards',
+  description:
+    'Bring boards from Microsoft Whiteboard across as editable whiteboard tabs: pen strokes with their pressure, colours, sticky notes, text, shapes, lines and images. Import one board folder, a folder of boards, or their .zip; each board opens as a new whiteboard tab.',
+  path: '/help/tabs/microsoft-whiteboard-import/',
+});
+
+<ArticleLayout
+  title="Importing Microsoft Whiteboard boards"
+  description="Bring Microsoft Whiteboard boards across as editable whiteboard tabs, ink and all."
+  categoryTitle="Tabs"
+  categorySlug="tabs"
+>
+
+Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026 and are deleted on **16 October 2026**. The **Microsoft Whiteboard** import brings your boards across as [whiteboard tabs](/help/canvas/whiteboards/) you can keep drawing on: every pen stroke stays a stroke, with its pressure and colour, and sticky notes, text, shapes, lines and images come with it.
+
+## What you need
+
+The import reads a **board export**: a folder per board holding the board's edit history, the way the Whiteboard web app syncs it. A board folder contains:
+
+- `manifest.json`, `metadata.json`, `session.json` and `changes.json`
+- an `objects` folder with the board's images
+
+Other files beside them (such as a screenshot) are ignored. You can import **one board folder**, a **folder holding many board folders**, or a **.zip** of either.
+
+## Importing
+
+1. From the tab ellipsis menu, expand **Content** and choose **Import**.
+2. Pick **Microsoft Whiteboard**.
+3. Choose a folder or a .zip, or drop one onto the panel.
+
+A single board imports straight away. When there are several, the panel lists them, newest first, with each board's title (or "Untitled board"), the date it was last edited and how many items it holds. Every board starts ticked; untick the ones you don't want and press **Import**.
+
+Each board opens as a **new whiteboard tab** after the current one, named after the board. Nothing on your current tab changes, and one undo removes the whole import.
+
+## How boards come across
+
+- **Pen strokes** become marker strokes with their pressure, so thick and thin stay as you drew them.
+- **Colours** follow your board: black ink on a light board, and white ink on a dark board, become your whiteboard's own ink, so they read on either background. Other colours keep their hue.
+- **Highlighter** strokes stay highlighter strokes.
+- **Sticky notes**, **text** and **shapes** keep their position, size and text.
+- **Images** are saved to your [image gallery](/help/explorer/image-gallery/) like any imported image.
+- The board's **background** (plain, dots or grid, light or dark) carries over.
+
+A few things change on the way, and the import says how many of each:
+
+- **Rainbow and galaxy ink** is drawn in one colour.
+- **Arrowheads** on pen strokes are redrawn as simple open arrowheads.
+- **Tables** become rectangles, with the ink inside them kept.
+- **Strokes drawn in the board's own colour**, which you could never see on the board, are left out.
+
+<Tip>
+  Importing many boards at once can take a moment while the images save. The panel counts the boards
+  and images as it goes.
+</Tip>
+
+</ArticleLayout>

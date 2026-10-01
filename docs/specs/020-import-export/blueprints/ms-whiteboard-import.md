@@ -25,7 +25,8 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 | `apps/live/lib/pick-folder.ts`                             | A folder pick or drop to a file set                                      |
 | `apps/live/components/dialogs/MsWhiteboardImportPanel.tsx` | The card's panel: pick, list, progress, result                           |
 | `apps/live/hooks/persistence/useMsWhiteboardImport.ts`     | Runs the import and commits each board as a new whiteboard tab           |
-| `scripts/ms-whiteboard-verify.ts` (in `apps/live`)         | Local verification over real exports (path argument; prints counts only) |
+| `apps/live/scripts/ms-whiteboard-verify.mts`               | Local verification over real exports (path argument; prints counts only) |
+| `file-sets.ts`                                             | A `.zip` or a folder pick as an `ExportFileSet` (`MAX_IMPORT_BYTES`)     |
 
 ## Domain and naming
 
