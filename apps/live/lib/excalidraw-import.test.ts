@@ -507,9 +507,7 @@ describe('arrow + line mapping', () => {
       ]),
     } as FreehandElement;
 
-    const r = importOnDiagram(
-      tabToExcalidrawText({ id: 't', name: 'T', elements: [sketch] }),
-    );
+    const r = importOnDiagram(tabToExcalidrawText({ id: 't', name: 'T', elements: [sketch] }));
     if (!r.ok) throw new Error(r.error);
     const back = r.elements[0] as FreehandElement;
     expect(back.closed).toBe(true);
