@@ -31,6 +31,16 @@ export const NEW_DOCUMENT_BACKED_OUT = chart(
   { types: ['NewDocument'] },
 );
 
+// The template step's expand toggle (docs/specs/008-canvas/canvas-and-palette.md "Templates section"):
+// whether people want a whole category at once over the carousel.
+export const TEMPLATE_SHELF_EXPANDED = chart(
+  'UI',
+  'Toggled',
+  'Template Shelf Expanded',
+  'The expand toggle in the New Document wizard flipped: every template in the open category at once (Expanded), or back to the carousel (Collapsed).',
+  { types: ['TemplateShelfExpanded', 'TemplateShelfCollapsed'] },
+);
+
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
@@ -237,7 +247,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), how often the wizard was backed out of with Escape, and how often its template shelf was expanded.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
@@ -248,6 +258,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
     NEW_DOCUMENT_BACKED_OUT,
+    TEMPLATE_SHELF_EXPANDED,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };

@@ -43,6 +43,8 @@ function Shelf({
       filteredTemplates={[]}
       openCategory={open}
       setOpenCategory={setOpen}
+      shelfExpanded={false}
+      setShelfExpanded={() => {}}
       popularTemplates={popular}
       categoryTemplates={categoryTemplates}
       whiteboardTemplate={byKind('whiteboard')}
