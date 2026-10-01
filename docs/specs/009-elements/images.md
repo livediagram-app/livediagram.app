@@ -28,6 +28,9 @@ type ImageElement = {
   naturalHeight?: number;
   // Optional alt text (accessibility + future export-to-markdown).
   alt?: string;
+  // Creator + licence credit of a picture picked from Image search
+  // (image-search.md); absent for uploads.
+  credit?: ImageCredit;
   // Inherited from the boxed-element shared fields:
   locked?: boolean;
   opacity?: number;
@@ -111,7 +114,7 @@ When `imageId === null`, `<ImageElementView>` (`apps/live/components/canvas/Imag
 
 ### Image picker modal
 
-`apps/live/components/panels/ImagePicker.tsx`, lazy-loaded via `next/dynamic` (matches the other on-demand modals like `ExportTabDialog` and `ShareDialog`). Two-tab modal:
+`apps/live/components/panels/ImagePicker.tsx`, lazy-loaded via `next/dynamic` (matches the other on-demand modals like `ExportTabDialog` and `ShareDialog`). Three-tab modal:
 
 - **Upload tab.** Drag-and-drop zone + file-input fallback. On drop:
   1. Client checks the file's content type + size against the accepted list / cap.
@@ -119,6 +122,7 @@ When `imageId === null`, `<ImageElementView>` (`apps/live/components/canvas/Imag
   3. POSTs to `/api/images` with the sha + dimensions in headers. If `deduped: true`, the modal flashes "Already in your gallery" and selects the existing image.
   4. The element's `imageId` is set to the returned id; the modal closes.
 - **Gallery tab.** Renders `apiListImages()` as a 4-column grid of thumbnails (re-uses `/api/images/:id` with native `<img>` lazy loading). Hovering a tile surfaces a small "Use" button + a trash icon for delete. Clicking a tile sets the element's `imageId` and closes.
+- **Search tab.** Searches openly licensed pictures on Openverse and stores the picked one in the gallery, with a creator credit on the element. See [Image search](image-search.md).
 
 The modal also surfaces the soft-cap usage as a tiny bar at the bottom ("3.2 / 100 MB used") so users see the cap before they hit it.
 
@@ -217,4 +221,4 @@ Image uploads / deletes don't go through the realtime room. The element's `image
 - **Per-image share links.** The same image can be referenced by multiple documents of the same owner; the document-scoped `GET /api/images/:id?d=<documentId>` read endpoint covers cross-document sharing for visitors holding a share code, without any per-image plumbing.
 - **CDN / image-optimisation.** Cloudflare's edge cache (via the `immutable` Cache-Control) is the only transform layer. No on-the-fly resize / format conversion. Future: Cloudflare Image Resizing or a custom transform Worker.
 - **External-source image clipboard via `navigator.clipboard.read()`.** The Cmd+V image-paste path listens to the browser's native `paste` event and reads `clipboardData.items`, which is permissionless. The picker modal + drag-drop + the `paste` shortcut (Cmd/Ctrl+V on the canvas, image MIME on the clipboard data routes through `uploadImageFile` and lands as a new image element) are the entry paths today; `navigator.clipboard.read()` (which would let us probe the clipboard on a button click without requiring an actual paste gesture) needs the browser's clipboard-read permission prompt and is not used.
-- **External-URL images.** No `imageId === 'https://...'` shape. Every image is internal so the bytes survive an upstream taking the source down + don't leak referrer headers.
+- **External-URL images.** No `imageId === 'https://...'` shape. Every image is internal so the bytes survive an upstream taking the source down + don't leak referrer headers. [Image search](image-search.md) copies a picked picture into the gallery for the same reason.
