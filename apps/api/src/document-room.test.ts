@@ -360,6 +360,19 @@ describe('DocumentRoom hello frame role forcing', () => {
     expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT });
   });
 
+  it('adds the live build id when the deploy set one', () => {
+    // docs/specs/016-platform/stale-builds.md "Knowing which build is live".
+    const room = new DocumentRoom(
+      makeState() as unknown as DurableObjectState,
+      { BUILD_ID: 'abc123' } as unknown as Env,
+    );
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
+    const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, build: 'abc123' });
+  });
+
   it('replaces the client participant id with a server-assigned ephemeral id', () => {
     const { room } = newRoom();
     const ws = makeSocket();

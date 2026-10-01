@@ -4,6 +4,8 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
 import { Button } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
+import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
+import { isChunkLoadError } from '@/lib/stale-chunks';
 
 // A render crash in one part of the editor or Explorer used to unmount the
 // whole page (the app has no route-level error boundary), and the telemetry
@@ -88,6 +90,8 @@ export class AreaErrorBoundary extends Component<Props, { failed: boolean }> {
       // Telemetry must never throw from inside an error boundary.
     }
     this.props.onError?.();
+    // A chunk from an earlier build is gone: load the page in full instead (docs/specs/016-platform/stale-builds.md).
+    if (isChunkLoadError(error)) void recoverInBrowser(error, browserNavigationDeps());
   }
 
   override componentDidUpdate(prev: Props) {

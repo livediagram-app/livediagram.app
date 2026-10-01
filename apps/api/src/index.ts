@@ -60,7 +60,7 @@ import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
 import { handleDrive } from './routes/drive';
-import { withDocumentFormat } from './document-format-header';
+import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
 
 export { DocumentRoom };
@@ -361,9 +361,9 @@ async function routeApiRequest(
 }
 
 const worker = {
-  // Every response carries the document format number (docs/specs/016-platform/new-version-prompt.md).
+  // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
-    return withDocumentFormat(await routeApiRequest(request, env, executionCtx));
+    return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
   },
 
   // Scheduled handler. Wired to the cron schedule in wrangler.toml.

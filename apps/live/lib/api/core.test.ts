@@ -1,7 +1,7 @@
 import type { Tab } from '@livediagram/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
-import { resetDocumentFormatForTests, serverDocumentFormat } from '../document-format';
+import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
+import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
 // it so the guest-signature header is deterministic per case.
@@ -272,7 +272,7 @@ describe('tabForWire — tab kind', () => {
 // editor learns of a newer server from traffic it already has.
 describe('apiFetch and the document format header', () => {
   afterEach(() => {
-    resetDocumentFormatForTests();
+    resetServerReleaseForTests();
     vi.unstubAllGlobals();
   });
 
@@ -288,6 +288,19 @@ describe('apiFetch and the document format header', () => {
     );
     await apiFetch(`${API_BASE}/documents/d1`);
     expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+  });
+
+  it('notes the live build id beside it (docs/specs/016-platform/stale-builds.md)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response('{}', { status: 200, headers: { [BUILD_ID_HEADER]: 'b2' } }),
+        ),
+    );
+    await apiFetch(`${API_BASE}/documents`);
+    expect(serverBuild()).toBe('b2');
   });
 
   it('notes nothing from a response without the header', async () => {

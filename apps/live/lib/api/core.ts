@@ -12,8 +12,8 @@ import type {
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
-import { DOCUMENT_FORMAT_HEADER, isClerkIdShape } from '@livediagram/api-schema';
-import { noteServerDocumentFormat } from '../document-format';
+import { BUILD_ID_HEADER, DOCUMENT_FORMAT_HEADER, isClerkIdShape } from '@livediagram/api-schema';
+import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
@@ -84,8 +84,10 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
     throw err;
   }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
-  // The server's document format number rides every response (docs/specs/016-platform/new-version-prompt.md).
+  // The server release signal rides every response: the document format number and the live build
+  // id (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
   noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
+  noteServerBuild(res.headers?.get(BUILD_ID_HEADER));
   return res;
 }
 
