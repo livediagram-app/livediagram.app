@@ -106,6 +106,12 @@ export type UserPreferences = {
   // not panels: the minimal dock bar and the cluster buttons stay opaque.
   // Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
+  // UI scale (docs/specs/007-editor/ui-scale.md). The factor (0.8..1.5 in 0.05
+  // steps) the panels, the Palette toolbar and the bottom-right cluster are
+  // drawn at, via CSS `zoom` on each surface; nothing else scales. Desktop
+  // only: a phone always draws at 1. Read through `resolveUiScale`, never
+  // directly. Missing / undefined / 1 === the design size, the default.
+  uiScale?: number;
   // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
   // buttons open their menu on hover instead of requiring a click; moving
   // the pointer away closes it. The "+" buttons still only appear on the

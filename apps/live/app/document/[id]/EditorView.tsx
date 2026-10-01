@@ -43,6 +43,9 @@ import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
+import { UiScaleProvider } from '@/components/providers/ui-scale';
+import { resolveUiScale } from '@/lib/ui-scale';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStylePanel } from '@/components/canvas/QuickStylePanel';
@@ -157,6 +160,8 @@ export function EditorView() {
   } = ctx;
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
+  // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
+  const uiScale = resolveUiScale(userPreferences, { mobile: useIsMobileViewport() });
   const role = useRoleIndicator();
 
   // Who is facilitating, named for the UI, or null when it is nobody or us
@@ -227,386 +232,389 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
       <MinimalChromeProvider value={minimalChrome}>
-        <div className="flex h-dvh flex-col">
-          {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
+        <UiScaleProvider value={uiScale}>
+          <div className="flex h-dvh flex-col">
+            {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
           is armed so the user knows the next shape click connects, and
           gives a click target to cancel (clicking empty canvas also
           cancels). */}
-          {connectSourceId !== null ? (
-            <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-              <button
-                type="button"
-                onClick={cancelConnect}
-                className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
-              >
-                Click a shape to connect the arrow
-                <span className="text-brand-300" aria-hidden>
-                  |
-                </span>
-                <span className="text-brand-500 dark:text-brand-300">Cancel</span>
-              </button>
-            </div>
-          ) : null}
-          {/* Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides the header entirely so the
+            {connectSourceId !== null ? (
+              <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
+                <button
+                  type="button"
+                  onClick={cancelConnect}
+                  className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
+                >
+                  Click a shape to connect the arrow
+                  <span className="text-brand-300" aria-hidden>
+                    |
+                  </span>
+                  <span className="text-brand-500 dark:text-brand-300">Cancel</span>
+                </button>
+              </div>
+            ) : null}
+            {/* Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides the header entirely so the
           canvas gets the full height. Embeds (docs/specs/013-workspace/embeds.md) never show it. */}
-          {zenMode || embedMode ? null : (
-            <AreaErrorBoundary area="Header" fallback="panel">
-              <EditorHeader
-                documentName={documentName}
-                hideTitle={anyWelcomeOpen}
-                showShare={isOwner && hydrated && !anyWelcomeOpen}
-                shareable={documentShareable}
-                teamDocument={!!documentTeamId}
-                offline={isOffline}
-                // Visitors see "Make a copy" instead of "Share": same slot,
-                // different action. Hidden during the welcome flow so the
-                // first-paint chrome stays minimal, and during hydration so
-                // we don't render the button before we know whether the user
-                // is the owner.
-                onMakeCopy={
-                  !isOwner && hydrated && !anyWelcomeOpen && documentId ? makeCopy : undefined
-                }
-                copying={copying}
-                readOnly={isStructureReadOnly}
-                renameNonce={renameDocumentNonce}
-                // Minimal chrome moves the pill to an icon in the status bar.
-                rolePill={minimalChrome ? undefined : <RolePill {...role} />}
-                brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
-                onOpenAccount={() => openSettingsOn('account')}
-                onOpenShare={() => {
-                  setShareDialogOpen(true);
-                  track('UI', 'Opened', 'Share');
-                }}
-                onRename={(next) => {
-                  const prev = documentName.trim();
-                  // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
-                  // limit the auto-namer and the Explorer renames both respect.
-                  const nextTrim = truncateName(next);
-                  setDocumentName(nextTrim);
-                  // Keep the Explorer panel's row for THIS document in sync —
-                  // autosave persists the name, but the in-memory list would
-                  // otherwise show the old name until a reload re-fetched it.
-                  if (nextTrim && documentId)
-                    setDocumentList((prev) =>
-                      prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
-                    );
-                  if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-                }}
-              />
+            {zenMode || embedMode ? null : (
+              <AreaErrorBoundary area="Header" fallback="panel">
+                <EditorHeader
+                  documentName={documentName}
+                  hideTitle={anyWelcomeOpen}
+                  showShare={isOwner && hydrated && !anyWelcomeOpen}
+                  shareable={documentShareable}
+                  teamDocument={!!documentTeamId}
+                  offline={isOffline}
+                  // Visitors see "Make a copy" instead of "Share": same slot,
+                  // different action. Hidden during the welcome flow so the
+                  // first-paint chrome stays minimal, and during hydration so
+                  // we don't render the button before we know whether the user
+                  // is the owner.
+                  onMakeCopy={
+                    !isOwner && hydrated && !anyWelcomeOpen && documentId ? makeCopy : undefined
+                  }
+                  copying={copying}
+                  readOnly={isStructureReadOnly}
+                  renameNonce={renameDocumentNonce}
+                  // Minimal chrome moves the pill to an icon in the status bar.
+                  rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+                  brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
+                  onOpenAccount={() => openSettingsOn('account')}
+                  onOpenShare={() => {
+                    setShareDialogOpen(true);
+                    track('UI', 'Opened', 'Share');
+                  }}
+                  onRename={(next) => {
+                    const prev = documentName.trim();
+                    // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
+                    // limit the auto-namer and the Explorer renames both respect.
+                    const nextTrim = truncateName(next);
+                    setDocumentName(nextTrim);
+                    // Keep the Explorer panel's row for THIS document in sync —
+                    // autosave persists the name, but the in-memory list would
+                    // otherwise show the old name until a reload re-fetched it.
+                    if (nextTrim && documentId)
+                      setDocumentList((prev) =>
+                        prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
+                      );
+                    if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
+                  }}
+                />
+              </AreaErrorBoundary>
+            )}
+            <AreaErrorBoundary area="TabDialogs">
+              <EditorTabDialogs />
             </AreaErrorBoundary>
-          )}
-          <AreaErrorBoundary area="TabDialogs">
-            <EditorTabDialogs />
-          </AreaErrorBoundary>
-          <AreaErrorBoundary area="Collaborators">
-            <CollaboratorsHost />
-          </AreaErrorBoundary>
-          <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
-            <EditorCanvasHost />
-          </AreaErrorBoundary>
-          {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
+            <AreaErrorBoundary area="Collaborators">
+              <CollaboratorsHost />
+            </AreaErrorBoundary>
+            <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
+              <EditorCanvasHost />
+            </AreaErrorBoundary>
+            {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}
-          <AreaErrorBoundary area="Presentation">
-            <PresentationHost />
-          </AreaErrorBoundary>
-          {embedMode ? (
-            // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
-            // switcher replace the full TabBar. Same selection clears as
-            // the TabBar's onSelect so element state never leaks across a
-            // tab switch.
-            <EmbedChrome
-              tabs={tabs}
-              activeId={activeId}
-              shareCode={sessionShareCode}
-              onSelectTab={selectTab}
-            />
-          ) : null}
-          {anyWelcomeOpen || zenMode || embedMode ? null : (
-            <AreaErrorBoundary area="TabBar" fallback="panel">
-              <TabBar
-                powerUser={isPowerUserMode(userPreferences)}
-                roleIcon={
-                  minimalChrome ? (
-                    <RoleStatusIcon role={role.role} onToggle={role.onToggle} />
-                  ) : undefined
-                }
+            <AreaErrorBoundary area="Presentation">
+              <PresentationHost />
+            </AreaErrorBoundary>
+            {embedMode ? (
+              // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
+              // switcher replace the full TabBar. Same selection clears as
+              // the TabBar's onSelect so element state never leaks across a
+              // tab switch.
+              <EmbedChrome
                 tabs={tabs}
                 activeId={activeId}
-                // Clicking an avatar in a presence stack opens the Collaborators
-                // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
-                followingId={followMe.followingId}
-                onOpenCollaborators={openCollaborators}
-                onMoveTabToFolder={moveTabToFolder}
-                onRemoveTabFromFolder={removeTabFromFolder}
-                onRenameFolder={renameTabFolder}
-                activeTabHasContent={activeTab.elements.length > 0}
-                onSelect={selectTab}
-                onAdd={addTab}
-                onRename={renameTab}
-                onDuplicate={duplicateTab}
-                onDelete={deleteTab}
-                onClearContent={clearTabContent}
-                onImportTab={() => setImportOpen(true)}
-                onExportTab={() => {
-                  setExportScope('tab');
-                  setExportOpen(true);
-                }}
-                timer={activeTab.timer ?? null}
-                vote={activeTab.vote ?? null}
-                // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md), so the Studio
-                // says whose it is and disables its controls.
-                facilitatedBy={facilitatorName}
-                facilitating={facilitator.isFacilitator}
-                onStartTimer={startTimer}
-                onPauseTimer={pauseTimer}
-                onResumeTimer={resumeTimer}
-                onResetTimer={resetTimer}
-                onExtendTimer={extendTimer}
-                onClearTimer={clearTimer}
-                onStartVote={startVote}
-                onEndVote={endVote}
-                onRevealVote={revealVote}
-                onClearVote={clearVote}
-                livePoll={livePoll.poll}
-                // A poll only reaches other people through the realtime room
-                // (docs/specs/012-collaboration/live-poll.md). Unshared and off-team, it still runs, just for you;
-                // the composer says so rather than refusing.
-                pollHasAudience={documentShareable || !!documentTeamId}
-                onStartPoll={livePoll.startPoll}
-                pollCollaborators={pollCollaborators}
-                voteLayers={layers}
-                activeLayerId={activeLayerId}
-                otherDocuments={
-                  // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
-                  // offline document's tabs nor an offline destination can take part
-                  // (docs/specs/006-document/offline-mode.md) — empty list disables the menu entry.
-                  isOffline
-                    ? []
-                    : documentList.filter(
-                        (d) => d.id !== documentId && d.ownerId !== OFFLINE_OWNER_ID,
-                      )
-                }
-                onCopyTabTo={linkActiveTabTo}
-                onToggleLockTab={toggleActiveTabLock}
-                onReorder={reorderTabs}
-                // A tab-scoped visitor edits their tab's content at most, never the
-                // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
-                readOnly={isStructureReadOnly}
-                isOutOfScope={isOutOfScope}
-                renameActiveNonce={renameTabNonce}
-                participantsByTab={participantsByTab}
-                selfId={selfParticipant.id}
-                voteSelfId={voteSelfId}
-                selfRole={sessionRole}
-                onOpenSettings={() => {
-                  // Preferences are user-scoped, not document-scoped, so
-                  // view-role visitors can still flip them for their own
-                  // browser (e.g. opt out of telemetry).
-                  setSettingsOpen(true);
-                  track('UI', 'Opened', 'Settings');
-                }}
-                onOpenSearch={() => {
-                  setSearchOpen(true);
-                  // Element search walks local tab state; pull every
-                  // not-yet-visited tab's content so matches cover the
-                  // whole document (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
-                  // and fire-and-forget: results refresh as tabs land.
-                  void loadAllTabs();
-                }}
-                // Canvas right-click (desktop) + long-press (touch) open the active
-                // tab's menu with the canvas sections folded in, rendered by the
-                // TabBar so it reuses every tab handler. Element / multi context
-                // menus stay on EditorContextMenu below.
-                canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
-                onCloseCanvasMenu={closeContextMenu}
-                canvasActions={{
-                  onAutoAlign: autoAlignTab,
-                  onAutoLayout: autoLayoutTab,
-                  onPreviewCleanup: previewCleanup,
-                  onEndCleanupPreview: endCleanupPreview,
-                  // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
-                  onPaste: () =>
-                    pasteFromClipboard(
-                      undefined,
-                      contextMenu?.mode === 'canvas' ? (contextMenu.canvasPoint ?? null) : null,
-                    ),
-                  canPaste: hasClipboard,
-                }}
+                shareCode={sessionShareCode}
+                onSelectTab={selectTab}
               />
-            </AreaErrorBoundary>
-          )}
-          {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
+            ) : null}
+            {anyWelcomeOpen || zenMode || embedMode ? null : (
+              <AreaErrorBoundary area="TabBar" fallback="panel">
+                <TabBar
+                  powerUser={isPowerUserMode(userPreferences)}
+                  roleIcon={
+                    minimalChrome ? (
+                      <RoleStatusIcon role={role.role} onToggle={role.onToggle} />
+                    ) : undefined
+                  }
+                  tabs={tabs}
+                  activeId={activeId}
+                  // Clicking an avatar in a presence stack opens the Collaborators
+                  // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
+                  followingId={followMe.followingId}
+                  onOpenCollaborators={openCollaborators}
+                  onMoveTabToFolder={moveTabToFolder}
+                  onRemoveTabFromFolder={removeTabFromFolder}
+                  onRenameFolder={renameTabFolder}
+                  activeTabHasContent={activeTab.elements.length > 0}
+                  onSelect={selectTab}
+                  onAdd={addTab}
+                  onRename={renameTab}
+                  onDuplicate={duplicateTab}
+                  onDelete={deleteTab}
+                  onClearContent={clearTabContent}
+                  onImportTab={() => setImportOpen(true)}
+                  onExportTab={() => {
+                    setExportScope('tab');
+                    setExportOpen(true);
+                  }}
+                  timer={activeTab.timer ?? null}
+                  vote={activeTab.vote ?? null}
+                  // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md), so the Studio
+                  // says whose it is and disables its controls.
+                  facilitatedBy={facilitatorName}
+                  facilitating={facilitator.isFacilitator}
+                  onStartTimer={startTimer}
+                  onPauseTimer={pauseTimer}
+                  onResumeTimer={resumeTimer}
+                  onResetTimer={resetTimer}
+                  onExtendTimer={extendTimer}
+                  onClearTimer={clearTimer}
+                  onStartVote={startVote}
+                  onEndVote={endVote}
+                  onRevealVote={revealVote}
+                  onClearVote={clearVote}
+                  livePoll={livePoll.poll}
+                  // A poll only reaches other people through the realtime room
+                  // (docs/specs/012-collaboration/live-poll.md). Unshared and off-team, it still runs, just for you;
+                  // the composer says so rather than refusing.
+                  pollHasAudience={documentShareable || !!documentTeamId}
+                  onStartPoll={livePoll.startPoll}
+                  pollCollaborators={pollCollaborators}
+                  voteLayers={layers}
+                  activeLayerId={activeLayerId}
+                  otherDocuments={
+                    // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
+                    // offline document's tabs nor an offline destination can take part
+                    // (docs/specs/006-document/offline-mode.md) — empty list disables the menu entry.
+                    isOffline
+                      ? []
+                      : documentList.filter(
+                          (d) => d.id !== documentId && d.ownerId !== OFFLINE_OWNER_ID,
+                        )
+                  }
+                  onCopyTabTo={linkActiveTabTo}
+                  onToggleLockTab={toggleActiveTabLock}
+                  onReorder={reorderTabs}
+                  // A tab-scoped visitor edits their tab's content at most, never the
+                  // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
+                  readOnly={isStructureReadOnly}
+                  isOutOfScope={isOutOfScope}
+                  renameActiveNonce={renameTabNonce}
+                  participantsByTab={participantsByTab}
+                  selfId={selfParticipant.id}
+                  voteSelfId={voteSelfId}
+                  selfRole={sessionRole}
+                  onOpenSettings={() => {
+                    // Preferences are user-scoped, not document-scoped, so
+                    // view-role visitors can still flip them for their own
+                    // browser (e.g. opt out of telemetry).
+                    setSettingsOpen(true);
+                    track('UI', 'Opened', 'Settings');
+                  }}
+                  onOpenSearch={() => {
+                    setSearchOpen(true);
+                    // Element search walks local tab state; pull every
+                    // not-yet-visited tab's content so matches cover the
+                    // whole document (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
+                    // and fire-and-forget: results refresh as tabs land.
+                    void loadAllTabs();
+                  }}
+                  // Canvas right-click (desktop) + long-press (touch) open the active
+                  // tab's menu with the canvas sections folded in, rendered by the
+                  // TabBar so it reuses every tab handler. Element / multi context
+                  // menus stay on EditorContextMenu below.
+                  canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
+                  onCloseCanvasMenu={closeContextMenu}
+                  canvasActions={{
+                    onAutoAlign: autoAlignTab,
+                    onAutoLayout: autoLayoutTab,
+                    onPreviewCleanup: previewCleanup,
+                    onEndCleanupPreview: endCleanupPreview,
+                    // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
+                    onPaste: () =>
+                      pasteFromClipboard(
+                        undefined,
+                        contextMenu?.mode === 'canvas' ? (contextMenu.canvasPoint ?? null) : null,
+                      ),
+                    canPaste: hasClipboard,
+                  }}
+                />
+              </AreaErrorBoundary>
+            )}
+            {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
               a selection. Stands down in zen / embeds / presenting and while an
               element menu is open, which is the complete home of every setting. */}
-          <AreaErrorBoundary area="QuickStyle">
-            <QuickStylePanel
-              quickStyle={quickStyle}
-              hidden={
-                zenMode ||
-                embedMode ||
-                // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
-                !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
-                (contextMenu !== null && contextMenu.mode !== 'canvas')
-              }
-              // Phones never show it, so the desktop layout is the one that counts.
-              layout={resolvePanelLayout(userPreferences)}
-              powerUser={isPowerUserMode(userPreferences)}
-            />
-          </AreaErrorBoundary>
-          <AreaErrorBoundary area="Search">
-            <EditorSearchPanel />
-          </AreaErrorBoundary>
-          {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
+            <AreaErrorBoundary area="QuickStyle">
+              <QuickStylePanel
+                quickStyle={quickStyle}
+                hidden={
+                  zenMode ||
+                  embedMode ||
+                  // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
+                  !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
+                  (contextMenu !== null && contextMenu.mode !== 'canvas')
+                }
+                // Phones never show it, so the desktop layout is the one that counts.
+                layout={resolvePanelLayout(userPreferences)}
+                powerUser={isPowerUserMode(userPreferences)}
+              />
+            </AreaErrorBoundary>
+            <AreaErrorBoundary area="Search">
+              <EditorSearchPanel />
+            </AreaErrorBoundary>
+            {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
           including view-role; the results panel unlocks once you've
           responded (or if you're the host). Both vanish with the poll —
           nothing here is persisted. */}
-          <PollPromptSheet
-            // Keyed on the poll so a second poll starts with a clean free-text
-            // box rather than inheriting the first one's half-typed answer.
-            key={livePoll.poll?.id ?? 'no-poll'}
-            poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
-            onAnswer={livePoll.answerPoll}
-          />
-          {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
+            <PollPromptSheet
+              // Keyed on the poll so a second poll starts with a clean free-text
+              // box rather than inheriting the first one's half-typed answer.
+              key={livePoll.poll?.id ?? 'no-poll'}
+              poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
+              onAnswer={livePoll.answerPoll}
+            />
+            {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
           the same reason: it is a question addressed to you, not a status
           line. Shown to view-role visitors too. */}
-          <FocusInviteDialog
-            from={
-              focusInvite.invite
-                ? (livePresence.find((p) => p.id === focusInvite.invite!.from)?.name ?? 'Someone')
-                : null
-            }
-            onAccept={focusInvite.acceptFocus}
-            onDismiss={focusInvite.dismissFocus}
-          />
-          <AreaErrorBoundary area="Modals">
-            <EditorModals />
-          </AreaErrorBoundary>
-          <AreaErrorBoundary area="Popovers">
-            <EditorAnchoredPopovers />
-          </AreaErrorBoundary>
-          <AreaErrorBoundary area="ContextMenu">
-            <EditorContextMenuHost />
-          </AreaErrorBoundary>
-          <AreaErrorBoundary area="ElementDialogs">
-            <EditorElementDialogs />
-          </AreaErrorBoundary>
-          {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
-          wizard's "Show me around" handoff flag is pending. */}
-          <AreaErrorBoundary area="Tour">
-            <TourHost />
-          </AreaErrorBoundary>
-
-          {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
-          the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
-          {showSignInBanner ? (
-            <SignInBanner
-              surface="Editor"
-              onDismiss={dismissSignIn}
-              placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
+            <FocusInviteDialog
+              from={
+                focusInvite.invite
+                  ? (livePresence.find((p) => p.id === focusInvite.invite!.from)?.name ?? 'Someone')
+                  : null
+              }
+              onAccept={focusInvite.acceptFocus}
+              onDismiss={focusInvite.dismissFocus}
             />
-          ) : null}
-          {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md) — replaces the old centre-of-canvas card
+            <AreaErrorBoundary area="Modals">
+              <EditorModals />
+            </AreaErrorBoundary>
+            <AreaErrorBoundary area="Popovers">
+              <EditorAnchoredPopovers />
+            </AreaErrorBoundary>
+            <AreaErrorBoundary area="ContextMenu">
+              <EditorContextMenuHost />
+            </AreaErrorBoundary>
+            <AreaErrorBoundary area="ElementDialogs">
+              <EditorElementDialogs />
+            </AreaErrorBoundary>
+            {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
+          wizard's "Show me around" handoff flag is pending. */}
+            <AreaErrorBoundary area="Tour">
+              <TourHost />
+            </AreaErrorBoundary>
+
+            {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
+          the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
+            {showSignInBanner ? (
+              <SignInBanner
+                surface="Editor"
+                onDismiss={dismissSignIn}
+                placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
+              />
+            ) : null}
+            {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md) — replaces the old centre-of-canvas card
           with a subdued, dismissible bottom banner so a blank document reads as
           intentionally blank. */}
-          {showEmptyCanvasBanner ? (
-            <EmptyCanvasBanner
-              tabName={activeTab.name}
-              readOnly={isReadOnly}
-              onQuickStart={openTemplatePicker}
-            />
-          ) : null}
-          {/* Offer to match the editor chrome to the active tab's theme
+            {showEmptyCanvasBanner ? (
+              <EmptyCanvasBanner
+                tabName={activeTab.name}
+                readOnly={isReadOnly}
+                onQuickStart={openTemplatePicker}
+              />
+            ) : null}
+            {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
           zen / embed like the other floating prompts, and yields the
           bottom-centre slot to the sign-in / empty-canvas banners. */}
-          {zenMode ||
-          embedMode ||
-          minimalChrome ||
-          whiteboard ||
-          showSignInBanner ||
-          showEmptyCanvasBanner ? null : (
-            <ThemeModeBanner themeId={activeTab.theme} />
-          )}
-          {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
+            {zenMode ||
+            embedMode ||
+            minimalChrome ||
+            whiteboard ||
+            showSignInBanner ||
+            showEmptyCanvasBanner ? null : (
+              <ThemeModeBanner themeId={activeTab.theme} />
+            )}
+            {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is
           on the move. Suppressed while a mode banner owns the top slot. */}
-          {minimalChrome ? null : (
-            <ModifierHintBanner
-              drag={drag}
-              esBoard={esBoard}
-              selectedKind={shiftSelectedKind}
-              hasElements={activeTab.elements.length > 0}
-              suppressed={
-                canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null
-              }
-            />
-          )}
+            {minimalChrome ? null : (
+              <ModifierHintBanner
+                drag={drag}
+                esBoard={esBoard}
+                selectedKind={shiftSelectedKind}
+                hasElements={activeTab.elements.length > 0}
+                suppressed={
+                  canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null
+                }
+              />
+            )}
 
-          {/* What a photo import is doing BEFORE the draft lands: a progress
+            {/* What a photo import is doing BEFORE the draft lands: a progress
             strip from the moment the file is picked, with Cancel. */}
-          <PhotoImportProgress state={photoDraft.state} onCancel={photoDraft.cancelReading} />
+            <PhotoImportProgress state={photoDraft.state} onCancel={photoDraft.cancelReading} />
 
-          {/* Step 1 + 2 of the wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
+            {/* Step 1 + 2 of the wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
             box, tickable, and the words editable. Nothing lands until Add. */}
-          {photoDraft.state.stage === 'review' && photoDraft.review ? (
-            <PhotoReviewOverlay
-              review={photoDraft.review}
-              reading={
-                photoDraft.state.readSoFar < photoDraft.state.found && !photoDraft.review.readError
-              }
-              modelDownload={photoDraft.state.modelDownload}
-              readSoFar={photoDraft.state.readSoFar}
-              readTotal={photoDraft.state.found}
-              readerBackend={photoDraft.state.readerBackend}
-              readerWhy={photoDraft.state.readerWhy}
-              readerFallback={photoDraft.state.readerFallback}
-              rereading={photoDraft.rereading}
-              onReread={photoDraft.reread}
-              onConfirm={photoDraft.confirm}
-              onCancel={photoDraft.cancelReview}
-              // "Try another photo": leave this review and open the picker
-              // again, inside the same click, so the browser allows the dialog.
-              onRetake={() => {
-                photoDraft.cancelReview();
-                photoPickerRef.current?.click();
-              }}
-            />
-          ) : null}
+            {photoDraft.state.stage === 'review' && photoDraft.review ? (
+              <PhotoReviewOverlay
+                review={photoDraft.review}
+                reading={
+                  photoDraft.state.readSoFar < photoDraft.state.found &&
+                  !photoDraft.review.readError
+                }
+                modelDownload={photoDraft.state.modelDownload}
+                readSoFar={photoDraft.state.readSoFar}
+                readTotal={photoDraft.state.found}
+                readerBackend={photoDraft.state.readerBackend}
+                readerWhy={photoDraft.state.readerWhy}
+                readerFallback={photoDraft.state.readerFallback}
+                rereading={photoDraft.rereading}
+                onReread={photoDraft.reread}
+                onConfirm={photoDraft.confirm}
+                onCancel={photoDraft.cancelReview}
+                // "Try another photo": leave this review and open the picker
+                // again, inside the same click, so the browser allows the dialog.
+                onRetake={() => {
+                  photoDraft.cancelReview();
+                  photoPickerRef.current?.click();
+                }}
+              />
+            ) : null}
 
-          {/* A photo import awaiting Add or Discard (docs/specs/021-event-storming/event-storming.md Phase 8). Derived
+            {/* A photo import awaiting Add or Discard (docs/specs/021-event-storming/event-storming.md Phase 8). Derived
             from the tab's own draft notes, so a reload mid-import comes back to
             the same decision rather than to a board full of strays. Hidden
             while the words are still being read: that moment belongs to the
             progress strip above. */}
-          {photoDraft.state.stage !== 'detecting' ? (
-            <PhotoDraftBar
-              draftCount={draftNotes.length}
-              read={draftView?.read ?? null}
-              readError={draftView?.readError}
-              matchedCount={draftView ? draftView.matchedIds.size : null}
-              busy={photoDraft.state.stage === 'committing'}
-              onAccept={photoDraft.accept}
-              onDiscard={photoDraft.discard}
-            />
-          ) : null}
+            {photoDraft.state.stage !== 'detecting' ? (
+              <PhotoDraftBar
+                draftCount={draftNotes.length}
+                read={draftView?.read ?? null}
+                readError={draftView?.readError}
+                matchedCount={draftView ? draftView.matchedIds.size : null}
+                busy={photoDraft.state.stage === 'committing'}
+                onAccept={photoDraft.accept}
+                onDiscard={photoDraft.discard}
+              />
+            ) : null}
 
-          {/* The one file input behind "Add from photo". Hidden, opened by the
+            {/* The one file input behind "Add from photo". Hidden, opened by the
             palette row and the command palette; `capture` makes a phone open
             the camera straight away, because the act is "photograph this wall". */}
-          {photoImportAvailable ? (
-            <input
-              ref={photoPickerRef}
-              type="file"
-              accept={PHOTO_ACCEPT_ATTR}
-              capture="environment"
-              className="hidden"
-              aria-hidden
-              tabIndex={-1}
-              onChange={onPhotoPicked}
-            />
-          ) : null}
-        </div>
+            {photoImportAvailable ? (
+              <input
+                ref={photoPickerRef}
+                type="file"
+                accept={PHOTO_ACCEPT_ATTR}
+                capture="environment"
+                className="hidden"
+                aria-hidden
+                tabIndex={-1}
+                onChange={onPhotoPicked}
+              />
+            ) : null}
+          </div>
+        </UiScaleProvider>
       </MinimalChromeProvider>
     </CanvasSurfaceProvider>
   );

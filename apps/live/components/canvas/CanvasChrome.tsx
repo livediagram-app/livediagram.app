@@ -45,6 +45,8 @@ import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -173,8 +175,10 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
 // rather than at the 16px inset, or a panel docked there (the Collaborate
 // banner) renders underneath the strip where it can't be reached. The strip
-// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap.
-const TOOLBAR_TOP_CLEARANCE_PX = 68;
+// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap. The strip
+// is drawn at the UI scale (docs/specs/007-editor/ui-scale.md), so only its
+// height scales.
+const toolbarTopClearancePx = (scale: number) => 12 + 46 * scale + 10;
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
@@ -350,7 +354,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const topCornersKey = (['top-left', 'top-right'] as const)
     .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
     .join('|');
-  const stripCrowds = useStripCrowdsCorners(cornerRefs, stripShown && !isMobile, topCornersKey);
+  // UI scale (docs/specs/007-editor/ui-scale.md): the strip, the panels and the
+  // bottom-right cluster are drawn at it, so the clearances around them follow.
+  const uiScale = useUiScale();
+  const stripCrowds = useStripCrowdsCorners(
+    cornerRefs,
+    stripShown && !isMobile,
+    topCornersKey,
+    uiScale,
+  );
   const stripSpansTop = stripShown && (isMobile || stripCrowds);
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
@@ -379,9 +391,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             }}
             style={
               corner === 'bottom-right'
-                ? { bottom: cornerBottomInset(corner) }
+                ? { bottom: cornerBottomInset(corner, uiScale) }
                 : stripSpansTop && corner.startsWith('top')
-                  ? { top: TOOLBAR_TOP_CLEARANCE_PX }
+                  ? { top: toolbarTopClearancePx(uiScale) }
                   : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
@@ -575,6 +587,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
+        // Drawn at the UI scale, still 16px from the corner.
+        style={
+          uiScale === 1
+            ? undefined
+            : {
+                ...uiScaleStyle(uiScale),
+                right: toSurfacePx(16, uiScale),
+                bottom: toSurfacePx(16, uiScale),
+              }
+        }
         className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"
       >
         {welcomeOpen ? null : (

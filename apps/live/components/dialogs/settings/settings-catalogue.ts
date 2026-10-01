@@ -13,6 +13,7 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
+import { UI_SCALE_MAX, UI_SCALE_MIN, UI_SCALE_STEP, resolveUiScale } from '@/lib/ui-scale';
 import type { SettingsIllustrationId } from './settings-illustrations';
 import {
   CLOUD_SYNC_PROVIDERS,
@@ -364,6 +365,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           "Sets whether the editor chrome is light or dark. System follows your device. A tab's own canvas theme is a separate setting, except for Default, which follows this one. Stored on this device only, so it does not sync with your other settings.",
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
+      },
+      {
+        // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
+        // never the canvas, dialogs or menus.
+        kind: 'slider',
+        key: 'uiScale',
+        keywords:
+          'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+        label: 'UI Scale',
+        description:
+          'Makes the panels, the Palette toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are.',
+        desktopOnly:
+          'UI Scale is desktop only, so a phone always uses 100%. Your choice still applies on a larger screen.',
+        min: UI_SCALE_MIN,
+        max: UI_SCALE_MAX,
+        step: UI_SCALE_STEP,
+        format: (v) => `${Math.round(v * 100)}%`,
+        read: (p) => resolveUiScale(p, { mobile: false }),
+        write: (p, v) => ({ ...p, uiScale: v }),
+        event: { category: 'UI', changed: 'UiScale' },
       },
     ],
   },

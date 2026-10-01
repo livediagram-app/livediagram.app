@@ -11,6 +11,8 @@ import {
 } from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
 // Top-right mobile dock (docs/specs/007-editor/live-app.md "Mobile chrome"): a compact button row
 // that replaces the four full-width collapse banners on mobile, opening
@@ -66,10 +68,19 @@ export function CanvasMobileDock({
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
 }) {
+  // The Minimal layout's button bar is drawn at the UI scale
+  // (docs/specs/007-editor/ui-scale.md), still 12px from the corner. A phone
+  // is never scaled.
+  const scale = useUiScale();
   if (welcomeOpen || toolbarLayout) return null;
   return (
     <div
       data-mobile-dock
+      style={
+        scale === 1
+          ? undefined
+          : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), right: toSurfacePx(12, scale) }
+      }
       className={`pointer-events-auto absolute top-3 right-3 z-[var(--z-toolbar)] flex items-stretch rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900${minimalPanels ? '' : ' sm:hidden'}`}
       onPointerDown={(e) => e.stopPropagation()}
     >

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useUiScale } from '@/components/providers/ui-scale';
 import {
   DEFAULT_PANEL_CORNER,
   PANEL_CORNERS,
@@ -71,6 +72,9 @@ export type PanelDock = {
 export function usePanelDock(): PanelDock {
   const [layout, setLayout] = useState<PanelLayout>(() => readPanelLayout());
   const [drag, setDrag] = useState<PanelDragState | null>(null);
+  // The zoom controls the bottom-right corner clears are drawn at the UI
+  // scale (docs/specs/007-editor/ui-scale.md).
+  const scale = useUiScale();
 
   // Re-read on any external change (another tab's `storage` event) and
   // on our own same-tab writes (the custom event). Idempotent: a write
@@ -147,7 +151,7 @@ export function usePanelDock(): PanelDock {
 
   const updateDrag = useCallback(
     (panel: PanelId, geom: PanelDragGeometry, extents?: CornerStackExtents) => {
-      const candidate = nearestSnapCorner(geom, extents);
+      const candidate = nearestSnapCorner(geom, extents, scale);
       setDrag((prev) => {
         // Only the panel that owns the drag updates the candidate; guard
         // against stale geometry from a panel that isn't dragging.
@@ -156,12 +160,12 @@ export function usePanelDock(): PanelDock {
         return { panelId: panel, candidate, height: geom.height };
       });
     },
-    [],
+    [scale],
   );
 
   const endDrag = useCallback(
     (panel: PanelId, geom: PanelDragGeometry, extents?: CornerStackExtents): PanelCorner | null => {
-      const candidate = nearestSnapCorner(geom, extents);
+      const candidate = nearestSnapCorner(geom, extents, scale);
       commit(
         candidate
           ? dockPanel(layout, panel, candidate)
@@ -170,7 +174,7 @@ export function usePanelDock(): PanelDock {
       setDrag(null);
       return candidate;
     },
-    [commit, layout],
+    [commit, layout, scale],
   );
 
   const resetPanel = useCallback(

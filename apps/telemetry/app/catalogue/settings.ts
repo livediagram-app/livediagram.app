@@ -98,6 +98,7 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   changed('PanelLayout', 'Panel Layout', 'Floating, Minimal or Toolbar chrome.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
+  changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),
 ]);
 
 export const CONTROLS_SETTINGS = settingsStack(

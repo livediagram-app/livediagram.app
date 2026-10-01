@@ -30,6 +30,7 @@ export function useMovablePanelDrag({
   collapsed,
   setCollapsed,
   mobileOpenOverride,
+  scale,
   getDockBounds,
   onDockDragStart,
   onDockDrag,
@@ -48,6 +49,8 @@ export function useMovablePanelDrag({
   collapsible: boolean;
   collapsed: boolean;
   setCollapsed: (v: boolean) => void;
+  // The UI scale the panel is zoomed at (docs/specs/007-editor/ui-scale.md).
+  scale: number;
 }) {
   // Presence of getDockBounds opts this panel into the corner-docking
   // drag path (docs/specs/007-editor/panel-docking.md). Computed once per render; cheap.
@@ -181,8 +184,10 @@ export function useMovablePanelDrag({
       });
       return;
     }
-    const startX = node.offsetLeft;
-    const startY = node.offsetTop;
+    // offsetLeft / offsetTop are in the zoomed panel's own px; positions are
+    // stored in screen px, so a stored spot survives a change of UI scale.
+    const startX = node.offsetLeft * scale;
+    const startY = node.offsetTop * scale;
     // If the panel hasn't been positioned yet, freeze the current corner
     // position so subsequent deltas don't snap it to (0,0).
     if (position === null) onMoveTo(startX, startY);

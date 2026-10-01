@@ -174,6 +174,12 @@ type UserPreferences = {
   // Defaults to 1 (fully opaque).
   panelOpacity?: number;
 
+  // UI scale (docs/specs/007-editor/ui-scale.md): the factor (0.8..1.5, 0.05
+  // steps) the panels, the Palette toolbar and the bottom-right cluster are
+  // drawn at, via CSS `zoom` on each surface. Desktop only: a phone always
+  // draws at 1. Defaults to 1.
+  uiScale?: number;
+
   // Panel switches (the Panels sub-categories, see "Settings dialog"
   // below). Each defaults ON via `!== false`, so an existing user's editor
   // is unchanged; `false` is the only state that turns its panel off.
@@ -335,6 +341,11 @@ Missing key === undefined === default behaviour. Concretely:
   popover (Minimal, a phone, the cluster popovers), the Map, Quick style
   and the Toolbar strip. Button bars and buttons stay opaque. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- `uiScale` undefined / 1 → the chrome at its design size (the default).
+  Any other value in 0.8..1.5 draws the panels, the Palette toolbar and the
+  bottom-right cluster at that factor on desktop; a phone always draws at 1.
+  Junk reads as 1, out-of-range values clamp ([UI scale](ui-scale.md)). Emits
+  `UI`/`Changed`/`UiScale` on release.
 - `layersPanelEnabled` / `activityPanelEnabled` / `collaboratePanelEnabled` /
   `quickStylePanelEnabled` undefined / true → the panel is on (the
   default). `false` removes it and the chrome that reaches it, leaving the
@@ -497,7 +508,7 @@ and the dialog stays as the one complete, browsable index of them.
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
   middle-mouse pan, then a **Power User** section: power user mode, and
-  Minimal chrome while the mode is on), **Appearance** (theme), **Keyboard**
+  Minimal chrome while the mode is on), **Appearance** (theme, UI scale), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel layout, panel opacity; with the
   sub-categories **Layers**, **Activity**, **Map**, **Collaborate** and
@@ -574,7 +585,7 @@ and the dialog stays as the one complete, browsable index of them.
   A setting renders as a **one-line row** (label + control), with its
   long-form explanation as a **grey footnote below the row**. Labels are
   **Title Case**. Row kinds: `toggle`, `choice` (a segmented control, e.g.
-  the theme and the minimap size), `slider` (panel opacity, committing on
+  the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
   release so one drag is not one PUT per pixel), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (a
   read-only listing of the account's API tokens plus a link to the Explorer's

@@ -603,6 +603,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone switched the editor's panel layout to Toolbar, in Settings > Editor.",
   'UI|Changed|PanelOpacity':
     'Someone adjusted how see-through the floating panels are, on the Panel Opacity slider in Settings > Editor.',
+  'UI|Changed|UiScale':
+    'Someone made the panels, the Palette toolbar and the bottom-right buttons bigger or smaller, on the UI Scale slider in Settings > Appearance.',
   'UI|Changed|QuickSwatchCustom':
     "Someone replaced one of the quick style panel's theme colours with a colour of their own, by right-clicking the swatch.",
   'UI|Changed|QuickSwatchReset':
