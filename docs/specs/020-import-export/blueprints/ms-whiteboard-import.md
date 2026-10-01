@@ -108,9 +108,13 @@ value each: centre, middle), fit `95034a7c`, `38b2b070`, `48348267`, polygon sty
      built `insertTrees`. Removed nodes leave the index.
    - `FchMove`: the run from the source place to the destination place.
    - `FchGroup`: each group tree in order, by command type (insert, delete, replace, move); tag
-     and unknown commands are counted in `stats.ignoredCommands`.
-4. Any edit whose parent, sibling or run is missing is counted in `stats.skippedEdits` and
-   skipped. Every built node gets `seq` from a counter.
+     commands change nothing; unknown commands are counted in `stats.ignoredCommands`.
+4. Missing references: an insert whose parent is gone, a delete whose run is gone, and a move
+   whose run is gone are counted in `stats.skippedEdits` and skipped; an insert whose sibling is
+   gone lands last (`stats.misplacedInserts`); a replace whose run is gone inserts its new nodes
+   first (`stats.staleReplaces`); a move whose destination is gone puts the run back. Nodes are
+   built only once their place is known, so a skipped edit leaves the index untouched. Every
+   built node gets `seq` from a counter.
 5. `single(node, trait)`: the child with the highest `seq`.
 
 ### Pen strokes (`pen-stroke.ts`)

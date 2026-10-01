@@ -72,9 +72,11 @@ listed with their ids in the [blueprint](blueprints/ms-whiteboard-import.md).
   order than the edits made to it, but its own earlier timestamp.
 - **Undo** takes an earlier change out of the replay; **redo** puts it back (a
   redo of an undo restores what that undo took out).
-- An edit that names a node no longer in the tree (an edit made concurrently
-  from another window, or one following an undone change) is skipped; the
-  replay never throws. A trait that holds a single value (a position, a scale)
+- Edits made concurrently from another window, or following an undone change,
+  can name nodes no longer in the tree. Nothing they add is lost: an insert
+  whose sibling is gone lands last (on top); a replace whose old value is gone
+  still adds its new value. A delete or move of a node that is gone is skipped.
+  The replay never throws. A trait that holds a single value (a position, a scale)
   reads its **most recently inserted** child, so a concurrent edit that left two
   values behind resolves to the later one.
 
