@@ -1,6 +1,6 @@
 # Excalidraw import & export
 
-Excalidraw content reaches livediagram three ways, all through **one parser**:
+Excalidraw content reaches livediagram four ways, all through **one parser**:
 
 - **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. On a
   whiteboard tab it lands as whiteboard-native content (marker strokes, shapes,
@@ -11,6 +11,8 @@ Excalidraw content reaches livediagram three ways, all through **one parser**:
   Excalidraw exported with its scene embedded, replaces the active tab.
 - **Drop**: a `.excalidraw` file, or an Excalidraw PNG / SVG with an embedded
   scene, dropped on the canvas lands like a paste.
+- **New documents** (the Explorer's Import from group): each picked file becomes
+  its own document with one whiteboard tab, named and dated after the file.
 
 The parser turns Excalidraw into a [Board scene](board-scene.md), the
 source-neutral intermediate every board import shares; the shared landing turns
@@ -264,6 +266,48 @@ opens one import session for the document, resolves every request, fills
 `imageId` / `naturalWidth` / `naturalHeight` on the elements that stored, and
 only then changes the tab, so either stays one undo step. Limits, offline handling, failures and the
 report are the pipeline's ([Import image pipeline](import-image-pipeline.md)).
+
+## Import as new documents (Explorer)
+
+Excalidraw is a source of the Explorer page header's **Import from** group
+([Folders](../013-workspace/folders.md)), beside Microsoft Whiteboard: a board
+saved in Excalidraw comes in as its own document, with no editor open.
+
+- **What it takes**: one or more `.excalidraw` files, or `.png` / `.svg` exports
+  with the scene embedded, picked at once (`.excalidraw,.json,.png,.svg`).
+  A saved file and a clipboard copy of the same board carry identical elements;
+  only the envelope differs (`type: "excalidraw"`, `version`, `source`,
+  `appState`), so a file lands exactly as the same board pasted on a whiteboard.
+- **What it makes**: each file becomes **a new document with one whiteboard
+  tab**, through the shared new-document target
+  ([Board import](board-import.md) "new-document", `importBoardsAsDocuments`):
+  the whiteboard profile, filed where New document files, images through the
+  [Import image pipeline](import-image-pipeline.md). Several files make one
+  document each; a file that cannot be read is listed with its reason and the
+  rest still land. A whiteboard ignores the file's `viewBackgroundColor` (it is
+  Excalidraw's light canvas even for an author working in dark mode); the board
+  keeps its own light and dark look.
+- **Name**: the file name without its extension (`.excalidraw`,
+  `.excalidraw.png`, `.excalidraw.svg`, `.png`, `.svg`, `.json`). Excalidraw's
+  default name, `Untitled-YYYY-MM-DD-HHMM` (its local save moment), becomes
+  "Excalidraw board, 12 Apr 2026".
+- **Dates**: created is the moment in Excalidraw's default name, else the
+  file's `lastModified`; last modified is the file's `lastModified`. Both are
+  checked by the same rule as Microsoft Whiteboard's board dates
+  ([Board import](board-import.md)): an impossible pair keeps what holds and is
+  reported ("Board dates that couldn't be read were set to today").
+- **Refusals**, listed per file: a file with no Excalidraw scene ("This file
+  isn't an Excalidraw scene."), and the envelope's and embedded-scene messages.
+- **Flow**: the button opens a small dialog, "Import from Excalidraw": a drop
+  zone that is also a button ("Drop .excalidraw files here, or choose files"),
+  then "Importing board 3 of 5…" and the shared report, as the Microsoft
+  Whiteboard dialog does.
+- Telemetry: one `track('Tab', 'Imported', 'Excalidraw' | 'ExcalidrawPng' |
+'ExcalidrawSvg')` per board that lands (by its container), as the Import
+  dialog's card and Microsoft Whiteboard's import count; the shared target adds
+  `Document · Created` and `Whiteboard · Created · Import`.
+
+The editor's tab-scoped Import dialog card, paste and drop stay as they are.
 
 ## Export degradation table (Tab → `.excalidraw`)
 

@@ -8,26 +8,27 @@ and are not restated. The landing is [Board scene](../board-scene.md)'s. Default
 
 Scope, by file:
 
-| File                                                             | Role                                                                            |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `apps/live/lib/excalidraw-types.ts`                              | The slice of Excalidraw's format the parser reads (types only)                  |
-| `apps/live/lib/excalidraw-envelope.ts`                           | `looksLikeExcalidraw`, `readExcalidrawEnvelope`: detection, cap, rejections     |
-| `apps/live/lib/excalidraw-scene.ts`                              | `excalidrawToBoardScene`: elements to scene items, order, notes                 |
-| `apps/live/lib/excalidraw-scene-style.ts`                        | Colours, opacity, widths, dashes, fonts, text, arrowheads                       |
-| `apps/live/lib/excalidraw-scene-geometry.ts`                     | Absolute points, rotation baking, closure                                       |
-| `apps/live/lib/excalidraw-fixtures.ts`                           | Typed builder of synthesised Excalidraw elements and envelopes (tests only)     |
-| `apps/live/lib/excalidraw-read.ts`                               | `sceneFromExcalidrawText`, `readExcalidrawFile`: text or file to a scene (lazy) |
-| `apps/live/lib/excalidraw-paste.ts`                              | `excalidrawTextFromPaste`, `isExcalidrawFileCandidate`, `DROP_NOT_A_SCENE`      |
-| `apps/live/scripts/excalidraw-verify.mts`                        | Real copies through parser and landing, aggregates only (local)                 |
-| `apps/live/lib/excalidraw-embedded.ts`                           | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                  |
-| `apps/live/hooks/canvas/useClipboard.ts`                         | Paste branches and `dropBoardFile`: scenes go to the board-scene insert         |
-| `apps/live/hooks/canvas/usePaletteDrop.ts`                       | `onDropFile`: a dropped file with its canvas point                              |
-| `apps/live/components/canvas/Canvas.tsx`, `EditorCanvasHost.tsx` | Thread `onDropFile` (`dropBoardFile`, not when read-only)                       |
-| `apps/live/hooks/persistence/useTabImport.ts`                    | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport) |
-| `apps/live/components/dialogs/TextImportPanel.tsx`               | Progress label; hands the outcome to the dialog                                 |
-| `apps/live/components/dialogs/ImportTabDialog.tsx`               | Shows the report view when the outcome carries one                              |
-| `apps/live/components/dialogs/ImportImageReport.tsx`             | The report view                                                                 |
-| `apps/telemetry/app/event-explanations.ts`                       | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                |
+| File                                                             | Role                                                                               |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `apps/live/lib/excalidraw-types.ts`                              | The slice of Excalidraw's format the parser reads (types only)                     |
+| `apps/live/lib/excalidraw-envelope.ts`                           | `looksLikeExcalidraw`, `readExcalidrawEnvelope`: detection, cap, rejections        |
+| `apps/live/lib/excalidraw-scene.ts`                              | `excalidrawToBoardScene`: elements to scene items, order, notes                    |
+| `apps/live/lib/excalidraw-scene-style.ts`                        | Colours, opacity, widths, dashes, fonts, text, arrowheads                          |
+| `apps/live/lib/excalidraw-scene-geometry.ts`                     | Absolute points, rotation baking, closure                                          |
+| `apps/live/lib/excalidraw-fixtures.ts`                           | Typed builder of synthesised Excalidraw elements and envelopes (tests only)        |
+| `apps/live/lib/excalidraw-read.ts`                               | `sceneFromExcalidrawText`, `readExcalidrawFile`: text or file to a scene (lazy)    |
+| `apps/live/lib/excalidraw-paste.ts`                              | `excalidrawTextFromPaste`, `isExcalidrawFileCandidate`, `DROP_NOT_A_SCENE`         |
+| `apps/live/lib/excalidraw-board-file.ts`                         | `excalidrawFileIdentity`, `readExcalidrawBoardFiles`: files to named, dated scenes |
+| `apps/live/scripts/excalidraw-verify.mts`                        | Real copies through parser and landing, aggregates only (local)                    |
+| `apps/live/lib/excalidraw-embedded.ts`                           | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
+| `apps/live/hooks/canvas/useClipboard.ts`                         | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
+| `apps/live/hooks/canvas/usePaletteDrop.ts`                       | `onDropFile`: a dropped file with its canvas point                                 |
+| `apps/live/components/canvas/Canvas.tsx`, `EditorCanvasHost.tsx` | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
+| `apps/live/hooks/persistence/useTabImport.ts`                    | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
+| `apps/live/components/dialogs/TextImportPanel.tsx`               | Progress label; hands the outcome to the dialog                                    |
+| `apps/live/components/dialogs/ImportTabDialog.tsx`               | Shows the report view when the outcome carries one                                 |
+| `apps/live/components/dialogs/ImportImageReport.tsx`             | The report view                                                                    |
+| `apps/telemetry/app/event-explanations.ts`                       | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
 
 ## Domain and naming
 
@@ -46,19 +47,22 @@ Scope, by file:
 
 ## Constants and configuration
 
-| Constant                           | Value                                         | Provenance                                                                                | Safe range          |
-| ---------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------- |
-| `EXCALIDRAW_MAX_SCENE_CHARS`       | `64 * 1024 * 1024`                            | Excalidraw caps one image at 4 MiB (`MAX_ALLOWED_FILE_BYTES`): about a dozen as data URLs | 8 Mi to 128 Mi      |
-| `EXCALIDRAW_DETECT_PREFIX_CHARS`   | `256`                                         | Room for an indented saved file's opening `"type"` line plus leading whitespace           | 64 to 1024          |
-| `EXCALIDRAW_CLOSE_EPSILON_PX`      | `1`                                           | Our exporter repeats the first point exactly; 1 px absorbs float noise only               | 0 to 2              |
-| `EXCALIDRAW_FREEDRAW_WIDTH_FACTOR` | `{ constant: 2.8, variable: 4.25 }`           | Excalidraw `shape.ts`: laser-pointer radius `1.4 × w`; perfect-freehand size `4.25 × w`   | fixed by the source |
-| `EXCALIDRAW_DEFAULT_STREAMLINE`    | `0.5`                                         | Excalidraw `DEFAULT_STROKE_STREAMLINE`                                                    | fixed by the source |
-| `EXCALIDRAW_LABEL_POSITION_MIDDLE` | `0.5`                                         | Excalidraw's default `labelPosition`                                                      | fixed by the source |
-| `EXCALIDRAW_CLIPBOARD_MIME`        | `'application/vnd.excalidraw.clipboard+json'` | Excalidraw `MIME_TYPES.excalidrawClipboard`                                               | fixed by the source |
-| `EXCALIDRAW_FILE_MIME`             | `'application/vnd.excalidraw+json'`           | Excalidraw `MIME_TYPES.excalidraw`                                                        | fixed by the source |
-| `EXCALIDRAW_FONT_FAMILY`           | `{ hand: [1, 5], mono: [3, 8] }`              | Excalidraw `FONT_FAMILY`: Virgil 1, Cascadia 3, Excalifont 5, Comic Shanns 8              | fixed by the source |
-| `EXCALIDRAW_STICKY_FILL`           | `'#ffdf6b'`                                   | Excalidraw's sticky-note yellow (seen in real copies)                                     | fixed by the source |
-| `DROP_NOT_A_SCENE`                 | the refusal copy                              | [Excalidraw import & export](../excalidraw-import-export.md) "Paste"                      | copy                |
+| Constant                           | Value                                                 | Provenance                                                                                | Safe range          |
+| ---------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------- |
+| `EXCALIDRAW_MAX_SCENE_CHARS`       | `64 * 1024 * 1024`                                    | Excalidraw caps one image at 4 MiB (`MAX_ALLOWED_FILE_BYTES`): about a dozen as data URLs | 8 Mi to 128 Mi      |
+| `EXCALIDRAW_DETECT_PREFIX_CHARS`   | `256`                                                 | Room for an indented saved file's opening `"type"` line plus leading whitespace           | 64 to 1024          |
+| `EXCALIDRAW_CLOSE_EPSILON_PX`      | `1`                                                   | Our exporter repeats the first point exactly; 1 px absorbs float noise only               | 0 to 2              |
+| `EXCALIDRAW_FREEDRAW_WIDTH_FACTOR` | `{ constant: 2.8, variable: 4.25 }`                   | Excalidraw `shape.ts`: laser-pointer radius `1.4 × w`; perfect-freehand size `4.25 × w`   | fixed by the source |
+| `EXCALIDRAW_DEFAULT_STREAMLINE`    | `0.5`                                                 | Excalidraw `DEFAULT_STROKE_STREAMLINE`                                                    | fixed by the source |
+| `EXCALIDRAW_LABEL_POSITION_MIDDLE` | `0.5`                                                 | Excalidraw's default `labelPosition`                                                      | fixed by the source |
+| `EXCALIDRAW_CLIPBOARD_MIME`        | `'application/vnd.excalidraw.clipboard+json'`         | Excalidraw `MIME_TYPES.excalidrawClipboard`                                               | fixed by the source |
+| `EXCALIDRAW_FILE_MIME`             | `'application/vnd.excalidraw+json'`                   | Excalidraw `MIME_TYPES.excalidraw`                                                        | fixed by the source |
+| `EXCALIDRAW_FONT_FAMILY`           | `{ hand: [1, 5], mono: [3, 8] }`                      | Excalidraw `FONT_FAMILY`: Virgil 1, Cascadia 3, Excalifont 5, Comic Shanns 8              | fixed by the source |
+| `EXCALIDRAW_STICKY_FILL`           | `'#ffdf6b'`                                           | Excalidraw's sticky-note yellow (seen in real copies)                                     | fixed by the source |
+| `DROP_NOT_A_SCENE`                 | the refusal copy                                      | [Excalidraw import & export](../excalidraw-import-export.md) "Paste"                      | copy                |
+| `EXCALIDRAW_UNTITLED_NAME`         | `/^Untitled-(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})$/` | Excalidraw `getFileName`: `Untitled-${getDateTime()}`                                     | fixed by the source |
+| `EXCALIDRAW_BOARD_NAME`            | `'Excalidraw board'`                                  | [Excalidraw import & export](../excalidraw-import-export.md) "Import as new documents"    | copy                |
+| `EXCALIDRAW_NOT_A_SCENE`           | `"This file isn't an Excalidraw scene."`              | the same                                                                                  | copy                |
 
 ## Interfaces and contracts
 
@@ -220,6 +224,25 @@ read."
   first dropped file → `preventDefault`, `at = pointerToCanvas(clientX, clientY, wrapperRect,
 zoom)`, `onDropFile(file, at)`.
 - `EditorCanvasHost` passes `dropBoardFile` as `onDropFile` unless read-only.
+
+### New documents (`excalidraw-board-file.ts`)
+
+- `excalidrawFileIdentity(name, lastModified)` → `{ title, createdAt?, modifiedAt? }` (ISO 8601):
+  1. Strip the first matching extension, case-insensitive, in this order: `.excalidraw.png`,
+     `.excalidraw.svg`, `.excalidraw`, `.png`, `.svg`, `.json`; trim. Empty → `EXCALIDRAW_BOARD_NAME`.
+  2. `EXCALIDRAW_UNTITLED_NAME` matches (`Untitled-YYYY-MM-DD-HHMM`) and the parts form a real
+     local date-time → `title` = `"Excalidraw board, 12 Apr 2026"` (`en-GB`, day month year),
+     `createdAt` = that local moment as ISO.
+  3. Else `title` = the stripped name; `createdAt` = `lastModified` as ISO.
+  4. `modifiedAt` = `lastModified` as ISO. A `lastModified` that is not a finite positive number
+     sets neither date from it.
+- `readExcalidrawBoardFiles(files)` → `{ scenes: BoardScene[], failures: { title, message }[] }`,
+  files in pick order, each through `readExcalidrawFile`: `scene` → the scene with the identity's
+  `title`, `createdAt`, `modifiedAt` and `sourceId: 'excalidraw:<file name>'`;
+  `not-excalidraw` → failure `EXCALIDRAW_NOT_A_SCENE`; `error` → failure with its message. Never
+  throws (a read that throws is a failure with "This file couldn't be read.").
+- The scenes go to `importBoardsAsDocuments` (whiteboard profile, new documents); on a landed
+  board, `track('Tab', 'Imported', <container type>)`.
 
 ### Dialog
 
