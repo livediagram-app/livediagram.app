@@ -276,7 +276,7 @@ export function PaletteFavouritesTab({
       ) : favouriteTiles.length === 0 ? (
         showEmptyHint ? (
           <p className="px-1 py-2 text-center text-[11px] text-slate-400">
-            {recent ? 'No favourites yet.' : 'No favourites yet — Edit to add some.'}
+            No favourites yet — Edit to add some.
           </p>
         ) : null
       ) : (
@@ -293,11 +293,11 @@ export function PaletteFavouritesTab({
           Gone entirely while searching. Search replaces the favourites grid
           with cross-category results, so both verbs would act on a grid that
           is not on screen — Reorder on a list you cannot see, Edit on a set
-          the results are not from. And gone in the Toolbar layout, whose
-          order is by use (see `recent` above). */}
+          the results are not from. The Toolbar layout keeps Edit but drops
+          Reorder: its order is by use (see `recent` above). */}
       <div
         className={`-mx-2 -mb-2.5 mt-2.5 self-stretch border-t border-slate-200 dark:border-slate-700 ${
-          matches || recent ? 'hidden' : 'flex'
+          matches ? 'hidden' : 'flex'
         }`}
       >
         {reordering ? (
@@ -309,21 +309,23 @@ export function PaletteFavouritesTab({
           </>
         ) : (
           <>
-            <FooterButton
-              onClick={() => {
-                track('UI', 'Toggled', 'PaletteFavouritesEdit');
-                setReorderDraft([...favourites]);
-              }}
-              // Nothing to arrange with one tile, and nothing at all with none.
-              disabled={favourites.length < 2}
-            >
-              <Glyph size={11} units={14}>
-                {/* Four-way move arrows: the gesture, not the outcome. */}
-                <path d="M7 1.5v11M1.5 7h11" />
-                <path d="M5 3.5 7 1.5l2 2M5 10.5l2 2 2-2M3.5 5l-2 2 2 2M10.5 5l2 2-2 2" />
-              </Glyph>
-              Reorder
-            </FooterButton>
+            {recent ? null : (
+              <FooterButton
+                onClick={() => {
+                  track('UI', 'Toggled', 'PaletteFavouritesEdit');
+                  setReorderDraft([...favourites]);
+                }}
+                // Nothing to arrange with one tile, and nothing at all with none.
+                disabled={favourites.length < 2}
+              >
+                <Glyph size={11} units={14}>
+                  {/* Four-way move arrows: the gesture, not the outcome. */}
+                  <path d="M7 1.5v11M1.5 7h11" />
+                  <path d="M5 3.5 7 1.5l2 2M5 10.5l2 2 2-2M3.5 5l-2 2 2 2M10.5 5l2 2-2 2" />
+                </Glyph>
+                Reorder
+              </FooterButton>
+            )}
             <FooterButton
               onClick={() => {
                 track('UI', 'Toggled', 'PaletteFavouritesEdit');

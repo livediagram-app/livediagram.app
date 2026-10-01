@@ -50,10 +50,11 @@ animated tile rail, so it rides the rail's width change.
 For Icons / Stickers / Technology the strip's twelve are the first twelve of the
 catalogue in its own order, after any the user has used (below).
 
-In the Favourites body, More shows no **Reorder / Edit** footer: the order
-is by use (below), so a hand-made one would be overridden on the next use.
-Its search results keep their favourite star, which is how a tile joins or
-leaves Favourites from this layout. The Floating Palette's Favourites body is
+In the Favourites body, More's footer offers **Edit** (the Edit Favourites
+dialog, as in the floating Palette) but no **Reorder**: the order is by use
+when the favourites overflow the strip (below), so a hand-made one would be
+overridden on the next use. Its search results keep their favourite star
+too, a second way for a tile to join or leave Favourites from this layout. The Floating Palette's Favourites body is
 unchanged.
 
 ## Tiles by use
