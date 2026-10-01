@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   STROKE_DECODE_CACHE_POINTS,
+  clearStrokePointsCache,
   createStrokePointsDecoder,
   decodeStrokePoints,
 } from './stroke-points-cache';
@@ -75,5 +76,16 @@ describe('createStrokePointsDecoder', () => {
     decoder.decode(encodeStrokePoints(line(4)));
     decoder.clear();
     expect(decoder.size()).toEqual({ entries: 0, points: 0 });
+  });
+});
+
+describe('clearStrokePointsCache', () => {
+  it('makes the next decode of a block a fresh one', () => {
+    const packed = encodeStrokePoints(line(5));
+    const first = decodeStrokePoints(packed);
+    clearStrokePointsCache();
+    const second = decodeStrokePoints(packed);
+    expect(second).not.toBe(first);
+    expect([...second.nx]).toEqual([...first.nx]);
   });
 });

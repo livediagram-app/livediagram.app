@@ -121,6 +121,25 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 ## Measured wins
 
-Recorded by the stroke-points bench (`pnpm bench:stroke-points`) on a synthesised board shaped
-like the largest real board measured (3,300 strokes, 66,000 points, pen pressure on every
-point). See the blueprint for the numbers.
+Measured by the stroke-points bench (`pnpm bench:stroke-points`, `scripts/stroke-points-bench.ts`)
+on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
+66,000 points, a pressure on every point. Before is the former shape as the pen wrote it (full
+doubles); timings are medians on a developer machine and move with it, the ratios hold.
+
+| Measure                                   | Before (`{ nx, ny }`) | After (packed) |
+| ----------------------------------------- | --------------------- | -------------- |
+| Tab bytes                                 | 5,129 KB              | 1,066 KB       |
+| Share of one D1 row (2,000,000 bytes)     | 263%                  | 55%            |
+| Bytes per point, pressure included        | 70.8                  | 7.8            |
+| Objects `JSON.parse` allocates            | 75,902                | 3,302          |
+| Heap held after parsing                   | 6,674 KB              | 1,148 KB       |
+| `JSON.parse`                              | 9.7 ms                | 1.5 ms         |
+| Parse and draw one viewport (1920 x 1080) | 12.9 ms               | 4.6 ms         |
+| Parse and draw the whole board            | 131 ms                | 132 ms         |
+
+- **Accuracy:** the worst position error over all 66,000 points is 0.0029 px, exactly the
+  guarantee for these strokes' sizes; the worst pressure error is 0.0020 (bound 1 / 510).
+- **Drawing the whole board** costs the same: perfect-freehand's outline dominates, and decoding a
+  block is cheaper than the point objects it replaces. What packing removes is the cost of
+  everything not drawn: a stroke outside the view is never decoded.
+- **Migrating** the former tab on load takes 18 ms, once: the next save stores it packed.

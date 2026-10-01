@@ -14,6 +14,7 @@
     "staging:check": "turbo run staging:check",
     "licences": "pnpm --filter @livediagram/marketing licences",
     "bench:readers": "tsx scripts/read-bench.mts",
+    "bench:stroke-points": "node --expose-gc --import ./scripts/ts-source-hooks.mjs scripts/stroke-points-bench.ts",
     "demo:sticky-vision:build": "node docs/demo/sticky-vision/build.mjs",
     "demo:sticky-vision": "pnpm demo:sticky-vision:build && node docs/demo/sticky-vision/serve.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",

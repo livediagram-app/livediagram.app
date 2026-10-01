@@ -71,3 +71,8 @@ const shared = createStrokePointsDecoder(STROKE_DECODE_CACHE_POINTS);
 export function decodeStrokePoints(packed: string): StrokePoints {
   return shared.decode(packed);
 }
+
+/** Empties the shared cache: a freshly opened document, or the bench's cold first draw. */
+export function clearStrokePointsCache(): void {
+  shared.clear();
+}

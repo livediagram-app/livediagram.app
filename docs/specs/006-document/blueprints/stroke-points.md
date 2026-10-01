@@ -30,6 +30,7 @@ spec.
 | `packages/document/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
 | `packages/document/scripts/expand-stroke-points.ts` | The debug script: a tab or document JSON file with every block expanded                                                                                  |
 | `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
+| `scripts/stroke-points-bench.ts`                    | The bench behind `pnpm bench:stroke-points`                                                                                                              |
 
 ## Interfaces and contracts
 
@@ -82,6 +83,7 @@ export type StrokePointsDecoder = {
 };
 export function createStrokePointsDecoder(budgetPoints: number): StrokePointsDecoder;
 export function decodeStrokePoints(packed: string): StrokePoints; // the shared decoder
+export function clearStrokePointsCache(): void; // a freshly opened document, the bench's cold draw
 
 // stroke-points-debug.ts
 export type DescribedStrokePoints =
@@ -264,8 +266,10 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit and erase: linear in the stroke; the live ink never encodes.
-- The bench records tab bytes, `JSON.parse` time, decode and first-draw time and allocations
-  before and after (spec, "Measured wins").
+- The bench (`scripts/stroke-points-bench.ts`, `pnpm bench:stroke-points`, run with `--expose-gc`)
+  records tab bytes, bytes per point, objects allocated, heap held, `JSON.parse` time, parse and
+  draw of one viewport and of the whole board (cold decode cache), and the worst errors, which it
+  checks against the bound (spec, "Measured wins").
 
 ## Observability
 
