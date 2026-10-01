@@ -351,6 +351,8 @@ export function MultiSelectionContextMenu({
                       // reflecting one arrow's state, and arrows in the
                       // selection can disagree. Set it per arrow.
                       routeBehind={null}
+                      exactStart={null}
+                      onSetExactStart={props.onSetArrowExactStart}
                       onSetStrokeStyle={props.onSetArrowStrokeStyle}
                       onSetRouteBehind={props.onSetArrowRouteBehind}
                     />

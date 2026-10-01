@@ -132,6 +132,10 @@ export type ArrowElement = {
   // boxes between. Absent = ON: this is the default reading for an arrow, and
   // `false` is the explicit opt-out for the cases where crossing is wanted.
   routeBehind?: boolean;
+  // Start exactly at the anchor it is pinned to (docs/specs/008-canvas/arrow-anchors.md
+  // "Converging-fan rendering"): its start is left out of the fan that spreads arrows sharing an
+  // anchor. Absent = fanned, the default.
+  exactStart?: boolean;
   // Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes or a travelling dot
   // along the path to show flow direction. Undefined = static.
   flow?: ArrowFlow;

@@ -364,6 +364,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   style={arrowStyleOf(target)}
                   strokeStyle={target.strokeStyle ?? 'solid'}
                   routeBehind={arrowRoutesBehind(target)}
+                  exactStart={target.exactStart === true}
+                  onSetExactStart={props.onSetArrowExactStart}
                   onSetThickness={props.onSetArrowThickness}
                   onSetStyle={props.onSetArrowStyle}
                   onSetStrokeStyle={props.onSetArrowStrokeStyle}

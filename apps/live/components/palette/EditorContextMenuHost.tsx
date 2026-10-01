@@ -167,6 +167,7 @@ export function EditorContextMenuHost() {
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
@@ -392,6 +393,7 @@ export function EditorContextMenuHost() {
       onSetArrowStyle={setArrowStyleSelected}
       onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
       onSetArrowRouteBehind={setArrowRouteBehindSelected}
+      onSetArrowExactStart={setArrowExactStartSelected}
       onSetArrowEnds={setArrowEndsSelected}
       onSetArrowheadSize={setArrowheadSizeSelected}
       onSetArrowheadShape={setArrowheadShapeSelected}

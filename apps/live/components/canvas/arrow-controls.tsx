@@ -75,20 +75,25 @@ export function ArrowLineControls({
   style,
   strokeStyle,
   routeBehind,
+  exactStart,
   onSetThickness,
   onSetStyle,
   onSetStrokeStyle,
   onSetRouteBehind,
+  onSetExactStart,
 }: {
   thickness: ArrowThickness | null;
   style: ArrowStyle | null;
   strokeStyle: BorderStyle | null;
   // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md). Null hides the row (mixed selection).
   routeBehind: boolean | null;
+  // Start exactly at the pinned anchor rather than fanned out; null hides the row (a mixed selection).
+  exactStart: boolean | null;
   onSetThickness: (v: ArrowThickness) => void;
   onSetStyle: (v: ArrowStyle) => void;
   onSetStrokeStyle: (v: BorderStyle) => void;
   onSetRouteBehind: (v: boolean) => void;
+  onSetExactStart: (v: boolean) => void;
 }) {
   return (
     <>
@@ -177,6 +182,23 @@ export function ArrowLineControls({
             <ToggleSwitch checked={routeBehind} label="Pass behind boxes" presentational />
           </button>
         </>
+      ) : null}
+      {exactStart !== null ? (
+        <button
+          type="button"
+          onClick={() => onSetExactStart(!exactStart)}
+          className="flex w-full items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+        >
+          <span className="flex flex-col">
+            <span className="text-[11px] text-slate-600 dark:text-slate-300">
+              Start at exact anchor
+            </span>
+            <span className="text-[10px] leading-snug text-slate-400">
+              Start where you connected it, not spread out from other arrows there.
+            </span>
+          </span>
+          <ToggleSwitch checked={exactStart} label="Start at exact anchor" presentational />
+        </button>
       ) : null}
     </>
   );

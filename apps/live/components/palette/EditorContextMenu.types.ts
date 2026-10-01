@@ -310,6 +310,8 @@ export type EditorContextMenuProps = {
   onSetArrowStrokeStyle: (v: BorderStyle) => void;
   // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md).
   onSetArrowRouteBehind: (v: boolean) => void;
+  // Start exactly at the pinned anchor, out of the fan (arrow-anchors.md).
+  onSetArrowExactStart: (v: boolean) => void;
   onSetArrowEnds: (v: ArrowEnds) => void;
   onSetArrowheadSize: (v: ArrowheadSize) => void;
   onSetArrowheadShape: (v: ArrowheadShape) => void;

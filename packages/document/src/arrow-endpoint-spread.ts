@@ -99,6 +99,8 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
     if (el.type !== 'arrow') continue;
     const arrow = el as ArrowElement;
     for (const end of ['from', 'to'] as const) {
+      // An arrow set to start exactly at its anchor sits out of that anchor's fan.
+      if (end === 'from' && arrow.exactStart === true) continue;
       const endpoint = arrow[end];
       const key = pinKey(endpoint);
       if (!key) continue;
