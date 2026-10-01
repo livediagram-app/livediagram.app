@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { excalidrawBuilder, excalidrawText } from '../lib/excalidraw-fixtures';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // Paste from Excalidraw (docs/specs/020-import-export/excalidraw-import-export.md "Paste"): a copy
 // made in Excalidraw, pasted with Ctrl+V, lands as native content, selected, in one undo step.
@@ -185,6 +185,40 @@ test.describe('dropping an Excalidraw file', () => {
     await canvas.dispatchEvent('drop', { dataTransfer: drop, clientX: 700, clientY: 450 });
     await expect(page.getByText('Only Excalidraw files', { exact: false })).toBeVisible();
     expect(await countElements(page)).toBe(0);
+    expectNoPageErrors(pageErrors);
+  });
+});
+
+test.describe('importing Excalidraw files from the Explorer', () => {
+  test.use({ colorScheme: 'dark', viewport: { width: 1400, height: 900 } });
+
+  test('each file becomes its own document, named after the file', async ({ page, pageErrors }) => {
+    await startBlankDocument(page);
+    await dismissQuickTour(page);
+    await page.goto('/explorer/recent');
+    const button = page
+      .getByRole('toolbar', { name: 'Import from' })
+      .getByRole('button', { name: 'Import from Excalidraw' });
+    await expect(button).toBeVisible();
+    await page.screenshot({ path: test.info().outputPath('explorer-import-from.png') });
+    await button.click();
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Choose files', exact: true }).click();
+    const sample = sampleCopy();
+    await (
+      await chooser
+    ).setFiles([
+      { name: 'Weekly flow.excalidraw', mimeType: '', buffer: Buffer.from(sample.text) },
+      {
+        name: 'Untitled-2026-04-12-1430.excalidraw',
+        mimeType: '',
+        buffer: Buffer.from(sample.text),
+      },
+    ]);
+    const documents = page.getByTestId('import-documents');
+    await expect(documents).toContainText('Weekly flow');
+    await expect(documents).toContainText('Excalidraw board, 12 Apr 2026');
+    await page.screenshot({ path: test.info().outputPath('explorer-excalidraw-report.png') });
     expectNoPageErrors(pageErrors);
   });
 });
