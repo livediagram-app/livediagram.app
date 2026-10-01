@@ -194,18 +194,13 @@ parser normalises:
 
 ## Where it lives
 
-- In the **Explorer**, beside creating a document, because each board becomes
-  a document ([Folders](../013-workspace/folders.md)):
-  - the floating Explorer panel's **⋯** menu, row **Import from Microsoft
-    Whiteboard** after New Document;
-  - the full-page Explorer's **+ Create** menu, wherever the section offers
-    New document, as a full-width entry under the tiles.
-- Either opens the **Import from Microsoft Whiteboard** dialog holding the import
-  panel. The panel is self-contained (input, board list, progress, report), so
+- In the **Explorer**, beside creating documents, because each board becomes
+  a document ([Folders](../013-workspace/folders.md)). Its entry point opens the
+  **Import from Microsoft Whiteboard** dialog holding the import panel. The panel is self-contained (input, board list, progress, report), so
   a host only supplies the commit and what closing does.
-- Documents land where a new document would: from a folder section of the
-  full-page Explorer, in that folder; from the floating panel of an Offline
-  Mode document, as Offline Mode documents; otherwise as the owner's documents.
+- Documents land where a new document would: from the Explorer beside an
+  Offline Mode document, as Offline Mode documents; otherwise as the owner's
+  documents.
   The Explorer's lists refresh once they exist.
 - Not in the tab-scoped Import dialog: that dialog replaces a tab, and this
   import makes documents.

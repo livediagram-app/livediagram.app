@@ -40,7 +40,6 @@ export function EditorTabDialogs() {
     importOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    importScenesAsNewDocuments,
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
@@ -96,7 +95,6 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          onImportBoards={importScenesAsNewDocuments}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

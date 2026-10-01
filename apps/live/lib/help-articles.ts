@@ -53,6 +53,7 @@ export const HELP_ARTICLES = {
   googleDrive: 'account-and-data/google-drive',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
+  microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
@@ -202,6 +203,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
+  },
+  microsoftWhiteboardImport: {
+    title: 'Learn about Microsoft Whiteboard import',
+    description: 'What a board export is and how each board becomes a document.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',

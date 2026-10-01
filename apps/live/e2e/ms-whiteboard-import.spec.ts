@@ -1,7 +1,13 @@
-// The Microsoft Whiteboard card end to end (docs/specs/020-import-export/whiteboard-import.md
-// "Importing in the dialog"), on a synthesised export: list, untick, import, report, new tabs.
+// The Microsoft Whiteboard import end to end (docs/specs/020-import-export/whiteboard-import.md
+// "Importing"), on a synthesised export: list, import, report, one document per board.
+import type { Page } from '@playwright/test';
 import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument } from './fixtures';
 import { syntheticExportZip } from './ms-whiteboard-board';
+
+// The Explorer's entry point opens the import; its design is still being chosen.
+async function openMsWhiteboardImport(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Import from Microsoft Whiteboard' }).click();
+}
 
 test('Microsoft Whiteboard boards open as their own documents with a report', async ({
   page,
@@ -9,10 +15,8 @@ test('Microsoft Whiteboard boards open as their own documents with a report', as
 }) => {
   await startBlankDocument(page);
   await dismissQuickTour(page);
-  await page.getByRole('button', { name: 'Tab menu' }).click();
-  await page.getByText('Content', { exact: true }).click();
-  await page.getByRole('button', { name: 'Import', exact: true }).click();
-  await page.getByRole('button', { name: /^Microsoft Whiteboard/ }).click();
+  test.fixme(true, 'the Explorer entry point design is being chosen (plan 0033, M8)');
+  await openMsWhiteboardImport(page);
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Choose a .zip' }).click();
   await (

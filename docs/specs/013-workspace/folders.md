@@ -178,15 +178,16 @@ beats "browse my whole library." The panel header carries a single
 icon-left rows holds the document's and the app's verbs in three bands
 split by separators:
 
-1. **New Document**, **Import from Microsoft Whiteboard** (opens the
-   [Microsoft Whiteboard import](../020-import-export/whiteboard-import.md),
-   each board becoming its own document), **Open Explorer** (the full-page
-   Explorer's Recent list, `/explorer/recent`).
-2. **Share** (owners only, the header Share button's gate) and
-   **Export** (the active tab, as the tab menu's Export).
-3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
-   third-party licences page, new tab, see
-   [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
+1. **New Document**, **Open Explorer** (the full-page Explorer's Recent
+   list, `/explorer/recent`).
+
+The Explorer also offers the entry point for importing boards from other
+tools, starting with
+[Microsoft Whiteboard](../020-import-export/whiteboard-import.md), each board
+becoming its own document. 2. **Share** (owners only, the header Share button's gate) and
+**Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
+third-party licences page, new tab, see
+[Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
 
 A row whose handler the host doesn't pass is absent, and a band left
 empty takes its separator with it (the Explorer behind an error screen
@@ -298,15 +299,10 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     list of links into those documents so the user can spot
     orphaned bytes that are safe to delete. Upload validation +
     hashing share the editor's path via `apps/live/lib/upload-image.ts`.
-- **Create:** the pane header's create affordance, wherever the section
-  offers "New document": a "+ Create" menu of tiles, "New document" and
-  "New folder" (or "New subfolder" when a folder is focused), then
-  **Import from Microsoft Whiteboard** across the full width. A section with a
-  single create action shows it as one named button; with the import beside
-  it, the menu. The import opens the
-  [Microsoft Whiteboard import](../020-import-export/whiteboard-import.md) in a
-  dialog; each board becomes its own document, filed in the focused folder when
-  the section is a folder, and the list refreshes once they exist.
+- **Create:** a single floating action button at the bottom-right
+  opens a popover with "New document" and "New folder" (or "New
+  subfolder" when a folder is focused). The documents-page FAB on the
+  editor / new-document routes is unrelated.
 - **Move:** documents and folders share the move-to-folder picker.
   For a folder move, the target folder's own subtree is filtered
   out client-side so cycle-creating choices don't appear (the server
