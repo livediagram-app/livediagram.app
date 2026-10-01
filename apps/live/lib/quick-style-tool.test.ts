@@ -48,3 +48,24 @@ describe('the Path tool (docs/specs/023-whiteboard/path-tool.md "Style")', () =>
     expect(toolCaption({ type: 'path' })).toBe('Next path');
   });
 });
+
+// docs/specs/008-canvas/quick-style-panel.md "With a tool in hand": on a diagram tab too.
+describe('a tool in hand on a diagram tab', () => {
+  const diagram = { theme: undefined, backgroundColor: undefined, patternColor: undefined };
+
+  it('stands in a themed, filled shape', () => {
+    const el = toolPhantom({ type: 'shape', kind: 'square' }, theme, diagram)!;
+    expect(el).toMatchObject({ type: 'shape', shape: 'square' });
+    expect((el as { fillColor?: string }).fillColor).not.toBe('transparent');
+  });
+
+  it('stands in a painted arrow', () => {
+    const arrow = toolPhantom({ type: 'arrow', ends: 'to' }, theme, diagram)!;
+    expect('strokeColor' in arrow).toBe(true);
+  });
+
+  it('names a shape as the palette does', () => {
+    expect(toolCaption({ type: 'shape', kind: 'square' }, false)).toBe('Next square');
+    expect(toolCaption({ type: 'shape', kind: 'square' })).toBe('Next rectangle');
+  });
+});

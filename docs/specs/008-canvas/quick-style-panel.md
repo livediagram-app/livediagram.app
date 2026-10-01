@@ -39,6 +39,17 @@ The quick style panel is deliberately not that panel coming back:
 The boundary keeps the panel small enough to leave open without covering the diagram, which is the
 only reason it can be always-there rather than on-demand.
 
+## With a tool in hand
+
+With a shape, line, arrow, text or path tool armed and **nothing selected**, the panel styles **what
+that tool draws next**, on every tab (as on a whiteboard, [Whiteboard](../023-whiteboard/whiteboard.md)
+"Shapes"). It is captioned for the next mark ("Next square", "Next arrow", "Next text box"; a
+whiteboard names its dock shapes its own way, "Next rectangle") and shows that mark's rows, starting
+from how it would land: on a diagram tab the theme's new-shape colours dressed by the tab's style
+memory. A choice changes nothing on the canvas; it is remembered for the kind (see "Style memory"),
+so every later mark of that kind takes it. **Clear styles** forgets the kind's memory. With a pen in
+hand the panel styles the pen instead (the markers' rows).
+
 ## Where it sits
 
 The panel sits **on the left edge of the canvas, vertically centred**, in every layout: one gap

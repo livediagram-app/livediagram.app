@@ -87,8 +87,8 @@ export function useQuickStyle(deps: {
     // Your colours: a custom colour used from the panel moves to their front.
     colours?: Pick<PenColourMemoryApi, 'remember'>;
   };
-  // The draw intent in hand: on a whiteboard, a shape, line, arrow or text tool
-  // with nothing selected makes the panel style what it draws next.
+  // The draw intent in hand: a shape, line, arrow, text or path tool with nothing selected makes
+  // the panel style what it draws next, on every tab.
   toolIntent?: PendingDraw | null;
 }): QuickStyleApi {
   const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
@@ -118,18 +118,30 @@ export function useQuickStyle(deps: {
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
   const intent = deps.toolIntent ?? null;
   const phantom = useMemo(() => {
-    if (!whiteboard || editsBlocked || selected.length > 0 || !intent) return null;
-    const plain = toolPhantom(intent, theme);
+    if (editsBlocked || selected.length > 0 || !intent) return null;
+    const plain = toolPhantom(intent, theme, whiteboard ? undefined : activeTab);
     return plain ? memory.styleNewElement(plain) : null;
     // toolVersion: memory changed under the same intent. memory.scope: another document's (or
     // tab kind's) memory, whose style must never show as this one's next mark.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion, memory.scope]);
+  }, [
+    whiteboard,
+    editsBlocked,
+    selected.length,
+    intent,
+    theme,
+    toolVersion,
+    memory.scope,
+    activeTab.backgroundColor,
+    activeTab.patternColor,
+    activeTab.theme,
+  ]);
   const view = useMemo(() => {
     if (editsBlocked) return null;
     if (phantom && intent) {
-      const tool = onWhiteboard(quickStyleView([phantom], theme, overrides), [phantom], ink);
-      return tool && { ...tool, caption: toolCaption(intent) };
+      const plainTool = quickStyleView([phantom], theme, overrides);
+      const tool = whiteboard ? onWhiteboard(plainTool, [phantom], ink) : plainTool;
+      return tool && { ...tool, caption: toolCaption(intent, whiteboard) };
     }
     const plain = quickStyleView(selected, theme, overrides);
     // On a diagram tab a marker is picked up from the palette's Draw category
@@ -213,7 +225,7 @@ export function useQuickStyle(deps: {
     clearStyles: () => {
       if (!view) return;
       if (phantom) {
-        const kind = styleKindOf(phantom, true);
+        const kind = styleKindOf(phantom, whiteboard);
         if (kind) memory.forget([kind]);
         bumpTool();
         track('Element', 'Changed', 'QuickClearStyles');
