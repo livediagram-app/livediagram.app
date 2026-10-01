@@ -26,9 +26,11 @@ spirit of customising iOS Control Centre.
   IDENTICALLY to the same tile in its home tab; only the grouping differs.
 - **Default set (12)**, four rows of three so the starting grid has no
   ragged row: **Square (R), Circle (O), Diamond (D), Text (T), Arrow (A),
-  Frame, Sticky note (N), Image (9), Shape Pen, Table, Code, Entity**. The
-  shapes and the things you put on a diagram come first, then the two
-  structured cards technical diagrams lean on (a code block and an entity).
+  Frame, Sticky note (N), Image (9), Shape Pen, Marker 1, Marker 2,
+  Entity**. The shapes and the things you put on a diagram come first, then
+  the pens, then the structured card technical diagrams lean on (an entity).
+  Markers 1 and 2 took the Table and Code block slots: drawing is the more
+  common first reach, and both cards stay in their categories.
   Session tools such as Timer and Comment panel are deliberately not
   defaults: a facilitator reaches for them on purpose, from Collaborate.
   Changing the defaults only affects browsers with no stored favourites; a

@@ -11,9 +11,10 @@ const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 // Twelve, which is four rows of three — the grid's natural shape, so the
 // starting state has no ragged last row. The order is deliberate rather than
 // alphabetical: the three shapes anyone reaches for first, then the things you
-// put ON the canvas (text, arrow, frame, note, image), then the Shape Pen and a
-// table, then the two structured cards technical diagrams lean on: a code
-// block and an entity. Timer and Comment panel held those two slots; they
+// put ON the canvas (text, arrow, frame, note, image), then the pens (the Shape
+// Pen, Markers 1 and 2), then an entity, the structured card technical diagrams
+// lean on. The markers took the Table and Code block slots: drawing is the more
+// common first reach, and both cards stay one category away. Timer and Comment panel held those two slots; they
 // are session tools a facilitator reaches for on purpose, so they live in
 // Collaborate rather than on everyone's first screen.
 //
@@ -33,8 +34,8 @@ export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'tools:sticky',
   'tools:image',
   'tools:shape-pen',
-  'tools:table',
-  'tools:code-block',
+  'tools:marker-1',
+  'tools:marker-2',
   'tools:entity',
 ];
 
