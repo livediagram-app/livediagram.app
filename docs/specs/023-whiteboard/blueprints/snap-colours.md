@@ -6,16 +6,16 @@ whiteboard shows"). Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                                | Role                                                                     |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/pen-colours.ts`                              | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `nearestPenColour` (pure colour maths) |
-| `packages/document/src/snap-colours.ts`                             | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)  |
-| `apps/live/hooks/canvas/useSnapColours.ts`                          | The board's snappable colours and the one-commit `snap()`                |
-| `apps/live/components/canvas/whiteboard/SnapColoursSection.tsx`     | The Settings flyout's Colours section                                    |
-| `apps/live/components/canvas/whiteboard/dock-flyouts.tsx`           | Renders the section last in `SettingsFlyoutBody`                         |
-| `apps/live/hooks/canvas/useWhiteboard.ts`                           | Carries `snapColours` on the dock model                                  |
-| `apps/live/app/document/[id]/useEditorState.ts`                     | Builds `useSnapColours` and hands it to `useWhiteboard`                  |
-| `packages/api-schema/src/telemetry-schema.ts`, `apps/telemetry/...` | The `SnapColours` token's comment and its dashboard sentence             |
+| File                                                                                      | Role                                                                          |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/document/src/pen-colours.ts`                                                    | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
+| `packages/document/src/snap-colours.ts`                                                   | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
+| `apps/live/hooks/canvas/useSnapColours.ts`                                                | The board's snappable colours and the one-commit `snap()`                     |
+| `apps/live/components/canvas/whiteboard/SnapColoursSection.tsx`                           | The Settings flyout's Colours section                                         |
+| `apps/live/components/canvas/whiteboard/dock-flyouts.tsx`                                 | Renders the section last in `SettingsFlyoutBody`                              |
+| `apps/live/hooks/canvas/useWhiteboard.ts`                                                 | Carries `snapColours` on the dock model                                       |
+| `apps/live/app/document/[id]/useEditorState.ts`                                           | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
+| `packages/api-schema/src/telemetry-schema.ts`, `apps/telemetry/app/event-explanations.ts` | The `SnapColours` token's comment and its dashboard sentence                  |
 
 ## Domain and naming
 
@@ -40,7 +40,7 @@ no theme; the colours are stock colours), "default colour" for Ink in code (it i
 - `null` when `hex` is not `#rrggbb` (case-insensitive).
 - `hexOklch(hex)`: OKLCH `{ l, c, h }` (the module's existing `rgbOklch`, exported through it).
 - `c < PEN_NEUTRAL_CHROMA` → `'ink'`.
-- Else the `PEN_COLOURS` entry with the smallest circular hue distance
+- Else `penColourAtHue(h)`: the `PEN_COLOURS` entry with the smallest circular hue distance
   `min(|h - hue|, 360 - |h - hue|)`; equal distances go to the earlier entry (strict `<`).
 
 ### `snapTabColours(elements, skip?) → { elements, colours, changed }`
@@ -68,11 +68,11 @@ A kind gaining a named colour (text colour, path stroke) adds one row; nothing e
 ### Editor (`useSnapColours`)
 
 - Inputs: `elements` (the active tab's), `inertIds` (`layerInertIds`), `editsBlocked`, `commit`.
-- Output: `{ colours: string[], blocked: boolean, snap(): number }`; `colours` is
+- Output: `SnapColoursApi`, `{ colours: string[], blocked: boolean, snap(): number }`; `colours` is
   `snappableCustomColours`, memoised on `elements` and `inertIds`.
 - `snap()`: no-op returning 0 when blocked or nothing to snap; else one `commit` running
   `snapTabColours` on the live elements (one undo step), `track('Whiteboard', 'Changed',
-'SnapColours')`, a `console.info` fingerprint, and returns `colours`.
+'SnapColours')`, a `console.info` fingerprint, and returns the number of colours the commit converted.
 
 ### Section (`SnapColoursSection`)
 
@@ -94,6 +94,7 @@ A kind gaining a named colour (text colour, path stroke) adds one row; nothing e
 export const PEN_NEUTRAL_CHROMA = 0.05;
 export function hexOklch(hex: string): { l: number; c: number; h: number } | null;
 export type SnapTarget = PenColourName | 'ink';
+export function penColourAtHue(hue: number): PenColourName;
 export function nearestPenColour(hex: string): SnapTarget | null;
 
 export type SnapColourField = {
