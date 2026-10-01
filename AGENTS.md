@@ -300,6 +300,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
+- This is a public repo, rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
