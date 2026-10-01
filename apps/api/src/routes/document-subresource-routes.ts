@@ -7,6 +7,7 @@ import type { Tab } from '@livediagram/document';
 import {
   applyElementDelta,
   isValidTab,
+  migrateIncomingTab,
   preferNewerQaAll,
   sanitizeMentions,
 } from '@livediagram/document';
@@ -133,7 +134,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
     if (request.method === 'PUT') {
-      const received = (await request.json()) as Tab;
+      // A former stored shape (freehand points before docs/specs/006-document/stroke-points.md,
+      // from a browser loaded before a deploy or an API-token script) is migrated, not refused.
+      const received = migrateIncomingTab(await request.json()) as Tab;
       // Structural schema gate (shared with the app, @livediagram/document):
       // discriminant, required fields, endpoints, array bounds + unique ids.
       if (!isValidTab(received)) {

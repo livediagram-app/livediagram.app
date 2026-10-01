@@ -287,7 +287,7 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Eraser split behaviour unchanged                                       | `packages/document/src/whiteboard-stroke.test.ts`                                   |
 | Pen outline unchanged                                                  | `packages/document/src/pen-stroke.test.ts`                                          |
 | SVG export within the bound                                            | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
-| Api migrates former shape on create and save                           | `apps/api/src/routes/documents.test.ts`                                             |
+| Api migrates former shape on create and save                           | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
 | Clipboard and tab import migrate                                       | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
 | Change-log entries migrate                                             | `apps/live/lib/api/change-log.test.ts`                                              |
 | Live ink matches landed ink within the bound                           | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |

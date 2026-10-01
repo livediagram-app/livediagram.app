@@ -16,3 +16,15 @@ export function migrateStoredTab<
   const elements = upgradeLegacyLinks(migrateStoredElements(schemed.elements));
   return elements === schemed.elements ? schemed : { ...schemed, elements };
 }
+
+/**
+ * The same migrations for a tab that arrives from outside (an api write, a realtime peer, a file):
+ * untrusted, so anything that is not an object with an element list passes through unchanged for
+ * validation to refuse. Run before `isValidTab`, so a former stored shape is converted, not refused.
+ */
+export function migrateIncomingTab(tab: unknown): unknown {
+  if (tab === null || typeof tab !== 'object' || Array.isArray(tab)) return tab;
+  const candidate = tab as Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>;
+  if (!Array.isArray(candidate.elements)) return tab;
+  return migrateStoredTab(candidate);
+}
