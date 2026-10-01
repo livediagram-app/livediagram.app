@@ -262,3 +262,23 @@ export function ownerHeaders(
   const sig = guestSigs.get(owner);
   return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
 }
+
+// A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a
+// smaller, then overshooting, box until it settles, so one measurement mid-animation, or two from
+// different frames, misplaces its edges.
+export async function settledBox(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  let last = '';
+  let box: { x: number; y: number; width: number; height: number } | null = null;
+  await expect
+    .poll(async () => {
+      box = await locator.boundingBox();
+      const now = JSON.stringify(box);
+      const still = box !== null && now === last;
+      last = now;
+      return still;
+    })
+    .toBe(true);
+  return box!;
+}
