@@ -35,9 +35,9 @@ export function readJsonExport(text: string): JsonExport {
   try {
     raw = JSON.parse(text);
   } catch {
-    throw new DrawioRefused('not-drawio');
+    throw new DrawioRefused('not-xml');
   }
-  if (!isObject(raw) || !Array.isArray(raw.pages)) throw new DrawioRefused('not-drawio');
+  if (!isObject(raw) || !Array.isArray(raw.pages)) throw new DrawioRefused('not-xml');
   if (typeof raw.data === 'string' && raw.data.trimStart().startsWith('<mxfile')) {
     return { kind: 'xml', text: raw.data };
   }

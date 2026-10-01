@@ -31,12 +31,14 @@ export const DRAWIO_RULES: Readonly<Record<ImportNoteKind, string>> = {
   'link-dropped': "Links of a kind livediagram can't follow were dropped",
   'text-truncated': 'Texts were shortened to fit',
   'auto-layout': "Positions and styles weren't in the file; the layout is automatic",
+  'library-item-unreadable': "Shapes that couldn't be read were left out",
   'content-truncated': 'Pages or items beyond the import limits were left out',
 };
 
 const SKIPPED: ReadonlySet<ImportNoteKind> = new Set([
   'hidden-skipped',
   'collapsed-skipped',
+  'library-item-unreadable',
   'content-truncated',
 ]);
 

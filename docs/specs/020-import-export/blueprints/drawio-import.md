@@ -437,8 +437,8 @@ picture repeated across pages is stored once. This runs before the one `commitTa
   attribute is present, the PNG signature, or a JSON object whose first keys include `pages` →
   `diagram`; `<mxlibrary` → `library`; anything else → null. Leading whitespace and a BOM are skipped.
   No file name is read.
-- **JSON export** (`readJsonExport(text)`): `JSON.parse` (throw → refusal `not-drawio`); an object with
-  a `pages` array, else `not-drawio`. A string `data` starting `<mxfile` → that text through the XML
+- **JSON export** (`readJsonExport(text)`): `JSON.parse` (throw → refusal `not-xml`); an object with
+  a `pages` array, else `not-xml`. A string `data` starting `<mxfile` → that text through the XML
   path, its result returned as is. Otherwise per page: nodes (`type: 'node'`) and edges (`type:
 'edge'`, both ends among the page's nodes; others dropped and counted `connection-loosened`) to a
   `MermaidGraph`-shaped graph (`id`, `label` from `jsonLabelText`, the default box), laid out by
@@ -447,9 +447,10 @@ picture repeated across pages is stored once. This runs before the one `commitTa
 - `jsonLabelText(html)`: `<br>` and the closing tags of `p`, `div`, `li`, `h1` to `h6` → `\n`;
   every other tag removed; entities decoded (named and numeric); runs of blank lines collapsed;
   trimmed.
-- `ImportNoteKind` gains `auto-layout` (spec order: after `text-truncated`).
-- **Libraries** (`importDrawioLibrary(input)` → `{ ok: true, items: ImportedLibraryItem[], report }`
-  or a refusal): `<mxlibrary>` text → `JSON.parse` of its body (an array, else `not-drawio`); per
+- `ImportNoteKind` gains `auto-layout` (after `text-truncated`) and `library-item-unreadable` (after
+  `collapsed-skipped`, left out).
+- **Libraries** (`library.ts`, `importDrawioLibrary(input)` → `{ ok: true, items, images, report }`
+  or a refusal): `<mxlibrary>` text → `JSON.parse` of its body (an array, else `not-library`); per
   item: `xml` decoded with `decompressDiagram` when it does not start with `<`, read as one
   `mxGraphModel`, converted by `convertPage` into elements normalised to the item's top-left at
   (0, 0); an image item (`data` a `data:` URL) → one `image` element `w` × `h` plus an image request;
@@ -597,16 +598,19 @@ then name, capped at `DRAWIO_REPORT_NAMES_MAX` with the rest counted in `moreNam
 
 Refusals (the `error` string, final copy):
 
-| Reason                | Copy                                                                                                            |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `too-large`           | "This file is too large to import (the limit is 50 MB)."                                                        |
-| `not-xml`             | "This isn't a draw.io file: it isn't XML, a .drawio.png or a .drawio.svg."                                      |
-| `not-drawio`          | "This XML isn't a draw.io diagram (expected an mxfile or mxGraphModel)."                                        |
-| `no-pages`            | "This draw.io file has no pages."                                                                               |
-| `png-without-diagram` | "This PNG has no draw.io diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked." |
-| `svg-without-diagram` | "This SVG has no draw.io diagram inside. In draw.io, export as SVG with 'Include a copy of my diagram' ticked." |
-| `page-unreadable`     | "Page '<name>' couldn't be decoded." (`Page <n>` when unnamed)                                                  |
-| `unreadable`          | "Couldn't read this draw.io file."                                                                              |
+| Reason                | Copy                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `too-large`           | "This file is too large to import (the limit is 50 MB)."                                                                                         |
+| `not-xml`             | "This isn't a draw.io file: it isn't a .drawio, a .drawio.png, a .drawio.svg or a draw.io JSON export." (also JSON that is not a draw.io export) |
+| `not-drawio`          | "This XML isn't a draw.io diagram (expected an mxfile or mxGraphModel)."                                                                         |
+| `no-pages`            | "This draw.io file has no pages."                                                                                                                |
+| `png-without-diagram` | "This PNG has no draw.io diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked."                                  |
+| `svg-without-diagram` | "This SVG has no draw.io diagram inside. In draw.io, export as SVG with 'Include a copy of my diagram' ticked."                                  |
+| `page-unreadable`     | "Page '<name>' couldn't be decoded." (`Page <n>` when unnamed)                                                                                   |
+| `library`             | "This is a draw.io shape library. Import it from the Explorer's Import from draw.io to add it to My shapes."                                     |
+| `not-library`         | "This isn't a draw.io library (expected an mxlibrary holding a list of shapes)."                                                                 |
+| `empty-library`       | "None of this library's shapes could be read."                                                                                                   |
+| `unreadable`          | "Couldn't read this draw.io file."                                                                                                               |
 
 ## Data and persistence
 

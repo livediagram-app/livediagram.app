@@ -134,6 +134,10 @@ describe('the JSON export', () => {
       { kind: 'text', text: '{"type":"excalidraw","elements":[]}' },
       { tabIdForPage: () => 't' },
     );
-    expect(r).toMatchObject({ ok: false });
+    expect(r).toEqual({
+      ok: false,
+      error:
+        "This isn't a draw.io file: it isn't a .drawio, a .drawio.png, a .drawio.svg or a draw.io JSON export.",
+    });
   });
 });

@@ -15,6 +15,7 @@ import {
 } from '@livediagram/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import type { DrawioCell, Rect } from './cells';
+import { requestDataUrlImage } from './images';
 import { readLabel } from './label';
 import {
   DRAWIO_CAPTION_CHAR_PX,
@@ -143,30 +144,10 @@ function buildLine(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): 
   };
 }
 
-// draw.io writes an embedded image as `data:<type>,<base64>` (the `;` of
-// `;base64` would end the style pair), so restore the standard form when the
-// payload is base64; a percent-encoded or raw payload stays as it is.
-function normaliseDataUrl(url: string): string {
-  const m = /^data:([^,;]+),(.*)$/s.exec(url);
-  return m && /^[A-Za-z0-9+/]+=*$/.test(m[2]!) ? `data:${m[1]};base64,${m[2]}` : url;
-}
-
 function buildImage(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): ImageElement {
   const source = cell.style.str('image') ?? '';
   if (source.startsWith('data:')) {
-    const dataUrl = normaliseDataUrl(source);
-    let key = ctx.imageKeys.get(dataUrl);
-    if (!key) {
-      key = `drawio-image-${ctx.imageKeys.size + 1}`;
-      ctx.imageKeys.set(dataUrl, key);
-    }
-    // The shared import image pipeline stores it and reports how it came across.
-    ctx.images.push({
-      elementId: id,
-      key,
-      source: { kind: 'data-url', dataUrl },
-      hint: { width: rect.width, height: rect.height },
-    });
+    requestDataUrlImage(ctx, id, source, { width: rect.width, height: rect.height });
   } else {
     // A web or library URL: never fetched from a third party.
     ctx.tally.add('image-unavailable');

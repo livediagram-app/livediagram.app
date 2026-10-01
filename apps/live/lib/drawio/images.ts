@@ -30,3 +30,30 @@ export async function attachDrawioImages<P extends { elements: Element[] }>(
   });
   return { pages: patched, images: report };
 }
+
+// draw.io writes an embedded image as `data:<type>,<base64>` (the `;` of
+// `;base64` would end the style pair), so restore the standard form when the
+// payload is base64; a percent-encoded or raw payload stays as it is.
+export function normaliseDataUrl(url: string): string {
+  const m = /^data:([^,;]+),(.*)$/s.exec(url);
+  return m && /^[A-Za-z0-9+/]+=*$/.test(m[2]!) ? `data:${m[1]};base64,${m[2]}` : url;
+}
+
+/**
+ * Asks the shared import image pipeline to store an embedded picture for one image element. The
+ * same picture twice shares one key, so it is stored once.
+ */
+export function requestDataUrlImage(
+  ctx: { images: ImportImageRequest[]; imageKeys: Map<string, string> },
+  elementId: string,
+  source: string,
+  hint: { width: number; height: number },
+): void {
+  const dataUrl = normaliseDataUrl(source);
+  let key = ctx.imageKeys.get(dataUrl);
+  if (!key) {
+    key = `drawio-image-${ctx.imageKeys.size + 1}`;
+    ctx.imageKeys.set(dataUrl, key);
+  }
+  ctx.images.push({ elementId, key, source: { kind: 'data-url', dataUrl }, hint });
+}

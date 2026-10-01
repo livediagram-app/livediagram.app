@@ -17,6 +17,7 @@ export type ImportNoteKind =
   | 'link-dropped'
   | 'text-truncated'
   | 'auto-layout'
+  | 'library-item-unreadable'
   | 'content-truncated';
 
 /** The summary's order: the spec table's. */
@@ -35,6 +36,7 @@ export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'link-dropped',
   'text-truncated',
   'auto-layout',
+  'library-item-unreadable',
   'content-truncated',
 ];
 

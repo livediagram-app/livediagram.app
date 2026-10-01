@@ -10,6 +10,8 @@ export type DrawioRefusalReason =
   | 'svg-without-diagram'
   | 'page-unreadable'
   | 'library'
+  | 'not-library'
+  | 'empty-library'
   | 'unreadable';
 
 export class DrawioRefused extends Error {
@@ -28,7 +30,7 @@ export function refusalMessage(reason: DrawioRefusalReason, detail?: string): st
     case 'too-large':
       return 'This file is too large to import (the limit is 50 MB).';
     case 'not-xml':
-      return "This isn't a draw.io file: it isn't XML, a .drawio.png or a .drawio.svg.";
+      return "This isn't a draw.io file: it isn't a .drawio, a .drawio.png, a .drawio.svg or a draw.io JSON export.";
     case 'not-drawio':
       return "This XML isn't a draw.io diagram (expected an mxfile or mxGraphModel).";
     case 'no-pages':
@@ -41,6 +43,10 @@ export function refusalMessage(reason: DrawioRefusalReason, detail?: string): st
       return `Page '${detail ?? ''}' couldn't be decoded.`;
     case 'library':
       return "This is a draw.io shape library. Import it from the Explorer's Import from draw.io to add it to My shapes.";
+    case 'not-library':
+      return "This isn't a draw.io library (expected an mxlibrary holding a list of shapes).";
+    case 'empty-library':
+      return "None of this library's shapes could be read.";
     case 'unreadable':
       return "Couldn't read this draw.io file.";
   }

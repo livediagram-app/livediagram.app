@@ -86,6 +86,8 @@ A draw.io **library** (`<mxlibrary>`, the "preset" draw.io keeps in a scratchpad
 not a diagram: it is a list of reusable shapes, each `{ xml, w, h, aspect, title }` (or `{ data }`
 for an image), its `xml` a compressed `mxGraphModel` snippet. Each item decodes like a page and
 converts through the same mapping, so a library shape arrives as the elements draw.io would draw.
+An item that cannot be read is left out and counted; a library none of whose items can be read is
+refused ("None of this library's shapes could be read."). A library keeps its first 1 000 items.
 
 Each imported library becomes **its own named shape library** of the person importing it, as
 [Shape libraries](../013-workspace/shape-libraries.md) defines (palette **My shapes**, the Explorer's
@@ -390,23 +392,24 @@ a rule with its count, changes first and things left out after, then how the ima
 [import image pipeline](import-image-pipeline.md)'s report). The importer tallies closed note kinds
 (`ImportNoteKind`) and `lib/drawio/report.ts` gives each its rule, in this order:
 
-| Kind                     | Rule (the report shows "count · rule")                                          | Shown as |
-| ------------------------ | ------------------------------------------------------------------------------- | -------- |
-| `shape-unmatched`        | Shapes with no livediagram match came in as labelled boxes (the top 5 stencils) | changed  |
-| `shape-approximated`     | Shapes came in as the nearest livediagram shape                                 | changed  |
-| `icon-substituted`       | Vendor icons came in as the matching livediagram icon                           | changed  |
-| `image-unavailable`      | Images linked outside the diagram came in as placeholders or were left out      | changed  |
-| `arrowhead-approximated` | Arrowheads livediagram doesn't draw took the nearest one                        | changed  |
-| `connection-loosened`    | Connection ends that couldn't stay attached were left where they were           | changed  |
-| `label-moved`            | Labels were moved inside their shapes or merged onto one line                   | changed  |
-| `lane-title-turned`      | Upright lane titles now read across                                             | changed  |
-| `group-flattened`        | Groups were dropped                                                             | changed  |
-| `link-dropped`           | Links of a kind livediagram can't follow were dropped                           | changed  |
-| `text-truncated`         | Texts were shortened to fit                                                     | changed  |
-| `auto-layout`            | Positions and styles weren't in the file; the layout is automatic (pages)       | changed  |
-| `hidden-skipped`         | Hidden items were left out                                                      | left out |
-| `collapsed-skipped`      | Items inside collapsed containers were left out                                 | left out |
-| `content-truncated`      | Pages or items beyond the import limits were left out                           | left out |
+| Kind                      | Rule (the report shows "count · rule")                                          | Shown as |
+| ------------------------- | ------------------------------------------------------------------------------- | -------- |
+| `shape-unmatched`         | Shapes with no livediagram match came in as labelled boxes (the top 5 stencils) | changed  |
+| `shape-approximated`      | Shapes came in as the nearest livediagram shape                                 | changed  |
+| `icon-substituted`        | Vendor icons came in as the matching livediagram icon                           | changed  |
+| `image-unavailable`       | Images linked outside the diagram came in as placeholders or were left out      | changed  |
+| `arrowhead-approximated`  | Arrowheads livediagram doesn't draw took the nearest one                        | changed  |
+| `connection-loosened`     | Connection ends that couldn't stay attached were left where they were           | changed  |
+| `label-moved`             | Labels were moved inside their shapes or merged onto one line                   | changed  |
+| `lane-title-turned`       | Upright lane titles now read across                                             | changed  |
+| `group-flattened`         | Groups were dropped                                                             | changed  |
+| `link-dropped`            | Links of a kind livediagram can't follow were dropped                           | changed  |
+| `text-truncated`          | Texts were shortened to fit                                                     | changed  |
+| `auto-layout`             | Positions and styles weren't in the file; the layout is automatic (pages)       | changed  |
+| `hidden-skipped`          | Hidden items were left out                                                      | left out |
+| `collapsed-skipped`       | Items inside collapsed containers were left out                                 | left out |
+| `library-item-unreadable` | Shapes that couldn't be read were left out (libraries)                          | left out |
+| `content-truncated`       | Pages or items beyond the import limits were left out                           | left out |
 
 When the report has a rule, or met any image, the Import dialog does not close: it shows the report,
 so the person sees what changed before they carry on. A clean import closes the dialog as before.
