@@ -202,6 +202,9 @@ export type ArrowElement = {
   // Label colour, independent of `strokeColor` (the line). Falls back to
   // the stroke colour when unset so the label matches the line by default.
   textColor?: string;
+  // A whiteboard stock colour for the label (docs/specs/023-whiteboard/whiteboard.md "Imported and
+  // pasted content"), drawn in its board's version when `textColor` is unset.
+  penTextColour?: PenColourName;
   // A plate behind the label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent = none, which is how
   // the label has always drawn: straight onto the canvas. A caption crossing
   // its own line, another arrow, or a busy backdrop is the case this exists
