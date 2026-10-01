@@ -182,6 +182,30 @@ export function isWhiteboardPenIntent(
   return intent?.type === 'freehand' && intent.variant === 'whiteboard';
 }
 
+// The diagram pencil's and the Shape Pen's ink width, canvas px: the default border's weight, which
+// the pencil drew at before it took the pen ink.
+export const DIAGRAM_PEN_WIDTH = 2;
+
+// The pen a draw intent inks with, when it draws live pen ink (docs/specs/008-canvas/two-pens.md
+// "Ink"): a whiteboard pen as it is, and on a diagram tab the Freehand pencil and the Shape Pen as
+// one-shot pens in the tab's ink (colour null) at DIAGRAM_PEN_WIDTH, the Shape Pen recognising.
+// Null for everything else, the highlighter included, which keeps its own marker recipe.
+export function inkPenOf(intent: PendingDraw | null | undefined): WhiteboardPenIntent | null {
+  if (intent?.type !== 'freehand') return null;
+  if (intent.variant === 'whiteboard') return intent;
+  if (intent.variant === 'highlighter') return null;
+  return {
+    type: 'freehand',
+    variant: 'whiteboard',
+    colour: null,
+    width: DIAGRAM_PEN_WIDTH,
+    recognise: intent.variant === 'shape-pen',
+    oneShot: true,
+  };
+}
+
+export type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
+
 // A tool held the board's way (docs/specs/023-whiteboard/whiteboard.md "Shapes"): a pen, the Path
 // tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so a dock
 // shape's look never reaches a diagram tab. The pens and the Path tool are also picked up from the

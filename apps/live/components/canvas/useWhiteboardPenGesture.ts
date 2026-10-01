@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { inkPenOf } from '@/lib/draw-mode';
 import { createLiveStroke, type LiveStroke } from '@/lib/live-stroke';
 import { flipStrokeRecognition } from '@/lib/recognition-flip';
 
@@ -31,7 +31,7 @@ export function useWhiteboardPenGesture({
   const [penStroke, setPenStroke] = useState<LiveStroke | null>(null);
 
   // The pen was put down mid-stroke (Escape, another tool): the stroke goes with it.
-  if (penStroke && !isWhiteboardPenIntent(pendingDraw)) {
+  if (penStroke && !inkPenOf(pendingDraw)) {
     console.debug('[whiteboard] stroke discarded: pen put down');
     setPenStroke(null);
   }
@@ -71,9 +71,7 @@ export function useWhiteboardPenGesture({
     });
   });
 
-  const penWidth = useEffectEvent(() =>
-    isWhiteboardPenIntent(pendingDraw) ? pendingDraw.width : 0,
-  );
+  const penWidth = useEffectEvent(() => inkPenOf(pendingDraw)?.width ?? 0);
   // Alt went down while a stroke was live: its release is swallowed too, even after the lift, so
   // the browser never moves the focus to its menu bar.
   const swallowAltUp = useRef(false);

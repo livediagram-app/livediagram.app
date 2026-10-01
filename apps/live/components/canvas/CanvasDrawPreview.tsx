@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
-import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
+import { inkPenOf, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
@@ -48,9 +48,10 @@ export function CanvasDrawPreview({
   // A whiteboard shape or line previews as it will land (docs/specs/023-whiteboard/whiteboard.md
   // "Shapes"): in the board's ink, solid, unfilled.
   const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
-  // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
+  // A pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here: only the
+  // highlighter's stroke previews here.
   const showsPen =
-    !isWhiteboardPenIntent(pendingDraw) &&
+    !inkPenOf(pendingDraw) &&
     !!penPoints &&
     pendingDraw?.type === 'freehand' &&
     penPoints.length >= 2;

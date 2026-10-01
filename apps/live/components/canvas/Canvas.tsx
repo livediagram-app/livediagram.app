@@ -12,7 +12,7 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
-import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { drawIntentCursor, inkPenOf } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
@@ -128,12 +128,15 @@ export function Canvas(props: CanvasProps) {
   } = props;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
+  // A pen's own cursor (the board's pens, the markers, the Freehand pencil and the Shape Pen), as
+  // chosen in the dock's Settings flyout.
   const penCursorValue = useWhiteboardPenCursor(
     pendingDraw,
-    props.whiteboardDock?.prefs.cursor,
+    props.penCursor,
     viewportZoom,
+    props.penInk,
   );
+  const inkPen = inkPenOf(pendingDraw);
 
   // Paint mode covers BOTH painter entry points: a single-shot armed source
   // (toolbar) and the persistent Format canvas tool — the tool must read as
@@ -673,14 +676,9 @@ export function Canvas(props: CanvasProps) {
         // the base plane while the camera orbits so they can't z-fight
         // (flicker) with the coplanar contents above them.
         data-iso={canvasTool === 'isometric' ? '' : undefined}
-        // A whiteboard pen draws wherever it presses, so nothing under it swaps
-        // the pen cursor for its own (globals.css, docs/specs/023-whiteboard/whiteboard.md "Pens").
-        data-pen-in-hand={
-          (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
-          pendingDraw?.type === 'path'
-            ? ''
-            : undefined
-        }
+        // A pen draws wherever it presses, so nothing under it swaps the pen cursor for its own
+        // (globals.css, docs/specs/023-whiteboard/whiteboard.md "Pens").
+        data-pen-in-hand={inkPen || pendingDraw?.type === 'path' ? '' : undefined}
         data-path-cursor={pathTool.cursor ? '' : undefined}
         // Fades in as the editor arrives (globals.css, "Editor fade-in").
         data-canvas-world=""
@@ -752,14 +750,15 @@ export function Canvas(props: CanvasProps) {
             />
           </MindGrowProvider>
         </CanvasStillProvider>
-        {/* The whiteboard pen's stroke being drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"):
-            in this transformed layer, after the elements, laid out as the stroke it lands as, so
-            the same layer rasterises both and release changes no pixel. */}
-        {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
+        {/* A pen's stroke being drawn (docs/specs/023-whiteboard/whiteboard.md "Pens",
+            docs/specs/008-canvas/two-pens.md "Ink"): in this transformed layer, after the elements,
+            laid out as the stroke it lands as, so the same layer rasterises both and release
+            changes no pixel. */}
+        {penStroke && inkPen ? (
           <WhiteboardPenPreview
             stroke={penStroke}
-            pen={pendingDraw}
-            ink={props.whiteboardInk ?? 'currentColor'}
+            pen={inkPen}
+            ink={props.penInk ?? props.whiteboardInk ?? 'currentColor'}
             zoom={viewportZoom}
           />
         ) : null}

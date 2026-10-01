@@ -60,8 +60,16 @@ describe('the pen gesture under a pinch', () => {
     expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the pencil\u2019s behaviour on a diagram tab', () => {
+  // The diagram pencil inks as a pen now (docs/specs/008-canvas/two-pens.md "Ink"), so a pinch
+  // discards its stroke too; the highlighter keeps the sample buffer, which commits.
+  it('discards a diagram pencil stroke a second finger interrupted', () => {
     const s = setup({ type: 'freehand' });
+    s.stroke(true);
+    expect(s.onCommitFreehand).not.toHaveBeenCalled();
+  });
+
+  it('keeps the highlighter\u2019s behaviour', () => {
+    const s = setup({ type: 'freehand', variant: 'highlighter' });
     s.stroke(true);
     expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
   });
@@ -106,8 +114,13 @@ describe('a whiteboard pen draws freely (docs/specs/023-whiteboard/whiteboard.md
     expect(firstPoint(WB_PEN)).toEqual({ x: 100, y: 25 });
   });
 
-  it('still snaps a pencil on a diagram', () => {
-    expect(firstPoint({ type: 'freehand' }).x).toBe(103);
+  it('starts the diagram pencil and Shape Pen where they touch too (two-pens.md "Ink")', () => {
+    expect(firstPoint({ type: 'freehand' })).toEqual({ x: 100, y: 25 });
+    expect(firstPoint({ type: 'freehand', variant: 'shape-pen' })).toEqual({ x: 100, y: 25 });
+  });
+
+  it('still snaps the highlighter', () => {
+    expect(firstPoint({ type: 'freehand', variant: 'highlighter' }).x).toBe(103);
   });
 });
 

@@ -19,6 +19,8 @@ import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { penInkFor } from '@/lib/pen-ink';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -385,6 +387,7 @@ export function EditorCanvasHost() {
   // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
+  const canvasSurface = useCanvasSurface();
   // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
   const isMobile = useIsMobileViewport();
   const panelLayout = resolvePanelLayout(userPreferences, { mobile: isMobile });
@@ -480,6 +483,13 @@ export function EditorCanvasHost() {
         tabKind={activeTab.kind}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={WHITEBOARD_INK[appearance]}
+        penInk={penInkFor({
+          whiteboard: isWhiteboardTab(activeTab),
+          appearance,
+          themeStroke: getTheme(activeTab.theme).elementStroke ?? undefined,
+          surface: canvasSurface,
+        })}
+        penCursor={whiteboardDock.prefs.cursor}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
           drawnArrowAsShown(intent, startX, startY, endX, endY, {
             elements: activeTab.elements,

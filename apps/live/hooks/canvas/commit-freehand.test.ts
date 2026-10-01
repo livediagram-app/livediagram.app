@@ -7,13 +7,13 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 
 const board: Tab = { id: 't', name: 'Board', kind: 'whiteboard', elements: [] } as Tab;
 
-function setup(pendingDraw: PendingDraw) {
+function setup(pendingDraw: PendingDraw, tab: Tab = board) {
   let elements: Element[] = [];
   const setPendingDraw = vi.fn();
   const setSelectedId = vi.fn();
   const commit = makeCommitFreehand({
     editsBlocked: false,
-    activeTab: board,
+    activeTab: tab,
     commit: (fn) => {
       elements = fn(elements);
     },
@@ -204,5 +204,52 @@ describe('a whiteboard pen stroke', () => {
     const s = setup(pen({ recognise: false }));
     s.commit(loop, false);
     expect(s.elements[0]!.type).toBe('freehand');
+  });
+});
+
+// The diagram pencil and Shape Pen ink as pens (docs/specs/008-canvas/two-pens.md "Ink").
+describe('the diagram pencil and Shape Pen', () => {
+  const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] } as Tab;
+  const ink = { streamline: 0.5 };
+
+  it('lands a pencil stroke as open pen ink, selected, and puts the pencil down', () => {
+    const s = setup({ type: 'freehand' }, diagram);
+    s.commit(loop, false, ink);
+    const stroke = s.elements[0] as FreehandElement;
+    expect(stroke.type).toBe('freehand');
+    expect(stroke.closed).toBe(false);
+    expect(stroke.penWidth).toBe(2);
+    expect(stroke.streamline).toBe(0.5);
+    expect(s.setSelectedId).toHaveBeenCalledWith(stroke.id);
+    expect(s.setPendingDraw).toHaveBeenCalledWith(null);
+  });
+
+  it('lands a Shape Pen stroke that reads as a shape as a themed diagram shape', () => {
+    const s = setup({ type: 'freehand', variant: 'shape-pen' }, diagram);
+    s.commit(scribble, true, {
+      ...ink,
+      snapped: { kind: 'circle', bbox: { x: 0, y: 0, width: 80, height: 80 }, confidence: 1 },
+    });
+    const shape = s.elements[0]!;
+    expect(shape).toMatchObject({ type: 'shape', shape: 'circle', width: 80, height: 80 });
+    expect((shape as { fillColor?: string }).fillColor).not.toBe('transparent');
+    expect(s.setPendingDraw).toHaveBeenCalledWith(null);
+  });
+
+  it('keeps the Shape Pen armed when Shift was held at the lift', () => {
+    const s = setup({ type: 'freehand', variant: 'shape-pen' }, diagram);
+    s.commit(scribble, true, {
+      ...ink,
+      keepArmed: true,
+      snapped: { kind: 'square', bbox: { x: 0, y: 0, width: 60, height: 40 }, confidence: 1 },
+    });
+    expect(s.elements).toHaveLength(1);
+    expect(s.setPendingDraw).not.toHaveBeenCalled();
+  });
+
+  it('lands a Shape Pen stroke that reads as no shape as ink', () => {
+    const s = setup({ type: 'freehand', variant: 'shape-pen' }, diagram);
+    s.commit(scribble, true, { ...ink, keepInk: true });
+    expect(s.elements[0]).toMatchObject({ type: 'freehand', penWidth: 2 });
   });
 });

@@ -79,6 +79,11 @@ export type CanvasProps = {
   // (docs/specs/023-whiteboard/whiteboard.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
   whiteboardInk?: string;
+  // The colour a colourless pen inks in here (lib/pen-ink): the stroke being drawn and the pen
+  // cursor show it, on every tab.
+  penInk?: string;
+  // The pen cursor look (the dock's Settings flyout), for every pen on every tab.
+  penCursor?: import('@/lib/whiteboard-pen-cursor').PenCursorVariant;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
   // undefined: a note dragged in from the palette snaps onto it, and the
   // overlay lights the lane it is landing on.

@@ -37,9 +37,9 @@ used to be.
 { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
 ```
 
-`useCanvasDrawGesture` reads the armed intent on release —
-`pendingDraw?.variant === 'shape-pen'` — rather than a lifted preference, and
-passes that to `onCommitFreehand`. The recognition code itself
+The pens draw through the whiteboard pen's live stroke (`inkPenOf` maps each to a one-shot pen;
+see "Ink" below), and the commit reads the armed intent (`variant === 'shape-pen'`) rather than a
+lifted preference. The recognition code itself
 (`packages/document/src/recognise-shape.ts`) is untouched; only what decides to
 call it changed.
 
@@ -47,6 +47,32 @@ Each pen gets its own cursor and banner. The shape pen's cursor is the nib
 with a dashed square beside it, and its banner reads "Draw a rough shape — it
 snaps to the real one", because saying what it will do is the whole difference
 between the two tiles.
+
+## Ink
+
+Both pens draw the whiteboard's pen ink ([Whiteboard](../023-whiteboard/whiteboard.md) "Pens"),
+through the same live stroke pipeline as the markers: raw samples, a pressure per sample from a
+stylus, the pointer's streamline, the perfect-freehand outline, drawn in the canvas layer as it will
+land, so release moves no pixel. They differ from a whiteboard pen only in what is already a
+diagram's:
+
+- **One stroke, then put down**, as before: the stroke lands selected. Shift held as the pen lifts
+  keeps the pen for another stroke, as for a diagram tab's markers.
+- **The tab's ink:** no colour of their own, so they draw in the theme's element stroke (recorded on
+  the stroke, as the pencil always did) or, with none, the canvas's default freehand colour. Width
+  2 canvas px (`DIAGRAM_PEN_WIDTH`), the default border's weight.
+- **Strokes stay open**, as on a board: a loop is ink, not a filled shape. Close-to-fill went with
+  the old pencil; a filled shape is the Shape Pen's or the palette's.
+- **No guides or start snap**: a pen draws where it presses.
+- **The pen cursor** (the dock's Cursor setting: crosshair and nib, or a dot as wide as the stroke)
+  in the tab's ink.
+- **The Shape Pen previews while you hold still**: half a second with the pen pressed and still
+  swaps the stroke for the shape it reads as; dragging on reshapes it, Shift makes it perfect, Alt
+  flips recognition for that stroke, and on touch the chip does what Alt does (all as on a board,
+  "Shape recognition"). What lands is a **diagram shape**: themed and filled like any new shape,
+  connected to a nearby arrow when it is a line, so the outline preview gains its fill on release.
+
+The highlighter keeps its own recipe and the per-frame sample buffer.
 
 ## Why `6` and not `S`
 

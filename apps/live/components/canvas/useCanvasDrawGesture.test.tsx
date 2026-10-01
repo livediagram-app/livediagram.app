@@ -11,7 +11,9 @@ import { useCanvasDrawGesture } from './useCanvasDrawGesture';
 // a press starts one, window pointer moves drive it, and the release commits it.
 
 const BOX: PendingDraw = { type: 'shape', kind: 'square' } as PendingDraw;
-const PEN: PendingDraw = { type: 'freehand' } as PendingDraw;
+// The highlighter: the one freehand intent still sampled into the per-frame buffer (the pens ink
+// live, useWhiteboardPenGesture).
+const PEN: PendingDraw = { type: 'freehand', variant: 'highlighter' };
 
 type Props = {
   pendingDraw: PendingDraw | null;

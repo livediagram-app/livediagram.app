@@ -28,15 +28,15 @@ Looking for the marker? The **Highlighter** is a canvas mode now, not a draw too
 
 Both pens are gestural tools: pick one from the palette's **Draw** category (**Freehand** is `P`, **Shape Pen** is `6`) and the next drag on the canvas draws a stroke. A small mode banner tells you which pen is armed, with a Cancel action, and the cursor swaps to a pen icon so you know you are in draw mode.
 
-The only difference is what happens on release: Freehand keeps the stroke exactly as you drew it, and the Shape Pen matches it against real shapes.
+The only difference is what the stroke becomes: Freehand keeps it exactly as you drew it, and the Shape Pen turns it into the real shape it looks like. Hold `Shift` as you finish a stroke to keep the pen for another.
 
 <Step n={1}>Select Freehand or the Shape Pen from the palette's Draw category.</Step>
-<Step n={2}>Drag across the canvas to draw. A live preview follows your pointer.</Step>
+<Step n={2}>Drag across the canvas to draw. The stroke appears as you draw it.</Step>
 <Step n={3}>
   Release to commit the stroke. A stray click with no drag does not create anything.
 </Step>
 
-On release, your raw points are smoothed into a clean, hand-drawn curve rather than a jagged polyline. If you release near where you started, the path closes into a custom shape and fills, which is the way to sketch a bespoke outline.
+Both pens draw the same smooth ink as a whiteboard's markers: what you see while drawing is exactly what lands. With a stylus the line swells as you press harder. A stroke stays an open line even when it ends where it began; for a filled outline, use the Shape Pen or the [Polygon](#the-polygon-tool) tool.
 
 <Figure caption="Freehand in draw mode, with a smoothed stroke and the Drag to draw banner.">
   <PencilStroke />
@@ -54,7 +54,7 @@ A marker draws one stroke, like Freehand: the stroke is selected when you finish
 
 ## Styling a sketch
 
-A committed sketch is a regular boxed element. Its stroke colour follows the tab's theme so it reads as part of the diagram rather than a separate annotation layer, and a closed path fills with the theme's fill colour. From there you can:
+A committed sketch is a regular boxed element. Its stroke colour follows the tab's theme so it reads as part of the diagram rather than a separate annotation layer. From there you can:
 
 - Move it, resize it (the path scales proportionally), and lock or group it.
 - Recolour its stroke and fill from the element's Colours controls.
@@ -82,7 +82,7 @@ While placing points, `Backspace` removes the last point so you can walk a mista
 
 ## Shape recognition
 
-Pick the **Shape Pen** instead of Freehand and your sketches are matched against real shapes on commit. A rough square becomes a square, a loop becomes a circle, and a straight stroke becomes an arrow. See [Shape recognition](/help/palette/tools/drawing/shape-recognition/) for the details and which kinds are detected.
+Pick the **Shape Pen** instead of Freehand and your sketches turn into real shapes. A rough square becomes a square, a loop becomes a circle, and a straight stroke becomes a line. Hold the pen still for half a second while drawing to see the shape it will become, then keep dragging to resize it (hold `Shift` to make it perfect). Press `Alt` mid-stroke to keep it as ink instead. See [Shape recognition](/help/palette/tools/drawing/shape-recognition/) for the details and which kinds are detected.
 
 <Figure caption="Drawn with the Shape Pen, a rough sketch snaps into a clean shape on commit.">
   <ShapeRecognition />

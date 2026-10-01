@@ -7,7 +7,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { ARROW_SNAP_REVEAL_PX, ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
-import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
+import { inkPenOf, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
@@ -90,8 +90,8 @@ export function computeDrawGuides({
   // 0×0 candidate), so the user sees the first corner latch before they
   // press. Mutually exclusive with drawBoxGuides (hover is cleared once a
   // drag starts). The snapped dot itself renders below the guide overlay.
-  // A whiteboard pen draws freely: none of the guides below.
-  const freePen = isWhiteboardPenIntent(pendingDraw);
+  // A pen draws freely: none of the guides below.
+  const freePen = inkPenOf(pendingDraw) !== null;
   const drawHoverGuides =
     drawHover && !freePen
       ? alignmentGuides(
