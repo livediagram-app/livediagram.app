@@ -1,6 +1,6 @@
-// Reading Excalidraw content a paste or drop carried (docs/specs/020-import-export/excalidraw-import-export.md
-// "Paste"), lazy-loaded by useClipboard once excalidraw-paste.ts has recognised it, so the parser
-// stays out of the editor's first bundle.
+// Reading Excalidraw text or a file into a board scene (docs/specs/020-import-export/excalidraw-import-export.md):
+// the paste, the drop and the Import dialog all come through here. Lazy-loaded by its callers so
+// the parser stays out of the editor's first bundle.
 
 import type { BoardScene } from './board-scene/scene';
 import { extractExcalidrawScene, NO_SCENE, type ExcalidrawContainer } from './excalidraw-embedded';

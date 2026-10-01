@@ -1,7 +1,7 @@
 // Excalidraw content on a paste or a drop (docs/specs/020-import-export/excalidraw-import-export.md
 // "Paste"). Excalidraw's copy puts its envelope on the clipboard as its own MIME type and as plain
 // text; a file arrives as `.excalidraw` JSON or as a PNG / SVG export that may embed the scene.
-// Recognising it lives here, small and synchronous; reading it is excalidraw-paste-read.ts.
+// Recognising it lives here, small and synchronous; reading it is excalidraw-read.ts.
 
 import { looksLikeExcalidraw } from './excalidraw-envelope';
 

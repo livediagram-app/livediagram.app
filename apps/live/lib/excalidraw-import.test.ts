@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildElementsFromExcalidraw as build } from './excalidraw-import';
+import { landBoardScene, type BoardSceneProfile } from './board-scene/land';
+import { sceneFromExcalidrawText } from './excalidraw-read';
 import { tabToExcalidrawText } from './excalidraw-export';
 import { excalidrawBuilder, excalidrawText } from './excalidraw-fixtures';
 import {
@@ -14,6 +15,28 @@ import {
   freehandNormalisedPoints,
   strokePointCount,
 } from '@livediagram/document';
+
+// Excalidraw text through the one parser and the shared landing, as the Import dialog runs it
+// (useTabImport, useBoardSceneImport), at the tab's own coordinates.
+function build(text: string, profile: BoardSceneProfile) {
+  const read = sceneFromExcalidrawText(text);
+  if (!read.ok) return { ok: false as const, error: read.error };
+  const landed = landBoardScene(read.scene, {
+    profile,
+    placement: { kind: 'origin' },
+    mintId: () => crypto.randomUUID(),
+  });
+  if (!landed.ok) return { ok: false as const, error: landed.message };
+  const pattern = read.scene.background?.pattern;
+  return {
+    ok: true as const,
+    elements: landed.elements,
+    images: landed.imageRequests,
+    report: landed.report,
+    backgroundColor: landed.tabPatch.backgroundColor,
+    backgroundPattern: pattern ? landed.tabPatch.backgroundPattern : undefined,
+  };
+}
 
 // The diagram profile: the mapping this importer has always had (docs/specs/020-import-export/excalidraw-import-export.md).
 const buildElementsFromExcalidraw = (text: string) => build(text, 'diagram');

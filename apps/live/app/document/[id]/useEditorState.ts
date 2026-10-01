@@ -2918,6 +2918,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toast,
     onPastePhoto: readPhotoFile,
     canvasPointerRef,
+    // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
+    insertBoardScene: (scene) => void boardSceneInsert.insertScene(scene),
   });
   // Board scenes pasted or dropped from another tool (docs/specs/020-import-export/board-scene.md
   // "In the editor"): one commit at the pointer, selected, with its notice.

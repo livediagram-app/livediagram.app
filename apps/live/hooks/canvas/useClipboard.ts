@@ -234,7 +234,7 @@ export function useClipboard(deps: ClipboardDeps) {
   // landed by the board-scene insert. A file that turns out not to hold a scene is `otherwise`'s.
   const pasteExcalidrawText = async (text: string) => {
     if (!insertBoardScene) return;
-    const { sceneFromExcalidrawText } = await import('@/lib/excalidraw-paste-read');
+    const { sceneFromExcalidrawText } = await import('@/lib/excalidraw-read');
     const read = sceneFromExcalidrawText(text);
     if (!read.ok) {
       toast.error(read.error);
@@ -245,7 +245,7 @@ export function useClipboard(deps: ClipboardDeps) {
   };
   const pasteExcalidrawFile = async (file: File, otherwise: () => void) => {
     if (!insertBoardScene) return otherwise();
-    const { readExcalidrawFile } = await import('@/lib/excalidraw-paste-read');
+    const { readExcalidrawFile } = await import('@/lib/excalidraw-read');
     const read = await readExcalidrawFile(file);
     if (read.kind === 'not-excalidraw') return otherwise();
     if (read.kind === 'error') return toast.error(read.error);

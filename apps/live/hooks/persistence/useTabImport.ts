@@ -4,7 +4,8 @@
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
 // Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md).
 
-import { remapElementRefs, tabKindOf, type Element, type Tab } from '@livediagram/document';
+import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
+import type { BoardScene } from '@/lib/board-scene/scene';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -41,10 +42,6 @@ const EXCALIDRAW_TELEMETRY_TYPE = {
 
 type TabImportDeps = {
   tabs: Tab[];
-  // Who stores the imported images, and whether this document is an Offline
-  // Mode one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
-  ownerId: string;
-  documentId: string | null;
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -54,12 +51,12 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Replaces the active tab with a board scene (useBoardSceneImport): the Excalidraw format's commit.
+  importScene: (scene: BoardScene, onProgress?: ImportProgressListener) => Promise<ImportOutcome>;
 };
 
 export function useTabImport({
   tabs,
-  ownerId,
-  documentId,
   activeId,
   commitTabs,
   setSelectedId,
@@ -67,6 +64,7 @@ export function useTabImport({
   setFormatSourceId,
   setImportError,
   requestFit,
+  importScene,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -89,59 +87,32 @@ export function useTabImport({
   // the exact same parse + replace. The parsers are lazy-loaded so their
   // code stays out of the editor's initial bundle. Never throws — returns
   // the outcome the dialog renders (close / stay / show error).
-  // Excalidraw: a scene as JSON text, or inside a PNG / SVG export; its images
-  // go through the import image pipeline BEFORE the tab changes, so the whole
+  // Excalidraw: a scene as JSON text, or inside a PNG / SVG export, read into a board scene and
+  // landed by the shared commit path; its images are stored BEFORE the tab changes, so the whole
   // import stays one undo step (docs/specs/020-import-export/excalidraw-import-export.md).
   const importExcalidraw = async (
     input: Uint8Array | string,
     onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
-    const active = tabs.find((t) => t.id === activeId);
-    const [{ extractExcalidrawScene }, { buildElementsFromExcalidraw }] = await Promise.all([
+    const [{ extractExcalidrawScene }, { sceneFromExcalidrawText }] = await Promise.all([
       import('@/lib/excalidraw-embedded'),
-      import('@/lib/excalidraw-import'),
+      import('@/lib/excalidraw-read'),
     ]);
-    const scene = await extractExcalidrawScene(input);
-    if (!scene.ok) return { status: 'error', error: scene.error };
-    // A whiteboard gets whiteboard-native marks; every other tab the diagram mapping.
-    const profile = tabKindOf(active) === 'whiteboard' ? 'whiteboard' : 'diagram';
-    const result = buildElementsFromExcalidraw(scene.text, profile);
-    if (!result.ok) return { status: 'error', error: result.error };
-    let elements = result.elements;
-    let images;
-    if (result.images.length > 0) {
-      const [{ attachImportImages }, { createBrowserImportImageSession }] = await Promise.all([
-        import('@/lib/import-images'),
-        import('@/lib/import-images/browser'),
-      ]);
-      const session = createBrowserImportImageSession({ ownerId, documentId });
-      ({ elements, report: images } = await attachImportImages(
-        elements,
-        result.images,
-        session,
-        onProgress,
-      ));
-    }
+    const extracted = await extractExcalidrawScene(input);
+    if (!extracted.ok) return { status: 'error', error: extracted.error };
+    const read = sceneFromExcalidrawText(extracted.text);
+    if (!read.ok) return { status: 'error', error: read.error };
+    // The shared board-scene commit: landed for the tab's profile, images stored, one replace.
+    const outcome = await importScene(read.scene, onProgress);
     console.info('[excalidraw-import]', {
-      container: scene.container,
-      elements: elements.length,
-      images: result.images.length,
-      profile,
-      degraded: result.report.degraded,
-      skipped: result.report.skipped,
+      container: extracted.container,
+      items: read.scene.items.length,
+      status: outcome.status,
     });
-    // Ids are already re-minted inside the converter (docs/specs/020-import-export/excalidraw-import-export.md), so this
-    // skips the JSON path's remintElementIds step.
-    replaceActiveTabContent({
-      id: activeId,
-      name: active?.name ?? '',
-      elements,
-      theme: active?.theme,
-      backgroundColor: result.backgroundColor,
-      backgroundPattern: result.backgroundPattern,
-    });
-    track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[scene.container]);
-    return images ? { status: 'done', images } : { status: 'done' };
+    if (outcome.status === 'done') {
+      track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[extracted.container]);
+    }
+    return outcome;
   };
 
   const importTextIntoActiveTab = async (

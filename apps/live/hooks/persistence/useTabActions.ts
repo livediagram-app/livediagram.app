@@ -146,8 +146,6 @@ export function useTabActions(deps: TabActionsDeps) {
   // cross-document link below.
   const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
     tabs,
-    ownerId,
-    documentId,
     activeId,
     commitTabs,
     setSelectedId,
@@ -155,6 +153,8 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    // Declared below; called only once an import runs, after this render has defined it.
+    importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
   });
   // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
   // active tab, or open each board as a new whiteboard tab.
