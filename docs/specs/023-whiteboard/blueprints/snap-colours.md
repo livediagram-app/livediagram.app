@@ -153,7 +153,9 @@ export function snapTabColours(
 ## Web Experience
 
 - No network, no new bundle weight beyond two small modules; the section sits last in a flyout
-  that opens above the dock, so it shifts nothing on the page (CLS 0); a snap is one O(n) commit
+  that opens on the board side of the dock (below a dock at the top, above one at the bottom), its
+  edge anchored at the dock, so it shifts nothing on the page (CLS 0); the section is decided as
+  the flyout opens and leaves it only after a snap or an undo, never under the pointer mid-choice; a snap is one O(n) commit
   (INP well under 200 ms at the tab element cap).
 
 ## Observability
@@ -163,21 +165,21 @@ export function snapTabColours(
 
 ## Testing
 
-| Rule                                                       | Test                                            |
-| ---------------------------------------------------------- | ----------------------------------------------- |
-| Each stock hue's own colours map to it                     | `pen-colours.test.ts` "nearestPenColour" table  |
-| Neutrals (black, white, greys, slate) map to Ink           | same                                            |
-| Near-boundary hues go to the nearer; ties to the earlier   | same                                            |
-| Invalid input is null; case-insensitive                    | same                                            |
-| Each field-table row snaps; Ink removes the named field    | `snap-colours.test.ts`                          |
-| Untouched elements by identity; counts                     | same                                            |
-| Highlighter, stock, ink, locked, skipped, fills, text kept | same                                            |
-| `strokeSwatch` cleared                                     | same                                            |
-| Snappable colours: distinct, lower-cased, newest first     | same                                            |
-| Hook: one commit, telemetry, blocked no-op                 | `useSnapColours.test.tsx`                       |
-| Section: hidden, offer copy, press, done status, disabled  | `SnapColoursSection.test.tsx`                   |
-| Settings flyout shows the section only with custom colours | `WhiteboardDock.test.tsx`                       |
-| End to end: snap, undo, light and dark                     | `apps/live/e2e/whiteboard-snap-colours.spec.ts` |
+| Rule                                                                   | Test                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------- |
+| Each stock hue's own colours map to it                                 | `pen-colours.test.ts` "nearestPenColour" table  |
+| Neutrals (black, white, greys, slate) map to Ink                       | same                                            |
+| Near-boundary hues go to the nearer; ties to the earlier               | same                                            |
+| Invalid input is null; case-insensitive                                | same                                            |
+| Each field-table row snaps; Ink removes the named field                | `snap-colours.test.ts`                          |
+| Untouched elements by identity; counts                                 | same                                            |
+| Highlighter, stock, ink, locked, skipped, fills, text kept             | same                                            |
+| `strokeSwatch` cleared                                                 | same                                            |
+| Snappable colours: distinct, lower-cased, newest first                 | same                                            |
+| Hook: one commit, telemetry, blocked no-op                             | `useSnapColours.test.tsx`                       |
+| Section: hidden, offer copy, press, done status, disabled              | `SnapColoursSection.test.tsx`                   |
+| Settings flyout shows the section only with custom colours             | `WhiteboardDock.test.tsx`                       |
+| End to end: snap, undo, light and dark, dock at the top and the bottom | `apps/live/e2e/whiteboard-snap-colours.spec.ts` |
 
 ## Constants and configuration
 

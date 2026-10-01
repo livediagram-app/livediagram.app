@@ -1,6 +1,14 @@
 import type { Page } from '@playwright/test';
 import { penColourHex, WHITEBOARD_INK } from '@livediagram/document';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test, type Seed } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  settledBox,
+  test,
+  type Seed,
+} from './fixtures';
 
 // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): a synthesised board with
 // custom-coloured marker strokes, a shape and an arrow, beside a stock stroke and a highlighter
@@ -88,26 +96,48 @@ async function painted(page: Page, id: string): Promise<string[]> {
     });
 }
 
+const PREFS_KEY = 'livediagram:user-preferences:v1';
+const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
+
 async function openSettings(page: Page) {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await dock(page).getByRole('button', { name: 'Settings', exact: true }).click();
   return page.locator('#whiteboard-flyout-settings');
 }
 
-for (const scheme of ['dark', 'light'] as const) {
-  test(`snaps a board's custom colours to stock colours, one undo step (${scheme})`, async ({
+// The dock at the top (the default) or the bottom (docs/specs/023-whiteboard/whiteboard.md "Where
+// the dock sits"), chosen before the editor loads, as the synced preference stores it.
+async function placeDock(page: Page, position: 'top' | 'bottom') {
+  await page.addInitScript(
+    ([key, whiteboardDockPosition]) => {
+      const prefs = JSON.parse(localStorage.getItem(key as string) ?? '{}');
+      localStorage.setItem(key as string, JSON.stringify({ ...prefs, whiteboardDockPosition }));
+    },
+    [PREFS_KEY, position] as const,
+  );
+}
+
+for (const [scheme, position] of [
+  ['dark', 'top'],
+  ['light', 'top'],
+  ['dark', 'bottom'],
+  ['light', 'bottom'],
+] as const) {
+  const shot = (step: string) => `${SHOTS}/${scheme}-${position}-${step}.png`;
+  test(`snaps a board's custom colours to stock colours, one undo step (${scheme}, dock at the ${position})`, async ({
     page,
     pageErrors,
   }) => {
     test.setTimeout(90_000);
     await page.emulateMedia({ colorScheme: scheme });
     await page.setViewportSize({ width: 1280, height: 800 });
+    await placeDock(page, position);
     await page.goto('/new?template=whiteboard');
     await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await dismissQuickTour(page);
     await seedTab(page, BOARD);
     await page.locator('[data-element-id="link"]').first().waitFor();
     await page.keyboard.press('v');
-    if (SHOTS) await page.screenshot({ path: `${SHOTS}/${scheme}-1-before.png` });
+    if (SHOTS) await page.screenshot({ path: shot('1-before') });
 
     const settings = await openSettings(page);
     const colours = settings.getByRole('group', { name: 'Colours' });
@@ -115,14 +145,24 @@ for (const scheme of ['dark', 'light'] as const) {
     // highlighter.
     await expect(colours.getByText('6 custom colours')).toBeVisible();
     await expect(colours.locator('[data-snap-swatch]')).toHaveCount(6);
-    if (SHOTS) await page.screenshot({ path: `${SHOTS}/${scheme}-2-offer.png` });
+    // The section follows its flyout to the board side of the dock, wholly in view.
+    await expect(dock(page)).toHaveAttribute('data-dock-position', position);
+    await expect(settings).toHaveAttribute('data-side', position === 'top' ? 'below' : 'above');
+    // The dock's own box (its pills), and the section once the flyout's pop-in has settled.
+    const bar = (await dock(page).boundingBox())!;
+    const section = await settledBox(colours);
+    if (position === 'top') expect(section.y).toBeGreaterThan(bar.y + bar.height);
+    else expect(section.y + section.height).toBeLessThan(bar.y);
+    expect(section.y).toBeGreaterThanOrEqual(0);
+    expect(section.y + section.height).toBeLessThanOrEqual(800);
+    if (SHOTS) await page.screenshot({ path: shot('2-offer') });
 
     await colours.getByRole('button', { name: 'Snap to stock colours' }).click();
     await expect(colours.getByRole('status')).toHaveText(
       '6 custom colours snapped to stock colours',
     );
     await expect(colours.getByRole('button', { name: 'Snap to stock colours' })).toHaveCount(0);
-    if (SHOTS) await page.screenshot({ path: `${SHOTS}/${scheme}-3-snapped.png` });
+    if (SHOTS) await page.screenshot({ path: shot('3-snapped') });
 
     // Each now draws in its stock colour's version for this board; grey became the ink.
     const expected: Record<string, string> = {
@@ -144,7 +184,7 @@ for (const scheme of ['dark', 'light'] as const) {
     await openSettings(page);
     await expect(page.getByRole('group', { name: 'Colours' })).toHaveCount(0);
     await page.keyboard.press('Escape');
-    if (SHOTS) await page.screenshot({ path: `${SHOTS}/${scheme}-4-after.png` });
+    if (SHOTS) await page.screenshot({ path: shot('4-after') });
 
     // One undo brings every custom colour back, and with them the section.
     await page.keyboard.press('ControlOrMeta+z');
@@ -154,7 +194,7 @@ for (const scheme of ['dark', 'light'] as const) {
     await expect(
       again.getByRole('group', { name: 'Colours' }).getByText('6 custom colours'),
     ).toBeVisible();
-    if (SHOTS) await page.screenshot({ path: `${SHOTS}/${scheme}-5-undone.png` });
+    if (SHOTS) await page.screenshot({ path: shot('5-undone') });
 
     // From the keyboard: Tab reaches the button inside the flyout, Enter snaps, and the focus
     // lands on the confirmation rather than being lost with the button.

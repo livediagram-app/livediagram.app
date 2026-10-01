@@ -616,8 +616,9 @@ imported. One option converts them all at once into the board's stock
 colours, so a board brought in from elsewhere (or coloured by hand) adapts to
 light and dark boards like everything drawn with the stock colours.
 
-- **Where:** a **Colours** section at the bottom of the dock's Settings
-  flyout, after Drawing, shown **only while the board has custom colours it
+- **Where:** a **Colours** section, the last of the dock's Settings
+  flyout, after Drawing (the flyout opens on the board side of the dock,
+  wherever [the dock sits](#where-the-dock-sits)), shown **only while the board has custom colours it
   can snap**. It names how many ("3 custom colours"), shows them as small
   swatches (at most eight, most recently drawn first, as the quick style
   panel's custom section does), and offers one button: **Snap to stock
