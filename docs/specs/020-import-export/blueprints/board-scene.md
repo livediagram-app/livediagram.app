@@ -329,8 +329,12 @@ message: string }[]`.
 
 ### `BoardSceneNotice`
 
-A `role="status"` `aria-live="polite"` panel at the bottom centre of the canvas, above the dock
-(`z-[var(--z-panel)]`), 360 px max wide, the panel dress (border, radius, shadow, light and dark);
+A `role="status"` `aria-live="polite"` panel, fixed, bottom centre (`z-[var(--z-overlay)]`), 360 px
+max wide. Its `bottom` comes from `useNoticeSlot` (`components/canvas/useNoticeSlot.ts`): the
+`[data-whiteboard-dock]` top plus `NOTICE_GAP_PX` (8), or, with no dock, the canvas bottom less
+`DOCKLESS_LIFT_PX` (68; `DOCKLESS_WIDE_LIFT_PX` 16 from `DOCKLESS_WIDE_MIN_PX` 1760, mirroring the
+dock), via the pure `noticeBottom` (`lib/board-scene-notice-slot.ts`); measured in a layout effect
+and on resize (ResizeObserver on the dock and canvas), hidden until measured. The panel dress the panel dress (border, radius, shadow, light and dark);
 heading per the spec, `BoardSceneReportList` rows, the image placeholder sentences, a Close button
 (Escape when focus is inside). Never steals focus; reduced motion removes its fade.
 
@@ -413,4 +417,5 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | quick style on a mixed whiteboard selection, dark mode                 | `apps/live/e2e/quick-style-mixed.spec.ts`                                                       |
 | insert: one commit, selection, images, notice, point                   | `apps/live/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                    |
 | import: replace-tab, new whiteboard tabs, failures                     | `apps/live/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                               |
+| notice slot above the dock at every width                              | `apps/live/lib/board-scene-notice-slot.test.ts`                                                 |
 | notice copy and role                                                   | `apps/live/components/canvas/BoardSceneNotice.test.tsx`                                         |

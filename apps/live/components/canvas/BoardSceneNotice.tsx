@@ -7,6 +7,7 @@
 import { describeImportImageReport } from '@/lib/import-images';
 import type { BoardSceneNoticeState, BoardSceneSource } from '@/hooks/canvas/useBoardSceneInsert';
 import { BoardSceneReportList } from '@/components/dialogs/BoardSceneReportList';
+import { useNoticeSlot } from './useNoticeSlot';
 
 const SOURCE_NAMES: Readonly<Record<BoardSceneSource, string>> = {
   excalidraw: 'Excalidraw',
@@ -20,13 +21,18 @@ export function BoardSceneNotice({
   notice: BoardSceneNoticeState | null;
   onClose: () => void;
 }) {
+  const bottom = useNoticeSlot(notice !== null);
   if (!notice) return null;
   const source = SOURCE_NAMES[notice.source];
   const images =
     notice.kind === 'report' && notice.images ? describeImportImageReport(notice.images) : null;
   return (
-    // Bottom centre, above the whiteboard dock and the bottom-right cluster's line.
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[var(--z-overlay)] flex justify-center px-4 pb-24">
+    // Bottom centre, in its own slot above the dock (lib/board-scene-notice-slot); measured before
+    // paint and hidden until then, so it never shows in the wrong place nor moves anything.
+    <div
+      className="pointer-events-none fixed inset-x-0 z-[var(--z-overlay)] flex justify-center px-4"
+      style={bottom === null ? { bottom: 0, visibility: 'hidden' } : { bottom }}
+    >
       <div
         role="status"
         aria-live="polite"

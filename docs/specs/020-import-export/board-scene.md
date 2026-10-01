@@ -216,8 +216,11 @@ under a skipped rule.
   new tab made active and framed. A new whiteboard counts as
   `Whiteboard · Created · Import`.
 - **The paste notice**: after a paste that degraded, skipped or left an image
-  as a placeholder, a small non-blocking notice at the bottom of the canvas
-  (`role="status"`) says so; a lossless paste shows nothing. Copy:
+  as a placeholder, a small non-blocking notice (`role="status"`) says so; a
+  lossless paste shows nothing. It has **its own slot just above the
+  whiteboard dock**, so it never covers the dock at any width; with no dock it
+  takes the slot a dock would have (above the bottom-right controls' line).
+  It floats, so showing it moves nothing. Copy:
   - Heading: "Pasted from Excalidraw with some changes" (the source's name).
   - One line per rule, the count first: "2 · Groups were dropped".
   - Image placeholders as the image pipeline words them.
