@@ -518,6 +518,8 @@ export {
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { titleCase } from './title-case';
+// The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
+export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
 // so the two can't disagree on what a request presented (see ./request-auth.ts).

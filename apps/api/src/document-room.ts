@@ -1,4 +1,9 @@
-import { DOCUMENT_TRASHED_CLOSE, isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
+import {
+  DOCUMENT_FORMAT,
+  DOCUMENT_TRASHED_CLOSE,
+  isPresenceOpKind,
+  isSystemOpKind,
+} from '@livediagram/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
 import { RoomLedgerStore } from './room-ledger-store';
 import { RoomLivePoll } from './room-live-poll';
@@ -579,6 +584,9 @@ export class DocumentRoom implements DurableObject {
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
+      // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
+      // older than it offers a reload.
+      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT });
       // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
       for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();
