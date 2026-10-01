@@ -13,7 +13,18 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
-import { UI_SCALE_MAX, UI_SCALE_MIN, UI_SCALE_STEP, resolveUiScale } from '@/lib/ui-scale';
+import {
+  UI_SCALE_MAX,
+  UI_SCALE_MIN,
+  UI_SCALE_STEP,
+  resolveUiScale,
+  resolveUiScalePart,
+  uiScalePartPatch,
+  uiScalePatch,
+  withUiScalePatch,
+  type UiScalePart,
+} from '@/lib/ui-scale';
+import { setUiScalePreview } from '@/lib/ui-scale-preview';
 import type { SettingsIllustrationId } from './settings-illustrations';
 import {
   CLOUD_SYNC_PROVIDERS,
@@ -137,6 +148,9 @@ export type SettingsSliderRowSpec = RowBase & {
   format: (value: number) => string;
   read: (prefs: UserPreferences) => number;
   write: (prefs: UserPreferences, next: number) => UserPreferences;
+  // Shows the value live while the thumb is dragged, before the release
+  // commits it; called with null once the drag ends. Absent = no live effect.
+  preview?: (value: number | null) => void;
   event: { category: TelemetryCategory; changed: string };
 };
 
@@ -234,6 +248,37 @@ export type SettingsCategorySpec = {
 
 // A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
 // three of its rows are inert there and share this note.
+// What every UI scale slider shares (docs/specs/007-editor/ui-scale.md).
+const UI_SCALE_SLIDER = {
+  kind: 'slider',
+  desktopOnly:
+    'UI Scale is desktop only, so a phone always uses 100%. Your choice still applies on a larger screen.',
+  min: UI_SCALE_MIN,
+  max: UI_SCALE_MAX,
+  step: UI_SCALE_STEP,
+  format: (v: number) => `${Math.round(v * 100)}%`,
+} as const;
+
+// One part's slider, nested under UI Scale: it reads the part's own value or,
+// without one, the master's, and writes only its own.
+function uiScalePartRow(
+  part: UiScalePart,
+  copy: { label: string; keywords: string; description: string; changed: string },
+): SettingsSliderRowSpec {
+  return {
+    ...UI_SCALE_SLIDER,
+    key: `uiScale-${part}`,
+    parent: 'uiScale',
+    label: copy.label,
+    keywords: copy.keywords,
+    description: copy.description,
+    read: (p) => resolveUiScalePart(p, part),
+    write: (p, v) => withUiScalePatch(p, uiScalePartPatch(part, v)),
+    preview: (v) => setUiScalePreview(v === null ? null : uiScalePartPatch(part, v)),
+    event: { category: 'UI', changed: copy.changed },
+  };
+}
+
 const MINIMAP_DESKTOP_ONLY =
   'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
 
@@ -366,26 +411,43 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
       },
+      // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
+      // never the canvas, dialogs or menus. The master sets every part; each
+      // part's row beneath it overrides that part alone.
       {
-        // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
-        // never the canvas, dialogs or menus.
-        kind: 'slider',
+        ...UI_SCALE_SLIDER,
         key: 'uiScale',
         keywords:
           'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
         label: 'UI Scale',
         description:
-          'Makes the panels, the Palette toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are.',
-        desktopOnly:
-          'UI Scale is desktop only, so a phone always uses 100%. Your choice still applies on a larger screen.',
-        min: UI_SCALE_MIN,
-        max: UI_SCALE_MAX,
-        step: UI_SCALE_STEP,
-        format: (v) => `${Math.round(v * 100)}%`,
-        read: (p) => resolveUiScale(p, { mobile: false }),
-        write: (p, v) => ({ ...p, uiScale: v }),
+          'Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below.',
+        read: (p: UserPreferences) => resolveUiScale(p),
+        write: (p: UserPreferences, v: number) => withUiScalePatch(p, uiScalePatch(v)),
+        preview: (v) => setUiScalePreview(v === null ? null : uiScalePatch(v)),
         event: { category: 'UI', changed: 'UiScale' },
       },
+      uiScalePartRow('panels', {
+        label: 'Panel Scale',
+        keywords: 'panels explorer palette layers popover size bigger smaller zoom',
+        description: 'Every panel, floating or opened from a button, and the Quick Style panel.',
+        changed: 'UiScalePanels',
+      }),
+      uiScalePartRow('toolbar', {
+        label: 'Toolbar Scale',
+        keywords: 'toolbar strip top bar button bar minimal size bigger smaller zoom',
+        description:
+          'The Toolbar layout’s strip and its menu button, and the Minimal layout’s button bar.',
+        changed: 'UiScaleToolbar',
+      }),
+      uiScalePartRow('cornerButtons', {
+        label: 'Corner Buttons Scale',
+        keywords:
+          'undo redo zoom controls layers theme activity corner buttons size bigger smaller',
+        description:
+          'The buttons in the bottom-right corner: Activity, Undo and Redo, Layers, theme and zoom.',
+        changed: 'UiScaleCornerButtons',
+      }),
     ],
   },
   {

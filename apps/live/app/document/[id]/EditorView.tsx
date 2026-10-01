@@ -43,8 +43,8 @@ import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
-import { UiScaleProvider } from '@/components/providers/ui-scale';
-import { resolveUiScale } from '@/lib/ui-scale';
+import { UiScaleProvider, useUiScalePreview } from '@/components/providers/ui-scale';
+import { resolveUiScales } from '@/lib/ui-scale';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -161,7 +161,13 @@ export function EditorView() {
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
-  const uiScale = resolveUiScale(userPreferences, { mobile: useIsMobileViewport() });
+  // While a Settings slider is dragged its patch wins, so the chrome resizes
+  // as you go; the preference is written once, on release.
+  const uiScalePreview = useUiScalePreview();
+  const uiScales = resolveUiScales(
+    uiScalePreview === null ? userPreferences : { ...userPreferences, ...uiScalePreview },
+    { mobile: useIsMobileViewport() },
+  );
   const role = useRoleIndicator();
 
   // Who is facilitating, named for the UI, or null when it is nobody or us
@@ -232,7 +238,7 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
       <MinimalChromeProvider value={minimalChrome}>
-        <UiScaleProvider value={uiScale}>
+        <UiScaleProvider value={uiScales}>
           <div className="flex h-dvh flex-col">
             {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
           is armed so the user knows the next shape click connects, and

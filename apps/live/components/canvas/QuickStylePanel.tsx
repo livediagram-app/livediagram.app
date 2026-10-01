@@ -143,7 +143,7 @@ export function QuickStylePanel({
   const minimalChrome = useMinimalChrome();
   // UI scale (docs/specs/007-editor/ui-scale.md): zoomed at the root, so the
   // placement's screen-px spot is converted to the panel's own px.
-  const scale = useUiScale();
+  const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
   // Section titles stay under Minimal chrome: they are what tells two rows of
   // coloured squares (Stroke, Background) apart at a glance.

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsSliderRowSpec } from './settings-catalogue';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
@@ -26,6 +27,15 @@ export function SettingsSliderRow({
   // Follow the stored value when it changes elsewhere (the Palette popover
   // sets the same preference); adjusted during render.
   const [draft, setDraft] = useFollowingDraft(value);
+  // A row with a live preview (UI scale) shows the value under the thumb as it
+  // moves; the release commits it and ends the preview. Closing the dialog
+  // mid-drag ends it too, so an uncommitted value never sticks.
+  const { preview } = row;
+  useEffect(() => () => preview?.(null), [preview]);
+  const commit = () => {
+    onCommit(draft);
+    preview?.(null);
+  };
 
   return (
     <SettingsRowShell
@@ -42,9 +52,13 @@ export function SettingsSliderRow({
             disabled={disabled}
             aria-label={row.label}
             aria-describedby={`${row.key}-description`}
-            onChange={(e) => setDraft(Number(e.target.value))}
-            onPointerUp={() => onCommit(draft)}
-            onKeyUp={() => onCommit(draft)}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              setDraft(next);
+              preview?.(next);
+            }}
+            onPointerUp={commit}
+            onKeyUp={commit}
             className="h-1 w-28 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700"
           />
           <span className="w-9 text-right text-xs tabular-nums text-slate-500 dark:text-slate-400">

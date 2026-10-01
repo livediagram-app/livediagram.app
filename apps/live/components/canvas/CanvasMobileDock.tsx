@@ -71,7 +71,7 @@ export function CanvasMobileDock({
   // The Minimal layout's button bar is drawn at the UI scale
   // (docs/specs/007-editor/ui-scale.md), still 12px from the corner. A phone
   // is never scaled.
-  const scale = useUiScale();
+  const scale = useUiScale('toolbar');
   if (welcomeOpen || toolbarLayout) return null;
   return (
     <div

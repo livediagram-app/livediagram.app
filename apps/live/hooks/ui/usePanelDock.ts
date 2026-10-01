@@ -74,7 +74,7 @@ export function usePanelDock(): PanelDock {
   const [drag, setDrag] = useState<PanelDragState | null>(null);
   // The zoom controls the bottom-right corner clears are drawn at the UI
   // scale (docs/specs/007-editor/ui-scale.md).
-  const scale = useUiScale();
+  const scale = useUiScale('cornerButtons');
 
   // Re-read on any external change (another tab's `storage` event) and
   // on our own same-tab writes (the custom event). Idempotent: a write

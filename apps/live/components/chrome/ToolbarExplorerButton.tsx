@@ -29,7 +29,7 @@ export function ToolbarExplorerButton({
 }) {
   // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from
   // the corner. Inline it sits in the strip, which is scaled already.
-  const scale = useUiScale();
+  const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
   const button = (
     <button

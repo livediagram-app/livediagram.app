@@ -356,12 +356,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
     .join('|');
   // UI scale (docs/specs/007-editor/ui-scale.md): the strip, the panels and the
   // bottom-right cluster are drawn at it, so the clearances around them follow.
-  const uiScale = useUiScale();
+  const toolbarScale = useUiScale('toolbar');
+  const panelScale = useUiScale('panels');
+  const cornerScale = useUiScale('cornerButtons');
   const stripCrowds = useStripCrowdsCorners(
     cornerRefs,
     stripShown && !isMobile,
     topCornersKey,
-    uiScale,
+    `${toolbarScale}/${panelScale}`,
   );
   const stripSpansTop = stripShown && (isMobile || stripCrowds);
   // Bucketing keys off the persisted placement ONLY (not which panel is
@@ -391,9 +393,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             }}
             style={
               corner === 'bottom-right'
-                ? { bottom: cornerBottomInset(corner, uiScale) }
+                ? { bottom: cornerBottomInset(corner, cornerScale) }
                 : stripSpansTop && corner.startsWith('top')
-                  ? { top: toolbarTopClearancePx(uiScale) }
+                  ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
@@ -589,12 +591,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
         data-zoom-cluster=""
         // Drawn at the UI scale, still 16px from the corner.
         style={
-          uiScale === 1
+          cornerScale === 1
             ? undefined
             : {
-                ...uiScaleStyle(uiScale),
-                right: toSurfacePx(16, uiScale),
-                bottom: toSurfacePx(16, uiScale),
+                ...uiScaleStyle(cornerScale),
+                right: toSurfacePx(16, cornerScale),
+                bottom: toSurfacePx(16, cornerScale),
               }
         }
         className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"

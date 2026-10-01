@@ -604,7 +604,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|PanelOpacity':
     'Someone adjusted how see-through the floating panels are, on the Panel Opacity slider in Settings > Editor.',
   'UI|Changed|UiScale':
-    'Someone made the panels, the Palette toolbar and the bottom-right buttons bigger or smaller, on the UI Scale slider in Settings > Appearance.',
+    'Someone made the panels, the toolbar and the bottom-right buttons bigger or smaller together, on the UI Scale slider in Settings > Appearance.',
+  'UI|Changed|UiScalePanels':
+    'Someone made just the panels bigger or smaller, on the Panel Scale slider under UI Scale in Settings > Appearance.',
+  'UI|Changed|UiScaleToolbar':
+    'Someone made just the toolbar bigger or smaller, on the Toolbar Scale slider under UI Scale in Settings > Appearance.',
+  'UI|Changed|UiScaleCornerButtons':
+    'Someone made just the bottom-right buttons (undo, layers, theme, zoom) bigger or smaller, on the Corner Buttons Scale slider under UI Scale in Settings > Appearance.',
   'UI|Changed|QuickSwatchCustom':
     "Someone replaced one of the quick style panel's theme colours with a colour of their own, by right-clicking the swatch.",
   'UI|Changed|QuickSwatchReset':

@@ -68,7 +68,7 @@ export function MovablePanel({
   const minimalChrome = useMinimalChrome();
   // UI scale (docs/specs/007-editor/ui-scale.md): the panel is zoomed at its
   // root, so every screen-px offset written on it goes through toSurfacePx.
-  const scale = useUiScale();
+  const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
   const ref = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);

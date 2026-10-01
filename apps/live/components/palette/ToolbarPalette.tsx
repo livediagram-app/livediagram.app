@@ -130,7 +130,7 @@ export function ToolbarPalette(props: Props) {
   const viewportWidth = useViewportWidth();
   // UI scale (docs/specs/007-editor/ui-scale.md): the strip zooms at its root,
   // so a scaled tile takes more of the window.
-  const scale = useUiScale();
+  const scale = useUiScale('toolbar');
   // Measured from the strip itself (useStripTileLimit); the estimate only
   // covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);

@@ -38,7 +38,14 @@ function panel(
     </MovablePanel>
   );
   const { container } = render(
-    scale === null ? el : <UiScaleProvider value={scale}>{el}</UiScaleProvider>,
+    scale === null ? (
+      el
+    ) : (
+      // Only the panels part applies to a panel.
+      <UiScaleProvider value={{ panels: scale, toolbar: 0.8, cornerButtons: 1.2 }}>
+        {el}
+      </UiScaleProvider>
+    ),
   );
   return container.querySelector('[data-floating-panel]') as HTMLElement;
 }
@@ -80,7 +87,7 @@ describe('useUiScale', () => {
   it('is 1 with no provider', () => {
     let seen = 0;
     function Probe() {
-      seen = useUiScale();
+      seen = useUiScale('panels');
       return null;
     }
     render(<Probe />);

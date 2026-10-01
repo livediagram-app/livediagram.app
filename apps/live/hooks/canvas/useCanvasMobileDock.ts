@@ -68,7 +68,7 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   const [activeMobilePanel, setActiveMobilePanel] = useState<MobilePanel | null>(null);
   const dockButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [activeDockAnchor, setActiveDockAnchor] = useState<DockAnchor | null>(null);
-  const scale = useUiScale();
+  const scale = useUiScale('panels');
 
   // Open a panel under its dock button (never toggles it shut).
   //

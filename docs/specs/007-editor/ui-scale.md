@@ -10,7 +10,10 @@ dialogs and every other page.
 
 ## What scales
 
-Exactly these surfaces, in every desktop layout:
+Exactly these surfaces, in every desktop layout, in three **parts** that can
+each be sized on their own (see "The setting"):
+
+**Panels** (`panels`):
 
 - **Every panel**: each `MovablePanel`, floating, docked into a corner,
   dragged, or open as a popover (the Minimal layout's popovers, the Toolbar
@@ -18,9 +21,15 @@ Exactly these surfaces, in every desktop layout:
   That covers the Explorer, Palette, AI, Layers, Activity, Map, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
+
+**Toolbar** (`toolbar`):
+
 - **The Toolbar layout's strip** and its More popover ([Toolbar layout](toolbar-layout.md)),
   and that layout's top-left Explorer menu button.
 - **The Minimal layout's button bar** in the top right.
+
+**Corner buttons** (`cornerButtons`):
+
 - **The bottom-right cluster**: the Activity strip with Undo / Redo, the
   Layers and Collaborate buttons, the Theme & Canvas button, the Zoom
   controls and the off-screen content hint.
@@ -34,35 +43,53 @@ design size too.
 
 ## The setting
 
-- **Key** `uiScale` in `UserPreferences` ([User preferences](user-preferences.md)),
-  a number: the factor every scaled surface is drawn at. Synced like every
-  other preference.
-- **Range** 80% to 150% in 5% steps; **default** 100% (missing key). Below
-  80% the chrome's 10px labels drop under 8px and stop being readable; above
-  150% the Palette and a corner stack of panels no longer fit a laptop
-  screen.
+- **Keys** in `UserPreferences` ([User preferences](user-preferences.md)),
+  each a number, synced like every other preference:
+  - `uiScale`, the **master**: the factor every part is drawn at.
+  - `uiScalePanels`, `uiScaleToolbar`, `uiScaleCornerButtons`: a part's own
+    factor, overriding the master for that part alone. Missing = the part
+    follows the master.
+- **Setting the master sets everything**: it writes `uiScale` and clears all
+  three part keys, so the master slider always means "every part at this
+  size". Setting a part writes only that part's key.
+- **Range** 80% to 120% in 5% steps; **default** 100% (missing key). The
+  range is symmetric so 100% sits in the middle of the slider: making the
+  chrome smaller to give the canvas room is wanted as much as making it
+  bigger. 80% is the floor below which the chrome's small labels stop being
+  readable.
 - **Desktop only.** On a phone-sized viewport (below the `sm:` breakpoint)
   the chrome always draws at 100%: the phone layout is already sized to the
   screen, and a scaled panel would run off it. The stored value is left
   alone for the desktop.
 - A stored value that is not a finite number reads as 100%; one outside the
-  range is clamped into it; one between steps snaps to the nearest step.
+  range is clamped into it; one between steps snaps to the nearest step. A
+  part key holding junk reads as 100%, not as the master.
 
 ## In Settings
 
-A `slider` row in the **Appearance** category, after Theme:
+Four `slider` rows in the **Appearance** category, after Theme: the master,
+then one per part nested beneath it (`parent: 'uiScale'`), each showing its
+value as a percentage ("110%"):
 
-- Label **UI Scale**, value shown as a percentage ("110%").
-- Footnote: "Makes the panels, the Palette toolbar and the buttons in the
-  bottom-right corner bigger or smaller. The canvas, dialogs and menus stay
-  as they are."
-- Desktop only (the row-level `desktopOnly` note, shown on a phone): "UI Scale
+| Row                  | Footnote                                                                                                                                                                                   | Event                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| UI Scale             | "Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below." | `UiScale`              |
+| Panel Scale          | "Every panel, floating or opened from a button, and the Quick Style panel."                                                                                                                | `UiScalePanels`        |
+| Toolbar Scale        | "The Toolbar layout's strip and its menu button, and the Minimal layout's button bar."                                                                                                     | `UiScaleToolbar`       |
+| Corner Buttons Scale | "The buttons in the bottom-right corner: Activity, Undo and Redo, Layers, theme and zoom."                                                                                                 | `UiScaleCornerButtons` |
+
+- A part's slider shows its own value, or the master's while it has none.
+- Desktop only (each row's `desktopOnly` note, shown on a phone): "UI Scale
   is desktop only, so a phone always uses 100%. Your choice still applies on a
-  larger screen." On a phone the slider is greyed and takes no input.
-- Search keywords: "zoom size bigger smaller larger text font scale
-  magnify chrome interface ui accessibility".
-- Commits on release like Panel Opacity, so one drag is one write.
-- Emits `UI` / `Changed` / `UiScale` on commit
+  larger screen." On a phone the sliders are greyed and take no input.
+- Search keywords cover "zoom size bigger smaller scale" plus each part's
+  own words (undo, zoom controls, layers for corner buttons; strip, button
+  bar for the toolbar).
+- **Live while dragged**: the chrome resizes as the thumb moves, so you can
+  see the size you are choosing. The value is only a preview until release,
+  which commits it like Panel Opacity, so one drag is one write; closing
+  Settings mid-drag drops the preview and keeps the stored value.
+- Emits `UI` / `Changed` / the row's event on commit
   ([Telemetry](../017-telemetry/telemetry.md)).
 
 ## Behaviour
@@ -86,6 +113,6 @@ A `slider` row in the **Appearance** category, after Theme:
   follows the pointer exactly, and corner snapping measures the panel at its
   scaled size.
 - **What makes room for a scaled surface moves with it**: the bottom-right
-  corner's panel stack clears the taller zoom cluster, the top corners clear
-  the taller Toolbar strip, the strip fits fewer tiles before More, and a
+  corner's panel stack clears the zoom cluster at the corner buttons' scale,
+  the top corners clear the Toolbar strip at the toolbar's scale, the strip fits fewer tiles before More, and a
   popover opened from a button stays inside the window at its scaled width.
