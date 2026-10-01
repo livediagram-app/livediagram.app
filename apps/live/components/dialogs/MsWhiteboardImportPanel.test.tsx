@@ -25,9 +25,7 @@ describe('MsWhiteboardImportPanel', () => {
   it('lists the boards in a labelled group, all ticked, and imports the ticked ones', async () => {
     const importScenes = vi.fn(async () => ({ status: 'done' as const }));
     const onDone = vi.fn();
-    render(
-      <MsWhiteboardImportPanel importScenes={importScenes} onDone={onDone} onBack={() => {}} />,
-    );
+    render(<MsWhiteboardImportPanel importScenes={importScenes} onClose={onDone} />);
     fireEvent.click(screen.getByRole('button', { name: 'Choose a folder' }));
     const group = await screen.findByRole('group', { name: 'Boards to import' });
     expect(group).toBeTruthy();
@@ -36,16 +34,36 @@ describe('MsWhiteboardImportPanel', () => {
     expect(screen.getByText('Edited 12 Mar 2026 · 0 items')).toBeTruthy();
     fireEvent.click(screen.getByRole('checkbox', { name: /Whiteboard, 1 Jan 2026/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Import 1 board' }));
+    // The panel shows its own report; Done hands back to the host.
+    fireEvent.click(await screen.findByRole('button', { name: 'Done' }));
     await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(importScenes).toHaveBeenCalledTimes(1);
   });
 
   it('disables import with nothing ticked', async () => {
-    render(<MsWhiteboardImportPanel importScenes={vi.fn()} onDone={vi.fn()} onBack={() => {}} />);
+    render(<MsWhiteboardImportPanel importScenes={vi.fn()} onClose={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Choose a folder' }));
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Select all' }));
     expect(
       (screen.getByRole('button', { name: 'Import 0 boards' }) as HTMLButtonElement).disabled,
     ).toBe(true);
+  });
+
+  it('shows a way back only when its host gives one', () => {
+    const back = vi.fn();
+    const { unmount } = render(
+      <MsWhiteboardImportPanel importScenes={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    unmount();
+    render(
+      <MsWhiteboardImportPanel
+        importScenes={vi.fn()}
+        onClose={vi.fn()}
+        onBack={{ label: 'All formats', onClick: back }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    expect(back).toHaveBeenCalled();
   });
 });

@@ -2,6 +2,7 @@ import { useState, type DragEvent } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import { pickExport, readDrop } from '@/lib/pick-folder';
+import { ImportImageReport } from './ImportImageReport';
 import type { ImportOutcome } from '@/lib/import-tab';
 import {
   useMsWhiteboardImport,
@@ -15,29 +16,44 @@ const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', 
 const plural = (n: number, one: string, many: string) =>
   `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
-// The Microsoft Whiteboard card's panel (docs/specs/020-import-export/whiteboard-import.md
-// "Importing in the dialog"): pick or drop a board export, choose boards, watch them import.
+// The Microsoft Whiteboard import, whole (docs/specs/020-import-export/whiteboard-import.md
+// "Importing"): pick or drop a board export, choose boards, watch them import, read the report.
+// Self-contained so any host can mount it: the host supplies the commit and what Done does, and
+// optionally a way back (shown as the house back bar).
 export function MsWhiteboardImportPanel({
   importScenes,
-  onDone,
+  onClose,
   onBack,
 }: {
   importScenes: ImportScenes;
-  onDone: (outcome: DoneOutcome) => void;
-  onBack: () => void;
+  onClose: () => void;
+  onBack?: { label: string; onClick: () => void };
 }) {
-  const flow = useMsWhiteboardImport({ importScenes, onDone });
+  const [done, setDone] = useState<DoneOutcome | null>(null);
+  const flow = useMsWhiteboardImport({ importScenes, onDone: setDone });
   const { state } = flow;
   const busy = state.step === 'reading' || state.step === 'importing';
 
+  if (done) {
+    return (
+      <ImportImageReport
+        report={done.images}
+        scene={done.scene}
+        failures={done.failures}
+        onDone={onClose}
+      />
+    );
+  }
   return (
     <div>
-      <BackBar
-        label="All formats"
-        current="Microsoft Whiteboard"
-        onClick={onBack}
-        disabled={busy}
-      />
+      {onBack ? (
+        <BackBar
+          label={onBack.label}
+          current="Microsoft Whiteboard"
+          onClick={onBack.onClick}
+          disabled={busy}
+        />
+      ) : null}
       {state.step === 'pick' ? (
         <PickStep error={state.error} onPicked={(p) => void flow.open(p)} />
       ) : state.step === 'list' ? (

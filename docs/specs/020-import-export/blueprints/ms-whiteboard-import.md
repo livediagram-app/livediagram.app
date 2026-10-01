@@ -296,15 +296,17 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
   under the drop zone (`role="alert"`): the Errors table's copy, or "Couldn't import that. Check
   the export and try again." for anything unexpected.
 - One board imports straight away, without the list.
-- List (several boards): a checkbox per board, label the title, secondary line "Edited 12 Mar 2026
+- List (several boards): a checkbox per board, label the document name, secondary line "Edited 12 Mar 2026
   · 140 items"; a "Select all" checkbox; primary button "Import 12 boards" (count follows the
   ticks; disabled at 0), "Back"; under the list, "2 boards couldn't be read and will be left out."
   when listing failed for some.
 - Progress (`role="status"`): "Importing board 3 of 12…" ("Importing board…" for one), then
   "Importing images 3 of 12…".
-- Result: the Import dialog's shared report view ("Here's how your board came across.": landed
-  counts, notes, image counts, boards left out), button "Done"; a lossless import with no images
-  closes the dialog.
+- Result: the panel's own report (the shared `ImportImageReport`: landed counts, notes, image
+  counts, boards left out), always shown, its "Done" handing back to the host.
+- The panel is self-contained (`MsWhiteboardImportPanel`: `importScenes`, `onClose`, optional
+  `onBack: { label, onClick }` drawn as the house back bar), so any host mounts it; the editor's
+  Import dialog mounts it behind its card with "All formats" as the way back.
 
 ## Accessibility
 

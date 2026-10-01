@@ -156,6 +156,7 @@ export function ImportTabDialog({
             onImportText={onImportText}
             boards={active === 'microsoft-whiteboard'}
             onImportBoards={onImportBoards}
+            onClose={onClose}
             onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
           />
         )}
@@ -173,6 +174,7 @@ function ImportChooser({
   onImportText,
   boards,
   onImportBoards,
+  onClose,
   onDone,
 }: {
   tabName: string;
@@ -180,6 +182,7 @@ function ImportChooser({
   onPick: (format: Choice | null) => void;
   boards: boolean;
   onImportBoards: ImportScenes;
+  onClose: () => void;
   onImportFile: ImportTabDialogProps['onImportFile'];
   onImportText: ImportTabDialogProps['onImportText'];
   onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
@@ -188,8 +191,8 @@ function ImportChooser({
     return (
       <MsWhiteboardImportPanel
         importScenes={onImportBoards}
-        onDone={onDone}
-        onBack={() => onPick(null)}
+        onClose={onClose}
+        onBack={{ label: 'All formats', onClick: () => onPick(null) }}
       />
     );
   }
