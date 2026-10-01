@@ -4,13 +4,13 @@ import {
   isValidElement,
   isValidTab,
   MAX_ELEMENTS_PER_TAB,
-  MAX_FREEHAND_POINTS,
   MAX_PATH_NODES,
   PATH_COORD_MAX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
+import { MAX_FREEHAND_POINTS } from './stroke-points';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };

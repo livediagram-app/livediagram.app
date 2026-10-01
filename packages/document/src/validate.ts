@@ -57,10 +57,10 @@ import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow } from './mind-flow';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
+import { MAX_FREEHAND_POINTS } from './stroke-points';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-export const MAX_FREEHAND_POINTS = 20_000;
 // A path (docs/specs/023-whiteboard/path-tool.md): a drawn one rarely passes 50 nodes.
 export const MAX_PATH_NODES = 5_000;
 // A normalised path coordinate: handles may reach beyond the box, never absurdly far.

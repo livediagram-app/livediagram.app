@@ -474,6 +474,8 @@ export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
+export * from './stroke-points';
+export * from './stroke-points-cache';
 export * from './pen-colours';
 export * from './snap-colours';
 export * from './path-geometry';
