@@ -10,5 +10,5 @@ Follow the references below only as needed; never upfront.
 - ./board-import.md - when working on any board import from another tool: stages, WebP resize (WASM on Safari), gallery-cap placeholders, the import report, bulk readiness
 - ./board-scene.md - when working on the board scene every board import and paste reduces to: its items, the whiteboard and diagram profiles, colour, width and text mapping, placement, the report and the paste notice
 - ./miro-import.md - when working on Miro import: REST API v2 only (no clipboard), stateless Worker code exchange, browser-direct reads, the Miro to livediagram mapping and what is skipped
-- ./whiteboard-import.md - when working on Microsoft Whiteboard import: personal boards retire 2026-10-16, the PNG image route, what the web app exports, the Full export Zip
+- ./whiteboard-import.md - when working on Microsoft Whiteboard import: board exports (the edit history) replayed into one dated document per board, the format (tree, changes, pen-stroke encoding), colour normalisation, the mapping to a board scene, where it lives (the Explorer) and the import flow
 - ./blueprints/README.md - when implementing from a blueprint: the import image pipeline and Excalidraw import

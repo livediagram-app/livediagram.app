@@ -517,6 +517,8 @@ export function useExplorerState() {
     invites,
     tokens,
     loading,
+    // Re-read the owner's lists (after an import made documents).
+    refreshPersonal: refresh,
     folderById,
     childrenByParent,
     rootFolders,

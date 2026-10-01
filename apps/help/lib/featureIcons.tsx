@@ -1448,6 +1448,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3v9M9 9l3 3 3-3" />
     </Glyph>
   ),
+  // A board's ink arriving in a tab.
+  'microsoft-whiteboard-import': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
+    </Glyph>
+  ),
   'export-tabs': (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />

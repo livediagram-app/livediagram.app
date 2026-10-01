@@ -13,6 +13,7 @@ import { TimelineControls } from '@livediagram/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
+import { useExplorerImport } from './useExplorerImport';
 
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
@@ -96,6 +97,7 @@ export function ExplorerPane() {
     go,
     loading,
     ownerId,
+    refreshPersonal,
     clerkUserId,
     clerkDisplayName,
     activity,
@@ -183,49 +185,64 @@ export function ExplorerPane() {
   // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
+  const newDocument =
+    // Timeline gets one too. A feed is a record of what happened rather
+    // than a container you add to, so this started out omitted and left
+    // to the empty state's CTA — but the empty state is exactly what a
+    // returning user never sees, and Timeline is now the Explorer
+    // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new document" a
+    // dead end on the first screen of the app.
+    //
+    // Activity does NOT: a new document puts nothing on an inbox of
+    // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
+    selected.kind === 'activity' ||
+    selected.kind === 'shared' ||
+    selected.kind === 'gallery' ||
+    selected.kind === 'themes' ||
+    selected.kind === 'trash' ||
+    selected.kind === 'team' ||
+    selected.kind === 'invites' ||
+    // Generated / Offline are read-through dynamic views, not places
+    // you hand-author into (offline documents are created from the /new
+    // wizard's Settings toggle).
+    selected.kind === 'generated' ||
+    selected.kind === 'offline' ||
+    selected.kind === 'dynamic'
+      ? undefined
+      : () =>
+          window.location.assign(
+            selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new',
+          );
+  // Imports sit beside New document: imported boards land where new documents do.
+  const imports = useExplorerImport({
+    ownerId,
+    folderId: selected.kind === 'folder' ? selected.id : null,
+    onDocumentsCreated: () => {
+      if (ownerId) void refreshPersonal(ownerId);
+    },
+  });
+
   return (
     <>
+      {imports.dialogs}
       <PaneHeader
         title={hideTeamTitle ? '' : paneTitle}
         crumbs={hideTeamTitle ? [] : paneCrumbs}
         onOpenNav={() => setMobileNavOpen(true)}
         helpArticle={sectionHelp}
         headerActions={
-          selected.kind === 'timeline' ? (
-            <TimelineControls controls={timeline.controls} />
+          selected.kind === 'timeline' || newDocument ? (
+            <>
+              {selected.kind === 'timeline' ? (
+                <TimelineControls controls={timeline.controls} />
+              ) : null}
+              {newDocument ? imports.toolbar : null}
+            </>
           ) : undefined
         }
         viewMode={isBrowse ? viewMode : undefined}
         onSetViewMode={isBrowse ? setViewMode : undefined}
-        onCreateDocument={
-          // Timeline gets one too. A feed is a record of what happened rather
-          // than a container you add to, so this started out omitted and left
-          // to the empty state's CTA — but the empty state is exactly what a
-          // returning user never sees, and Timeline is now the Explorer
-          // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new document" a
-          // dead end on the first screen of the app.
-          //
-          // Activity does NOT: a new document puts nothing on an inbox of
-          // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
-          selected.kind === 'activity' ||
-          selected.kind === 'shared' ||
-          selected.kind === 'gallery' ||
-          selected.kind === 'themes' ||
-          selected.kind === 'trash' ||
-          selected.kind === 'team' ||
-          selected.kind === 'invites' ||
-          // Generated / Offline are read-through dynamic views, not places
-          // you hand-author into (offline documents are created from the /new
-          // wizard's Settings toggle).
-          selected.kind === 'generated' ||
-          selected.kind === 'offline' ||
-          selected.kind === 'dynamic'
-            ? undefined
-            : () =>
-                window.location.assign(
-                  selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new',
-                )
-        }
+        onCreateDocument={newDocument}
         onCreateFolder={
           selected.kind === 'timeline' ||
           selected.kind === 'activity' ||
