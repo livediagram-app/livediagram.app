@@ -17,17 +17,7 @@ export type MovablePanelDockProps = {
 
 // The placement props a panel forwards straight through to the MovablePanel
 // it renders. Every movable panel in the editor takes these and passes them
-// on unchanged; nine of them had re-declared the set by hand, including the
-// `mobileDockAnchor` object shape written out longhand nine times.
-//
-// Each prop's behaviour is documented on MovablePanelProps below. What is
-// worth recording here is why a panel must forward them rather than letting
-// MovablePanel default: `mobileDockAnchor` tells the popover where the dock
-// button that opened it sits, so it hangs under that button with a pointer
-// arrow. Without it MovablePanel falls back to a fixed top-right corner with
-// no arrow, which is exactly how the Poll and Vote panels once looked flush
-// against the dock while every other docked panel floated beneath its own
-// button.
+// on unchanged; nine of them had re-declared the set by hand.
 //
 // `onReset` is optional here; a panel that always offers reset narrows it by
 // intersecting with a required declaration of its own.
@@ -37,20 +27,20 @@ export type MovablePanelPlacementProps = {
   onReset?: () => void;
   // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
-  // Mobile / minimal-layout dock plumbing (docs/specs/007-editor/live-app.md "Mobile chrome"): a panel
-  // with its own dock button opens as a popover there, so it hides unless the
-  // dock has it open.
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: DockAnchor;
-  // The minimal-layout preference: dock behaviour on desktop too. A panel
-  // that forwards the two above but not this floats freely in minimal
-  // layout and ignores its own dock button.
-  forceDockMode?: boolean;
-  // Close the dock popover on any press outside it, as a menu does, at every
-  // viewport. The Toolbar layout's Explorer (docs/specs/007-editor/toolbar-layout.md) is a menu off its
-  // button, so opening another strip menu puts it away.
+};
+
+// The props of a panel that can open as a popover off a button: the Toolbar
+// layout's Explorer (docs/specs/007-editor/toolbar-layout.md), and the Layers, Activity and Collaborate
+// popovers over their cluster buttons (docs/specs/007-editor/live-app.md). Each is documented on
+// MovablePanelProps below. A panel must forward `popoverAnchor` rather than
+// let MovablePanel default it: it says where the button that opened the
+// popover sits, so the popover hangs from that button with a pointer arrow.
+export type MovablePanelPopoverProps = {
+  popoverOpen?: boolean;
+  popoverAnchor?: DockAnchor;
+  asPopover?: boolean;
   dismissOnOutside?: boolean;
-  onMobileClose?: () => void;
+  onPopoverClose?: () => void;
 };
 
 export type MovablePanelProps = {
@@ -82,11 +72,11 @@ export type MovablePanelProps = {
   // this slots into the same tight cluster as reset / minimise — for
   // panel-scoped affordances that belong with the chrome buttons (the
   // Palette's settings popover trigger). Only rendered in the desktop
-  // floating-panel header; the mobile dock popover has no header.
+  // floating-panel header; the popover has no header.
   headerActions?: ReactNode;
   // The help article this panel is explained by (docs/specs/018-help/contextual-help-links.md). Rendered as the
   // `?` chrome button beside reset / minimise, in BOTH the desktop header and
-  // the mobile/minimal band, so the help we already wrote is reachable from
+  // the popover's header band, so the help we already wrote is reachable from
   // the feature it documents rather than only by searching for it.
   //
   // Declared here rather than left to each panel's own headerActions so every
@@ -120,27 +110,12 @@ export type MovablePanelProps = {
   // independently of which corner / top-utility class the upper
   // panel uses (top-2 on mobile vs top-4 on desktop).
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
-  // Mobile-only override for the top edge of `top-right` panels. Used
-  // when ANOTHER panel sits above on mobile (Explorer above Palette),
-  // so the Palette starts below it instead of overlapping. Ignored on
-  // desktop, where the panel keeps its right-corner layout. Numeric
-  // pixels, applied as an inline `top` so it wins over the Tailwind
-  // mobile class without disturbing the `sm:top-4` desktop class.
-  mobileTopOverridePx?: number;
-  // CSS selector for DOM nodes that should be treated as inside the
-  // panel even if they live outside `ref` (e.g. portal-mounted
-  // submenus rendered to document.body). Without this, tapping an
-  // ellipsis-menu item inside the panel body would count as a tap
-  // OUTSIDE the panel and trigger the mobile auto-collapse, which
-  // hides the rename input the same tap is about to mount.
-  outsideExceptSelector?: string;
   // When true the panel can collapse to a banner (title row only)
   // via its header button, on both mobile and desktop. The button's
   // icon flips between dash (collapse) and plus (expand) so the
   // same slot is the entry point in both directions. Mobile starts
-  // collapsed by default and auto-collapses on outside-tap; desktop
-  // starts expanded and stays open until the user clicks the button
-  // again. Replaces the dock-button minimise mechanism for opted-in
+  // collapsed by default; desktop starts expanded. Either stays as set
+  // until the user clicks the button again. Replaces the dock-button minimise mechanism for opted-in
   // panels: the banner stays in the corner so the affordance is
   // always visible. See docs/specs/008-canvas/canvas-and-palette.md "Collapse to banner".
   collapsible?: boolean;
@@ -151,21 +126,19 @@ export type MovablePanelProps = {
   // Comments panel ships closed so it doesn't compete with the
   // Palette above it).
   defaultCollapsed?: boolean;
-  // Mobile dock mode. When true: force the panel open and position it
-  // below the dock bar (using mobileTopOverridePx as the top offset).
-  // When false: render nothing on mobile so the dock button is the
-  // only affordance. When undefined: existing self-managed behaviour.
-  mobileOpenOverride?: boolean;
-  // When true, apply the mobile dock behaviour on desktop too (the
-  // "minimal panel layout" user preference). The dock in Canvas.tsx
-  // stays visible and panels render as popovers regardless of viewport.
-  forceDockMode?: boolean;
-  // See MovablePanelPlacementProps.dismissOnOutside.
+  // Render as a popover off a button rather than a floating panel: shown
+  // only while `popoverOpen`, hung from `popoverAnchor`, with a slim header
+  // band instead of the draggable title row.
+  asPopover?: boolean;
+  // Whether the button that owns this popover has it open.
+  popoverOpen?: boolean;
+  // Close the popover on any press outside it, as a menu does. The button
+  // that opened it toggles it itself.
   dismissOnOutside?: boolean;
-  // Called when the user taps the collapse/minimize button while the
-  // panel is dock-controlled. The dock should deactivate this panel.
-  onMobileClose?: () => void;
-  mobileDockAnchor?: DockAnchor;
+  // Called when the popover asks to close (an outside press, or its header's
+  // close control), so the owner can clear its open panel.
+  onPopoverClose?: () => void;
+  popoverAnchor?: DockAnchor;
   // Drop the body's default top padding so the first child sits flush
   // against the panel header (floating) or the popover's top edge (dock).
   // Used by the palette, whose first child is a full-width tab band meant
@@ -187,8 +160,7 @@ export type MovablePanelProps = {
   // stack container (no absolute positioning / corner class), so the
   // container owns its resting position + reflow. Ignored while a drag
   // is in progress (the panel lifts to absolute to follow the pointer)
-  // and in the mobile / minimal dock paths. Wired only by CanvasChrome's
-  // desktop docking layout.
+  // and in the popover path. Wired only by CanvasChrome's docking layout.
   docked?: boolean;
   // The corner the panel currently rests in while docked (see the bundle
   // type above) — drives the body-height anchor for bottom corners.
@@ -204,7 +176,7 @@ export type MovablePanelProps = {
   onDockDragEnd?: (geom: PanelDragGeometry) => void;
   // Stable anchor id for the interactive tour (docs/specs/007-editor/editor-tour.md), rendered as
   // `data-tour-id` on the panel root in BOTH render paths (floating panel
-  // and mobile/minimal dock popover) so tour steps can find the panel
+  // and popover) so tour steps can find the panel
   // whatever the layout.
   dataTourId?: string;
   children: ReactNode;

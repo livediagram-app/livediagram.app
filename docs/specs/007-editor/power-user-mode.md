@@ -36,8 +36,8 @@ Panel opacity is not part of the preset. Motion is not part of the mode: every t
   (`powerUserBaseline`). "Did the user change it?" is answered by comparing the current value with the value written,
   so it holds whichever surface made the change (Settings, the tour's layout picker, another device). A setting changed
   and then changed back to the preset's value counts as untouched.
-- **One setting can span several keys.** The panel layout writes `panelLayout` and its legacy mirror `minimalPanels`
-  together ([Toolbar layout](toolbar-layout.md)); they are compared and restored together, so the two never disagree.
+- **One setting can span several keys.** A preset setting names the keys it writes; they are compared and restored
+  together, so they never disagree. Every setting in today's preset writes one key.
 - **Switching on while already on does nothing**, and switching off while off does nothing. Switching on again after
   switching off records a fresh baseline.
 

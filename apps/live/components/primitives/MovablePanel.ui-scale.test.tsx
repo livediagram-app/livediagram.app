@@ -73,9 +73,9 @@ describe('MovablePanel at a UI scale', () => {
 
   it('positions a popover from its screen-px anchor', () => {
     const root = panel(2, {
-      forceDockMode: true,
-      mobileOpenOverride: true,
-      mobileDockAnchor: { top: 40, left: 100, arrowOffset: 30 },
+      asPopover: true,
+      popoverOpen: true,
+      popoverAnchor: { top: 40, left: 100, arrowOffset: 30 },
     });
     expect(root.style.zoom).toBe('2');
     expect(root.style.top).toBe('26px');

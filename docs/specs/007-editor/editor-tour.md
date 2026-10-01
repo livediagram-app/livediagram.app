@@ -17,17 +17,16 @@ card were removed once this tour proved the better introduction.
   "No thanks" dismisses it. There is no wizard toggle; the offer IS the
   opt-in, and declining must be one obvious, equal-weight click.
 - **The welcome card also picks the panel layout.** Under its copy sit
-  the three Panel Layout drawings from Settings (Floating / Minimal /
-  Toolbar, [Toolbar layout](toolbar-layout.md)), one button each, the one in
+  the two Panel Layout drawings from Settings (Floating / Toolbar,
+  [Toolbar layout](toolbar-layout.md)), one button each, the one in
   force ringed. A pick applies at once (the card's backdrop is a light
   tint, so the editor visibly changes behind it) and is written like the
   Settings row writes it, so it holds whether the tour is then taken or
   declined. The tour's steps follow the layout in force when it starts, so
-  the Toolbar variants (below) kick in for a Toolbar pick. The options,
-  the phone restriction (Floating, desktop only, is left out on a phone,
-  where the remaining two keep their desktop size, centred; a stored
-  Floating rings Toolbar there, which is what the phone shows, [Toolbar layout](toolbar-layout.md)),
-  the write, and
+  the Toolbar variants (below) kick in for a Toolbar pick. A phone shows
+  no picker: Floating is desktop only, which leaves Toolbar as the only
+  layout there, so there is nothing to choose ([Toolbar layout](toolbar-layout.md)). The options,
+  the phone restriction, the write, and
   the telemetry token all come from the Settings row
   (`choiceRow('panelLayout')`), so the two surfaces cannot disagree
   (`TourLayoutPicker`).
@@ -126,11 +125,8 @@ alone.
   safety net; the step list itself is filtered up front (`tourStepsFor`,
   by viewport and tab kind) so the "N of M" count stays honest instead
   of a hidden step burning its timeout mid-tour.
-- **Mobile + minimal panel layout**: panels there live behind the dock
-  button row ([Live app](live-app.md) / [Canvas and palette](../008-canvas/canvas-and-palette.md)), so palette/explorer steps first tap the
-  matching dock button (`data-tour-id="dock-*"`), and the popover clamps to
-  the viewport with the shared edge margins. Collapsed desktop panels are
-  expanded via their header toggle the same way.
+- **Collapsed panels**: a Floating panel collapsed to its banner is
+  expanded via its header toggle before its step is measured.
 - **Toolbar panel layout** ([Toolbar layout](toolbar-layout.md), desktop and
   phone): there is no Explorer panel to point at, so the Explorer step
   presses the top-left menu button (`data-tour-id="dock-explorer"`, whose
@@ -142,7 +138,7 @@ alone.
   selection-mode and category steps use the strip's own pickers. Every other
   step is the same in all layouts.
 - Advancing closes whatever the previous step opened (dropdowns, context
-  menu, dock popovers); finishing or skipping restores a quiet editor.
+  menu, popovers); finishing or skipping restores a quiet editor.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

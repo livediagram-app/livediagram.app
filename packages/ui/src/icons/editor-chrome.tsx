@@ -47,7 +47,7 @@ export function ThemeBrushIcon({ size = 20, ...rest }: IconProps = {}) {
   );
 }
 
-// The Layers dock button (20px in the cluster, 16px in the mobile dock).
+// The Layers button in the bottom-right cluster (20px).
 export const LayersStackIcon = lucideGlyph(lucideLayers, 20);
 
 // Settings: two sliders, never a cog (a cog's spokes read as a sun, the appearance toggle).

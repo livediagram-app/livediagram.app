@@ -67,8 +67,8 @@ synchronously on its first render, before any scaled surface paints.
 Each scaled surface reads its part's scale with `useUiScale(part)`, spreads
 `uiScaleStyle(scale)` into its ROOT's `style`, and converts every JS-computed
 screen-px length it writes on that root or a descendant with `toSurfacePx`.
-`panels`: `MovablePanel`, `QuickStylePanel`, `useCanvasMobileDock`.
-`toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`, `CanvasMobileDock`.
+`panels`: `MovablePanel`, `QuickStylePanel`, `useDockPopovers`.
+`toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`.
 `cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
 
 - **`MovablePanel`** (both branches):
@@ -78,7 +78,7 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
   - The legacy drag's start point reads `offsetLeft` / `offsetTop` (surface
     px) and multiplies by `scale` to get screen px.
   - `bodyMaxH` (screen px, measured) → `toSurfacePx` on the body's `maxHeight`.
-  - Popover `mobileDockAnchor` offsets (screen px) → `toSurfacePx`, including
+  - Popover `popoverAnchor` offsets (screen px) → `toSurfacePx`, including
     the `maxHeight: calc(100% - Npx)` term's `N`. The arrow's `left` is inside
     the zoomed root, so its `arrowOffset` → `toSurfacePx` too.
   - Corner classes (`top-4 right-4` etc.) are insets on the zoomed root, so
@@ -100,14 +100,12 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
   `currentCSSZoom` (1 where unsupported), so it writes surface px.
 - **The bottom-right cluster** (`[data-zoom-cluster]`): zoom on the root;
   `right` / `bottom` inline `toSurfacePx(16)` so it keeps its 16px corner gap.
-- **`CanvasMobileDock`** (the Minimal button bar): zoom on the root; `top` /
-  `right` inline `toSurfacePx(12)`.
 - **`ToolbarExplorerButton`**: zoom on the root; its corner inset is restored
   the same way. Inline in the phone strip it takes no zoom of its own.
 
 Popovers that MovablePanel anchors to a scaled button read the button's
 `getBoundingClientRect` (screen px), so they line up at any scale.
-`useCanvasMobileDock` clamps the anchor against `POPOVER_WIDTH * scale` (the
+`useDockPopovers` clamps the anchor against `POPOVER_WIDTH * scale` (the
 panels' scale: the popover is a panel), so a scaled popover is tucked inside
 the window rather than running off it.
 

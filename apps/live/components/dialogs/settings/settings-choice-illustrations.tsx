@@ -1,5 +1,14 @@
 import type { ReactNode } from 'react';
-import { GAP, H, PANEL, StateFrame, W, Window, pickable } from './settings-illustration-kit';
+import {
+  GAP,
+  H,
+  PANEL,
+  REM_PER_UNIT,
+  StateFrame,
+  W,
+  Window,
+  pickable,
+} from './settings-illustration-kit';
 
 // One small drawing per OPTION of a pick-one setting, side by side, the one
 // in force ringed. The toggle drawings (settings-illustrations.tsx) show a
@@ -20,24 +29,12 @@ type ChoiceDrawing = {
   fullColour?: boolean;
 };
 
-// --- Panel layout (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/007-editor/toolbar-layout.md) --------------------------------------
+// --- Panel layout (docs/specs/007-editor/toolbar-layout.md) --------------------------------------
 
 const FloatingArt = (
   <Window>
     <rect x="5" y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
     <rect x={W - 31} y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
-  </Window>
-);
-
-// The dock: one short row of buttons in the top-right corner.
-const MinimalArt = (
-  <Window>
-    <rect x={W - 39} y="14" width="34" height="11" rx="2.5" className={PANEL} strokeWidth="1" />
-    <path
-      d={`M${W - 28} 14v11M${W - 17} 14v11`}
-      className="stroke-brand-500/60"
-      strokeWidth="0.8"
-    />
   </Window>
 );
 
@@ -115,11 +112,10 @@ export const CHOICE_ILLUSTRATIONS: Record<ChoiceIllustrationId, ChoiceDrawing> =
   panelLayout: {
     states: [
       { id: 'floating', caption: 'Floating', art: FloatingArt },
-      { id: 'minimal', caption: 'Minimal', art: MinimalArt },
       { id: 'toolbar', caption: 'Toolbar', art: ToolbarArt },
     ],
     label:
-      'The three panel layouts: Floating, with the Explorer and Palette panels over the canvas; Minimal, with both collapsed into a short button bar in the top-right corner; and Toolbar, with the Palette as a strip across the top and a menu button in the top-left.',
+      'The two panel layouts: Floating, with the Explorer and Palette panels over the canvas, and Toolbar, with the Palette as a strip across the top and a menu button in the top-left.',
   },
   appearance: {
     states: [
@@ -149,10 +145,14 @@ export function ChoiceStates({
   const n = drawing.states.length;
   // A tighter gap than the toggle pair's: there is no arrow to fit between.
   const gap = GAP / 2;
+  const width = W * n + gap * (n - 1) + 8;
   return (
     <svg
-      viewBox={`-4 -4 ${W * n + gap * (n - 1) + 8} ${H + 22}`}
-      className="h-auto w-full max-w-[24rem]"
+      viewBox={`-4 -4 ${width} ${H + 22}`}
+      // Capped so each frame draws at the toggle pair's size, whatever the
+      // option count: two options stay as small as a toggle's two states.
+      style={{ maxWidth: `${(width * REM_PER_UNIT).toFixed(2)}rem` }}
+      className="h-auto w-full"
       fill="none"
       role="img"
       aria-label={drawing.label}

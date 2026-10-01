@@ -30,14 +30,14 @@ To the right of Laser sits the **Zen mode** button (a fullscreen / expand icon, 
 
 The header has a **collapse button** to the right of the `PALETTE` label. Clicking it hides the body (canvas-tool toggle, shape row, accordions) and leaves the title row visible as a banner in place, so the user always sees the affordance and gets canvas real-estate back. The button's icon flips from a dash (collapse) to a plus (expand) so the same slot is the entry point in both directions.
 
-- **Mobile** (touch viewports below the `sm:` breakpoint, 640 px): the palette does not render at its corner. It opens instead from the **mobile dock** (a top-right button row, see [Live app](../007-editor/live-app.md) "Mobile chrome") as a popover anchored to the Palette button; tapping the button again, or adding a shape / tool, closes the popover. The banner-collapse described here is the desktop mechanism.
+- **Mobile** (touch viewports below the `sm:` breakpoint, 640 px): the palette does not render at its corner. A phone always uses the [Toolbar layout](../007-editor/toolbar-layout.md), where the Palette is a strip across the top of the canvas (see [Live app](../007-editor/live-app.md) "Mobile chrome"). The banner-collapse described here is the desktop Floating mechanism.
 - **Desktop** (`sm:` and up): the palette starts expanded. The collapse button toggles to banner mode. There is no outside-tap auto-close on desktop, the user is in control of when to re-open.
 
-On desktop the Palette collapses to a banner in place via the `MovablePanel` `collapsible` prop. On mobile it (and the Explorer) is reached from the top-right mobile dock instead ([Live app](../007-editor/live-app.md) "Mobile chrome"); the old bottom-of-canvas dock button next to the zoom controls is retired. Activity still docks via its own minimise path, see that section.
+On desktop the Palette collapses to a banner in place via the `MovablePanel` `collapsible` prop. On mobile it is the Toolbar strip, and the Explorer opens from the strip's menu button ([Live app](../007-editor/live-app.md) "Mobile chrome"). Activity still docks via its own minimise path, see that section.
 
-### Minimal panel layout (desktop opt-in)
+### Panel layouts
 
-Desktop users can opt into the mobile-style dock by choosing **Minimal** in the three-way **Panel Layout** preference (Floating / Minimal / Toolbar; `panelLayout`, [User preferences](../007-editor/user-preferences.md)), in the Settings dialog's Panels category. The Toolbar choice is [Toolbar layout](../007-editor/toolbar-layout.md); it replaced the old on/off Minimal Panel Layout toggle, whose `minimalPanels` flag is still written for older readers. With Minimal chosen, the floating Explorer / Palette / AI panels are replaced on desktop by the same top-right button dock and popover behaviour mobile already uses: each button opens its panel as a popover with an arrow pointing at the button, click-outside or a second click closes it, and adding a shape / tool auto-closes the Palette popover. Implemented by the `MovablePanel` `forceDockMode` prop, which extends the existing mobile dock code path to desktop (the dock is `sm:hidden` by default but shown at all widths in the Minimal layout). The default is Floating; mobile is always docked whatever the choice.
+The **Panel Layout** preference (`panelLayout`, [User preferences](../007-editor/user-preferences.md)), in the Settings dialog's Panels category, is a two-way choice: **Floating** (the desktop default, the corner panels described here) or **Toolbar** ([Toolbar layout](../007-editor/toolbar-layout.md), the Palette as one strip across the top). A phone always uses Toolbar.
 
 ## Explorer panel
 
@@ -55,7 +55,7 @@ Sections, top to bottom:
 
 Document rows — in **Recent Documents** and inside folders — show a small chain-link glyph (the shared `SharedDocumentIcon`) beside the name when the document has an active share link (`shareCode` non-null, carried through from the `/api/documents` summary), with a "Has a share link" hover card, so an owner can tell at a glance which of their documents are shared. The glyph is suppressed on the row for the currently-open document, whose share state already shows in the Current Document section.
 
-On desktop, collapsing the Explorer banner-collapses it in place via the shared `MovablePanel` `collapsible` prop (same as the Palette). On mobile the Explorer is instead opened from the top-right mobile dock ([Live app](../007-editor/live-app.md) "Mobile chrome"), so it is no longer hidden on phones; the old bottom-of-canvas dock button is retired. Activity still docks via its own minimise path, see that section.
+On desktop, collapsing the Explorer banner-collapses it in place via the shared `MovablePanel` `collapsible` prop (same as the Palette). On mobile, as in the Toolbar layout on desktop, the Explorer opens as a popover from the strip's menu button ([Toolbar layout](../007-editor/toolbar-layout.md)). Activity still docks via its own minimise path, see that section.
 
 ## Text alignment
 
@@ -339,7 +339,7 @@ A dedicated palette category **after Tools**, holding ready-made **web component
 
 All follow the **active tab theme**. Two looks, both legible by construction: solid-accent bars with white text (**Banner / Header**, which paint in `fillColor` falling back to the stroke, and retheme only their stroke), and light cards using the theme's `elementFill` (surface) + `elementText` (ink) pair with the accent for emphasis (**Callout / Stat row / Process**). The Hero's caption card is the image's `fillColor`. The theme → `{accent, surface, ink}` mapping lives in `buildDrawnComponent` (the diagram factories stay theme-agnostic, taking colours).
 
-**Tap to drop or drag to draw.** Components arm the **same combined gesture as shapes** (a `component` `PendingDraw` intent): a tap drops the component at its natural size on the tap point, a drag sizes it to the dragged box like any shape, and it re-flows into that box. An aspect-locked one (the Avatar) keeps its square, fitted into the box. The palette tiles press while armed and reopen on mobile after the draw lands, exactly like shape tiles.
+**Tap to drop or drag to draw.** Components arm the **same combined gesture as shapes** (a `component` `PendingDraw` intent): a tap drops the component at its natural size on the tap point, a drag sizes it to the dragged box like any shape, and it re-flows into that box. An aspect-locked one (the Avatar) keeps its square, fitted into the box. The palette tiles press while armed, exactly like shape tiles.
 
 **Editing.** The main text (banner title, callout body, header brand) is the element's `label`, edited by double-click like any label. Every other line (a banner's subtitle, a callout's heading, each stat's value and caption, each step, each link, a hero's title and line) is edited in place once the element is selected. Rows are added from the quick-connect ring (**Add stat / Add step / Add link**) and added, removed and reordered from the context menu's **Stats / Steps / Links** section under Tools. See [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md) for the resize behaviour of each.
 

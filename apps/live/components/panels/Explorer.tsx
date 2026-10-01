@@ -52,13 +52,11 @@ function ExplorerImpl({
   teamFolders = [],
   teamDocuments = [],
   onDismissShared,
-  onSize,
   dock,
-  mobileOpenOverride,
-  mobileTopOverridePx,
-  onMobileClose,
-  mobileDockAnchor,
-  forceDockMode,
+  popoverOpen,
+  onPopoverClose,
+  popoverAnchor,
+  asPopover,
   dismissOnOutside,
   recentExcludedIds,
   onToggleRecentExclusion,
@@ -190,21 +188,11 @@ function ExplorerImpl({
         />
       }
       {...dock}
-      onSize={onSize}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileTopOverridePx={mobileTopOverridePx}
-      onMobileClose={onMobileClose}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
+      popoverOpen={popoverOpen}
+      onPopoverClose={onPopoverClose}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
-      // Mobile auto-collapse fires on any tap outside the panel's
-      // DOM. Ellipsis menus (PortalMenu, role="menu") and confirm
-      // modals (ConfirmDialog, role="dialog") render via React
-      // portals into document.body, so a tap on "Rename" or "Delete"
-      // counts as outside and would collapse the panel just as the
-      // rename input is about to mount. Treat both ARIA roles as
-      // "inside" so the user can finish the action they started.
-      outsideExceptSelector='[role="menu"],[role="dialog"]'
       collapsible
     >
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1">

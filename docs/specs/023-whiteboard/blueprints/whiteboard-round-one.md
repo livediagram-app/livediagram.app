@@ -227,8 +227,8 @@ The canvas host maps the displayed elements through it with a per-object cache
 Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 
 - `panelEls.palette`, `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
-  `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `highlighter`, `format`), the
-  mobile dock's buttons for those panels: not rendered.
+  `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `highlighter`, `format`): not
+  rendered.
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
 - The dock renders when `whiteboard && !readOnly && !chromeHidden`.

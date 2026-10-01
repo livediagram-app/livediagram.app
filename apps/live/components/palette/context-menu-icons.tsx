@@ -88,8 +88,7 @@ export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
 export const AutoAlignIcon = lucideGlyph(lucideAlignStartVertical, MENU_ICON_PX);
 // The Timer session-tool category glyph.
 export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
-// The Vote session-tool category glyph (a cast dot-vote). The mobile dock passes 16 to match its
-// neighbours.
+// The Vote session-tool category glyph (a cast dot-vote).
 export const VoteMenuIcon = lucideGlyph(lucideCircleCheck, MENU_ICON_PX);
 // The Collaborate parent category glyph: the flyout grouping the live session tools.
 export const CollaborateMenuIcon = lucideGlyph(lucideUsers, MENU_ICON_PX);

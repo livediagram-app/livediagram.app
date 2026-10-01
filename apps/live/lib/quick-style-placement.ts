@@ -3,7 +3,7 @@
 // by trying fixed candidates in order, so the same chrome always gives the same spot.
 
 export type Rect = { left: number; top: number; width: number; height: number };
-export type QuickStyleLayout = 'floating' | 'minimal' | 'toolbar';
+export type QuickStyleLayout = 'floating' | 'toolbar';
 export type QuickStyleCandidate = 'centre' | 'below' | 'above' | 'beside' | 'right-edge';
 export type QuickStylePlacement = {
   left: number;

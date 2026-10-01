@@ -1203,12 +1203,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="14" y="14" width="6" height="4" rx="1" />
     </Glyph>
   ),
-  'minimal-panels': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 8h18M6 14h4M6 17h7" />
-    </Glyph>
-  ),
   // The strip across the top of a window, with the menu button's three bars
   // in the corner: the two things the layout adds.
   'toolbar-layout': (

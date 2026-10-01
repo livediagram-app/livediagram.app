@@ -11,7 +11,7 @@ import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 // itself to the toggle as the anchor), so it is the real Explorer, not a
 // second menu that could drift from it.
 //
-// `data-mobile-dock` is what MovablePanel's outside-click check skips, so
+// `data-dock-button` is what MovablePanel's outside-click check skips, so
 // pressing this button while the Explorer is open closes it via the toggle
 // rather than closing it on pointer-down and reopening it on click.
 //
@@ -53,7 +53,7 @@ export function ToolbarExplorerButton({
   );
   return (
     <div
-      data-mobile-dock=""
+      data-dock-button=""
       data-tour-id="dock-explorer"
       data-toolbar-menu=""
       style={

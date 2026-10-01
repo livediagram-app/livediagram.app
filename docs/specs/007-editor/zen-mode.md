@@ -12,7 +12,7 @@ When zen mode is on, the editor hides:
 - the tab bar,
 - the palette (tools + add-element), the context / inspector
   panel, the Explorer, the Activity panel, the Collaborate panel, the AI
-  panel, the mobile dock, and the owner / role status badge,
+  panel, the Toolbar layout's strip and menu button, and the owner / role status badge,
 - the empty-canvas prompt and the undo/redo history dock.
 
 What stays:
@@ -49,7 +49,7 @@ view-only visitors (focusing is read-only).
 
 Flipping zen mode emits `UI / Toggled / ZenModeOn` and
 `UI / Toggled / ZenModeOff` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), the same shape as the dark-mode
-and minimal-panel toggles.
+toggle.
 
 ## Implementation notes
 

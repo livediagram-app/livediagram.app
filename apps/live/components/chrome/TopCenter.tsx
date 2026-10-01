@@ -36,9 +36,8 @@ const TONE_CLASS: Record<BannerTone, string> = {
 
 // The positioned container: pinned to the top centre, above the canvas,
 // laying its children out as a column of rows that never overlap. On
-// mobile it anchors to the top LEFT (`left-3`, left-aligned) so it clears
-// the mobile dock buttons that sit at the top right; from `sm:` up it
-// centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
+// mobile it anchors to the top RIGHT (`right-3`, right-aligned), under the
+// top row of chrome; from `sm:` up it centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
 // gaps between pills stay click-through; each pill re-enables pointer
 // events for itself.
 const STACK_TOP: Record<'toolbar' | 'dock' | 'none', string> = {
@@ -59,24 +58,14 @@ export function TopCenterStack({
   below?: 'toolbar' | 'dock';
 }) {
   return (
-    // On mobile this stack starts BELOW the dock rather than beside it. Both
-    // used to sit at top-3, and the stack spans the full width, so anything
-    // wide enough — the vote-results banner, the timer pill, the mode banners
-    // — ran underneath the dock buttons and covered them. Reserving width
-    // instead was the obvious alternative and doesn't work: the dock's width
-    // changes with its button count (Collaborate, AI, Poll and Vote all come
-    // and go), while its height is a stable single row. 4.75rem clears the
-    // dock's 12px top + 57px height with a small gap; revisit it if the dock
-    // ever becomes two rows. From sm: up the stack is centred and the dock is
-    // hidden (or, with minimal panels, far to the right), so it goes back to
-    // top-3.
+    // On mobile this stack starts BELOW the top row of chrome rather than
+    // beside it: the stack spans the full width, so anything wide enough (the
+    // vote-results banner, the timer pill, the mode banners) would otherwise
+    // run under the Toolbar strip, or a read-only visitor's menu button, and
+    // cover it. From sm: up the stack is centred and goes back to top-3,
+    // unless the Toolbar strip owns that row.
     //
-    // Right-aligned on mobile, not left: these sit UNDER the dock, which is
-    // itself pinned top-right, so lining them up with it keeps the pair
-    // reading as one column of chrome instead of a banner adrift on the
-    // opposite side of the canvas.
-    //
-    // It also drops BELOW the dock popovers on mobile (z-panel, under the
+    // It also drops BELOW the popovers on mobile (z-panel, under the
     // popovers' z-toolbar) so opening a panel simply covers the banners
     // instead of them punching through it. Desktop keeps z-chrome, where the
     // stack is centred and nothing overlaps it.

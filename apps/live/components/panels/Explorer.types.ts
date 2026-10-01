@@ -1,7 +1,7 @@
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
-import type { DockAnchor } from '@/lib/canvas-chrome';
 
 // Folder mutations inside a team library, for the panel's team tree.
 // Create returns the new folder so the tree can open its parent and
@@ -97,21 +97,11 @@ export type ExplorerProps = {
   // The header ⋯ menu's verbs beyond new / open (docs/specs/013-workspace/folders.md). Each optional:
   // an absent handler drops its row.
   menuActions?: ExplorerMenuActions;
-  // Callback the Canvas wires up to track Explorer's bottom edge so
-  // the Palette can stack beneath it on mobile (where Explorer
-  // banner-pins to the top of the viewport rather than the left
-  // corner). Optional: desktop layout doesn't need it.
-  onSize?: (size: { width: number; height: number; bottomY: number }) => void;
   // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
-  // Mobile dock control — forwarded to the inner MovablePanel.
-  mobileOpenOverride?: boolean;
-  mobileTopOverridePx?: number;
-  onMobileClose?: () => void;
-  mobileDockAnchor?: DockAnchor;
-  forceDockMode?: boolean;
-  dismissOnOutside?: boolean;
-};
+  // The Toolbar layout's popover under the menu button
+  // (docs/specs/007-editor/toolbar-layout.md), forwarded to the inner MovablePanel.
+} & MovablePanelPopoverProps;
 
 export type ExplorerMenuActions = {
   onShare?: () => void;

@@ -598,7 +598,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|PanelLayoutFloating':
     "Someone switched the editor's panel layout to Floating, in Settings > Editor.",
   'UI|Changed|PanelLayoutMinimal':
-    "Someone switched the editor's panel layout to Minimal, in Settings > Editor.",
+    "Someone switched the editor's panel layout to Minimal, in Settings > Editor. No longer recorded: the Minimal layout was removed.",
   'UI|Changed|PanelLayoutToolbar':
     "Someone switched the editor's panel layout to Toolbar, in Settings > Editor.",
   'UI|Changed|PanelOpacity':
@@ -791,9 +791,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|MiddleMousePanOn':
     'Someone turned on panning the canvas by holding the middle mouse button, in Settings > Controls.',
   'UI|Toggled|MinimalPanelsOff':
-    'Someone switched the panel layout back to Floating, from the quick toggle rather than the Settings dialog.',
+    'Someone switched the panel layout back to Floating, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimalPanelsOn':
-    'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog.',
+    'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimapOff': 'Someone turned off the minimap, in Settings > Editor.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|NotificationsOff':

@@ -11,7 +11,7 @@ import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBack
 import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
-import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
+import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
@@ -155,30 +155,19 @@ export function Canvas(props: CanvasProps) {
   // paletteBottomY + 16 regardless of whether the palette pins to
   // top-2 (mobile) or top-4 (desktop).
   const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
-  // Explorer's measured bottom edge on mobile. The Palette sits BELOW
-  // this via its `mobileTopOverridePx` so the document switcher fits
-  // above the Palette without overlapping. Desktop ignores it (the
-  // Explorer pins to top-left there, not as a banner).
-  const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
   // Which quick-connect ring (if any) is open. Self-contained state + reset /
   // outside-close effects live in useQuickRing.
   const [quickRingOpen, setQuickRingOpen] = useQuickRing(selectedId);
-  // Mobile dock state + toggle (compact button row replacing the four
-  // full-width collapse banners on mobile). See useCanvasMobileDock; the
-  // popover anchor math is the tested computeDockAnchor.
+  // Which panel is open as a popover off its button (the Toolbar Explorer,
+  // the cluster popovers). See useDockPopovers; the popover anchor math is
+  // the tested computeDockAnchor.
   const {
-    activeMobilePanel,
-    setActiveMobilePanel,
-    dockButtonRefs,
+    activeDockPanel,
+    setActiveDockPanel,
     activeDockAnchor,
     setActiveDockAnchor,
     handleDockButtonClick,
-    openDockPanel,
-  } = useCanvasMobileDock(mainRef);
-  // A session panel opens under its dock button when it arrives (docs/specs/012-collaboration/live-poll.md,
-  // docs/specs/012-collaboration/session-tools.md): a new poll (or the one you just answered), a vote just opened.
-  useOpenDockPanelOnChange(props.pollPanel ? props.pollPanel.poll.id : null, 'poll', openDockPanel);
-  useOpenDockPanelOnChange(props.tabVote ? 'vote' : null, 'vote', openDockPanel);
+  } = useDockPopovers(mainRef);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -938,11 +927,8 @@ export function Canvas(props: CanvasProps) {
         wrapperRef={wrapperRef}
         paletteBottomY={paletteBottomY}
         setPaletteBottomY={setPaletteBottomY}
-        explorerBottomY={explorerBottomY}
-        setExplorerBottomY={setExplorerBottomY}
-        activeMobilePanel={activeMobilePanel}
-        setActiveMobilePanel={setActiveMobilePanel}
-        dockButtonRefs={dockButtonRefs}
+        activeDockPanel={activeDockPanel}
+        setActiveDockPanel={setActiveDockPanel}
         activeDockAnchor={activeDockAnchor}
         setActiveDockAnchor={setActiveDockAnchor}
         handleDockButtonClick={handleDockButtonClick}
