@@ -124,7 +124,8 @@ Top to bottom, each a small title over one row of option buttons:
 - A section shows when at least one selected element supports it (a background for a shape that has
   one, a border for a shape that draws one, a label slot for alignment, text colour for a text
   element). Sticky notes, tables, images and the other non-shape elements are not styled by the
-  panel; a selection holding only those shows no panel.
+  panel; a selection holding only those shows no panel, and a selection mixing them with styled
+  elements styles the rest (see Multi-selection).
 
 ### Option counts and rhythm
 
@@ -235,14 +236,31 @@ identity otherwise, and into this browser's cache either way.
 
 ## Multi-selection
 
-The panel styles every selected shape, arrow and text element at once, including mixed kinds:
-select three arrows, two rectangles and a circle, press green, and all six turn green. Add a text
-element to that selection and a Text colour row appears beside the others, styling only it.
+The panel styles every selected shape, arrow, path and text element at once, including mixed
+kinds: select three arrows, two rectangles and a circle, press green, and all six turn green. Add a
+text element to that selection and a Text colour row appears beside the others, styling only it.
+
+**Any mix works.** A selection may hold every kind at once (a whole pasted or imported board:
+marker strokes, shapes, lines, arrows, paths, text boxes, stickies, images, frames). Each row
+styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
+elements no row fits (stickies, images, frames, tables and the other non-shape kinds) are passed
+over, never refused, so they never hide the panel from the rest.
 
 - A section shows when **at least one** selected element supports it, and a choice applies only to
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
+- **A colour stored by name** (a whiteboard stock colour, such as an imported blue line) matches no
+  theme swatch, so it marks none; choosing a swatch replaces the name with the swatch's colour.
+- **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
+  its marker strokes ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel
+  stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
+  style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
+  strokes; the others never touch a stroke.
+- **The caption** above the rows on a whiteboard names what they style: "Marker stroke" or
+  "3 marker strokes" when only strokes are styled, and the count of styled elements otherwise
+  ("12 elements"). Elements passed over are not counted. Power user mode leaves it out, as it
+  does every caption.
 - **Stroke style on a mixed selection** of shapes and arrows offers the shape row (Solid / Dashed /
   Dotted): each of those means something for both kinds (arrows draw dotted lines too), whereas
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
@@ -284,7 +302,7 @@ element of the same kind you draw.
 
 The Actions section's first button. It resets the selected elements' quick-style fields to the
 tab theme's default (stroke, background and label colour, width, style, text alignment, icon
-alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour) **and** forgets the memory of every
+alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour; on a whiteboard any stock colour stored by name, too) **and** forgets the memory of every
 kind it touched, so the next shape of those kinds is the default again. A one-off style stays a
 one-off: without the second half, clearing a shape would leave its style waiting in memory for the
 next one. One undo step.

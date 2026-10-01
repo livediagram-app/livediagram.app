@@ -214,6 +214,28 @@ One pure transform per section, a no-op on a non-supporting element:
 records the memory from the same before / after, and tracks the section's token. Clear styles also
 calls `forget` with the kind keys of every target it changed.
 
+## Mixed selections and named colours
+
+Derived from the spec's Multi-selection rules for any mix of kinds (a whole imported board):
+
+- **Applicability** stays per element: `isQuickStyleTarget` (unlocked shape, arrow, text, path) and
+  `supportsQuickSection` decide each row; `isPenStroke` (`quick-style-pen.ts`) decides the marker
+  rows. Every other element is passed over: it is neither a target nor counted, and never empties the
+  view of the rest. One pure function names the whole answer for a selection,
+  `quickStyleApplicability(selected) => { targets: QuickStyleTarget[]; strokes: FreehandElement[] }`
+  (`apps/live/lib/quick-style-applicability.ts`), read by `quickStyleView`, `strokesPenStyle` and the
+  caption.
+- **Named colours**: in `swatchValue`, a target whose role colour is unset but carries a stock name
+  (`penColour` for stroke, `penTextColour` for text) has value `null` (it marks no swatch), never
+  slot 0. `applyQuickStroke` removes `penColour`; `applyQuickTextColour` removes `penTextColour`;
+  `clearQuickStyle` removes `penColour` and `penTextColour` (shapes, arrows, paths, text).
+- **Caption** (whiteboard only, `quickStyleCaption(targets, strokes)`): no styled element →
+  none; only strokes → the existing "Marker stroke" / "N marker strokes"; otherwise "1 element" /
+  "N elements" where N counts the distinct styled elements (targets plus strokes). The pen subject
+  keeps its own name for the pen in hand. It replaces `view.pen.subject.name` as the caption when
+  the selection mixes kinds.
+- **Telemetry** is unchanged: the row's own token, once per choice.
+
 ## Style memory
 
 `StyleMemory` is `Partial<Record<StyleKindKey, RememberedStyle>>`, a remembered style being `Record<field, string | number>`.
@@ -426,6 +448,8 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`, `e2e/quick-style-panel.spec.ts`      |
 | Toolbar panel is 186 px, targets 24 × 24; swatch rows one line, never clipped     | `e2e/quick-style-panel.spec.ts`                                  |
 | Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                                       |
+| Any mix: rows apply where they fit, others passed over; caption counts styled     | `quick-style-applicability.test.ts`, `quick-style.test.ts`       |
+| Named stock colours mark no swatch; a choice or Clear styles removes the name     | `quick-style.test.ts`                                            |
 
 ## Constants and configuration
 

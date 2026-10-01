@@ -44,7 +44,9 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **No theme.** A whiteboard has no theme; like every template now, picking
   it goes straight to the settings step in the New Document wizard and lands
   at once in Quick Start.
-- **Import:** a Microsoft Whiteboard import lands on a whiteboard tab.
+- **Import:** a Microsoft Whiteboard import opens each board as a new
+  whiteboard tab, and Excalidraw pasted onto a whiteboard lands as its own
+  marks (see [Imported and pasted content](#imported-and-pasted-content)).
 - A tab's kind is fixed at creation. Converting a diagram tab into a
   whiteboard (or back) is not offered: the two present the same elements very
   differently, and a silent switch would surprise.
@@ -72,8 +74,9 @@ centred across the **top** of the canvas by default (see
   it. **Marker colour** is the same **eight stock colours** as the marker's
   picker, adaptive like them. Below them, **a second section of custom
   colours appears only when custom colours are used on this whiteboard
-  tab**: the custom (hex) colours of the tab's marker strokes and shapes, up
-  to eight, most recently drawn first; with none on the tab, the section is
+  tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
+  arrows, paths and text, up to eight, most recently drawn first (imported and
+  pasted content brings its own); with none on the tab, the section is
   not there. A custom colour is added with the marker picker's **+**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
@@ -388,7 +391,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   no explicit colour, so it follows the appearance; a stock colour is recorded
   by name, so it adapts to each viewer's board, and a custom colour as its
   hex, which stays as drawn. A recognised shape or line keeps its pen's colour
-  the same way.
+  the same way, and so does imported content ([Imported and pasted
+  content](#imported-and-pasted-content)).
 
 ## Shapes
 
@@ -465,6 +469,39 @@ and read it comfortably.
 - An empty text box left by clicking away is removed, as today.
 - Existing text boxes keep their size until edited or resized; then they hug.
 - Notes (stickies) keep their fixed note size.
+
+## Imported and pasted content
+
+Boards brought in from elsewhere land as if drawn here, through one shared
+landing ([Board scene](../020-import-export/board-scene.md)): Excalidraw pasted
+or dropped onto a whiteboard, an Excalidraw file imported into one, and every
+Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
+
+- **What arrives as what:** pen and freedraw ink becomes **marker strokes**,
+  with their pressure where the source recorded it (else a constant width) at
+  the nearest marker width; highlighter ink stays highlighter; shapes become
+  **shapes** (rectangle, ellipse, diamond, triangle) with their border, fill and
+  label; a two-point line becomes a **line**, a longer line or polygon a
+  **path** (corners kept, curves smooth, closed with its fill); arrows become
+  **arrows** attached to the shapes they were bound to; text becomes **text
+  boxes**; notes become **sticky notes** in the nearest sticky colour; images
+  arrive through the image gallery; frames stay **frames**. Groups are dropped.
+- **Adaptive colours:** colour comes across the way the pens store it. A
+  near-black line is the board's **ink** (no colour of its own), so it shows
+  dark on the light board and light on the dark one, whatever board it was
+  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Green,
+  Teal, Violet, Pink) lands by its name and is drawn in the version for each
+  viewer's board. Anything else keeps its exact hex, a custom colour, and shows
+  in the quick style panel's custom colours.
+- **Named colours on every mark:** a stock colour is stored by name on a
+  stroke, shape, line, arrow and path (its line colour) and on a text box and a
+  shape's label (its text colour), each drawn in its board's version when no
+  explicit colour overrides it.
+- **Text hugs:** every landed text box hugs its text in our fonts, at the size
+  it had (the nearest size times a text scale); hand-drawn fonts land in Caveat.
+- **A paste selects its result**, lands at the pointer (or the middle of the
+  view), and is **one undo step**, images included. A paste that changed or
+  dropped anything says so in a small notice; a lossless paste says nothing.
 
 ## Nothing animates in
 
@@ -746,7 +783,10 @@ The whiteboard is built in rounds and tuned with the operator between them.
   ([Where the dock sits](#where-the-dock-sits)).
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,
   duplicate, comment); until then a whiteboard element opens the ordinary
-  menu. The Microsoft Whiteboard import lands with its own spec.
+  menu.
+- **Imports:** Excalidraw paste and the
+  Microsoft Whiteboard import land through the board scene, and the quick style
+  panel styles mixed selections of everything they bring.
 
 ## Non-goals
 
