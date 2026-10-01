@@ -382,7 +382,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 - `pointDecimals(size)`: the fewest decimals `d` (0 to `MAX_POINT_DECIMALS` = 12) with
   `0.5 * 10^-d * size <= LANDED_POINT_TOLERANCE_PX`, `size` the larger of the box's width and height;
   so `d = ceil(log10(size / (2 * tolerance)))`, clamped. Applied to freehand `points` and path
-  nodes and handles (`roundNormalised`).
+  nodes and handles (`compactElement`).
 - `PRESSURE_DECIMALS` = 3 (1/1000; pens report 1/1024 at best). `BOX_DECIMALS` = 2 for x, y, width,
   height of landed boxed elements (0.005 px), and for arrow free ends.
 - Defaults dropped (each one the renderer's own reading of absence): `streamline: 0` (`freehandPenStroke`
