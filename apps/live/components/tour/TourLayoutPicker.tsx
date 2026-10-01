@@ -44,6 +44,8 @@ export function TourLayoutPicker() {
       <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
         Choose Your Layout
       </span>
+      {/* Each option takes at most a third of the row, the size the drawings
+          are drawn for, so two options stay that size, centred. */}
       <div role="radiogroup" aria-label="Panel layout" className="flex justify-center gap-1.5">
         {options.map((option) => {
           const drawing = drawings.find((d) => d.id === option.id);
@@ -58,7 +60,7 @@ export function TourLayoutPicker() {
               onClick={() => {
                 if (!current) pick(option.id);
               }}
-              className="min-w-0 flex-1 rounded-md p-0.5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-900"
+              className="min-w-0 max-w-[calc((100%-0.75rem)/3)] flex-1 rounded-md p-0.5 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-900"
             >
               <svg
                 viewBox={`-4 -4 ${W + 8} ${H + 22}`}

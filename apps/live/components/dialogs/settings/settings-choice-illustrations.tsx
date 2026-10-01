@@ -1,5 +1,14 @@
 import type { ReactNode } from 'react';
-import { GAP, H, PANEL, StateFrame, W, Window, pickable } from './settings-illustration-kit';
+import {
+  GAP,
+  H,
+  PANEL,
+  REM_PER_UNIT,
+  StateFrame,
+  W,
+  Window,
+  pickable,
+} from './settings-illustration-kit';
 
 // One small drawing per OPTION of a pick-one setting, side by side, the one
 // in force ringed. The toggle drawings (settings-illustrations.tsx) show a
@@ -136,10 +145,14 @@ export function ChoiceStates({
   const n = drawing.states.length;
   // A tighter gap than the toggle pair's: there is no arrow to fit between.
   const gap = GAP / 2;
+  const width = W * n + gap * (n - 1) + 8;
   return (
     <svg
-      viewBox={`-4 -4 ${W * n + gap * (n - 1) + 8} ${H + 22}`}
-      className="h-auto w-full max-w-[24rem]"
+      viewBox={`-4 -4 ${width} ${H + 22}`}
+      // Capped so each frame draws at the toggle pair's size, whatever the
+      // option count: two options stay as small as a toggle's two states.
+      style={{ maxWidth: `${(width * REM_PER_UNIT).toFixed(2)}rem` }}
+      className="h-auto w-full"
       fill="none"
       role="img"
       aria-label={drawing.label}
