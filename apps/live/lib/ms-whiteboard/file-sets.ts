@@ -10,8 +10,10 @@ export type FileSetRejection = ZipRefusal | 'too-large';
 
 /** Thrown by a lazy read that fails; the import turns it into the board's rejection. */
 export class FileSetReadError extends Error {
-  constructor(readonly refusal: ZipRefusal) {
+  readonly refusal: ZipRefusal;
+  constructor(refusal: ZipRefusal) {
     super(`Zip entry unreadable: ${refusal}`);
+    this.refusal = refusal;
     this.name = 'FileSetReadError';
   }
 }
