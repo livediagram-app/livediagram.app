@@ -535,6 +535,7 @@ export function isValidElement(el: unknown): el is Element {
   // A whiteboard text box's hug fields (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
   if (t === 'text') {
     if (el.autoWidth !== undefined && typeof el.autoWidth !== 'boolean') return false;
+    if (el.hug !== undefined && typeof el.hug !== 'boolean') return false;
     if (
       el.textScale !== undefined &&
       (!isNum(el.textScale) || el.textScale < TEXT_SCALE_MIN || el.textScale > TEXT_SCALE_MAX)

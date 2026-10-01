@@ -982,8 +982,8 @@ Any boxed element (shape / text / sticky / image / freehand) can be rotated abou
 A free-floating text element. The text **is** the element — there is no border or fill.
 
 - Added from the **Text** palette button.
-- Default content: `"Text"`. Default size: 220 × 64.
-- **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
+- **Text boxes hug their text** (as on a whiteboard, [Whiteboard](../023-whiteboard/whiteboard.md) "Text boxes"): a new text box lands empty, opens for typing, and is the text's own line box plus a little padding. A click puts it caret-sized at the click and it widens with the words up to 480 px, then wraps; a drag sets its width and the height hugs the lines. A side or corner handle sets the width (the height still hugs); with Shift the text scales with the box. Left empty, it is removed. It carries `hug: true`, so a text box made **before** hugging came to diagram tabs keeps its old behaviour: default content `"Text"`, 220 × 64, text auto-scaling to fit the box (same SVG-based fit-to-bounds technique as shape labels), resized freely.
+- **Drag** to move; **resize** via the same four corner handles as shapes.
 - **Double-click** to edit content; **Enter** commits, **Escape** cancels.
 - A faint dashed outline appears when selected so the bounds are visible.
 - **Colour.** The text takes the theme's label colour, and can be recoloured like any other element:

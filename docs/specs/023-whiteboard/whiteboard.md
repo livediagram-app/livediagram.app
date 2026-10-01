@@ -424,6 +424,8 @@ Picking by the drawn line holds **on every tab** ([Canvas and palette](../008-ca
 
 ## Text boxes
 
+New text boxes on diagram tabs hug their text the same way ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Text element").
+
 A text box on a whiteboard **hugs its text**: its box, and so its selection
 ring and handles, sit just around the words, with only enough padding to grab
 and read it comfortably.

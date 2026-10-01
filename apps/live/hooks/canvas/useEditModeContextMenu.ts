@@ -6,6 +6,7 @@
 // viewport the keyboard + menu would fight for space. Arrow labels and
 // table cells keep their plain editors and don't auto-open a menu.
 
+import { hugsText } from '@/lib/text-hug';
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { isBoxed, type Element } from '@livediagram/document';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
@@ -48,10 +49,10 @@ export function useEditModeContextMenu({
       // A path's edit mode is its points, with a toolbar of its own
       // (docs/specs/023-whiteboard/path-tool.md "Editing"): no menu rides beside it.
       if (el.type === 'path') return;
-      // A whiteboard text box starts caret-sized and grows with the words
+      // A hugging text box starts caret-sized and grows with the words
       // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"): a menu at its
       // corner would sit on the line being typed.
-      if (whiteboard && el.type === 'text') return;
+      if (hugsText(el, whiteboard)) return;
       // The element's on-screen rect. A freshly created element (double-click
       // text, palette drop) enters edit mode on its mount commit, so this
       // effect measures while the pop-in entry animation is still at scale ~0

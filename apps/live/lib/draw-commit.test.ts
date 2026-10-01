@@ -170,9 +170,12 @@ describe('buildDrawnBoxed', () => {
     expect('autoWidth' in out).toBe(false);
   });
 
-  it('keeps a diagram tab text box at its default size', () => {
+  // Hugging came to diagram tabs (docs/specs/008-canvas/canvas-and-palette.md "Text boxes hug
+  // their text"): a new text box there lands caret-sized and carries `hug`.
+  it('places a diagram tab text box hugging, flagged so older boxes are left alone', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab());
-    expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
+    expect(out).toMatchObject({ label: '', autoWidth: true, hug: true });
+    expect(out.width).toBeLessThan(20);
   });
 
   it('centres the factory-default size on a tap', () => {

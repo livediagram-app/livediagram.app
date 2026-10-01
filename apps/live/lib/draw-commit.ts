@@ -297,16 +297,21 @@ export function buildDrawnBoxed(
   });
   // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
   const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
-  // A whiteboard text box hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"): it
-  // lands empty, one line tall, caret-sized at a click or at the dragged width.
+  // A new text box hugs its text, on every tab (docs/specs/023-whiteboard/whiteboard.md "Text
+  // boxes"; docs/specs/008-canvas/canvas-and-palette.md "Text boxes hug their text"): it lands
+  // empty, one line tall, caret-sized at a click or at the dragged width. On a diagram tab it
+  // carries `hug`, which a whiteboard's text boxes need not.
   const hugged =
-    base.type === 'text' && isWhiteboardTab(activeTab)
-      ? placedTextBox(
-          { ...base, ...textSize } as TextElement,
-          isTap,
-          { x: startX, y: startY },
-          dragBox,
-        )
+    base.type === 'text'
+      ? {
+          ...placedTextBox(
+            { ...base, ...textSize } as TextElement,
+            isTap,
+            { x: startX, y: startY },
+            dragBox,
+          ),
+          ...(isWhiteboardTab(activeTab) ? {} : { hug: true }),
+        }
       : {};
   return {
     ...base,

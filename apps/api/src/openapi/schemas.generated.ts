@@ -5823,6 +5823,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "height": {
         "type": "number"
       },
+      "hug": {
+        "type": "boolean"
+      },
       "id": {
         "$ref": "#/components/schemas/ElementId"
       },

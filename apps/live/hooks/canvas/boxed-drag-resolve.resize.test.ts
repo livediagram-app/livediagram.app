@@ -151,19 +151,31 @@ describe('resizedElement', () => {
   });
 
   it('hugs the height of a whiteboard text box to the rewrapped text', () => {
-    const hug = { mode: 'resize-e' as const, constrain: false, measure };
+    const hug = { mode: 'resize-e' as const, constrain: false, measure, whiteboard: true };
     const out = resizedElement(hello, { x: 0, y: 0, width: 28, height: 22 }, hug);
     expect(out).toMatchObject({ width: 28, height: 39 });
   });
 
   it('scales the text of a whiteboard text box under Shift', () => {
-    const hug = { mode: 'resize-se' as const, constrain: true, measure };
+    const hug = { mode: 'resize-se' as const, constrain: true, measure, whiteboard: true };
     const out = resizedElement(hello, { x: 0, y: 0, width: 78, height: 40 }, hug);
     expect(out).toMatchObject({ width: 78, height: 39, textScale: 2 });
   });
 
+  // Hugging on a diagram tab is the text box's own flag (docs/specs/008-canvas/canvas-and-palette.md
+  // "Text boxes hug their text").
+  it('hugs a diagram text box only when it carries hug', () => {
+    const hug = { mode: 'resize-e' as const, constrain: false, measure, whiteboard: false };
+    const bounds = { x: 0, y: 0, width: 28, height: 22 };
+    expect(resizedElement(hello, bounds, hug)).toMatchObject(bounds);
+    expect(resizedElement({ ...hello, hug: true } as never, bounds, hug)).toMatchObject({
+      width: 28,
+      height: 39,
+    });
+  });
+
   it('leaves a rotated text box and any other element to the bounds', () => {
-    const hug = { mode: 'resize-e' as const, constrain: false, measure };
+    const hug = { mode: 'resize-e' as const, constrain: false, measure, whiteboard: true };
     const bounds = { x: 0, y: 0, width: 28, height: 22 };
     expect(resizedElement({ ...hello, rotation: 30 }, bounds, hug)).toMatchObject(bounds);
     const square = box('s', 0, 0, 43, 22) as never;

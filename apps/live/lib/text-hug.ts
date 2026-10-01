@@ -28,9 +28,11 @@ export type BlockSize = { width: number; height: number };
 // its natural width, capped at `width`. Returns the block's own size, padding excluded.
 export type MeasureTextBlock = (width: number, fixed: boolean) => BlockSize;
 
-// Whether this element hugs its text: a text box, on a whiteboard.
+// Whether this element hugs its text: a text box on a whiteboard, or one placed on a diagram tab
+// since hugging came there (its `hug` flag; docs/specs/008-canvas/canvas-and-palette.md "Text boxes
+// hug their text").
 export function hugsText(el: Element, whiteboard: boolean): el is TextElement {
-  return whiteboard && el.type === 'text';
+  return el.type === 'text' && (whiteboard || el.hug === true);
 }
 
 // The padding around the text: the element's own preset when it has one, else the hug padding.
@@ -80,7 +82,7 @@ export function hugCommittedText(
   return { ...el, ...hugTextSize(el, measure(el)) };
 }
 
-// A new whiteboard text box, empty and about to be typed into. A click puts the caret at the
+// A new hugging text box (any tab), empty and about to be typed into. A click puts the caret at the
 // click (the box's left edge a padding to its left, its one line centred on it) and the box
 // widens with the text. A drag sets the width from the dragged box; the height is one line.
 export function placedTextBox(

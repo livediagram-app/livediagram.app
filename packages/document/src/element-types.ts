@@ -513,6 +513,10 @@ export type TextElement = {
   // boxes"): its width follows its text up to the wrap width. Absent = the width is set, and
   // the text wraps inside it.
   autoWidth?: boolean;
+  // A text box that hugs its text on a diagram tab (docs/specs/008-canvas/canvas-and-palette.md
+  // "Text boxes hug their text"): set on every text box placed there since hugging came to
+  // diagrams, so an older box keeps its fit-to-box text. On a whiteboard every text box hugs.
+  hug?: boolean;
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
   // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"). Absent = 1.
   textScale?: number;

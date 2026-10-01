@@ -431,14 +431,15 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
-          // A lone whiteboard text box hugs its text through the resize
-          // (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+          // A lone hugging text box hugs its text through the resize
+          // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"), on any tab.
           const textHug =
-            isWhiteboardTab(activeTab) && drag.startBounds.size === 1
+            drag.startBounds.size === 1
               ? {
                   mode: drag.mode,
                   constrain: drag.aspectLocked || e.shiftKey,
                   measure: measureDrawnText(activeTab.font),
+                  whiteboard: isWhiteboardTab(activeTab),
                 }
               : null;
           tick((els) =>

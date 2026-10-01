@@ -154,7 +154,11 @@ export function resizedElement(
   document, so no migration. An existing box keeps its stored size until an edit changes its
   label, a style change re-hugs it or a handle resizes it; with no `autoWidth` it keeps its width
   and its height hugs (T1).
-- `validate.ts` refuses a non-boolean `autoWidth` and a `textScale` outside `[0.1, 40]`.
+- `hug?: boolean` on `TextElement`: set on every text box placed on a diagram tab
+  (`buildDrawnBoxed`), so `hugsText(el, whiteboard)` is `whiteboard || el.hug === true` for a text
+  box; absent on older diagram boxes, which keep their fit-to-box text. A whiteboard's boxes need
+  no flag.
+- `validate.ts` refuses a non-boolean `autoWidth` or `hug` and a `textScale` outside `[0.1, 40]`.
 
 ## Errors and edge cases
 
