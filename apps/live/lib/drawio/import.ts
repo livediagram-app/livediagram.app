@@ -10,7 +10,8 @@ import type { ImportImageRequest } from '@/lib/import-images';
 import { ReportTally, type DrawioReport } from './notes';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';
-import { readDrawioPages, type DrawioInput } from './envelope';
+import { readDrawioSource, sniffDrawio, type DrawioInput, type DrawioMeta } from './envelope';
+import { jsonPageElements, readJsonExport, type JsonExportPage } from './json-export';
 import { ByteBudget } from './inflate';
 import {
   DRAWIO_MAX_FILE_BYTES,
@@ -31,7 +32,14 @@ export type ImportedPage = {
 };
 
 export type DrawioImportResult =
-  | { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: DrawioReport }
+  | {
+      ok: true;
+      pages: ImportedPage[];
+      images: ImportImageRequest[];
+      report: DrawioReport;
+      /** What the file says about itself (an mxfile's name and modified time). */
+      meta: DrawioMeta;
+    }
   | { ok: false; error: string };
 
 export type DrawioImportOptions = {
@@ -52,8 +60,18 @@ export async function importDrawio(
 ): Promise<DrawioImportResult> {
   try {
     if (inputSize(input) > DRAWIO_MAX_FILE_BYTES) throw new DrawioRefused('too-large');
+    if (sniffDrawio(input) === 'library') throw new DrawioRefused('library');
+    const json = jsonText(input);
+    if (json !== null) {
+      const exported = readJsonExport(json);
+      // The full diagram the export carries: imported exactly, as the file it is.
+      if (exported.kind === 'xml') {
+        return importDrawio({ kind: 'text', text: exported.text }, options);
+      }
+      return graphPages(exported.pages, options);
+    }
     const budget = new ByteBudget(DRAWIO_MAX_INFLATED_BYTES);
-    const sources = await readDrawioPages(input, budget);
+    const { pages: sources, meta } = await readDrawioSource(input, budget);
     const tally = new ReportTally(DRAWIO_REPORT_NAMES_MAX);
     tally.add('content-truncated', Math.max(0, sources.length - DRAWIO_MAX_PAGES));
     const kept = sources.slice(0, DRAWIO_MAX_PAGES);
@@ -85,7 +103,7 @@ export async function importDrawio(
       elements: pages.reduce((n, p) => n + p.elements.length, 0),
       notes: tally.notes(),
     };
-    return { ok: true, pages, images, report };
+    return { ok: true, pages, images, report, meta };
   } catch (error) {
     const refusal = error instanceof DrawioRefused ? error : new DrawioRefused('unreadable');
     console.warn('[drawio-import] refused', {
@@ -95,4 +113,31 @@ export async function importDrawio(
     });
     return { ok: false, error: refusalMessage(refusal.reason, refusal.detail) };
   }
+}
+
+// A JSON export's text, or null for every other input (XML, an SVG, a PNG).
+function jsonText(input: DrawioInput): string | null {
+  if (input.kind === 'bytes' && input.bytes[0] === 0x89) return null;
+  const text = input.kind === 'text' ? input.text : new TextDecoder('utf-8').decode(input.bytes);
+  const trimmed = text.replace(/^\uFEFF/, '').trimStart();
+  return trimmed.startsWith('{') ? trimmed : null;
+}
+
+// A graph-only JSON export: each page laid out automatically (docs/specs/020-import-export/
+// drawio-import.md "The JSON export"). No images and no meta: the export records neither.
+function graphPages(sources: JsonExportPage[], options: DrawioImportOptions): DrawioImportResult {
+  const tally = new ReportTally(DRAWIO_REPORT_NAMES_MAX);
+  tally.add('content-truncated', Math.max(0, sources.length - DRAWIO_MAX_PAGES));
+  const pages: ImportedPage[] = sources.slice(0, DRAWIO_MAX_PAGES).map((source, index) => ({
+    tabId: options.tabIdForPage(index),
+    name: source.name,
+    elements: jsonPageElements(source, tally),
+  }));
+  const report: DrawioReport = {
+    pages: pages.length,
+    elements: pages.reduce((n, p) => n + p.elements.length, 0),
+    notes: tally.notes(),
+  };
+  console.debug('[drawio-import] json export laid out', { pages: pages.length });
+  return { ok: true, pages, images: [], report, meta: {} };
 }

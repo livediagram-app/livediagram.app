@@ -9,6 +9,7 @@ export type DrawioRefusalReason =
   | 'png-without-diagram'
   | 'svg-without-diagram'
   | 'page-unreadable'
+  | 'library'
   | 'unreadable';
 
 export class DrawioRefused extends Error {
@@ -38,6 +39,8 @@ export function refusalMessage(reason: DrawioRefusalReason, detail?: string): st
       return "This SVG has no draw.io diagram inside. In draw.io, export as SVG with 'Include a copy of my diagram' ticked.";
     case 'page-unreadable':
       return `Page '${detail ?? ''}' couldn't be decoded.`;
+    case 'library':
+      return "This is a draw.io shape library. Import it from the Explorer's Import from draw.io to add it to My shapes.";
     case 'unreadable':
       return "Couldn't read this draw.io file.";
   }

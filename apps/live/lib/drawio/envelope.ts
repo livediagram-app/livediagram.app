@@ -9,6 +9,11 @@ import { DrawioRefused } from './refusals';
 
 export type DrawioInput = { kind: 'text'; text: string } | { kind: 'bytes'; bytes: Uint8Array };
 
+/** What the file says about itself: the mxfile's `name` and `modified` (ISO) attributes. */
+export type DrawioMeta = { name?: string; modified?: string };
+
+export type DrawioSource = { pages: DrawioPageSource[]; meta: DrawioMeta };
+
 export type DrawioPageSource = {
   id: string;
   name: string;
@@ -87,10 +92,31 @@ async function pagesOf(
   }
 }
 
-export async function readDrawioPages(
+function metaOf(root: Element): DrawioMeta {
+  const file = root.localName === 'mxfile' ? root : null;
+  const name = file?.getAttribute('name')?.trim();
+  const modified = file?.getAttribute('modified')?.trim();
+  return { ...(name ? { name } : {}), ...(modified ? { modified } : {}) };
+}
+
+// The root an SVG carries in `content`: what its meta is read from.
+function metaRoot(root: Element): Element {
+  if (root.localName !== 'svg') return root;
+  const content = root.getAttribute('content')?.trim() ?? '';
+  try {
+    const inner = content.startsWith('<')
+      ? content
+      : new TextDecoder('utf-8').decode(base64Bytes(content));
+    return parseXml(inner);
+  } catch {
+    return root;
+  }
+}
+
+export async function readDrawioSource(
   input: DrawioInput,
   budget: ByteBudget,
-): Promise<DrawioPageSource[]> {
+): Promise<DrawioSource> {
   let text: string;
   if (input.kind === 'bytes') {
     if (isPng(input.bytes)) {
@@ -109,5 +135,40 @@ export async function readDrawioPages(
   } else {
     text = input.text;
   }
-  return pagesOf(parseXml(text), budget, 0);
+  const root = parseXml(text);
+  const pages = await pagesOf(root, budget, 0);
+  return { pages, meta: metaOf(metaRoot(root)) };
+}
+
+/** How much of a file the sniff reads: room for a BOM, an XML declaration and the root element. */
+export const DRAWIO_SNIFF_CHARS = 4096;
+
+/**
+ * What a file is, by its content alone (never its name: a Drive save has no extension): a draw.io
+ * diagram, a draw.io library, or neither. Cheap: the PNG signature, or the first few KB as text.
+ */
+export function sniffDrawio(input: DrawioInput): 'diagram' | 'library' | null {
+  if (input.kind === 'bytes' && isPng(input.bytes)) return 'diagram';
+  const head = (
+    input.kind === 'bytes'
+      ? new TextDecoder('utf-8').decode(input.bytes.subarray(0, DRAWIO_SNIFF_CHARS))
+      : input.text.slice(0, DRAWIO_SNIFF_CHARS)
+  )
+    .replace(/^\uFEFF/, '')
+    .trimStart();
+  // draw.io's JSON export opens with its version (a long `data` may push `pages` past the head).
+  if (head.startsWith('{')) {
+    const exported =
+      /^\{\s*"version"\s*:\s*"\d+(?:\.\d+)*"/.test(head) || /^\{[^{}]*"pages"\s*:/.test(head);
+    return exported ? 'diagram' : null;
+  }
+  const root = /^(?:<\?xml[^>]*\?>\s*)?(?:<!--[\s\S]*?-->\s*)*<([A-Za-z][\w:.-]*)([^>]*)/.exec(
+    head,
+  );
+  if (!root) return null;
+  const [, tag, attrs] = root;
+  if (tag === 'mxlibrary') return 'library';
+  if (tag === 'mxfile' || tag === 'mxGraphModel') return 'diagram';
+  if (tag === 'svg' && /\scontent\s*=/.test(attrs ?? '')) return 'diagram';
+  return null;
 }

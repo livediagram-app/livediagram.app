@@ -71,7 +71,7 @@ the graph (`layer`, `node` with `label`, `html` and `metadata.link`, `edge` with
 - When `data` holds an `mxfile` (draw.io writes it when asked to include the diagram), that file is
   imported instead, exactly, like any `.drawio` file.
 - Otherwise each page's nodes and edges become a graph that is **laid out automatically** by the same
-  layered layout Mermaid import uses (`graphToElements`, `packages/document`): nodes as rounded
+  layered layout Mermaid import uses (`layoutClusteredGraph`, `packages/document`): nodes as
   boxes, edges as connections between them, layers in document order. Labels convert from draw.io's
   HTML to plain text (`<br>`, `<p>`, `<div>` and headings become line breaks, entities decode,
   every other tag is dropped); an empty label stays empty. A node's `metadata.link` becomes its

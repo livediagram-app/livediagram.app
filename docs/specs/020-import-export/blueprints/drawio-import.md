@@ -441,8 +441,8 @@ picture repeated across pages is stored once. This runs before the one `commitTa
   a `pages` array, else `not-drawio`. A string `data` starting `<mxfile` → that text through the XML
   path, its result returned as is. Otherwise per page: nodes (`type: 'node'`) and edges (`type:
 'edge'`, both ends among the page's nodes; others dropped and counted `connection-loosened`) to a
-  `MermaidGraph`-shaped graph (`id`, `label` from `jsonLabelText`, `shape: 'rounded'`), laid out by
-  `graphToElements` (`packages/document`), node links from `metadata.link` when `http`, `https` or
+  `MermaidGraph`-shaped graph (`id`, `label` from `jsonLabelText`, the default box), laid out by
+  `layoutClusteredGraph` (`packages/document`, `graphToElements` plus the layout), node links from `metadata.link` when `http`, `https` or
   `mailto` (else `link-dropped`); `auto-layout` counted once per page with any node.
 - `jsonLabelText(html)`: `<br>` and the closing tags of `p`, `div`, `li`, `h1` to `h6` → `\n`;
   every other tag removed; entities decoded (named and numeric); runs of blank lines collapsed;

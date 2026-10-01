@@ -16,6 +16,7 @@ export type ImportNoteKind =
   | 'collapsed-skipped'
   | 'link-dropped'
   | 'text-truncated'
+  | 'auto-layout'
   | 'content-truncated';
 
 /** The summary's order: the spec table's. */
@@ -33,6 +34,7 @@ export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'collapsed-skipped',
   'link-dropped',
   'text-truncated',
+  'auto-layout',
   'content-truncated',
 ];
 
