@@ -23,7 +23,8 @@ const CURVE_SAMPLES = 64;
 
 export type BendPlan =
   | { kind: 'bow'; from: Pt; to: Pt; t: number; grab: Pt }
-  | { kind: 'insert'; mid: Pt; points: Delta[]; index: number; grab: Pt }
+  // `fromBow`: the points began as a single bow, converted to its apex; the bow's offset goes.
+  | { kind: 'insert'; mid: Pt; points: Delta[]; index: number; grab: Pt; fromBow?: true }
   | { kind: 'slide'; mid: Pt; route: Pt[]; segment: number; dir: Pt; grab: Pt };
 
 export type BendPatch = Partial<
@@ -77,7 +78,12 @@ export function planArrowBend(arrow: ArrowElement, elements: Element[], grab: Pt
   }
 
   if (style === 'curved') {
+    // A single bow gains a point (arrow-bending.md "Curved arrow with a single bow"): the bow
+    // becomes a bend point at its apex, the point the quadratic passes through at its middle
+    // (halfway from the chord's midpoint to the control point), and the grab is inserted beside
+    // it, on whichever side of the apex it was grabbed. Its handle still reshapes the bow alone.
     const c = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
+    const apex = { dx: (c.x - mid.x) / 2, dy: (c.y - mid.y) / 2 };
     let bestT = 0.5;
     let bestDist = Infinity;
     for (let i = 0; i <= CURVE_SAMPLES; i++) {
@@ -90,7 +96,14 @@ export function planArrowBend(arrow: ArrowElement, elements: Element[], grab: Pt
         bestT = t;
       }
     }
-    return { kind: 'bow', from, to, t: clampT(bestT), grab };
+    return {
+      kind: 'insert',
+      mid,
+      points: [apex],
+      index: bestT < 0.5 ? 0 : 1,
+      grab,
+      fromBow: true,
+    };
   }
 
   const t =
@@ -116,7 +129,9 @@ export function applyArrowBend(plan: BendPlan, delta: Pt): BendPatch {
     case 'insert': {
       const next = plan.points.slice();
       next.splice(plan.index, 0, { dx: p.x - plan.mid.x, dy: p.y - plan.mid.y });
-      return { curvePoints: next };
+      return plan.fromBow
+        ? { arrowStyle: 'curved', curveOffset: undefined, curvePoints: next }
+        : { curvePoints: next };
     }
     case 'slide': {
       // Only the sideways part of the drag moves the segment.

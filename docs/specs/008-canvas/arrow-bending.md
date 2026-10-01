@@ -27,8 +27,12 @@ undo step.
 - **Straight arrow**: becomes a curved arrow with one smooth bow that passes through the pointer,
   at the point along the line where it was grabbed. The bow is stored as `curveOffset`, the same
   field the curve handle writes.
-- **Curved arrow with a single bow**: the bow reshapes so the curve passes through the pointer at
-  the grabbed point.
+- **Curved arrow with a single bow**: grabbing the line **adds a point**. The bow becomes a bend
+  point at its apex (where the curve passes at its middle) and a second bend point is inserted
+  where the line was grabbed, before or after the apex, and dragged; the bow's `curveOffset` goes.
+  From then on it is a curved arrow with bend points (below), so each grab adds another. The bow's
+  own curve handle still reshapes the single bow, without adding a point. (Grabbing the line only
+  reshaped the bow, so a curved arrow could never gain a second bend.)
 - **Curved arrow with bend points** (`curvePoints`): grabbing a bend point's handle drags that point,
   as before. Grabbing the line elsewhere inserts a bend point where it was grabbed, in the segment
   it was grabbed on, and drags it.
