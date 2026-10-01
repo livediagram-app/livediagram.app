@@ -111,7 +111,21 @@ Following [Telemetry](../017-telemetry/telemetry.md):
 - `Element / Searched / Image` once per submitted search (not per page).
 - `Element / Used / ImageSearch` when a picked result is attached. Not `Added`: the element already exists (it was counted as `Added / Image` when drawn), and `Added` is the element census.
 
-Never the query, a title or a creator.
+Failures are counted as `Error / Warning` (a failure the user sees and can retry from, not a crash),
+typed `ImageSearch.<Reason>`, so they rank in the dashboard's Exceptions view:
+
+| Type                            | When                                                                |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `ImageSearch.RateLimited`       | Openverse answered 429 (the user's per-IP allowance is spent)       |
+| `ImageSearch.SearchFailed`      | Any other failed search: network, Openverse down, bad answer        |
+| `ImageSearch.ThumbnailFallback` | The full picture couldn't be used and the thumbnail was tried       |
+| `ImageSearch.Pick.<Failure>`    | A pick failed, `<Failure>` the pipeline failure or `DownloadFailed` |
+
+`<Failure>` is one of `DownloadFailed`, `GalleryFull`, `ImagesUnavailable`, `TooLarge`,
+`OfflineBudget`, `Unsupported`, `MissingBytes`, `UploadFailed`. One event per failed search or pick
+(and per fallback), never per retry inside one.
+
+Never the query, a title, a creator or a URL.
 
 ## Out of scope
 

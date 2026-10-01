@@ -6,6 +6,11 @@ import { OpenverseSearchError, type OpenverseImage } from '@/lib/image-search/op
 import { searchOpenverse } from '@/lib/image-search/search';
 import { pickFailureMessage, storeSearchResult } from '@/lib/image-search/pick';
 import type { PickedImage } from '@/lib/upload-image';
+import {
+  IMAGE_SEARCH_THUMBNAIL_FALLBACK,
+  pickWarningType,
+  searchWarningType,
+} from '@/lib/image-search/telemetry';
 
 // State of the image picker's Search tab (docs/specs/009-elements/blueprints/image-search.md
 // "Behaviour and state"): the submitted query, the pages loaded so far, the
@@ -67,6 +72,7 @@ export function useImageSearch({
         `kind=${kind}`,
         `status=${e instanceof OpenverseSearchError ? (e.status ?? 0) : 0}`,
       );
+      track('Error', 'Warning', searchWarningType(kind));
       setError(kind);
       setStatus('error');
     }
@@ -97,7 +103,12 @@ export function useImageSearch({
         // The pipeline's browser half is DOM-heavy; load it on first pick.
         const { createBrowserImportImageSession } = await import('@/lib/import-images/browser');
         const session = createBrowserImportImageSession({ ownerId, documentId });
-        outcome = await storeSearchResult(result, (source) => session.store(source));
+        outcome = await storeSearchResult(
+          result,
+          (source) => session.store(source),
+          fetch,
+          () => track('Error', 'Warning', IMAGE_SEARCH_THUMBNAIL_FALLBACK),
+        );
       } catch {
         // A failed chunk load or an unexpected throw must not leave the grid locked.
         outcome = { ok: false, failure: 'download-failed' };
@@ -109,6 +120,7 @@ export function useImageSearch({
         return;
       }
       console.warn('[image-search] pick failed', `failure=${outcome.failure}`);
+      track('Error', 'Warning', pickWarningType(outcome.failure));
       setPickError(pickFailureMessage(outcome.failure));
     },
     [documentId, onPicked, ownerId, pickingId],

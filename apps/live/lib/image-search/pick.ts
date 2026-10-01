@@ -41,7 +41,13 @@ export async function storeSearchResult(
   result: OpenverseImage,
   store: PickStore,
   fetchImpl: typeof fetch = fetch,
+  // Told once when the full picture is given up on for the thumbnail.
+  onFallback: (reason: string) => void = () => {},
 ): Promise<PickOutcome> {
+  const fallBack = (reason: string) => {
+    console.info('[image-search] thumbnail fallback', `reason=${reason}`);
+    onFallback(reason);
+  };
   const name = galleryNameFor(result);
   const done = (outcome: ImportImageOutcome & { ok: true }): PickOutcome => ({
     ok: true,
@@ -59,9 +65,9 @@ export async function storeSearchResult(
     const outcome = await store({ kind: 'blob', blob: full, name });
     if (outcome.ok) return done(outcome);
     if (!RETRY_WITH_THUMBNAIL.has(outcome.failure)) return { ok: false, failure: outcome.failure };
-    console.info('[image-search] thumbnail fallback', `reason=${outcome.failure}`);
+    fallBack(outcome.failure);
   } else {
-    console.info('[image-search] thumbnail fallback', `reason=${full}`);
+    fallBack(full);
   }
 
   const thumb = await download(result.thumbnail, fetchImpl);

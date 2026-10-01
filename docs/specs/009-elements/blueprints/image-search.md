@@ -7,25 +7,26 @@ storage path is the [Import image pipeline](../../020-import-export/import-image
 
 Scope, by file:
 
-| File                                              | Role                                                               |
-| ------------------------------------------------- | ------------------------------------------------------------------ |
-| `packages/document/src/image-credit.ts`           | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`      |
-| `packages/document/src/element-types.ts`          | `ImageElement.credit`                                              |
-| `packages/document/src/validate.ts`               | Image branch calls `isImageCredit` on `credit`                     |
-| `apps/live/lib/upload-image.ts`                   | `PickedImage`: what every picker tab hands back                    |
-| `apps/live/lib/image-search/openverse.ts`         | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`    |
-| `apps/live/lib/image-search/search.ts`            | `searchOpenverse`: one page over an injected `fetch`, typed errors |
-| `apps/live/lib/image-search/pick.ts`              | `storeSearchResult`: download (full, else thumbnail) and store     |
-| `apps/live/hooks/ui/useImageSearch.ts`            | Search tab state: query, pages, status, picking                    |
-| `apps/live/components/panels/ImageSearchPane.tsx` | The Search tab's form, grid, states and footer credit              |
-| `apps/live/components/panels/ImagePicker.tsx`     | Third tab; `onSelect(image: PickedImage)` carries the credit       |
-| `apps/live/hooks/canvas/useEditorImages.ts`       | `applyImageToElement` sets / drops `credit`; detach drops it       |
-| `apps/live/components/palette/ImageCreditRow.tsx` | Credit line, mounted in `ElementContentSections`' Image section    |
-| `apps/live/lib/telemetry-manifest.ts`             | `Element·Searched` in the emitted-pairs manifest                   |
-| `apps/telemetry/app/catalogue/content.ts`         | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing          |
-| `apps/telemetry/app/event-explanations.ts`        | Sentences for the two events                                       |
-| `apps/help/app/palette/tools/images/page.mdx`     | "Searching for an image" section                                   |
-| `apps/help/app/policies/privacy-policy/page.mdx`  | Openverse named under Service providers                            |
+| File                                              | Role                                                                    |
+| ------------------------------------------------- | ----------------------------------------------------------------------- |
+| `packages/document/src/image-credit.ts`           | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`           |
+| `packages/document/src/element-types.ts`          | `ImageElement.credit`                                                   |
+| `packages/document/src/validate.ts`               | Image branch calls `isImageCredit` on `credit`                          |
+| `apps/live/lib/upload-image.ts`                   | `PickedImage`: what every picker tab hands back                         |
+| `apps/live/lib/image-search/openverse.ts`         | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
+| `apps/live/lib/image-search/search.ts`            | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
+| `apps/live/lib/image-search/telemetry.ts`         | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
+| `apps/live/lib/image-search/pick.ts`              | `storeSearchResult`: download (full, else thumbnail) and store          |
+| `apps/live/hooks/ui/useImageSearch.ts`            | Search tab state: query, pages, status, picking                         |
+| `apps/live/components/panels/ImageSearchPane.tsx` | The Search tab's form, grid, states and footer credit                   |
+| `apps/live/components/panels/ImagePicker.tsx`     | Third tab; `onSelect(image: PickedImage)` carries the credit            |
+| `apps/live/hooks/canvas/useEditorImages.ts`       | `applyImageToElement` sets / drops `credit`; detach drops it            |
+| `apps/live/components/palette/ImageCreditRow.tsx` | Credit line, mounted in `ElementContentSections`' Image section         |
+| `apps/live/lib/telemetry-manifest.ts`             | `Element·Searched` in the emitted-pairs manifest                        |
+| `apps/telemetry/app/catalogue/content.ts`         | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
+| `apps/telemetry/app/event-explanations.ts`        | Sentences for the two events                                            |
+| `apps/help/app/palette/tools/images/page.mdx`     | "Searching for an image" section                                        |
+| `apps/help/app/policies/privacy-policy/page.mdx`  | Openverse named under Service providers                                 |
 
 ## Domain and naming
 
@@ -216,6 +217,12 @@ Pick failure copy (`pickFailureMessage`):
 | O3  | Pick failed          | `console.warn` | `[image-search] pick failed failure=<failure>`        |
 | O4  | Pipeline outcome     | (pipeline)     | `[import-images] <outcome>`                           |
 
+O1 to O3 each also send one `Error·Warning` event (`searchWarningType` / `pickWarningType` in
+`apps/live/lib/image-search/telemetry.ts`, a fixed table from kind / failure to token): O1
+`ImageSearch.RateLimited` or `ImageSearch.SearchFailed`; O2 `ImageSearch.ThumbnailFallback`; O3
+`ImageSearch.Pick.<Failure>` in PascalCase (`download-failed` → `DownloadFailed`). A search answer
+dropped as stale sends nothing.
+
 ## Testing
 
 | Rule                                                         | Test file                                       |
@@ -226,6 +233,8 @@ Pick failure copy (`pickFailureMessage`):
 | 429 → rate-limited; 500, network, bad JSON → failed          | `apps/live/lib/image-search/search.test.ts`     |
 | Full image stored; CORS / non-image / unsupported → thumb    | `apps/live/lib/image-search/pick.test.ts`       |
 | Gallery-full is final; both downloads fail → download-failed | `apps/live/lib/image-search/pick.test.ts`       |
+| Warning token per search kind and pick failure               | `apps/live/lib/image-search/telemetry.test.ts`  |
+| Thumbnail fallback reported once, not on a direct store      | `apps/live/lib/image-search/pick.test.ts`       |
 | `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`        |
 | Search tab end to end                                        | Browser verification (no e2e: external network) |
 

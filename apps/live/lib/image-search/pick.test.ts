@@ -74,10 +74,20 @@ describe('storeSearchResult', () => {
     });
   });
 
-  it('falls back to the thumbnail when the full picture is blocked', async () => {
+  it('reports no fallback when the full picture stores', async () => {
+    const onFallback = vi.fn();
+    const fetchImpl = fetchFrom({ [result.url]: () => image() });
+    await storeSearchResult(result, storeReturning(stored), fetchImpl, onFallback);
+    expect(onFallback).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the thumbnail when the full picture is blocked, reporting it once', async () => {
     const store = storeReturning(stored);
+    const onFallback = vi.fn();
     const fetchImpl = fetchFrom({ [result.thumbnail]: () => image() });
-    expect((await storeSearchResult(result, store, fetchImpl)).ok).toBe(true);
+    expect((await storeSearchResult(result, store, fetchImpl, onFallback)).ok).toBe(true);
+    expect(onFallback).toHaveBeenCalledTimes(1);
+    expect(onFallback).toHaveBeenCalledWith('network');
     expect(vi.mocked(fetchImpl).mock.calls.map((c) => c[0])).toEqual([
       result.url,
       result.thumbnail,
