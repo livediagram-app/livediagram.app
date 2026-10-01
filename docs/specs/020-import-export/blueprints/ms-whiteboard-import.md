@@ -20,6 +20,7 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 | `ink-scene.ts`                                             | Ink groups, strokes, presets and arrowheads to scene `ink` items                          |
 | `board-export.ts`                                          | Finding boards in a file set; reading one board's files                                   |
 | `import.ts`                                                | `listBoards`, `boardSceneOf`: the card's two steps                                        |
+| `board-identity.ts`                                        | `boardDocumentName`, `boardDates`: the document's name and dates from the board record    |
 | `ms-whiteboard-fixtures.ts`                                | Test-only encoder: readable board descriptions to export files                            |
 | `apps/live/lib/zip-reader.ts`                              | Generic Zip reading (stored and deflated entries, byte budget)                            |
 | `apps/live/lib/zip-writer-fixture.ts`                      | Test-only Zip writer (Node)                                                               |
@@ -33,16 +34,17 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 
 ## Domain and naming
 
-| Term          | Identifier      | Meaning                                                                   |
-| ------------- | --------------- | ------------------------------------------------------------------------- |
-| Board export  | `BoardFiles`    | One board's files: manifest, metadata, session, changes, objects          |
-| File set      | `ExportFileSet` | `Map<path, () => Promise<Uint8Array>>`: a Zip's or a folder's entries     |
-| Node          | `WbNode`        | `{ id?, type, payload?, traits: Map<traitId, WbNode[]>, seq }`            |
-| Replayed tree | `ReplayedBoard` | `{ root, canvas, index, stats: ReplayStats, imageObjects }`               |
-| Element       | `WbElement`     | A decoded board item (union by `kind`, below)                             |
-| Board         | `WbBoard`       | `{ background?, pattern, elements }`                                      |
-| Board summary | `BoardSummary`  | `{ dir, title, modified?, elementCount, prepared }` for the dialog's list |
-| Pen stroke    | `PenStroke`     | `{ originPx, unitScale, width, pressureMax, points: { x, y, p? }[] }`     |
+| Term          | Identifier      | Meaning                                                                          |
+| ------------- | --------------- | -------------------------------------------------------------------------------- |
+| Board export  | `BoardFiles`    | One board's files: manifest, metadata, session, changes, objects                 |
+| File set      | `ExportFileSet` | `Map<path, () => Promise<Uint8Array>>`: a Zip's or a folder's entries            |
+| Node          | `WbNode`        | `{ id?, type, payload?, traits: Map<traitId, WbNode[]>, seq }`                   |
+| Replayed tree | `ReplayedBoard` | `{ root, canvas, index, stats: ReplayStats, imageObjects }`                      |
+| Element       | `WbElement`     | A decoded board item (union by `kind`, below)                                    |
+| Board         | `WbBoard`       | `{ background?, pattern, elements }`                                             |
+| Board summary | `BoardSummary`  | `{ dir, name, dates: BoardDates, elementCount, prepared }` for the dialog's list |
+| Board dates   | `BoardDates`    | `{ createdAt?, modifiedAt? }`: validated ISO strings                             |
+| Pen stroke    | `PenStroke`     | `{ originPx, unitScale, width, pressureMax, points: { x, y, p? }[] }`            |
 
 Ids are compared in full; the tables below abbreviate to the first 8 hex digits, `format.ts`
 holds the full UUIDs.
@@ -185,8 +187,10 @@ decode is dropped and counted (the group's `unreadable` count).
   the group's position, `s` its scale, `u` the stroke's unit scale; then the group's rotation turns
   every point clockwise about the group's position. `widthPx = width · u · s · factor`.
   Pressure kept when every point has one.
-- Presets: highlighter → `highlighter: true`, opacity from alpha; rainbow → `stops` `RAINBOW_STOPS`,
-  colour the first stop; galaxy → `stops` `GALAXY_STOPS`.
+- Presets: highlighter → `highlighter: true`, opacity from alpha; rainbow → colour `RAINBOW_COLOUR`
+  (stock pink's light-board version), `stops` `RAINBOW_STOPS`, counted in `notes.rainbow`; galaxy →
+  `GALAXY_COLOUR` (stock violet's), `GALAXY_STOPS`, `notes.galaxy`. The landing resolves both
+  colours to their stock names.
 - Arrowhead: decoded with `decodePenStroke` (flags `0xff`/`0xef`: origin, width channel); an extra
   `ink` item keyed `…-head`, its points `g + s·(origin + p·u + d)`, same colour, its own width; one
   that does not decode counts as unreadable.
@@ -204,6 +208,8 @@ Rules (`RULES`, user-facing):
 
 | Key             | Kind     | Copy                                                    |
 | --------------- | -------- | ------------------------------------------------------- |
+| `rainbow`       | degraded | "Rainbow ink drawn in pink"                             |
+| `galaxy`        | degraded | "Galaxy ink drawn in violet"                            |
 | `tables`        | degraded | "Tables became rectangles"                              |
 | `invisible`     | skipped  | "Strokes drawn in the board's own colour were left out" |
 | `unreadable`    | skipped  | "Pen strokes that couldn't be read were skipped"        |
@@ -271,6 +277,8 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 | `RAINBOW_STOPS`                 | e71224 f6630c ffc114 02a556 0069bf 8a2be2 | Measured on screenshots                               | n/a           |
 | `GALAXY_STOPS`                  | 881f7c 3a9fb4                             | Measured on screenshots                               | n/a           |
 | `MSWB_STICKY_YELLOW`            | `#f6dc67`                                 | Measured                                              | n/a           |
+| `BOARD_DATES_FLOOR`             | `2016-01-01T00:00:00.000Z`                | Whiteboard's first preview was 2017                   | 2010 to 2017  |
+| `UNTITLED_DOCUMENT`             | "Whiteboard"                              | The tab kind's own name                               | n/a           |
 | `POLYGON_WIDTH_PX`              | 4                                         | Whiteboard's default pen                              | 1 to 8        |
 | `MAX_IMPORT_BYTES`              | 512 MB                                    | The real 83-board export is 245 MB                    | 64 MB to 1 GB |
 | `MAX_BOARD_JSON_BYTES`          | 64 MB                                     | Largest real `changes.json` about 2 MB; frames larger | 8 to 256 MB   |
@@ -325,6 +333,7 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 | Board finding, rejections                                                                    | `board-export.test.ts`             |
 | Zip reading                                                                                  | `zip-reader.test.ts`               |
 | Listing and importing                                                                        | `import.test.ts`                   |
+| Document name and dates (blank and null titles, invalid, future, reversed dates)             | `board-identity.test.ts`           |
 | Panel states                                                                                 | `MsWhiteboardImportPanel.test.tsx` |
 
 ## Assets and external resources

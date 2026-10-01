@@ -1,8 +1,8 @@
 # Microsoft Whiteboard import
 
 A **Microsoft Whiteboard** card in the Import dialog brings boards made in
-Microsoft Whiteboard across as **whiteboard tabs**
-([Whiteboard](../023-whiteboard/whiteboard.md)): pressure ink as marker
+Microsoft Whiteboard across as **documents**, one per board, each holding one
+whiteboard tab ([Whiteboard](../023-whiteboard/whiteboard.md)): pressure ink as marker
 strokes, colours that follow light and dark boards, text, sticky notes, shapes,
 lines and images, all editable, so a board survives Microsoft deleting it.
 The parser turns each board into a [Board scene](board-scene.md); the shared
@@ -23,8 +23,10 @@ landing does the rest. Built on [Board import](board-import.md); background in
 - **Nothing leaves the browser.** No Microsoft account, no network call, no
   Worker route; works offline and on self-host. Images go through the
   [Import image pipeline](import-image-pipeline.md) like any import's.
-- **Each board becomes a new whiteboard tab** in the current document, named
-  after the board, so importing never overwrites anything.
+- **Each board becomes a new document** (a single board too) with one
+  whiteboard tab, **named after the board** and **dated as the board**: its
+  created and last-modified dates are the board's. Importing never overwrites
+  anything, and a board library comes across as a library, not as tabs.
 - **The picture route is retired.** A flat PNG keeps nothing editable; the
   structured route supersedes it.
 
@@ -46,8 +48,8 @@ A **board folder** holds, by name:
   `changes.json`. The card accepts **one board folder**, **a folder of board
   folders**, or a **`.zip`** of either; other files beside the boards are
   ignored.
-- The board's **title** is `metadata.json`'s, else `manifest.json`'s; a board
-  with neither is "Untitled board".
+- The board's **title** is `metadata.json`'s, else `manifest.json`'s; its
+  **dates** are `metadata.json`'s `createdTime` and `lastModifiedTime`.
 
 ## The format
 
@@ -156,20 +158,20 @@ parser normalises:
 
 ## Mapping
 
-| Whiteboard                 | Board scene                                                                                                       |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Pen stroke                 | `ink`: points with pressures, width, colour; the group's position, scale and rotation applied                     |
-| Pen stroke with arrowhead  | `ink`, plus its arrowhead as a second `ink` stroke in the same colour (an arrowhead is a small stroke of its own) |
-| Highlighter stroke         | `ink` with `highlighter`, its colour's alpha as opacity                                                           |
-| Rainbow and galaxy strokes | `ink` with colour stops (the preset's); the landing degrades multicolour per [Board scene](board-scene.md)        |
-| Shape                      | `shape` rectangle, its border (width, dash, colour) and fill, its text as the label (size, bold, alignment)       |
-| Sticky note                | `sticky`, its colour as the fill, its text                                                                        |
-| Text box                   | `text`: auto-width when it has no fixed size, its font size times its scale, its colour                           |
-| Image                      | `image` with its asset from `objects/`; a missing file is noted ("Images missing from the export")                |
-| Ink-to-shape polygon       | closed `polyline` through its corners, border colour, no fill                                                     |
-| Line                       | `polyline` from start to end with its heads, width, dash and colour                                               |
-| Table                      | One `shape` rectangle per cell (border colour, no fill), cell ink as `ink` (degraded: "Tables became rectangles") |
-| Canvas                     | `background`: appearance per Colours, pattern Plain, Dots or Grid; `authoredOn` the same appearance               |
+| Whiteboard                 | Board scene                                                                                                                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pen stroke                 | `ink`: points with pressures, width, colour; the group's position, scale and rotation applied                                                                                                         |
+| Pen stroke with arrowhead  | `ink`, plus its arrowhead as a second `ink` stroke in the same colour (an arrowhead is a small stroke of its own)                                                                                     |
+| Highlighter stroke         | `ink` with `highlighter`, its colour's alpha as opacity                                                                                                                                               |
+| Rainbow and galaxy strokes | `ink` in one representative stock colour, rainbow as **pink**, galaxy as **violet**, the preset's colour stops kept on the item (degraded: "Rainbow ink drawn in pink", "Galaxy ink drawn in violet") |
+| Shape                      | `shape` rectangle, its border (width, dash, colour) and fill, its text as the label (size, bold, alignment)                                                                                           |
+| Sticky note                | `sticky`, its colour as the fill, its text                                                                                                                                                            |
+| Text box                   | `text`: auto-width when it has no fixed size, its font size times its scale, its colour                                                                                                               |
+| Image                      | `image` with its asset from `objects/`; a missing file is noted ("Images missing from the export")                                                                                                    |
+| Ink-to-shape polygon       | closed `polyline` through its corners, border colour, no fill                                                                                                                                         |
+| Line                       | `polyline` from start to end with its heads, width, dash and colour                                                                                                                                   |
+| Table                      | One `shape` rectangle per cell (border colour, no fill), cell ink as `ink` (degraded: "Tables became rectangles")                                                                                     |
+| Canvas                     | `background`: appearance per Colours, pattern Plain, Dots or Grid; `authoredOn` the same appearance                                                                                                   |
 
 - The scene's `title` is the board's title; `sourceId` is the board id.
 - **Text** families are sans-serif (Whiteboard's notes and text use its UI
@@ -177,19 +179,32 @@ parser normalises:
 - **Unknown kinds** (an element type not in the table) are skipped and counted
   ("Unsupported Whiteboard items were skipped"), never thrown.
 
+## Documents
+
+- **Name**: the board's title, whitespace collapsed and capped at the document
+  name limit. An untitled (or blank) board is named after the day it was made:
+  "Whiteboard, 14 Aug 2020" (its created date, else its last-modified date;
+  "Whiteboard" with neither).
+- **Dates**: a date counts when it parses, is no earlier than 2016 (before
+  Whiteboard existed) and no later than now. One valid date stands in for both;
+  a created date after the last edit becomes the last edit's; with neither, the
+  document takes the import's own time, as any new document does.
+- The document's one tab is the board's whiteboard tab, its background and
+  pattern the board's; the tab is named after the board too.
+
 ## Importing in the dialog
 
 - The card reads a `.zip` (stored or deflated entries) or a folder (a directory
   pick or a dropped folder), finds every board in it, and shows the list.
-- **One board** imports straight away as a new whiteboard tab.
-- **Several boards** list first, each with its title (or "Untitled board"), its
-  last-modified date and its element count, newest first, all checked; the user
-  unticks what they do not want and imports the rest. Each checked board
-  becomes its own whiteboard tab after the active tab, in list order, all in one
-  undo step; the first new tab becomes active.
+- **One board** imports straight away as a new document.
+- **Several boards** list first, each with its document name, its last-edited
+  date and its element count, newest first, all checked; the user unticks what
+  they do not want and imports the rest. Each checked board becomes its own
+  document, in list order. The current document is never changed.
 - Progress: "Importing board 3 of 12…", then the image pipeline's own progress.
 - The **result** shows the shared report per [Board scene](board-scene.md),
-  summed over the boards, plus each board that failed with its reason.
+  summed over the boards, plus each board that failed with its reason. The new
+  documents appear in the document list, in their own place in it by date.
 
 ## Errors
 

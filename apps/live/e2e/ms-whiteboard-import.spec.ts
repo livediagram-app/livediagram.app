@@ -27,7 +27,7 @@ test('Microsoft Whiteboard boards open as new whiteboard tabs with a report', as
 
   await page.getByRole('button', { name: 'Import 2 boards' }).click();
   const report = page.getByTestId('import-image-report');
-  await expect(report).toContainText('Multicolour ink drawn in one colour');
+  await expect(report).toContainText('Rainbow ink drawn in pink');
   await page.screenshot({ path: test.info().outputPath('ms-whiteboard-report.png') });
   await page.getByRole('button', { name: 'Done' }).click();
 

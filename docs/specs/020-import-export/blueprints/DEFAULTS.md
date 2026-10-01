@@ -34,3 +34,5 @@ One row per default applied where a spec is silent or qualitative.
 | M3  | ms-whiteboard-import  | Width of an arrowhead stroke                                            | Its own stored width, scaled like its stroke                                                    |
 | M4  | ms-whiteboard-import  | Order of boards in the list                                             | Last modified, newest first; then title                                                         |
 | M5  | ms-whiteboard-import  | A line head value other than none                                       | An open arrowhead                                                                               |
+| M6  | ms-whiteboard-import  | Which date names an untitled board                                      | Its created date (the day it was made), else its last edit                                      |
+| M7  | ms-whiteboard-import  | The earliest date a board can carry                                     | 2016-01-01; earlier is damage and is dropped                                                    |
