@@ -349,6 +349,9 @@ export type CanvasProps = {
   onAddImage?: () => void;
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
   onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
+  // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
+  reshapingArrowId?: string | null;
   onBeginFreehand: () => void;
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.

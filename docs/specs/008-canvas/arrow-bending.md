@@ -61,6 +61,9 @@ handles.
   arrow never flips or collapses through itself.
 - An axis with no extent (a perfectly horizontal or vertical arrow) shows no edge handles for it,
   since there is nothing to scale.
+- **The frame stands down while a handle reshapes the arrow** (a bend, curve, elbow or endpoint
+  drag) and comes back when the drag ends: it grew with every bend and read as a selection box
+  being dragged out.
 - Arrow keys still nudge a selected free arrow. Arrows with an attached end have no frame, as
   before, since they follow their elements.
 

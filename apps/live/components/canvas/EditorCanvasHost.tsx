@@ -348,7 +348,17 @@ export function EditorCanvasHost() {
     viewportZoom,
     zenMode,
     whiteboardDock,
+    drag,
   } = useEditorContext();
+  // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
+  const reshapingArrowId =
+    drag &&
+    (drag.kind === 'arrow-bend' ||
+      drag.kind === 'arrow-curve' ||
+      drag.kind === 'arrow-elbow' ||
+      drag.kind === 'arrow-endpoint')
+      ? drag.arrowId
+      : null;
 
   // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
   // below fall away for everybody else, exactly as they do on a read-only
@@ -693,6 +703,7 @@ export function EditorCanvasHost() {
         createBlocked={createBlocked}
         onAddImage={addImage}
         onAddArrow={addArrow}
+        reshapingArrowId={reshapingArrowId}
         onBeginFreehand={beginFreehand}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
