@@ -38,26 +38,35 @@ export function diagramBorderStroke(px: number): BorderStroke {
   return px <= 1 ? 'thin' : px <= 2.5 ? 'medium' : 'thick';
 }
 
-const hexOf = (c: SceneColour | 'ink' | undefined) =>
-  c && c !== 'ink' ? { hex: c.hex } : undefined;
+/**
+ * A colour on a diagram tab: near-black ink lands as the theme's ink (unset), every other colour as
+ * its exact hex; an unreadable one is counted and inked.
+ */
+export function diagramColourHex(
+  c: SceneColour | 'ink' | undefined,
+  ctx: LandContext,
+): string | undefined {
+  const resolved = ctx.colour(c);
+  return resolved && resolved.kind !== 'ink' && c && c !== 'ink' ? c.hex : undefined;
+}
 const fillOf = (fill: SceneColour | undefined) =>
   fill && colourAlpha(fill) > 0 ? fill.hex : 'transparent';
 
-function strokeFields(stroke: SceneStroke) {
-  const colour = hexOf(stroke.colour);
+function strokeFields(stroke: SceneStroke, ctx: LandContext) {
+  const colour = diagramColourHex(stroke.colour, ctx);
   return {
-    ...(colour ? { strokeColor: colour.hex } : {}),
+    ...(colour ? { strokeColor: colour } : {}),
     strokeWidth: diagramBorderStroke(stroke.widthPx),
     ...(stroke.dash === 'dashed' || stroke.dash === 'dotted' ? { strokeStyle: stroke.dash } : {}),
   };
 }
 
-function textFields(t: SceneText) {
+function textFields(t: SceneText, ctx: LandContext) {
   const font = SCENE_FONTS[t.family];
-  const colour = hexOf(t.colour);
+  const colour = diagramColourHex(t.colour, ctx);
   return {
     label: t.text.replace(/\r\n?/g, '\n'),
-    ...(colour ? { textColor: colour.hex } : {}),
+    ...(colour ? { textColor: colour } : {}),
     textSize: diagramTextSize(t.fontPx),
     ...(font ? { font } : {}),
     ...(t.alignX ? { textAlignX: t.alignX } : {}),
@@ -80,7 +89,7 @@ export function diagramFreehand(
     ...boxOfPoints(points),
     closed: meet || item.closed === true,
     fillColor: fillOf(item.fill),
-    ...strokeFields(item.stroke),
+    ...strokeFields(item.stroke, ctx),
     ...(item.kind === 'polyline' ? { straightEdges: true } : {}),
     ...commonFields(item, ctx, strokeOpacity(item.stroke)),
   };
@@ -98,15 +107,15 @@ export function diagramShape(item: SceneShape, id: string, ctx: LandContext): Sh
     height: item.height,
     ...(item.shape === 'rectangle' ? { borderRadius: item.rounded ? 'md' : 'none' } : {}),
     fillColor: fillOf(item.fill),
-    ...(stroke ? strokeFields(stroke) : { strokeWidth: 'none' as const }),
-    ...(item.label && item.label.text.trim() !== '' ? labelOf(item.label) : {}),
+    ...(stroke ? strokeFields(stroke, ctx) : { strokeWidth: 'none' as const }),
+    ...(item.label && item.label.text.trim() !== '' ? labelOf(item.label, ctx) : {}),
     ...commonFields(item, ctx, stroke ? strokeOpacity(stroke) : colourAlpha(item.fill)),
   };
 }
 
 // A shape label keeps its vertical alignment too, as the bound text's did.
-function labelOf(t: SceneText) {
-  return { ...textFields(t), ...(t.alignY ? { textAlignY: t.alignY } : {}) };
+function labelOf(t: SceneText, ctx: LandContext) {
+  return { ...textFields(t, ctx), ...(t.alignY ? { textAlignY: t.alignY } : {}) };
 }
 
 export function diagramText(item: SceneTextItem, id: string, ctx: LandContext): TextElement | null {
@@ -118,7 +127,7 @@ export function diagramText(item: SceneTextItem, id: string, ctx: LandContext): 
     y: item.y,
     width: item.width,
     height: item.height,
-    ...textFields(item.text),
+    ...textFields(item.text, ctx),
     ...commonFields(item, ctx, colourAlpha(item.text.colour)),
   };
 }
@@ -132,7 +141,7 @@ export function diagramSticky(item: SceneSticky, id: string, ctx: LandContext): 
     width: item.width,
     height: item.height,
     fillColor: item.fill.hex,
-    ...(item.text && item.text.text.trim() !== '' ? labelOf(item.text) : {}),
+    ...(item.text && item.text.text.trim() !== '' ? labelOf(item.text, ctx) : {}),
     ...commonFields(item, ctx, colourAlpha(item.fill)),
   };
 }

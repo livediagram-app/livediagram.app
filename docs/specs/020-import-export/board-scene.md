@@ -59,10 +59,11 @@ lives in hooks and components, see "In the editor" below.
 The landing has two profiles, chosen by the tab the scene lands on:
 
 - **Whiteboard**: whiteboard-native marks, the rules below.
-- **Diagram**: today's Excalidraw file mapping, unchanged in meaning (colours
-  verbatim, size buckets, freedraw as a pencil freehand, multi-point lines as
-  straight-edged freehands), so a scene pasted or imported onto a diagram tab
-  lands exactly as an Excalidraw file always has.
+- **Diagram**: the Excalidraw file mapping (size buckets, freedraw as a pencil
+  freehand, multi-point lines as straight-edged freehands). Colours: near-black
+  ink (the ink rule under Colours) lands as the **theme's ink** (no colour of its
+  own, so it follows the tab's theme), every other colour as its **exact hex**,
+  never a stock name; fills stay exact.
 
 ## Colours
 
@@ -122,7 +123,7 @@ Each scene colour resolves to one of three things, in this order:
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
 | ink        | A marker stroke: its points, pressures when every point has one, its streamline (none when the source gives none), colour, width; a closed stroke returns to its start; a highlighter stroke lands as a highlighter mark | A pencil freehand, closed when it ends where it started |
 | polyline   | With heads: an arrow. Two points: a line (an arrow with no heads). Three or more: a path, corners or (curved) smooth nodes, closed with its fill                                                                         | Two points: a line; more: a straight-edged freehand     |
-| shape      | A shape (rectangle, ellipse, diamond, triangle; rounded corners kept), its border and fill, its label                                                                                                                    | The same shape, colours verbatim                        |
+| shape      | A shape (rectangle, ellipse, diamond, triangle; rounded corners kept), its border and fill, its label                                                                                                                    | The same shape, ink as the theme's, other colours exact |
 | connector  | An arrow: each end pinned to the item it is bound to (the nearest anchor) when that item landed as a box, else free; its heads, label; bends as a curve                                                                  | The same                                                |
 | text       | A text box that hugs its text                                                                                                                                                                                            | A text element                                          |
 | sticky     | A sticky note in the nearest sticky preset, with its text                                                                                                                                                                | A sticky note, its fill verbatim                        |

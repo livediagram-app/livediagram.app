@@ -40,7 +40,7 @@ const rect = (over: Partial<SceneItem> = {}): SceneItem =>
   }) as SceneItem;
 
 describe('the diagram profile', () => {
-  it('maps rectangle / ellipse / diamond, colours verbatim', () => {
+  it('maps rectangle / ellipse / diamond, near-black as the theme’s ink, colours exact', () => {
     const shapes = land([
       rect(),
       rect({ key: 'e', shape: 'ellipse', rounded: false } as Partial<SceneItem>),
@@ -55,9 +55,10 @@ describe('the diagram profile', () => {
       width: 120,
       height: 60,
       fillColor: '#ffec99',
-      strokeColor: '#1e1e1e',
       strokeWidth: 'medium',
     });
+    // Near-black source ink is the theme's own ink on a diagram tab: no colour of its own.
+    expect(shapes[0]!.strokeColor).toBeUndefined();
     expect(shapes[0]!.penColour).toBeUndefined();
   });
 
@@ -142,8 +143,8 @@ describe('the diagram profile', () => {
       arrowEnds: 'none',
       to: { kind: 'free', x: 100, y: 50 },
       strokeWidth: 2,
-      strokeColor: '#1e1e1e',
     });
+    expect(a!.strokeColor).toBeUndefined();
   });
 
   it('maps a closed multi-point line to a closed straight-edged freehand', () => {
@@ -231,6 +232,17 @@ describe('the diagram profile', () => {
     expect(a.from).toMatchObject({ kind: 'pinned', elementId: els[0]!.id });
     expect(a.label).toBe('yes');
     expect(a.arrowheadShape).toBeUndefined();
+  });
+
+  it('keeps every other colour exact, never a stock name', () => {
+    const [s] = land([
+      rect({
+        stroke: { colour: { hex: '#1971C2' }, widthPx: 2 },
+        label: sceneText('Hi', { colour: { hex: '#868e96' } }),
+      } as Partial<SceneItem>),
+    ]) as ShapeElement[];
+    expect(s).toMatchObject({ strokeColor: '#1971C2', textColor: '#868e96' });
+    expect(s!.penColour).toBeUndefined();
   });
 
   it('keeps a sticky note’s fill verbatim', () => {

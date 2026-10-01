@@ -244,8 +244,10 @@ second pass lands the arrows; the output keeps the scene's order.
 
 ### Per kind, diagram profile (`land-diagram.ts`)
 
-The existing converter's rules, expressed on scene items: colours verbatim (`'ink'` unset, hex as
-given, never stock names); `fillColor: 'transparent'` when unfilled; widths by the diagram buckets;
+The existing converter's rules, expressed on scene items. Line and text colours through
+`diagramColourHex(colour, ctx)`: `'ink'` and near-black ink (the ink rule) unset, so the theme's ink
+shows; every other hex as given, never a stock name; an unreadable one counted and unset. Fills
+verbatim; `fillColor: 'transparent'` when unfilled; widths by the diagram buckets;
 text by the diagram text buckets (no `textScale`, no `autoWidth`); ink → a pencil freehand (no
 `penWidth`), closed when the parser says so; a two-point unheaded polyline → arrow `arrowEnds:
 'none'`; three or more → freehand `straightEdges: true`; connectors as above with `strokeWidth:

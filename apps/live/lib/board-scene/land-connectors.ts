@@ -19,6 +19,7 @@ import type { SceneConnector, SceneHead, ScenePolyline } from './scene';
 import { labelFields } from './text';
 import { arrowWidthPx } from './width';
 import { strokeOpacity } from './land-marks';
+import { diagramColourHex } from './land-diagram';
 
 const HEADS: Readonly<Record<SceneHead, ArrowheadShape>> = {
   arrow: 'line',
@@ -32,6 +33,9 @@ const HEADS: Readonly<Record<SceneHead, ArrowheadShape>> = {
 };
 
 type Point = { x: number; y: number };
+
+const withHex = <K extends string>(key: K, hex: string | undefined) =>
+  (hex ? { [key]: hex } : {}) as Partial<Record<K, string>>;
 
 /** The anchor on `target` nearest `point`: how a source's binding becomes one of our pins. */
 export function nearestAnchor(target: BoxedElement, point: Point): Anchor {
@@ -93,9 +97,7 @@ export function landArrow(
   const colourFields =
     profile === 'whiteboard'
       ? lineColourFields(lineColour)
-      : item.stroke.colour !== 'ink'
-        ? { strokeColor: item.stroke.colour.hex }
-        : {};
+      : withHex('strokeColor', diagramColourHex(item.stroke.colour, ctx));
 
   const label = connector?.label && connector.label.text.trim() !== '' ? connector.label : null;
   let labelPart: Partial<ArrowElement> = {};
@@ -114,9 +116,7 @@ export function landArrow(
         ? sameColour(own, lineColour)
           ? {}
           : textColourFields(own)
-        : label.colour !== 'ink'
-          ? { textColor: label.colour.hex }
-          : {}),
+        : withHex('textColor', diagramColourHex(label.colour, ctx))),
     };
   }
 
