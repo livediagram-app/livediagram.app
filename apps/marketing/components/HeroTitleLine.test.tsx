@@ -24,7 +24,7 @@ function shownWord(container: HTMLElement) {
   return words.find((w) => !/invisible|hero-word-out/.test(w.className))?.textContent;
 }
 
-// docs/specs/019-marketing/marketing-site.md "Hero": the first word cycles every 1.5s.
+// docs/specs/019-marketing/marketing-site.md "Hero": the first word cycles every 2.5s.
 describe('the hero headline word', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -41,12 +41,12 @@ describe('the hero headline word', () => {
     vi.unstubAllGlobals();
   });
 
-  it('cycles Diagram, Document, Whiteboard, Brainstorm, 1.5s each, then wraps', () => {
+  it('cycles Diagram, Document, Whiteboard, Brainstorm, 2.5s each, then wraps', () => {
     stubMotion(false);
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
     const seen = [shownWord(container)];
     for (let i = 0; i < 4; i++) {
-      act(() => vi.advanceTimersByTime(1499));
+      act(() => vi.advanceTimersByTime(2499));
       expect(shownWord(container)).toBe(seen.at(-1));
       act(() => vi.advanceTimersByTime(1));
       seen.push(shownWord(container));
@@ -57,7 +57,7 @@ describe('the hero headline word', () => {
   it('holds Diagram under reduced motion', () => {
     stubMotion(true);
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
-    act(() => vi.advanceTimersByTime(6000));
+    act(() => vi.advanceTimersByTime(10000));
     expect(shownWord(container)).toBe('Diagram');
   });
 });
