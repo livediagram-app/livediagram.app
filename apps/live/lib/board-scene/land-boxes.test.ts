@@ -221,9 +221,19 @@ describe('landFrame', () => {
       createLandContext(),
     );
     expect(isValidElement(el)).toBe(true);
-    expect(el).toMatchObject({ shape: 'frame', label: 'Testing' });
-    expect(
-      landFrame({ key: 'f', kind: 'frame', ...box }, 'id', createLandContext()).label,
-    ).toBeUndefined();
+    // The palette frame's title look: top-right, padded, Medium, never fitted across the frame.
+    expect(el).toMatchObject({
+      id: 'id',
+      shape: 'frame',
+      label: 'Testing',
+      textAlignX: 'right',
+      textAlignY: 'top',
+      padding: 'lg',
+      textSize: 'md',
+      ...box,
+    });
+    expect(landFrame({ key: 'f', kind: 'frame', ...box }, 'id', createLandContext()).label).toBe(
+      'Frame',
+    );
   });
 });

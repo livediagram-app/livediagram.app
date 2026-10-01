@@ -232,7 +232,8 @@ borderStrokeOf`, `strokeStyle` from `dash`. A duplicated closing point is droppe
 - **image** → `ImageElement` `imageId: null`, box, `objectFit: 'cover'` when `crop`; one
   `ImportImageRequest` `{ elementId, key: asset, source: sceneImageSource(asset) or null, hint:
 { width, height } }`.
-- **frame** → `ShapeElement` `shape: 'frame'`, box, `label: name` when non-empty.
+- **frame** → `createShape('frame', x, y)` (its title look: `textAlignX: 'right'`, `textAlignY: 'top'`,
+  `padding: 'lg'`, `textSize: 'md'`) with the box, `label: name` when non-empty, else the factory's "Frame".
 
 Boxed elements land before connectors resolve their ends: a first pass lands every item except
 connectors and headed polylines into a `Map<key, landedElement>` while reserving their index; the

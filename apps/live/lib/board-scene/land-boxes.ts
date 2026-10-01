@@ -1,6 +1,12 @@
 // Boxed kinds on the whiteboard profile (docs/specs/020-import-export/board-scene.md "Kinds"):
 // shapes, text boxes, sticky notes, images and frames.
-import type { ImageElement, ShapeElement, StickyElement, TextElement } from '@livediagram/document';
+import {
+  createShape,
+  type ImageElement,
+  type ShapeElement,
+  type StickyElement,
+  type TextElement,
+} from '@livediagram/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { colourAlpha, lineColourFields, resolveFill, resolveStickyFill } from './colour';
 import { commonFields } from './common';
@@ -114,13 +120,15 @@ export function landImage(
   };
 }
 
-/** A frame, its name as its label. */
+/**
+ * A frame with the palette frame's own look (createShape: its title top-right, padded in off the
+ * border, at the Medium size), named after the source's frame; an unnamed one keeps "Frame".
+ */
 export function landFrame(item: SceneFrame, id: string, ctx: LandContext): ShapeElement {
   const name = item.name?.trim();
   return {
+    ...createShape('frame', item.x, item.y),
     id,
-    type: 'shape',
-    shape: 'frame',
     ...boxOf(item),
     ...(name ? { label: name } : {}),
     ...commonFields(item, ctx, 1),

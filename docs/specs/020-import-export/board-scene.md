@@ -127,7 +127,7 @@ Each scene colour resolves to one of three things, in this order:
 | text       | A text box that hugs its text                                                                                                                                                                                            | A text element                                          |
 | sticky     | A sticky note in the nearest sticky preset, with its text                                                                                                                                                                | A sticky note, its fill verbatim                        |
 | image      | An image placeholder, filled through the [Import image pipeline](import-image-pipeline.md); a cropped image covers its box                                                                                               | The same                                                |
-| frame      | A frame, its name as its label                                                                                                                                                                                           | The same                                                |
+| frame      | A frame titled with its name, in the palette frame's title look (top right, padded); unnamed, "Frame"                                                                                                                    | The same                                                |
 
 - **Heads**: arrow (an open V), triangle, hollow triangle, circle, hollow
   circle, diamond, hollow diamond; a bar lands as an open V (degraded: "Bar
