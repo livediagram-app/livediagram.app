@@ -636,3 +636,73 @@ describe('Excalidraw import background', () => {
     expect(r.ok && r.backgroundColor).toBeUndefined();
   });
 });
+
+describe('Excalidraw file and clipboard envelopes', () => {
+  // A saved file and a clipboard copy of the same board carry identical elements; only the
+  // envelope differs (docs/specs/020-import-export/excalidraw-import-export.md "Envelopes").
+  const board = () => {
+    const b = excalidrawBuilder();
+    const box = b.rectangle({ x: 0, y: 0, width: 120, height: 60 });
+    const target = b.diamond({ x: 300, y: 0, strokeColor: '#1971c2' });
+    return [
+      box,
+      b.label(box, 'Box'),
+      target,
+      b.arrow(
+        [
+          [0, 0],
+          [175, 0],
+        ],
+        { x: 122, y: 30 },
+        { from: box, to: target },
+      ),
+      b.freedraw(
+        [
+          [0, 0],
+          [10, 5],
+          [20, 0],
+        ],
+        { x: 0, y: 200, strokeColor: '#e03131' },
+      ),
+      b.text('Title', { x: 0, y: -80, fontSize: 36 }),
+      b.stickynote({ x: 400, y: 200 }),
+    ];
+  };
+  const counting = () => {
+    let n = 0;
+    return () => `id-${++n}`;
+  };
+  const land = (text: string, profile: 'whiteboard' | 'diagram') => {
+    const read = sceneFromExcalidrawText(text);
+    if (!read.ok) throw new Error(read.error);
+    const landed = landBoardScene(read.scene, {
+      profile,
+      placement: { kind: 'origin' },
+      mintId: counting(),
+    });
+    if (!landed.ok) throw new Error(landed.message);
+    return landed;
+  };
+  const clipboard = () => excalidrawText(board());
+  const file = () =>
+    excalidrawText(board(), {
+      type: 'excalidraw',
+      appState: { viewBackgroundColor: '#ffffff', gridSize: 20, gridModeEnabled: false },
+    });
+
+  it.each(['whiteboard', 'diagram'] as const)('land the same elements (%s)', (profile) => {
+    const a = land(clipboard(), profile);
+    const b = land(file(), profile);
+    expect(b.elements).toEqual(a.elements);
+    expect(b.report).toEqual(a.report);
+  });
+
+  it("leaves a whiteboard's background to the board: a file's canvas colour is not taken", () => {
+    expect(land(file(), 'whiteboard').tabPatch.backgroundColor).toBeUndefined();
+  });
+
+  it("keeps a file's canvas colour as the diagram tab's background", () => {
+    expect(land(file(), 'diagram').tabPatch.backgroundColor).toBe('#ffffff');
+    expect(land(clipboard(), 'diagram').tabPatch.backgroundColor).toBeUndefined();
+  });
+});
