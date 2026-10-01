@@ -87,6 +87,10 @@ Each scene colour resolves to one of three things, in this order:
   fill lands as the nearest sticky preset's paper (OKLab distance) with that
   preset's readable ink for its text, so a note keeps its note colours. Every
   other fill keeps its hex: fills are washes, never adaptive ink.
+- **Text on a fill keeps its exact colour.** A label on a filled shape, and a
+  sticky note's own text colour, lands as its hex, never as ink or a stock
+  name: the fill is the same on both boards, so text that adapted (black ink
+  turning light on the dark board) would vanish into it.
 - Where a kind has no named field for a role, a stock colour lands as its
   light-board version's hex.
 

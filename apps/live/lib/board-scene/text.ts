@@ -5,12 +5,13 @@ import {
   LABEL_FONT_PX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
+  hexOklch,
   type PenColourName,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
 } from '@livediagram/document';
-import { textColourFields } from './colour';
+import { normaliseHex, textColourFields } from './colour';
 import type { LandContext } from './context';
 import type { SceneText } from './scene';
 
@@ -66,8 +67,16 @@ export type SceneTextFields = {
 const fontPxOf = (t: SceneText) =>
   Number.isFinite(t.fontPx) && t.fontPx > 0 ? t.fontPx : LABEL_FONT_PX.md;
 
-/** A label's fields: the nearest preset, family, alignment, styles and colour. */
-export function labelFields(t: SceneText, ctx: LandContext): SceneTextFields {
+/**
+ * A label's fields: the nearest preset, family, alignment, styles and colour. On a fill that does
+ * not adapt (`onFill`: a filled shape, a sticky note) the text keeps its exact hex, never ink or a
+ * stock name, so it stays readable on that fill on both boards.
+ */
+export function labelFields(
+  t: SceneText,
+  ctx: LandContext,
+  { onFill = false }: { onFill?: boolean } = {},
+): SceneTextFields {
   const font = SCENE_FONTS[t.family];
   return {
     label: t.text.replace(/\r\n?/g, '\n'),
@@ -79,8 +88,18 @@ export function labelFields(t: SceneText, ctx: LandContext): SceneTextFields {
     ...(t.italic ? { textItalic: true as const } : {}),
     ...(t.underline ? { textUnderline: true as const } : {}),
     ...(t.strike ? { textStrikethrough: true as const } : {}),
-    ...textColourFields(ctx.colour(t.colour)),
+    ...(onFill ? exactColour(t, ctx) : textColourFields(ctx.colour(t.colour))),
   };
+}
+
+// The text colour as its exact hex (an unreadable one is counted and left as ink).
+function exactColour(t: SceneText, ctx: LandContext): { textColor?: string } {
+  if (t.colour === 'ink') return {};
+  if (!hexOklch(t.colour.hex)) {
+    ctx.colour(t.colour); // counts it as unreadable, drawn in ink
+    return {};
+  }
+  return { textColor: normaliseHex(t.colour.hex) };
 }
 
 /** A text box's fields: the label's, with the scale that keeps the font px exact. */

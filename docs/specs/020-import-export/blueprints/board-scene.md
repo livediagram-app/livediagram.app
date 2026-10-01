@@ -172,7 +172,9 @@ Writing a resolved colour onto an element, per role:
   `font` from `SCENE_FONTS`; `textAlignX`, `textAlignY` as given (`'center'` kept, top / middle /
   bottom as given); `textBold`, `textItalic`, `textUnderline`, `textStrikethrough` written only when
   true; `label` the text with `\r\n` normalised to `\n`; the text colour per the role table.
-- `labelFields(t)`: the same without `textScale`.
+- `labelFields(t, ctx, { onFill })`: the same without `textScale`; with `onFill` (a shape with a fill,
+  a sticky note) the text colour is `textColor: hex` whatever it resolves to (the ink keyword
+  writes nothing), so text stays readable on a fill that does not adapt.
 - Empty text (after trimming) on a text item: the item is skipped ("Empty text boxes were skipped").
 
 ### Per kind, whiteboard profile

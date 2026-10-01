@@ -49,7 +49,9 @@ export function landShape(item: SceneShape, id: string, ctx: LandContext): Shape
     ...(stroke?.dash === 'dashed' || stroke?.dash === 'dotted' ? { strokeStyle: stroke.dash } : {}),
     ...(stroke ? lineColourFields(ctx.colour(stroke.colour)) : {}),
     ...(fill ? { fillColor: fill } : {}),
-    ...(item.label && item.label.text.trim() !== '' ? labelFields(item.label, ctx) : {}),
+    ...(item.label && item.label.text.trim() !== ''
+      ? labelFields(item.label, ctx, { onFill: fill !== undefined })
+      : {}),
     ...commonFields(item, ctx, opacity),
   };
 }
@@ -70,8 +72,12 @@ export function landText(item: SceneTextItem, id: string, ctx: LandContext): Tex
 /** A sticky note on the nearest sticky preset's paper, its text in that preset's ink. */
 export function landSticky(item: SceneSticky, id: string, ctx: LandContext): StickyElement {
   const paper = resolveStickyFill(item.fill);
-  const text = item.text && item.text.text.trim() !== '' ? labelFields(item.text, ctx) : undefined;
-  const ownColour = text && (text.textColor !== undefined || text.penTextColour !== undefined);
+  const text =
+    item.text && item.text.text.trim() !== ''
+      ? labelFields(item.text, ctx, { onFill: true })
+      : undefined;
+  // Ink text takes the paper's own readable ink; any other colour is kept exactly.
+  const ownColour = text?.textColor !== undefined;
   return {
     id,
     type: 'sticky',

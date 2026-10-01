@@ -24,7 +24,7 @@ export type ResolvedColour =
   | { kind: 'unreadable' };
 
 // '#rgb' or '#rrggbb' as lower-case '#rrggbb' (only called on a readable hex).
-function normaliseHex(hex: string): string {
+export function normaliseHex(hex: string): string {
   const full = hex.length === 4 ? '#' + [...hex.slice(1)].map((d) => d + d).join('') : hex;
   return full.toLowerCase();
 }

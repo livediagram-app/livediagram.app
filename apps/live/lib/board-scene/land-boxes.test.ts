@@ -66,8 +66,32 @@ describe('landShape', () => {
       font: 'caveat',
       textAlignX: 'center',
       textAlignY: 'middle',
-      penTextColour: 'red',
+      // On its fill the label keeps its exact colour.
+      textColor: '#e03131',
     });
+  });
+
+  it('keeps the exact colour of a label on a fill, so it stays readable on both boards', () => {
+    const el = landShape(
+      shape({ fill: { hex: '#ffc9c9' }, label: label({ colour: { hex: '#1e1e1e' } }) }),
+      'id',
+      createLandContext(),
+    );
+    expect(el.textColor).toBe('#1e1e1e');
+    expect(el.penTextColour).toBeUndefined();
+    const blue = landShape(
+      shape({ fill: { hex: '#ffc9c9' }, label: label({ colour: { hex: '#1971c2' } }) }),
+      'id',
+      createLandContext(),
+    );
+    expect(blue.textColor).toBe('#1971c2');
+    // Unfilled, the label adapts with the board.
+    const open = landShape(
+      shape({ label: label({ colour: { hex: '#1e1e1e' } }) }),
+      'id',
+      createLandContext(),
+    );
+    expect(open.textColor).toBeUndefined();
   });
 
   it('has no border without a stroke', () => {
@@ -131,8 +155,8 @@ describe('landSticky', () => {
       'id',
       createLandContext(),
     );
-    expect(el.penTextColour).toBe('blue');
-    expect(el.textColor).toBeUndefined();
+    expect(el.textColor).toBe('#1971c2');
+    expect(el.penTextColour).toBeUndefined();
   });
 });
 
