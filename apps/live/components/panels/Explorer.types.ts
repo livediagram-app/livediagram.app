@@ -108,7 +108,4 @@ export type ExplorerMenuActions = {
   onExport?: () => void;
   onSearch?: () => void;
   onOpenSettings?: () => void;
-  // Opens the Microsoft Whiteboard import (docs/specs/020-import-export/whiteboard-import.md
-  // "Where it lives"): the Explorer's import entry point calls it.
-  onImportMicrosoftWhiteboard?: () => void;
 };

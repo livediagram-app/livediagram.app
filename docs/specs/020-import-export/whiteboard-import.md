@@ -194,13 +194,18 @@ parser normalises:
 
 ## Where it lives
 
-- In the **Explorer**, beside creating documents, because each board becomes
-  a document ([Folders](../013-workspace/folders.md)). Its entry point opens the
-  **Import from Microsoft Whiteboard** dialog holding the import panel. The panel is self-contained (input, board list, progress, report), so
+- On the full-page **Explorer**, beside creating documents, because each board
+  becomes a document: the page header's **Import from** toolbar holds a
+  Microsoft Whiteboard button ([Folders](../013-workspace/folders.md)). It opens
+  the **Import from Microsoft Whiteboard** dialog holding the import panel. The
+  floating Explorer panel does not carry it (its header would crowd); the
+  Explorer page is the one home.
+- **The icon is an original glyph**, a whiteboard with a drawn stroke on a blue
+  tile, not Microsoft's logo: the repo ships no vendor trademark marks
+  ([Iconography](../004-interface-design/iconography.md), Technology tiles). The panel is self-contained (input, board list, progress, report), so
   a host only supplies the commit and what closing does.
-- Documents land where a new document would: from the Explorer beside an
-  Offline Mode document, as Offline Mode documents; otherwise as the owner's
-  documents.
+- Documents land where a new document would: in the focused folder inside a
+  folder section, otherwise unfiled, as the owner's documents.
   The Explorer's lists refresh once they exist.
 - Not in the tab-scoped Import dialog: that dialog replaces a tab, and this
   import makes documents.

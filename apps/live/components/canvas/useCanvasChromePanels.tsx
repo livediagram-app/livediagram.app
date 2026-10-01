@@ -229,7 +229,6 @@ export function useCanvasChromePanels({
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
     onMenuSettings: explorerMenuActions?.onOpenSettings,
-    onMenuImportMicrosoftWhiteboard: explorerMenuActions?.onImportMicrosoftWhiteboard,
   });
   // The ⋯ menu's rows, stable like the rest; a row stays absent while its
   // handler is, since the stable wrapper alone would always look present.
@@ -237,18 +236,14 @@ export function useCanvasChromePanels({
   const hasExport = !!explorerMenuActions?.onExport;
   const hasSearch = !!explorerMenuActions?.onSearch;
   const hasSettings = !!explorerMenuActions?.onOpenSettings;
-  const hasMsWhiteboardImport = !!explorerMenuActions?.onImportMicrosoftWhiteboard;
   const explorerMenu = useMemo(
     () => ({
       onShare: hasShare ? explorerHandlers.onMenuShare : undefined,
       onExport: hasExport ? explorerHandlers.onMenuExport : undefined,
       onSearch: hasSearch ? explorerHandlers.onMenuSearch : undefined,
       onOpenSettings: hasSettings ? explorerHandlers.onMenuSettings : undefined,
-      onImportMicrosoftWhiteboard: hasMsWhiteboardImport
-        ? explorerHandlers.onMenuImportMicrosoftWhiteboard
-        : undefined,
     }),
-    [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings, hasMsWhiteboardImport],
+    [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings],
   );
 
   const activityHandlers = useStableCallbacks({

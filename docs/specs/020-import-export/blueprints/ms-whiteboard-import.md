@@ -29,8 +29,9 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 | `apps/live/hooks/persistence/useMsWhiteboardImport.ts`          | The card's flow: read, list, build scenes, commit through `importScenesAsNewWhiteboards`  |
 | `apps/live/components/dialogs/MsWhiteboardImportDialog.tsx`     | The "Import from Microsoft Whiteboard" dialog hosting the panel                           |
 | `apps/live/hooks/persistence/useMsWhiteboardImportLauncher.tsx` | `openMicrosoftWhiteboardImport` and the dialog element, for any host                      |
-| `apps/live/components/panels/Explorer.types.ts`                 | `ExplorerMenuActions.onImportMicrosoftWhiteboard`, the entry point's action               |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`              | The editor host: the launcher over `importScenesAsNewDocuments`                           |
+| `apps/live/app/explorer/import-sources.tsx`                     | `IMPORT_SOURCES`: the shipped sources (id, name, icon), one entry each                    |
+| `apps/live/app/explorer/ImportFromToolbar.tsx`                  | The page header's "Import from" toolbar                                                   |
+| `apps/live/app/explorer/ExplorerPane.tsx`                       | Mounts the toolbar beside New document and the launcher over the commit                   |
 | `apps/live/e2e/ms-whiteboard-board.ts`                          | The synthesised export the end-to-end spec imports                                        |
 | `apps/live/scripts/ms-whiteboard-verify.mts`                    | Local verification over real exports (path argument; prints counts only)                  |
 | `file-sets.ts`                                                  | A `.zip` or a folder pick as an `ExportFileSet` (`MAX_IMPORT_BYTES`)                      |
@@ -288,8 +289,13 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 
 ## Presentation and UX
 
-- Entry point: the Explorer's, calling `openMicrosoftWhiteboardImport` (through
-  `ExplorerMenuActions.onImportMicrosoftWhiteboard` in the editor).
+- Entry point: the Explorer page header's "Import from" toolbar (`ImportFromToolbar`, from
+  `IMPORT_SOURCES`), rendered through `PaneHeader`'s `headerActions` (so it sits left of Help)
+  wherever the section passes `onCreateDocument`. Group: `role="toolbar"`, `aria-label="Import from"`,
+  Help's outline style (`rounded-lg border px-1 py-0.5 text-xs`, the same height), the muted label
+  hidden below `sm`. Each button: 24 px icon, `aria-label="Import from <name>"`, the `Tooltip` with
+  `<name>`, `focus-visible` ring; it calls the source's open (`openMicrosoftWhiteboardImport`).
+  Icon: `MsWhiteboardSourceIcon`, an original glyph (white board with a stroke on a `#2b6fd6` tile).
 - Dialog: title "Import from Microsoft Whiteboard", subtitle "Each board becomes its own document,
   named and dated as the board." The panel has no back bar there (nothing to go back to).
 - Panel: the intro "Pick a Microsoft Whiteboard board export: a board folder, a folder of boards,
@@ -337,6 +343,7 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 | Zip and folder picks as file sets                                                            | `file-sets.test.ts`                 |
 | The card's flow: single board, list, ticks, zip, errors, failures, telemetry                 | `useMsWhiteboardImport.test.ts`     |
 | The dialog (title, panel, close) and the launcher                                            | `MsWhiteboardImportDialog.test.tsx` |
+| The toolbar: label, one named button per source, tooltip, opening                            | `ImportFromToolbar.test.tsx`        |
 | End to end in the browser, synthesised export                                                | `e2e/ms-whiteboard-import.spec.ts`  |
 | Board finding, rejections                                                                    | `board-export.test.ts`              |
 | Zip reading                                                                                  | `zip-reader.test.ts`                |
