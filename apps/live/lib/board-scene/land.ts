@@ -16,6 +16,7 @@ import { diagramFreehand, diagramShape, diagramSticky, diagramText } from './lan
 import { landInk, landLine, landPath } from './land-marks';
 import { placementOffset, translateItem, type BoardScenePlacement } from './placement';
 import { mergeNotes, type BoardSceneReport } from './report';
+import { compactLanded } from './compact';
 import type { BoardScene, SceneAsset, SceneItem, SceneItemKind, ScenePolyline } from './scene';
 
 export type { BoardScenePlacement } from './placement';
@@ -184,7 +185,7 @@ export function landBoardScene(scene: BoardScene, options: LandOptions): LandRes
   const landed: BoardSceneReport['landed'] = {};
   for (const kind of landedKinds) if (kind) landed[kind] = (landed[kind] ?? 0) + 1;
   const report: BoardSceneReport = { landed, ...mergeNotes([...scene.notes, ...ctx.notes()]) };
-  const elements = slots.filter((el): el is Element => el !== null);
+  const elements = compactLanded(slots.filter((el): el is Element => el !== null));
   console.info('[board-scene] landed', {
     source: scene.source,
     profile,

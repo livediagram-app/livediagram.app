@@ -8,7 +8,7 @@ import {
 import { LANDING_RULES } from './context';
 import { landBoardScene, type LandOptions } from './land';
 import type { SceneItem } from './scene';
-import { boardScene, countingIds, inkStroke, sceneText } from './test-scenes';
+import { boardScene, countingIds, inkStroke, sceneText, syntheticInkBoard } from './test-scenes';
 
 // docs/specs/020-import-export/board-scene.md: the landing as a whole.
 const options = (over: Partial<LandOptions> = {}): LandOptions => ({
@@ -206,6 +206,19 @@ describe('landBoardScene', () => {
     const r = landed([]);
     expect(r.elements).toEqual([]);
     expect(r.report).toEqual({ landed: {}, degraded: [], skipped: [] });
+  });
+});
+
+// docs/specs/020-import-export/board-scene.md "Compact output": a big hand-drawn board writes
+// about 30 bytes a point (a full double is 18 digits alone), so thousands of strokes fit a tab.
+describe('a large board', () => {
+  it('lands compactly: about 30 bytes a pressure point', () => {
+    const scene = syntheticInkBoard(200, 120);
+    const r = landBoardScene(scene, options());
+    if (!r.ok) throw new Error('rejected');
+    const bytes = JSON.stringify(r.elements).length;
+    expect(bytes / (200 * 120)).toBeLessThan(36);
+    expect(r.elements.every((el) => !('streamline' in el))).toBe(true);
   });
 });
 
