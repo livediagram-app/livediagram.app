@@ -2,6 +2,7 @@ import {
   arrowStyleOf,
   curveAnchorPoints,
   endpointPosition,
+  otherArrowBends,
   projectToArrow,
   snapArrowPoint,
   type AlignmentGuide,
@@ -44,7 +45,14 @@ function snapArrowControlPoint(
   const exclude = new Set<string>();
   if (arrow.from.kind === 'pinned') exclude.add(arrow.from.elementId);
   if (arrow.to.kind === 'pinned') exclude.add(arrow.to.elementId);
-  return snapArrowPoint(raw, neighbours, els, ALIGN_SNAP_THRESHOLD, exclude);
+  // Other arrows' bends too, so bends line up across arrows (arrow-bending.md "Bends line up").
+  return snapArrowPoint(
+    raw,
+    [...neighbours, ...otherArrowBends(arrowId, els)],
+    els,
+    ALIGN_SNAP_THRESHOLD,
+    exclude,
+  );
 }
 
 // Resolve one curve / elbow handle frame. The control point should sit

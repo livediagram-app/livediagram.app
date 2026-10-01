@@ -161,3 +161,34 @@ export function applyArrowBend(plan: BendPlan, delta: Pt): BendPatch {
     }
   }
 }
+
+// An arrow's bends: the corners an angled arrow turns at, or the points a curve with bend points
+// passes through. Other arrows' bends are what a dragged bend snaps to, so a set of angled
+// arrows can turn on the same line (docs/specs/008-canvas/arrow-bending.md "Bends line up").
+export function arrowBendVertices(arrow: ArrowElement, elements: Element[]): Pt[] {
+  const { from, to } = arrowResolvedEnds(arrow, elements);
+  const style = arrowStyleOf(arrow);
+  if (style === 'angled') {
+    return arrowPathPolyline(
+      'angled',
+      from,
+      to,
+      arrow.from,
+      arrow.to,
+      arrow.curveOffset,
+      arrow.elbowOffset,
+      arrow.curvePoints,
+    ).slice(1, -1);
+  }
+  if (style === 'curved' && arrow.curvePoints && arrow.curvePoints.length > 0) {
+    return curveAnchorPoints(from, to, arrow.curvePoints);
+  }
+  return [];
+}
+
+// Every other arrow's bends, for a drag on `arrowId` to snap to.
+export function otherArrowBends(arrowId: string, elements: Element[]): Pt[] {
+  return elements.flatMap((el) =>
+    el.type === 'arrow' && el.id !== arrowId ? arrowBendVertices(el, elements) : [],
+  );
+}

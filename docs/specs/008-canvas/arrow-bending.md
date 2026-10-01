@@ -47,6 +47,19 @@ The curve and elbow handles stay: they are the precise controls. The "+" add-poi
 removed. Right-clicking a bend point still deletes it, and deleting the last one still reverts the
 arrow to a straight line.
 
+## Bends line up
+
+A dragged bend snaps to **other arrows' bends**, so a set of angled arrows can turn on the same line:
+an angled arrow's corners and a curve's bend points (`arrowBendVertices`) are alignment targets,
+beside the element edges and centres and the arrow's own neighbouring points that a bend already
+snapped to, within the usual threshold (`ALIGN_SNAP_THRESHOLD`) and with the usual guide.
+
+- **A bend or elbow handle** dragged: its x and y each snap to the nearest such line.
+- **An angled segment slid** by its line: the segment's sideways position snaps (a horizontal
+  segment to a y, a vertical one to an x), and only that axis's guide shows. It never moves along
+  itself.
+- Holding the no-snap modifier, or alignment guides switched off, behaves as for every other snap.
+
 ## Moving and scaling a free arrow
 
 An arrow whose two ends are both free (attached to nothing) no longer moves by dragging its line,

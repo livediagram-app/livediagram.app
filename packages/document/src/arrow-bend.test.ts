@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { BEND_T_MIN, applyArrowBend, planArrowBend } from './arrow-bend';
+import {
+  BEND_T_MIN,
+  applyArrowBend,
+  arrowBendVertices,
+  otherArrowBends,
+  planArrowBend,
+} from './arrow-bend';
 import type { ArrowElement } from './index';
 
 const free = (x: number, y: number) => ({ kind: 'free' as const, x, y });
@@ -142,5 +148,34 @@ describe('applyArrowBend', () => {
       { dx: -35, dy: -100 },
       { dx: -35, dy: 100 },
     ]);
+  });
+});
+
+// docs/specs/008-canvas/arrow-bending.md "Bends line up": what a dragged bend snaps to.
+describe('arrowBendVertices', () => {
+  it('is an angled arrow\u2019s corners, a curve\u2019s bend points, and nothing for a straight one', () => {
+    const angled = arrow([0, 0], [200, 100], {
+      arrowStyle: 'angled',
+      curvePoints: [
+        { dx: 0, dy: -50 },
+        { dx: 0, dy: 50 },
+      ],
+    });
+    expect(arrowBendVertices(angled, [])).toEqual([
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ]);
+    const curved = arrow([0, 0], [200, 0], {
+      arrowStyle: 'curved',
+      curvePoints: [{ dx: 0, dy: -40 }],
+    });
+    expect(arrowBendVertices(curved, [])).toEqual([{ x: 100, y: -40 }]);
+    expect(arrowBendVertices(arrow([0, 0], [200, 0]), [])).toEqual([]);
+  });
+
+  it('leaves the dragged arrow out of the others', () => {
+    const a = arrow([0, 0], [200, 0], { arrowStyle: 'curved', curvePoints: [{ dx: 0, dy: -40 }] });
+    const b = { ...a, id: 'b' };
+    expect(otherArrowBends('a', [a, b])).toEqual([{ x: 100, y: -40 }]);
   });
 });
