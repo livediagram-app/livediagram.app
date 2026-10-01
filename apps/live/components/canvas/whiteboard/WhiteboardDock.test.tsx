@@ -277,6 +277,21 @@ describe('WhiteboardDock settings', () => {
     expect(headings).toEqual(['Background', 'Cursor', 'Drawing']);
   });
 
+  it('adds Colours last only while the board has custom colours to snap', () => {
+    const snap = vi.fn(() => 2);
+    renderDock(
+      model('pen', { snapColours: { colours: ['#e03131', '#1971c2'], blocked: false, snap } }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const settings = screen.getByRole('group', { name: 'Settings' });
+    const headings = [...settings.querySelectorAll('[data-flyout-heading]')].map(
+      (h) => h.textContent,
+    );
+    expect(headings).toEqual(['Background', 'Cursor', 'Drawing', 'Colours']);
+    fireEvent.click(screen.getByRole('button', { name: 'Snap to stock colours' }));
+    expect(snap).toHaveBeenCalledTimes(1);
+  });
+
   it('sets the board background', () => {
     const { m } = renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));

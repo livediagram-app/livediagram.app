@@ -125,7 +125,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'Template' | 'NewTab' | 'Import'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
   // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
   // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
-  // 'BackgroundGrid') and shape recognition 'Toggled' ('RecognitionOn' |
+  // 'BackgroundGrid', 'SnapColours') and shape recognition 'Toggled' ('RecognitionOn' |
   // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Whiteboard',

@@ -32,6 +32,7 @@ function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 's
     setBackgroundPattern: vi.fn(),
     pathEditing: false,
     leavePathEdit: vi.fn(),
+    snapColours: { colours: [], blocked: false, snap: vi.fn(() => 0) },
   };
   // The synced preferences as the editor holds them: state, written through to this browser.
   const hook = renderHook(

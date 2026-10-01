@@ -81,7 +81,7 @@ A kind gaining a named colour (text colour, path stroke) adds one row; nothing e
   unmounts it) forgets it; undo re-renders **offer** once colours are back and no result is shown.
 - Section heading "Colours" in the flyouts' small capitals; `role="group"`, `aria-label="Colours"`.
 - Offer copy: "1 custom colour" / "N custom colours"; swatches: first `TAB_CUSTOM_COLOURS_MAX` (8, `apps/live/lib/quick-style-pen.ts`),
-  each `aria-hidden` with the hex as `title`; button "Snap to stock colours", disabled when
+  each `aria-hidden`, its hex in `data-snap-swatch`; button "Snap to stock colours", disabled when
   `blocked`.
 - Done copy: "1 custom colour snapped to stock colours" / "N custom colours snapped to stock
   colours", in a `role="status"` paragraph that is present (empty) in the offer state so the

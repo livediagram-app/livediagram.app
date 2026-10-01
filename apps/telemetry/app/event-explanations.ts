@@ -44,6 +44,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Whiteboard|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
   'Whiteboard|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
   'Whiteboard|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
+  'Whiteboard|Changed|SnapColours':
+    "Someone snapped a whiteboard's custom colours to its stock colours, so they adapt to light and dark boards.",
   'Whiteboard|Toggled|RecognitionOn':
     'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
   'Whiteboard|Toggled|RecognitionOff':
