@@ -16,6 +16,7 @@ import {
   createText,
   entityHeight,
   isCodeThemeId,
+  migrateIncomingElements,
   normalizeTable,
   type TableElement,
   type TextSize,
@@ -89,7 +90,9 @@ function normaliseSticky(el: Raw): Raw {
 // edit touched, leaving the rest of the diagram as it is).
 export function normaliseElement(el: unknown): unknown {
   if (!isObject(el)) return el;
-  return normaliseContent(withFactoryDefaults(el));
+  // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
+  const [current] = migrateIncomingElements([el]) as unknown as Raw[];
+  return normaliseContent(withFactoryDefaults(current!));
 }
 
 // A new element of this kind, as the editor's own factory makes it, one per
@@ -156,6 +159,19 @@ export function lanesToFront<T>(elements: T[]): T[] {
 
 // A whole element list from the model made safe. Anything that is not an
 // array comes back as it was, for validation to reject.
+/**
+ * An ops-mode update: the model's fields over the element's. Points the model sends in the former
+ * `{ nx, ny }` shape replace the stroke's packed ones (docs/specs/006-document/stroke-points.md):
+ * left beside them, the migration would keep the old block and drop the new points.
+ */
+export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
+  const base = isObject(prev) ? prev : {};
+  if (!isObject(patch)) return { ...base };
+  if (!('points' in patch)) return { ...base, ...patch };
+  const { packedPoints: _replaced, ...unpacked } = base;
+  return { ...unpacked, ...patch };
+}
+
 export function normaliseElements<T>(elements: T): T {
   if (!Array.isArray(elements)) return elements;
   return lanesToFront(elements.map(normaliseElement)) as T;

@@ -447,6 +447,11 @@ wrongly:
   kept), so they paint behind everything: a lane has a fill, and one listed after
   its contents covered them. It also makes each lane the backmost box under its
   contents, which is what lets dragging it in the editor carry them.
+- **A freehand stroke in the former `{ nx, ny }` shape is packed**
+  ([Stroke points](../006-document/stroke-points.md)): a stroke read from a tab
+  carries its points as one `packedPoints` block, and a model that writes
+  `points` instead gets them packed, as the api's own writes would. In an
+  update, sent `points` replace the stroke's block (`mergeElementUpdate`).
 
 ### 4.8 `share_document`
 

@@ -177,40 +177,40 @@ export function migrateLegacyStrokePoints(elements: Element[]): Element[]; // id
 Every site that read or wrote `FreehandElement.points` / `pressures`, found by removing both
 fields from the type and compiling every workspace, plus the untyped entry points.
 
-| Area                | Site                                                                                 | Change                                                        |
-| ------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| Element model       | `packages/document/src/element-types.ts`                                             | `packedPoints: string` replaces both fields                   |
-| Validation          | `packages/document/src/validate.ts`                                                  | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec |
-| OpenAPI             | `apps/api/src/openapi/schemas.generated.ts`                                          | regenerated from the type                                     |
-| Factories           | `packages/document/src/factories.ts`                                                 | `createFreehand` packs; geometry stays unpacked               |
-| Pen outline         | `packages/document/src/pen-stroke.ts`                                                | `freehandPenStroke` / `penStrokeSvg` decode                   |
-| Eraser              | `packages/document/src/whiteboard-stroke.ts`                                         | decode; pieces re-pack                                        |
-| SVG export          | `packages/document/src/svg-render-shapes.ts`                                         | decode                                                        |
-| Stored migration    | `packages/document/src/stored-elements.ts`                                           | adds `migrateLegacyStrokePoints`                              |
-| Canvas view         | `apps/live/components/canvas/boxed-element-overlays.tsx`                             | decode                                                        |
-| Live ink            | `apps/live/components/canvas/whiteboard/LiveInk.tsx`                                 | unchanged: raw geometry through `PenStrokeSource`             |
-| Pen gesture         | `apps/live/components/canvas/useWhiteboardPenGesture.ts`                             | ink type                                                      |
-| Commit types        | `apps/live/components/canvas/Canvas.types.ts`                                        | `PenInk` owns `pressures`                                     |
-| Pen commit          | `apps/live/hooks/canvas/commit-freehand.ts`                                          | pressures to `createFreehand`                                 |
-| Style presets       | `apps/live/lib/style-presets.ts`                                                     | re-pack without pressures                                     |
-| Excalidraw export   | `apps/live/lib/excalidraw-export.ts`                                                 | decode                                                        |
-| Excalidraw import   | `apps/live/lib/excalidraw-import.ts`                                                 | `packFreehandPoints`                                          |
-| Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                    |
-| Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2 |
-| Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                               |
-| Change log          | `apps/live/lib/api/change-log.ts`, `change-log-migrate.ts`, room `log` op            | `migrateChangeLogEntry`                                       |
-| Api writes          | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`                 | `migrateStoredTab` before `isValidTab`                        |
-| Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                   |
-| Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                  |
-| MCP server          | `apps/mcp/src/tools.ts`                                                              | unchanged: writes through the api; reads migrated tabs        |
-| Drive mirror        | `apps/live/lib/drive/livediagram-port.ts`                                            | unchanged: copies create through the api                      |
-| Templates           | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                   |
-| Shape recognition   | `apps/live/lib/recognition-preview.ts`, `recogniseBoardStroke`                       | unchanged: reads the live stroke, not an element              |
-| Polygon tool        | `useCanvasPolygonGesture.ts`                                                         | unchanged: `createFreehand`                                   |
-| Highlighter, pencil | `commit-freehand.ts`                                                                 | unchanged: `createFreehand`                                   |
-| Path tool           | `PathElement.nodes`                                                                  | not a freehand: out of scope                                  |
-| AI features         | `apps/api/src/ai-prompt.ts`, `apps/live/lib/api/ai.ts`                               | unchanged: AI never generates freehand                        |
-| Undo                | `useEditorHistory.ts`                                                                | unchanged: element snapshots by reference                     |
+| Area                | Site                                                                                 | Change                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Element model       | `packages/document/src/element-types.ts`                                             | `packedPoints: string` replaces both fields                                         |
+| Validation          | `packages/document/src/validate.ts`                                                  | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
+| OpenAPI             | `apps/api/src/openapi/schemas.generated.ts`                                          | regenerated from the type                                                           |
+| Factories           | `packages/document/src/factories.ts`                                                 | `createFreehand` packs; geometry stays unpacked                                     |
+| Pen outline         | `packages/document/src/pen-stroke.ts`                                                | `freehandPenStroke` / `penStrokeSvg` decode                                         |
+| Eraser              | `packages/document/src/whiteboard-stroke.ts`                                         | decode; pieces re-pack                                                              |
+| SVG export          | `packages/document/src/svg-render-shapes.ts`                                         | decode                                                                              |
+| Stored migration    | `packages/document/src/stored-elements.ts`                                           | adds `migrateLegacyStrokePoints`                                                    |
+| Canvas view         | `apps/live/components/canvas/boxed-element-overlays.tsx`                             | decode                                                                              |
+| Live ink            | `apps/live/components/canvas/whiteboard/LiveInk.tsx`                                 | unchanged: raw geometry through `PenStrokeSource`                                   |
+| Pen gesture         | `apps/live/components/canvas/useWhiteboardPenGesture.ts`                             | ink type                                                                            |
+| Commit types        | `apps/live/components/canvas/Canvas.types.ts`                                        | `PenInk` owns `pressures`                                                           |
+| Pen commit          | `apps/live/hooks/canvas/commit-freehand.ts`                                          | pressures to `createFreehand`                                                       |
+| Style presets       | `apps/live/lib/style-presets.ts`                                                     | re-pack without pressures                                                           |
+| Excalidraw export   | `apps/live/lib/excalidraw-export.ts`                                                 | decode                                                                              |
+| Excalidraw import   | `apps/live/lib/excalidraw-import.ts`                                                 | `packFreehandPoints`                                                                |
+| Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                                          |
+| Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
+| Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
+| Change log          | `apps/live/lib/api/change-log.ts`, `change-log-migrate.ts`, room `log` op            | `migrateChangeLogEntry`                                                             |
+| Api writes          | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`                 | `migrateStoredTab` before `isValidTab`                                              |
+| Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                                         |
+| Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                                        |
+| MCP server          | `apps/mcp/src/element-normalise.ts`, `tools.ts`                                      | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
+| Drive mirror        | `apps/live/lib/drive/livediagram-port.ts`                                            | unchanged: copies create through the api                                            |
+| Templates           | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                                         |
+| Shape recognition   | `apps/live/lib/recognition-preview.ts`, `recogniseBoardStroke`                       | unchanged: reads the live stroke, not an element                                    |
+| Polygon tool        | `useCanvasPolygonGesture.ts`                                                         | unchanged: `createFreehand`                                                         |
+| Highlighter, pencil | `commit-freehand.ts`                                                                 | unchanged: `createFreehand`                                                         |
+| Path tool           | `PathElement.nodes`                                                                  | not a freehand: out of scope                                                        |
+| AI features         | `apps/api/src/ai-prompt.ts`, `apps/live/lib/api/ai.ts`                               | unchanged: AI never generates freehand                                              |
+| Undo                | `useEditorHistory.ts`                                                                | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence
 
@@ -278,28 +278,31 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 ## Testing
 
-| Spec rule                                                              | Test                                                                                |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Byte layout, version, flags, little-endian                             | `packages/document/src/stroke-points.test.ts`                                       |
-| Round trip and precision bound (tiny, huge, degenerate, single, empty) | `stroke-points.test.ts`                                                             |
-| Pressure present and absent, pressure precision                        | `stroke-points.test.ts`                                                             |
-| Re-encoding a decoded block is stable                                  | `stroke-points.test.ts`                                                             |
-| Every named rejection                                                  | `stroke-points.test.ts`                                                             |
-| Encoder throws on non-finite, length mismatch, too many                | `stroke-points.test.ts`                                                             |
-| Memoised decode: same arrays, bounded, LRU, oversize                   | `packages/document/src/stroke-points-cache.test.ts`                                 |
-| Corrupt block draws nothing and logs once                              | `stroke-points-cache.test.ts`                                                       |
-| Debug decoder and expansion                                            | `packages/document/src/stroke-points-debug.test.ts`                                 |
-| Migration: shape, extent widening, pressures, idempotent               | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| Validation accepts packed, rejects former shape and corrupt            | `packages/document/src/validate.test.ts`                                            |
-| Eraser split behaviour unchanged                                       | `packages/document/src/whiteboard-stroke.test.ts`                                   |
-| Pen outline unchanged                                                  | `packages/document/src/pen-stroke.test.ts`                                          |
-| SVG export within the bound                                            | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
-| Api migrates former shape on create and save                           | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
-| Clipboard and tab import migrate                                       | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Room ops migrated on receipt                                           | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
-| Untrusted tabs and elements: migrated or passed through                | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| Change-log entries migrate                                             | `apps/live/lib/change-log-migrate.test.ts`                                          |
-| Live ink matches landed ink within the bound                           | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
+| Spec rule                                                                     | Test                                                                                |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Byte layout, version, flags, little-endian                                    | `packages/document/src/stroke-points.test.ts`                                       |
+| Round trip and precision bound (tiny, huge, degenerate, single, empty)        | `stroke-points.test.ts`                                                             |
+| Pressure present and absent, pressure precision                               | `stroke-points.test.ts`                                                             |
+| Re-encoding a decoded block is stable                                         | `stroke-points.test.ts`                                                             |
+| Every named rejection                                                         | `stroke-points.test.ts`                                                             |
+| Encoder throws on non-finite, length mismatch, too many                       | `stroke-points.test.ts`                                                             |
+| Memoised decode: same arrays, bounded, LRU, oversize                          | `packages/document/src/stroke-points-cache.test.ts`                                 |
+| Corrupt block draws nothing and logs once                                     | `stroke-points-cache.test.ts`                                                       |
+| Debug decoder and expansion                                                   | `packages/document/src/stroke-points-debug.test.ts`                                 |
+| Migration: shape, extent widening, pressures, idempotent                      | `packages/document/src/legacy-stroke-points.test.ts`                                |
+| Validation accepts packed, rejects former shape and corrupt                   | `packages/document/src/validate.test.ts`                                            |
+| Eraser split behaviour unchanged                                              | `packages/document/src/whiteboard-stroke.test.ts`                                   |
+| Pen outline unchanged                                                         | `packages/document/src/pen-stroke.test.ts`                                          |
+| SVG export within the bound                                                   | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
+| Api migrates former shape on create and save                                  | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
+| Clipboard and tab import migrate                                              | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
+| Room ops migrated on receipt                                                  | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
+| Untrusted tabs and elements: migrated or passed through                       | `packages/document/src/legacy-stroke-points.test.ts`                                |
+| Change-log entries migrate                                                    | `apps/live/lib/change-log-migrate.test.ts`                                          |
+| MCP packs a model's former-shape stroke; an update's points replace the block | `apps/mcp/src/element-normalise.test.ts`                                            |
+| Every template builds a valid tab with packed strokes (MCP and editor)        | `apps/mcp/src/tab-builders.test.ts`                                                 |
+| Drive mirror round trip keeps packed strokes byte for byte                    | `apps/live/lib/drive/open-with.test.ts`                                             |
+| Live ink matches landed ink within the bound                                  | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
 
 ## Constants and configuration
 
