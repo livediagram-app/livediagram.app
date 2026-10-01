@@ -1285,7 +1285,7 @@ export const articles: Article[] = [
     description:
       'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene or PNG / SVG export into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw file paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard',
+      'import json mermaid markdown excalidraw file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
