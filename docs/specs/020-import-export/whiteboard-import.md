@@ -226,4 +226,5 @@ parser normalises:
 - Comments, reactions and the board's follow and laser features.
 - Obtaining a board export (outside this repository).
 - Exact text layout: Whiteboard's text wraps in its own font; ours wraps in the
-  board's.
+  board's. Whiteboard also draws some enlarged auto-size text boxes further in from
+  their stored place than the board records; they land at their stored place.
