@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
@@ -50,7 +51,8 @@ import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
 // owner id resolves to the Clerk userId when signed in, otherwise to
 // the `livediagram:v2:self-id` localStorage UUID.
 export function useExplorerState() {
-  const router = useRouter();
+  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
+  const router = useAppNavigation();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // What the tree highlights + the right pane shows, derived from the

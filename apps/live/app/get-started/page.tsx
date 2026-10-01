@@ -18,7 +18,8 @@ import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider'
 import { useAuth } from '@clerk/react';
 import { useSignUp } from '@clerk/react/legacy';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import {
   AuthCard,
@@ -39,7 +40,8 @@ import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 type Phase = 1 | 2;
 
 function GetStartedContent() {
-  const router = useRouter();
+  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
+  const router = useAppNavigation();
   const searchParams = useSearchParams();
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const { signUp: clerkSignUp, setActive: setActiveSignUp, isLoaded: signUpLoaded } = useSignUp();

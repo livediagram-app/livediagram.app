@@ -21,7 +21,8 @@ import { StaticClerkProvider } from '@/components/providers/StaticClerkProvider'
 import { useAuth } from '@clerk/react';
 import { useSignIn } from '@clerk/react/legacy';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import {
   AuthCard,
@@ -41,7 +42,8 @@ import { Button } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 
 function SignInContent() {
-  const router = useRouter();
+  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
+  const router = useAppNavigation();
   const searchParams = useSearchParams();
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const { signIn: clerkSignIn, setActive: setActiveSignIn, isLoaded: signInLoaded } = useSignIn();
