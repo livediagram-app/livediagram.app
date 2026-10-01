@@ -1,5 +1,6 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
+  angledCornerPoints,
   angledElbow,
   arrowLabelAnchor,
   arrowStyleOf,
@@ -164,7 +165,12 @@ export function useArrowDragHandlers({
     if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
-    const anchor = curveAnchorPoints(from, to, arrow.curvePoints)[index]!;
+    // Where the handle shows: an angled arrow's corners are squared to its ends.
+    const anchor = (
+      arrowStyleOf(arrow) === 'angled'
+        ? angledCornerPoints(from, to, arrow.curvePoints, arrow.from, arrow.to)
+        : curveAnchorPoints(from, to, arrow.curvePoints)
+    )[index]!;
     checkpointPendingRef.current = true;
     setDrag({
       kind: 'arrow-curve',

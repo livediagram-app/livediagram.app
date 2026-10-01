@@ -41,9 +41,11 @@ export function useStripTileLimit(
     if (!card || typeof ResizeObserver === 'undefined') return;
     const measure = () => {
       const rail = card.querySelector<HTMLElement>('[data-strip-rail]');
-      const tile = rail?.querySelector<HTMLElement>('[data-rail-key]');
+      // The narrowest item is a bare tile: one a fixed divider follows is wider by the divider.
+      const items = rail ? [...rail.querySelectorAll<HTMLElement>('[data-rail-key]')] : [];
+      const tile = items[0];
       if (!rail || !tile) return;
-      const tileWidth = tile.getBoundingClientRect().width;
+      const tileWidth = Math.min(...items.map((el) => el.getBoundingClientRect().width));
       const cardWidth = card.getBoundingClientRect().width;
       // A strip with no layout (hidden in zen or the welcome flow, or not yet
       // painted) measures zero everywhere; that would collapse the count to

@@ -237,7 +237,7 @@ export function EditorView() {
     // Subscribing to the appearance is what re-renders this on a mode switch:
     // a Default tab's paper is the viewer's, not the tab's.
     <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
-      <MinimalChromeProvider value={minimalChrome}>
+      <MinimalChromeProvider value={minimalChrome} powerUser={isPowerUserMode(userPreferences)}>
         <UiScaleProvider value={uiScales}>
           <div className="flex h-dvh flex-col">
             {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture

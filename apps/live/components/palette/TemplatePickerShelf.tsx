@@ -1,3 +1,4 @@
+import { scrollToTopWithin } from '@/lib/scroll-within';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type {
   TemplateCategory,
@@ -59,7 +60,6 @@ export function TemplatePickerShelf({
   userOpened,
   expanded: expandedFlag,
   setExpanded,
-  whiteboardTemplate,
   templateKind,
   onTemplateCommit,
 }: {
@@ -71,7 +71,6 @@ export function TemplatePickerShelf({
   userOpened: boolean;
   expanded: boolean;
   setExpanded: (expanded: boolean) => void;
-  whiteboardTemplate?: TemplateDescriptor;
   templateKind: TemplateKind;
   onTemplateCommit: (kind: TemplateKind) => void;
 }) {
@@ -85,7 +84,9 @@ export function TemplatePickerShelf({
   const stageRef = useRef<HTMLDivElement>(null);
   const openId = open?.id;
   useEffect(() => {
-    if (userOpened) stageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    // Within the picker's own scroller only: scrollIntoView also scrolled the page, which slid
+    // the Quick Start modal up under the header (lib/scroll-within).
+    if (userOpened && stageRef.current) scrollToTopWithin(stageRef.current);
   }, [openId, userOpened]);
 
   // Popular only repeats templates the categories already hold, so it is left
@@ -153,17 +154,6 @@ export function TemplatePickerShelf({
         />
       </li>
     )),
-    whiteboardTemplate ? (
-      <li key="whiteboard" {...rise(folded.length, 'tiles')}>
-        <CategoryTile
-          label={whiteboardTemplate.title}
-          ariaLabel={`Start a whiteboard: ${whiteboardTemplate.description}`}
-          description={whiteboardTemplate.description}
-          kinds={['whiteboard']}
-          onOpen={() => onTemplateCommit('whiteboard')}
-        />
-      </li>
-    ) : null,
   ];
 
   const moreHeading = (

@@ -163,7 +163,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);
       setPendingDraw(null);
-      track('Element', 'Added', 'Arrow');
+      track('Element', 'Added', arrow.arrowEnds === 'none' ? 'Line' : 'Arrow');
       return;
     }
     // Freehand / polygon / path never reach commitDraw: freehand routes

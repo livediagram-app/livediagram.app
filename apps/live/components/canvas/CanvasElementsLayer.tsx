@@ -351,6 +351,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             element.to.kind === 'free' &&
             element.locked !== true &&
             element.id !== editingId &&
+            // Not while a handle reshapes it: the frame grew with every bend and read as a
+            // selection box being dragged out (arrow-bending.md "Moving and scaling a free arrow").
+            element.id !== props.reshapingArrowId &&
             !readOnly &&
             !tabLocked &&
             !isPaintMode;

@@ -4,6 +4,7 @@ import {
   arrowPathD,
   arrowPathMidpoint,
   arrowStyleOf,
+  angledCornerPoints,
   curveAnchorPoints,
   curveControlPoint,
   endpointPosition,
@@ -57,7 +58,9 @@ export function deriveArrowViewFrame(arrow: ArrowElement, elementIndex: ElementI
   // elbow handles below are used only when there are no explicit points.
   const curveAnchors =
     (style === 'curved' || style === 'angled') && arrow.curvePoints && arrow.curvePoints.length > 0
-      ? curveAnchorPoints(from, to, arrow.curvePoints)
+      ? style === 'angled'
+        ? angledCornerPoints(from, to, arrow.curvePoints, arrow.from, arrow.to)
+        : curveAnchorPoints(from, to, arrow.curvePoints)
       : null;
   const curveControl =
     style === 'curved' && !curveAnchors

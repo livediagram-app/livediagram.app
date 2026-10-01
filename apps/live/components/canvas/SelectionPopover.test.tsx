@@ -22,9 +22,9 @@ function setTouch(touch: boolean) {
 
 const BOUNDS = { x: 100, y: 100, width: 80, height: 40 };
 
-function renderSingle(minimal = false) {
+function renderSingle(minimal = false, powerUser = minimal) {
   render(
-    <MinimalChromeProvider value={minimal}>
+    <MinimalChromeProvider value={minimal} powerUser={powerUser}>
       <SelectionPopover
         bounds={BOUNDS}
         canvasOffset={{ x: 0, y: 0 }}
@@ -38,9 +38,9 @@ function renderSingle(minimal = false) {
   );
 }
 
-function renderMulti(minimal = false) {
+function renderMulti(minimal = false, powerUser = minimal) {
   render(
-    <MinimalChromeProvider value={minimal}>
+    <MinimalChromeProvider value={minimal} powerUser={powerUser}>
       <MultiSelectionToolbar
         anyLocked={false}
         allLocked={false}
@@ -61,16 +61,22 @@ afterEach(() => {
 });
 
 describe('SelectionPopover', () => {
-  it('has no More button on desktop: right-click opens the menu', () => {
+  it('shows More on desktop, the visible way into the element menu', () => {
     setTouch(false);
     renderSingle();
-    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy();
   });
 
-  it('keeps More on touch, which cannot right-click', () => {
+  it('drops More on desktop in power user mode, where right-click opens the menu', () => {
+    setTouch(false);
+    renderSingle(false, true);
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+  });
+
+  it('keeps More on touch, which cannot right-click, even in power user mode', () => {
     setTouch(true);
-    renderSingle();
+    renderSingle(true, true);
     expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
   });
 
@@ -97,13 +103,16 @@ describe('SelectionPopover', () => {
 });
 
 describe('MultiSelectionToolbar', () => {
-  it('has no More button on desktop, and keeps it on touch', () => {
+  it('shows More on desktop except in power user mode, and always on touch', () => {
     setTouch(false);
     renderMulti();
+    expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
+    cleanup();
+    renderMulti(false, true);
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
     cleanup();
     setTouch(true);
-    renderMulti();
+    renderMulti(true, true);
     expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
   });
 

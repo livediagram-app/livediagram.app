@@ -317,9 +317,6 @@ export function TemplatePicker({
   // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
-  // Whiteboard is not a template shelf: its own tile closes the category grid
-  // (docs/specs/023-whiteboard/whiteboard.md "Creating one").
-  const whiteboardTemplate = TEMPLATES.find((t) => t.kind === 'whiteboard');
   // Picking a template: the welcome wizard moves on to where the document
   // lives; Quick Start applies it straight away.
   const onTemplateCommit = (kind: TemplateKind) => {
@@ -441,7 +438,6 @@ export function TemplatePicker({
                 setShelfExpanded={setShelfExpanded}
                 popularTemplates={popularTemplates}
                 categoryTemplates={categoryTemplates}
-                whiteboardTemplate={whiteboardTemplate}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
               />

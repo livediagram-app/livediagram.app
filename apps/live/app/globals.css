@@ -39,6 +39,14 @@
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
    * (@livediagram/tailwind-config) so every app gets the same branded ring;
    * see there for the rationale. */
+
+  /* An SVG node focused by a pointer press (an arrow's bend, curve or elbow handle, whose node
+   * React may then reuse as a plain group mid-drag) drew the browser's default focus outline
+   * round the whole arrow: a dark box while dragging its points. A pointer focus shows no ring;
+   * keyboard focus (:focus-visible) keeps it (docs/specs/008-canvas/arrow-bending.md). */
+  svg :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /* iOS Safari refuses to honour `user-scalable=no` for accessibility,

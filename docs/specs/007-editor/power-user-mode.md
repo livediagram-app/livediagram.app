@@ -91,6 +91,12 @@ Kept as they are:
 - Every control. Minimal chrome hides words, not abilities.
 - The empty-canvas banner ("Tab 1 is empty"): it holds actions (Help, Quick Start), so it is a control, not a hint.
 
+The mode also drops, whatever the Minimal chrome option says:
+
+- **The More button** (`⋯`) in the selection toolbars, on desktop: a power user opens the element menu with a
+  right-click ([Canvas and palette](../008-canvas/canvas-and-palette.md#selection-popover)). Touch devices keep it:
+  they cannot right-click.
+
 #### Accessibility of hidden labels
 
 Minimal chrome meets WCAG 2.2 AA:

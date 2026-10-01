@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
 import {
   BringToFrontIcon,
@@ -98,11 +98,14 @@ export function SelectionPopover({
   title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
-  // Desktop right-clicks for the menu and presses Delete for the bin; touch
-  // can do neither, so it keeps both buttons (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
+  // More opens the element menu: on every device, since right-click is not something a desktop
+  // user finds, except in power user mode, where right-click is the way in. Touch can't
+  // right-click, so it always keeps it. The bin goes only with Minimal chrome on desktop, where
+  // Delete is the key (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
   const touch = useCoarsePointer();
   const minimalChrome = useMinimalChrome();
-  const showMore = !!onOpenContextMenu && touch;
+  const powerUser = usePowerUser();
+  const showMore = !!onOpenContextMenu && (touch || !powerUser);
   const showDelete = !!onDelete && (touch || !minimalChrome);
   // Counter-scaled placement: the popover renders at its natural on-screen size
   // regardless of zoom, pinned to the selection's nearest centre edge.

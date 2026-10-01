@@ -32,13 +32,13 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band           | Categories                                 |
-| -------------- | ------------------------------------------ |
-| _(no heading)_ | Favourites, full width                     |
-| **Common**     | Shapes, Write, Draw                        |
-| **Structure**  | Build, Components, Devices, Event Storming |
-| **Decorate**   | Icons, Stickers, Technology, Media         |
-| **Dynamic**    | Data, Behaviours                           |
+| Band           | Categories                                                                   |
+| -------------- | ---------------------------------------------------------------------------- |
+| _(no heading)_ | Favourites, full width                                                       |
+| **Common**     | Shapes, Write, Draw                                                          |
+| **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only) |
+| **Decorate**   | Icons, Stickers, Technology, Media                                           |
+| **Dynamic**    | Data, Behaviours                                                             |
 
 ## Why flatten
 

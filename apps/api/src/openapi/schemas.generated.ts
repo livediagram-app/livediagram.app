@@ -565,6 +565,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "exactStart": {
+        "type": "boolean"
+      },
       "flow": {
         "$ref": "#/components/schemas/ArrowFlow"
       },

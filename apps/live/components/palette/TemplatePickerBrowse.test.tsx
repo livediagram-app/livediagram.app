@@ -47,7 +47,6 @@ function Shelf({
       setShelfExpanded={() => {}}
       popularTemplates={popular}
       categoryTemplates={categoryTemplates}
-      whiteboardTemplate={byKind('whiteboard')}
       templateKind="blank"
       onTemplateCommit={onCommit}
     />
@@ -56,26 +55,23 @@ function Shelf({
 
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!;
 
-describe('the whiteboard tile', () => {
-  it('closes the category tiles, last, three across so the grid fills three rows', () => {
+// Whiteboard is not a category (docs/specs/023-whiteboard/whiteboard.md "Creating one"): it is a
+// Popular card, never a category tile or on a category shelf.
+describe('the whiteboard', () => {
+  it('is a card on Popular, not a category tile', () => {
     const commit = vi.fn();
     render(<Shelf onCommit={commit} />);
     const tiles = screen.getAllByRole('button', { name: /Browse .* templates/ })[0]!.closest('ul')!;
-    expect(tiles.className).toContain('sm:grid-cols-3');
-    expect(tiles.children).toHaveLength(9);
-    const last = tiles.lastElementChild!;
-    expect(last.textContent).toContain('Whiteboard');
-    expect(last.textContent).toContain('Free drawing without distractions');
-    // Its own category: the whiteboard's preview alone, not a fan of three.
-    expect(last.querySelectorAll('[data-single-preview] svg')).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: /^Start a whiteboard/ }));
-    expect(commit).toHaveBeenCalledWith('whiteboard');
+    expect(tiles.children).toHaveLength(8);
+    expect(tiles.textContent).not.toContain('Whiteboard');
+    expect(stage().textContent).toContain('Popular');
+    expect(screen.getAllByText('Whiteboard')).toHaveLength(1);
   });
 
-  it('is never on a shelf', () => {
+  it('is on no category shelf', () => {
     render(<Shelf initial="design" />);
     expect(stage().textContent).toContain('Design');
-    expect(screen.getAllByText('Whiteboard')).toHaveLength(1);
+    expect(screen.queryByText('Whiteboard')).toBeNull();
   });
 });
 

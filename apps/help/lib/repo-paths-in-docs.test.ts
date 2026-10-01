@@ -259,7 +259,9 @@ describe('repo paths quoted in specs and docs', () => {
       .filter(({ quoted }) => !resolves(quoted, known))
       .map(({ f, quoted }) => `${f}: ${quoted}`);
     expect(broken).toEqual([]);
-  });
+    // It reads every spec and doc and lists the repo: well under a second alone, but past the
+    // 5 s default when the whole monorepo's suites run at once.
+  }, 30_000);
 
   it('accepts a declared build output and rejects a misspelt directory', () => {
     const built = 'apps/marketing/generated/licences.json';

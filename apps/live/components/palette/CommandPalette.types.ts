@@ -108,7 +108,8 @@ export type CommandPaletteProps = {
   // Drops a horizontal arrow at the viewport centre with no pointers
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
-  onAddArrow: () => void;
+  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
+  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Pencil tool: enters one-shot freehand draw mode. Unlike the
   // other add-element callbacks, this never drops at the viewport
   // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil
