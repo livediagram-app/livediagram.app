@@ -80,7 +80,8 @@ centred across the **top** of the canvas by default (see
   picker, adaptive like them. Below them, **a second section of custom
   colours appears only when custom colours are used on this whiteboard
   tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
-  arrows, paths and text, up to eight, most recently drawn first (imported and
+  arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
+  would convert), up to eight, most recently drawn first (imported and
   pasted content brings its own); with none on the tab, the section is
   not there. A custom colour is added with the marker picker's **+**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
@@ -675,7 +676,8 @@ light and dark boards like everything drawn with the stock colours.
   colours**.
 - **What it converts:** every custom (`#rrggbb`) colour held in a field that
   has a stock counterpart: a marker stroke's colour, a shape's outline, a
-  line's or arrow's colour. These are the custom colours the quick style
+  line's, arrow's or path's colour, a text box's text, and the label of an
+  unfilled shape or of an arrow. These are the custom colours the quick style
   panel's custom section offers. Further kinds join as they gain a stock
   colour field.
 - **The rule:** each colour is read in OKLCH.
@@ -689,8 +691,9 @@ light and dark boards like everything drawn with the stock colours.
     nearer in hue.
 - **Never touched:** elements already in a stock colour or the ink,
   highlighter strokes (their recipe owns their colour), fills (a whiteboard
-  has no stock fills), text colours and shape labels, an arrow's separate head
-  colour, images, locked elements and elements on locked or hidden layers.
+  has no stock fills), text on a fill (a filled shape's label, a sticky
+  note's text: the fill does not adapt, so the text keeps its exact colour to
+  stay readable on it), an arrow's separate head colour, images, locked elements and elements on locked or hidden layers.
 - **One undo step**; collaborators receive it as any edit. Snapping is
   unavailable (the button disabled) while the board cannot be edited.
 - **Confirmation:** the section then says "3 custom colours snapped to stock

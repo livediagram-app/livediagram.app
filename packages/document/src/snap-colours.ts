@@ -1,6 +1,7 @@
 // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): every custom colour of a
 // board held in a field that has a stock counterpart becomes its nearest stock colour (or the ink),
-// so it adapts to light and dark boards. Pure; the field table says which kinds take part.
+// so it adapts to light and dark boards. Pure; the field table (docs/specs/023-whiteboard/
+// blueprints/snap-colours.md) says which kinds and fields take part.
 import type { Element } from './index';
 import { isCustomPenColour, nearestPenColour } from './pen-colours';
 
@@ -8,16 +9,24 @@ import { isCustomPenColour, nearestPenColour } from './pen-colours';
 export type SnapColourField = {
   applies: (el: Element) => boolean;
   // The custom colour, an exact `#rrggbb`.
-  hex: 'strokeColor';
+  hex: 'strokeColor' | 'textColor';
   // The stock colour by name; absent is the ink.
-  named: 'penColour';
+  named: 'penColour' | 'penTextColour';
   // Bindings that would re-derive a hex over the stock colour.
-  clear: readonly 'strokeSwatch'[];
+  clear: readonly ('strokeSwatch' | 'textSwatch')[];
 };
 
 const STROKE = { hex: 'strokeColor', named: 'penColour', clear: ['strokeSwatch'] } as const;
+const TEXT = { hex: 'textColor', named: 'penTextColour', clear: [] } as const;
 
-// A kind gaining a named colour (a text colour, a path's stroke) adds one row here.
+// Text on a fill that does not adapt keeps its exact colour, readable on it (the board scene's
+// rule, docs/specs/020-import-export/board-scene.md "Colours"): so a filled shape's label is no row.
+const unfilled = (el: Element) => {
+  const fill = (el as { fillColor?: string }).fillColor;
+  return fill === undefined || fill === 'transparent';
+};
+
+// A kind gaining a named colour adds one row here.
 export const SNAP_COLOUR_FIELDS: readonly SnapColourField[] = [
   // Marker strokes; a highlighter's recipe owns its colour, a pencil stroke has no stock colours.
   {
@@ -27,6 +36,10 @@ export const SNAP_COLOUR_FIELDS: readonly SnapColourField[] = [
   },
   { applies: (el) => el.type === 'shape', ...STROKE },
   { applies: (el) => el.type === 'arrow', ...STROKE },
+  { applies: (el) => el.type === 'path', ...STROKE },
+  { applies: (el) => el.type === 'text', ...TEXT, clear: ['textSwatch'] },
+  { applies: (el) => el.type === 'shape' && unfilled(el), ...TEXT },
+  { applies: (el) => el.type === 'arrow', ...TEXT },
 ];
 
 type Fields = Record<string, unknown>;

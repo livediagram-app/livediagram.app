@@ -5,6 +5,7 @@
 // of them, most recently drawn first; Marker width is the pens' named widths.
 import {
   PEN_COLOUR_NAMES,
+  SNAP_COLOUR_FIELDS,
   isCustomPenColour,
   isPenColourName,
   penColourCss,
@@ -61,29 +62,29 @@ export function isPenStroke(el: Element): el is FreehandElement {
   );
 }
 
-// The colour an element is drawn in, for the tab's custom colours: a marker stroke's, a shape's,
-// line's, arrow's or path's line, a text box's text. Fills are washes, never marker colours.
-function drawnColour(el: Element): string | undefined {
-  if (el.type === 'freehand') {
-    return el.penWidth !== undefined && el.pen !== 'highlighter' ? el.strokeColor : undefined;
-  }
-  if (el.type === 'shape' || el.type === 'arrow' || el.type === 'path') return el.strokeColor;
-  if (el.type === 'text') return el.textColor;
-  return undefined;
+// The custom colours an element holds where a stock colour could stand instead: the snap's own
+// field table (SNAP_COLOUR_FIELDS), so the custom section offers exactly the colours a snap would
+// convert. Fills are washes, never marker colours, and are no rows.
+function heldColours(el: Element): unknown[] {
+  return SNAP_COLOUR_FIELDS.filter((row) => row.applies(el)).map(
+    (row) => (el as unknown as Record<string, unknown>)[row.hex],
+  );
 }
 
 /**
  * The custom (hex) colours used on a whiteboard tab, most recently drawn first (the later in the
- * tab, the more recent), at most eight: the own colours of its marker strokes, shapes, lines,
- * arrows, paths and text, imported ones included.
+ * tab, the more recent), at most eight: every custom colour a snap could convert (the marker
+ * strokes', shapes', lines', arrows' and paths' colours, text boxes' text, unfilled shapes' and
+ * arrows' labels), imported ones included.
  */
 export function tabCustomColours(elements: readonly Element[]): string[] {
   const out: string[] = [];
   for (let i = elements.length - 1; i >= 0 && out.length < TAB_CUSTOM_COLOURS_MAX; i--) {
-    const colour = drawnColour(elements[i]!);
-    if (!isCustomPenColour(colour)) continue;
-    const hex = colour.toLowerCase();
-    if (!out.includes(hex)) out.push(hex);
+    for (const colour of heldColours(elements[i]!)) {
+      if (!isCustomPenColour(colour) || out.length >= TAB_CUSTOM_COLOURS_MAX) continue;
+      const hex = colour.toLowerCase();
+      if (!out.includes(hex)) out.push(hex);
+    }
   }
   return out;
 }

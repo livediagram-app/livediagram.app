@@ -422,8 +422,9 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 - `projectWhiteboardElement`: after `penColour` (stroke), `penTextColour` sets `textColor` when unset
   (`penColourHex(name, board)`); then the ink projection. Every renderer that projects (canvas
   through `whiteboard-ink.ts`, SVG and PNG exports through `export-as-seen.ts`) draws it.
-- `tabCustomColours`: also reads arrows', paths' and text elements' own custom colours (stroke, or
-  text colour for a text element).
+- `tabCustomColours`: the custom colours held in the snap's field table (`SNAP_COLOUR_FIELDS`,
+  which gains rows for paths, text boxes and the labels of unfilled shapes and arrows), so the
+  custom section and the snap agree.
 - Quick style: a stock name on an element marks no theme swatch; applying a stroke clears
   `penColour`, a text colour clears `penTextColour`; Clear styles clears both (see the quick style
   blueprint's delta). "Reset to theme" (`resetElementColours`) clears them too.
