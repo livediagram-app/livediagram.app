@@ -30,6 +30,10 @@ export type {
 export type Env = {
   DB: D1Database;
   DOCUMENT_ROOM: DurableObjectNamespace;
+  // The live build id: the deploy's commit, the same one baked into the editor build as
+  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
+  // sets neither) leaves it off the server release signal.
+  BUILD_ID?: string;
   // Clerk JWKS URL: when set, the request handler verifies Bearer
   // tokens against it via `src/auth/clerk.ts` and prefers the
   // resulting userId over `X-Owner-Id`. When unset, the worker stays

@@ -289,7 +289,8 @@ export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
 
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
-export type FormatMessage = { kind: 'format'; format: number };
+// `build`: the live build id when the deploy set one (docs/specs/016-platform/stale-builds.md).
+export type FormatMessage = { kind: 'format'; format: number; build?: string };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local

@@ -88,10 +88,18 @@ jobs:
     name: Build apps
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # The live build id (docs/specs/016-platform/stale-builds.md): the commit this run builds, baked
+    # into the editor and handed to the api deploy, so both name the same build.
+    outputs:
+      build_id: ${{ steps.build-id.outputs.id }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
+
+      - name: Record the build id
+        id: build-id
+        run: echo "id=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: pnpm/action-setup@v6
         with:
@@ -152,6 +160,8 @@ jobs:
           # (restrict it by HTTP referrer in the Cloud Console); unset leaves the
           # mirror working and the folder adoption button hidden.
           NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
+          # The live build id, matched by the api's BUILD_ID (docs/specs/016-platform/stale-builds.md).
+          NEXT_PUBLIC_BUILD_ID: ${{ steps.build-id.outputs.id }}
         run: pnpm build
 
       # The live build must carry this environment's Google client id and no
@@ -482,6 +492,8 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          # The build id the editor of this run was built with (docs/specs/016-platform/stale-builds.md).
+          BUILD_ID: ${{ needs.build.outputs.build_id }}
         # The D1 binding's `database_id` placeholder in wrangler.toml
         # must be filled in before the first deploy succeeds. Run
         # `wrangler d1 create livediagram` locally once and commit the
@@ -501,7 +513,7 @@ jobs:
             flags="$(node scripts/hosted-vars.mjs flags ${WRANGLER_ENV:+--env "$WRANGLER_ENV"})"
             mapfile -t hosted_vars <<<"$flags"
           fi
-          pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} "${hosted_vars[@]}"
+          pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"} "${hosted_vars[@]}" --var "BUILD_ID:$BUILD_ID"
 
       # Read the hosted vars back off the version now serving traffic and fail
       # the run if any is missing or different. The image caps are the R2

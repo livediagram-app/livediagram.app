@@ -5,6 +5,7 @@
 // canonical home that the next route can grep for.
 
 import {
+  BUILD_ID_HEADER,
   DOCUMENT_CONVERSION_HEADER,
   DOCUMENT_FORMAT_HEADER,
   DOCUMENT_TRASHED_ERROR,
@@ -30,9 +31,9 @@ export const CORS_HEADERS = {
   // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
   'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}`,
   'Access-Control-Max-Age': '86400',
-  // The document format number (docs/specs/016-platform/new-version-prompt.md), readable by an editor
-  // on another origin (local dev, a self-host with a separate api host).
-  'Access-Control-Expose-Headers': DOCUMENT_FORMAT_HEADER,
+  // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
+  // by an editor on another origin (local dev, a self-host with a separate api host).
+  'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}`,
 };
 
 export function json(body: unknown, init: ResponseInit = {}): Response {
