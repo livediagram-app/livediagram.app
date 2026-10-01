@@ -48,38 +48,35 @@ more than tiles (search, group browsing, Edit / Reorder). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
 For Icons / Stickers / Technology the strip's twelve are the first twelve of the
-catalogue in its own order, after any the user has used (below).
+catalogue in its own order.
 
-In the Favourites body, More shows no **Reorder / Edit** footer: the order
-is by use (below), so a hand-made one would be overridden on the next use.
-Its search results keep their favourite star, which is how a tile joins or
-leaves Favourites from this layout. The Floating Palette's Favourites body is
-unchanged.
+In the Favourites body, More keeps the **Reorder / Edit** footer, as the floating Palette has it:
+Favourites are in the order you set, in every layout.
 
-## Tiles by use
+## The strip's order and dividers
 
-Using a tile brings it to the **first slot** of the strip: it animates in
-there, the others slide right one, and the tile pushed past the last slot
-shrinks away and lives behind More until it is used again. Using a tile from
-More that wasn't on the strip does the same.
+The strip shows a category **in its own order**, always: the first tiles that fit, the rest behind
+More. **Using a tile never reorders it** (an earlier version brought each used tile to the front,
+which moved things under the pointer after every add; it is gone, its stored list with it).
 
-- **One recently-used list** of tile ids, most recent first, across every
-  category (`lib/toolbar-recent-tiles.ts`, capped at 40). Each category shows
-  its used tiles first, in that order, then the rest in the category's own
-  order. A tile used from another category, or not in this one, changes
-  nothing here.
-- **What counts as a use:** a click on a tile or a search-result row, Enter
-  on a Favourites search, a drag that lands on the canvas (one dropped
-  nowhere doesn't), and placing a glyph from the Icons / Stickers /
-  Technology bodies. Keyboard shortcuts don't: they don't go through the
-  strip.
-- **Toolbar layout only.** It is not the Favourites list: the floating
-  Palette and its Favourites order are untouched, and switching back finds
-  them as they were.
-- Per browser, in `localStorage` (`livediagram:v1:toolbar-recent-tiles`),
-  like the palette's other UI state. Not synced.
-- The More body for Favourites follows the same order, so the strip is
-  always the first tiles of what More shows.
+**Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
+
+- **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
+  the rest (Cloud to Bubble).
+- **Write**: Page, Text | Note, Annotation.
+- **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
+- **Build**: Mind node, Table | Lane, Frame, Timeline.
+- **Components**: the cards (Code, Checklist, Entity) | the website blocks.
+- **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
+- **Media**: Image | the embeds | Avatar.
+- **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
+- **Behaviour**: the Selection Mode buttons | everything else.
+- **Event Storming**: the notation | Hotspot.
+
+Favourites (your own set) and the Icons / Stickers / Technology catalogues have none. A category
+has two at most. A divider shows only between two tiles both on the strip. They take room: a
+category that fits whole with them shows them; one whose tiles fit only without them drops them
+before any tile; one that overflows shows one tile fewer, its dividers between those.
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
@@ -176,7 +173,8 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 ## Motion
 
-- **A reorder animates** (`ToolbarStripRail`, FLIP): tiles that moved slide
+- **A change to the strip's tiles animates** (`ToolbarStripRail`, FLIP; a favourite added,
+  removed or reordered, or the window letting more or fewer tiles on): tiles that moved slide
   from their old slot to their new one over 200ms (the `short` token of [Motion](../004-interface-design/motion.md)), a tile new to the strip
   pops in, and the one pushed off the end pops out where it stood. Reduced
   motion collapses it to instant.

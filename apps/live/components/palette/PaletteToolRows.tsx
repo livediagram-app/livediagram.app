@@ -20,14 +20,8 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
-import { usePaletteRecent } from './palette-recent-context';
 // The SAME star the Explorer's favourites use, so one glyph means one thing.
-import {
-  tileActive,
-  useTileHandler,
-  visibleTiles,
-  type PaletteTileActions,
-} from './PaletteTileGrid';
+import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 
 function PaletteToolRow({
   def,
@@ -57,9 +51,8 @@ function PaletteToolRow({
     if (highlighted) rowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [highlighted]);
 
-  const onClick = useTileHandler(def, actions);
+  const onClick = tileHandler(def, actions);
   const dragStart = tileDragStart(def.action);
-  const recent = usePaletteRecent();
   // Built first, then wrapped when the list offers favouriting, so the row's
   // own markup has exactly one shape.
   const row = (
@@ -77,11 +70,7 @@ function PaletteToolRow({
       // Clearing the preview is NOT optional: it is what removes the canvas
       // ghost. Without it every dragged row left its placemarker behind after
       // the element landed, on the drop AND on a cancelled drag.
-      // A drop on the canvas is a use too (the Toolbar strip's ordering); a cancelled drag is not.
-      onDragEnd={(e) => {
-        setPaletteDragPreview(null);
-        if (recent && e.dataTransfer.dropEffect !== 'none') recent.onUse(def.id);
-      }}
+      onDragEnd={() => setPaletteDragPreview(null)}
       aria-label={def.label}
       aria-pressed={armed}
       className={`flex w-full items-center gap-2.5 rounded-lg border py-1.5 pl-2 text-left transition ${

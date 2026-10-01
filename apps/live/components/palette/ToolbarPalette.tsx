@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  useCallback,
+  Fragment,
   useEffect,
   useEffectEvent,
   useMemo,
@@ -12,11 +12,9 @@ import {
 import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
-import { loadRecentTiles, recordTileUse, saveRecentTiles } from '@/lib/toolbar-recent-tiles';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
-import { PaletteRecentContext } from './palette-recent-context';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
 import { PaletteTile } from './PaletteTileGrid';
@@ -83,35 +81,8 @@ export function ToolbarPalette(props: Props) {
     setMoreOpenState(open);
     setFavouriteIds(loadPaletteFavourites(validIds));
   };
-  // Tiles by use (docs/specs/007-editor/toolbar-layout.md): using one brings it to the front of the strip,
-  // pushing the rest along, and the last drops back behind More. Read once
-  // per page load; written on every use.
-  const [recent, setRecent] = useState<readonly string[]>(loadRecentTiles);
-  const onUse = useCallback((id: string) => {
-    setRecent((prev) => {
-      const next = recordTileUse(prev, id);
-      if (next !== prev) saveRecentTiles(next);
-      return next;
-    });
-  }, []);
-  const recentState = useMemo(() => ({ recent, onUse }), [recent, onUse]);
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
     ...props,
-    // The Icons / Stickers / Technology bodies place a glyph straight
-    // through these rather than through a tile, so the use is recorded here,
-    // under the id the glyph's strip tile carries (palette-dynamic-tiles).
-    onAddIcon: (id) => {
-      onUse(`icon:${id}`);
-      props.onAddIcon(id);
-    },
-    onAddSticker: (id) => {
-      onUse(`sticker:${id}`);
-      props.onAddSticker(id);
-    },
-    onAddTechIcon: (id) => {
-      onUse(`tech:${id}`);
-      props.onAddTechIcon(id);
-    },
     // A tile used from the More popover closes it, so the canvas is clear to
     onTileUsed: () => setMoreOpen(false),
   });
@@ -140,11 +111,10 @@ export function ToolbarPalette(props: Props) {
       ? phoneStripTileLimit(viewportWidth)
       : desktopStripTileLimit(viewportWidth / scale),
   });
-  const { tiles, hasMore } = stripTilesFor(category?.id ?? defaultId, {
+  const { tiles, hasMore, dividersAfter } = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,
     limit: stripLimit,
-    recent,
   });
 
   // The category being switched AWAY from, while its tiles animate out
@@ -174,7 +144,6 @@ export function ToolbarPalette(props: Props) {
         favouriteIds,
         hasImage: tileActions.hasImage,
         limit: stripLimit,
-        recent,
       })
     : null;
 
@@ -290,149 +259,159 @@ export function ToolbarPalette(props: Props) {
       }}
     >
       <PaletteGroupProvider>
-        <PaletteRecentContext.Provider value={recentState}>
-          <PaletteTintProvider tint={themeTint}>
-            {/* Whole-pixel wide, and the same parity as the canvas, so centring
+        <PaletteTintProvider tint={themeTint}>
+          {/* Whole-pixel wide, and the same parity as the canvas, so centring
               it can't leave the strip on a half pixel (see SnapWidth). */}
-            <SnapWidth matchParentParity>
-              {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
+          <SnapWidth matchParentParity>
+            {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
-              <div
-                ref={cardRef}
-                data-tour-id="palette"
-                className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-              >
-                {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
+            <div
+              ref={cardRef}
+              data-tour-id="palette"
+              className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+            >
+              {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
-                {leading ? (
-                  <>
-                    {leading}
-                    <Divider />
-                  </>
-                ) : null}
-                {esBoard ? null : (
-                  <>
-                    <PaletteDropdown
-                      ariaLabel="Selection mode"
-                      dataTourId="canvas-tool"
-                      hoverCardTitle="Selection Mode"
-                      hoverCardDescription="Choose how the pointer acts on the canvas."
-                      value={canvasTool}
-                      variant="toolbar"
-                      iconOnly
-                      autoHeight
-                      grid
-                      menuClassName=""
-                      groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-                      onChange={onCanvasToolChange}
-                      options={canvasToolOptions}
-                    />
-                    <Divider />
-                    {/* The category picker sits between the selection mode and the
+              {leading ? (
+                <>
+                  {leading}
+                  <Divider />
+                </>
+              ) : null}
+              {esBoard ? null : (
+                <>
+                  <PaletteDropdown
+                    ariaLabel="Selection mode"
+                    dataTourId="canvas-tool"
+                    hoverCardTitle="Selection Mode"
+                    hoverCardDescription="Choose how the pointer acts on the canvas."
+                    value={canvasTool}
+                    variant="toolbar"
+                    iconOnly
+                    autoHeight
+                    grid
+                    menuClassName=""
+                    groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                    onChange={onCanvasToolChange}
+                    options={canvasToolOptions}
+                  />
+                  <Divider />
+                  {/* The category picker sits between the selection mode and the
                     tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
                     Its width follows its label's text, which is fractional:
                     snapped, so the tiles after it stay on whole pixels. */}
-                    <SnapWidth>
-                      <PaletteDropdown
-                        ariaLabel="Palette category"
-                        dataTourId="palette-category"
-                        value={category?.id ?? defaultId}
-                        variant="toolbar"
-                        // A phone shows the category's icon alone, so the
-                        // strip has room for more tiles.
-                        iconOnly={isMobile}
-                        autoHeight
-                        grid
-                        menuClassName=""
-                        groupLabels={CATEGORY_BANDS}
-                        onChange={switchCategory}
-                        options={tabs.map((tab) => ({
-                          id: tab.id,
-                          label: tab.label,
-                          icon: tab.icon,
-                          group: tab.group,
-                          fullWidth: tab.fullWidth,
-                        }))}
-                      />
-                    </SnapWidth>
-                    <Divider />
-                  </>
-                )}
-                <ToolbarStripRail
-                  railKey={category?.id ?? defaultId}
-                  items={[
-                    ...tiles.map((def) => (
+                  <SnapWidth>
+                    <PaletteDropdown
+                      ariaLabel="Palette category"
+                      dataTourId="palette-category"
+                      value={category?.id ?? defaultId}
+                      variant="toolbar"
+                      // A phone shows the category's icon alone, so the
+                      // strip has room for more tiles.
+                      iconOnly={isMobile}
+                      autoHeight
+                      grid
+                      menuClassName=""
+                      groupLabels={CATEGORY_BANDS}
+                      onChange={switchCategory}
+                      options={tabs.map((tab) => ({
+                        id: tab.id,
+                        label: tab.label,
+                        icon: tab.icon,
+                        group: tab.group,
+                        fullWidth: tab.fullWidth,
+                      }))}
+                    />
+                  </SnapWidth>
+                  <Divider />
+                </>
+              )}
+              <ToolbarStripRail
+                railKey={category?.id ?? defaultId}
+                items={[
+                  ...tiles.map((def) => {
+                    const tile = (
                       <PaletteTile
-                        key={def.id}
                         def={def}
                         actions={tileActions}
                         pendingDraw={pendingDraw}
                         compact
                       />
-                    )),
-                  ]}
-                  leavingItems={
-                    leaving
-                      ? [
-                          ...leaving.tiles.map((def) => (
+                    );
+                    // A fixed divider rides with the tile it follows.
+                    return dividersAfter.has(def.id) ? (
+                      <span key={def.id} className="flex items-center">
+                        {tile}
+                        <Divider />
+                      </span>
+                    ) : (
+                      <Fragment key={def.id}>{tile}</Fragment>
+                    );
+                  }),
+                ]}
+                leavingItems={
+                  leaving
+                    ? [
+                        ...leaving.tiles.map((def) => (
+                          <span key={def.id} className="flex items-center">
                             <PaletteTile
-                              key={def.id}
                               def={def}
                               actions={tileActions}
                               pendingDraw={null}
                               compact
                             />
-                          )),
-                        ]
-                      : null
-                  }
-                />
-                {/* Outside the rail so it rides the rail's width change rather
+                            {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
+                          </span>
+                        )),
+                      ]
+                    : null
+                }
+              />
+              {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
                 the category has more than the strip shows. */}
-                {hasMore ? (
-                  <>
-                    <Divider />
-                    {moreOpen ? (
-                      moreButton
-                    ) : (
-                      <HoverCard
-                        title={`More ${category?.label ?? ''}`.trim()}
-                        description={category?.description ?? 'Everything in this category.'}
-                      >
-                        {moreButton}
-                      </HoverCard>
-                    )}
-                  </>
-                ) : null}
+              {hasMore ? (
+                <>
+                  <Divider />
+                  {moreOpen ? (
+                    moreButton
+                  ) : (
+                    <HoverCard
+                      title={`More ${category?.label ?? ''}`.trim()}
+                      description={category?.description ?? 'Everything in this category.'}
+                    >
+                      {moreButton}
+                    </HoverCard>
+                  )}
+                </>
+              ) : null}
+            </div>
+          </SnapWidth>
+          {moreOpen && category ? (
+            // The category's full Palette body, the exact node the floating
+            // Palette renders. Capped to the window so a long category
+            // (Components, Behaviours) scrolls rather than running off it.
+            <div
+              ref={moreRef}
+              data-toolbar-more=""
+              // Hangs from the More button, not the middle of the strip. Wide
+              // rather than tall, so a category body rarely has to scroll.
+              // A phone has no room to hang it from the button: it spans the
+              // screen between the side gutters instead.
+              // A menu, so it stays at design size while the strip is scaled
+              // (docs/specs/007-editor/ui-scale.md): the counter-zoom brings it
+              // back to 1, so moreRight (screen px) and the classes' width and
+              // height cap apply as written.
+              style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right: moreRight }}
+              className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
+            >
+              <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                {category.label}
               </div>
-            </SnapWidth>
-            {moreOpen && category ? (
-              // The category's full Palette body, the exact node the floating
-              // Palette renders. Capped to the window so a long category
-              // (Components, Behaviours) scrolls rather than running off it.
-              <div
-                ref={moreRef}
-                data-toolbar-more=""
-                // Hangs from the More button, not the middle of the strip. Wide
-                // rather than tall, so a category body rarely has to scroll.
-                // A phone has no room to hang it from the button: it spans the
-                // screen between the side gutters instead.
-                // A menu, so it stays at design size while the strip is scaled
-                // (docs/specs/007-editor/ui-scale.md): the counter-zoom brings it
-                // back to 1, so moreRight (screen px) and the classes' width and
-                // height cap apply as written.
-                style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right: moreRight }}
-                className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
-              >
-                <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  {category.label}
-                </div>
-                {category.content}
-              </div>
-            ) : null}
-          </PaletteTintProvider>
-        </PaletteRecentContext.Provider>
+              {category.content}
+            </div>
+          ) : null}
+        </PaletteTintProvider>
       </PaletteGroupProvider>
     </div>
   );

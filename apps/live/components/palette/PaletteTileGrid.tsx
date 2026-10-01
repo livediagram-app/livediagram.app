@@ -10,7 +10,6 @@ import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
-import { usePaletteRecent } from './palette-recent-context';
 import { tilesInSection } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 
@@ -174,19 +173,6 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the hover card, and the
 // shortcut letter always showing in the corner rather than only while the
 // modifier is held, the way a tool bar reads.
-// A tile's click handler, which in the Toolbar layout also records the use,
-// so the strip can bring the tile to its front (docs/specs/007-editor/toolbar-layout.md). Everywhere else it
-// is exactly tileHandler.
-export function useTileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
-  const recent = usePaletteRecent();
-  const handler = tileHandler(def, actions);
-  if (!recent) return handler;
-  return () => {
-    recent.onUse(def.id);
-    handler();
-  };
-}
-
 export function PaletteTile({
   def,
   actions,
@@ -199,8 +185,7 @@ export function PaletteTile({
   compact?: boolean;
 }) {
   const a = def.action;
-  const onClick = useTileHandler(def, actions);
-  const recent = usePaletteRecent();
+  const onClick = tileHandler(def, actions);
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
@@ -210,15 +195,6 @@ export function PaletteTile({
       caption={def.caption}
       description={def.description}
       onClick={onClick}
-      // A drag that lands on the canvas is a use too; one dropped nowhere is
-      // not.
-      onDragEnd={
-        recent
-          ? (e) => {
-              if (e.dataTransfer.dropEffect !== 'none') recent.onUse(def.id);
-            }
-          : undefined
-      }
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
         a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
