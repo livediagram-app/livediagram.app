@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { QuickStyleView } from '@/lib/quick-style';
-import { heldPenStyle } from '@/lib/quick-style-pen';
+import { customOptions, heldPenStyle, stockOptions } from '@/lib/quick-style-pen';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
@@ -282,6 +282,35 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
     expect(quickStyle.setPenWidth).toHaveBeenCalledWith('bold');
     expect(screen.queryByTestId('quick-style-clear')).toBeNull();
+  });
+
+  it('offers the whiteboard’s colours on Stroke and Text colour, with the tab’s custom colours', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays".
+    const palette = { ...PALETTE, custom: ['#868e96'] };
+    const board = {
+      value: 'blue' as const,
+      options: stockOptions(palette),
+      custom: customOptions(palette),
+    };
+    const quickStyle = {
+      ...api(undefined, ['s1']),
+      view: {
+        targetIds: ['s1'],
+        sections: { boardStroke: board, boardText: { ...board, value: null } },
+      },
+    };
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    const stroke = screen.getByRole('radiogroup', { name: 'Stroke' });
+    expect(within(stroke).getAllByRole('radio')).toHaveLength(8);
+    expect(within(stroke).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(within(stroke).getByRole('radio', { name: 'Teal' }));
+    expect(quickStyle.setBoardStroke).toHaveBeenCalledWith('teal');
+    const custom = screen.getByRole('radiogroup', { name: 'Custom text colours' });
+    fireEvent.click(within(custom).getByRole('radio', { name: 'Custom #868e96' }));
+    expect(quickStyle.setBoardTextColour).toHaveBeenCalledWith('#868e96');
+    expect(screen.getByRole('radiogroup', { name: 'Custom stroke colours' })).toBeTruthy();
   });
 
   it('drops the pen name in power user mode', () => {

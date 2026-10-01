@@ -342,6 +342,7 @@ function QuickStyleSections({
             <BoardColourRows
               key={row.role}
               title={row.title}
+              customTitle={row.role === 'stroke' ? 'Custom stroke colours' : 'Custom text colours'}
               testId={row.testId}
               section={board}
               showTitles={showTitles}

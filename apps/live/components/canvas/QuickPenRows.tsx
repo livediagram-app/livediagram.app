@@ -80,6 +80,7 @@ export function QuickPenRows({
 // colours below when it has any.
 export function BoardColourRows({
   title,
+  customTitle,
   testId,
   section,
   onChoose,
@@ -87,6 +88,8 @@ export function BoardColourRows({
   density,
 }: {
   title: string;
+  // The custom row's own name, so it reads apart from the Marker colour row's.
+  customTitle: string;
   testId: string;
   section: BoardColourSection;
   onChoose: (colour: PenColourChoice) => void;
@@ -109,7 +112,7 @@ export function BoardColourRows({
       />
       {section.custom.length > 0 ? (
         <QuickRadioRow
-          title={`Custom ${title.toLowerCase()} colours`}
+          title={customTitle}
           testId={`${testId}-custom`}
           showTitle={showTitles}
           density={density}
