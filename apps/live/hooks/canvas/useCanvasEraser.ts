@@ -85,8 +85,8 @@ type EraserDeps = {
   ) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Eraser"): a stroke is touched where its INK
-  // is, and Partial cuts strokes instead of removing them. Null elsewhere.
+  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Eraser"): the dock's mode and fixed
+  // brushes rather than the panel's settings. Null elsewhere.
   whiteboard?: { mode: WhiteboardEraserMode } | null;
 };
 
@@ -119,19 +119,35 @@ export function useCanvasEraser(deps: EraserDeps) {
     checkpointedRef.current = true;
   };
 
-  // The whiteboard's step. Returns false when this is not a whiteboard gesture.
-  const whiteboardErase = (clientX: number, clientY: number): boolean => {
+  // The geometric step (docs/specs/023-whiteboard/whiteboard.md "Eraser", on every tab since
+  // docs/specs/008-canvas/eraser-panel.md "Ink, not boxes"): a stroke, path or shape is touched
+  // where its ink, outline or visible fill is, and Partial cuts strokes instead of removing them.
+  // A whiteboard uses its dock's mode and fixed brushes; a diagram tab its panel's mode, size and
+  // target. Returns false when the press gave no canvas frame to map the pointer with.
+  const geometricErase = (clientX: number, clientY: number): boolean => {
     const { whiteboard, activeTab, tick, layerInertIds } = depsRef.current;
     const frame = frameRef.current;
-    if (!whiteboard || !frame) return false;
+    if (!frame) return false;
+    const config = depsRef.current.config ?? DEFAULT_ERASER_CONFIG;
+    const mode: WhiteboardEraserMode = whiteboard
+      ? whiteboard.mode
+      : config.mode === 'partial'
+        ? 'partial'
+        : 'stroke';
     const rect = { left: frame.left, top: frame.top } as DOMRect;
     const at = pointerToCanvas(clientX, clientY, rect, frame.zoom);
     const from = prevRef.current ?? at;
     prevRef.current = at;
-    const screenRadius = WHITEBOARD_ERASER_RADIUS_PX[whiteboard.mode];
+    // A diagram's Point brush is the whiteboard's brush, so ink is as easy to catch as on a board.
+    const screenRadius = whiteboard
+      ? WHITEBOARD_ERASER_RADIUS_PX[mode]
+      : Math.max(eraserRadius(config), WHITEBOARD_ERASER_RADIUS_PX[mode]);
     const r = screenRadius / frame.zoom;
+    // The panel's target filter protects as a lock does (a whiteboard has no filter).
     const isProtected = (el: Element) =>
-      el.locked === true || depsRef.current.layerInertIds.has(el.id);
+      el.locked === true ||
+      depsRef.current.layerInertIds.has(el.id) ||
+      (!whiteboard && !eraserAllows(el, config.target));
     // A path goes whole in either mode (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing").
     let changed = false;
     for (const id of pathsTouched(activeTab.elements, from, at, r, isProtected)) {
@@ -139,7 +155,7 @@ export function useCanvasEraser(deps: EraserDeps) {
       erasedRef.current.add(id);
       changed = true;
     }
-    if (whiteboard.mode === 'partial') {
+    if (mode === 'partial') {
       if (changed) removeErased();
       if (strokesTouched(activeTab.elements, from, at, r, isProtected).length === 0) return true;
       checkpointOnce();
@@ -159,7 +175,9 @@ export function useCanvasEraser(deps: EraserDeps) {
       changed = true;
     }
     // Everything else (a note, a text box, a line by its hit band) is touched as on any tab: by the DOM.
-    for (const point of eraserSamplePoints(clientX, clientY, screenRadius)) {
+    // A diagram tab's boxes keep the panel's brush (Point is one pixel there, as it always was).
+    const boxRadius = whiteboard ? screenRadius : eraserRadius(config);
+    for (const point of eraserSamplePoints(clientX, clientY, boxRadius)) {
       for (const { id } of elementHostsAtPoint(point.x, point.y)) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
@@ -189,7 +207,7 @@ export function useCanvasEraser(deps: EraserDeps) {
   };
 
   const eraseAtPoint = (clientX: number, clientY: number) => {
-    if (whiteboardErase(clientX, clientY)) return;
+    if (geometricErase(clientX, clientY)) return;
     const { activeTab, layerInertIds } = depsRef.current;
     const config = depsRef.current.config ?? DEFAULT_ERASER_CONFIG;
     let changed = false;

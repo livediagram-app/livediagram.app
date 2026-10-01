@@ -87,6 +87,12 @@ describe('parseEraserConfig', () => {
     });
   });
 
+  it('keeps the Partial mode', () => {
+    expect(parseEraserConfig({ mode: 'partial', size: 'point', target: 'anything' }).mode).toBe(
+      'partial',
+    );
+  });
+
   it('falls back completely for junk', () => {
     expect(parseEraserConfig(null)).toEqual(DEFAULT_ERASER_CONFIG);
     expect(parseEraserConfig('not json')).toEqual(DEFAULT_ERASER_CONFIG);

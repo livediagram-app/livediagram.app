@@ -7,7 +7,7 @@
 import type { Element } from '@livediagram/document';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
-export type EraserMode = 'sweep' | 'tap';
+export type EraserMode = 'sweep' | 'tap' | 'partial';
 export type EraserSize = 'point' | 'small' | 'medium' | 'large';
 // What the eraser is allowed to remove. 'drawings' is the one that makes
 // sketching over the canvas safe; 'arrows' is for rewiring without disturbing
@@ -32,6 +32,8 @@ export const DEFAULT_ERASER_CONFIG: EraserConfig = {
 export const ERASER_MODES: readonly { id: EraserMode; label: string; hint: string }[] = [
   { id: 'sweep', label: 'Sweep', hint: 'Drag across things to erase them' },
   { id: 'tap', label: 'Tap', hint: 'One press, one thing — for a crowded canvas' },
+  // The whiteboard's Partial eraser (docs/specs/023-whiteboard/whiteboard.md "Eraser"), on every tab.
+  { id: 'partial', label: 'Partial', hint: 'Cut away only the part of a stroke you brush over' },
 ];
 
 export const ERASER_SIZES: readonly { id: EraserSize; label: string }[] = [

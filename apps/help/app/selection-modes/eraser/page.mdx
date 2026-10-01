@@ -35,11 +35,13 @@ This is quicker than selecting elements and then deleting them, especially when 
 
 While the mode is active an **Eraser** panel sits under the palette, over a preview of the brush:
 
-- **Mode** — **Sweep** (drag across things to erase them) or **Tap** (one press, one thing), which is the safer choice on a crowded canvas.
+- **Mode** — **Sweep** (drag across things to erase them), **Tap** (one press, one thing), which is the safer choice on a crowded canvas, or **Partial**, which cuts away only the part of a drawn stroke you brush over and leaves the rest as separate strokes.
 - **Size** — **Point** for the exact pixel, or Small, Medium, and Large brushes. Above Point, a ring follows the cursor at the brush's real size, so you can see what a sweep will take before you press.
 - **Erases** — **Anything**, **Drawings only** (pencil and highlighter strokes), or **Arrows only**. Drawings only is what makes sketching over the canvas safe: sweep the whole thing at Large and everything underneath is untouched. Arrows only lets you rewire without disturbing the boxes.
 
 The ring turns amber whenever a filter is on, so a restricted eraser never looks like a broken one. Your settings are remembered on this device.
+
+A drawn stroke, or a shape with no fill, is only erased where its line actually is: brushing past it, or through an empty shape's middle, leaves it alone.
 
 Locked elements, and anything on a locked or hidden layer, are never erased whatever the panel says — and a whole sweep is still a single undo.
 

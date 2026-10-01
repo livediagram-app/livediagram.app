@@ -16,11 +16,21 @@ A size makes the first case one sweep. A target filter makes the second case imp
 
 Three accordion rows over a live preview of the brush.
 
-- **Mode** — **Sweep** (drag across things to erase them, today's behaviour) or **Tap** (one press, one thing). Tap is for surgical removal on a crowded canvas, where a two-pixel drag currently takes a neighbour with it.
+- **Mode** — **Sweep** (drag across things to erase them, today's behaviour), **Tap** (one press, one thing) or **Partial** (cut away only the part of a stroke the brush passes over, as on a whiteboard: the pieces either side stay as their own strokes; anything else under a Partial brush is untouched). Tap is for surgical removal on a crowded canvas, where a two-pixel drag currently takes a neighbour with it.
 - **Size** — **Point** (the exact pixel, today) / **Small** (18px) / **Medium** (36px) / **Large** (72px) radius. Anything the brush touches goes, hit-tested by sampling a ring of points around the pointer rather than one — the DOM hit test the eraser already uses, called a few more times.
 - **Erases** — **Anything** (default), **Drawings only** (freehand + highlighter strokes), or **Arrows only**. "Drawings only" is the one that makes sketching over the canvas safe: sweep the whole thing at Large and everything underneath is untouched. "Arrows only" is for rewiring without disturbing the boxes.
 
 A fourth row, **Groups** (just the piece, or the whole group), was removed with groups themselves ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)). A stored config still carrying it parses fine: the unknown field is ignored.
+
+## Ink, not boxes
+
+As on a whiteboard ([Whiteboard](../023-whiteboard/whiteboard.md) "Eraser"), a **stroke, path or
+shape is touched only where it is drawn**: a stroke along its ink, a path along its line or fill,
+a shape along its outline or anywhere on a visible fill. Brushing beside a long stroke, or through an
+unfilled shape's empty inside, erases nothing. A diagram's default shapes are filled, so they go
+anywhere on their face as before. For these, the brush is at least the whiteboard's (10 screen px,
+16 for Partial), so ink is as easy to catch as on a board; every other element keeps the panel's
+brush, Point being the exact pixel. The **Erases** filter applies to both.
 
 ## The brush is visible
 
