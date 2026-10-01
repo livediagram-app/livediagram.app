@@ -375,6 +375,24 @@ and on resize (ResizeObserver on the dock and canvas), hidden until measured. Th
 heading per the spec, `BoardSceneReportList` rows, the image placeholder sentences, a Close button
 (Escape when focus is inside). Never steals focus; reduced motion removes its fade.
 
+## Compact output (`compact.ts`)
+
+- `LANDED_POINT_TOLERANCE_PX` = 0.05 (safe 0.01 to 0.2): the largest position error rounding may add,
+  in canvas px; a twentieth of a pixel stays under a screen pixel at the canvas's 5x zoom ceiling.
+- `pointDecimals(size)`: the fewest decimals `d` (0 to `MAX_POINT_DECIMALS` = 12) with
+  `0.5 * 10^-d * size <= LANDED_POINT_TOLERANCE_PX`, `size` the larger of the box's width and height;
+  so `d = ceil(log10(size / (2 * tolerance)))`, clamped. Applied to freehand `points` and path
+  nodes and handles (`roundNormalised`).
+- `PRESSURE_DECIMALS` = 3 (1/1000; pens report 1/1024 at best). `BOX_DECIMALS` = 2 for x, y, width,
+  height of landed boxed elements (0.005 px), and for arrow free ends.
+- Defaults dropped (each one the renderer's own reading of absence): `streamline: 0` (`freehandPenStroke`
+  reads absent as 0), `opacity: 1`, `strokeStyle: 'solid'` and a medium border (already omitted).
+- Applied by `landBoardScene` to every element it returns, for every source and profile
+  (`compactLanded`), so no per-kind code repeats it.
+- New-document target: an `ApiError` with status 413 from the create becomes the failure
+  `BOARD_TOO_BIG` "This board is too big for one document", logged `[board-scene] board too big`
+  `{ board, bytes }` (the serialised tab's size).
+
 ## Errors and edge cases
 
 | Case                                         | Handling                                                         |

@@ -200,6 +200,22 @@ under a skipped rule.
 | image     | images       |
 | frame     | frames       |
 
+## Compact output
+
+A board of thousands of strokes must fit one tab (the api's 4 MB tab cap), so
+the landing writes no more than the drawing needs:
+
+- **Points to the error that cannot be seen.** A stroke's or path's points are
+  stored normalised to its box; each is rounded to the fewest decimals that
+  keep its position within `LANDED_POINT_TOLERANCE_PX` (a twentieth of a canvas
+  pixel) at that element's own size. A 10 px stroke needs two or three
+  decimals, a 4,000 px one five; never a fixed number for every size.
+- **Pressures to a thousandth**, which no pen reports more finely.
+- **Boxes** (x, y, width, height) to a hundredth of a canvas pixel.
+- **No defaults written out.** A field the renderer reads as its default when
+  absent is left absent: a streamline of 0, a border at the default width, full
+  opacity, a solid line. What lands draws exactly as if it had been written.
+
 ## Limits and rejections
 
 - A scene with more items than the tab has room for (`MAX_ELEMENTS_PER_TAB`
@@ -229,7 +245,9 @@ under a skipped rule.
   "Board dates that couldn't be read were set to today"). An untitled board is
   named "Whiteboard, 14 Aug 2020" after its created date, or "Whiteboard"
   without one. Images and the report are combined across the boards; a board
-  that cannot land is listed with its reason. Each new document counts as
+  that cannot land is listed with its reason. A board whose document the server
+  refuses as too large (413) is listed as "This board is too big for one
+  document", logged `[board-scene] board too big`, and the rest still land. Each new document counts as
   `Document · Created · Cloud` (or `Offline`) and `Whiteboard · Created ·
 Import`; the open document is not touched.
 - **The paste notice**: after a paste that degraded, skipped or left an image
