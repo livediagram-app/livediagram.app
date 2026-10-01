@@ -229,7 +229,7 @@ response.
   `textContent`; paste reads `text/plain` only.
 - **Links.** `target="_blank"` with `rel="noopener noreferrer"`; a click stops propagation so it
   never doubles as a canvas gesture.
-- **Size.** A note is bounded only by `MAX_TAB_BYTES` (4 MiB) at the api.
+- **Size.** A note is bounded only by `MAX_TAB_BYTES` (just under 2 MB, D1's row cap) at the api.
 
 ## Performance and limits
 

@@ -227,6 +227,31 @@ ticket or code. `POST /api/documents` over a trashed id answers 410 to its
 owner and 403 to anyone else. The daily `0 3 * * *` cron purges documents 30
 days in the Trash (`purgeExpiredTrash`, at most 2,000 a run, oldest first).
 
+### Tab size
+
+A tab is stored as one text value in one D1 row (`tabs.data`, the tab's
+JSON without its id and name), and Cloudflare D1 caps a string, a BLOB and a
+row at **2,000,000 bytes** ([D1 limits](https://developers.cloudflare.com/d1/platform/limits/)).
+Local `wrangler dev` does not enforce it, so the api enforces it itself:
+
+- `D1_MAX_ROW_BYTES` = 2,000,000. `MAX_TAB_BYTES` = `D1_MAX_ROW_BYTES` less
+  `D1_ROW_HEADROOM_BYTES` (8 KiB) = 1,991,808 bytes of UTF-8 JSON. The
+  headroom covers the row's other columns (the tab id, a UUID; the name, at
+  most 60 characters, so at most 240 bytes; `updated_at`; SQLite's record
+  header) many times over, so a tab under the cap always fits its row.
+- Both numbers live in `@livediagram/api-schema`, so the editor checks the same
+  cap the worker does and the two cannot drift.
+- **Every write of a tab's data** is checked against it, at the storage layer
+  (`upsertTab`, `seedTabs`, `swapTabData`), so no route can store what D1
+  would refuse: document create, the tab save, a comment added or deleted
+  through the api, and a Q&A board write. A tab over the cap is refused with
+  the named 413 (`payload_too_large`) and nothing is written; the worker logs
+  `[tab-size] refused` with the route, the bytes and the cap. The routes
+  also check the request up front, so a create never leaves a document
+  without its tabs.
+- The cap is not raised and the storage format is unchanged; a tab that needs
+  more is a separate decision.
+
 ## Rate limiting
 
 Six limiters, each a Cloudflare Workers Rate Limiting binding declared under `[[unsafe.bindings]]` in `apps/api/wrangler.toml` (where the ceilings live). Over-limit requests get `429` with `{ "error": "rate_limited" }`, except the telemetry ingest, which answers with its usual no-op `204` so a throttled beacon never surfaces as an error.

@@ -389,8 +389,10 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
   reads absent as 0), `opacity: 1`, `strokeStyle: 'solid'` and a medium border (already omitted).
 - Applied by `landBoardScene` to every element it returns, for every source and profile
   (`compactLanded`), so no per-kind code repeats it.
-- New-document target (`lib/board-scene-import.ts`): an `ApiError` with status 413 from the create
-  becomes the failure `BOARD_TOO_BIG` "This board is too big for one document", logged
+- New-document target (`lib/board-scene-import.ts`): a cloud board whose tab serialises to more
+  than `MAX_TAB_BYTES` (`@livediagram/api-schema`, the worker's own cap, [Tab size](../../015-api/api.md#tab-size))
+  fails before any request, and an `ApiError` with status 413 from the create fails the same way: the
+  failure `BOARD_TOO_BIG` "This board is too big for one document", logged
   `console.warn('[board-scene] board too big', { board, bytes })` (the serialised tab's size).
 - Measured on `syntheticInkBoard(3000, 120)` (`test-scenes.ts`: 360,000 pressure points): 25.6 MB of
   landed JSON before, 11.7 MB after; points dominate (about three quarters), then pressures.

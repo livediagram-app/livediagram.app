@@ -48,8 +48,9 @@ throws. Only the parse stage has to be pure.
      and last-modified dates, see [Document dates](../015-api/api.md#document-dates)),
      filed in the folder the import was started from (the Explorer's), else
      Unsorted (the Microsoft Whiteboard import). A board that cannot land is
-     named in the report with its reason (a document the server refuses as
-     too large: "This board is too big for one document") and the rest still
+     named in the report with its reason (a board over the api's tab cap,
+     [Tab size](../015-api/api.md#tab-size), checked before the create and again
+     by the server: "This board is too big for one document") and the rest still
      do; an open document is left as it
      was. It needs no open document: from the editor, an Offline Mode document
      makes Offline Mode documents too, as a copy does; from the Explorer, the

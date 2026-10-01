@@ -202,7 +202,8 @@ under a skipped rule.
 
 ## Compact output
 
-A board of thousands of strokes must fit one tab (the api's 4 MB tab cap), so
+A board of thousands of strokes must fit one tab (the api's tab cap,
+`MAX_TAB_BYTES`, just under 2 MB: [Tab size](../015-api/api.md#tab-size)), so
 the landing writes no more than the drawing needs:
 
 - **Points to the error that cannot be seen.** A stroke's or path's points are
