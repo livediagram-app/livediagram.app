@@ -129,6 +129,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabs: { type: 'array', items: ref('Tab') },
         folderId: { type: ['string', 'null'] },
         teamId: { type: ['string', 'null'] },
+        // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
+        createdAt: { type: 'integer' },
+        savedAt: { type: 'integer' },
       },
       required: ['id', 'name'],
     },
@@ -268,7 +271,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { elementId: { type: 'string' }, text: { type: 'string' } },
       required: ['elementId', 'text'],
     },
-    statuses: [201, 400, 401, 403, 404, 410],
+    statuses: [201, 400, 401, 403, 404, 410, 413],
   },
   {
     method: 'DELETE',
@@ -277,7 +280,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Documents',
     summary: 'Delete a comment.',
     auth: 'guest-or-clerk',
-    statuses: [204, 401, 403, 404, 410],
+    statuses: [204, 401, 403, 404, 410, 413],
   },
   {
     method: 'GET',

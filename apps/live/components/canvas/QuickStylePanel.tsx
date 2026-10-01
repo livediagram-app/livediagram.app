@@ -34,7 +34,7 @@ import {
 } from '@livediagram/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
-import { QuickPenRows } from './QuickPenRows';
+import { BoardColourRows, QuickPenRows } from './QuickPenRows';
 import {
   QUICK_BORDER_PX,
   QUICK_COMPACT_PADDING_PX,
@@ -159,7 +159,12 @@ export function QuickStylePanel({
   if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
-  const frame = panelFrame(docked, !!spot?.width, !!view.pen);
+  // Eight-colour rows (the pens', a whiteboard's Stroke and Text colour) need the wider frame.
+  const frame = panelFrame(
+    docked,
+    !!spot?.width,
+    !!view.pen || !!view.sections.boardStroke || !!view.sections.boardText,
+  );
   const editedSwatch = editing
     ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
@@ -323,8 +328,31 @@ function QuickStyleSections({
           showTitles={showTitles}
           density={density}
         />
-      ) : null}
+      ) : null}{' '}
       {COLOUR_ROWS.map((row) => {
+        // A whiteboard's Stroke and Text colour rows are the whiteboard's colours.
+        const board =
+          row.role === 'stroke'
+            ? view.sections.boardStroke
+            : row.role === 'text'
+              ? view.sections.boardText
+              : undefined;
+        if (board) {
+          return (
+            <BoardColourRows
+              key={row.role}
+              title={row.title}
+              customTitle={row.role === 'stroke' ? 'Custom stroke colours' : 'Custom text colours'}
+              testId={row.testId}
+              section={board}
+              showTitles={showTitles}
+              density={density}
+              onChoose={
+                row.role === 'stroke' ? quickStyle.setBoardStroke : quickStyle.setBoardTextColour
+              }
+            />
+          );
+        }
         const colours = view.sections[row.section];
         return colours ? (
           <QuickRadioRow

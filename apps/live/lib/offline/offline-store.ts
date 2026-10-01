@@ -336,16 +336,19 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
   return tab ? migrateStoredTab(tab) : null;
 }
 
+// `extra`: a document's own created and last-modified dates (an imported board,
+// docs/specs/015-api/api.md "Document dates"), absent now; the personal folder it is filed in.
 export async function offlineCreateDocument(
   d: { id: string; name: string; tabs?: Tab[] },
   now: number,
+  extra: { createdAt?: number; savedAt?: number; folderId?: string | null } = {},
 ): Promise<LiveDoc> {
   const rec: OfflineDocumentRecord = {
     id: d.id,
     name: d.name,
-    folderId: null,
-    createdAt: now,
-    savedAt: now,
+    folderId: extra.folderId ?? null,
+    createdAt: extra.createdAt ?? now,
+    savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
   };
   await backend.put(rec);

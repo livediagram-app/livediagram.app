@@ -95,6 +95,31 @@ describe('recordStyleEdit', () => {
   });
 });
 
+// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a board remembers a stock
+// colour by name, so the next shape adapts per board too.
+describe('whiteboard stock colours in memory', () => {
+  it('remembers a named colour and drops the hex it replaced', () => {
+    const first = recordStyleEdit(
+      {},
+      [shape('a', 'square')],
+      [{ ...shape('a', 'square'), strokeColor: '#ff6b00' }],
+      forest,
+      true,
+    );
+    const next = recordStyleEdit(
+      first,
+      [{ ...shape('a', 'square'), strokeColor: '#ff6b00' }],
+      [{ ...shape('a', 'square'), penColour: 'blue' }],
+      forest,
+      true,
+    );
+    expect(next).toEqual({ 'board:shape:square': { penColour: 'blue' } });
+    expect(applyStyleMemory(shape('b', 'square'), next, forest, true)).toMatchObject({
+      penColour: 'blue',
+    });
+  });
+});
+
 describe('applyStyleMemory', () => {
   const memory: StyleMemory = {
     'shape:circle': { strokeColor: '#ff0000', strokeWidth: 'thick', textAlignX: 'left' },
@@ -158,6 +183,18 @@ describe('parseStyleMemory', () => {
     expect(parseStyleMemory(raw)).toEqual({
       'shape:circle': { strokeColor: '#ff0000' },
       arrow: { strokeWidth: 4 },
+    });
+  });
+
+  it('keeps a whiteboard stock colour by name, never an unknown name', () => {
+    const raw = JSON.stringify({
+      'board:shape:square': { penColour: 'blue' },
+      'board:arrow': { penColour: 'nope' },
+      'board:text': { penTextColour: 'green' },
+    });
+    expect(parseStyleMemory(raw)).toEqual({
+      'board:shape:square': { penColour: 'blue' },
+      'board:text': { penTextColour: 'green' },
     });
   });
 

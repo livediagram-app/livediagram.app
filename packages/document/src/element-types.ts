@@ -156,6 +156,10 @@ export type ShapeElement = {
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   textColor?: string;
+  // A whiteboard stock colour for the label's text (docs/specs/023-whiteboard/whiteboard.md
+  // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
+  // `textColor` is unset.
+  penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
   // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
@@ -462,6 +466,9 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // A whiteboard stock colour for the text (docs/specs/023-whiteboard/whiteboard.md "Imported and
+  // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
+  penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
   // colour was picked from in the quick style panel's Text colour row, so a
   // theme change re-derives it. Cleared the moment the colour is set any other way.
@@ -700,6 +707,9 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // A whiteboard stock colour for the note's text (docs/specs/023-whiteboard/whiteboard.md
+  // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
+  penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
   // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
@@ -990,6 +1000,9 @@ export type PathElement = {
   closed: boolean;
   fillColor?: string;
   strokeColor?: string;
+  // A whiteboard stock colour (docs/specs/023-whiteboard/whiteboard.md "Imported and pasted
+  // content"): drawn in the version tuned for the viewer's board when `strokeColor` is unset.
+  penColour?: PenColourName;
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.
   strokeSwatch?: QuickSwatchSlot;
   fillSwatch?: QuickSwatchSlot;

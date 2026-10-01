@@ -11,7 +11,16 @@
 // 'cancelled' (file dialog dismissed — stay open, no error), or 'error'
 // (parse / build failed — show it).
 export type ImportOutcome =
-  | { status: 'done'; images?: ImportImageReport }
+  | {
+      status: 'done';
+      images?: ImportImageReport;
+      // A board scene's report (docs/specs/020-import-export/board-scene.md "The report").
+      scene?: BoardSceneReport;
+      // Boards of a several-board import that could not land (the rest did).
+      failures?: { title: string; message: string }[];
+      // The documents an import made, one per board (docs/specs/020-import-export/board-import.md).
+      documents?: { id: string; name: string }[];
+    }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
 
@@ -24,6 +33,7 @@ export type ImportOutcome =
 
 import { isValidElement, migrateIncomingElements, type Tab } from '@livediagram/document';
 import type { ImportImageReport } from './import-images';
+import type { BoardSceneReport } from './board-scene/report';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };

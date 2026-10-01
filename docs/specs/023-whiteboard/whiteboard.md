@@ -44,7 +44,9 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **No theme.** A whiteboard has no theme; like every template now, picking
   it goes straight to the settings step in the New Document wizard and lands
   at once in Quick Start.
-- **Import:** a Microsoft Whiteboard import lands on a whiteboard tab.
+- **Import:** a Microsoft Whiteboard import makes each board its own new
+  document with one whiteboard tab, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
+  marks (see [Imported and pasted content](#imported-and-pasted-content)).
 - A tab's kind is fixed at creation. Converting a diagram tab into a
   whiteboard (or back) is not offered: the two present the same elements very
   differently, and a silent switch would surprise.
@@ -64,16 +66,23 @@ centred across the **top** of the canvas by default (see
   they are about the document, not about drawing.
 - **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
   it is how a shape, line or text box gets another colour or width once
-  drawn, since the pens colour only their own strokes. Its "theme default"
-  swatches show the board's ink (and no fill for a background), and a
-  restyle on a whiteboard never feeds the style memory diagram tabs use.
+  drawn, since the pens colour only their own strokes. A whiteboard has no
+  theme, so its **Stroke** and **Text colour** rows offer the **whiteboard's
+  colours**, the same choices as Marker colour: **Ink** first, then the seven
+  stock colours (stored by name, adaptive per board), then the tab's custom
+  colours section when there is one. Ink clears the element's own colour, so
+  it draws in the board's ink. **Background** keeps its fills, "no fill" first.
+  A restyle on a whiteboard never feeds the style memory diagram tabs use; the
+  board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
   Bold). The quick style panel is **quick choices only**: no colour picker in
   it. **Marker colour** is the same **eight stock colours** as the marker's
   picker, adaptive like them. Below them, **a second section of custom
   colours appears only when custom colours are used on this whiteboard
-  tab**: the custom (hex) colours of the tab's marker strokes and shapes, up
-  to eight, most recently drawn first; with none on the tab, the section is
+  tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
+  arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
+  would convert), up to eight, most recently drawn first (imported and
+  pasted content brings its own); with none on the tab, the section is
   not there. A custom colour is added with the marker picker's **+**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
@@ -388,7 +397,8 @@ The shapes group learns and keeps the shapes a user reaches for.
   no explicit colour, so it follows the appearance; a stock colour is recorded
   by name, so it adapts to each viewer's board, and a custom colour as its
   hex, which stays as drawn. A recognised shape or line keeps its pen's colour
-  the same way.
+  the same way, and so does imported content ([Imported and pasted
+  content](#imported-and-pasted-content)).
 
 ## Shapes
 
@@ -465,6 +475,41 @@ and read it comfortably.
 - An empty text box left by clicking away is removed, as today.
 - Existing text boxes keep their size until edited or resized; then they hug.
 - Notes (stickies) keep their fixed note size.
+
+## Imported and pasted content
+
+Boards brought in from elsewhere land as if drawn here, through one shared
+landing ([Board scene](../020-import-export/board-scene.md)): Excalidraw pasted
+or dropped onto a whiteboard, an Excalidraw file imported into one, and every
+Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
+
+- **What arrives as what:** pen and freedraw ink becomes **marker strokes**,
+  with their pressure where the source recorded it (else a constant width) at
+  the nearest marker width; highlighter ink stays highlighter; shapes become
+  **shapes** (rectangle, ellipse, diamond, triangle) with their border, fill and
+  label; a two-point line becomes a **line**, a longer line or polygon a
+  **path** (corners kept, curves smooth, closed with its fill); arrows become
+  **arrows** attached to the shapes they were bound to; text becomes **text
+  boxes**; notes become **sticky notes** in the nearest sticky colour; images
+  arrive through the image gallery; frames stay **frames**. Groups are dropped.
+- **Adaptive colours:** colour comes across the way the pens store it. A
+  near-black line is the board's **ink** (no colour of its own), so it shows
+  dark on the light board and light on the dark one, whatever board it was
+  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Green,
+  Teal, Violet, Pink) lands by its name and is drawn in the version for each
+  viewer's board. Anything else keeps its exact hex, a custom colour, and shows
+  in the quick style panel's custom colours.
+- **Named colours on every mark:** a stock colour is stored by name on a
+  stroke, shape, line, arrow and path (its line colour) and on a text box, a
+  shape's label, a sticky note's text and an arrow's label (its text colour),
+  each drawn in its board's version when no explicit colour overrides it. Text
+  on a fill (a filled shape's label, a sticky note's own text colour) keeps its
+  exact colour instead, since the fill does not adapt.
+- **Text hugs:** every landed text box hugs its text in our fonts, at the size
+  it had (the nearest size times a text scale); hand-drawn fonts land in Caveat.
+- **A paste selects its result**, lands at the pointer (or the middle of the
+  view), and is **one undo step**, images included. A paste that changed or
+  dropped anything says so in a small notice; a lossless paste says nothing.
 
 ## Nothing animates in
 
@@ -631,7 +676,8 @@ light and dark boards like everything drawn with the stock colours.
   colours**.
 - **What it converts:** every custom (`#rrggbb`) colour held in a field that
   has a stock counterpart: a marker stroke's colour, a shape's outline, a
-  line's or arrow's colour. These are the custom colours the quick style
+  line's, arrow's or path's colour, a text box's text, and the label of an
+  unfilled shape or of an arrow. These are the custom colours the quick style
   panel's custom section offers. Further kinds join as they gain a stock
   colour field.
 - **The rule:** each colour is read in OKLCH.
@@ -645,8 +691,9 @@ light and dark boards like everything drawn with the stock colours.
     nearer in hue.
 - **Never touched:** elements already in a stock colour or the ink,
   highlighter strokes (their recipe owns their colour), fills (a whiteboard
-  has no stock fills), text colours and shape labels, an arrow's separate head
-  colour, images, locked elements and elements on locked or hidden layers.
+  has no stock fills), text on a fill (a filled shape's label, a sticky
+  note's text: the fill does not adapt, so the text keeps its exact colour to
+  stay readable on it), an arrow's separate head colour, images, locked elements and elements on locked or hidden layers.
 - **One undo step**; collaborators receive it as any edit. Snapping is
   unavailable (the button disabled) while the board cannot be edited.
 - **Confirmation:** the section then says "3 custom colours snapped to stock
@@ -746,7 +793,10 @@ The whiteboard is built in rounds and tuned with the operator between them.
   ([Where the dock sits](#where-the-dock-sits)).
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,
   duplicate, comment); until then a whiteboard element opens the ordinary
-  menu. The Microsoft Whiteboard import lands with its own spec.
+  menu.
+- **Imports:** Excalidraw paste and the
+  Microsoft Whiteboard import land through the board scene, and the quick style
+  panel styles mixed selections of everything they bring.
 
 ## Non-goals
 

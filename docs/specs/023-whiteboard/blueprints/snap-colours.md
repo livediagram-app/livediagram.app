@@ -57,13 +57,19 @@ no theme; the colours are stock colours), "default colour" for Ink in code (it i
 
 ### Field table (`SNAP_COLOUR_FIELDS`)
 
-| Applies to                                                 | Hex field     | Named field | Clears         |
-| ---------------------------------------------------------- | ------------- | ----------- | -------------- |
-| `freehand` with `penWidth` set and `pen !== 'highlighter'` | `strokeColor` | `penColour` | `strokeSwatch` |
-| `shape`                                                    | `strokeColor` | `penColour` | `strokeSwatch` |
-| `arrow`                                                    | `strokeColor` | `penColour` | `strokeSwatch` |
+| Applies to                                                 | Hex field     | Named field     | Clears         |
+| ---------------------------------------------------------- | ------------- | --------------- | -------------- |
+| `freehand` with `penWidth` set and `pen !== 'highlighter'` | `strokeColor` | `penColour`     | `strokeSwatch` |
+| `shape`                                                    | `strokeColor` | `penColour`     | `strokeSwatch` |
+| `arrow`                                                    | `strokeColor` | `penColour`     | `strokeSwatch` |
+| `path`                                                     | `strokeColor` | `penColour`     | `strokeSwatch` |
+| `text`                                                     | `textColor`   | `penTextColour` | `textSwatch`   |
+| `shape` without a fill (unset or `transparent`)            | `textColor`   | `penTextColour` | none           |
+| `arrow` (its label)                                        | `textColor`   | `penTextColour` | none           |
 
-A kind gaining a named colour (text colour, path stroke) adds one row; nothing else changes.
+A filled shape's label and a sticky note's text are not rows: text on a fill that does not adapt
+keeps its exact colour (the board scene's own rule, docs/specs/020-import-export/board-scene.md
+"Colours"). A kind gaining a named colour adds one row; nothing else changes.
 
 ### Editor (`useSnapColours`)
 
@@ -99,9 +105,9 @@ export function nearestPenColour(hex: string): SnapTarget | null;
 
 export type SnapColourField = {
   applies: (el: Element) => boolean;
-  hex: 'strokeColor';
-  named: 'penColour';
-  clear: readonly 'strokeSwatch'[];
+  hex: 'strokeColor' | 'textColor';
+  named: 'penColour' | 'penTextColour';
+  clear: readonly ('strokeSwatch' | 'textSwatch')[];
 };
 export const SNAP_COLOUR_FIELDS: readonly SnapColourField[];
 export function snappableCustomColours(
@@ -172,8 +178,9 @@ export function snapTabColours(
 | Near-boundary hues go to the nearer; ties to the earlier               | same                                            |
 | Invalid input is null; case-insensitive                                | same                                            |
 | Each field-table row snaps; Ink removes the named field                | `snap-colours.test.ts`                          |
+| Text, path, unfilled label and arrow label rows; text on a fill kept   | `snap-colours.test.ts`                          |
 | Untouched elements by identity; counts                                 | same                                            |
-| Highlighter, stock, ink, locked, skipped, fills, text kept             | same                                            |
+| Highlighter, stock, ink, locked, skipped, fills, text on a fill kept   | same                                            |
 | `strokeSwatch` cleared                                                 | same                                            |
 | Snappable colours: distinct, lower-cased, newest first                 | same                                            |
 | Hook: one commit, telemetry, blocked no-op                             | `useSnapColours.test.tsx`                       |

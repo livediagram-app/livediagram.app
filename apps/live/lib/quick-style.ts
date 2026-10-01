@@ -24,7 +24,14 @@ import {
   type ThemeDefinition,
 } from '@livediagram/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
-import type { QuickPenStyle } from './quick-style-pen';
+import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
+
+// The whiteboard's colours as a row: the choice the targets share, the stock options, the tab's own.
+export type BoardColourSection = {
+  value: PenColourChoice | null;
+  options: PenColourOption[];
+  custom: PenColourOption[];
+};
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
 export type QuickSectionId =
@@ -51,6 +58,10 @@ export type QuickStyleView = {
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
+    // A whiteboard's Stroke and Text colour rows (lib/quick-style-whiteboard): the whiteboard's
+    // colours in place of `stroke` and `textColour`.
+    boardStroke?: BoardColourSection;
+    boardText?: BoardColourSection;
   };
   // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
   pen?: QuickPenStyle;
@@ -117,6 +128,13 @@ type RoleFields = (typeof ROLE_FIELDS)[QuickSwatchRole];
 type RoleValues = Partial<Record<RoleFields['colour'], string>> &
   Partial<Record<RoleFields['swatch'], QuickSwatchSlot>>;
 
+// The field a whiteboard stock colour is stored in by name, per role (fills have none).
+const NAMED_FIELD: Record<QuickSwatchRole, 'penColour' | 'penTextColour' | null> = {
+  stroke: 'penColour',
+  fill: null,
+  text: 'penTextColour',
+};
+
 // The one value every supporting element shares, else null.
 function shared<T>(values: (T | null)[]): T | null {
   if (values.length === 0) return null;
@@ -136,6 +154,12 @@ function swatchValue(
   // A bound slot counts only while the row still shows its theme colour.
   if (bound && !swatches[bound]?.override) return bound;
   const colour = values[fields.colour];
+  // A whiteboard stock colour stored by name is no theme swatch (docs/specs/008-canvas/quick-style-panel.md
+  // "Multi-selection").
+  const named = NAMED_FIELD[role];
+  if (colour === undefined && named && (el as Record<string, unknown>)[named] !== undefined) {
+    return null;
+  }
   if (colour === undefined) return 0;
   const own = theme[fields.theme];
   const lower = colour.toLowerCase();
@@ -253,9 +277,11 @@ export function applyQuickStroke(
 ): Element {
   if (!isLinedTarget(el, 'stroke')) return el;
   const { colour, bind } = pickFor(theme, 'stroke', slot, overrides);
-  return el.type === 'shape'
-    ? { ...el, strokeColor: colour, strokeSwatch: bind, colorPreset: undefined }
-    : { ...el, strokeColor: colour, strokeSwatch: bind };
+  // The swatch replaces a stock colour stored by name.
+  const { penColour: _named, ...rest } = el;
+  return rest.type === 'shape'
+    ? { ...rest, strokeColor: colour, strokeSwatch: bind, colorPreset: undefined }
+    : { ...rest, strokeColor: colour, strokeSwatch: bind };
 }
 
 export function applyQuickFill(
@@ -285,7 +311,8 @@ export function applyQuickTextColour(
   if (el.type !== 'text' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'textColour'))
     return el;
   const { colour, bind } = pickFor(theme, 'text', slot, overrides);
-  return { ...el, textColor: colour, textSwatch: bind };
+  const { penTextColour: _named, ...rest } = el;
+  return { ...rest, textColor: colour, textSwatch: bind };
 }
 
 export function applyQuickWidth(el: Element, width: QuickWidth): Element {
@@ -327,7 +354,7 @@ export function applyQuickIconAlign(el: Element, align: QuickIconAlign): Element
 export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
   if (!isQuickStyleTarget(el)) return el;
   if (el.type === 'text') {
-    const { textSwatch: _ts, textColor: _tc, ...rest } = el;
+    const { textSwatch: _ts, textColor: _tc, penTextColour: _ptc, ...rest } = el;
     return theme.elementText ? { ...rest, textColor: theme.elementText } : rest;
   }
   if (el.type === 'arrow') {
@@ -338,6 +365,8 @@ export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
       flow: _f,
       flowSpeed: _fs,
       strokeColor: _c,
+      penColour: _pc,
+      penTextColour: _ptc,
       ...rest
     } = el;
     return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;
@@ -351,6 +380,7 @@ export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
       strokeStyle: _st,
       strokeColor: _sc,
       fillColor: _fc,
+      penColour: _pc,
       ...rest
     } = el;
     return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;
@@ -366,6 +396,8 @@ export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
     strokeColor: _sc,
     fillColor: _fc,
     textColor: _tc,
+    penColour: _pc,
+    penTextColour: _ptc,
     ...rest
   } = el;
   return {

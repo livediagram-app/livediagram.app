@@ -10,9 +10,11 @@ import {
   MAX_CHANGE_LOG_ENTRY_BYTES,
   MAX_DECK_LEN,
   MAX_TAB_BYTES,
-  byteLength,
+  TabTooLargeError,
   bodyExceedsCap,
   declaredBodyBytes,
+  logTabRefused,
+  tabDataBytes,
 } from '../limits';
 import {
   CHANGE_LOG_TAB_NOT_SAVED,
@@ -52,6 +54,7 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
+import { documentDates } from '@livediagram/api-schema';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { emailEnabled } from '../email/client';
@@ -99,6 +102,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!body.id || typeof body.name !== 'string') {
         return badRequest('missing id/name');
       }
+      // The document's own dates (docs/specs/015-api/api.md "Document dates"), refused whole when
+      // invalid, before anything is written.
+      const dates = documentDates(body, Date.now());
+      if (!dates.ok) return badRequest('invalid document dates');
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
       if (Array.isArray(body.tabs)) {
@@ -107,7 +114,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         body.tabs = body.tabs.map((tab) => migrateIncomingTab(tab) as Tab);
         for (const tab of body.tabs) {
           if (!isValidTab(tab)) return badRequest('invalid tab');
-          if (byteLength(JSON.stringify(tab)) > MAX_TAB_BYTES) {
+          // The cap D1's row sets (docs/specs/015-api/api.md "Tab size"), measured as stored,
+          // before anything is written, so a create never leaves a document without its tabs.
+          const bytes = tabDataBytes(tab);
+          if (bytes > MAX_TAB_BYTES) {
+            logTabRefused('create', tab.id, bytes);
             return payloadTooLarge();
           }
         }
@@ -168,7 +179,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
             ),
           )
         : null;
-      const now = Date.now();
+      // Only a genuine create takes the body's dates: a re-commit keeps the stored created date
+      // (the upsert never rewrites it) and is modified now.
+      const savedAt = clash ? Date.now() : dates.savedAt;
       // Document meta first so the FK in tabs can resolve.
       await upsertDocumentMeta(env, {
         id: body.id,
@@ -188,15 +201,20 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
-        savedAt: now,
-        createdAt: body.createdAt ?? now,
+        savedAt,
+        createdAt: dates.createdAt,
       });
       // Seed tabs if the caller provided them. The live app's
       // welcome flow uses this when it commits a fresh document
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
       if (seeded) {
-        await seedTabs(env, body.id, seeded.tabs);
+        try {
+          await seedTabs(env, body.id, seeded.tabs, savedAt);
+        } catch (error) {
+          if (error instanceof TabTooLargeError) return payloadTooLarge();
+          throw error;
+        }
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

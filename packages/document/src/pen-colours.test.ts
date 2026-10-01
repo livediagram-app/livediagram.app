@@ -11,6 +11,7 @@ import {
   isPenColourName,
   nearestPenColour,
   penColourAtHue,
+  penColourHueDistance,
   penColourCss,
   penColourHardToSee,
   penColourHex,
@@ -161,8 +162,33 @@ describe('nearestPenColour', () => {
     }
   });
 
+  it('measures hue distance round the circle', () => {
+    expect(penColourHueDistance(255, 'blue')).toBe(0);
+    expect(penColourHueDistance(5, 'pink')).toBe(15);
+    expect(penColourHueDistance(185, 'red')).toBe(160);
+  });
+
   it('keeps the neutral threshold in its safe range', () => {
     expect(PEN_NEUTRAL_CHROMA).toBeGreaterThanOrEqual(0.03);
     expect(PEN_NEUTRAL_CHROMA).toBeLessThanOrEqual(0.08);
+  });
+});
+
+describe('hexOklch', () => {
+  it('reads a #rrggbb colour as OKLCH', () => {
+    const black = hexOklch('#000000');
+    expect(black!.l).toBeCloseTo(0, 5);
+    const white = hexOklch('#ffffff');
+    expect(white!.l).toBeCloseTo(1, 3);
+    expect(white!.c).toBeLessThan(0.001);
+    const blue = hexOklch('#1971c2')!;
+    expect(blue.h).toBeGreaterThan(245);
+    expect(blue.h).toBeLessThan(260);
+  });
+
+  it('is null for anything that is not a hex colour', () => {
+    expect(hexOklch('blue')).toBeNull();
+    expect(hexOklch('#12345')).toBeNull();
+    expect(hexOklch('#fff')).toBeNull();
   });
 });

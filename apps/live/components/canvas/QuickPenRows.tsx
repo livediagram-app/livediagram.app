@@ -8,7 +8,8 @@
 
 import { BorderStrokeIcon } from '@/components/palette/palette-style-previews';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
-import type { PenWidthId, QuickPenStyle } from '@/lib/quick-style-pen';
+import type { PenColourChoice, PenWidthId, QuickPenStyle } from '@/lib/quick-style-pen';
+import type { BoardColourSection } from '@/lib/quick-style';
 import { WHITEBOARD_PEN_WIDTHS } from '@/lib/whiteboard-prefs';
 import { QuickRadioRow, type QuickRowDensity } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
@@ -70,6 +71,57 @@ export function QuickPenRows({
         value={pen.width.value}
         onChoose={quickStyle.setPenWidth}
       />
+    </>
+  );
+}
+
+// A whiteboard's Stroke or Text colour row (docs/specs/023-whiteboard/whiteboard.md "The quick style
+// panel stays"): the whiteboard's colours, as Marker colour offers them, and the tab's custom
+// colours below when it has any.
+export function BoardColourRows({
+  title,
+  customTitle,
+  testId,
+  section,
+  onChoose,
+  showTitles,
+  density,
+}: {
+  title: string;
+  // The custom row's own name, so it reads apart from the Marker colour row's.
+  customTitle: string;
+  testId: string;
+  section: BoardColourSection;
+  onChoose: (colour: PenColourChoice) => void;
+  showTitles: boolean;
+  density: QuickRowDensity;
+}) {
+  const swatches = (options: BoardColourSection['options']) =>
+    options.map((o) => ({ ...o, content: null }));
+  return (
+    <>
+      <QuickRadioRow
+        title={title}
+        testId={testId}
+        showTitle={showTitles}
+        density={density}
+        options={swatches(section.options)}
+        columns={QUICK_ROW_TARGETS.pen}
+        value={section.value}
+        onChoose={onChoose}
+      />
+      {section.custom.length > 0 ? (
+        <QuickRadioRow
+          title={customTitle}
+          testId={`${testId}-custom`}
+          showTitle={showTitles}
+          density={density}
+          options={swatches(section.custom)}
+          columns={QUICK_ROW_TARGETS.pen}
+          value={section.value}
+          onChoose={onChoose}
+        />
+      ) : null}
     </>
   );
 }

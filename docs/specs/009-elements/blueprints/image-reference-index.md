@@ -280,7 +280,7 @@ workerd's local D1 with 5,000 tabs (42.6 MB of bodies, 10% placing 1 to 3 images
 | Usage map during backfill (lazy) | as above                      | 261 / 12              |
 
 Asymptotically the sweep goes from `I + T` rows plus every image-mentioning body through one Worker to about
-`I + R` rows and no body; the old sweep also held 200 bodies of up to 4 MiB per page. A backfill page parses at most 100
+`I + R` rows and no body; the old sweep also held 200 bodies of up to `MAX_TAB_BYTES` each per page. A backfill page parses at most 100
 bodies inside D1; the run stops after 60 s of wall clock, inside the cron's limit. The sweep holds at most
 `IMAGE_SWEEP_PAGE` ids.
 

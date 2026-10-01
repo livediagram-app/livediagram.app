@@ -623,6 +623,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "routeBehind": {
         "type": "boolean"
       },
@@ -3701,6 +3704,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "rotation": {
         "type": "number"
       },
@@ -4312,6 +4318,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"
@@ -4811,6 +4820,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "padding": {
         "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "richText": {
         "items": {
@@ -5835,6 +5847,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "padding": {
         "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "richText": {
         "items": {

@@ -77,21 +77,22 @@ describe('style memory across a diagram tab and a whiteboard tab', () => {
     // The whiteboard's next rectangle is plain ink: the diagram's green never shows.
     view.rerender({ documentId: DOC, tab: board, intent: rectangle });
     expect(view.result.current.quick.view?.caption).toBe('Next rectangle');
-    expect(view.result.current.quick.view?.sections.stroke?.value).toBe(0);
+    expect(view.result.current.quick.view?.sections.boardStroke?.value).toBe('ink');
     expect(view.result.current.quick.view?.sections.width?.value).not.toBe('thick');
     expect(nextSquare(view.result.current.memory, true)).not.toMatchObject({
       strokeColor: '#2f9e44',
     });
 
-    // Next rectangle red, on the board.
-    act(() => view.result.current.quick.setStroke(1));
-    expect(nextSquare(view.result.current.memory, true).strokeSwatch).toBe(1);
+    // Next rectangle red, on the board: the stock colour, by name.
+    act(() => view.result.current.quick.setBoardStroke('red'));
+    expect(nextSquare(view.result.current.memory, true).penColour).toBe('red');
 
     // Back on the diagram: green and thick, never red.
     view.rerender({ documentId: DOC, tab: diagram, intent: null });
     const drawn = nextSquare(view.result.current.memory, false);
     expect(drawn).toMatchObject({ strokeColor: '#2f9e44', strokeWidth: 'thick' });
     expect(drawn.strokeSwatch).toBeUndefined();
+    expect(drawn.penColour).toBeUndefined();
   });
 
   it('keeps a board restyle of a drawn shape off the diagram', () => {
@@ -105,21 +106,21 @@ describe('style memory across a diagram tab and a whiteboard tab', () => {
 
   it('keeps the diagram’s Clear styles off the board', () => {
     const view = setup({ documentId: DOC, tab: board, intent: rectangle });
-    act(() => view.result.current.quick.setStroke(1));
+    act(() => view.result.current.quick.setBoardStroke('red'));
     view.rerender({ documentId: DOC, tab: diagram, intent: null });
     act(() => view.result.current.memory.forget(['shape:square']));
     view.rerender({ documentId: DOC, tab: board, intent: null });
-    expect(nextSquare(view.result.current.memory, true).strokeSwatch).toBe(1);
+    expect(nextSquare(view.result.current.memory, true).penColour).toBe('red');
   });
 
   it('shows the next rectangle of the document it is in, never the last one’s', () => {
     const view = setup({ documentId: 'first', tab: board, intent: rectangle });
-    act(() => view.result.current.quick.setStroke(1));
-    expect(view.result.current.quick.view?.sections.stroke?.value).toBe(1);
+    act(() => view.result.current.quick.setBoardStroke('red'));
+    expect(view.result.current.quick.view?.sections.boardStroke?.value).toBe('red');
 
     // Another document, its whiteboard open, the rectangle still in hand.
     view.rerender({ documentId: 'second', tab: board, intent: rectangle });
-    expect(view.result.current.quick.view?.sections.stroke?.value).toBe(0);
-    expect(nextSquare(view.result.current.memory, true).strokeSwatch).toBeUndefined();
+    expect(view.result.current.quick.view?.sections.boardStroke?.value).toBe('ink');
+    expect(nextSquare(view.result.current.memory, true).penColour).toBeUndefined();
   });
 });

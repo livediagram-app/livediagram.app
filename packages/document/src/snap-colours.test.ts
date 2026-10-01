@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, FreehandElement, ShapeElement, TextElement } from './index';
+import type {
+  ArrowElement,
+  Element,
+  FreehandElement,
+  PathElement,
+  ShapeElement,
+  StickyElement,
+  TextElement,
+} from './index';
 import { SNAP_COLOUR_FIELDS, snapTabColours, snappableCustomColours } from './snap-colours';
 import { encodeStrokePoints } from './stroke-points';
 
@@ -43,6 +51,30 @@ const text = (over: Partial<TextElement> = {}): TextElement => ({
   width: 10,
   height: 10,
   label: 'hi',
+  ...over,
+});
+
+const path = (over: Partial<PathElement> = {}): PathElement => ({
+  id: 'p',
+  type: 'path',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  closed: false,
+  nodes: [
+    { nx: 0, ny: 0, mode: 'corner' },
+    { nx: 1, ny: 1, mode: 'corner' },
+  ],
+  ...over,
+});
+const sticky = (over: Partial<StickyElement> = {}): StickyElement => ({
+  id: 'n',
+  type: 'sticky',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
   ...over,
 });
 
@@ -93,12 +125,12 @@ describe('snapTabColours', () => {
     expect(out).toMatchObject({ colours: 2, changed: 3 });
   });
 
-  it('never touches highlighters, pencil strokes, fills, text colours, labels or arrow heads', () => {
+  it('never touches highlighters, pencil strokes, fills, text on a fill or arrow heads', () => {
     const els: Element[] = [
       stroke({ id: 'hl', pen: 'highlighter', strokeColor: '#ffd43b' }),
       stroke({ id: 'pencil', penWidth: undefined, strokeColor: '#e03131' }),
       shape({ id: 'fill', fillColor: '#ffdf6b', textColor: '#e03131' }),
-      text({ id: 'text', textColor: '#1971c2' }),
+      sticky({ id: 'note', fillColor: '#fde68a', textColor: '#1971c2' }),
       arrow({ id: 'head', arrowheadColor: '#e03131' }),
       shape({ id: 'clear', strokeColor: 'transparent' }),
       shape({ id: 'short', strokeColor: '#f00' }),
@@ -126,14 +158,48 @@ describe('snapTabColours', () => {
     expect(out.changed).toBe(0);
   });
 
-  it('has one row per kind that carries a named colour', () => {
+  it('has one row per kind and field that carries a named colour', () => {
     expect(SNAP_COLOUR_FIELDS.map((r) => [r.hex, r.named])).toEqual([
       ['strokeColor', 'penColour'],
       ['strokeColor', 'penColour'],
       ['strokeColor', 'penColour'],
+      ['strokeColor', 'penColour'],
+      ['textColor', 'penTextColour'],
+      ['textColor', 'penTextColour'],
+      ['textColor', 'penTextColour'],
     ]);
     expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(stroke()))).toHaveLength(1);
-    expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(text()))).toHaveLength(0);
+    expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(text()))).toHaveLength(1);
+    expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(shape()))).toHaveLength(2);
+    expect(
+      SNAP_COLOUR_FIELDS.filter((r) => r.applies(shape({ fillColor: '#ffdf6b' }))),
+    ).toHaveLength(1);
+    expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(sticky()))).toHaveLength(0);
+  });
+
+  // docs/specs/023-whiteboard/blueprints/snap-colours.md: the named colours imports land on.
+  it('snaps a text box, a path, an unfilled shape’s label and an arrow’s label', () => {
+    const out = snapTabColours([
+      text({ textColor: '#1971C2', textSwatch: 2 }),
+      path({ strokeColor: '#e03131', strokeSwatch: 1 }),
+      shape({ id: 's2', strokeColor: '#2f9e44', textColor: '#c2255c' }),
+      shape({ id: 's3', fillColor: 'transparent', textColor: '#868e96' }),
+      arrow({ textColor: '#6741d9' }),
+    ]);
+    expect(out.elements).toEqual([
+      text({ penTextColour: 'blue' }),
+      path({ penColour: 'red' }),
+      shape({ id: 's2', penColour: 'green', penTextColour: 'pink' }),
+      shape({ id: 's3', fillColor: 'transparent' }),
+      arrow({ penTextColour: 'violet' }),
+    ]);
+    expect(out).toMatchObject({ changed: 5 });
+  });
+
+  it('lists a text box’s and a label’s custom colours among the snappable ones', () => {
+    expect(
+      snappableCustomColours([text({ textColor: '#0C8599' }), arrow({ textColor: '#9c36b5' })]),
+    ).toEqual(['#9c36b5', '#0c8599']);
   });
 });
 

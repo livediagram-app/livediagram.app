@@ -12,7 +12,7 @@ import {
   sanitizeMentions,
 } from '@livediagram/document';
 import { broadcastShareOp, mergeRoomLedger, relayElementDelta } from '../room-client';
-import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
+import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import {
   findCommentHost,
@@ -228,7 +228,11 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
             ),
           }
         : body;
-      await upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex);
+      // The merged tab (room ledger, server-stamped authors) may outgrow the request: the storage
+      // layer measures what it stores (docs/specs/015-api/api.md "Tab size").
+      if (!(await storeTab(() => upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex)))) {
+        return payloadTooLarge();
+      }
       // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the
       // save added that the feed cares about (comments, thread
       // resolutions, assigned + completed actions). Diffed against the
@@ -346,7 +350,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     const updatedElements = tab.elements.map((el) =>
       el.id === elementId ? applyElementDelta(el, { kind: 'comment-add', comment }) : el,
     );
-    await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    if (
+      !(await storeTab(() =>
+        upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex),
+      ))
+    ) {
+      return payloadTooLarge();
+    }
     // Tell the room, so editors see it now and their next save keeps it
     // (docs/specs/012-collaboration/collab-race-hardening.md). Off the response path. WITHOUT the author id: it is the
     // visitor's owner id, which a GET redacts for everyone but its author
@@ -410,7 +420,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // can see the comment exists, they just can't delete it.
     if (found.authorId !== owner) return forbidden();
     const updatedElements = removeComment(tab.elements, commentId);
-    await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    if (
+      !(await storeTab(() =>
+        upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex),
+      ))
+    ) {
+      return payloadTooLarge();
+    }
     // Same as the add: without it, an editor's next save put it back.
     ctx.waitUntil?.(
       relayElementDelta(env, existing, tabId, host.elementId, {

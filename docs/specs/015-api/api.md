@@ -87,7 +87,7 @@ Owner-only routes require a resolved owner (see Auth above). When none resolves,
 | Method | Path                             | Auth             | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ------ | -------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GET    | `/api/documents`                 | owner            | List the caller's documents, newest first.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| POST   | `/api/documents`                 | owner            | Body `{ id, name, tabs?, folderId?, presentation? }`. Seeds tabs (and the deck) inline when present. A seeded tab whose id another document already holds is created under a fresh id, with the document's tab / element links and deck slides re-pointed at it, so a create never writes into someone else's tab ([Offline Mode](../006-document/offline-mode.md), "A forked tab comes back as its own tab"); the response carries the ids that landed.                                                                                                                                                                                                                                                                                     |
+| POST   | `/api/documents`                 | owner            | Body `{ id, name, tabs?, folderId?, presentation?, createdAt?, savedAt? }`. Seeds tabs (and the deck) inline when present. `createdAt` / `savedAt` give the document dates of its own (an Offline Mode sync, an imported board), validated as in [Document dates](#document-dates). A seeded tab whose id another document already holds is created under a fresh id, with the document's tab / element links and deck slides re-pointed at it, so a create never writes into someone else's tab ([Offline Mode](../006-document/offline-mode.md), "A forked tab comes back as its own tab"); the response carries the ids that landed.                                                                                                      |
 | GET    | `/api/documents/:id`             | owner/share/team | Returns the document meta. Owner, a valid share code, or a joined member of the document's team ([Team shared documents](../013-workspace/team-shared-documents.md)); 404 on no access (no existence leak).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | PUT    | `/api/documents/:id`             | owner/share/team | Body `{ name?, tabIds? }` — rename and/or reorder tabs. Edit gate (incl. joined team members).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | DELETE | `/api/documents/:id`             | owner/team       | Owner OR a joined member of the document's team ([Team shared documents](../013-workspace/team-shared-documents.md)); not share-link visitors. Moves the document to the [Trash](../013-workspace/trash.md) (`documents.trashed_at`, migration 0051) and ends its realtime sessions (`document-trashed` op, close 4004). `?permanent=true` purges it instead (also one already in the Trash); a plain DELETE of a trashed document answers 410 `document_trashed`. The owner's Take Offline (`X-Document-Conversion: offline`) bypasses the Trash. Removal (the purge) drops the tabs no other document links; a tab shared into another document stays there ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)). |
@@ -188,6 +188,31 @@ Owner-only routes require a resolved owner (see Auth above). When none resolves,
 | GET    | `/api/preferences` | owner (any path) | Returns `{ prefs }` for the resolved owner (Clerk userId for signed-in users, `X-Owner-Id` for guests). Empty object when no row exists. The blob is opaque to the worker; the client owns the shape (`apps/live/lib/user-preferences.ts`'s `UserPreferences` type).                                                                |
 | PUT    | `/api/preferences` | owner (any path) | Body `{ prefs }`. Upserts the row for the resolved owner. Returns 204. Size-capped at 4 KB to defend against runaway clients; no per-field validation otherwise. Same hybrid auth as `GET`. Last-write-wins per device, the client tolerates failure by keeping its localStorage cache authoritative until the next successful PUT. |
 
+### Document dates
+
+A document's dates are its `createdAt` (shown as created) and `savedAt` (last
+modified, the lists' order), both milliseconds since the epoch, as everywhere
+on the wire. A create stamps both with the server's now, unless the body
+carries its own: an Offline Mode sync carries the local record's `createdAt`
+([Offline Mode](../006-document/offline-mode.md)), and an imported board
+carries the board's own created and last-modified dates
+([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)), so
+it sits in the Explorer where its age puts it.
+
+- Each given date must be a whole number of milliseconds no earlier than
+  `DOCUMENT_DATE_MIN` (1 January 2000, before any document a person could
+  bring) and no later than the server's now plus `DOCUMENT_DATE_SKEW_MS`
+  (one day, for a device clock that runs ahead), and `createdAt` must not be
+  later than `savedAt`.
+- A given `createdAt` alone keeps `savedAt` at now (or at `createdAt`, if a
+  clock running ahead put that later); a given `savedAt` alone is refused (a
+  document is never modified before it is created).
+- Seeding the create's tabs leaves `savedAt` as given.
+- Anything else is refused whole, 400 `bad_request` "invalid document dates";
+  nothing is created.
+- Only a genuine create takes them: re-committing an id the caller already
+  owns keeps the stored `createdAt`.
+
 ### Documents in the Trash
 
 Every document read (`getDocument`, `getDocumentMeta`, the lists, Shared with
@@ -201,6 +226,33 @@ WebSocket upgrade refuses a trashed document with a plain 404, whatever the
 ticket or code. `POST /api/documents` over a trashed id answers 410 to its
 owner and 403 to anyone else. The daily `0 3 * * *` cron purges documents 30
 days in the Trash (`purgeExpiredTrash`, at most 2,000 a run, oldest first).
+
+### Tab size
+
+A tab is stored as one text value in one D1 row (`tabs.data`, the tab's
+JSON without its id and name), and Cloudflare D1 caps a string, a BLOB and a
+row at **2,000,000 bytes** ([D1 limits](https://developers.cloudflare.com/d1/platform/limits/)).
+Local `wrangler dev` does not enforce it, so the api enforces it itself:
+
+- `D1_MAX_ROW_BYTES` = 2,000,000. `MAX_TAB_BYTES` = `D1_MAX_ROW_BYTES` less
+  `D1_ROW_HEADROOM_BYTES` (8 KiB) = 1,991,808 bytes of UTF-8 JSON. The
+  headroom covers the row's other columns (the tab id, a UUID; the name, at
+  most 60 characters, so at most 240 bytes; `updated_at`; SQLite's record
+  header) many times over, so a tab under the cap always fits its row.
+- Both numbers live in `@livediagram/api-schema`, so the editor checks the same
+  cap the worker does and the two cannot drift.
+- **Every write of a tab's data** is checked against it, at the storage layer
+  (`upsertTab`, `seedTabs`, `swapTabData`), so no route can store what D1
+  would refuse: document create, the tab save, a comment added or deleted
+  through the api, and a Q&A board write. A tab over the cap is refused with
+  the named 413 (`payload_too_large`) and nothing is written; the worker logs
+  `[tab-size] refused` with the write (`create`, `upsertTab`, `seedTabs`,
+  `swapTabData`), the tab id, the bytes and the cap. The comment routes list
+  413 among their answers in the OpenAPI manifest. The routes
+  also check the request up front, so a create never leaves a document
+  without its tabs.
+- The cap is not raised and the storage format is unchanged; a tab that needs
+  more is a separate decision.
 
 ## Rate limiting
 

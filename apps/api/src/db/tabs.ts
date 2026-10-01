@@ -3,6 +3,17 @@
 
 import { capElementActions, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';
+import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
+
+// Every write of a tab's data meets this first (docs/specs/015-api/api.md "Tab size"): data over the
+// cap would fail in D1 with a generic error (and pass locally, where the row cap isn't enforced), so
+// it is refused here, logged, and nothing is written.
+function assertTabDataFits(tabId: string, data: string, write: string): void {
+  const bytes = byteLength(data);
+  if (bytes <= MAX_TAB_BYTES) return;
+  logTabRefused(write, tabId, bytes);
+  throw new TabTooLargeError(tabId, bytes, write);
+}
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
@@ -86,6 +97,7 @@ export async function upsertTab(
   const tab = { ...input, elements: capElementActions(input.elements) };
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
+  assertTabDataFits(id, data, 'upsertTab');
   const now = Date.now();
   // The body goes to `tabs`, this document's position to its `document_tabs`
   // link (docs/specs/006-document/tab-document-many-to-many.md). The two writes
@@ -127,10 +139,21 @@ export async function upsertTab(
 // way costs ~3K serial round trips. Here we collect every insert and
 // submit one batch, then bump saved_at exactly once. Same ON CONFLICT
 // semantics as upsertTab so a retried create stays idempotent.
-export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promise<void> {
+// `savedAt`: the document's last-modified date after seeding, its own when a create carried one
+// (docs/specs/015-api/api.md "Document dates"); absent, now.
+export async function seedTabs(
+  env: Env,
+  documentId: string,
+  tabs: Tab[],
+  savedAt?: number,
+): Promise<void> {
   if (tabs.length === 0) return;
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
+  // Every tab measured before any is written: a create seeds all or none.
+  for (const { id, name: _name, ...rest } of capped) {
+    assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
+  }
   const stmts = capped.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
     const data = JSON.stringify(rest);
@@ -151,7 +174,10 @@ export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promi
     ];
   });
   stmts.push(
-    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
+    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(
+      savedAt ?? now,
+      documentId,
+    ),
   );
   // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
@@ -358,6 +384,7 @@ export async function swapTabData(
   expectedData: string,
   nextData: string,
 ): Promise<boolean> {
+  assertTabDataFits(tabId, nextData, 'swapTabData');
   const now = Date.now();
   const [res] = await env.DB.batch([
     env.DB.prepare('UPDATE tabs SET data = ?, updated_at = ? WHERE id = ? AND data = ?').bind(

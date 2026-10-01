@@ -5,6 +5,7 @@
 // of them, most recently drawn first; Marker width is the pens' named widths.
 import {
   PEN_COLOUR_NAMES,
+  SNAP_COLOUR_FIELDS,
   isCustomPenColour,
   isPenColourName,
   penColourCss,
@@ -61,22 +62,29 @@ export function isPenStroke(el: Element): el is FreehandElement {
   );
 }
 
+// The custom colours an element holds where a stock colour could stand instead: the snap's own
+// field table (SNAP_COLOUR_FIELDS), so the custom section offers exactly the colours a snap would
+// convert. Fills are washes, never marker colours, and are no rows.
+function heldColours(el: Element): unknown[] {
+  return SNAP_COLOUR_FIELDS.filter((row) => row.applies(el)).map(
+    (row) => (el as unknown as Record<string, unknown>)[row.hex],
+  );
+}
+
 /**
  * The custom (hex) colours used on a whiteboard tab, most recently drawn first (the later in the
- * tab, the more recent), at most eight: its marker strokes' and its shapes' and lines' own colours.
+ * tab, the more recent), at most eight: every custom colour a snap could convert (the marker
+ * strokes', shapes', lines', arrows' and paths' colours, text boxes' text, unfilled shapes' and
+ * arrows' labels), imported ones included.
  */
 export function tabCustomColours(elements: readonly Element[]): string[] {
   const out: string[] = [];
   for (let i = elements.length - 1; i >= 0 && out.length < TAB_CUSTOM_COLOURS_MAX; i--) {
-    const el = elements[i]!;
-    const drawn =
-      (el.type === 'freehand' && el.penWidth !== undefined && el.pen !== 'highlighter') ||
-      el.type === 'shape' ||
-      el.type === 'arrow';
-    const colour = drawn ? (el as { strokeColor?: string }).strokeColor : undefined;
-    if (!isCustomPenColour(colour)) continue;
-    const hex = colour.toLowerCase();
-    if (!out.includes(hex)) out.push(hex);
+    for (const colour of heldColours(elements[i]!)) {
+      if (!isCustomPenColour(colour) || out.length >= TAB_CUSTOM_COLOURS_MAX) continue;
+      const hex = colour.toLowerCase();
+      if (!out.includes(hex)) out.push(hex);
+    }
   }
   return out;
 }
@@ -91,11 +99,14 @@ const inkOption = (palette: PenPalette): PenColourOption => ({
   name: 'Ink',
   swatch: palette.ink,
 });
-const stockOptions = (palette: PenPalette) => [
+/** The whiteboard's colours as choices: Ink, the seven stock colours, adaptive per board. */
+export const stockOptions = (palette: PenPalette): PenColourOption[] => [
   inkOption(palette),
   ...PEN_COLOUR_NAMES.map((c) => optionOf(c, palette)),
 ];
-const customOptions = (palette: PenPalette) => palette.custom.map((c) => optionOf(c, palette));
+/** The tab's custom colours as choices, most recently drawn first. */
+export const customOptions = (palette: PenPalette): PenColourOption[] =>
+  palette.custom.map((c) => optionOf(c, palette));
 
 const widthIdOf = (px: number | undefined): PenWidthId | null =>
   (WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.id as PenWidthId | undefined) ?? null;
