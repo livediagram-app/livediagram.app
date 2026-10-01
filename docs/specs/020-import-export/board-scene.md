@@ -212,10 +212,16 @@ under a skipped rule.
   paste notice says "Pasting images 3 of 12…". A paste whose tab is left while
   its images upload belongs to that tab, so it does not land on another.
 - **Import a board** (the Import dialog): replace the active tab (the
-  Excalidraw card) or open each board as a **new whiteboard tab** after the
-  active one (the Microsoft Whiteboard card), all in one undo step, the first
-  new tab made active and framed. A new whiteboard counts as
-  `Whiteboard · Created · Import`.
+  Excalidraw card, one undo step), or make each board **its own new document**
+  with one whiteboard tab (the Microsoft Whiteboard card), named after the board
+  and dated as it (the scene's `createdAt` / `modifiedAt`; a date that cannot
+  be read is left out, so the document is dated today, and the report says so:
+  "Board dates that couldn't be read were set to today"). An untitled board is
+  named "Whiteboard, 14 Aug 2020" after its created date, or "Whiteboard"
+  without one. Images and the report are combined across the boards; a board
+  that cannot land is listed with its reason. Each new document counts as
+  `Document · Created · Cloud` (or `Offline`) and `Whiteboard · Created ·
+Import`; the open document is not touched.
 - **The paste notice**: after a paste that degraded, skipped or left an image
   as a placeholder, a small non-blocking notice (`role="status"`) says so; a
   lossless paste shows nothing. It has **its own slot just above the

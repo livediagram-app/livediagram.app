@@ -39,10 +39,17 @@ throws. Only the parse stage has to be pure.
 4. **Assets** (browser, network): every image goes through the
    [Import image pipeline](import-image-pipeline.md), which owns resizing,
    encoding, upload, deduplication, concurrency and every image failure.
-5. **Commit**, in one undoable step, to one of three targets:
-   - **replace-tab**: the elements replace the active tab (the Excalidraw card);
-   - **new-whiteboard-tab**: each board opens as a new whiteboard tab after the
-     active one, the first made active (the Microsoft Whiteboard card);
+5. **Commit** to one of three targets:
+   - **replace-tab**: the elements replace the active tab, one undoable step
+     (the Excalidraw card);
+   - **new-document**: each board becomes **its own new document** with one
+     whiteboard tab, **named after the board** (an untitled board: "Whiteboard,
+     14 Aug 2020", its created date) and **dated as the board** (its created
+     and last-modified dates, see [Document dates](../015-api/api.md#document-dates)),
+     filed in Unsorted (the Microsoft Whiteboard card). A board that cannot land
+     is named in the report and the rest still do; the open document is left
+     as it was. A new document made from an Offline Mode document is an
+     Offline Mode document too, as a copy is;
    - **insert-at-point**: the elements join the active tab at a point and are
      selected (a paste or a drop).
 
@@ -88,8 +95,8 @@ Bulk import is not built. What keeps it cheap to add:
   budget of its own.
 - The scene carries a stable `sourceId` (tool plus the tool's board id where it
   has one), so a bulk importer can detect a board it already imported.
-- Several boards of one export already land as several new whiteboard tabs in
-  one undo step (new-whiteboard-tab), see [Microsoft Whiteboard import](whiteboard-import.md).
+- Several boards of one export already land as several new documents in one
+  import (new-document), see [Microsoft Whiteboard import](whiteboard-import.md).
 
 ## Non-goals
 

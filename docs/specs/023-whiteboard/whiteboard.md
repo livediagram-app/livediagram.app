@@ -44,8 +44,8 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **No theme.** A whiteboard has no theme; like every template now, picking
   it goes straight to the settings step in the New Document wizard and lands
   at once in Quick Start.
-- **Import:** a Microsoft Whiteboard import opens each board as a new
-  whiteboard tab, and Excalidraw pasted onto a whiteboard lands as its own
+- **Import:** a Microsoft Whiteboard import makes each board its own new
+  document with one whiteboard tab, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
 - A tab's kind is fixed at creation. Converting a diagram tab into a
   whiteboard (or back) is not offered: the two present the same elements very
