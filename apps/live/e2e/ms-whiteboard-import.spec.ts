@@ -4,9 +4,13 @@ import type { Page } from '@playwright/test';
 import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument } from './fixtures';
 import { syntheticExportZip } from './ms-whiteboard-board';
 
-// The Explorer's entry point opens the import; its design is still being chosen.
+// The Explorer page header's "Import from" toolbar opens the import.
 async function openMsWhiteboardImport(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Import from Microsoft Whiteboard' }).click();
+  await page.goto('/explorer/recent');
+  await page
+    .getByRole('toolbar', { name: 'Import from' })
+    .getByRole('button', { name: 'Import from Microsoft Whiteboard' })
+    .click();
 }
 
 test('Microsoft Whiteboard boards open as their own documents with a report', async ({
@@ -15,7 +19,7 @@ test('Microsoft Whiteboard boards open as their own documents with a report', as
 }) => {
   await startBlankDocument(page);
   await dismissQuickTour(page);
-  test.fixme(true, 'the Explorer entry point design is being chosen (plan 0033, M8)');
+  test.fixme(true, 'the Explorer page needs the editor-free commit (plan 0033, Requests to F)');
   await openMsWhiteboardImport(page);
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Choose a .zip' }).click();
