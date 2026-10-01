@@ -130,8 +130,7 @@ export function QuickStylePanel({
   // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
   // or strokes a whiteboard's pen rows style.
   powerUser?: boolean;
-  // Floating wears the Palette's own panel dress; Toolbar and Minimal keep it
-  // compact. Always on the left edge.
+  // Floating wears the Palette's own panel dress; Toolbar keeps it compact. Always on the left edge.
   layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;

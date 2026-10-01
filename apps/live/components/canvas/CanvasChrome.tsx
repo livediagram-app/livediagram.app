@@ -23,7 +23,6 @@ const TemplatePicker = dynamic(
 import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
-import { CanvasMobileDock } from '@/components/canvas/CanvasMobileDock';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -31,12 +30,11 @@ import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { ActivityClusterStrip } from '@/components/canvas/ActivityClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
-import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
+import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
-import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
@@ -76,14 +74,11 @@ type ChromeExtras = {
   wrapperRef: RefObject<HTMLDivElement | null>;
   paletteBottomY: number;
   setPaletteBottomY: Dispatch<SetStateAction<number>>;
-  explorerBottomY: number;
-  setExplorerBottomY: Dispatch<SetStateAction<number>>;
-  activeMobilePanel: MobilePanel | null;
-  setActiveMobilePanel: Dispatch<SetStateAction<MobilePanel | null>>;
-  dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
+  activeDockPanel: DockPanel | null;
+  setActiveDockPanel: Dispatch<SetStateAction<DockPanel | null>>;
   activeDockAnchor: DockAnchor | null;
   setActiveDockAnchor: Dispatch<SetStateAction<DockAnchor | null>>;
-  handleDockButtonClick: (id: MobilePanel, ownButton?: HTMLElement, above?: boolean) => void;
+  handleDockButtonClick: (id: DockPanel, button: HTMLElement, above?: boolean) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
@@ -195,21 +190,19 @@ const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
 };
 
 // The floating chrome layer of the canvas: empty-state prompt, template
-// picker, multi-select toolbar, mode banners, mobile dock, Explorer, the
+// picker, multi-select toolbar, mode banners, Explorer, the
 // Activity / Comments / Editor / Context panels, the palette, and
 // the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
 
 export function CanvasChrome(props: CanvasChromeProps) {
   const {
-    activeMobilePanel,
+    activeDockPanel,
     activityMinimized,
-    aiPanel,
     canRedo,
     canUndo,
     canvasTool,
     documentName,
-    dockButtonRefs,
     drawDrag,
     drawHover,
     stamp,
@@ -219,7 +212,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleZoomIn,
     handleZoomOut,
     marquee,
-    minimalPanels,
     toolbarLayout,
     layersMinimized,
     onToggleLayersMinimized,
@@ -272,11 +264,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
-    useCornerDocking({
-      minimalPanels: minimalPanels === true,
-      zenMode: zenMode === true,
-      toolbarLayout: toolbarLayout === true,
-    });
+    useCornerDocking({ zenMode: zenMode === true });
   // Alignment guides while a palette tile is being dragged in (docs/specs/021-event-storming/event-storming.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
@@ -313,8 +301,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
-  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: honoured on a phone too, where it
-  // replaces the dock's Palette + Explorer buttons.
+  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: always, on a phone.
   const toolbarActive = toolbarLayout === true;
   // A whiteboard trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
@@ -333,7 +320,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const menuInStrip = isMobile && !readOnly && !whiteboard;
   const explorerMenuButton = (
     <ToolbarExplorerButton
-      open={activeMobilePanel === 'explorer'}
+      open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
       inline={menuInStrip}
     />
@@ -434,7 +421,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   ) : null;
 
   return (
-    <PhoneDockProvider value={!toolbarActive}>
+    <>
       {/* The empty-canvas hint is now a dismissible bottom banner
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
           theme banners rather than a centre-of-canvas card. */}
@@ -541,31 +528,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      <CanvasMobileDock
-        welcomeOpen={chromeHidden}
-        minimalPanels={minimalPanels}
-        toolbarLayout={toolbarActive}
-        readOnly={readOnly}
-        hasAi={!!aiPanel}
-        hasPoll={!!props.pollPanel}
-        hasVote={!!props.tabVote}
-        hasAvatar={props.canvasTool === 'avatar'}
-        hasLaser={props.canvasTool === 'laser'}
-        hasSpotlight={props.canvasTool === 'spotlight'}
-        hasEraser={props.canvasTool === 'eraser' && !whiteboard}
-        hasFormat={props.canvasTool === 'format' && !whiteboard}
-        hasHighlighter={props.canvasTool === 'highlighter' && !whiteboard}
-        hasSlideDeck={props.canvasTool === 'slide-deck'}
-        activeMobilePanel={activeMobilePanel}
-        dockButtonRefs={dockButtonRefs}
-        onDockButtonClick={handleDockButtonClick}
-      />
-
       {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they
           are distributed into per-corner stack containers (with a free
-          layer + snap guides) by `dockedLayer`; otherwise — mobile,
-          minimal dock, or zen — they render inline where they always
-          did. Each element carries its own visibility gate, so the
+          layer + snap guides) by `dockedLayer`; in zen they render inline. Each element carries its own visibility gate, so the
           welcome-flow / read-only / zen suppression is unchanged.
           Explorer stays visible during the welcome flow; only zen hides
           it. */}
@@ -580,11 +545,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.palette}
           {panelEls.minimap}
           {panelEls.layers}
-          {/* The session panels were missing from this list, so on mobile (and
-              any other non-docking layout) they were never rendered at all —
-              a live poll or vote simply had no panel. The docked branch above
-              iterates PANEL_IDS and so picked them up for free, which is why
-              it only ever showed on the layouts that take this path. */}
           {panelEls.poll}
           {panelEls.vote}
           {panelEls.avatar}
@@ -633,7 +593,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             (!panelsOn.activity || clusterPopovers || activityMinimized) ? (
               <ActivityClusterStrip
                 showActivity={panelsOn.activity}
-                popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
+                popoverOpen={clusterPopovers && activeDockPanel === 'activity'}
                 onExpand={onToggleActivityMinimized}
                 onTogglePopover={
                   !clusterPopovers
@@ -649,7 +609,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
             {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
-                popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
+                popoverOpen={clusterPopovers && activeDockPanel === 'layers'}
                 onExpand={onToggleLayersMinimized}
                 onTogglePopover={
                   !clusterPopovers
@@ -666,7 +626,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton
                 openCount={kindCounts('open', commentRows, actionRows).all}
-                popoverOpen={activeMobilePanel === 'collaborate'}
+                popoverOpen={activeDockPanel === 'collaborate'}
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
@@ -719,6 +679,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           </>
         )}
       </div>
-    </PhoneDockProvider>
+    </>
   );
 }

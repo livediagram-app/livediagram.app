@@ -1,44 +1,31 @@
 // Small pure helpers for the canvas chrome, lifted out of Canvas.tsx so
-// they're unit-testable: the mobile dock-popover anchor math and the
+// they're unit-testable: the button-popover anchor math and the
 // cursor-class decision. Both are referentially transparent — geometry
 // / flags in, value out — with no React or DOM dependency.
 
-// Where a dock popover should open, in canvas-relative px. The dock lives
-// at the top-right, so every popover RIGHT-ALIGNS to the dock's right edge
-// (8px inside the canvas) and opens in the same right-tucked spot
-// regardless of which button was tapped. (Centring under each button left
-// the leftmost Explorer popover drifting toward the centre while the
-// rightmost panels sat flush right — they no longer disagree.) `arrowOffset`
-// keeps the pointer triangle aimed at the tapped button, clamped to stay on
-// the popover.
+// Where a popover opened from a button hangs, canvas-relative. It hangs from
+// the button's own left edge, kept on the canvas (8px in from either side),
+// and `arrowOffset` keeps the pointer triangle aimed at the button, clamped
+// to stay on the popover.
 //
-// `from: 'button'` is for a lone button that is NOT the dock: the Toolbar
-// layout's menu button in the top-left corner (docs/specs/007-editor/toolbar-layout.md). Right-tucking its
-// popover would open the Explorer on the far side of the canvas from the
-// button that asked for it, so it hangs from the button's own left edge
-// instead, still kept on the canvas.
+// `from: 'button'` opens DOWN from the button: the Toolbar layout's menu
+// button in the top-left corner (docs/specs/007-editor/toolbar-layout.md).
 //
-// `from: 'above'` is for a button in the bottom-right cluster (Layers, Activity
-// in every layout but Floating): the popover opens UP from it, hanging from
-// the button's left edge like 'button' does, and `bottom` (the distance from the
-// canvas's bottom edge to the button's top) tells the panel to hang there.
-// Where a dock-controlled popover hangs, canvas-relative. `bottom` set =
-// it opens UP from the button (see 'above' below); unset = down from `top`.
+// `from: 'above'` opens UP from a button in the bottom-right cluster (Layers,
+// Activity, Collaborate), and `bottom` (the distance from the canvas's bottom
+// edge to the button's top) tells the panel to hang there.
 export type DockAnchor = { left: number; top: number; arrowOffset: number; bottom?: number };
 
 export function computeDockAnchor(
   btnRect: { left: number; top?: number; bottom: number; width: number },
   canvasRect: { left: number; top: number; width: number; height?: number },
   popoverWidth: number,
-  from: 'dock' | 'button' | 'above' = 'dock',
+  from: 'button' | 'above',
 ): DockAnchor {
   const centerX = btnRect.left + btnRect.width / 2 - canvasRect.left;
   const bottomY = btnRect.bottom - canvasRect.top;
   const rightTucked = canvasRect.width - popoverWidth - 8;
-  const left = Math.max(
-    8,
-    from === 'dock' ? rightTucked : Math.min(btnRect.left - canvasRect.left, rightTucked),
-  );
+  const left = Math.max(8, Math.min(btnRect.left - canvasRect.left, rightTucked));
   const arrowOffset = Math.max(14, Math.min(popoverWidth - 14, centerX - left));
   if (from === 'above') {
     const bottom = (canvasRect.height ?? 0) - ((btnRect.top ?? btnRect.bottom) - canvasRect.top);

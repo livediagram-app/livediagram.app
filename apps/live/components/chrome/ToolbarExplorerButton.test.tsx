@@ -31,7 +31,7 @@ describe('ToolbarExplorerButton', () => {
     // Otherwise pressing it while the Explorer is open would close the panel
     // on pointer-down and reopen it on click.
     render(<ToolbarExplorerButton open onToggle={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'Explorer' }).closest('[data-mobile-dock]')).not.toBe(
+    expect(screen.getByRole('button', { name: 'Explorer' }).closest('[data-dock-button]')).not.toBe(
       null,
     );
   });

@@ -144,33 +144,24 @@ type UserPreferences = {
   // space, so it can hide them. Undefined / true === shown.
   aiSuggestedPrompts?: boolean;
 
-  // When true, the floating Explorer / Palette / AI panels
-  // are replaced by a compact dock of buttons that open each panel
-  // as a popover on click — the "minimal panel layout". Defaults to
-  // false (floating panels) on desktop. The dock layout is ALWAYS
-  // active on mobile regardless of this flag, because the floating
-  // panels don't fit a phone viewport; the preference only changes
-  // desktop behaviour. See docs/specs/008-canvas/canvas-and-palette.md. Legacy since docs/specs/007-editor/toolbar-layout.md: still written
-  // (as `panelLayout !== 'floating'`) so older readers keep working, but
-  // `panelLayout` is the source of truth when set.
-  minimalPanels?: boolean;
-
-  // The desktop panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the default),
-  // 'minimal' (the dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as one strip
-  // across the top of the canvas, no Explorer panel). Missing → derived
-  // from `minimalPanels`. Mobile is always docked whatever this says.
-  panelLayout?: 'floating' | 'minimal' | 'toolbar';
+  // The panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the desktop
+  // default, corner panels, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the
+  // Palette as one strip across the top of the canvas, no Explorer panel).
+  // Missing → Floating on desktop. A phone always uses Toolbar whatever
+  // this says. A stored value outside the union (a legacy 'minimal')
+  // resolves like a missing one, and the retired `minimalPanels` flag
+  // some stored blobs still carry is ignored.
+  panelLayout?: 'floating' | 'toolbar';
 
   // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
   // them; they snap back to fully opaque while hovered or focused so they
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its floating and its
-  // popover branch (so the Minimal layout's and a phone's panels, and the
-  // Layers / Activity / Collaborate popovers, follow it too), the Map, the
-  // Quick style panel in every layout and the Toolbar layout's strip.
-  // Buttons are not panels: the minimal dock's button bar, the bottom-right
-  // cluster buttons and the zoom controls stay opaque.
+  // popover branch (so the Explorer, Layers, Activity and Collaborate
+  // popovers follow it too), the Map, the Quick style panel in every
+  // layout and the Toolbar layout's strip. Buttons are not panels: the
+  // bottom-right cluster buttons and the zoom controls stay opaque.
   // Defaults to 1 (fully opaque).
   panelOpacity?: number;
 
@@ -331,14 +322,10 @@ Missing key === undefined === default behaviour. Concretely:
 - `aiAssistanceEnabled` undefined → AI panel hidden (the default).
   Setting it to `true` shows the panel; the toggle only appears in
   Settings when the api worker advertises AI capability.
-- `minimalPanels` undefined → floating panels on desktop (the
-  default). Setting it to `true` switches desktop to the dock /
-  popover layout. Mobile ignores the flag — it is always docked. In
-  this layout the Collaborate panel (the cheat sheet of threads +
-  actions) joins the dock as its own **Collaborate** button — shown
-  only while the active tab has at least one comment thread or action,
-  the same gate as the floating panel ([Assigned actions](../012-collaboration/assigned-actions.md) §5) — and opens as a
-  popover like the other panels.
+- `panelLayout` undefined (or a legacy `'minimal'`) → Floating on desktop
+  (the default), Toolbar on a phone. `'toolbar'` switches desktop to the
+  [Toolbar layout](toolbar-layout.md); a phone is always Toolbar. Emits `UI`/`Changed`/
+  `PanelLayoutFloating` or `PanelLayoutToolbar`.
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
 - `alignmentGuides` undefined → guides on (the default). Setting it
@@ -348,8 +335,8 @@ Missing key === undefined === default behaviour. Concretely:
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, in every layout: floating,
-  popover (Minimal, a phone, the cluster popovers), the Map, Quick style
-  and the Toolbar strip. Button bars and buttons stay opaque. Emits
+  popover (the Explorer and cluster popovers), the Map, Quick style
+  and the Toolbar strip. Buttons stay opaque. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - `uiScale` undefined / 1 → the chrome at its design size (the default).
   Any other value in 0.8..1.2 draws the panels, the toolbar and the
@@ -617,7 +604,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
   (`settings-choice-illustrations.tsx`): **Panel Layout** (Floating /
-  Minimal / Toolbar, [Toolbar layout](toolbar-layout.md)) and **Theme** (Light / Dark / System, the
+  Toolbar, [Toolbar layout](toolbar-layout.md)) and **Theme** (Light / Dark / System, the
   last drawn half light and half dark). Theme's pictures are drawn in their
   own fixed colours and are never dimmed, since their colour is the point: a
   dimmed light editor reads grey on a dark dialog. A test holds every
@@ -635,8 +622,7 @@ and the dialog stays as the one complete, browsable index of them.
   On a phone-sized viewport it stays visible but can't be picked, and a note
   under the row says why. Panel Layout's Floating is desktop only: a phone
   shows Toolbar instead ([Toolbar layout](toolbar-layout.md)), which is therefore the phone default,
-  and the row rings Toolbar there (`read(prefs, { mobile })`). Minimal and
-  Toolbar both work on a phone.
+  and the row rings Toolbar there (`read(prefs, { mobile })`).
 
   A whole row can be desktop only too (`desktopOnly` on the row, holding the
   note to show). On a phone-sized viewport the row stays visible, greyed,

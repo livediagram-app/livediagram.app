@@ -13,7 +13,7 @@ delete, undo, label edit via Space) that already work on a selection.
   `aria-label` ("Canvas") and a keyboard focus ring
   (`focus-visible` only, so pointer users see nothing new). It keeps its
   main-landmark role rather than `role="application"`: the floating
-  panels (Palette, Explorer, Map, mobile dock) render inside it, and an
+  panels (Palette or Toolbar strip, Explorer, Map) render inside it, and an
   application role would strip them of normal screen-reader navigation.
 - **While focus is on / inside the canvas, Tab selects the next element and
   Shift+Tab the previous**, in render (z) order. The selection scrolls into

@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { elementActions, elementDisplayLabel, type BoxedElement } from '@livediagram/document';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type {
+  MovablePanelPlacementProps,
+  MovablePanelPopoverProps,
+} from '@/components/primitives/MovablePanel.types';
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
 import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
@@ -72,8 +75,6 @@ type CollaboratePanelProps = {
   // caller doesn't mount the panel at all when both lists are empty.
   commentRows: CommentRow[];
   actionRows: ActionRow[];
-  // As a popover: a press outside it (the canvas) puts it away.
-  dismissOnOutside?: boolean;
   // Row clicks: the editor selects the element + opens the matching
   // popover (comment thread / action).
   onCommentRowClick: (elementId: string) => void;
@@ -81,9 +82,8 @@ type CollaboratePanelProps = {
   // Complete (done = true) or reopen an action from its row's check. Absent
   // for a read-only visitor, whose check is a static status disc.
   onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
-} & MovablePanelPlacementProps & { onReset: () => void };
+} & MovablePanelPlacementProps &
+  MovablePanelPopoverProps & { onReset: () => void };
 
 export function CollaboratePanel({
   position,
@@ -94,11 +94,11 @@ export function CollaboratePanel({
   onCommentRowClick,
   onActionRowClick,
   onToggleActionDone,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
+  popoverOpen,
+  popoverAnchor,
+  asPopover,
   dismissOnOutside,
-  onMobileClose,
+  onPopoverClose,
 }: CollaboratePanelProps) {
   const [kind, setKind] = useState<CollaborateKind>('all');
   const openAll = kindCounts('open', commentRows, actionRows).all;
@@ -126,11 +126,11 @@ export function CollaboratePanel({
       width="w-[calc(100vw-2rem)] sm:w-72"
       onReset={onReset}
       onMoveTo={onMoveTo}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
+      popoverOpen={popoverOpen}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
-      onMobileClose={onMobileClose}
+      onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2.5 px-3 pb-3">
         <SideTabs

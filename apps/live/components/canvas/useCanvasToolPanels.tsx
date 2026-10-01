@@ -27,7 +27,6 @@ export function useCanvasToolPanels({
   chromeHidden,
   stackBelowY,
   panelWiringFor,
-  closeMobilePanel,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
@@ -35,7 +34,6 @@ export function useCanvasToolPanels({
   // offset that keeps these panels clear of the palette above them.
   stackBelowY: number | undefined;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
-  closeMobilePanel: () => void;
 }): {
   avatarEl: ReactNode;
   laserEl: ReactNode;
@@ -46,10 +44,7 @@ export function useCanvasToolPanels({
   slideDeckEl: ReactNode;
 } {
   const {
-    activeDockAnchor,
-    activeMobilePanel,
     canvasTool,
-    minimalPanels,
     selfParticipant,
     avatarConfig,
     onChangeAvatarField,
@@ -126,8 +121,7 @@ export function useCanvasToolPanels({
 
   // Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet, mounted only while Avatar
   // mode is active — so it joins and leaves its corner stack the way the
-  // session-tool panels do. Available to view-role too (the mode is), and on
-  // mobile / minimal it opens from its dock button like every other panel.
+  // session-tool panels do. Available to view-role too (the mode is).
   const avatarEl =
     !chromeHidden && canvasTool === 'avatar' && avatarConfig ? (
       <AvatarPanel
@@ -142,16 +136,12 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveAvatarPanel?.(x, y)}
         onReset={avatarWiring.onReset}
         dock={avatarWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'avatar'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
   // tool is active — the avatar panel's twin in every respect, including the
-  // view-role availability (the laser is theirs too) and the dock button.
+  // view-role availability (the laser is theirs too).
   const laserEl =
     !chromeHidden && canvasTool === 'laser' && laserConfig ? (
       <LaserPanel
@@ -163,10 +153,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveLaserPanel?.(x, y)}
         onReset={laserWiring.onReset}
         dock={laserWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'laser'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -184,10 +170,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveSpotlightPanel?.(x, y)}
         onReset={spotlightWiring.onReset}
         dock={spotlightWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'spotlight'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -203,10 +185,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveEraserPanel?.(x, y)}
         onReset={eraserWiring.onReset}
         dock={eraserWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'eraser'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -224,10 +202,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveFormatPanel?.(x, y)}
         onReset={formatWiring.onReset}
         dock={formatWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'format'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -247,10 +221,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveHighlighterPanel?.(x, y)}
         onReset={highlighterWiring.onReset}
         dock={highlighterWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'highlighter'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -270,10 +240,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
         onReset={slideDeckWiring.onReset}
         dock={slideDeckWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'slide-deck'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 

@@ -111,7 +111,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { minimalPanels: true, telemetryEnabled: false };
+    const before: UserPreferences = { panelLayout: 'toolbar', telemetryEnabled: false };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {

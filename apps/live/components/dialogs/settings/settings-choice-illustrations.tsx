@@ -20,24 +20,12 @@ type ChoiceDrawing = {
   fullColour?: boolean;
 };
 
-// --- Panel layout (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/007-editor/toolbar-layout.md) --------------------------------------
+// --- Panel layout (docs/specs/007-editor/toolbar-layout.md) --------------------------------------
 
 const FloatingArt = (
   <Window>
     <rect x="5" y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
     <rect x={W - 31} y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
-  </Window>
-);
-
-// The dock: one short row of buttons in the top-right corner.
-const MinimalArt = (
-  <Window>
-    <rect x={W - 39} y="14" width="34" height="11" rx="2.5" className={PANEL} strokeWidth="1" />
-    <path
-      d={`M${W - 28} 14v11M${W - 17} 14v11`}
-      className="stroke-brand-500/60"
-      strokeWidth="0.8"
-    />
   </Window>
 );
 
@@ -115,11 +103,10 @@ export const CHOICE_ILLUSTRATIONS: Record<ChoiceIllustrationId, ChoiceDrawing> =
   panelLayout: {
     states: [
       { id: 'floating', caption: 'Floating', art: FloatingArt },
-      { id: 'minimal', caption: 'Minimal', art: MinimalArt },
       { id: 'toolbar', caption: 'Toolbar', art: ToolbarArt },
     ],
     label:
-      'The three panel layouts: Floating, with the Explorer and Palette panels over the canvas; Minimal, with both collapsed into a short button bar in the top-right corner; and Toolbar, with the Palette as a strip across the top and a menu button in the top-left.',
+      'The two panel layouts: Floating, with the Explorer and Palette panels over the canvas, and Toolbar, with the Palette as a strip across the top and a menu button in the top-left.',
   },
   appearance: {
     states: [

@@ -29,7 +29,7 @@ export function useMovablePanelDrag({
   collapsible,
   collapsed,
   setCollapsed,
-  mobileOpenOverride,
+  popoverOpen,
   scale,
   getDockBounds,
   onDockDragStart,
@@ -39,7 +39,7 @@ export function useMovablePanelDrag({
   MovablePanelProps,
   | 'position'
   | 'onMoveTo'
-  | 'mobileOpenOverride'
+  | 'popoverOpen'
   | 'getDockBounds'
   | 'onDockDragStart'
   | 'onDockDrag'
@@ -158,7 +158,7 @@ export function useMovablePanelDrag({
     // Tap-to-collapse on mobile, except while the parent has locked
     // the panel open or the dock is controlling this panel (dock
     // button is the collapse affordance in that case).
-    if (collapsible && e.pointerType === 'touch' && mobileOpenOverride === undefined) {
+    if (collapsible && e.pointerType === 'touch' && popoverOpen === undefined) {
       e.stopPropagation();
       setCollapsed(true);
       return;

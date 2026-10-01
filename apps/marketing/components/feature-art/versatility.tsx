@@ -562,45 +562,47 @@ export function RotateArt() {
   );
 }
 
-// Minimal panel layout: the editor chrome crossfades between the standard
-// floating panels and the compact dock + popover layout, with the toggle —
-// pick how you want to work (always on for mobile) (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/007-editor/user-preferences.md).
-export function MinimalPanelArt() {
+// Panel layouts: the editor chrome crossfades between the Floating panels
+// and the Toolbar layout (the palette as one strip across the top, the
+// Explorer behind a menu button), with the toggle (docs/specs/007-editor/toolbar-layout.md,
+// docs/specs/007-editor/user-preferences.md).
+export function PanelLayoutArt() {
   return (
     <Frame canvas>
-      {/* standard — floating panels docked on the sides */}
+      {/* floating: panels docked on the sides */}
       <div className="fa-on absolute inset-0">
         <div className="absolute bottom-7 left-2 top-2 flex w-7 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {[0, 1, 2, 3].map((i) => (
             <span key={i} className="h-3 w-3 rounded bg-slate-200 dark:bg-slate-700" />
           ))}
         </div>
-        <div className="absolute bottom-7 right-2 top-2 w-12 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="absolute bottom-7 right-2 top-8 w-12 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="h-1.5 w-full rounded bg-slate-300 dark:bg-slate-600" />
           <div className="h-1.5 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
           <div className="h-1.5 w-full rounded bg-slate-200 dark:bg-slate-700" />
         </div>
         <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-          standard panels
+          floating panels
         </span>
       </div>
-      {/* minimal — compact dock + popover */}
+      {/* toolbar: menu button top-left, the palette as one strip */}
       <div className="fa-off absolute inset-0">
-        <div className="absolute bottom-7 left-1/2 w-[46%] -translate-x-1/2 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
-          <div className="h-1.5 w-3/4 rounded bg-slate-300 dark:bg-slate-600" />
-          <div className="h-1.5 w-full rounded bg-slate-200 dark:bg-slate-700" />
-        </div>
-        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className="h-2.5 w-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
+        <div className="absolute left-2 top-2 flex h-5 w-5 flex-col items-center justify-center gap-0.5 rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="h-px w-2.5 rounded bg-slate-400 dark:bg-slate-500" />
           ))}
         </div>
-        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
-          compact dock
+        <div className="absolute left-1/2 top-2 flex h-5 -translate-x-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <span key={i} className="h-2.5 w-2.5 rounded bg-slate-200 dark:bg-slate-700" />
+          ))}
+        </div>
+        <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
+          toolbar
         </span>
       </div>
       {/* toggle (synced with the crossfade above) */}
-      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-600">
+      <span className="absolute bottom-2 right-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-600">
         <span className="fa-off absolute inset-0 rounded-full bg-brand-500" />
         <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
       </span>

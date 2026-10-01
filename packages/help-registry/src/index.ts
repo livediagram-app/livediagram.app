@@ -189,7 +189,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 26,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -316,7 +316,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
+      'settings preferences options config configure gear cog toggles panel layout floating toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -383,7 +383,7 @@ export const articles: Article[] = [
     title: 'The Welcome Tour',
     description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
     keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar minimal floating',
+      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar floating',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -1157,20 +1157,11 @@ export const articles: Article[] = [
     group: 'Palette Settings',
   },
   {
-    slug: 'minimal-panels',
-    title: 'Minimal Panels',
-    description: 'Swap floating panels for a compact button bar.',
-    keywords: 'compact dock hide chrome small collapse reduce clutter',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Palette Settings',
-  },
-  {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
     description: 'The palette as one strip across the top of the canvas.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles recent recently used order reorder',
+      'toolbar strip top bar excalidraw panel layout floating compact menu button explorer more tiles recent recently used order reorder',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',

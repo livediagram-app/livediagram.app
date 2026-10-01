@@ -459,9 +459,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('toolbar', {
         label: 'Toolbar Scale',
-        keywords: 'toolbar strip top bar button bar minimal size bigger smaller zoom',
-        description:
-          'The Toolbar layout’s strip and its menu button, and the Minimal layout’s button bar.',
+        keywords: 'toolbar strip top bar menu button size bigger smaller zoom',
+        description: 'The Toolbar layout’s strip and its menu button.',
         changed: 'UiScaleToolbar',
       }),
       uiScalePartRow('cornerButtons', {
@@ -505,21 +504,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Panels',
     rows: [
       {
-        // Three layouts, one choice (docs/specs/007-editor/toolbar-layout.md). Replaced the Minimal Panel
-        // Layout toggle when the Toolbar layout arrived; the key is new so
-        // the telemetry token is too, and the old On/Off tokens simply stop.
+        // Two layouts, one choice (docs/specs/007-editor/toolbar-layout.md).
         kind: 'choice',
         key: 'panelLayout',
-        keywords:
-          'minimal compact dock button bar hide panels layout tidy toolbar strip top bar excalidraw floating',
+        keywords: 'compact hide panels layout tidy toolbar strip top bar excalidraw floating',
         label: 'Panel Layout',
         description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
+          'Floating shows the Explorer, Palette and other panels over the canvas. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
         helpArticle: 'toolbarLayout',
         illustration: 'panelLayout',
         options: [
           { id: 'floating', label: 'Floating', desktopOnly: true },
-          { id: 'minimal', label: 'Minimal' },
           { id: 'toolbar', label: 'Toolbar' },
         ],
         read: (p, view) => resolvePanelLayout(p, view),

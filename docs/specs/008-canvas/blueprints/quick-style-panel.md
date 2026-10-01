@@ -35,20 +35,20 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term             | Identifier                                                                                  | Meaning                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Quick swatch     | `QuickSwatch = { slot, color, name }`                                                       | One colour option                                                                                      |
-| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill' \| 'text'`                                            | Which row (Stroke / Background / Text colour) it belongs to                                            |
-| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                                               | The stable id of a colour across themes                                                                |
-| Swatch binding   | `strokeSwatch`, `fillSwatch`, `textSwatch` on the element                                   | The slot a colour was picked from; absent = unbound                                                    |
-| Section          | `QuickSectionId`                                                                            | `stroke`, `background`, `textColour`, `width`, `style`, `textAlign`, `iconAlign`                       |
-| Style target     | `isQuickStyleTarget(el)`                                                                    | An unlocked `shape`, `arrow` or `text`                                                                 |
-| Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                           | `shape:<ShapeKind>` for shapes, `arrow` for arrows, `text` for text elements (D53)                     |
-| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                              | Per kind, the last value chosen for each memorable field                                               |
-| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                                | The fields memory records and applies (below)                                                          |
-| Placement        | `placeQuickStylePanel(input) => { left, top }`                                              | Where the panel sits, in viewport px                                                                   |
-| Swatch override  | `SwatchOverrides = { stroke?, fill?, text? }`, each `Partial<Record<QuickSwatchSlot, Hex>>` | A custom colour replacing a slot's theme colour in the row                                             |
-| Row density      | `density: 'compact' \| 'roomy'`                                                             | Compact (Toolbar, Minimal): 20 px swatches in 24 px targets, touching; roomy (Floating): 24 px, spread |
+| Term             | Identifier                                                                                  | Meaning                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Quick swatch     | `QuickSwatch = { slot, color, name }`                                                       | One colour option                                                                             |
+| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill' \| 'text'`                                            | Which row (Stroke / Background / Text colour) it belongs to                                   |
+| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                                               | The stable id of a colour across themes                                                       |
+| Swatch binding   | `strokeSwatch`, `fillSwatch`, `textSwatch` on the element                                   | The slot a colour was picked from; absent = unbound                                           |
+| Section          | `QuickSectionId`                                                                            | `stroke`, `background`, `textColour`, `width`, `style`, `textAlign`, `iconAlign`              |
+| Style target     | `isQuickStyleTarget(el)`                                                                    | An unlocked `shape`, `arrow` or `text`                                                        |
+| Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                           | `shape:<ShapeKind>` for shapes, `arrow` for arrows, `text` for text elements (D53)            |
+| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                              | Per kind, the last value chosen for each memorable field                                      |
+| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                                | The fields memory records and applies (below)                                                 |
+| Placement        | `placeQuickStylePanel(input) => { left, top }`                                              | Where the panel sits, in viewport px                                                          |
+| Swatch override  | `SwatchOverrides = { stroke?, fill?, text? }`, each `Partial<Record<QuickSwatchSlot, Hex>>` | A custom colour replacing a slot's theme colour in the row                                    |
+| Row density      | `density: 'compact' \| 'roomy'`                                                             | Compact (Toolbar): 20 px swatches in 24 px targets, touching; roomy (Floating): 24 px, spread |
 
 Banned synonyms: "format panel" (that is the painter's panel), "editor panel" (the removed one),
 "preset" for a swatch, "default style" for memory.
@@ -297,7 +297,7 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   on screen.
 - Under Minimal chrome (`useMinimalChrome()`): the docked header is not rendered (its title and help
   link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
-- Toolbar / Minimal (compact): the same surface with no header; rows at `density="compact"`.
+- Toolbar (compact): the same surface with no header; rows at `density="compact"`.
 - The width never follows the content, and a swatch row never wraps or clips: `panelFrame(docked,
 paletteWidth, penRows)` derives it in px from the named measures in `quick-style-metrics.ts`
   (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8,

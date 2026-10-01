@@ -72,7 +72,7 @@ function Svg({ children }: { children: ReactNode }) {
 }
 
 // Editor: the panel layout itself: a frame with a docked side panel, which
-// is what the group's settings (minimal panels, minimap) rearrange.
+// is what the group's settings (panel layout, minimap) rearrange.
 const EditorGlyph = (
   <Svg>
     <rect x="2.5" y="3.5" width="15" height="13" rx="2" />

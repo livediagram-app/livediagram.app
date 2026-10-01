@@ -328,7 +328,7 @@ cost no extra requests.
 
 A floating, draggable panel rendered over the canvas via `MovablePanel` (drag to
 reposition; reset returns it to its default spot). It's surfaced from the **Assistant**
-accordion in the Editor side panel, and on mobile through the bottom dock popover. Visible
+accordion in the Editor side panel, and docks in its corner in both panel layouts, a phone's too. Visible
 when `capabilities.aiEnabled && userPreferences.aiAssistanceEnabled`. Hidden in read-only /
 view-role sessions (AI mutates the document; guests can't persist changes they don't own).
 

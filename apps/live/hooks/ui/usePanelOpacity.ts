@@ -4,9 +4,8 @@ import { useEffect } from 'react';
 // user's "Panel opacity" preference (docs/specs/007-editor/user-preferences.md). The full floating editor
 // panels (MovablePanel, tagged `data-panel-translucent`) read it via CSS in
 // globals.css, so dragging the slider makes them translucent live and they
-// snap back to opaque on hover / focus. Only the full panels reference the
-// var; the minimal dock bar never does, so this preference leaves the
-// minimal layout untouched. undefined / >= 1 clears the var so the CSS
+// snap back to opaque on hover / focus. Only the panels reference the var;
+// buttons stay opaque. undefined / >= 1 clears the var so the CSS
 // fallback of 1 (fully opaque) applies.
 export function usePanelOpacity(opacity: number | undefined): void {
   useEffect(() => {

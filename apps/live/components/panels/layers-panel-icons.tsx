@@ -13,8 +13,8 @@ import {
 } from '@livediagram/icons/lucide';
 
 // Glyphs for the Layers panel (docs/specs/006-document/layers.md): the row controls (eye / eye-off,
-// lock, ellipsis, merge up / down), the footer add / delete, and the dock-button LayersStackIcon that
-// the CanvasChrome cluster and the mobile dock share (20px there, 16px in the dock).
+// lock, ellipsis, merge up / down), the footer add / delete, and the LayersStackIcon the
+// CanvasChrome cluster button wears.
 
 export { LayersStackIcon } from '@livediagram/ui';
 export const EyeIcon = lucideGlyph(lucideEye, 13);

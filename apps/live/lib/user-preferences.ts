@@ -85,25 +85,17 @@ export type UserPreferences = {
   // popover can hide them. Missing / undefined / true === shown (the
   // default); an explicit false hides them.
   aiSuggestedPrompts?: boolean;
-  // Minimal panel layout (docs/specs/008-canvas/canvas-and-palette.md). When `true`, the floating panels
-  // (Explorer, Palette, Editor, AI) are replaced by a compact button
-  // row that opens each panel as a popover on click. Always active on
-  // mobile regardless of this setting. Missing / undefined / false ===
-  // standard floating panels on desktop. Legacy since docs/specs/007-editor/toolbar-layout.md: kept in
-  // step with `panelLayout` (true only for 'minimal') so older
-  // readers still see a sensible layout. Read the layout through
-  // `resolvePanelLayout`, never this flag directly.
-  minimalPanels?: boolean;
-  // Desktop panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (default), 'minimal' (the
-  // dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as a top strip, no Explorer
-  // panel). Missing → derived from `minimalPanels`.
+  // Panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the
+  // default) or 'toolbar' (the Palette as a top strip, no Explorer panel).
+  // Read it through `resolvePanelLayout`, which maps a retired or unknown
+  // value to the default.
   panelLayout?: PanelLayout;
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
   // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
   // focused. Applied via the `--lvd-panel-opacity` custom property (see
   // usePanelOpacity) on every `data-panel-translucent` surface. Buttons are
-  // not panels: the minimal dock bar and the cluster buttons stay opaque.
+  // not panels: the cluster buttons stay opaque.
   // Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
   // UI scale (docs/specs/007-editor/ui-scale.md). The factor (0.8..1.2 in 0.05
@@ -274,15 +266,13 @@ export function toggleRecentExcluded(prefs: UserPreferences, documentId: string)
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
 
-// The three desktop panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers
-// them.
-export const PANEL_LAYOUTS = ['floating', 'minimal', 'toolbar'] as const;
+// The panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers them.
+export const PANEL_LAYOUTS = ['floating', 'toolbar'] as const;
 export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
 
-// The layout in force. `panelLayout` wins when it is one we know; otherwise
-// the legacy boolean decides, so nobody's layout moved when the choice
-// arrived. An unknown value (written by a newer client) reads as the default
-// rather than as a crash.
+// The layout in force. `panelLayout` wins when it is one we know; anything
+// else (unset, the retired 'minimal', or a value from a newer client) reads
+// as the default rather than as a crash.
 //
 // Pass `mobile` for the layout a phone actually shows: Floating is desktop
 // only, so there it (and so the unset default) becomes Toolbar (docs/specs/007-editor/toolbar-layout.md).
@@ -294,18 +284,12 @@ export function resolvePanelLayout(
 ): PanelLayout {
   const v = prefs.panelLayout;
   const stored =
-    v && (PANEL_LAYOUTS as readonly string[]).includes(v)
-      ? (v as PanelLayout)
-      : prefs.minimalPanels === true
-        ? 'minimal'
-        : 'floating';
-  return mobile && stored === 'floating' ? 'toolbar' : stored;
+    v && (PANEL_LAYOUTS as readonly string[]).includes(v) ? (v as PanelLayout) : 'floating';
+  return mobile ? 'toolbar' : stored;
 }
 
-// Write a layout, keeping the legacy flag in step: only Minimal docks the
-// panels, so an older reader treats Toolbar as Floating, whose panels it keeps.
 export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): UserPreferences {
-  return { ...prefs, panelLayout: layout, minimalPanels: layout === 'minimal' };
+  return { ...prefs, panelLayout: layout };
 }
 
 // The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by

@@ -28,9 +28,9 @@ describe('presetSummaryLines', () => {
   });
 
   it('marks a setting changed since switching on, as switch-off would', () => {
-    const prefs = withPanelLayout(setPowerUserMode({}, true).prefs, 'minimal');
+    const prefs = withPanelLayout(setPowerUserMode({}, true).prefs, 'floating');
     const layout = presetSummaryLines(prefs, ALL).find((l) => l.rowKey === 'panelLayout')!;
-    expect(layout.value).toBe('Minimal');
+    expect(layout.value).toBe('Floating');
     expect(layout.changed).toBe(true);
   });
 

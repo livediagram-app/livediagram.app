@@ -12,20 +12,22 @@ captioned with what it shows so copywriters can match it to a claim in
 
 ### Desktop (`desktop/`)
 
-| File                | Shows                                                                                                                                                                             |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                             |
-| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder. |
-| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.      |
-| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                    |
-| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                |
-| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                 |
-| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface (Minimal panel layout), AI (AI Assistant), Privacy (anonymous usage events).                                      |
-| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                            |
-| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode, with the compact dock popover open.                                                                                         |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards, and the Tab Activity log panel.                                                                         |
+| File                | Shows                                                                                                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                                  |
+| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder.      |
+| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.           |
+| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                         |
+| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                     |
+| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                      |
+| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, AI (AI Assistant), Privacy (anonymous usage events). Stale: it shows the removed Minimal panel layout toggle; retake. |
+| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                                 |
+| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                               |
+| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards, and the Tab Activity log panel.                                                                              |
 
 ### Mobile (`mobile/`)
+
+Stale: these predate the phone's Toolbar layout (the palette as one strip across the top, the Explorer behind a menu button) and show the old dock chrome, which is gone. Retake them.
 
 | File           | Shows                                                                                            |
 | -------------- | ------------------------------------------------------------------------------------------------ |

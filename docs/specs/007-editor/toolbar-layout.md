@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-A third panel layout, next to **Floating** (the default) and **Minimal**
-([Canvas and palette](../008-canvas/canvas-and-palette.md)). It works on a phone too (see "On a phone"). The Palette becomes a single horizontal strip pinned
+One of the two panel layouts, next to **Floating** (the desktop default,
+[Canvas and palette](../008-canvas/canvas-and-palette.md)). It is the only layout on a phone (see "On a phone"). The Palette becomes a single horizontal strip pinned
 to the top centre of the canvas, the way Excalidraw's tool bar works:
 
 ```
@@ -89,13 +89,11 @@ so a new page load starts on Favourites.
 
 There is no Explorer **panel** floating in a corner. A **menu button** (☰) in
 the top-left corner of the canvas toggles the real Explorer open as a
-popover hanging under it, and closed again. It goes through the dock's
-popover path (`handleDockButtonClick` with the button passed as its own
-anchor, `computeDockAnchor(..., 'button')`), so the popover hangs from the
-button's left edge instead of tucking against the right like the dock's do.
+popover hanging under it, and closed again. The popover hangs from the
+button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers, Activity and Collaborate open as **popovers over their bottom-row
-buttons**, as in Minimal ([Live app](live-app.md)): they are not corner panels here. Every
+buttons** ([Live app](live-app.md)): they are not corner panels here. Every
 other panel (AI, the minimap, Poll, Vote and the tool panels) behaves exactly
 as in **Floating**, docking in its corner. Layers, Activity and Collaborate render outside
 the corner layer in this layout, since a popover positions against the
@@ -108,40 +106,34 @@ are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The
 Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
-Activity popovers in every layout that has them ([Live app](live-app.md)). The Minimal dock's
-top-right popovers on desktop deliberately don't. The strip's dropdown menus are kept
+Activity popovers ([Live app](live-app.md)). The strip's dropdown menus are kept
 on screen sideways as well as vertically, whatever the trigger's position.
 
 ## The setting
 
-`panelLayout?: 'floating' | 'minimal' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
-Settings → Panels as a three-way **Panel Layout** choice. It
-replaces the Minimal Panel Layout toggle. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
+`panelLayout?: 'floating' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
+Settings → Panels as a two-way **Panel Layout** choice. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
 offers the same choice, drawn with the same pictures, so a new user picks a
 layout on their first document.
 
-- Missing → derived from the legacy `minimalPanels` flag, so nobody's layout
-  changes when this ships.
-- Writing it also writes `minimalPanels = layout === 'minimal'`, so any
-  reader of the old flag (and an older client on another device) shows the
-  toolbar layout as Floating, whose panels it keeps.
+- Missing → Floating on desktop, Toolbar on a phone.
+- A stored value the editor no longer knows (a legacy `'minimal'`) resolves
+  exactly like a missing one; so does the retired `minimalPanels` flag, which
+  is not part of the preferences and is ignored.
 - Telemetry: `UI`/`Changed` with the layout picked in the type,
-  `PanelLayoutFloating` / `PanelLayoutMinimal` / `PanelLayoutToolbar` (a
+  `PanelLayoutFloating` / `PanelLayoutToolbar` (a
   choice row, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), whether picked from the radios or the pictures.
 
 ## On a phone
 
-Toolbar works below `sm` too, and a phone in Toolbar gets the desktop
-chrome rather than the mobile dock ([Live app](live-app.md)): no top-right button bar, panels
-in their corners, Layers, Activity and Collaborate as popovers over their
-bottom-row buttons. Only
-Floating is still desktop only. **On a phone Floating resolves to Toolbar**
-(`resolvePanelLayout(prefs, { mobile: true })`), so Toolbar is the phone
-default: a user who never chose, or chose Floating, gets the strip there and
-Floating back on a desktop, since the stored value is untouched. A phone
-that picked Minimal keeps the button bar. The Settings row greys Floating
-out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome picker leaves Floating
-out ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
+**A phone always uses Toolbar** (`resolvePanelLayout(prefs, { mobile: true })`,
+below `sm`). It gets the same chrome as a desktop in Toolbar ([Live app](live-app.md)):
+panels in their corners, Layers, Activity and Collaborate as popovers over
+their bottom-row buttons. Floating is desktop only: a user who never chose, or
+chose Floating, gets the strip on a phone and Floating back on a desktop,
+since the stored value is untouched. The Settings row greys Floating
+out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome card shows no
+layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
 
 - **The menu button moves into the strip**, at its far left, before the
   selection mode. There is no room for a corner button and a strip side by
@@ -161,11 +153,11 @@ out ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes
   where it could not be reached. Without a strip (read-only, zen, the welcome
   flow) the corners keep their inset.
 - Read-only visitors have no strip, so their menu button stays top-left.
-- The minimap stays off, as in every phone layout ([Minimap](../008-canvas/minimap.md)).
+- The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
 ## The setting's pictures
 
-The Panel Layout row draws all three layouts side by side, the current one
+The Panel Layout row draws both layouts side by side, the current one
 ringed, so the difference is visible before switching ([User preferences](user-preferences.md)).
 
 ## Layout details
@@ -246,14 +238,12 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels follow Floating**, not Minimal: they dock in their
-  corners rather than behind a top-right button bar. Layers, Activity and
-  Collaborate are the exception, popovers over their bottom-row buttons as in
-  Minimal.
+- **The other panels follow Floating**: they dock in their corners. Layers,
+  Activity and Collaborate are the exception, popovers over their bottom-row
+  buttons.
 
 ## Help
 
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
 Palette Settings) explains the strip, More, the menu button and how it
-fits a phone, with two figures. The Panel Layout settings row links to it, and it
-links on to Minimal Panels.
+fits a phone, with two figures. The Panel Layout settings row links to it.

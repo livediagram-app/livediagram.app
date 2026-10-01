@@ -2,8 +2,7 @@
 
 // The Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): size, shroud darkness, edge softness, and
 // shape — the Laser Panel's sibling, and mounted on the same terms (present
-// only while the mode is, Palette width, top-right under it, its own dock
-// button in the minimal layout).
+// only while the mode is, Palette width, top-right under it).
 //
 // The one difference is the closing line: the laser's pen travels to everyone
 // in the room, and the spotlight's shroud does not. Saying so in the panel

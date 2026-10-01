@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/live/components/chrome/TabBar.tsx`                                                     | `roleIcon` slot first; "Tabs" label and control labels under the flag            |
 | `apps/live/components/palette/PaletteIconButton.tsx`                                         | Icon-only tile with a Tooltip under the flag                                     |
 | `apps/live/components/primitives/MovablePanelHeader.tsx`                                     | Title visually hidden, `?` removed under the flag                                |
-| `apps/live/components/primitives/MovablePanel.tsx`                                           | Same, for the dock-popover header                                                |
+| `apps/live/components/primitives/MovablePanel.tsx`                                           | Same, for the popover header                                                     |
 | `apps/live/components/panels/ExplorerHeaderMenu.tsx`                                         | Help row under the flag                                                          |
 | `apps/live/components/primitives/HelpArticleLink.tsx`                                        | `openHelpArticle`: the `?` link's telemetry, from a menu row                     |
 | `apps/live/components/panels/Explorer.tsx`                                                   | Sign-in / "saved to this browser" notice gated on the flag                       |
@@ -55,26 +55,26 @@ Scope, by file:
 
 One term, one identifier. The left column is the only spelling used in code, tests, copy and logs.
 
-| Term             | Identifier                                               | Meaning                                                              |
-| ---------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
-| Power user mode  | `powerUserMode` (preference), `isPowerUserMode`          | The preference; on / off                                             |
-| Preset           | `POWER_USER_PRESET`                                      | Per preset setting, the values switching on writes                   |
-| Preset setting   | `PowerUserPresetSetting` (key of the preset)             | One setting, possibly several keys (`panelLayout` + `minimalPanels`) |
-| Baseline         | `powerUserBaseline`, `PowerUserBaselineEntry`            | Per preset setting: `before` and `applied`                           |
-| Switch on / off  | `setPowerUserMode(prefs, on)`                            | Pure; returns the next preferences and what it restored / kept       |
-| Untouched        | `isUntouched(prefs, entry)`                              | Every key in `applied` still equals its current value                |
-| Minimal chrome   | `minimalChrome` (preference), `isMinimalChrome(prefs)`   | The flag in force: mode on and `minimalChrome !== false`             |
-| The one flag     | `useMinimalChrome()`, `MinimalChromeProvider`            | How a surface reads it                                               |
-| Offer            | `PowerUserOffer` (telemetry type), `powerUserOfferShown` | The once-ever toast                                                  |
-| Offer counters   | `OfferCounters` `{ days, lastDay, shortcuts }`           | Device-local usage counts                                            |
-| Editing session  | `recordEditingSession(counters, day)`                    | An editable document opened; counts once per `day`                   |
-| Day              | `localDayKey(date)`                                      | `YYYY-MM-DD` in local time (D3)                                      |
-| Shortcut used    | `recordShortcut(counters)`, `onShortcutUsed`             | A key the editor shortcut handler claimed (D4)                       |
-| Role pill        | `RolePill`                                               | Title-bar pill: Editing / Viewing, owner in its Tooltip              |
-| Role status icon | `RoleStatusIcon`                                         | Minimal chrome's pencil / eye, first in the status bar               |
-| View preview     | `viewPreview`, `setViewPreview`                          | Local read-only preview for someone who may edit                     |
-| Touch device     | `useCoarsePointer()` (`(hover: none)`)                   | Keeps More and the bin                                               |
-| Quick switch     | `oppositeAppearanceSetting(appearance)`                  | The explicit setting opposite the painted appearance                 |
+| Term             | Identifier                                               | Meaning                                                        |
+| ---------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| Power user mode  | `powerUserMode` (preference), `isPowerUserMode`          | The preference; on / off                                       |
+| Preset           | `POWER_USER_PRESET`                                      | Per preset setting, the values switching on writes             |
+| Preset setting   | `PowerUserPresetSetting` (key of the preset)             | One setting, possibly several keys                             |
+| Baseline         | `powerUserBaseline`, `PowerUserBaselineEntry`            | Per preset setting: `before` and `applied`                     |
+| Switch on / off  | `setPowerUserMode(prefs, on)`                            | Pure; returns the next preferences and what it restored / kept |
+| Untouched        | `isUntouched(prefs, entry)`                              | Every key in `applied` still equals its current value          |
+| Minimal chrome   | `minimalChrome` (preference), `isMinimalChrome(prefs)`   | The flag in force: mode on and `minimalChrome !== false`       |
+| The one flag     | `useMinimalChrome()`, `MinimalChromeProvider`            | How a surface reads it                                         |
+| Offer            | `PowerUserOffer` (telemetry type), `powerUserOfferShown` | The once-ever toast                                            |
+| Offer counters   | `OfferCounters` `{ days, lastDay, shortcuts }`           | Device-local usage counts                                      |
+| Editing session  | `recordEditingSession(counters, day)`                    | An editable document opened; counts once per `day`             |
+| Day              | `localDayKey(date)`                                      | `YYYY-MM-DD` in local time (D3)                                |
+| Shortcut used    | `recordShortcut(counters)`, `onShortcutUsed`             | A key the editor shortcut handler claimed (D4)                 |
+| Role pill        | `RolePill`                                               | Title-bar pill: Editing / Viewing, owner in its Tooltip        |
+| Role status icon | `RoleStatusIcon`                                         | Minimal chrome's pencil / eye, first in the status bar         |
+| View preview     | `viewPreview`, `setViewPreview`                          | Local read-only preview for someone who may edit               |
+| Touch device     | `useCoarsePointer()` (`(hover: none)`)                   | Keeps More and the bin                                         |
+| Quick switch     | `oppositeAppearanceSetting(appearance)`                  | The explicit setting opposite the painted appearance           |
 
 Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for the role pill.
 
@@ -84,7 +84,7 @@ Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for t
 
 ```ts
 const POWER_USER_PRESET = {
-  panelLayout: { panelLayout: 'toolbar', minimalPanels: false },
+  panelLayout: { panelLayout: 'toolbar' },
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
@@ -116,7 +116,7 @@ in `prefs`, so JSON round-trips it faithfully: an absent key stays absent.
 in `MinimalChromeProvider value={isMinimalChrome(userPreferences)}`; `useMinimalChrome()` defaults to `false` outside a
 provider, so the Explorer page and `/new` are unaffected.
 
-- Panel help under the flag: `MovablePanelHeader` and the dock-popover header in `MovablePanel` render no
+- Panel help under the flag: `MovablePanelHeader` and the popover header in `MovablePanel` render no
   `HelpArticleLink`. Only a panel that already has a `⋯` menu gets a Help row (`ExplorerHeaderMenu`); no menu is created
   to hold one. The help centre stays in the header's ProductNav (**Editor**) menu.
 - `EmptyCanvasBanner` does not read the flag: it holds actions, so it stays.

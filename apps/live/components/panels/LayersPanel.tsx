@@ -15,7 +15,10 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@/components/panels/layers-panel-icons';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type {
+  MovablePanelPlacementProps,
+  MovablePanelPopoverProps,
+} from '@/components/primitives/MovablePanel.types';
 import { HoverCard } from '@livediagram/ui';
 
 // The Layers panel (docs/specs/006-document/layers.md): one row per layer, TOP layer first (the
@@ -40,11 +43,11 @@ export function LayersPanel({
   onReset,
   dock,
   onMinimize,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
+  popoverOpen,
+  popoverAnchor,
+  asPopover,
   dismissOnOutside,
-  onMobileClose,
+  onPopoverClose,
   onSelectLayer,
   onAddLayer,
   onRemoveLayer,
@@ -70,10 +73,6 @@ export function LayersPanel({
   // The tab default face (docs/specs/004-interface-design/fonts.md), so a preview matches the canvas.
   tabFont?: string;
   onMinimize: () => void;
-  forceDockMode?: boolean;
-  // Close the popover on a press outside it (see MovablePanelPlacementProps).
-  dismissOnOutside?: boolean;
-  onMobileClose?: () => void;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;
@@ -100,7 +99,8 @@ export function LayersPanel({
   // optional, so a document with many layers reads as a compact list.
   showPreview: boolean;
   showCount: boolean;
-} & MovablePanelPlacementProps) {
+} & MovablePanelPlacementProps &
+  MovablePanelPopoverProps) {
   // Inline rename: which layer id is being edited. The draft text lives
   // inside InlineRenameInput, so a re-render of this panel mid-rename
   // cannot reach in and reset what has been typed.
@@ -211,11 +211,11 @@ export function LayersPanel({
       {...dock}
       onMinimize={onMinimize}
       onReset={onReset}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
+      popoverOpen={popoverOpen}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
-      onMobileClose={onMobileClose}
+      onPopoverClose={onPopoverClose}
     >
       <div className="px-2 pb-2">
         <ul ref={listRef} className="flex flex-col gap-0.5">
