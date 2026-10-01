@@ -249,7 +249,10 @@ The landing is [Board scene](board-scene.md)'s, one for every source:
   `circle`, diamonds, frames, text elements, arrows with pinned ends and curve
   points, two-point lines as headless arrows, longer lines and freedraw as
   `freehand` (straight-edged for lines), images, and the scene background as
-  the tab's background colour.
+  the tab's background colour. Colours stay exact, except near-black ink
+  (the landing's ink rule, [Board scene](board-scene.md)), which lands unset
+  so the tab's theme ink shows: Excalidraw's `#1e1e1e` is legible on a dark
+  theme as on a light one.
 
 ## Images
 
@@ -352,3 +355,6 @@ and a network failure surface of its own.
 - Rasterising exotic shapes into Excalidraw `image` elements: the labelled-box
   degrade is honest and keeps the exporter pure/sync; revisit if demand shows.
 - Reproducing the hand-drawn rendering style on our canvas.
+- Dropping an ordinary image (no Excalidraw scene) on the canvas to add it as an
+  image element: refused with the drop toast for now; image drop is a separate,
+  later feature.
