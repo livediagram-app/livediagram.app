@@ -1,11 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SceneItem } from '@/lib/board-scene/scene';
 import { boardScene, inkStroke } from '@/lib/board-scene/test-scenes';
-import { importBoardsAsDocuments, type NewBoardDocument } from './board-scene-import';
+import {
+  BOARD_TOO_BIG,
+  importBoardsAsDocuments,
+  type NewBoardDocument,
+} from './board-scene-import';
+import { ApiError } from '@/lib/api/core';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/offline/offline-store', () => ({ offlineCreateDocument: vi.fn() }));
-vi.mock('@/lib/api-client', () => ({ apiCreateDocument: vi.fn() }));
+vi.mock('@/lib/api-client', async () => ({
+  apiCreateDocument: vi.fn(),
+  ApiError: (await vi.importActual<typeof import('@/lib/api/core')>('@/lib/api/core')).ApiError,
+}));
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import { apiCreateDocument } from '@/lib/api-client';
 
@@ -69,6 +77,34 @@ describe('importBoardsAsDocuments', () => {
       expect.any(Number),
       { createdAt: Date.UTC(2020, 7, 14, 12), savedAt: undefined, folderId: 'f2' },
     );
+  });
+
+  it('names a board the server refuses as too large, logs it, and lands the rest', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const made: NewBoardDocument[] = [];
+    const outcome = await importBoardsAsDocuments(
+      [boardScene([square], { title: 'Huge' }), boardScene([square], { title: 'Small' })],
+      {
+        ownerId: 'o',
+        offline: false,
+        createDocument: async (d) => {
+          if (d.name === 'Huge') throw new ApiError('create document', 413, 'payload_too_large');
+          made.push(d);
+        },
+        ...seams,
+      },
+    );
+    expect(made.map((d) => d.name)).toEqual(['Small']);
+    expect(outcome).toMatchObject({
+      status: 'done',
+      failures: [{ title: 'Huge', message: BOARD_TOO_BIG }],
+    });
+    expect(BOARD_TOO_BIG).toBe('This board is too big for one document');
+    expect(warn).toHaveBeenCalledWith(
+      '[board-scene] board too big',
+      expect.objectContaining({ board: 1, bytes: expect.any(Number) }),
+    );
+    warn.mockRestore();
   });
 
   it('takes a document maker of its own', async () => {

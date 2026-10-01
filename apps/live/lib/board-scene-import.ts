@@ -22,7 +22,7 @@ import {
 } from '@/lib/import-images';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
-import { apiCreateDocument } from '@/lib/api-client';
+import { ApiError, apiCreateDocument } from '@/lib/api-client';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import {
   browserHugText,
@@ -30,6 +30,9 @@ import {
   type CreateImageSession,
   type HugText,
 } from '@/lib/board-scene-browser';
+
+// A board whose document the server refuses as too large (413): its own failure, never "try again".
+export const BOARD_TOO_BIG = 'This board is too big for one document';
 
 /** Image progress, and which board of how many it belongs to when several import at once. */
 export type BoardImportProgress = ImportImageProgress & { board?: number; boards?: number };
@@ -187,6 +190,15 @@ export async function importBoardsAsDocuments(
         ...(dates.savedAt !== undefined ? { savedAt: dates.savedAt } : {}),
       });
     } catch (error) {
+      if (error instanceof ApiError && error.status === 413) {
+        // Over the api's tab cap (MAX_TAB_BYTES): no retry will help, so say what it is.
+        console.warn('[board-scene] board too big', {
+          board: i + 1,
+          bytes: JSON.stringify(tab).length,
+        });
+        failures.push({ title: name, message: BOARD_TOO_BIG });
+        continue;
+      }
       console.warn('[board-scene] import board failed', { board: i + 1, error: String(error) });
       failures.push({ title: name, message: "The document couldn't be created. Try again." });
       continue;
