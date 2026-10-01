@@ -4,6 +4,8 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
+import { MsWhiteboardImportPanel } from './MsWhiteboardImportPanel';
+import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { reportHasLosses } from '@/lib/board-scene/report';
@@ -12,6 +14,13 @@ import { DialogHeader } from './DialogHeader';
 import { Glyph } from '@livediagram/ui';
 
 type Format = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
+// The Microsoft Whiteboard card opens boards as new whiteboard tabs instead of replacing this one.
+const BOARDS_CARD = {
+  title: 'Microsoft Whiteboard',
+  description:
+    'Board exports from Microsoft Whiteboard: a board folder, a folder of boards, or their .zip. Each board becomes a whiteboard tab.',
+} as const;
+type Choice = Format | 'microsoft-whiteboard';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -31,6 +40,8 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
+  // Opens Microsoft Whiteboard boards as new whiteboard tabs (docs/specs/020-import-export/whiteboard-import.md).
+  onImportBoards: ImportScenes;
   onClose: () => void;
 };
 
@@ -99,9 +110,10 @@ export function ImportTabDialog({
   tabName,
   onImportFile,
   onImportText,
+  onImportBoards,
   onClose,
 }: ImportTabDialogProps) {
-  const [active, setActive] = useState<Format | null>(null);
+  const [active, setActive] = useState<Choice | null>(null);
   // Set once an import that met images, or brought a board across with changes, has landed: the
   // dialog then shows how it came across instead of closing.
   const [report, setReport] = useState<DoneOutcome | null>(null);
@@ -116,9 +128,11 @@ export function ImportTabDialog({
             ? report.scene
               ? "Here's how your board came across."
               : "Here's how your images came across."
-            : activeFormat
-              ? `Paste your ${activeFormat.title}, or import a file.`
-              : 'Pick a format to import into the current tab.'
+            : active === 'microsoft-whiteboard'
+              ? 'Each board opens as a new whiteboard tab.'
+              : activeFormat
+                ? `Paste your ${activeFormat.title}, or import a file.`
+                : 'Pick a format to import into the current tab.'
         }
       >
         <HelpArticleLink article="importTabs" size="md" />
@@ -140,6 +154,8 @@ export function ImportTabDialog({
             onPick={setActive}
             onImportFile={onImportFile}
             onImportText={onImportText}
+            boards={active === 'microsoft-whiteboard'}
+            onImportBoards={onImportBoards}
             onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
           />
         )}
@@ -155,15 +171,28 @@ function ImportChooser({
   onPick,
   onImportFile,
   onImportText,
+  boards,
+  onImportBoards,
   onDone,
 }: {
   tabName: string;
   activeFormat: (typeof FORMATS)[number] | null;
-  onPick: (format: Format | null) => void;
+  onPick: (format: Choice | null) => void;
+  boards: boolean;
+  onImportBoards: ImportScenes;
   onImportFile: ImportTabDialogProps['onImportFile'];
   onImportText: ImportTabDialogProps['onImportText'];
   onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
 }) {
+  if (boards) {
+    return (
+      <MsWhiteboardImportPanel
+        importScenes={onImportBoards}
+        onDone={onDone}
+        onBack={() => onPick(null)}
+      />
+    );
+  }
   return (
     <>
       {/* Destructive-action warning — this overwrites the tab. */}
@@ -211,21 +240,30 @@ function ImportChooser({
               <FormatIcon kind={f.key} />
             </FormatCard>
           ))}
+          <FormatCard
+            title={BOARDS_CARD.title}
+            description={BOARDS_CARD.description}
+            onClick={() => onPick('microsoft-whiteboard')}
+          >
+            <FormatIcon kind="microsoft-whiteboard" />
+          </FormatCard>
         </div>
       )}
     </>
   );
 }
 
-function FormatIcon({ kind }: { kind: Format }) {
+function FormatIcon({ kind }: { kind: Choice }) {
   const label =
-    kind === 'mermaid'
-      ? 'mmd'
-      : kind === 'markdown'
-        ? 'md'
-        : kind === 'excalidraw'
-          ? 'excali'
-          : 'json';
+    kind === 'microsoft-whiteboard'
+      ? 'msw'
+      : kind === 'mermaid'
+        ? 'mmd'
+        : kind === 'markdown'
+          ? 'md'
+          : kind === 'excalidraw'
+            ? 'excali'
+            : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

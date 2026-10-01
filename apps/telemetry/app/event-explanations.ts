@@ -498,6 +498,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
   'Tab|Imported|ExcalidrawSvg':
     'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
+  'Tab|Imported|MicrosoftWhiteboard':
+    'Someone imported a Microsoft Whiteboard board as a new whiteboard tab (once per board).',
   'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
