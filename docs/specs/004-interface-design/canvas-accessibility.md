@@ -2,7 +2,7 @@
 
 A first, honest accessibility layer for the canvas: keyboard traversal of
 elements, selection announced to screen readers, and element views that carry
-names. This is a **baseline**, not full SR diagram editing — the goal is that
+names. This is a **baseline**, not full SR canvas editing — the goal is that
 a keyboard-only or screen-reader user can reach the canvas, walk its
 elements, hear what they are, and use the existing keyboard verbs (nudge,
 delete, undo, label edit via Space) that already work on a selection.
@@ -10,10 +10,10 @@ delete, undo, label edit via Space) that already work on a selection.
 ## Keyboard traversal
 
 - The canvas `<main>` joins the tab order (`tabIndex=0`) with an
-  `aria-label` ("Diagram canvas") and a keyboard focus ring
+  `aria-label` ("Canvas") and a keyboard focus ring
   (`focus-visible` only, so pointer users see nothing new). It keeps its
   main-landmark role rather than `role="application"`: the floating
-  panels (Palette, Explorer, Map, mobile dock) render inside it, and an
+  panels (Palette or Toolbar strip, Explorer, Map) render inside it, and an
   application role would strip them of normal screen-reader navigation.
 - **While focus is on / inside the canvas, Tab selects the next element and
   Shift+Tab the previous**, in render (z) order. The selection scrolls into

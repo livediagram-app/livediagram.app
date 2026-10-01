@@ -1,4 +1,4 @@
-import type { ArrowElement, BoxedElement, TextRun } from '@livediagram/diagram';
+import type { ArrowElement, BoxedElement, TextRun } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { applyPaint, paintableArrowFields, paintableBoxedFields } from './format-painter';
 

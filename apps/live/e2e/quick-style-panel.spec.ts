@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, test, openJustDraw } from './fixtures';
+import { expect, expectNoPageErrors, test, openStartBlank } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
@@ -17,19 +17,19 @@ async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<v
       localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout }));
     }, layout);
   }
-  await openJustDraw(page);
+  await openStartBlank(page);
 }
 
-// The saved elements of the diagram's first tab, read through the api.
+// The saved elements of the document's first tab, read through the api.
 async function savedElements(page: Page): Promise<El[]> {
   return page.evaluate(async () => {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
-    const diagram = await (await fetch(`/api/diagrams/${id}`, { headers })).json();
-    const tabId = diagram.diagram?.tabs?.[0]?.id;
+    const liveDoc = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const tabId = liveDoc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
-    const got = await (await fetch(`/api/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+    const got = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
     return (got.tab?.elements ?? []) as El[];
   });
 }
@@ -93,27 +93,22 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Floating: docks right beneath the Palette, the Palette’s width, and follows it', async ({
+  test('Floating: on the left edge in the Palette’s dress, away from a right-hand Palette', async ({
     page,
     pageErrors,
   }) => {
-    // Tall enough that the whole panel fits beneath the Favourites Palette.
     await page.setViewportSize({ width: 1440, height: 1000 });
     await openBoard(page, 'floating');
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    await drawShape(page, 'o', { x: 700, y: 300 });
     await expect(panel(page)).toBeVisible();
     await expect(panel(page).getByText('Quick style', { exact: true })).toBeVisible();
-    const docked = async () => {
+    await expect(async () => {
+      const canvas = (await page.locator(CANVAS).boundingBox())!;
       const p = (await page.locator(PALETTE).boundingBox())!;
       const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x - p.x)).toBeLessThan(1);
+      expect(q.x).toBeLessThan(canvas.x + canvas.width / 2);
       expect(Math.abs(q.width - p.width)).toBeLessThan(1);
-      expect(Math.abs(q.y - (p.y + p.height + 16))).toBeLessThan(1);
-    };
-    await expect(docked).toPass();
-    // Collapse the Palette to its banner: the panel rises with it.
-    await page.locator(PALETTE).getByRole('button', { name: 'Collapse palette' }).click();
-    await expect(docked).toPass();
+    }).toPass();
     expectNoPageErrors(pageErrors);
   });
 
@@ -121,7 +116,7 @@ test.describe('quick style panel', () => {
     await openBoard(page, 'toolbar');
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
-    expect((await panel(page).boundingBox())!.width).toBeCloseTo(184, 0);
+    expect((await panel(page).boundingBox())!.width).toBeCloseTo(186, 0);
     const swatches = panel(page)
       .getByRole('radiogroup', { name: 'Stroke', exact: true })
       .getByRole('radio');
@@ -169,7 +164,7 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Toolbar: sits on the right edge, vertically centred', async ({ page, pageErrors }) => {
+  test('Toolbar: sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
     await openBoard(page, 'toolbar');
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
@@ -177,7 +172,7 @@ test.describe('quick style panel', () => {
     await expect(async () => {
       const canvas = (await page.locator(CANVAS).boundingBox())!;
       const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x + q.width - (canvas.x + canvas.width - 12))).toBeLessThan(1);
+      expect(Math.abs(q.x - (canvas.x + 12))).toBeLessThan(1);
       expect(Math.abs(q.y + q.height / 2 - (canvas.y + canvas.height / 2))).toBeLessThan(1);
     }).toPass();
     expectNoPageErrors(pageErrors);
@@ -250,7 +245,9 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    // Clear of the panel, which sits on the canvas's left (docs/specs/008-canvas/quick-style-panel.md
+    // "Where it sits"), so the right-click below lands on the circle.
+    await drawShape(page, 'o', { x: 800, y: 300 });
     const widths = panel(page).getByRole('radiogroup', { name: 'Stroke width' });
     await widths.getByRole('radio', { name: 'Medium' }).focus();
     await page.keyboard.press('ArrowRight');
@@ -259,7 +256,11 @@ test.describe('quick style panel', () => {
       'aria-checked',
       'true',
     );
-    await page.mouse.click(500, 300, { button: 'right' });
+    // On the circle itself: a click the panel or any other chrome would take opens no element menu.
+    await page
+      .locator(CANVAS)
+      .getByRole('img', { name: 'Circle', exact: true })
+      .click({ button: 'right' });
     await expect(page.getByRole('menu').first()).toBeVisible();
     await expect(panel(page)).toBeHidden();
     expectNoPageErrors(pageErrors);

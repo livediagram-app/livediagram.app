@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livediagram/diagram';
+import { describe, expect, it, vi } from 'vitest';
+import type { Element, FreehandElement, ShapeElement } from '@livediagram/document';
 
 import {
   CLIPBOARD_KIND,
@@ -40,7 +40,7 @@ describe('serialiseElements', () => {
     expect(env.schemaVersion).toBe(CLIPBOARD_SCHEMA_VERSION);
   });
 
-  // A copy can travel to another diagram, another account, another person.
+  // A copy can travel to another document, another account, another person.
   // Nothing that says WHO does anything should ride along.
   it('strips comment threads and per-participant responses', () => {
     const withIdentity = shape('a', {
@@ -159,5 +159,36 @@ describe('parseElementsPayload salvages', () => {
     );
     const back = parseElementsPayload(serialiseElements(elements));
     expect(back).toHaveLength(MAX_CLIPBOARD_ELEMENTS);
+  });
+});
+
+describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
+  it('writes version 2, the first with packed stroke points', () => {
+    expect(CLIPBOARD_SCHEMA_VERSION).toBe(2);
+  });
+
+  it('packs the former { nx, ny } strokes of a version 1 payload from an older editor', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const stroke = {
+      id: 'f1',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      closed: false,
+      points: [
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 1 },
+      ],
+    };
+    const text = JSON.stringify({
+      kind: CLIPBOARD_KIND,
+      schemaVersion: 1,
+      elements: [stroke, null],
+    });
+    const back = parseElementsPayload(text);
+    expect(back).toHaveLength(1);
+    expect(typeof (back![0] as FreehandElement).packedPoints).toBe('string');
   });
 });

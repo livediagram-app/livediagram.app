@@ -21,7 +21,7 @@ import {
   tint,
   type BackgroundPattern,
   type ShapeKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { CustomThemeDefinition } from '@livediagram/api-schema';
 import { Button } from '@livediagram/ui';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';

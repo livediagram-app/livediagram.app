@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram": "workspace:*",
+    "@livediagram/document": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.1",

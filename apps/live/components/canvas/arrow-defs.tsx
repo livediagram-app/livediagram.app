@@ -3,7 +3,7 @@ import {
   ARROWHEAD_SIZE_PX,
   type ArrowheadShape,
   type ArrowheadSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // The arrowhead marker system (docs/specs/008-canvas/canvas-and-palette.md arrow styles), lifted out of
 // ArrowView: the shared <defs> block Canvas mounts once, the per-shape

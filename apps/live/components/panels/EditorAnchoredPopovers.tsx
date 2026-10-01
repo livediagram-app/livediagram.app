@@ -1,25 +1,29 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { apiSetDiagramFolder } from '@/lib/api-client';
-import { isBoxed } from '@livediagram/diagram';
+import { apiSetDocumentFolder } from '@/lib/api-client';
+import { elementActions, isBoxed } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
-const CommentThreadPopover = dynamic(() =>
-  import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
+const CommentThreadPopover = dynamic(
+  () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
+  { ssr: false },
 );
-const NotePopover = dynamic(() =>
-  import('@/components/notes/NotePopover').then((m) => m.NotePopover),
+const NotePopover = dynamic(
+  () => import('@/components/notes/NotePopover').then((m) => m.NotePopover),
+  { ssr: false },
 );
-const ActionPopover = dynamic(() =>
-  import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+const ActionPopover = dynamic(
+  () => import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+  { ssr: false },
 );
-const AssignActionDialog = dynamic(() =>
-  import('@/components/dialogs/AssignActionDialog').then((m) => m.AssignActionDialog),
+const AssignActionDialog = dynamic(
+  () => import('@/components/dialogs/AssignActionDialog').then((m) => m.AssignActionDialog),
+  { ssr: false },
 );
 
 // Popovers anchored to a specific canvas element: the comment thread and
@@ -33,7 +37,7 @@ export function EditorAnchoredPopovers() {
     activeTab,
     addComment,
     isReadOnly,
-    diagramId,
+    documentId,
     selfParticipant,
     sessionShareCode,
     deleteComment,
@@ -46,6 +50,7 @@ export function EditorAnchoredPopovers() {
     actionPopoverOpenId,
     closeActionPopover,
     assignActionFor,
+    assignActionId,
     openAssignActionDialog,
     closeAssignActionDialog,
     saveAction,
@@ -54,9 +59,9 @@ export function EditorAnchoredPopovers() {
     deleteAction,
     teams,
     clerkUserId,
-    setDiagramTeamId,
+    setDocumentTeamId,
     clerkDisplayName,
-    diagramTeamId,
+    documentTeamId,
     emailEnabled,
   } = useEditorContext();
 
@@ -77,7 +82,7 @@ export function EditorAnchoredPopovers() {
               <CommentThreadPopover
                 elementId={target.id}
                 thread={target.commentThread}
-                onAddComment={(text) => {
+                onAddComment={(text, mentions) => {
                   // View-role visitors don't autosave the tab, so
                   // their addComment via the local commit alone
                   // would vanish on refresh. Persist via the
@@ -91,17 +96,19 @@ export function EditorAnchoredPopovers() {
                   addComment(
                     target.id,
                     text,
-                    isReadOnly && diagramId
+                    isReadOnly && documentId
                       ? () =>
                           apiAddComment(
                             selfParticipant.id,
-                            diagramId,
+                            documentId,
                             activeTab.id,
                             target.id,
                             text,
                             sessionShareCode,
+                            mentions,
                           )
                       : undefined,
+                    mentions,
                   );
                 }}
                 onDeleteComment={(cid) => {
@@ -114,11 +121,11 @@ export function EditorAnchoredPopovers() {
                   deleteComment(
                     target.id,
                     cid,
-                    isReadOnly && diagramId
+                    isReadOnly && documentId
                       ? () =>
                           apiDeleteComment(
                             selfParticipant.id,
-                            diagramId,
+                            documentId,
                             activeTab.id,
                             cid,
                             sessionShareCode,
@@ -167,6 +174,7 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === assignActionFor && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
+            const cardTarget = target.type === 'shape' && target.shape === 'action-card';
             // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text —
             // its label, or a table's first non-empty cell. Null when the
             // element is unlabelled (the field just starts empty).
@@ -180,31 +188,45 @@ export function EditorAnchoredPopovers() {
             return (
               <AssignActionDialog
                 open
-                existing={target.action ?? null}
-                elementLabel={targetLabel || null}
+                // On an Action panel the dialog edits the named action, or adds
+                // one (docs/specs/012-collaboration/action-panel.md); elsewhere the element's one action.
+                existing={
+                  cardTarget
+                    ? ((assignActionId
+                        ? elementActions(target).find((a) => a.id === assignActionId)
+                        : undefined) ?? null)
+                    : (target.action ?? null)
+                }
+                // A card's title names the LIST, not each action on it.
+                elementLabel={cardTarget ? null : targetLabel || null}
                 teams={teams}
                 ownerId={clerkUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
-                diagramId={diagramId}
-                diagramTeamId={diagramTeamId}
+                documentId={documentId}
+                documentTeamId={documentTeamId}
                 emailEnabled={emailEnabled}
-                // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram
+                // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document
                 // into the picked team's library root so the picker can offer
                 // that team's members without an Explorer round-trip. The
-                // server enforces the docs/specs/013-workspace/team-shared-diagrams.md placement rules; on success the
+                // server enforces the docs/specs/013-workspace/team-shared-documents.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
-                  if (!clerkUserId || !diagramId) return false;
+                  if (!clerkUserId || !documentId) return false;
                   try {
-                    await apiSetDiagramFolder(clerkUserId, diagramId, null, teamId);
+                    await apiSetDocumentFolder(clerkUserId, documentId, null, teamId);
                   } catch {
                     return false;
                   }
-                  setDiagramTeamId(teamId);
+                  setDocumentTeamId(teamId);
                   return true;
                 }}
-                onSubmit={(input) => saveAction(target.id, input)}
+                onSubmit={(input) => saveAction(target.id, input, assignActionId)}
+                onDelete={
+                  cardTarget && assignActionId && !isReadOnly
+                    ? () => deleteAction(target.id, assignActionId)
+                    : undefined
+                }
                 onClose={closeAssignActionDialog}
               />
             );

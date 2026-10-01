@@ -4,9 +4,10 @@ import {
   anchorPosition,
   isBoxed,
   nearestOfferedAnchor,
+  withMindSubtrees,
   type Anchor,
   type ArrowElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { withFrameContents, type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
@@ -53,11 +54,16 @@ export function useBoxedDragHandlers({
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
-    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-diagram/layers.md):
+    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-document/layers.md):
     // unlike per-element `locked` (selectable to inspect, below), a
     // press on one doesn't even land a selection.
     if (d.layerInertIds.has(elementId)) return;
     d.setSelectedId(elementId);
+    // Only Shift adds to a selection (docs/specs/008-canvas/canvas-and-palette.md "Marquee
+    // box-select"): a press outside the multi-selection selects this element alone.
+    if (d.multiSelectedIds.size > 0 && !d.multiSelectedIds.has(elementId)) {
+      d.setMultiSelectedIds(new Set());
+    }
     // Selection above still lands so viewers can inspect; the drag
     // itself is blocked for a locked element or a read-only session.
     if (element.locked === true || d.isReadOnly) return;
@@ -76,7 +82,13 @@ export function useBoxedDragHandlers({
     // within a frame being moved (pinned arrows between them follow via
     // the rebind pass). Resizing is deliberately excluded — a frame
     // resize re-sizes the section outline and leaves its contents put.
-    const ids = mode === 'move' ? withFrameContents(d.activeTab.elements, baseIds) : baseIds;
+    //
+    // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
+    // the same way: a branch is one idea, and its points follow its heading.
+    const ids =
+      mode === 'move'
+        ? withMindSubtrees(d.activeTab.elements, withFrameContents(d.activeTab.elements, baseIds))
+        : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();
     // Free endpoints of any arrows the frame-section expansion pulled in, so

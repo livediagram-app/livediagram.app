@@ -22,8 +22,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
 // Every printed spelling per lowercase key: two surfaces can print one name
-// in different case (the Explorer page's "New diagram" button, the Explorer
-// panel's "New Diagram" menu row), and an article matching either is right.
+// in different case (the Explorer page's "New document" button, the Explorer
+// panel's "New Document" menu row), and an article matching either is right.
 function uiLabels(): Map<string, Set<string>> {
   const skip = new Set(['node_modules', '.next', '.next-dev', 'out', 'dist', '.turbo']);
   const byLower = new Map<string, Set<string>>();

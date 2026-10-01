@@ -4,55 +4,57 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Connect an AI tool (MCP)',
   description:
-    'Connect livediagram to Claude or any MCP client to find, view, create, and edit your diagrams from inside your AI tool. A signed-in-only feature.',
+    'Connect livediagram to Claude or any MCP client to find, view, create, and edit your documents from inside your AI tool. A signed-in-only feature.',
   path: '/help/account-and-data/connect-ai-mcp/',
 });
 
 <ArticleLayout
   title="Connect an AI tool (MCP)"
-  description="Drive your diagrams from Claude or any MCP client. A signed-in-only feature for advanced users."
+  description="Drive your documents from Claude or any MCP client. A signed-in-only feature for advanced users."
   categoryTitle="Account and Data"
   categorySlug="account-and-data"
 >
 
-livediagram has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your diagrams from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
+livediagram has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your documents from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
 
 ## You need an account
 
-Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](/help/account-and-data/api-tokens/) and [teams](/help/collaboration/teams/). The canvas, sharing, and real-time collaboration stay account-free for guests, but driving your diagrams programmatically is an advanced, opt-in capability that needs an account. On a self-hosted instance that hasn't enabled accounts, the feature isn't available.
+Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](/help/account-and-data/api-tokens/) and [teams](/help/collaboration/teams/). The canvas, sharing, and real-time collaboration stay account-free for guests, but driving your documents programmatically is an advanced, opt-in capability that needs an account. On a self-hosted instance that hasn't enabled accounts, the feature isn't available.
 
 ## Connecting
 
 In your AI tool, add a connector / MCP server pointing at **`https://mcp.livediagram.app/mcp`**. The first time, your tool opens a livediagram page asking you to **approve** the connection (you'll sign in if you aren't already). Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works.
 
-The token it creates is an ordinary API token: it appears in the Explorer's **API Tokens** page and you can **revoke** it there any time to disconnect the tool. Like all tokens, it lasts six months.
+The token it creates is an ordinary API token: it appears in the **API Tokens** category of **Settings** and you can **revoke** it there any time to disconnect the tool. Like all tokens, it lasts six months.
 
 ## What the AI can do
 
 The connection exposes these tools:
 
-- **Find diagrams** — search your diagrams by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
-- **Read a diagram** — get a tab's contents and an inline picture of it.
+- **Find documents** — search your documents by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
+- **Read a document** — get a tab's contents and an inline picture of it.
 - **List templates** — browse the same hand-tuned [template library](/help/canvas/templates/) the editor's Quick Start offers.
-- **Create a diagram** — turn a request into a new diagram, with one tab or several. A tab can start from a template — ask for "a kanban board" and the AI can lay down the curated scaffold, then fill in your content.
-- **Add a tab** — add another tab (its own canvas) to an existing diagram, e.g. a detail view of one part. Tabs can start from a template too.
-- **Update a diagram** — rework a whole tab or make a small adjustment.
-- **Share a diagram** — turn a diagram into a [share link](/help/collaboration/sharing/) to hand to someone.
-- **Rename a diagram** and **Delete a diagram** — tidy your library from the AI tool.
+- **Create a document** — turn a request into a new document, with one tab or several. A tab can start from a template — ask for "a kanban board" and the AI can lay down the curated scaffold, then fill in your content.
+- **Add a tab** — add another tab (its own canvas) to an existing document, e.g. a detail view of one part. Tabs can start from a template too.
+- **Update a document** — rework a whole tab or make a small adjustment.
+- **Share a document** — turn a document into a [share link](/help/collaboration/sharing/) to hand to someone.
+- **Rename a document** and **Delete a document** — tidy your library from the AI tool.
 
-For building the picture, the AI can just describe the **graph** — the nodes and what connects to what — and livediagram lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what. Your AI tool may also surface a few ready-made **prompts** (like "Diagram this" or "Flowchart from steps") as quick actions, so you don't have to know the tool names.
+For building the picture, the AI can just describe the **graph** — the nodes and what connects to what — and livediagram lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what, or hand over the same thing as **Mermaid** text (a flowchart, state diagram, or ER diagram). It can group related boxes into labelled sections and choose a flow, a tree (an org chart), or a mind map. Box labels are kept to short headings: when the AI writes a long sentence, the box shows the heading and the full text goes into the box's note, so a chatty AI doesn't fill your diagram with paragraphs.
 
-The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. New diagrams an AI creates land in a **"Generated"** folder in your Explorer (you can move them afterwards).
+Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, and **bar, line, and pie charts**. Your AI tool may also surface a few ready-made **prompts** (like "Diagram this" or "Flowchart from steps") as quick actions, so you don't have to know the tool names.
+
+The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. New documents an AI creates land in a **"Generated"** folder in your Explorer (you can move them afterwards).
 
 ## What a connection can and can't touch
 
-By default the token behind a connection has full read and write access to your diagrams — including the diagrams in your teams' shared libraries — so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, tick **read-only access** on the approval screen when you connect it: the connection can then find and read your diagrams but can't create, edit, share, rename, or delete anything (the block is enforced by our server, not just the tool). Its token shows a **Read-only** badge on the [API tokens](/help/account-and-data/api-tokens/) page.
+By default the token behind a connection has full read and write access to your documents — including the documents in your teams' shared libraries — so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, tick **read-only access** on the approval screen when you connect it: the connection can then find and read your documents but can't create, edit, share, rename, or delete anything (the block is enforced by our server, not just the tool). Its token shows a **Read-only** badge in the [API Tokens](/help/account-and-data/api-tokens/) category of Settings.
 
-Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than diagrams stay in the app.
+Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay in the app.
 
 <Tip>
-  Connected a tool you no longer use? Open the Explorer’s API tokens page and revoke its token —
-  that instantly cuts off its access.
+  Connected a tool you no longer use? Open the **API Tokens** category in **Settings** and revoke
+  its token — that instantly cuts off its access.
 </Tip>
 
 </ArticleLayout>

@@ -12,7 +12,8 @@ export type ExtractedScene =
 const MIME = 'application/vnd.excalidraw+json';
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
-const NO_SCENE =
+/** The message for a PNG or SVG that carries no Excalidraw scene: an ordinary image. */
+export const NO_SCENE =
   "This image doesn't contain an Excalidraw scene. In Excalidraw, export it with Embed scene switched on.";
 const BAD_SCENE = "The Excalidraw scene inside this image couldn't be read.";
 

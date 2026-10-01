@@ -9,23 +9,23 @@ import type { Env } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
-    getDiagram: vi.fn(),
+    getDocument: vi.fn(),
     getMembership: vi.fn(),
-    getTrashedDiagramMeta: vi.fn(async () => null),
+    getTrashedDocumentMeta: vi.fn(async () => null),
   },
 }));
 vi.mock('../db', () => db);
 
 const { access } = vi.hoisted(() => ({
-  access: { canReadDiagram: vi.fn(), canEditDiagram: vi.fn(), resolveDiagramGrant: vi.fn() },
+  access: { canReadDocument: vi.fn(), canEditDocument: vi.fn(), resolveDocumentGrant: vi.fn() },
 }));
-vi.mock('../auth/diagram-access', () => access);
+vi.mock('../auth/document-access', () => access);
 
 import type { RouteContext } from './context';
 import {
-  ownsDiagram,
-  requireDiagramGrant,
-  requireOwnedDiagram,
+  ownsDocument,
+  requireDocumentGrant,
+  requireOwnedDocument,
   requireOwner,
   sharePasswordOf,
 } from './context';
@@ -34,7 +34,7 @@ function makeCtx(
   opts: { owner?: string | null; headers?: Record<string, string> } = {},
 ): RouteContext {
   const owner = opts.owner === undefined ? 'owner-1' : opts.owner;
-  const url = new URL('https://api.test/api/diagrams/d1');
+  const url = new URL('https://api.test/api/documents/d1');
   const request = new Request(url, { headers: opts.headers ?? {} });
   return {
     request,
@@ -73,152 +73,154 @@ describe('requireOwner', () => {
   });
 });
 
-describe('requireOwnedDiagram', () => {
+describe('requireOwnedDocument', () => {
   it('400s when there is no owner', async () => {
-    const out = await requireOwnedDiagram(makeCtx({ owner: null }), 'd1');
+    const out = await requireOwnedDocument(makeCtx({ owner: null }), 'd1');
     expect((out as Response).status).toBe(400);
-    expect(db.getDiagram).not.toHaveBeenCalled();
+    expect(db.getDocument).not.toHaveBeenCalled();
   });
 
-  it('404s when the diagram is missing (before any ownership check)', async () => {
-    db.getDiagram.mockResolvedValue(null);
-    const out = await requireOwnedDiagram(makeCtx({ owner: 'owner-1' }), 'd1');
+  it('404s when the document is missing (before any ownership check)', async () => {
+    db.getDocument.mockResolvedValue(null);
+    const out = await requireOwnedDocument(makeCtx({ owner: 'owner-1' }), 'd1');
     expect((out as Response).status).toBe(404);
   });
 
-  it('403s when the diagram belongs to someone else', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'someone-else', teamId: null });
-    const out = await requireOwnedDiagram(makeCtx({ owner: 'owner-1' }), 'd1');
+  it('403s when the document belongs to someone else', async () => {
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else', teamId: null });
+    const out = await requireOwnedDocument(makeCtx({ owner: 'owner-1' }), 'd1');
     expect((out as Response).status).toBe(403);
   });
 
-  it('returns the diagram when the caller owns it', async () => {
-    const diagram = { id: 'd1', ownerId: 'owner-1', teamId: null };
-    db.getDiagram.mockResolvedValue(diagram);
-    const out = await requireOwnedDiagram(makeCtx({ owner: 'owner-1' }), 'd1');
-    expect(out).toBe(diagram);
+  it('returns the document when the caller owns it', async () => {
+    const liveDoc = { id: 'd1', ownerId: 'owner-1', teamId: null };
+    db.getDocument.mockResolvedValue(liveDoc);
+    const out = await requireOwnedDocument(makeCtx({ owner: 'owner-1' }), 'd1');
+    expect(out).toBe(liveDoc);
   });
 
-  // A TEAM diagram's owner id is a Clerk id every teammate can read off
+  // A TEAM document's owner id is a Clerk id every teammate can read off
   // `GET /api/teams/<id>` (`members[].userId`), so the hybrid X-Owner-Id path
   // must not prove ownership of one — otherwise a removed member who kept the
   // id reaches the owner-only surfaces this guard fronts: the share password
   // in the clear, minting an edit-role link, clearing the password, wiping a
   // tab's audit trail.
-  it('403s a TEAM diagram when the owner id arrives only as the guest header', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
+  it('403s a TEAM document when the owner id arrives only as the guest header', async () => {
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
     // resolveOwner() returns the header value; verifiedUserId stays null.
-    const out = await requireOwnedDiagram(makeCtx({ owner: 'user_owner' }), 'd1');
+    const out = await requireOwnedDocument(makeCtx({ owner: 'user_owner' }), 'd1');
     expect(out).toBeInstanceOf(Response);
     expect((out as Response).status).toBe(403);
   });
 
-  it('returns a TEAM diagram to its owner on a VERIFIED account id', async () => {
-    const diagram = { id: 'd1', ownerId: 'user_owner', teamId: 'team-1' };
-    db.getDiagram.mockResolvedValue(diagram);
+  it('returns a TEAM document to its owner on a VERIFIED account id', async () => {
+    const liveDoc = { id: 'd1', ownerId: 'user_owner', teamId: 'team-1' };
+    db.getDocument.mockResolvedValue(liveDoc);
     db.getMembership.mockResolvedValue({ status: 'joined' });
     const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
-    expect(await requireOwnedDiagram(ctx, 'd1')).toBe(diagram);
+    expect(await requireOwnedDocument(ctx, 'd1')).toBe(liveDoc);
   });
 
-  it('403s a TEAM diagram to an owner who is no longer in the team (docs/specs/013-workspace/team-shared-diagrams.md)', async () => {
+  it('403s a TEAM document to an owner who is no longer in the team (docs/specs/013-workspace/team-shared-documents.md)', async () => {
     // Removed (or left) before their work was handed on: owning the row must
     // not keep the share-link, password and delete routes open to them.
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
     db.getMembership.mockResolvedValue(null);
     const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
-    expect(((await requireOwnedDiagram(ctx, 'd1')) as Response).status).toBe(403);
+    expect(((await requireOwnedDocument(ctx, 'd1')) as Response).status).toBe(403);
   });
 
-  it('403s a TEAM diagram for a verified caller who is not its owner', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
+  it('403s a TEAM document for a verified caller who is not its owner', async () => {
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
     const ctx = { ...makeCtx({ owner: 'user_other' }), verifiedUserId: 'user_other' };
-    expect(((await requireOwnedDiagram(ctx, 'd1')) as Response).status).toBe(403);
+    expect(((await requireOwnedDocument(ctx, 'd1')) as Response).status).toBe(403);
   });
 
   // The personal path is unchanged and must stay that way: a guest owner id is
   // an unguessable server-minted UUID, which is what makes the header safe
   // there, and every signed-out author depends on it.
-  it('still accepts the guest header for a PERSONAL diagram', async () => {
-    const diagram = { id: 'd1', ownerId: 'guest-uuid', teamId: null };
-    db.getDiagram.mockResolvedValue(diagram);
-    expect(await requireOwnedDiagram(makeCtx({ owner: 'guest-uuid' }), 'd1')).toBe(diagram);
+  it('still accepts the guest header for a PERSONAL document', async () => {
+    const liveDoc = { id: 'd1', ownerId: 'guest-uuid', teamId: null };
+    db.getDocument.mockResolvedValue(liveDoc);
+    expect(await requireOwnedDocument(makeCtx({ owner: 'guest-uuid' }), 'd1')).toBe(liveDoc);
   });
 });
 
-describe('ownsDiagram', () => {
-  it('requires a verified account id for a team diagram, not the header', async () => {
+describe('ownsDocument', () => {
+  it('requires a verified account id for a team document, not the header', async () => {
     db.getMembership.mockResolvedValue({ status: 'joined' });
     const team = { ownerId: 'user_owner', teamId: 'team-1' };
-    expect(await ownsDiagram(makeCtx({ owner: 'user_owner' }), team)).toBe(false);
+    expect(await ownsDocument(makeCtx({ owner: 'user_owner' }), team)).toBe(false);
     expect(
-      await ownsDiagram({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
+      await ownsDocument({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
     ).toBe(true);
   });
 
-  it('requires the owner of a team diagram to still be a joined member', async () => {
+  it('requires the owner of a team document to still be a joined member', async () => {
     db.getMembership.mockResolvedValue(null);
     const team = { ownerId: 'user_owner', teamId: 'team-1' };
     expect(
-      await ownsDiagram({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
+      await ownsDocument({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
     ).toBe(false);
   });
 
-  it('accepts the hybrid identity for a personal diagram', async () => {
+  it('accepts the hybrid identity for a personal document', async () => {
     const personal = { ownerId: 'guest-uuid', teamId: null };
-    expect(await ownsDiagram(makeCtx({ owner: 'guest-uuid' }), personal)).toBe(true);
-    expect(await ownsDiagram(makeCtx({ owner: 'someone-else' }), personal)).toBe(false);
+    expect(await ownsDocument(makeCtx({ owner: 'guest-uuid' }), personal)).toBe(true);
+    expect(await ownsDocument(makeCtx({ owner: 'someone-else' }), personal)).toBe(false);
   });
 
   it('is false when neither identity resolves', async () => {
-    expect(await ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: null })).toBe(false);
-    expect(await ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
+    expect(await ownsDocument(makeCtx({ owner: null }), { ownerId: 'x', teamId: null })).toBe(
+      false,
+    );
+    expect(await ownsDocument(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
   });
 });
 
-describe('requireDiagramGrant', () => {
-  it('404s a missing diagram before gating', async () => {
-    db.getDiagram.mockResolvedValue(null);
-    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
+describe('requireDocumentGrant', () => {
+  it('404s a missing document before gating', async () => {
+    db.getDocument.mockResolvedValue(null);
+    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
     expect((out as Response).status).toBe(404);
-    expect(access.resolveDiagramGrant).not.toHaveBeenCalled();
+    expect(access.resolveDocumentGrant).not.toHaveBeenCalled();
   });
 
   it('403s when the caller holds no grant', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
-    access.resolveDiagramGrant.mockResolvedValue(null);
-    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
+    access.resolveDocumentGrant.mockResolvedValue(null);
+    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
     expect((out as Response).status).toBe(403);
   });
 
   it('403s a view grant in edit mode', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
-    access.resolveDiagramGrant.mockResolvedValue({ role: 'view', tabScope: null });
-    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
+    access.resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
+    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
     expect((out as Response).status).toBe(403);
   });
 
-  it('returns the diagram and the grant, scope included', async () => {
-    const diagram = { id: 'd1', ownerId: 'other', teamId: null };
+  it('returns the document and the grant, scope included', async () => {
+    const liveDoc = { id: 'd1', ownerId: 'other', teamId: null };
     const grant = { role: 'edit', tabScope: 't2' };
-    db.getDiagram.mockResolvedValue(diagram);
-    access.resolveDiagramGrant.mockResolvedValue(grant);
-    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
-    expect(out).toEqual({ diagram, grant });
+    db.getDocument.mockResolvedValue(liveDoc);
+    access.resolveDocumentGrant.mockResolvedValue(grant);
+    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
+    expect(out).toEqual({ document: liveDoc, grant });
   });
 
   it('400s an unidentified caller', async () => {
-    const out = await requireDiagramGrant(makeCtx({ owner: null }), 'd1', 'read');
+    const out = await requireDocumentGrant(makeCtx({ owner: null }), 'd1', 'read');
     expect((out as Response).status).toBe(400);
   });
 
   it('forwards verifiedUserId (session OR api token) to the team-membership check', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: 'team-1' });
-    access.resolveDiagramGrant.mockResolvedValue({ role: 'edit', tabScope: null });
+    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: 'team-1' });
+    access.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null });
     // A token caller: no Clerk session, but a server-verified account id.
     const ctx = { ...makeCtx({ owner: 'user-9' }), verifiedUserId: 'user-9' };
-    await requireDiagramGrant(ctx, 'd1', 'read');
-    expect(access.resolveDiagramGrant).toHaveBeenCalledWith(
+    await requireDocumentGrant(ctx, 'd1', 'read');
+    expect(access.resolveDocumentGrant).toHaveBeenCalledWith(
       ctx.env,
       'd1',
       'user-9',

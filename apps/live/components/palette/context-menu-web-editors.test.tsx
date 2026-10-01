@@ -11,7 +11,7 @@ import {
   PROCESS_MIN_STEPS,
   STATS_MIN,
   type WebRows,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 import { hasWebRowsSection, WebRowsMenuSection } from './context-menu-web-editors';
 

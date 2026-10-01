@@ -110,7 +110,7 @@ beforeEach(() => {
 
 describe('readUserPreferences (no window)', () => {
   // SSR / static-export build code path. Both helpers degrade to
-  // safe no-ops so the diagram page can render server-side without
+  // safe no-ops so the document page can render server-side without
   // throwing on `localStorage` access.
   it('returns {} when window is undefined', () => {
     expect(readUserPreferences()).toEqual({});
@@ -137,7 +137,7 @@ describe('readUserPreferences (with localStorage)', () => {
     });
   });
 
-  it('uses a single shared storage key (no per-diagram suffix anymore)', () => {
+  it('uses a single shared storage key (no per-document suffix anymore)', () => {
     const { storage } = mockBrowser();
     writeUserPreferences({ autoRebindArrows: false });
     // The spec says the key lives at exactly one place; this asserts
@@ -225,8 +225,8 @@ describe('writeUserPreferences (server sync)', () => {
 
   it('still writes to localStorage when the PUT path runs (cache first, sync second)', () => {
     const { storage } = mockBrowser();
-    writeUserPreferences({ minimalPanels: true }, 'owner-1');
-    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ minimalPanels: true });
+    writeUserPreferences({ showMinimap: false }, 'owner-1');
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
   });
 });
 
@@ -307,7 +307,7 @@ describe('recent exclusions', () => {
     expect(isRecentExcluded({ recentExcludedIds: [] }, 'd1')).toBe(false);
   });
 
-  it('reports an excluded diagram', () => {
+  it('reports an excluded document', () => {
     expect(isRecentExcluded({ recentExcludedIds: ['d1', 'd2'] }, 'd2')).toBe(true);
   });
 

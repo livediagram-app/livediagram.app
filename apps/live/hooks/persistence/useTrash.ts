@@ -3,16 +3,17 @@
 // The Trash view's state and actions (docs/specs/013-workspace/trash.md):
 // one listing over the cloud Trash and this browser's, and Restore / Delete
 // permanently / Empty Trash with their telemetry and toasts. `onChanged` lets
-// the host refresh the lists a restore puts a diagram back into.
+// the host refresh the lists a restore puts a document back into.
 import { useCallback, useEffect, useState } from 'react';
 import {
   apiEmptyTrash,
   apiListTrash,
-  apiPurgeDiagram,
-  apiRestoreDiagram,
+  apiPurgeDocument,
+  apiRestoreDocument,
   type TrashListing,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import type { TrashGroup } from '@/lib/trash-groups';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -62,19 +63,23 @@ export function useTrash(
     };
   }, [ownerId, apply]);
 
+  // A document binned, restored or purged in Google Drive
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow").
+  useAfterDriveChange(load, !!ownerId);
+
   const drop = (ids: string[]) => setListing((prev) => (prev ? without(prev, new Set(ids)) : prev));
 
   const restore = useCallback(
     async (id: string, group: TrashGroup) => {
       if (!ownerId) return;
       try {
-        await apiRestoreDiagram(ownerId, id);
+        await apiRestoreDocument(ownerId, id);
         drop([id]);
         track('Trash', 'Restored', group.telemetryType);
-        toast.success('Diagram restored');
+        toast.success('Document restored');
         onChanged();
       } catch {
-        toast.error('Could not restore that diagram. Please try again.');
+        toast.error('Could not restore that document. Please try again.');
         load();
       }
     },
@@ -85,11 +90,11 @@ export function useTrash(
     async (id: string, group: TrashGroup) => {
       if (!ownerId) return;
       try {
-        await apiPurgeDiagram(ownerId, id);
+        await apiPurgeDocument(ownerId, id);
         drop([id]);
         track('Trash', 'Deleted', group.telemetryType);
       } catch {
-        toast.error('Could not delete that diagram. Please try again.');
+        toast.error('Could not delete that document. Please try again.');
         load();
       }
     },

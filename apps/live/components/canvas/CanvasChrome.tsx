@@ -1,4 +1,4 @@
-import { ES_LANES } from '@livediagram/diagram';
+import { ES_LANES, isWhiteboardTab } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -7,22 +7,22 @@ import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing diagram with tabs that
-// already have content). For first-time guests on a fresh diagram
+// path (a returning user opening an existing document with tabs that
+// already have content). For first-time guests on a fresh document
 // the gate is true on first paint, but the empty canvas underneath
 // has already rendered by then, so the user sees the welcome modal
 // fade in a frame later rather than blocking the route on the
 // picker's JS. The /live/new entry keeps the static import because
 // the picker is the whole UI there.
 import dynamic from 'next/dynamic';
-const TemplatePicker = dynamic(() =>
-  import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
+const TemplatePicker = dynamic(
+  () => import('@/components/palette/TemplatePicker').then((m) => m.TemplatePicker),
+  { ssr: false },
 );
 
 import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
-import { CanvasMobileDock } from '@/components/canvas/CanvasMobileDock';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -30,20 +30,32 @@ import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { ActivityClusterStrip } from '@/components/canvas/ActivityClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
-import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
+import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
-import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
+import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import {
+  WHITEBOARD_DOCK_SELECTOR,
+  WHITEBOARD_DOCK_TOP_CLEARANCE_PX,
+} from '@/lib/whiteboard-dock-prefs';
+import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
+import { panelEnabled } from '@/lib/user-preferences';
+import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
   isPaintMode: boolean;
+  // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
+  mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
   offscreenContent: boolean;
@@ -62,14 +74,11 @@ type ChromeExtras = {
   wrapperRef: RefObject<HTMLDivElement | null>;
   paletteBottomY: number;
   setPaletteBottomY: Dispatch<SetStateAction<number>>;
-  explorerBottomY: number;
-  setExplorerBottomY: Dispatch<SetStateAction<number>>;
-  activeMobilePanel: MobilePanel | null;
-  setActiveMobilePanel: Dispatch<SetStateAction<MobilePanel | null>>;
-  dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
+  activeDockPanel: DockPanel | null;
+  setActiveDockPanel: Dispatch<SetStateAction<DockPanel | null>>;
   activeDockAnchor: DockAnchor | null;
   setActiveDockAnchor: Dispatch<SetStateAction<DockAnchor | null>>;
-  handleDockButtonClick: (id: MobilePanel, ownButton?: HTMLElement, above?: boolean) => void;
+  handleDockButtonClick: (id: DockPanel, button: HTMLElement, above?: boolean) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
@@ -82,7 +91,7 @@ type ChromeExtras = {
   onIsoReset: () => void;
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
-  // sprite rather than in the editor's diagram state) and edited by the
+  // sprite rather than in the editor's document state) and edited by the
   // Avatar Panel down in the chrome.
   avatarConfig: import('@/lib/avatar-config').AvatarConfig;
   onChangeAvatarField: <K extends keyof import('@/lib/avatar-config').AvatarConfig>(
@@ -93,7 +102,7 @@ type ChromeExtras = {
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
   // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@livediagram/diagram').Reaction) => void;
+  onAvatarBurst?: (reaction: import('@livediagram/document').Reaction) => void;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
@@ -136,7 +145,7 @@ type ChromeExtras = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -160,6 +169,16 @@ export type CanvasChromeProps = CanvasProps & ChromeExtras;
 // (inset 16px = the `*-4` resting inset). Top corners stack downward,
 // bottom corners upward (flex-col-reverse) so the first panel always
 // sits flush to the corner and the rest flow away from it.
+// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
+// "On a phone"; on a desktop window too narrow for a centred strip to clear a
+// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
+// rather than at the 16px inset, or a panel docked there (the Collaborate
+// banner) renders underneath the strip where it can't be reached. The strip
+// sits 12px down (top-3) and is 46px tall; 68px leaves a 10px gap. The strip
+// is drawn at the UI scale (docs/specs/007-editor/ui-scale.md), so only its
+// height scales.
+const toolbarTopClearancePx = (scale: number) => 12 + 46 * scale + 10;
+
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
   'top-right': 'right-4 top-4 flex-col items-end',
@@ -171,21 +190,19 @@ const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
 };
 
 // The floating chrome layer of the canvas: empty-state prompt, template
-// picker, multi-select toolbar, mode banners, mobile dock, Explorer, the
+// picker, multi-select toolbar, mode banners, Explorer, the
 // Activity / Comments / Editor / Context panels, the palette, and
 // the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
 
 export function CanvasChrome(props: CanvasChromeProps) {
   const {
-    activeMobilePanel,
+    activeDockPanel,
     activityMinimized,
-    aiPanel,
     canRedo,
     canUndo,
     canvasTool,
-    diagramName,
-    dockButtonRefs,
+    documentName,
     drawDrag,
     drawHover,
     stamp,
@@ -195,10 +212,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleZoomIn,
     handleZoomOut,
     marquee,
-    minimalPanels,
     toolbarLayout,
     layersMinimized,
     onToggleLayersMinimized,
+    commentRows,
+    actionRows,
     onOpenCanvasTheme,
     onChooseTemplate,
     offscreenContent,
@@ -217,6 +235,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     highlighterWidth,
     readOnly,
     selfParticipant,
+    settings,
     snapGuides,
     distGuides,
     snapTargets,
@@ -234,14 +253,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || zenMode === true;
+  // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
+  // buttons with them (Undo / Redo stay). Read once here and handed to
+  // useCanvasChromePanels, so a button and its panel share one value.
+  const panelsOn = {
+    activity: panelEnabled(settings, 'activityPanelEnabled'),
+    layers: panelEnabled(settings, 'layersPanelEnabled'),
+    collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
+  };
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
-    useCornerDocking({
-      minimalPanels: minimalPanels === true,
-      zenMode: zenMode === true,
-      toolbarLayout: toolbarLayout === true,
-    });
+    useCornerDocking({ zenMode: zenMode === true });
   // Alignment guides while a palette tile is being dragged in (docs/specs/021-event-storming/event-storming.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
@@ -278,31 +301,76 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
-  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: honoured on a phone too, where it
-  // replaces the dock's Palette + Explorer buttons.
+  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: always, on a phone.
   const toolbarActive = toolbarLayout === true;
+  // A whiteboard trades the palette, the strip and the theme controls for its
+  // dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
+  const whiteboard = isWhiteboardTab({ kind: props.tabKind });
+  // The strip only renders for an editor (not read-only) with the chrome up,
+  // and never on a whiteboard.
+  const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
+  // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
+  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-whiteboard/whiteboard.md
+  // "Where the dock sits").
+  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
+  const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
-  // strip, so it keeps the corner there.
-  const menuInStrip = isMobile && !readOnly;
+  // strip, and nor does a whiteboard, so it keeps the corner there.
+  const menuInStrip = isMobile && !readOnly && !whiteboard;
   const explorerMenuButton = (
     <ToolbarExplorerButton
-      open={activeMobilePanel === 'explorer'}
+      open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
       inline={menuInStrip}
     />
   );
 
   // Floating panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, toolbarExplorerEl, toolbarClusterEls, clusterPopovers, paletteTint } =
-    useCanvasChromePanels({
-      props,
-      chromeHidden,
-      isMobile,
-      dockingActive,
-      toolbarActive,
-      panelWiringFor,
-    });
+  const {
+    panelEls,
+    toolbarExplorerEl,
+    toolbarClusterEls,
+    collaborateEl,
+    clusterPopovers,
+    paletteTint,
+  } = useCanvasChromePanels({
+    props,
+    chromeHidden,
+    isMobile,
+    dockingActive,
+    toolbarActive,
+    panelWiringFor,
+    panelsOn,
+  });
+
+  // Measured against the real top-corner stacks (useStripCrowdsCorners). A
+  // stack only renders while it holds a panel, so which top corners are
+  // occupied is part of what re-measures. A phone's strip always spans the top.
+  const topCornersKey = (['top-left', 'top-right'] as const)
+    .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
+    .join('|');
+  // UI scale (docs/specs/007-editor/ui-scale.md): the strip, the panels and the
+  // bottom-right cluster are drawn at it, so the clearances around them follow.
+  const toolbarScale = useUiScale('toolbar');
+  const panelScale = useUiScale('panels');
+  const cornerScale = useUiScale('cornerButtons');
+  // The bar across the top that the top corners give way to: the strip, or a dock at the top.
+  const topBar = isMobile
+    ? null
+    : stripShown
+      ? STRIP_SELECTOR
+      : dockOnTop
+        ? WHITEBOARD_DOCK_SELECTOR
+        : null;
+  const topBarCrowds = useStripCrowdsCorners(
+    cornerRefs,
+    topBar,
+    topCornersKey,
+    `${toolbarScale}/${panelScale}`,
+  );
+  const stripSpansTop = stripShown && (isMobile || topBarCrowds);
+  const dockSpansTop = dockOnTop && topBarCrowds;
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -328,7 +396,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ref={(el) => {
               cornerRefs.current[corner] = el;
             }}
-            style={corner === 'bottom-right' ? { bottom: cornerBottomInset(corner) } : undefined}
+            style={
+              corner === 'bottom-right'
+                ? { bottom: cornerBottomInset(corner, cornerScale) }
+                : stripSpansTop && corner.startsWith('top')
+                  ? { top: toolbarTopClearancePx(toolbarScale) }
+                  : dockSpansTop && corner.startsWith('top')
+                    ? { top: WHITEBOARD_DOCK_TOP_CLEARANCE_PX }
+                    : undefined
+            }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
             {children.map((id) => (
@@ -345,7 +421,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   ) : null;
 
   return (
-    <PhoneDockProvider value={!toolbarActive}>
+    <>
       {/* The empty-canvas hint is now a dismissible bottom banner
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
           theme banners rather than a centre-of-canvas card. */}
@@ -355,7 +431,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           mode={templatePickerMode}
           participant={selfParticipant}
           currentThemeId={tabThemeId}
-          diagramName={diagramName}
+          documentName={documentName}
           lockedName={templatePickerLockedName}
           onPick={onChooseTemplate}
           onSkip={onSkipTemplatePicker}
@@ -366,7 +442,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           landing on, lit for the duration of the drag. Beside the guide
           overlay because it is the same kind of thing — help BEFORE the
           drop — and it publishes through its own store, so it costs nothing
-          on every other board. */}
+          on every other tab. */}
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
@@ -394,6 +470,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         highlighterWidth={highlighterWidth}
         pendingDraw={pendingDraw}
         stamp={stamp}
+        whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
       />
@@ -401,7 +478,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} toolbarLayout={toolbarActive} />
+      <TopCenterChrome {...props} toolbarLayout={toolbarActive} dockOnTop={dockOnTop} />
 
       {/* Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the menu button stands where the
           Explorer would float and opens it as a popover (zen hides it, the
@@ -414,7 +491,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {toolbarClusterEls}
         </>
       ) : null}
-      {toolbarActive && !readOnly ? (
+      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5), in every layout: it
+          positions against the canvas, so it renders outside the corner
+          layer, as Toolbar's cluster popovers do. */}
+      {zenMode ? null : collaborateEl}
+      {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
@@ -434,32 +515,22 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      <CanvasMobileDock
-        welcomeOpen={chromeHidden}
-        minimalPanels={minimalPanels}
-        toolbarLayout={toolbarActive}
-        readOnly={readOnly}
-        hasCollaborate={props.commentRows.length > 0 || props.actionRows.length > 0}
-        hasAi={!!aiPanel}
-        hasPoll={!!props.pollPanel}
-        hasVote={!!props.tabVote}
-        hasAvatar={props.canvasTool === 'avatar'}
-        hasLaser={props.canvasTool === 'laser'}
-        hasSpotlight={props.canvasTool === 'spotlight'}
-        hasEraser={props.canvasTool === 'eraser'}
-        hasFormat={props.canvasTool === 'format'}
-        hasHighlighter={props.canvasTool === 'highlighter'}
-        hasSlideDeck={props.canvasTool === 'slide-deck'}
-        activeMobilePanel={activeMobilePanel}
-        dockButtonRefs={dockButtonRefs}
-        onDockButtonClick={handleDockButtonClick}
-      />
+      {/* The whiteboard's dock (docs/specs/023-whiteboard/whiteboard.md): top or bottom centre, in place
+          of the palette. */}
+      {dockShown && props.whiteboardDock ? (
+        <WhiteboardDock
+          model={props.whiteboardDock}
+          ink={props.whiteboardInk ?? '#1c1917'}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={onUndo}
+          onRedo={onRedo}
+        />
+      ) : null}
 
       {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they
           are distributed into per-corner stack containers (with a free
-          layer + snap guides) by `dockedLayer`; otherwise — mobile,
-          minimal dock, or zen — they render inline where they always
-          did. Each element carries its own visibility gate, so the
+          layer + snap guides) by `dockedLayer`; in zen they render inline. Each element carries its own visibility gate, so the
           welcome-flow / read-only / zen suppression is unchanged.
           Explorer stays visible during the welcome flow; only zen hides
           it. */}
@@ -474,11 +545,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.palette}
           {panelEls.minimap}
           {panelEls.layers}
-          {/* The session panels were missing from this list, so on mobile (and
-              any other non-docking layout) they were never rendered at all —
-              a live poll or vote simply had no panel. The docked branch above
-              iterates PANEL_IDS and so picked them up for free, which is why
-              it only ever showed on the layouts that take this path. */}
           {panelEls.poll}
           {panelEls.vote}
           {panelEls.avatar}
@@ -492,24 +558,42 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Activity strip
-          (with inline Undo / Redo), the Layers button, the Theme & Canvas
+          (with inline Undo / Redo), the Layers button, the Collaborate button
+          (only while the tab has a thread or an action), the Theme & Canvas
           paintbrush, then the Zoom controls. Activity + Layers minimise into
           their buttons in desktop Floating and open as popovers above them
-          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md). */}
+          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md); Collaborate is a popover
+          in every layout. */}
       <div
         // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
+        // Drawn at the UI scale, still 16px from the corner.
+        style={
+          cornerScale === 1
+            ? undefined
+            : {
+                ...uiScaleStyle(cornerScale),
+                right: toSurfacePx(16, cornerScale),
+                bottom: toSurfacePx(16, cornerScale),
+              }
+        }
         className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"
       >
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
             {/* Activity + Undo / Redo (docs/specs/012-collaboration/activity-and-audit.md): see ActivityClusterStrip. */}
-            {!zenMode && !readOnly && (clusterPopovers ? true : activityMinimized) ? (
+            {/* With the Activity panel off there is no panel to carry Undo /
+                Redo in Floating, so the strip shows in every layout, as just
+                those two. */}
+            {!zenMode &&
+            !readOnly &&
+            (!panelsOn.activity || clusterPopovers || activityMinimized) ? (
               <ActivityClusterStrip
-                popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
+                showActivity={panelsOn.activity}
+                popoverOpen={clusterPopovers && activeDockPanel === 'activity'}
                 onExpand={onToggleActivityMinimized}
                 onTogglePopover={
                   !clusterPopovers
@@ -522,10 +606,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
-            {!zenMode && !readOnly && (clusterPopovers ? true : layersMinimized) ? (
+            {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
+            {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
               <LayersClusterButton
-                popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
+                popoverOpen={clusterPopovers && activeDockPanel === 'layers'}
                 onExpand={onToggleLayersMinimized}
                 onTogglePopover={
                   !clusterPopovers
@@ -534,20 +618,32 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 }
               />
             ) : null}
+            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
+                the tab has a comment thread or an action. A view-role visitor
+                gets it too: they read threads and answer them. */}
+            {!zenMode &&
+            panelsOn.collaborate &&
+            (commentRows.length > 0 || actionRows.length > 0) ? (
+              <CollaborateClusterButton
+                openCount={kindCounts('open', commentRows, actionRows).all}
+                popoverOpen={activeDockPanel === 'collaborate'}
+                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
+              />
+            ) : null}
             {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of
                 the Layers dock opens the CanvasThemeDialog — the same modal
                 the canvas right-click menu reaches, one click from the
                 chrome. All viewports, mobile included — the canvas menu's
                 long-press entry isn't discoverable there (read-only
                 sessions pass no handler). */}
-            {!zenMode && onOpenCanvasTheme ? (
+            {!zenMode && onOpenCanvasTheme && !whiteboard ? (
               <div
                 data-tour-id="canvas-theme"
                 onContextMenu={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+                className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >
                 <HoverCard
                   title="Theme & canvas"
@@ -583,6 +679,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           </>
         )}
       </div>
-    </PhoneDockProvider>
+    </>
   );
 }

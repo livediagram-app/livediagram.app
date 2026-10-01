@@ -3,7 +3,7 @@ import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 // The small uppercase "when was this last touched" stamp on an Explorer row,
 // card, or panel entry.
 //
-// Five places rendered this exact span — the two diagram rows, the folder row,
+// Five places rendered this exact span — the two document rows, the folder row,
 // the card grid and the shared-with-me list — differing only in which
 // timestamp they read. The styling is the whole component: five copies of a
 // class string is five chances for one of them to miss a change, and the
@@ -16,7 +16,9 @@ import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 export function RelativeTimeChip({ at }: { at: number }) {
   const now = useRelativeNow();
   return (
-    <span className="text-[11px] uppercase tracking-wider text-slate-400">
+    // Centred on its cap band (optical-alignment.md), so the time sits
+    // level with the badges and marks beside it.
+    <span className="text-optical-line max-w-full truncate text-[11px] uppercase tracking-wider text-slate-400">
       {relativeSince(at, now)}
     </span>
   );

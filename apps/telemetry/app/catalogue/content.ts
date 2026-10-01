@@ -1,4 +1,4 @@
-// What gets made: diagrams, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
+// What gets made: documents, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
@@ -16,16 +16,36 @@ const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type 
 export const JUST_DRAW = chart(
   'UI',
   'Used',
-  'Just Draw',
-  'Straight to a blank canvas, skipping the wizard: the Just Draw shortcut into /new, or Just Draw in the template picker.',
+  'Start Blank',
+  'Straight to a blank canvas, skipping the wizard: the Start Blank shortcut into /new, or Start Blank in the template picker.',
   { types: ['JustDraw'] },
+);
+
+// Escape in the New Document wizard: back to where they came from, nothing made
+// (docs/specs/007-editor/new-document-route.md "Escape backs out").
+export const NEW_DOCUMENT_BACKED_OUT = chart(
+  'UI',
+  'Closed',
+  'New Document Backed Out',
+  'Escape or the X in the New Document wizard went back to the page that opened it, creating nothing.',
+  { types: ['NewDocument'] },
+);
+
+// The template step's expand toggle (docs/specs/008-canvas/canvas-and-palette.md "Templates section"):
+// whether people want a whole category at once over the carousel.
+export const TEMPLATE_SHELF_EXPANDED = chart(
+  'UI',
+  'Toggled',
+  'Template Shelf Expanded',
+  'The expand toggle in the New Document wizard flipped: every template in the open category at once (Expanded), or back to the carousel (Collapsed).',
+  { types: ['TemplateShelfExpanded', 'TemplateShelfCollapsed'] },
 );
 
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
   'Template Links',
-  'A diagram made straight from a template link into /new, skipping the wizard.',
+  'A document made straight from a template link into /new, skipping the wizard.',
   { types: ['TemplateLink'] },
 );
 
@@ -55,8 +75,8 @@ export const LINKS_ADDED = chart(
   'Element',
   'Linked',
   'Links Added',
-  'A link put on an element or a table cell: a web address, another diagram, or another tab.',
-  { types: ['Url', 'Diagram', 'Tab'] },
+  'A link put on an element or a table cell: a web address, another document, or another tab.',
+  { types: ['Url', 'Document', 'Tab'] },
 );
 
 export const LINKS_REMOVED = chart(
@@ -79,7 +99,7 @@ export const TABS_LINKED = chart(
   'Tab',
   'Linked',
   'Tabs Linked',
-  'A tab linked into another diagram, so both diagrams share it and edits in either show in both.',
+  'A tab linked into another document, so both documents share it and edits in either show in both.',
 );
 
 export const TABS_LOCKED = chart(
@@ -90,73 +110,73 @@ export const TABS_LOCKED = chart(
   { actionIn: ['Unlocked'] },
 );
 
-// Diagram lifecycle.
-export const DIAGRAMS_LOADED: Metric = {
-  category: 'Diagram',
+// Document lifecycle.
+export const DOCUMENTS_LOADED: Metric = {
+  category: 'Document',
   action: 'Loaded',
   type: null,
-  title: 'Diagrams Loaded',
+  title: 'Documents Loaded',
   blurb:
-    'A diagram was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new diagram, straight after it is created.',
+    'A document was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new document, straight after it is created.',
 };
 
-export const DIAGRAMS_CREATED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_CREATED: Metric = {
+  category: 'Document',
   action: 'Created',
   allTypes: true,
-  title: 'Diagrams Created',
+  title: 'Documents Created',
   blurb:
-    'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
+    'New documents from the New Document wizard, stored in the cloud or offline in this browser.',
 };
 
-export const DIAGRAMS_RENAMED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_RENAMED: Metric = {
+  category: 'Document',
   action: 'Renamed',
   type: null,
-  title: 'Diagrams Renamed',
+  title: 'Documents Renamed',
 };
 
-export const DIAGRAMS_DELETED: Metric = {
+export const DOCUMENTS_DELETED: Metric = {
   rising: 'neutral',
-  category: 'Diagram',
+  category: 'Document',
   action: 'Deleted',
   type: null,
-  title: 'Diagrams Deleted',
+  title: 'Documents Deleted',
 };
 
-export const DIAGRAMS_DUPLICATED: Metric = {
-  category: 'Diagram',
+export const DOCUMENTS_DUPLICATED: Metric = {
+  category: 'Document',
   action: 'Duplicated',
   allTypes: true,
-  title: 'Diagrams Duplicated',
-  blurb: 'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
+  title: 'Documents Duplicated',
+  blurb: 'A document copied from the Explorer, or a shared document cloned into your own account.',
 };
 
-// Offline Mode (docs/specs/006-diagram/offline-mode.md): a diagram kept only in this browser, and the two
-// conversions between the stores. Created Offline is a subset of Diagrams
-// Created, so it sits in Diagram Actions outside the headline as well as
+// Offline Mode (docs/specs/006-document/offline-mode.md): a document kept only in this browser, and the two
+// conversions between the stores. Created Offline is a subset of Documents
+// Created, so it sits in Document Actions outside the headline as well as
 // heading its own stack.
 export const CREATED_OFFLINE = chart(
-  'Diagram',
+  'Document',
   'Created',
   'Created Offline',
-  'A new diagram kept only in this browser (Offline Mode), never sent to the server. Part of Diagrams Created.',
+  'A new document kept only in this browser (Offline Mode), never sent to the server. Part of Documents Created.',
   { types: ['Offline'] },
 );
 
 export const TAKEN_OFFLINE = chart(
-  'Diagram',
+  'Document',
   'Moved',
   'Taken Offline',
-  'A cloud diagram converted to Offline Mode with Take Offline, so it now lives only in this browser.',
+  'A cloud document converted to Offline Mode with Take Offline, so it now lives only in this browser.',
   { types: ['TakenOffline'] },
 );
 
 export const SAVED_TO_CLOUD = chart(
-  'Diagram',
+  'Document',
   'Moved',
   'Saved to Cloud',
-  'An offline diagram synced up to the server with Sync Diagram, so it can be shared.',
+  'An offline document synced up to the server with Sync Document, so it can be shared.',
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
@@ -164,7 +184,7 @@ export const OFFLINE_MODE: MetricStack = {
   stack: true,
   title: 'Offline Mode',
   blurb:
-    'Diagrams kept only in this browser: made offline, taken offline from the cloud, and synced back up.',
+    'Documents kept only in this browser: made offline, taken offline from the cloud, and synced back up.',
   members: [CREATED_OFFLINE, TAKEN_OFFLINE, SAVED_TO_CLOUD],
 };
 
@@ -175,7 +195,7 @@ export const TABS_LOADED: Metric = {
   type: null,
   title: 'Tabs Loaded',
   blurb:
-    "A tab's content was fetched for viewing, counted each time (the first tab when a diagram opens, then each tab switched to).",
+    "A tab's content was fetched for viewing, counted each time (the first tab when a document opens, then each tab switched to).",
 };
 
 export const TABS_CREATED: Metric = {
@@ -210,7 +230,7 @@ export const TABS_DUPLICATED: Metric = {
 // Exports sit in the Export & Import stack below.
 
 export const EXPORTS: Metric = {
-  category: 'Diagram',
+  category: 'Document',
   action: 'Exported',
   allTypes: true,
   title: 'Exports',
@@ -218,31 +238,33 @@ export const EXPORTS: Metric = {
     'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw). For the text formats, copying to the clipboard counts as an export too.',
 };
 
-// The diagram + tab lifecycle as stacks (Dashboard). Loaded is the opens
-// signal (every open, including a page refresh and a new diagram's first),
+// The document + tab lifecycle as stacks (Dashboard). Loaded is the opens
+// signal (every open, including a page refresh and a new document's first),
 // read against the once-per-object Created beside it. It is a different unit
-// from the changes, and counts every new diagram a second time, so neither
+// from the changes, and counts every new document a second time, so neither
 // head adds it in: each totals the changes made.
-export const DIAGRAM_ACTIONS: MetricStack = {
+export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
-  title: 'Diagram Actions',
+  title: 'Document Actions',
   blurb:
-    'Diagrams opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Diagrams Created.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), how often the wizard was backed out of with Escape, and how often its template shelf was expanded.',
   members: [
-    DIAGRAMS_LOADED,
-    DIAGRAMS_CREATED,
-    DIAGRAMS_RENAMED,
-    DIAGRAMS_DELETED,
-    DIAGRAMS_DUPLICATED,
+    DOCUMENTS_LOADED,
+    DOCUMENTS_CREATED,
+    DOCUMENTS_RENAMED,
+    DOCUMENTS_DELETED,
+    DOCUMENTS_DUPLICATED,
     JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
+    NEW_DOCUMENT_BACKED_OUT,
+    TEMPLATE_SHELF_EXPANDED,
   ],
-  headline: [DIAGRAMS_CREATED, DIAGRAMS_RENAMED, DIAGRAMS_DELETED, DIAGRAMS_DUPLICATED],
+  headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
-// diagram delete. Whether anyone comes back for a deleted diagram is the
+// document delete. Whether anyone comes back for a deleted document is the
 // question, so restores lead; each chart counts every Trash (Personal, Team,
 // Local).
 export const TRASH_OPENED = chart(
@@ -252,18 +274,18 @@ export const TRASH_OPENED = chart(
   'The Trash opened from Settings.',
 );
 
-export const DIAGRAMS_RESTORED = chart(
+export const DOCUMENTS_RESTORED = chart(
   'Trash',
   'Restored',
-  'Diagrams Restored',
-  'A deleted diagram brought back from the Trash, from the Trash itself or from its deleted page.',
+  'Documents Restored',
+  'A deleted document brought back from the Trash, from the Trash itself or from its deleted page.',
 );
 
-export const DIAGRAMS_DELETED_FOR_GOOD = chart(
+export const DOCUMENTS_DELETED_FOR_GOOD = chart(
   'Trash',
   'Deleted',
   'Deleted for Good',
-  'A diagram in the Trash deleted permanently, ahead of its 30 days.',
+  'A document in the Trash deleted permanently, ahead of its 30 days.',
   { rising: 'neutral' },
 );
 
@@ -271,7 +293,7 @@ export const TRASH_EMPTIED = chart(
   'Trash',
   'Cleared',
   'Trash Emptied',
-  'Empty Trash on one group: your diagrams, a team, or this browser.',
+  'Empty Trash on one group: your documents, a team, or this browser.',
   { rising: 'neutral' },
 );
 
@@ -280,8 +302,8 @@ export const TRASH: MetricStack = {
   stack: true,
   title: 'Trash',
   blurb:
-    'Deleted diagrams wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DIAGRAMS_RESTORED, TRASH_OPENED, DIAGRAMS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+    'Deleted documents wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
+  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [
@@ -301,7 +323,7 @@ export const TAB_ACTIONS: MetricStack = {
   stack: true,
   title: 'Tab Actions',
   blurb:
-    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another diagram, locked and cleared.',
+    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another document, locked and cleared.',
   headline: TAB_CHANGES,
   members: [
     TABS_LOADED,
@@ -455,6 +477,26 @@ export const ELEMENT_ACTIONS_USED = chart(
   'Used',
   'Element Actions Used',
   'Using an element in place: a reaction pad, Bring into Focus, playing a video.',
+  // Image search picks have their own chart below.
+  { typeIn: (type) => type !== 'ImageSearch' },
+);
+
+// Image search (docs/specs/009-elements/image-search.md): searches run in the
+// image picker, and the results attached to an image.
+export const IMAGE_SEARCHES = chart(
+  'Element',
+  'Searched',
+  'Image Searches',
+  "Searches run in the image picker's Search tab, for openly licensed pictures.",
+  { types: ['Image'] },
+);
+
+export const IMAGE_SEARCH_PICKS = chart(
+  'Element',
+  'Used',
+  'Image Search Picks',
+  'A searched picture attached to an image element.',
+  { types: ['ImageSearch'] },
 );
 
 export const KEYBOARD_SELECTIONS = chart(
@@ -511,6 +553,8 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENT_OPTIONS_TOGGLED,
     ELEMENTS_LOCKED,
     ELEMENT_ACTIONS_USED,
+    IMAGE_SEARCHES,
+    IMAGE_SEARCH_PICKS,
     KEYBOARD_SELECTIONS,
     INSERTED_BETWEEN,
     NEXT_NOTES_ADDED,
@@ -568,15 +612,17 @@ export const TABLES: MetricStack = {
 };
 
 // Undo, redo and revert.
-export const UNDOS = chart('Diagram', 'Undone', 'Undos', 'A change undone.', { rising: 'neutral' });
+export const UNDOS = chart('Document', 'Undone', 'Undos', 'A change undone.', {
+  rising: 'neutral',
+});
 
-export const REDOS = chart('Diagram', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
+export const REDOS = chart('Document', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
 
 export const REVERTS = chart(
-  'Diagram',
+  'Document',
   'Reverted',
   'Reverts',
-  'A diagram rolled back to an earlier point from the Activity panel.',
+  'A document rolled back to an earlier point from the Activity panel.',
   { rising: 'neutral' },
 );
 
@@ -604,10 +650,18 @@ export const TAB_IMPORTS = chart(
   'A tab imported from draw.io, Excalidraw, Mermaid, Markdown or JSON.',
 );
 
+export const PASTES_FROM_EXCALIDRAW = chart(
+  'Element',
+  'Imported',
+  'Pasted from Excalidraw',
+  'Drawings copied in Excalidraw and pasted or dropped onto the canvas.',
+);
+
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
-  blurb: 'Diagrams leaving livediagram as files and text, and tabs coming in from other tools.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
+  blurb:
+    'Diagrams leaving livediagram as files and text, and tabs and drawings coming in from other tools.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
   seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };

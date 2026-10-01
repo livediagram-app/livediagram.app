@@ -1,7 +1,7 @@
 // Live app worker. Wraps the static-export assets binding with a
-// single path rewrite: any `/diagram/<anything>` request serves the
+// single path rewrite: any `/document/<anything>` request serves the
 // single placeholder HTML built by Next.js, and the client extracts
-// the real diagram id from `window.location.pathname`. See docs/specs/007-editor/new-diagram-route.md
+// the real document id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
@@ -15,7 +15,7 @@ type Env = { ASSETS: AssetsBinding };
 //   - X-Content-Type-Options nosniff: stop the browser sniffing a
 //     mistyped response into an executable type.
 //   - Referrer-Policy strict-origin-when-cross-origin: URLs carry
-//     diagram ids in the path; don't leak full paths to third-party
+//     document ids in the path; don't leak full paths to third-party
 //     sites the user might click out to.
 //   - Permissions-Policy: deny every powerful feature the editor
 //     doesn't use (camera / mic / geolocation / payment / USB) so a
@@ -74,16 +74,16 @@ export default {
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}/explorer/timeline`, 302);
     }
-    // `/diagram` and everything under it shares one HTML file. We
+    // `/document` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
-    // stays `/diagram/<id>` (that's the whole point of the path
+    // stays `/document/<id>` (that's the whole point of the path
     // scheme).
-    if (url.pathname === '/diagram' || url.pathname.startsWith('/diagram/')) {
+    if (isEditorPath(url.pathname)) {
       // Skip if the request already points at the placeholder asset
       // (otherwise we'd loop). Static Assets resolves the extension.
-      if (url.pathname !== '/diagram/placeholder') {
+      if (url.pathname !== '/document/placeholder') {
         const rewritten = new URL(request.url);
-        rewritten.pathname = '/diagram/placeholder';
+        rewritten.pathname = '/document/placeholder';
         return withSecurityHeaders(
           await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
         );
@@ -92,3 +92,4 @@ export default {
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
+import { isEditorPath } from '../lib/legacy-editor-path';

@@ -107,6 +107,12 @@ ends out along that anchor's edge:
 
 The fan is purely visual: stored anchors, snapping and the auto-rebind use the true anchor point.
 
+**Start at exact anchor** (per arrow, off by default): the Line menu of an arrow whose start is
+pinned, under **Pass behind boxes**, has a switch that keeps the arrow's **start** exactly on the anchor it is pinned to. Its
+start sits out of that anchor's fan (`exactStart: true` on the arrow); the other arrows there fan
+among themselves as if it were not there. Its far end still fans. Telemetry:
+`Element·Changed·ArrowExactStart`.
+
 ## Auto-rebind
 
 As elements move, a pinned end can end up on a side that makes its arrow run through a shape. The
@@ -209,7 +215,7 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 
 ## Implementation
 
-- Vocabulary, anchors per shape and geometry: `packages/diagram/src/anchors.ts`, `shape-outline.ts`,
+- Vocabulary, anchors per shape and geometry: `packages/document/src/anchors.ts`, `shape-outline.ts`,
   `svg-path-outline.ts`, `geometry.ts`.
 - Creation choice: `bestAnchorTowards` in `anchor-choice.ts`.
 - Fan: `arrow-endpoint-spread.ts`.

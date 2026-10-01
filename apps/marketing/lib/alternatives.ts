@@ -108,10 +108,10 @@ export const ALTERNATIVES: Alternative[] = [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
-      'Assign action items to teammates on the diagram itself, tracked in an Actions panel.',
+      'Assign action items to teammates on the canvas itself, tracked in an Actions panel.',
       'Friction-free editing: tap once to add a shape, drag arrows that snap into place, and a format painter to copy a style across elements.',
-      'Themed templates and one-click whole-canvas themes turn a blank board into a polished diagram fast.',
-      'Walk a team through the board with the built-in present mode (laser pointer + spotlight), no export needed.',
+      'Themed templates and one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
+      'Walk a team through the canvas with the built-in present mode (laser pointer + spotlight), no export needed.',
       'Run a retro or planning session with the built-in per-tab timer and dot-voting, synced live to every participant.',
       'Import Mermaid or Markdown, export PNG, SVG, PDF, or Mermaid text.',
     ],
@@ -134,14 +134,14 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Collaboration without the onboarding',
         paragraphs: [
           'In Miro, collaborating starts with accounts: your teammates sign up, join a team, get assigned to boards. In livediagram, collaborating is a URL. Share a link and anyone who opens it is on the canvas with you, live cursors and all, without creating an account. Share links can carry a password or an expiry date when you need them locked down.',
-          'The collaboration tools go beyond cursors: leave comments on elements, assign action items to teammates directly on the diagram (with an Actions panel to track them and optional email notifications), and review the change log to see who did what. Editing is protected by a selection lock, so two people never fight over the same element.',
+          'The collaboration tools go beyond cursors: leave comments on elements, assign action items to teammates directly on the canvas (with an Actions panel to track them and optional email notifications), and review the change log to see who did what. Editing is protected by a selection lock, so two people never fight over the same element.',
         ],
       },
       {
         heading: 'Connected to the rest of your workflow',
         paragraphs: [
           'Diagrams rarely live alone. livediagram imports Mermaid flowcharts (the diagram-as-code format that lives in READMEs and AI output) and Markdown outlines, and exports PNG, SVG, PDF, Mermaid, or Markdown. Any share link can be embedded as a read-only, live-updating iframe in a wiki or doc.',
-          'For programmatic use there is a free REST API with personal tokens, and an MCP server that lets AI assistants read and edit your diagrams directly. None of it sits behind a plan.',
+          'For programmatic use there is a free REST API with personal tokens, and an MCP server that lets AI assistants read and edit your documents directly. None of it sits behind a plan.',
         ],
       },
     ],
@@ -152,7 +152,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Do my teammates need an account to edit with me?',
-        a: 'No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. Accounts are optional and mainly useful for syncing your diagrams across devices and using teams.',
+        a: 'No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. Accounts are optional and mainly useful for syncing your documents across devices and using teams.',
       },
       {
         q: 'Can I import my existing Miro boards?',
@@ -247,7 +247,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Does livediagram work offline like the XMind desktop app?',
-        a: "livediagram is a browser app, and its opt-in Offline Mode can keep a diagram stored only in your browser, never sent to a server. But if fully offline desktop work is your main requirement, XMind's native apps are the stronger fit.",
+        a: "livediagram is a browser app, and its opt-in Offline Mode can keep a document stored only in your browser, never sent to a server. But if fully offline desktop work is your main requirement, XMind's native apps are the stronger fit.",
       },
       {
         q: 'Is there a desktop or mobile app?',
@@ -291,7 +291,7 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page.',
-      'Keep a whole project together: several tabs in one diagram, organised in folders, with per-tab layers.',
+      'Keep a whole project together: several tabs in one document, organised in folders, with per-tab layers.',
       'Themes recolour the whole canvas, shapes and arrows, in one click.',
       'Prefer the sketchy look? The Freehand pen keeps your stroke exactly as drawn.',
       'Built-in charts, an icon library, comments and a present mode, without add-ons.',
@@ -412,8 +412,8 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Sharing that fits the web',
         paragraphs: [
-          'A livediagram diagram is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as a read-only iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale.',
-          'When you do need a file, any tab exports as PNG, SVG, or PDF, and the explorer shows thumbnail previews so you can find the right diagram at a glance.',
+          'A livediagram document is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as a read-only iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale.',
+          'When you do need a file, any tab exports as PNG, SVG, or PDF, and the explorer shows thumbnail previews so you can find the right document at a glance.',
         ],
       },
       {

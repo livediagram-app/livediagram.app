@@ -10,8 +10,8 @@
 //   invite  Open Invites · Accept · Decline
 //   theme   Open Themes · Edit Theme · Delete Theme (confirmed)
 //   image   Open Images
-//   diagram the Explorer can't resolve (a team diagram the sidebar
-//           hasn't loaded): Open Diagram
+//   document the Explorer can't resolve (a team document the sidebar
+//           hasn't loaded): Open Document
 //
 // A tombstone, or an entity the Explorer no longer holds (a revoked
 // token, an answered invite, a team the reader has left), keeps only
@@ -26,7 +26,7 @@
 import { CloseIcon } from '@livediagram/ui';
 import {
   CheckIcon,
-  DiagramIcon,
+  DocumentIcon,
   ImageIcon,
   InviteIcon,
   KeyIcon,
@@ -47,10 +47,11 @@ import {
   type CustomThemeDraft,
 } from '@/components/panels/ThemeBuilderModal';
 import { teamDeleteCopy, teamRemovalCopy } from '@/components/panels/team-removal';
-import { TOKEN_REVOKE_MESSAGE } from '@/components/panels/token-copy';
+import { TOKEN_REVOKE_MESSAGE } from '@/components/dialogs/settings/token-copy';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
+import { requestOpenSettings } from '@/lib/open-settings';
 import { useExplorer } from '../ExplorerContext';
 import type { TimelineMenuItem } from './TimelineCardMenu';
 
@@ -223,18 +224,18 @@ export function useTimelineEntityMenus(): {
     (event) => {
       const { sourceType, eventType, snapshot } = event;
 
-      if (sourceType === 'diagram') {
-        // Only reached for a diagram the Explorer could NOT resolve (the
+      if (sourceType === 'document') {
+        // Only reached for a document the Explorer could NOT resolve (the
         // slots hook builds the full menu otherwise). The card click
         // opens it; the menu says so explicitly.
-        const id = str(snapshot, 'diagramId');
+        const id = str(snapshot, 'documentId');
         if (!id) return null;
         return {
           items: [
             {
-              label: 'Open Diagram',
-              icon: <DiagramIcon />,
-              onClick: () => window.location.assign(`/diagram/${encodeURIComponent(id)}`),
+              label: 'Open Document',
+              icon: <DocumentIcon />,
+              onClick: () => window.location.assign(`/document/${encodeURIComponent(id)}`),
             },
           ],
         };
@@ -298,7 +299,11 @@ export function useTimelineEntityMenus(): {
       if (sourceType === 'account') {
         if (TOKEN_EVENTS.has(eventType)) {
           const items: TimelineMenuItem[] = [
-            { label: 'Open Tokens', icon: <KeyIcon />, onClick: () => go({ kind: 'tokens' }) },
+            {
+              label: 'Open API Tokens',
+              icon: <KeyIcon />,
+              onClick: () => requestOpenSettings('tokens'),
+            },
           ];
           const token = tokens.list?.find((t) => t.id === event.sourceId);
           if (token) {

@@ -24,7 +24,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (docs/specs/013-workspace/activity-page.md): the Explorer's cross-diagram inbox. 'Opened'
+  // Activity (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox. 'Opened'
   // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
   // click, 'Loaded'/'Retry' after a failed read.
   'Activity·Loaded',
@@ -35,40 +35,52 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Canvas·Zoomed',
   'Comment·Added',
   'Comment·Deleted',
+  'Comment·Mentioned',
   'Comment·Opened',
   'Comment·Resolved',
   'Comment·Unresolved',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
-  // ('Opened'), and that visit created a diagram ('Created'). `type` is the
+  // ('Opened'), and that visit created a document ('Created'). `type` is the
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
-  'Diagram·Created',
-  'Diagram·Deleted',
-  'Diagram·Duplicated',
-  'Diagram·Exported',
-  'Diagram·Loaded',
-  'Diagram·Moved',
-  'Diagram·Redone',
-  'Diagram·Removed',
-  'Diagram·Renamed',
-  'Diagram·Reverted',
-  'Diagram·Shared',
-  'Diagram·Undone',
+  'Document·Created',
+  'Document·Deleted',
+  'Document·Duplicated',
+  'Document·Exported',
+  'Document·Loaded',
+  'Document·Moved',
+  'Document·Redone',
+  'Document·Removed',
+  'Document·Renamed',
+  'Document·Reverted',
+  'Document·Shared',
+  'Document·Undone',
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
+  'Drive·Applied',
+  'Drive·Changed',
+  'Drive·Created',
+  'Drive·Linked',
+  'Drive·Opened',
+  'Drive·Unlinked',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',
   'Element·Deleted',
   'Element·Duplicated',
+  'Element·Imported',
   'Element·Linked',
   'Element·Locked',
   'Element·Removed',
   'Element·Reordered',
+  // A search submitted in the image picker (docs/specs/009-elements/image-search.md).
+  'Element·Searched',
   'Element·Selected',
   'Element·Toggled',
   'Element·Unlinked',
   'Element·Unlocked',
-  // Playback started on a video element (docs/specs/009-elements/youtube-video.md).
+  // Playback started on a video element (docs/specs/009-elements/youtube-video.md),
+  // or a search result attached to an image (docs/specs/009-elements/image-search.md).
   'Element·Used',
   'Element·Voted',
   'Error·Api',
@@ -158,7 +170,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Created',
   'Token·Removed',
   // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
-  // diagram restored / deleted for good / a group emptied, typed by which Trash.
+  // document restored / deleted for good / a group emptied, typed by which Trash.
   'Trash·Cleared',
   'Trash·Deleted',
   'Trash·Opened',
@@ -179,4 +191,10 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Toggled',
   'UI·Used',
   'UI·View',
+  // Whiteboard tabs (docs/specs/023-whiteboard/whiteboard.md): created (Template / NewTab / Import),
+  // a pen picked, the eraser mode or background changed, shape recognition toggled.
+  'Whiteboard·Changed',
+  'Whiteboard·Created',
+  'Whiteboard·Selected',
+  'Whiteboard·Toggled',
 ];

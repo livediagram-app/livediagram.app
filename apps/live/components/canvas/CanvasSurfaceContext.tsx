@@ -1,11 +1,11 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { CanvasSurface } from '@livediagram/diagram';
+import type { CanvasSurface } from '@livediagram/document';
 
 // Which paper the active tab's canvas is: light or dark. Every element that
 // carries no colour of its own is drawn in that paper's ink
-// (`defaultStrokeColor` and friends in @livediagram/diagram), and the Default
+// (`defaultStrokeColor` and friends in @livediagram/document), and the Default
 // theme deliberately leaves elements uncoloured — so on a Default tab
 // this context IS the element colour (docs/specs/007-editor/live-app.md, docs/specs/008-canvas/canvas-and-palette.md).
 //

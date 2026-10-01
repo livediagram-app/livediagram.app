@@ -5,9 +5,9 @@ import {
   type AlignmentGuide,
   type ArrowElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ARROW_SNAP_REVEAL_PX, ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
-import type { PendingDraw } from '@/lib/draw-mode';
+import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
@@ -90,18 +90,21 @@ export function computeDrawGuides({
   // 0×0 candidate), so the user sees the first corner latch before they
   // press. Mutually exclusive with drawBoxGuides (hover is cleared once a
   // drag starts). The snapped dot itself renders below the guide overlay.
-  const drawHoverGuides = drawHover
-    ? alignmentGuides(
-        { x: drawHover.x, y: drawHover.y, width: 0, height: 0 },
-        elements,
-        NO_GUIDE_EXCLUDE,
-      )
-    : [];
+  // A whiteboard pen draws freely: none of the guides below.
+  const freePen = isWhiteboardPenIntent(pendingDraw);
+  const drawHoverGuides =
+    drawHover && !freePen
+      ? alignmentGuides(
+          { x: drawHover.x, y: drawHover.y, width: 0, height: 0 },
+          elements,
+          NO_GUIDE_EXCLUDE,
+        )
+      : [];
   // Freehand: guide off the live stroke's bounding box so its edges /
   // centre line up with neighbours as you draw — combined with the
   // pre-press start snap, that lets a sketch match a nearby element's
   // width / height (draw until the far edge latches the neighbour's edge).
-  const penBox = penPoints && penPoints.length > 0 ? boundingBoxOf(penPoints) : null;
+  const penBox = penPoints && penPoints.length > 0 && !freePen ? boundingBoxOf(penPoints) : null;
   const drawPenGuides = penBox ? alignmentGuides(penBox, elements, NO_GUIDE_EXCLUDE) : [];
   const alignGuides =
     drawBoxGuides.length > 0 || drawHoverGuides.length > 0 || drawPenGuides.length > 0

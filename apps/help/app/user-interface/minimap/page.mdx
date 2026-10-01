@@ -3,20 +3,20 @@ import { helpMetadata } from '@/lib/seo';
 import { Minimap } from '@/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
-  title: 'Minimap',
+  title: 'Map',
   description:
     'The bottom-left Map gives a zoomed-out overview of the whole canvas with a box marking your current view. Tap or drag it to jump around, and scroll on it to zoom.',
   path: '/help/user-interface/minimap/',
 });
 
 <ArticleLayout
-  title="Minimap"
+  title="Map"
   description="A zoomed-out overview of the whole canvas in the corner, with a box marking where you are — tap or drag to navigate."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-When a diagram grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out wireframe of every shape and connector, with a coloured rectangle marking the part of the canvas you're currently looking at — so you always know where you are and what's off-screen.
+When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out wireframe of every shape and connector, with a coloured rectangle marking the part of the canvas you're currently looking at — so you always know where you are and what's off-screen.
 
 <Figure caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
   <Minimap />
@@ -34,11 +34,11 @@ The view box updates live as you pan and zoom by any means, so the Map doubles a
 
 The Map appears once a tab has a **few elements** to map, and it stacks with the [Activity panel](/help/activity-panel/) in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge.
 
-- To hide it, switch off **Show Minimap** in [Settings](/help/user-interface/settings/), under **Appearance**.
-- To bring it back, use **Show minimap** in [Settings](/help/tools/).
+- To hide it, switch off **Enable Map** in [Settings](/help/user-interface/settings/), under **Panels › Map**.
+- To bring it back, switch **Enable Map** on again in the same place. Its size and the shading outside your view live there too.
 
 <Tip>
-  On a big board, scroll on the Map to zoom straight into a far corner, instead of panning all the
+  On a big canvas, scroll on the Map to zoom straight into a far corner, instead of panning all the
   way there and zooming separately.
 </Tip>
 

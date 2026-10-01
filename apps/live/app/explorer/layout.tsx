@@ -6,7 +6,7 @@ import { ExplorerShell } from './ExplorerShell';
 // its own route page, and this layout wraps them all in the shared
 // chrome — header, sidebar tree, mobile drawer, cross-section
 // overlays — via ExplorerShell. App Router keeps the layout mounted
-// across child navigations, so the shell's state (diagram list,
+// across child navigations, so the shell's state (document list,
 // folders, teams, expanded branches) survives switching sections.
 //
 // Suspense: the shell derives the current section from the URL via

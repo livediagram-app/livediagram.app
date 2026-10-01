@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ShareLinks, LiveCursors } from '@/components/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Sharing Your Document',
+  description:
+    'Hand a colleague a share link and collaborate on the same livediagram in real time, even if they never sign in.',
+  path: '/help/getting-started/sharing-your-document/',
+});
+
+<ArticleLayout title="Sharing Your Document" description="Hand over a link and build the same document together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
+
+livediagram is multiplayer from the first shape. Sharing is just creating a link and handing it over: whoever opens it joins the same canvas, sees live cursors, and edits alongside you. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
+
+## Create a share link
+
+<Step n={1}>Open the document you want to share and click **Share** in the editor header.</Step>
+
+<Step n={2}>
+  In the Share dialog, pick a role for the new link: **Edit** (they can change the document) or
+  **View-only** (they can look but not change). Optionally set a link lifetime so it expires later.
+</Step>
+
+<Step n={3}>
+  Click **Create**, then **Copy link**. Send that URL to whoever you want in the document.
+</Step>
+
+If you are a guest, set **Your name** at the top of the dialog first, that is the name peers see on your cursor and comments.
+
+<Figure caption="The Share dialog mints Edit and View links, each with a Copy button to hand over.">
+  <ShareLinks />
+</Figure>
+
+## What happens when they open it
+
+When someone opens your link they land directly on the canvas:
+
+<Figure caption="Everyone in a shared document sees the others' live cursors and a presence stack of who is here.">
+  <LiveCursors />
+</Figure>
+
+- **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.
+- **Simultaneous editing.** On an Edit link, you both change the document at once. To avoid clashes, an element one person has selected is gently locked for the others while they hold it.
+- **No sign-in required.** A guest can edit straight away, the canvas never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
+
+## Managing and ending access
+
+Back in the Share dialog you can manage links over time:
+
+- **Multiple links.** Mint several links with different roles, for example a View-only link for stakeholders and an Edit link for collaborators.
+- **Revoke** a link to cut off access through it. Expiring links show a countdown, and expired ones can be extended or deleted.
+- **Optional password.** Protect every link with a shared password.
+
+<Tip>
+  Want to put a read-only document on a page or in a doc? Use the embed option in the Share dialog
+  to copy iframe code. See [Sharing](/help/collaboration/sharing/).
+</Tip>
+
+</ArticleLayout>

@@ -1,5 +1,5 @@
 // Pre-assigned layers for templates whose scaffold stays put while
-// their content moves (docs/specs/006-diagram/layers.md "Layered templates"). A layered
+// their content moves (docs/specs/006-document/layers.md "Layered templates"). A layered
 // template's builder stamps these ids onto the elements it returns,
 // and `templateCanvasOverrides` ships the matching `Tab.layers` array,
 // so every application path (editor picker, /new, MCP) lands scaffold
@@ -15,14 +15,14 @@
 // scaffold. Scaffold layers ship named but unlocked; locking is one
 // click in the panel.
 
-import type { Layer } from '@livediagram/diagram';
-import { eventStormingLayers } from '@livediagram/diagram';
+import type { Layer } from '@livediagram/document';
+import { eventStormingLayers } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';
 export const TEMPLATE_CONTENT_LAYER_ID = 'layer:template:content';
 
-// Bottom → top, matching Tab.layers order (docs/specs/006-diagram/layers.md). Built fresh per
+// Bottom → top, matching Tab.layers order (docs/specs/006-document/layers.md). Built fresh per
 // call so a caller mutating its tab can't corrupt the catalogue.
 const layered = (scaffoldName: string, contentName: string): Layer[] => [
   { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: scaffoldName },
@@ -39,7 +39,27 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     case 'kanban':
       return layered('Board', 'Cards');
     case 'retrospective':
+    case 'start-stop-continue':
+    case 'mad-sad-glad':
+    case 'four-ls':
+    case 'sailboat':
       return layered('Board', 'Stickies');
+    case 'incident-postmortem':
+      return layered('Report', 'Findings');
+    case 'opportunity-solution-tree':
+      return layered('Levels', 'Tree');
+    case 'crazy-eights':
+      return layered('Sheet', 'Sketches');
+    case 'stakeholder-map':
+      return layered('Grid', 'Stakeholders');
+    case 'risk-matrix':
+      return layered('Matrix', 'Risks');
+    case 'user-persona':
+      return layered('Card', 'Details');
+    case 'meeting-agenda':
+      return layered('Board', 'Notes');
+    case 'objectives-planner':
+      return layered('Planner', 'Objectives');
     case 'prioritization-matrix':
       return layered('Axes', 'Items');
     case 'affinity-map':
@@ -59,6 +79,9 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Quadrants', 'Notes');
     case 'sequence-diagram':
       return layered('Lifelines', 'Messages');
+    // Tier lanes stay put while components and their wiring move.
+    case 'system-architecture':
+      return layered('Tiers', 'Components');
     // Frame-and-content design templates.
     case 'mobile-wireframe':
     case 'laptop-wireframe':
@@ -80,7 +103,7 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // Event storming (docs/specs/021-event-storming/event-storming.md) is the one four-layer template: a hidden
     // Timeline-rail scaffold under three workshop-stage bands (Big picture /
     // Process / Design) that the editor's view switcher toggles. The layer
-    // set lives in @livediagram/diagram beside the note catalogue so the
+    // set lives in @livediagram/document beside the note catalogue so the
     // switcher and the template read one definition.
     case 'event-storming':
       return eventStormingLayers();

@@ -10,7 +10,7 @@ const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 test('a tab-scoped link opens its tab and nothing else', async ({ page, browser, baseURL }) => {
   const owner = crypto.randomUUID();
-  const diagram = crypto.randomUUID();
+  const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
     crypto.randomUUID(),
     crypto.randomUUID(),
@@ -26,10 +26,10 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     height: 110,
     label,
   });
-  const seeded = await page.request.post(`${apiBase}/diagrams`, {
+  const seeded = await page.request.post(`${apiBase}/documents`, {
     headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
     data: {
-      id: diagram,
+      id: liveDoc,
       name: 'Launch plan',
       tabs: [
         { id: pricing, name: 'Pricing', elements: [box('p1', 200, SECRET)] },
@@ -45,9 +45,9 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     localStorage.setItem('livediagram:v2:self-id', id);
     localStorage.setItem('livediagram:v2:name-confirmed', '1');
   }, owner);
-  await page.goto(`/diagram/${diagram}`);
+  await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Share this diagram' });
+  const dialog = page.getByRole('dialog', { name: 'Share this document' });
   await dialog
     .getByRole('combobox', { name: 'Tabs this link opens' })
     .selectOption({ label: 'Roadmap' });

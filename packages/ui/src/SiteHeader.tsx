@@ -9,7 +9,7 @@ import { ShareRail } from './ShareRail';
 // The public site header shared by the marketing landing page, the telemetry
 // dashboard and the help centre so the three read as one product. Brand +
 // apps-menu dropdown on the left, the CTA pair on the right (a secondary
-// "Just Draw", straight to a blank canvas at /new?blank=1, docs/specs/007-editor/new-diagram-route.md, beside the
+// "Start Blank", straight to a blank canvas at /new?blank=1, docs/specs/007-editor/new-document-route.md, beside the
 // primary "Choose Template", /new, the encouraged wizard path), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
@@ -82,7 +82,7 @@ export function SiteHeader({
   );
 }
 
-// The default CTA pair. Just Draw is hidden on mobile: Brand + dropdown + the
+// The default CTA pair. Start Blank is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex).
 function DefaultActions({ ctaSurface }: { ctaSurface?: Exclude<CtaSurface, 'Help'> }) {
@@ -96,7 +96,7 @@ function DefaultActions({ ctaSurface }: { ctaSurface?: Exclude<CtaSurface, 'Help
           className: 'shrink-0 shadow-sm max-sm:hidden',
         })}
       >
-        <ButtonContent>Just Draw</ButtonContent>
+        <ButtonContent>Start Blank</ButtonContent>
       </a>
       <a
         href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}

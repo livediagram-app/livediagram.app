@@ -27,9 +27,28 @@ async function _apiLoadSelf(id: string): Promise<Participant | null> {
     status: 'online',
   };
 }
-export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
+const loadSelfOnce = dedupeInFlight(_apiLoadSelf, (id) => id);
 
-// Account self-deletion (Clerk-only). Wipes the caller's diagrams,
+// The participant this page last loaded or saved, briefly. /new hands the new document to the
+// editor IN PLACE (docs/specs/007-editor/new-document-route.md), so the editor's identity bootstrap
+// asked again for the participant /new had just read and written: one wasted round trip on every
+// new document. A reload is a new page and starts empty, and presence carries any live change.
+const RECENT_SELF_MS = 30_000;
+let recentSelf: { participant: Participant; at: number } | null = null;
+function rememberSelf(participant: Participant) {
+  recentSelf = { participant, at: Date.now() };
+}
+
+export async function apiLoadSelf(id: string): Promise<Participant | null> {
+  if (recentSelf?.participant.id === id && Date.now() - recentSelf.at < RECENT_SELF_MS) {
+    return { ...recentSelf.participant };
+  }
+  const loaded = await loadSelfOnce(id);
+  if (loaded) rememberSelf(loaded);
+  return loaded;
+}
+
+// Account self-deletion (Clerk-only). Wipes the caller's documents,
 // folders, and participant row server-side; the caller is expected
 // to follow up with Clerk's `user.delete()` to drop the Clerk
 // account itself. Order matters — backend first, then Clerk — so a
@@ -38,7 +57,7 @@ export const apiLoadSelf = dedupeInFlight(_apiLoadSelf, (id) => id);
 // on any non-2xx so the caller can decide whether to proceed with
 // the Clerk delete.
 export async function apiDeleteAccount(): Promise<{
-  diagrams: number;
+  documents: number;
   folders: number;
 } | null> {
   // ownerId arg is unused server-side for this endpoint (the
@@ -50,7 +69,7 @@ export async function apiDeleteAccount(): Promise<{
     headers: await apiHeaders(''),
   });
   if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { diagrams: number; folders: number } };
+  const body = (await res.json()) as { deleted: { documents: number; folders: number } };
   return body.deleted;
 }
 
@@ -65,15 +84,15 @@ export async function apiDeleteAccount(): Promise<{
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
 // to a Clerk account. Returns
-// `{ migrated: { diagrams, folders, shared, images } }`.
+// `{ migrated: { documents, folders, shared, images } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ diagrams: number; folders: number; shared: number; images: number } | null> {
+): Promise<{ documents: number; folders: number; shared: number; images: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
-    // Bearer will be on every call from the editor / new-diagram
+    // Bearer will be on every call from the editor / new-document
     // pages after they've set the provider. ownerId is unused
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.
@@ -86,7 +105,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { diagrams: number; folders: number; shared: number; images: number };
+    migrated: { documents: number; folders: number; shared: number; images: number };
   };
   return body.migrated;
 }
@@ -149,4 +168,17 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
     body: JSON.stringify({ name: p.name, color: p.color }),
   });
   await expectOkVoid(res, 'save self');
+  rememberSelf({ id: p.id, name: p.name, color: p.color, status: 'online' });
+}
+
+// Publish or clear this account's profile picture (docs/specs/014-identity/profile-picture.md §6).
+// Clerk-only server-side. Returns the status so the caller can tell "no participant row yet" (404)
+// from a real failure.
+export async function apiSetProfilePicture(id: string, pictureUrl: string | null): Promise<number> {
+  const res = await apiFetch(`${API_BASE}/participants/${id}/picture`, {
+    method: 'PUT',
+    headers: await apiHeaders(id, { body: true }),
+    body: JSON.stringify({ pictureUrl }),
+  });
+  return res.status;
 }

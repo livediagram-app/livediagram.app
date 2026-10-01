@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
 import {
@@ -130,7 +130,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   shapes: 13,
   build: 5,
   write: 4,
-  draw: 4,
+  draw: 5,
   devices: 7,
   icons: 0,
   stickers: 0,

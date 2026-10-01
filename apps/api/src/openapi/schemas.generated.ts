@@ -61,10 +61,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "description": {
         "type": "string"
       },
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
-      "diagramName": {
+      "documentName": {
         "type": "string"
       },
       "elementId": {
@@ -116,8 +116,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "createdByMe",
       "description",
-      "diagramId",
-      "diagramName",
+      "documentId",
+      "documentName",
       "elementId",
       "elementLabel",
       "id",
@@ -137,10 +137,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentCount": {
         "type": "number"
       },
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
-      "diagramName": {
+      "documentName": {
         "type": "string"
       },
       "elementId": {
@@ -176,7 +176,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
-      "onYourDiagram": {
+      "mentionsYou": {
+        "type": "boolean"
+      },
+      "onYourDocument": {
         "type": "boolean"
       },
       "shareCode": {
@@ -211,13 +214,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "commentCount",
-      "diagramId",
-      "diagramName",
+      "documentId",
+      "documentName",
       "elementId",
       "elementLabel",
       "firstAt",
       "latest",
-      "onYourDiagram",
+      "mentionsYou",
+      "onYourDocument",
       "shareCode",
       "tabId",
       "tabName",
@@ -561,6 +565,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "exactStart": {
+        "type": "boolean"
+      },
       "flow": {
         "$ref": "#/components/schemas/ArrowFlow"
       },
@@ -612,6 +619,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "opacity": {
         "type": "number"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "routeBehind": {
         "type": "boolean"
@@ -793,6 +806,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/FreehandElement"
       },
       {
+        "$ref": "#/components/schemas/PathElement"
+      },
+      {
         "$ref": "#/components/schemas/TableElement"
       },
       {
@@ -811,6 +827,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "aiEnabled": {
         "type": "boolean"
+      },
+      "driveMode": {
+        "$ref": "#/components/schemas/DriveMode"
       },
       "emailEnabled": {
         "type": "boolean"
@@ -983,6 +1002,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
       "text": {
         "type": "string"
       }
@@ -993,6 +1018,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "authorName",
       "authorColor"
+    ],
+    "type": "object"
+  },
+  "CommentMention": {
+    "additionalProperties": false,
+    "properties": {
+      "handle": {
+        "type": "string"
+      },
+      "memberId": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "userId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "userId",
+      "name",
+      "handle"
     ],
     "type": "object"
   },
@@ -2079,7 +2130,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "Diagram": {
+  "Document": {
     "additionalProperties": false,
     "properties": {
       "createdAt": {
@@ -2133,7 +2184,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DiagramSource"
+            "$ref": "#/components/schemas/DocumentSource"
           },
           {
             "type": "null"
@@ -2171,14 +2222,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DiagramSource": {
+  "DocumentSource": {
     "enum": [
       "ai",
       "mcp"
     ],
     "type": "string"
   },
-  "DiagramSummary": {
+  "DocumentSummary": {
     "additionalProperties": false,
     "properties": {
       "createdAt": {
@@ -2214,7 +2265,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DiagramSource"
+            "$ref": "#/components/schemas/DocumentSource"
           },
           {
             "type": "null"
@@ -2241,6 +2292,193 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt"
     ],
     "type": "object"
+  },
+  "DriveAccessToken": {
+    "additionalProperties": false,
+    "properties": {
+      "accessToken": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "accessToken",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnection": {
+    "additionalProperties": false,
+    "properties": {
+      "connectedAt": {
+        "type": "number"
+      },
+      "hasRefreshToken": {
+        "type": "boolean"
+      },
+      "pageToken": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pageTokenSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "rootFolderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "$ref": "#/components/schemas/DriveConnectionStatus"
+      }
+    },
+    "required": [
+      "status",
+      "hasRefreshToken",
+      "rootFolderId",
+      "pageToken",
+      "pageTokenSavedAt",
+      "connectedAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnectionStatus": {
+    "enum": [
+      "connected",
+      "needs_reconnect"
+    ],
+    "type": "string"
+  },
+  "DriveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "driveFileId": {
+        "type": "string"
+      },
+      "headRevisionId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kind": {
+        "$ref": "#/components/schemas/DriveItemKind"
+      },
+      "ldId": {
+        "type": "string"
+      },
+      "ldName": {
+        "type": "string"
+      },
+      "md5": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mirroredSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "notice": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DriveNotice"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "noticeParentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "parentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashed": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "kind",
+      "ldId",
+      "driveFileId",
+      "name",
+      "ldName",
+      "parentId",
+      "trashed",
+      "md5",
+      "headRevisionId",
+      "mirroredSavedAt",
+      "notice",
+      "noticeParentId"
+    ],
+    "type": "object"
+  },
+  "DriveItemKind": {
+    "enum": [
+      "document",
+      "folder"
+    ],
+    "type": "string"
+  },
+  "DriveLease": {
+    "additionalProperties": false,
+    "properties": {
+      "acquired": {
+        "type": "boolean"
+      },
+      "expiresAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "holder": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "acquired",
+      "holder",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveMode": {
+    "enum": [
+      "off",
+      "browser",
+      "broker"
+    ],
+    "type": "string"
+  },
+  "DriveNotice": {
+    "const": "unseen_folder",
+    "type": "string"
   },
   "Element": {
     "anyOf": [
@@ -2401,11 +2639,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "diagramId": {
+          "documentId": {
             "type": "string"
           },
           "kind": {
-            "const": "diagram",
+            "const": "document",
             "type": "string"
           },
           "name": {
@@ -2414,7 +2652,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "required": [
           "kind",
-          "diagramId",
+          "documentId",
           "name"
         ],
         "type": "object"
@@ -2681,6 +2919,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opacity": {
         "type": "number"
       },
+      "packedPoints": {
+        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
+        "format": "byte",
+        "type": "string"
+      },
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
@@ -2688,33 +2931,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "highlighter",
         "type": "string"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "penWidth": {
         "type": "number"
-      },
-      "points": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "nx": {
-              "type": "number"
-            },
-            "ny": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "nx",
-            "ny"
-          ],
-          "type": "object"
-        },
-        "type": "array"
       },
       "rotation": {
         "type": "number"
       },
       "straightEdges": {
         "type": "boolean"
+      },
+      "streamline": {
+        "type": "number"
       },
       "strokeColor": {
         "type": "string"
@@ -2770,7 +3000,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "y",
       "width",
       "height",
-      "points",
+      "packedPoints",
       "closed"
     ],
     "type": "object"
@@ -2837,6 +3067,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ImageCredit": {
+    "additionalProperties": false,
+    "properties": {
+      "licenseUrl": {
+        "type": "string"
+      },
+      "sourceUrl": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text",
+      "sourceUrl"
+    ],
+    "type": "object"
+  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -2863,6 +3112,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
       },
       "fillColor": {
         "type": "string"
@@ -3026,15 +3278,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnownTimelineEventType": {
     "enum": [
-      "diagram_created",
-      "diagram_renamed",
-      "diagram_duplicated",
-      "diagram_moved",
-      "diagram_edited",
-      "diagram_offline",
-      "diagram_synced",
-      "diagram_opened_by_visitor",
-      "diagram_copied_by_visitor",
+      "document_created",
+      "document_renamed",
+      "document_duplicated",
+      "document_moved",
+      "document_edited",
+      "document_offline",
+      "document_synced",
+      "document_opened_by_visitor",
+      "document_copied_by_visitor",
       "folder_created",
       "folder_deleted",
       "comment_added",
@@ -3051,8 +3303,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "team_member_left",
       "team_member_removed",
       "team_role_changed",
-      "team_diagram_added",
-      "team_diagram_removed",
+      "team_document_added",
+      "team_document_removed",
       "team_renamed",
       "team_deleted",
       "team_invite_link_enabled",
@@ -3340,13 +3592,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [
       "id",
       "name",
       "color",
-      "createdAt"
+      "createdAt",
+      "pictureUrl"
     ],
     "type": "object"
   },
@@ -3369,6 +3628,211 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "at"
     ],
     "type": "object"
+  },
+  "PathElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "closed": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/components/schemas/PathNode"
+        },
+        "type": "array"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "path",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "nodes",
+      "closed"
+    ],
+    "type": "object"
+  },
+  "PathHandleMode": {
+    "enum": [
+      "corner",
+      "mirrored",
+      "aligned"
+    ],
+    "type": "string"
+  },
+  "PathNode": {
+    "additionalProperties": false,
+    "properties": {
+      "handleIn": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "handleOut": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/PathHandleMode"
+      },
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "mode",
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PathPoint": {
+    "additionalProperties": false,
+    "properties": {
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PenColourName": {
+    "enum": [
+      "blue",
+      "red",
+      "orange",
+      "green",
+      "teal",
+      "violet",
+      "pink"
+    ],
+    "type": "string"
   },
   "PickerSource": {
     "enum": [
@@ -3635,6 +4099,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
+      "actions": {
+        "items": {
+          "$ref": "#/components/schemas/ElementAction"
+        },
+        "type": "array"
+      },
       "agendaCurrent": {
         "type": "number"
       },
@@ -3844,6 +4314,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pageTitle": {
         "type": "string"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "pickerOptions": {
         "items": {
@@ -4142,7 +4618,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
       "expiresAt": {
@@ -4166,7 +4642,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "code",
-      "diagramId",
+      "documentId",
       "role",
       "createdAt",
       "expiry",
@@ -4194,7 +4670,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SharedTabsSummary": {
     "additionalProperties": false,
     "properties": {
-      "diagrams": {
+      "documents": {
         "type": "number"
       },
       "tabs": {
@@ -4203,7 +4679,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "tabs",
-      "diagrams"
+      "documents"
     ],
     "type": "object"
   },
@@ -4344,6 +4820,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "padding": {
         "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "richText": {
         "items": {
@@ -4491,14 +4970,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming"
+      "event-storming",
+      "whiteboard"
     ],
     "type": "string"
   },
   "TabSummary": {
     "additionalProperties": false,
     "properties": {
-      "diagramId": {
+      "documentId": {
         "type": "string"
       },
       "folder": {
@@ -4523,7 +5003,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "id",
-      "diagramId",
+      "documentId",
       "name",
       "orderIndex",
       "updatedAt"
@@ -4969,6 +5449,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "role": {
         "$ref": "#/components/schemas/TeamRole"
       },
@@ -4996,6 +5482,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "role",
       "status",
       "name",
+      "pictureUrl",
       "createdAt",
       "updatedAt"
     ],
@@ -5038,6 +5525,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Unlinked",
       "Resolved",
       "Unresolved",
+      "Mentioned",
       "Imported",
       "Aligned",
       "Undone",
@@ -5065,6 +5553,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Unhelpful",
       "Returned",
       "Restored",
+      "Applied",
       "Sent",
       "Api",
       "Client",
@@ -5074,7 +5563,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "TelemetryCategory": {
     "enum": [
-      "Diagram",
+      "Document",
       "Element",
       "Tab",
       "Theme",
@@ -5101,7 +5590,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Activity",
       "Page",
       "Cta",
-      "Trash"
+      "Trash",
+      "Whiteboard",
+      "Drive"
     ],
     "type": "string"
   },
@@ -5309,6 +5800,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
+      "autoWidth": {
+        "type": "boolean"
+      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
@@ -5354,6 +5848,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
@@ -5381,11 +5878,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textItalic": {
         "type": "boolean"
       },
+      "textScale": {
+        "type": "number"
+      },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"
       },
       "textStrikethrough": {
         "type": "boolean"
+      },
+      "textSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
       },
       "textUnderline": {
         "type": "boolean"
@@ -5527,7 +6030,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "enum": [
-          "diagram",
+          "document",
           "team",
           "account"
         ],
@@ -5542,7 +6045,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "TrashedDiagram": {
+  "TrashedDocument": {
     "additionalProperties": false,
     "properties": {
       "id": {

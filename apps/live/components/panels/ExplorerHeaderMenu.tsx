@@ -4,26 +4,31 @@ import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
-import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
+import {
+  SettingsIcon,
+  GithubIcon,
+  ScaleIcon,
+  SearchGlyph,
+} from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, Glyph } from '@livediagram/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
-// The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the diagram-level verbs that
+// The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
-// Three bands, new/open, then this diagram (share / export), then the app
-// (search / GitHub / settings). Each row renders only when its handler is
+// Three bands, new/open, then this document (share / export), then the app
+// (search / GitHub / Licences / settings). Each row renders only when its handler is
 // wired, and a band left empty takes its separator with it, so the Explorer
-// behind an error screen (no diagram, so no share / export) still reads
+// behind an error screen (no document, so no share / export) still reads
 // cleanly. Rows, not tiles: a ⋯ menu that IS the list (docs/specs/013-workspace/folders.md).
 export function ExplorerHeaderMenu({
-  onNewDiagram,
+  onNewDocument,
   actions = {},
   helpArticle,
 }: {
-  onNewDiagram?: () => void;
+  onNewDocument?: () => void;
   actions?: ExplorerMenuActions;
   // The panel's article. Minimal chrome hides the header's `?`, so Help moves
   // here (docs/specs/007-editor/power-user-mode.md).
@@ -39,15 +44,15 @@ export function ExplorerHeaderMenu({
 
   const bands: { key: string; rows: ReactNode[] }[] = [
     {
-      key: 'diagrams',
+      key: 'documents',
       rows: [
-        onNewDiagram ? (
+        onNewDocument ? (
           <MenuActionRow
             key="new"
             plain
             icon={<PlusIcon />}
-            label="New Diagram"
-            onClick={run(onNewDiagram)}
+            label="New Document"
+            onClick={run(onNewDocument)}
           />
         ) : null,
         <MenuActionRow
@@ -62,7 +67,7 @@ export function ExplorerHeaderMenu({
       ],
     },
     {
-      key: 'diagram',
+      key: 'document',
       rows: [
         actions.onShare ? (
           <MenuActionRow
@@ -112,6 +117,17 @@ export function ExplorerHeaderMenu({
           label="GitHub"
           onClick={run(() => {
             window.open(REPO_URL, '_blank', 'noopener,noreferrer');
+          })}
+        />,
+        // Third-party licences (docs/specs/002-project-scope/third-party-licences.md),
+        // in a new tab like GitHub so the open document stays put.
+        <MenuActionRow
+          key="licences"
+          plain
+          icon={<ScaleIcon />}
+          label="Licences"
+          onClick={run(() => {
+            window.open('/licences', '_blank', 'noopener,noreferrer');
           })}
         />,
         actions.onOpenSettings ? (

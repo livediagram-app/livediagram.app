@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
-import { snapToAlignment } from '@livediagram/diagram';
+import { snapToAlignment } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useLatest } from '@/hooks/ui/useLatest';

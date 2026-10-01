@@ -11,18 +11,21 @@ import {
   apiListImages,
   type ImageSummary,
 } from '@/lib/api-client';
-import { addImageFileForDiagram, ImageUploadError } from '@/lib/upload-image';
+import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
+import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 
-// Two-tab modal launched from the Image element's placeholder + the
+// Three-tab modal launched from the Image element's placeholder + the
 // "Upload image" palette button. Tab 1 (Upload) accepts a file via
 // drag-drop or file input, runs client-side validation (MIME + size +
 // dimensions) and SHA-256 hashing for dedupe, then POSTs to
 // /api/images. Tab 2 (Gallery) lists every image the owner has
 // uploaded so they can reuse one without re-uploading. docs/specs/009-elements/images.md.
+// Tab 3 (Search) finds openly licensed pictures on Openverse and stores the
+// pick in the gallery with a credit. docs/specs/009-elements/image-search.md.
 //
 // Upload validation + hashing + the apiUploadImage call live in
 // lib/upload-image.ts so the Explorer Image Gallery can reuse the
@@ -30,7 +33,7 @@ import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 
 type ImagePickerProps = {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   // When set, the picker is selecting an image for this specific
   // element id: the parent applies the chosen imageId + dimensions
   // to that element. When null, the picker is opening for a fresh
@@ -43,20 +46,20 @@ type ImagePickerProps = {
   // the element without touching the gallery copy.
   currentImageId?: string | null;
   onRemove?: () => void;
-  onSelect: (image: ImageSummary) => void;
+  onSelect: (image: PickedImage) => void;
   onClose: () => void;
 };
 
 export function ImagePicker({
   ownerId,
-  diagramId,
+  documentId,
   forElementId: _forElementId,
   currentImageId,
   onRemove,
   onSelect,
   onClose,
 }: ImagePickerProps) {
-  const [tab, setTab] = useState<'upload' | 'gallery'>('upload');
+  const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
   const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -80,9 +83,9 @@ export function ImagePicker({
     setUploadError(null);
     setUploading(true);
     try {
-      // Cloud diagrams upload to the gallery; offline diagrams embed the
-      // file locally as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDiagram(ownerId, diagramId, file);
+      // Cloud documents upload to the gallery; offline documents embed the
+      // file locally as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDocument(ownerId, documentId, file);
       onSelect(image);
     } catch (e) {
       setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
@@ -102,7 +105,7 @@ export function ImagePicker({
   // the paste one does too (a focused button inside the dialog
   // doesn't bubble the paste event to the dialog otherwise).
   // The pasted file goes through handleFile as an effect event, so the listener attaches once and
-  // still uploads with the newest owner / diagram / onSelect.
+  // still uploads with the newest owner / document / onSelect.
   const pasteFile = useEffectEvent((file: File) => void handleFile(file));
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -123,13 +126,13 @@ export function ImagePicker({
     return () => document.removeEventListener('paste', onPaste);
   }, []);
 
-  // Gallery picks re-home for offline diagrams (docs/specs/006-diagram/offline-mode.md): a bare gallery id
-  // inside an offline diagram would break once the server's 30-day unused-
+  // Gallery picks re-home for offline documents (docs/specs/006-document/offline-mode.md): a bare gallery id
+  // inside an offline document would break once the server's 30-day unused-
   // image cleanup reaps it (nothing server-side references it), so the bytes
   // are fetched and embedded as a data URI instead, exactly like Take
   // Offline does for existing references.
   const selectFromGallery = async (image: ImageSummary) => {
-    if (!isOfflineIdSync(diagramId)) {
+    if (!isOfflineIdSync(documentId)) {
       onSelect(image);
       return;
     }
@@ -177,6 +180,9 @@ export function ImagePicker({
           Gallery
           {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
         </TabButton>
+        <TabButton active={tab === 'search'} onClick={() => setTab('search')}>
+          Search
+        </TabButton>
       </nav>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {tab === 'upload' ? (
@@ -188,10 +194,12 @@ export function ImagePicker({
             heightClass="h-48"
             gapClass="gap-2"
           />
+        ) : tab === 'search' ? (
+          <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
         ) : (
           <GalleryGrid
             ownerId={ownerId}
-            diagramId={diagramId}
+            documentId={documentId}
             gallery={gallery}
             error={galleryError}
             onSelect={(image) => void selectFromGallery(image)}
@@ -219,14 +227,14 @@ export function ImagePicker({
 
 function GalleryGrid({
   ownerId,
-  diagramId,
+  documentId,
   gallery,
   error,
   onSelect,
   onDelete,
 }: {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   gallery: ImageSummary[] | null;
   error: string | null;
   onSelect: (image: ImageSummary) => void;
@@ -255,7 +263,7 @@ function GalleryGrid({
         <GalleryTile
           key={image.id}
           ownerId={ownerId}
-          diagramId={diagramId}
+          documentId={documentId}
           image={image}
           onSelect={() => onSelect(image)}
           onDelete={() => onDelete(image)}
@@ -267,13 +275,13 @@ function GalleryGrid({
 
 function GalleryTile({
   ownerId,
-  diagramId,
+  documentId,
   image,
   onSelect,
   onDelete,
 }: {
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   image: ImageSummary;
   onSelect: () => void;
   onDelete: () => void;
@@ -283,7 +291,7 @@ function GalleryTile({
       <GalleryImageButton
         image={image}
         ownerId={ownerId}
-        diagramId={diagramId}
+        documentId={documentId}
         onClick={onSelect}
         ariaLabel={`Use ${image.originalName ?? 'image'}`}
       />

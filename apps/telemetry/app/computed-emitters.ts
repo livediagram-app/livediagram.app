@@ -35,6 +35,18 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
   return [...block.matchAll(/'([A-Za-z0-9-]+)'/g)].map((m) => m[1]!);
 }
 
+// The Drive mirror's inbound change types and Open with outcomes.
+const DRIVE_INBOUND_TYPES = tokensAfter(
+  read('live/lib/drive/plan-inbound.ts'),
+  'export type InboundType',
+  ';',
+);
+const DRIVE_OPEN_WITH_TYPES = tokensAfter(
+  read('live/lib/drive/open-with.ts'),
+  'export function openWithTelemetryType',
+  '{',
+);
+
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
@@ -75,6 +87,16 @@ const PHOTO_DETECTORS = (() => {
   ];
 })();
 
+// The image picker's search failures (apps/live image-search/telemetry.ts):
+// every `ImageSearch.<Reason>` token in its fixed tables.
+const IMAGE_SEARCH_WARNINGS = [
+  ...new Set(
+    [...read('live/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
+      (m) => m[1]!,
+    ),
+  ),
+];
+
 // The welcome tour's steps, in order, as tourStepTelemetryType makes them
 // (apps/live tour-steps.ts). The welcome card sends no step view.
 export const TOUR_STEP_SOURCE: string[] = [
@@ -101,7 +123,7 @@ const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
 const API_ERRORS = [
   'Http403.LoadTab.Forbidden',
   'Http500.SaveTab',
-  'Network.Put.Diagrams.Tabs',
+  'Network.Put.Documents.Tabs',
   'Auth.NoSessionToken',
   'SaveFailed.TypeError',
 ];
@@ -115,14 +137,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'Http<status>.SendEmail, any status Resend answers',
   },
   'apps/api/src/index.ts Error·Api': {
-    values: ['Internal.Put.Diagrams.Tabs', 'Internal.Get.Diagrams'],
+    values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
   },
 
   // The MCP worker.
   'apps/mcp/src/tool-annotations.ts Mcp·Used': { values: MCP_TOOLS },
   'apps/mcp/src/api.ts Error·Api': {
-    values: ['Http503.CreateDiagram', 'Internal.ReadDiagram'],
+    values: ['Http503.CreateDocument', 'Internal.ReadDocument'],
     open: 'a status or Internal, plus the tool that failed',
   },
 
@@ -133,25 +155,25 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
-    values: ['Uncaught.Diagram.TypeError', 'UnhandledRejection.Explorer.Error'],
+    values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/diagram', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 
   // The editor.
-  'apps/live/app/diagram/[id]/useElementCreation.ts Element·Added': {
+  'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/diagram/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/live/app/diagram/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/diagram/[id]/useTemplateFlow.ts Theme·Changed': {
+  'apps/live/app/document/[id]/useTemplateFlow.ts Theme·Changed': {
     values: THEMES,
     open: THEME_WHY,
   },
@@ -175,7 +197,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/diagram/[id]/useDiagramTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
+  // the inbound change types and the Open with outcomes, read from their unions.
+  'apps/live/lib/drive/browser-engine.ts Drive·Applied': { values: DRIVE_INBOUND_TYPES },
+  'apps/live/components/drive/DriveOpen.tsx Drive·Opened': { values: DRIVE_OPEN_WITH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
@@ -200,10 +226,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Diagram', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
+  },
+  'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
+    values: IMAGE_SEARCH_WARNINGS,
   },
   'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
@@ -241,12 +270,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
+  'apps/live/hooks/canvas/useWhiteboard.ts Whiteboard·Selected': {
+    values: ['Main', 'Second', 'Third'],
+    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
+  },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
-  'apps/live/hooks/persistence/useShareLinks.ts Diagram·Shared': {
+  'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
     values: ['ExpiryWeek', 'ExpiryMonth', 'ExpirySixMonths'],
   },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },

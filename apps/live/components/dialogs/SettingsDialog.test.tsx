@@ -50,8 +50,8 @@ describe('SettingsDialog', () => {
     setViewport(false);
     Element.prototype.scrollIntoView = vi.fn();
     renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Appearance' }));
-    // Appearance is open, with the Panel Layout row ringed.
+    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Panels' }));
+    // Panels is open, with the Panel Layout row ringed.
     expect(screen.getByRole('radiogroup', { name: 'Panel Layout' })).toBeTruthy();
     const ringed = document.querySelector('[data-settings-row="panelLayout"]');
     expect(ringed?.className).toContain('ring-2');
@@ -80,6 +80,17 @@ describe('SettingsDialog', () => {
     expect(screen.getByText(FIRST_CATEGORY.rows[0]!.label)).toBeTruthy();
     // Nothing to go back to: the rail never left.
     expect(screen.queryByRole('button', { name: /^Settings$/ })).toBeNull();
+  });
+
+  it('holds one fixed desktop height whichever category is picked', () => {
+    // jsdom has no layout, so this pins the contract rather than pixels: a
+    // HEIGHT, not only a max-height, so a short category cannot shrink it.
+    setViewport(false);
+    renderDialog();
+    const dialog = screen.getByRole('dialog', { name: 'Settings' });
+    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
+    fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
+    expect(dialog.className).toContain('sm:h-[min(42rem,calc(100%-6rem))]');
   });
 
   it('swaps the pane when another category is picked, keeping the rail', () => {
@@ -124,6 +135,31 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
     expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+  });
+
+  it('reaches the Panels sub-categories on a phone through the Panels pane', () => {
+    // The root list has no accordion on a phone, so the parent's pane is the
+    // way down, and back from a sub-category returns to that pane.
+    setViewport(true);
+    renderDialog();
+    fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
+    const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
+    expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
+      'Layers',
+      'Activity',
+      'Map',
+      'Collaborate',
+      'Quick Style',
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Layers' }));
+    expect(screen.getByRole('heading', { name: 'Layers' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
+    expect(screen.getByRole('heading', { name: 'Panels' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
   });
 
   it('writes the flipped preference through the catalogue', () => {

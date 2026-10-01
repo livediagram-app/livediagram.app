@@ -3,26 +3,25 @@
 The per-element **note** (`note?` on every boxed element, opened from the
 element menu's Resources band, the on-element note badge, or an annotation
 marker — see [Annotations](annotations.md), [Assigned actions](../012-collaboration/assigned-actions.md))
-was a plain-text paragraph in a 288px popover. That is too cramped for
-anything longer than a line, and a note is often the place a reviewer writes
-several points, a checklist of caveats, or a link to the source material.
+is a **small rich-text document**: a note is often the place a reviewer writes
+several points, a checklist of caveats, or a link to the source material, and
+a plain-text paragraph in a small popover is too cramped for that.
 
-This spec makes the note a **small rich-text document**: a bigger popover, an
-**always-visible formatting toolbar**, and bold / italic / underline /
-headings / bullet + numbered lists / links.
+The note has a wide popover, an **always-visible formatting toolbar**, and
+bold / italic / underline / headings / bullet + numbered lists / links.
 
 ## It reuses the label runs model, it does not invent a second one
 
 Element labels already carry per-range formatting as **runs**
 ([Canvas and palette](../008-canvas/canvas-and-palette.md), `rich-text.ts` in
-`@livediagram/diagram`): an array of `{ text, …deltas }` slices plus a
+`@livediagram/document`): an array of `{ text, …deltas }` slices plus a
 plain-text mirror on the element. Notes use exactly that model, so there is
 one formatting algebra, one contentEditable ↔ runs bridge, and **no HTML is
 ever stored or rendered** — the runs are painted as React spans, which closes
 the stored-XSS door a "just keep the innerHTML" design would open.
 
-Two run attributes are added for this feature (unset on every existing run,
-so nothing re-renders):
+Two run attributes serve notes, `link` and `heading`. Both are optional, so a
+run without them renders as plain text:
 
 ```ts
 type TextRun = {
@@ -33,9 +32,8 @@ type TextRun = {
   strikethrough?: boolean;
   size?: 'sm' | 'md' | 'lg';
   color?: string;
-  // New (docs/specs/009-elements/rich-text-notes.md):
   link?: string; // http/https/mailto only, validated by normaliseUrl
-  heading?: 1 | 2; // line-level emphasis, applied across whole lines
+  heading?: RunHeading; // 1 | 2 | 3, line-level emphasis across whole lines
 };
 ```
 
@@ -43,37 +41,34 @@ type TextRun = {
 selection touches**, the same trick lists already use (a list is literal `• `
 / `1. ` prefix text, not a block node). Keeping the model flat is what lets
 the note reuse the label editor's offset mapping unchanged. The label toolbar
-does not expose either attribute today; nothing stops a future label from
-carrying them.
+exposes `heading` through the block-type picker ([The block-type picker](block-type-picker.md))
+and does not expose `link`; nothing stops a label from carrying one.
 
 ## Data model
 
-`noteRich?: TextRun[]` sits beside `note?: string` on every boxed element that
-already had a note (shape, text, sticky, image, table, link-card,
-annotation), mirroring how `richText` sits beside `label`:
+`noteRich?: TextRun[]` sits beside `note?: string` on every boxed element
+(`isBoxed`: shape, text, sticky, image, freehand, table, annotation, link-card,
+video), mirroring how `richText` sits beside `label`:
 
 - **`note` stays the plain-text mirror**, always `=== runsPlainText(noteRich)`.
-  Everything that already reads a note — the badge's "has a note" test, the
+  Everything that reads a note — the badge's "has a note" test, the
   menu's Add / Edit Note label, search, the JSON / Excalidraw round-trip, the
-  MCP and API payloads — keeps working with zero changes.
+  MCP and API payloads — reads the mirror alone.
 - **`noteRich` is absent when the note carries no formatting** (no runs, or a
-  single delta-free run). A plain note written before this spec, or typed
-  without touching the toolbar, stores exactly what it always did.
-- Committing an empty note strips **both** fields, as before.
+  single delta-free run). A note without formatting stores only `note`.
+- Committing an empty note strips **both** fields.
 
-Note edits keep running through the editor's history `commit`, so undo /
-redo and the change log behave exactly as they did.
+Note edits run through the editor's history `commit`, so undo / redo and the
+change log treat them like any other element edit.
 
 ## The popover
 
-`NotePopover` grows from `w-72` (288px) to **`w-[26rem]` (416px)** with an
-editing surface of **11rem minimum, vertically resizable to 24rem**, and the
-viewport flip / clamp maths tracks the new height. The chrome is otherwise
-unchanged: the "Note" caption, the `Cmd-Enter saves, Esc cancels` hint, and
-the Delete note action all stay.
+`NotePopover` is **`w-[26rem]` (416px)** wide with an editing surface of
+**11rem minimum, vertically resizable to 24rem**, and the viewport flip /
+clamp maths tracks its height. The chrome is the "Note" caption, the
+`Cmd-Enter saves, Esc cancels` hint, and the Delete note action.
 
-**The toolbar is always visible** (the issue's open question, answered): a
-note is usually read as often as it is written, and a toolbar that appears on
+**The toolbar is always visible**: a note is usually read as often as it is written, and a toolbar that appears on
 focus makes the popover jump the moment you click into it. **Read-only
 viewers** get no toolbar at all — they see the formatted note rendered and
 nothing that suggests they could change it, the same gate as every other note
@@ -118,15 +113,15 @@ It splits the runs on `\n` into lines, and paints each run as a `<span>` — or
 an `<a>` when the run carries a safe `link`. Base size is 13px; a run `size`
 maps to 11 / 13 / 16px, `heading: 1` to 17px/700 and `heading: 2` to
 14.5px/600. When `noteRich` is absent it renders `note` as a single plain
-run, so old notes look exactly as they did.
+run.
 
-Notes are **still not drawn in visual exports** (PNG / SVG) — they are an
+Notes are **not drawn in visual exports** (PNG / SVG) — they are an
 on-demand affordance, not page content, per [Annotations](annotations.md).
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Unchanged for the note lifecycle (`Note` / `Opened` / `Added` / `Changed` /
-`Deleted`). A formatting command inside the note editor fires
+The note lifecycle emits `Note` / `Opened` / `Added` / `Changed` /
+`Deleted`. A formatting command inside the note editor fires
 `track('Note', 'Used', <Bold | Italic | Underline | Heading | List | Link>)`
 — an existing category / action pair, and a fixed preset token, never note
 content.

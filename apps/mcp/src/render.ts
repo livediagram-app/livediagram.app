@@ -1,7 +1,7 @@
 // Headless SVG -> PNG rasterisation for inline MCP image content (docs/specs/015-api/mcp-server.md §5).
 // resvg runs as WASM in the Workers runtime; the SVG comes from the shared
-// renderElementsToSvg in packages/diagram, so the MCP and the in-app export draw
-// diagrams identically.
+// renderElementsToSvg in packages/document, so the MCP and the in-app export draw
+// the canvas identically.
 //
 // Workers have no system fonts, so we embed one (Inter, OFL — see
 // fonts/Inter-OFL.txt) as a font buffer and render every label in it. Without an

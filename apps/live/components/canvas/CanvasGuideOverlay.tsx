@@ -3,10 +3,12 @@ import {
   deriveTextColorForBg,
   type AlignmentGuide,
   type DistributionGuide,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { selectionBoxColors } from '@/lib/selection-box';
 
 type Marquee = { startX: number; startY: number; currentX: number; currentY: number } | null;
 
@@ -37,7 +39,8 @@ export function CanvasGuideOverlay({
   viewportZoom,
   wrapperRef,
 }: CanvasGuideOverlayProps) {
-  const accentColor = getTheme(tabThemeId).elementStroke ?? '#0ea5e9';
+  const surface = useCanvasSurface();
+  const marqueeColors = selectionBoxColors(getTheme(tabThemeId).elementStroke, surface);
   // Where canvas (0, 0) sits on screen, measured only while a canvas-space guide shows (the marquee is
   // already in client coords).
   const origin = useCanvasClientOrigin(
@@ -206,17 +209,16 @@ export function CanvasGuideOverlay({
       {marquee ? (
         <div
           aria-hidden
-          // Border + faint fill take the active tab theme's accent (elementStroke,
-          // else the brand sky) so the marquee suits the tab. color-mix keeps the
-          // 12% fill working whatever colour format the theme uses.
+          // Border + faint fill take the active tab theme's accent, softened on
+          // dark paper (selectionBoxColors, shared with the Map's view window).
           className="pointer-events-none fixed z-[var(--z-chrome)] rounded-sm border"
           style={{
             left: Math.min(marquee.startX, marquee.currentX),
             top: Math.min(marquee.startY, marquee.currentY),
             width: Math.abs(marquee.currentX - marquee.startX),
             height: Math.abs(marquee.currentY - marquee.startY),
-            borderColor: accentColor,
-            backgroundColor: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
+            borderColor: marqueeColors.stroke,
+            backgroundColor: marqueeColors.fill,
           }}
         />
       ) : null}

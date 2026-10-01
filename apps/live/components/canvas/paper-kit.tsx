@@ -11,14 +11,14 @@
 // Why this exists
 // ---------------
 // Every one of these elements rendered as the same rounded rectangle with a
-// title and some controls, so a board of them read as one repeated component
+// title and some controls, so a canvas full of them read as one repeated component
 // in thirteen sizes. The thing each of them IS — a clipboard, a ballot box, a
 // ticket stub, a stamped record — was carried entirely by the words on it.
 //
 // Everything here is built from `tint(textColor, alpha)`, so a card is drawn
 // in ITS OWN colour. That is the constraint the whole kit is designed around:
-// the tab theme still owns the palette (docs/specs/011-theme/multicolour-themes.md), and a pink board stays a
-// pink board. The distinction between kinds comes from FORM — a folded corner,
+// the tab theme still owns the palette (docs/specs/011-theme/multicolour-themes.md), and a pink canvas stays a
+// pink canvas. The distinction between kinds comes from FORM — a folded corner,
 // a torn edge, a punched margin, a rotated stamp — which survives any hue,
 // any theme, and light or dark mode, none of which a per-kind colour would.
 //
@@ -30,8 +30,8 @@
 //    can never change the layout it decorates.
 //  - Built from `tint`, never from a Tailwind colour class — see the note on
 //    `tint` itself for what goes wrong when app dark-mode and tab theme fight.
-//  - No animation. These are the surface an element is printed on; a board of
-//    thirteen moving textures is a board nobody can read.
+//  - No animation. These are the surface an element is printed on; a canvas of
+//    thirteen moving textures is a canvas nobody can read.
 
 import { tint } from '@/lib/element-tint';
 
@@ -56,7 +56,7 @@ export function ReelWindow({ textColor }: { textColor: string }) {
 
 /**
  * The moulded edge of a keycap: a lit top, a shaded skirt, and the drop that
- * makes it stand off the board.
+ * makes it stand off the canvas.
  *
  * Applied to a Selection Mode button, which is the one element here that IS a
  * key — you press it and a tool comes out.

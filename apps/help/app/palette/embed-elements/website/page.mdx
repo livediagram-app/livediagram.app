@@ -29,7 +29,7 @@ The flip side is that a **lookalike** host is framed, because it is not a host w
 
 ## The card is labelled with the host
 
-A website card reads **`bbc.co.uk`**, not the word "Website". Three cards side by side saying "Website" tell you nothing; three saying `bbc.co.uk`, `status.example.com` and `docs.internal` tell you what the board holds at a glance.
+A website card reads **`bbc.co.uk`**, not the word "Website". Three cards side by side saying "Website" tell you nothing; three saying `bbc.co.uk`, `status.example.com` and `docs.internal` tell you what the canvas holds at a glance.
 
 That means the label follows the address. Change the address and the label changes with it.
 
@@ -54,13 +54,13 @@ The palette tile, the empty card and the address hint all warn you about framing
 
 ## Nothing loads until you ask
 
-Like every other embed, a website card fetches nothing until you press **Load embed**. Opening a board with five website cards must not quietly fetch five third-party pages and announce your visit to all of them. It matters more here than anywhere: with the named services you at least chose the service, whereas a website card could be pointing anywhere at all.
+Like every other embed, a website card fetches nothing until you press **Load embed**. Opening a canvas with five website cards must not quietly fetch five third-party pages and announce your visit to all of them. It matters more here than anywhere: with the named services you at least chose the service, whereas a website card could be pointing anywhere at all.
 
 ## What a framed page may and may not do
 
 A framed website runs in a **sandbox**. Scripts, forms and pop-ups are allowed, because a page without them is not really a page.
 
-The permission deliberately left out is the one that lets a framed page **navigate the tab it sits in**. Without it, a page inside an embed cannot replace your editor with itself, which is the single thing a "frame any address" feature must not allow. Your diagram stays where it is no matter what the framed page tries.
+The permission deliberately left out is the one that lets a framed page **navigate the tab it sits in**. Without it, a page inside an embed cannot replace your editor with itself, which is the single thing a "frame any address" feature must not allow. Your document stays where it is no matter what the framed page tries.
 
 The named services carry no sandbox at all, because those hosts were each chosen on purpose and several of them break under one.
 

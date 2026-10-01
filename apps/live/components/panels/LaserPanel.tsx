@@ -2,7 +2,7 @@
 
 // The Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
 // tool is active — the same relationship the Avatar Panel has with Avatar mode,
-// down to the width, the corner it homes to, and the mobile dock button.
+// down to the width and the corner it homes to.
 //
 // Four settings: Width, Colour, Trail, Effect. Each is a single-open accordion
 // row with its current value in the collapsed header, so a closed panel is a
@@ -10,7 +10,7 @@
 // the current settings, because "Comet at Bold over a long trail" means nothing
 // as three words and everything as a stroke.
 //
-// Nothing here is a diagram edit: the pen is device-local (see
+// Nothing here is a document edit: the pen is device-local (see
 // lib/laser-config) and rides your laser samples so peers see the same beam.
 
 import { useEffect, useState } from 'react';
@@ -50,7 +50,7 @@ function PenPreview({ config, colour }: { config: LaserConfig; colour: string })
 
   // A gentle S-curve across the box, sampled back in time so the tail is
   // already fading when it appears — the same shape a hand sweeping across a
-  // diagram makes.
+  // canvas makes.
   const points = Array.from({ length: 24 }, (_, i) => {
     const p = i / 23;
     return {

@@ -93,15 +93,15 @@ differ, and the second copy is stored once more.
 
 ## Where the image is stored
 
-- **Cloud diagrams** upload through `POST /api/images` with the SHA-256 and dimensions, the same
+- **Cloud documents** upload through `POST /api/images` with the SHA-256 and dimensions, the same
   call the image picker makes, so the gallery's dedupe, per-file cap and per-owner cap apply
   unchanged. The owner is whoever is importing: a guest's own gallery, or a signed-in account's.
-- **Offline Mode diagrams** ([Offline Mode](../006-diagram/offline-mode.md)) never reach the
+- **Offline Mode documents** ([Offline Mode](../006-document/offline-mode.md)) never reach the
   server. The resized image is embedded in the element as a `data:` URL, the same shape a picked
-  image takes in an offline diagram and the shape Sync Diagram re-homes into the gallery later.
+  image takes in an offline document and the shape Sync Document re-homes into the gallery later.
   Embedding is bounded by an **offline import budget of 8 MB** of `data:` URL text per import:
   an image that would go past it stays a placeholder (`offline-budget`), so one import cannot
-  bloat the diagram record beyond what autosave handles comfortably.
+  bloat the document record beyond what autosave handles comfortably.
 
 ## Named failures
 
@@ -128,7 +128,7 @@ differ, and the second copy is stored once more.
 ## One import session
 
 Images are processed through an **import session**, created per import with the owner, the
-diagram and whether it is offline. The session holds what must be shared across a file's images:
+document and whether it is offline. The session holds what must be shared across a file's images:
 the concurrency limit (three images in flight at once), the offline budget, and the
 `images-unavailable` short-circuit. Within one file, images named by the same key (Excalidraw's
 `fileId`) are processed once and every element referencing it shares the outcome.
@@ -147,7 +147,7 @@ progress beside its buttons ("Importing images 3 of 12…"), so the buttons neve
 
 Each import that meets images returns a **report**, counted per image element on the board:
 
-- **imported**: new images stored (uploaded, or embedded in an offline diagram);
+- **imported**: new images stored (uploaded, or embedded in an offline document);
 - **already in your gallery**: images the gallery already held (the server deduped them);
 - **placeholders**, counted per failure.
 
@@ -165,7 +165,7 @@ without images closes the dialog as before. Copy per failure:
 | `too-large`          | The image was too large to import.                                         |
 | `gallery-full`       | Your image gallery is full. Free up space in the Explorer's Image Gallery. |
 | `images-unavailable` | This server doesn't store images.                                          |
-| `offline-budget`     | This offline diagram reached its image limit for one import.               |
+| `offline-budget`     | This offline document reached its image limit for one import.              |
 | `upload-failed`      | The upload didn't go through. Check your connection and try again.         |
 
 Every summary that lists placeholders ends with the same way forward: _Double-click a placeholder to add its image._

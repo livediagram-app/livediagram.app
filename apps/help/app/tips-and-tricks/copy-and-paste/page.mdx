@@ -4,13 +4,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Copy and Paste',
   description:
-    'Copy, cut and paste elements through your operating system clipboard: between tabs, between diagrams, into a second window, and paste a screenshot straight onto the canvas.',
+    'Copy, cut and paste elements through your operating system clipboard: between tabs, between documents, into a second window, and paste a screenshot straight onto the canvas.',
   path: '/help/tips-and-tricks/copy-and-paste/',
 });
 
 <ArticleLayout
   title="Copy and Paste"
-  description="Move elements between tabs, diagrams and windows through the ordinary system clipboard."
+  description="Move elements between tabs, documents and windows through the ordinary system clipboard."
   categoryTitle="Tips and Tricks"
   categorySlug="tips-and-tricks"
 >
@@ -21,12 +21,12 @@ Select something and `⌘C` copies it, `⌘X` cuts it, `⌘V` pastes it. (On Win
 
 The elements go on your **operating system's clipboard**, not a private one inside the page. That is what makes the useful cases work:
 
-- paste into **another tab** of the same diagram,
-- paste into a **different diagram** entirely,
+- paste into **another tab** of the same document,
+- paste into a **different document** entirely,
 - paste into a **second browser window** you have the editor open in,
 - copy, reload the page, and paste what you copied before the reload.
 
-A copy carries the elements' styling, their labels, their links and notes, and the arrows between them. Ids are re-minted on arrival and pinned arrows are re-wired to the copies, so pasting into a diagram that already holds the originals gives you a genuinely separate set rather than two names for one thing.
+A copy carries the elements' styling, their labels, their links and notes, and the arrows between them. Ids are re-minted on arrival and pinned arrows are re-wired to the copies, so pasting into a document that already holds the originals gives you a genuinely separate set rather than two names for one thing.
 
 ## What paste does
 
@@ -38,7 +38,7 @@ A paste onto a tab you cannot edit does nothing: a view-only [share link](/help/
 
 ## Pasting a screenshot
 
-If what you have on the clipboard is an **image** (a screenshot, or an image copied from a web page) rather than elements, `⌘V` drops it on the canvas as an [image element](/help/palette/tools/images/) and uploads it to your gallery. In an [offline diagram](/help/privacy-and-security/offline-mode/) it is embedded locally instead, so no copy leaves your machine.
+If what you have on the clipboard is an **image** (a screenshot, or an image copied from a web page) rather than elements, `⌘V` drops it on the canvas as an [image element](/help/palette/tools/images/) and uploads it to your gallery. In an [offline document](/help/privacy-and-security/offline-mode/) it is embedded locally instead, so no copy leaves your machine.
 
 Anything else on the clipboard is left alone: pasting ordinary text into a label being edited types the text, as it should.
 

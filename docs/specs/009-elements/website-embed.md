@@ -1,7 +1,7 @@
 # The Website embed
 
 An **Embed** provider that frames any `http(s)` address on the canvas, next to
-the named ones (YouTube, Vimeo, Loom, Figma, Google Docs — see
+the named ones (YouTube, Vimeo, Loom, Figma, Google Docs; see
 [More than YouTube](embed-providers.md)).
 
 Type `https://www.bbc.co.uk`, press **Load embed**, and the page renders inside
@@ -9,7 +9,7 @@ the element.
 
 ## Resolution order
 
-`embedTargetFor` gains a final catch-all returning `provider: 'website'` with
+`embedTargetFor` ends in a catch-all returning `provider: 'website'` with
 the URL passed through untouched. Three things about where it sits:
 
 - **Last.** Every named provider still wins on its own hosts, so a YouTube link
@@ -18,9 +18,9 @@ the URL passed through untouched. Three things about where it sits:
   still returns `null`, because "that isn't a Vimeo video" is a more useful
   answer than silently framing a 404 page. Only hosts we have no opinion about
   reach the catch-all.
-- **`http(s)` only**, unchanged. A `javascript:` or `data:` URL is refused
-  before the catch-all can see it, which is the property that matters most now
-  that the catch-all exists — it must not become a way in.
+- **`http(s)` only**, as for the named providers. A `javascript:` or `data:` URL is refused
+  before the catch-all can see it. With a catch-all in place this is the
+  property that matters most: it must not become a way in.
 
 A lookalike host (`evil-vimeo.com`) resolves as an anonymous **website**, never
 as the provider it imitates. It is still framed, because the user typed it and
@@ -47,8 +47,8 @@ which is never us.
 
 ## Nothing loads until asked
 
-Unchanged from [More than YouTube](embed-providers.md) and load-bearing: the iframe is not mounted until the
-user presses **Load embed**. Opening a diagram containing five website embeds
+As in [More than YouTube](embed-providers.md), and load-bearing: the iframe is not mounted until the
+user presses **Load embed**. Opening a document containing five website embeds
 must not fetch five third-party pages, and a self-hoster ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) should not
 be silently shipping their users anywhere on page load.
 
@@ -72,10 +72,9 @@ Measured in Chrome, bbc.co.uk (which sends both headers) against example.com
 | resource-timing entry    | present     | present   |
 
 Chrome serves its refusal page as a cross-origin document, so the familiar
-"read `location.href`, see `about:blank`" trick reports success for both. A
-first cut used exactly that with a timeout behind it, and the timeout is what
-actually fired: every website embed grew a "won't load" notice eight seconds
-after loading perfectly.
+"read `location.href`, see `about:blank`" trick reports success for both. With
+a timeout behind it, that trick fires the timeout on every website embed: a
+"won't load" notice eight seconds after loading perfectly.
 
 So the product does two things instead of one clever thing:
 

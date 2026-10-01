@@ -2,10 +2,10 @@
 
 import type { TeamFolderHandlers } from './Explorer.types';
 import { useState } from 'react';
-import { DiagramRowShell } from './DiagramRowShell';
-import type { DiagramListItem, Folder } from '@/lib/api-client';
+import { DocumentRowShell } from './DocumentRowShell';
+import type { DocumentListItem, Folder } from '@/lib/api-client';
 import {
-  DiagramRow,
+  DocumentRow,
   FolderNode,
   OfflineNode,
   SharedRow,
@@ -15,7 +15,7 @@ import { ExplorerTabBar, type ExplorerTab } from '@/components/panels/ExplorerTa
 import { TeamNode } from '@/components/panels/explorer-team-views';
 import { SYNTHETIC_FOLDERS } from '@/app/explorer/synthetic-folders';
 import type { PanelFolderTree } from './FolderNode';
-import type { PanelRowActions } from './PanelDiagramRows';
+import type { PanelRowActions } from './PanelDocumentRows';
 import { TreeNodeHeader } from './TreeNodeHeader';
 import type { useExplorerViewModel } from './useExplorerViewModel';
 
@@ -30,22 +30,22 @@ type ExplorerViewModel = ReturnType<typeof useExplorerViewModel>;
 export function ExplorerSections({
   loading,
   ownerId,
-  currentDiagramId,
-  diagrams,
+  currentDocumentId,
+  documents: liveDocs,
   folders,
   teams,
   recents,
   foldersByParent,
-  diagramsByFolder,
-  offlineDiagrams,
+  documentsByFolder,
+  offlineDocuments,
   foldersByTeam,
-  diagramsByTeam,
+  documentsByTeam,
   expandedFolders,
   onToggleFolder,
   pendingRenameFolderId,
   onRenameFolderCommitted,
-  exitingDiagramIds,
-  onOpenDiagram,
+  exitingDocumentIds,
+  onOpenDocument,
   onDismissShared,
   recentExcludedIds,
   onToggleRecentExclusion,
@@ -56,49 +56,49 @@ export function ExplorerSections({
   onCreateChild,
   onTeamFolders,
   onCreateTeamChild,
-  onDeleteDiagram,
-  onDuplicateDiagram,
-  onMoveDiagramRequest,
-  onMoveTeamDiagramRequest,
-  onMoveDiagramToFolder,
+  onDeleteDocument,
+  onDuplicateDocument,
+  onMoveDocumentRequest,
+  onMoveTeamDocumentRequest,
+  onMoveDocumentToFolder,
 }: {
   loading: boolean;
   ownerId: string | null;
   // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md).
   recentExcludedIds?: string[];
-  onToggleRecentExclusion?: (diagramId: string) => void;
+  onToggleRecentExclusion?: (documentId: string) => void;
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds?: Set<string>;
-  onToggleFavourite?: (diagramId: string) => void;
-  currentDiagramId: string | null;
-  diagrams: DiagramListItem[];
+  onToggleFavourite?: (documentId: string) => void;
+  currentDocumentId: string | null;
+  documents: DocumentListItem[];
   folders: Folder[];
   teams: { id: string; name: string }[];
   recents: ExplorerViewModel['recents'];
   foldersByParent: ExplorerViewModel['foldersByParent'];
-  diagramsByFolder: ExplorerViewModel['diagramsByFolder'];
-  offlineDiagrams: ExplorerViewModel['offlineDiagrams'];
+  documentsByFolder: ExplorerViewModel['documentsByFolder'];
+  offlineDocuments: ExplorerViewModel['offlineDocuments'];
   foldersByTeam: ExplorerViewModel['foldersByTeam'];
-  diagramsByTeam: ExplorerViewModel['diagramsByTeam'];
+  documentsByTeam: ExplorerViewModel['documentsByTeam'];
   expandedFolders: Record<string, boolean>;
   onToggleFolder: (key: string) => void;
   pendingRenameFolderId: string | null;
   onRenameFolderCommitted: () => void;
-  exitingDiagramIds: Set<string>;
-  onOpenDiagram: (id: string, shareCode?: string) => void;
-  onDismissShared?: (diagramId: string) => void;
+  exitingDocumentIds: Set<string>;
+  onOpenDocument: (id: string, shareCode?: string) => void;
+  onDismissShared?: (documentId: string) => void;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => void;
-  // Team-library folder verbs for the Teams tab (docs/specs/013-workspace/team-shared-diagrams.md); absent = browse-only.
+  // Team-library folder verbs for the Teams tab (docs/specs/013-workspace/team-shared-documents.md); absent = browse-only.
   onTeamFolders?: TeamFolderHandlers;
   onCreateTeamChild: (teamId: string, parentId: string | null) => void;
-  onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
-  onDuplicateDiagram?: (id: string) => void;
-  onMoveDiagramRequest?: (diagramId: string) => void;
+  onDeleteDocument?: (id: string, anchor: HTMLElement | null) => void;
+  onDuplicateDocument?: (id: string) => void;
+  onMoveDocumentRequest?: (documentId: string) => void;
   // The Teams tab's Change Folder: opens the move picker inside that team.
-  onMoveTeamDiagramRequest?: (diagramId: string, teamId: string) => void;
-  onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
+  onMoveTeamDocumentRequest?: (documentId: string, teamId: string) => void;
+  onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
 }) {
   // The three sections (Recent / Personal Space / Teams) are a single tab bar
   // instead of three stacked accordions, so only one list takes
@@ -120,7 +120,7 @@ export function ExplorerSections({
   // appear disappears and an empty section never becomes dead chrome.
   const sectionTabs: ExplorerTab[] = [];
   if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
-  if (!(diagrams.length === 0 && folders.length === 0))
+  if (!(liveDocs.length === 0 && folders.length === 0))
     sectionTabs.push({ id: 'work', label: 'Personal' });
   if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
   // Resolve the rendered tab: the user's pick when still available,
@@ -150,21 +150,21 @@ export function ExplorerSections({
   // storing "open" would make the first collapse click a no-op.
   const dynamicOpen = !expandedFolders['dynamic-collapsed'];
 
-  // What every diagram row in the Personal tab can do, handed to each node
+  // What every document row in the Personal tab can do, handed to each node
   // (the Teams tab adjusts it per team, below).
   const rows: PanelRowActions = {
     ownerId,
-    currentDiagramId,
-    exitingDiagramIds,
-    onOpenDiagram,
-    onDeleteDiagram,
-    onDuplicateDiagram,
-    onMoveDiagramRequest,
-    onMoveDiagramToFolder,
+    currentDocumentId,
+    exitingDocumentIds,
+    onOpenDocument,
+    onDeleteDocument,
+    onDuplicateDocument,
+    onMoveDocumentRequest,
+    onMoveDocumentToFolder,
   };
   const personalTree: PanelFolderTree = {
     foldersByParent,
-    diagramsByFolder,
+    documentsByFolder,
     expanded: expandedFolders,
     onToggleExpanded: onToggleFolder,
     pendingRenameId: pendingRenameFolderId,
@@ -174,7 +174,7 @@ export function ExplorerSections({
     onCreateChild,
     rows,
   };
-  const unsortedDiagrams = diagramsByFolder.get(null) ?? [];
+  const unsortedDocuments = documentsByFolder.get(null) ?? [];
 
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-slate-50 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
@@ -202,7 +202,7 @@ export function ExplorerSections({
           <ul className="scrollbar-slim flex max-h-60 flex-col gap-0.5 overflow-y-auto">
             {recents.map((entry) =>
               entry.kind === 'shared' ? (
-                // A diagram shared with you: opens on the share
+                // A document shared with you: opens on the share
                 // link, dismissable — never the viewer's to
                 // rename / move / delete.
                 <SharedRow
@@ -210,38 +210,38 @@ export function ExplorerSections({
                   item={entry.s}
                   active={false}
                   ownerId={ownerId}
-                  onOpen={() => onOpenDiagram(entry.s.id, entry.s.shareCode)}
+                  onOpen={() => onOpenDocument(entry.s.id, entry.s.shareCode)}
                   onDismiss={onDismissShared ? () => onDismissShared(entry.s.id) : undefined}
                 />
               ) : (
-                <DiagramRowShell key={entry.d.id} exiting={exitingDiagramIds.has(entry.d.id)}>
-                  <DiagramRow
+                <DocumentRowShell key={entry.d.id} exiting={exitingDocumentIds.has(entry.d.id)}>
+                  <DocumentRow
                     item={entry.d}
                     ownerId={ownerId}
                     active={false}
-                    // Team diagrams (docs/specs/013-workspace/team-shared-diagrams.md) open for any joined member
+                    // Team documents (docs/specs/013-workspace/team-shared-documents.md) open for any joined member
                     // and can be duplicated and re-filed from here; only
-                    // rename (the open diagram's) and the owner-gated delete
+                    // rename (the open document's) and the owner-gated delete
                     // are narrower than the /explorer page's.
-                    draggable={entry.kind === 'own' && !!onMoveDiagramToFolder}
-                    onOpen={() => onOpenDiagram(entry.d.id)}
+                    draggable={entry.kind === 'own' && !!onMoveDocumentToFolder}
+                    onOpen={() => onOpenDocument(entry.d.id)}
                     onDelete={
-                      entry.kind === 'own' && onDeleteDiagram
-                        ? (anchor) => onDeleteDiagram(entry.d.id, anchor)
+                      entry.kind === 'own' && onDeleteDocument
+                        ? (anchor) => onDeleteDocument(entry.d.id, anchor)
                         : undefined
                     }
                     onDuplicate={
-                      onDuplicateDiagram ? () => onDuplicateDiagram(entry.d.id) : undefined
+                      onDuplicateDocument ? () => onDuplicateDocument(entry.d.id) : undefined
                     }
                     // A team row's move opens the picker inside its team, so
-                    // the pick routes through the scope-aware move (docs/specs/013-workspace/team-shared-diagrams.md).
+                    // the pick routes through the scope-aware move (docs/specs/013-workspace/team-shared-documents.md).
                     onMoveRequest={
                       entry.kind === 'team'
-                        ? onMoveTeamDiagramRequest && entry.d.team
-                          ? () => onMoveTeamDiagramRequest(entry.d.id, entry.d.team!.id)
+                        ? onMoveTeamDocumentRequest && entry.d.team
+                          ? () => onMoveTeamDocumentRequest(entry.d.id, entry.d.team!.id)
                           : undefined
-                        : onMoveDiagramRequest
-                          ? () => onMoveDiagramRequest(entry.d.id)
+                        : onMoveDocumentRequest
+                          ? () => onMoveDocumentRequest(entry.d.id)
                           : undefined
                     }
                     // Hiding from Recent is a per-user view choice, so it
@@ -258,7 +258,7 @@ export function ExplorerSections({
                         : undefined
                     }
                   />
-                </DiagramRowShell>
+                </DocumentRowShell>
               ),
             )}
           </ul>
@@ -269,7 +269,7 @@ export function ExplorerSections({
             <FolderNode key={f.id} folder={f} depth={0} tree={personalTree} />
           ))}
           {/* The synthetic nodes group under one "Dynamic" parent (matching
-              the /explorer sidebar): live views over your diagrams, not real
+              the /explorer sidebar): live views over your documents, not real
               folder rows. Open by default so Unsorted stays one click away. */}
           <li>
             <TreeNodeHeader
@@ -279,26 +279,26 @@ export function ExplorerSections({
               icon={<SYNTHETIC_FOLDERS.dynamic.Icon size={12} />}
               label={SYNTHETIC_FOLDERS.dynamic.label}
               labelClassName="italic text-slate-500 dark:text-white"
-              count={unsortedDiagrams.length + offlineDiagrams.length}
+              count={unsortedDocuments.length + offlineDocuments.length}
             />
           </li>
           {dynamicOpen ? (
             <li>
               <ul className="flex flex-col gap-0.5 pl-3">
-                {unsortedDiagrams.length > 0 ? (
+                {unsortedDocuments.length > 0 ? (
                   <UnsortedNode
                     expanded={expandedFolders}
                     onToggleExpanded={onToggleFolder}
-                    diagrams={unsortedDiagrams}
+                    documents={unsortedDocuments}
                     rows={rows}
                   />
                 ) : null}
-                {/* Offline (docs/specs/006-diagram/offline-mode.md): always rendered, even empty, so the
+                {/* Offline (docs/specs/006-document/offline-mode.md): always rendered, even empty, so the
                     browser-only bucket stays discoverable. */}
                 <OfflineNode
                   expanded={expandedFolders}
                   onToggleExpanded={onToggleFolder}
-                  diagrams={offlineDiagrams}
+                  documents={offlineDocuments}
                   rows={rows}
                 />
               </ul>
@@ -312,21 +312,21 @@ export function ExplorerSections({
               key={t.id}
               team={t}
               folders={foldersByTeam.get(t.id) ?? []}
-              diagrams={diagramsByTeam.get(t.id) ?? []}
+              documents={documentsByTeam.get(t.id) ?? []}
               expanded={expandedFolders}
               onToggleExpanded={onToggleFolder}
               onOpenTeam={(teamId) =>
                 window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
               }
               // Hard delete on team-library rows, any joined member
-              // (docs/specs/013-workspace/team-shared-diagrams.md); the api enforces membership. Change Folder
+              // (docs/specs/013-workspace/team-shared-documents.md); the api enforces membership. Change Folder
               // opens the picker inside this team. No drag-and-drop.
               rows={{
                 ...rows,
-                onMoveDiagramRequest: onMoveTeamDiagramRequest
-                  ? (id) => onMoveTeamDiagramRequest(id, t.id)
+                onMoveDocumentRequest: onMoveTeamDocumentRequest
+                  ? (id) => onMoveTeamDocumentRequest(id, t.id)
                   : undefined,
-                onMoveDiagramToFolder: undefined,
+                onMoveDocumentToFolder: undefined,
               }}
               pendingRenameId={pendingRenameFolderId}
               onRenameFolderCommitted={onRenameFolderCommitted}

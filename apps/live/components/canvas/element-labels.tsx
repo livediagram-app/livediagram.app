@@ -16,15 +16,17 @@
 import {
   hasRichFormatting,
   isEventStormingNote,
+  LABEL_FONT_PX,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
   type TextRun,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
+import type { TextHugLabel } from './useTextHug';
 
 export function renderLabel(
   element: BoxedElement,
@@ -56,15 +58,22 @@ export function renderLabel(
   // element's invisible bounding box. Set only for text elements (see
   // isTextNativeAnim in BoxedElementView); undefined otherwise.
   labelAnimClass?: string,
+  // A whiteboard text box hugging its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+  // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
+  // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
+  hug?: TextHugLabel,
 ) {
   const isSticky = element.type === 'sticky';
+  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-whiteboard/whiteboard.md).
+  const textScale = element.type === 'text' ? (element.textScale ?? 1) : 1;
+  const textPadding = hug ? hug.padding : padding;
   // Shape elements don't carry a placeholder during edit. The user
   // is already mid-double-click on a visible shape, so the empty
   // input doesn't need "Label" filler nudging them; the surrounding
   // shape silhouette communicates context already. Sticky notes
   // and standalone text elements DO get a placeholder because their
   // pre-edit affordance is just an empty rectangle / nothing.
-  const placeholder = element.type === 'text' ? 'Text' : isSticky ? 'Note' : '';
+  const placeholder = element.type === 'text' ? (hug ? '' : 'Text') : isSticky ? 'Note' : '';
 
   // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — a presentation rule,
   // so it rides the label STYLE (and the fit below) rather than touching the
@@ -123,7 +132,9 @@ export function renderLabel(
         fitBox={fitBox}
         alignX={alignX}
         alignY={alignY}
-        padding={padding}
+        padding={textPadding}
+        textScale={textScale}
+        onLiveText={hug?.onLiveText}
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
@@ -150,7 +161,8 @@ export function renderLabel(
         textSize={textSize}
         alignX={alignX}
         alignY={alignY}
-        padding={padding}
+        padding={textPadding}
+        textScale={textScale}
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
@@ -176,7 +188,7 @@ export function renderLabel(
     );
   }
 
-  if (textSize === 'scale') {
+  if (textSize === 'scale' && !hug) {
     if (!label) return null;
     return (
       <ScalingLabel
@@ -196,10 +208,10 @@ export function renderLabel(
   return (
     <FixedSizeLabel
       text={label}
-      size={textSize}
+      px={hug ? hug.fontPx : LABEL_FONT_PX[textSize] * textScale}
       alignX={alignX}
       alignY={alignY}
-      padding={padding}
+      padding={textPadding}
       style={textStyle}
       animClass={labelAnimClass}
     />

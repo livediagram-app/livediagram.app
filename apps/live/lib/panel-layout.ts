@@ -89,11 +89,13 @@ export type PanelLayout = {
 export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   explorer: 'top-left',
   palette: 'top-right',
-  collaborate: 'top-right',
+  // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): with Layers, above the cluster button
+  // it minimises into.
+  collaborate: 'bottom-right',
   ai: 'top-right',
   activity: 'bottom-left',
   minimap: 'bottom-left',
-  // Layers (docs/specs/006-diagram/layers.md): the one panel homed bottom-right, above the fixed
+  // Layers (docs/specs/006-document/layers.md): the one panel homed bottom-right, above the fixed
   // zoom cluster (that corner's inset already clears it).
   layers: 'bottom-right',
   // Live poll (docs/specs/012-collaboration/live-poll.md): top-right under the Palette, where the panels
@@ -129,9 +131,9 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['top-left'] = ['explorer'];
-  corners['top-right'] = ['palette', 'vote', 'poll', 'collaborate', 'ai'];
+  corners['top-right'] = ['palette', 'vote', 'poll', 'ai'];
   corners['bottom-left'] = ['activity', 'minimap'];
-  corners['bottom-right'] = ['layers'];
+  corners['bottom-right'] = ['layers', 'collaborate'];
   return { corners, free: {} };
 }
 
@@ -264,11 +266,13 @@ export function resolvePlacement(layout: PanelLayout, panel: PanelId): ResolvedP
 // `*-4` (1rem) Tailwind corner classes in the dock containers.
 export const CORNER_INSET_PX = 16;
 // Extra bottom inset for the BOTTOM-RIGHT corner so a panel docked there
-// sits ABOVE the fixed zoom controls (bottom-right, ~44px tall at a 16px
-// inset) rather than overlapping them. Internal: it reaches the dock
-// container + snap detection via cornerBottomInset(), so nothing imports
-// the raw constant.
-const ZOOM_CLEARANCE_PX = 56;
+// sits ABOVE the fixed zoom controls (bottom-right, 44px tall at a 16px
+// inset) with a 12px gap, rather than overlapping them. The cluster is drawn
+// at the UI scale (docs/specs/007-editor/ui-scale.md), so its height scales
+// and the gap does not. Internal: they reach the dock container + snap
+// detection via cornerBottomInset(), so nothing imports the raw constants.
+const ZOOM_CLUSTER_HEIGHT_PX = 44;
+const ZOOM_CLUSTER_GAP_PX = 12;
 // How close (px) the panel's relevant corner must get to a corner anchor
 // before that corner becomes the snap candidate. Internal to the snap math.
 const SNAP_RADIUS_PX = 96;
@@ -285,9 +289,11 @@ export const STACK_GAP_PX = 16;
 export type CornerStackExtents = Partial<Record<PanelCorner, number>>;
 
 // The total bottom inset for a corner: bottom-right is raised to clear the
-// zoom controls; every other corner uses the plain inset.
-export function cornerBottomInset(corner: PanelCorner): number {
-  return corner === 'bottom-right' ? CORNER_INSET_PX + ZOOM_CLEARANCE_PX : CORNER_INSET_PX;
+// zoom controls, drawn at `scale`; every other corner uses the plain inset.
+export function cornerBottomInset(corner: PanelCorner, scale = 1): number {
+  return corner === 'bottom-right'
+    ? CORNER_INSET_PX + ZOOM_CLUSTER_HEIGHT_PX * scale + ZOOM_CLUSTER_GAP_PX
+    : CORNER_INSET_PX;
 }
 
 // A dragged panel's geometry in positioning-container (i.e. <main>)
@@ -312,13 +318,16 @@ function cornerAnchor(
   parentWidth: number,
   parentHeight: number,
   extent: number,
+  scale: number,
 ): { x: number; y: number } {
   const left = corner === 'top-left' || corner === 'bottom-left';
   const top = corner === 'top-left' || corner === 'top-right';
   const stackOffset = extent > 0 ? extent + STACK_GAP_PX : 0;
   return {
     x: left ? CORNER_INSET_PX : parentWidth - CORNER_INSET_PX,
-    y: top ? CORNER_INSET_PX + stackOffset : parentHeight - cornerBottomInset(corner) - stackOffset,
+    y: top
+      ? CORNER_INSET_PX + stackOffset
+      : parentHeight - cornerBottomInset(corner, scale) - stackOffset,
   };
 }
 
@@ -339,15 +348,23 @@ function panelCornerPoint(corner: PanelCorner, geom: PanelDragGeometry): { x: nu
 // outside every corner's snap radius (a free drop). Picks the nearest
 // when more than one is in range. `extents` shifts each corner's anchor
 // past any panel already stacked there, so detection matches the landing
-// slot (you don't have to reach the bare corner).
+// slot (you don't have to reach the bare corner). `scale` is the UI scale the
+// zoom controls are drawn at.
 export function nearestSnapCorner(
   geom: PanelDragGeometry,
   extents: CornerStackExtents = {},
+  scale = 1,
 ): PanelCorner | null {
   let best: PanelCorner | null = null;
   let bestDist = SNAP_RADIUS_PX;
   for (const corner of PANEL_CORNERS) {
-    const anchor = cornerAnchor(corner, geom.parentWidth, geom.parentHeight, extents[corner] ?? 0);
+    const anchor = cornerAnchor(
+      corner,
+      geom.parentWidth,
+      geom.parentHeight,
+      extents[corner] ?? 0,
+      scale,
+    );
     const point = panelCornerPoint(corner, geom);
     const dist = Math.hypot(point.x - anchor.x, point.y - anchor.y);
     if (dist <= bestDist) {

@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
 import {
   BringToFrontIcon,
@@ -10,6 +10,8 @@ import {
   SendToBackIcon,
   TextIcon,
 } from '@/components/canvas/selection-popover-icons';
+import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
+import { EditPointsIcon } from '@/components/palette/palette-icons';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -31,11 +33,18 @@ type SelectionPopoverProps = {
   // True when the element already has text: the button reads "Edit text";
   // false = "Add text". Defaults to edit for older callers.
   hasText?: boolean;
+  // Open a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"): a path only.
+  onEditPoints?: () => void;
+  // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
+  // The same actions as Tab / Enter and the "+" ring, given a one-click home
+  // on the toolbar. Passed only for an editable, unlocked mind node.
+  onAddMindChild?: () => void;
+  onAddMindSibling?: () => void;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
-  // Intra-LAYER z-order (docs/specs/006-diagram/layers.md gained no z-nudge until now): stack this
+  // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;
@@ -77,6 +86,9 @@ export function SelectionPopover({
   onDelete,
   onEditText,
   hasText = true,
+  onEditPoints,
+  onAddMindChild,
+  onAddMindSibling,
   onDuplicate,
   onBringToFront,
   onSendToBack,
@@ -86,11 +98,14 @@ export function SelectionPopover({
   title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
-  // Desktop right-clicks for the menu and presses Delete for the bin; touch
-  // can do neither, so it keeps both buttons (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
+  // More opens the element menu: on every device, since right-click is not something a desktop
+  // user finds, except in power user mode, where right-click is the way in. Touch can't
+  // right-click, so it always keeps it. The bin goes only with Minimal chrome on desktop, where
+  // Delete is the key (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
   const touch = useCoarsePointer();
   const minimalChrome = useMinimalChrome();
-  const showMore = !!onOpenContextMenu && touch;
+  const powerUser = usePowerUser();
+  const showMore = !!onOpenContextMenu && (touch || !powerUser);
   const showDelete = !!onDelete && (touch || !minimalChrome);
   // Counter-scaled placement: the popover renders at its natural on-screen size
   // regardless of zoom, pinned to the selection's nearest centre edge.
@@ -105,6 +120,8 @@ export function SelectionPopover({
     <div
       ref={ref}
       data-testid="selection-popover"
+      // A toolbar over the canvas: a held tool's press there is a button press (usePathTool).
+      data-canvas-toolbar=""
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -146,6 +163,39 @@ export function SelectionPopover({
             onClick={onEditText}
           >
             <TextIcon />
+          </PopoverButton>
+          <Divider />
+        </>
+      ) : null}
+
+      {onEditPoints ? (
+        <>
+          <PopoverButton
+            label="Edit points"
+            description="Adjust the path's points, corners and curves."
+            onClick={onEditPoints}
+          >
+            <EditPointsIcon />
+          </PopoverButton>
+          <Divider />
+        </>
+      ) : null}
+
+      {onAddMindChild && onAddMindSibling ? (
+        <>
+          <PopoverButton
+            label={MIND_CHILD_OPTION.label}
+            description={MIND_CHILD_OPTION.description}
+            onClick={onAddMindChild}
+          >
+            {MIND_CHILD_OPTION.icon}
+          </PopoverButton>
+          <PopoverButton
+            label={MIND_SIBLING_OPTION.label}
+            description={MIND_SIBLING_OPTION.description}
+            onClick={onAddMindSibling}
+          >
+            {MIND_SIBLING_OPTION.icon}
           </PopoverButton>
           <Divider />
         </>

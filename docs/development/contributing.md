@@ -39,6 +39,8 @@ pnpm build
 
 CI runs the same five steps on every push, plus `pnpm staging:check`. Failing any of them blocks the merge.
 
+Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
+
 ### Merging to `main` deploys
 
 A merge to `main` that passes CI **deploys automatically to staging** —
@@ -93,9 +95,11 @@ When you add a feature, add tests for the critical paths. When you fix a bug, ad
 
 The bar isn't 100% line coverage; it's "the next regression on this code path fails CI before it ships."
 
-### End-to-end smoke tests
+### End-to-end tests
 
-A small [Playwright](https://playwright.dev) smoke suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It is **deliberately off the per-PR gate** because a browser run costs real CI minutes; it runs on push to `main` and on demand (the `E2E Smoke` workflow, `.github/workflows/e2e.yml`).
+A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It is **deliberately off the per-PR gate** because a browser run costs real CI minutes; it runs on push to `main` and on demand (the `E2E Smoke` workflow, `.github/workflows/e2e.yml`).
+
+A change to shared chrome (a Settings row, a panel, the top or bottom bars) can move what a smoke spec measures without failing any PR check, so run the suite on the branch before merging: `gh workflow run e2e.yml --ref <branch>`.
 
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3002` / `:8787`):
 
@@ -103,7 +107,14 @@ Run it locally against a running `pnpm dev` stack (it reuses the servers on `:30
 pnpm --filter @livediagram/live test:e2e
 ```
 
-Without a dev stack, it builds the live app and boots its own (`scripts/e2e-stack.mjs`).
+Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/live/out`, which it never rebuilds: run `pnpm --filter @livediagram/live build` first, or it exits naming the missing build.
+
+The signed-in specs (`apps/live/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+
+```sh
+pnpm --filter @livediagram/live build:clerk-stub
+pnpm --filter @livediagram/live test:e2e:clerk-stub
+```
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3002` is already taken (a second checkout, a worktree):
 
@@ -143,7 +154,7 @@ Open a [GitHub issue](https://github.com/livediagram-app/livediagram.app/issues)
 
 - What you expected vs what happened.
 - The browser / OS if visible UI is involved.
-- A diagram id, share code, or repro steps if applicable.
+- A document id, share code, or repro steps if applicable.
 - Whether you're on the hosted livediagram.app or a self-host.
 
 For feature requests, link to (or propose) a spec entry. A new feature without a spec is hard to review meaningfully; one with a spec is straightforward.

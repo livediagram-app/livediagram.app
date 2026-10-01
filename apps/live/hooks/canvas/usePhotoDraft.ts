@@ -14,7 +14,7 @@ import {
   type PhotoNote,
   type StickyElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
 import type { ReadOptions } from '@/lib/reading/types';

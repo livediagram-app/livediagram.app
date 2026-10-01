@@ -105,14 +105,14 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 8,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
     title: 'Privacy and Security',
     description:
-      'Know exactly how your diagrams are stored, what we collect, and how to keep shared links safe.',
+      'Know exactly how your documents are stored, what we collect, and how to keep shared links safe.',
     articleCount: 5,
   },
   {
@@ -164,7 +164,7 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the panels, toolbar, context menus, minimap, zoom and tab bars, quick controls, and power user mode.',
+      'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls, and power user mode.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -172,8 +172,8 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 14,
+      'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
+    articleCount: 15,
     kind: 'feature',
   },
   {
@@ -189,7 +189,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 26,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -197,14 +197,14 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 21,
+    articleCount: 22,
     kind: 'feature',
   },
   {
     slug: 'tabs',
     title: 'Tabs',
     description:
-      'Keep a whole project in one diagram: organise, link, and move between multiple boards with tabs.',
+      'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
     articleCount: 8,
     kind: 'feature',
   },
@@ -220,7 +220,7 @@ export const categories: Category[] = [
     slug: 'activity-panel',
     title: 'Activity Panel',
     description:
-      'The running record of every change to a diagram, with undo, redo, and reverting a single change.',
+      'The running record of every change to a document, with undo, redo, and reverting a single change.',
     articleCount: 5,
     kind: 'feature',
   },
@@ -236,7 +236,7 @@ export const categories: Category[] = [
     slug: 'search-panel',
     title: 'Search Panel',
     description:
-      'Find anything in seconds: jump to any diagram, folder, team, tab, or element, and add new elements to the canvas.',
+      'Find anything in seconds: jump to any document, folder, team, tab, or element, and add new elements to the canvas.',
     articleCount: 1,
     kind: 'feature',
   },
@@ -280,17 +280,17 @@ export const articles: Article[] = [
   {
     slug: 'zoom-controls',
     title: 'Zoom Controls',
-    description: 'Move in and out of the canvas, fit the diagram to the screen, and reset to 100%.',
+    description: 'Zoom in and out, fit the canvas to the screen, and reset to 100%.',
     keywords: 'zoom in out magnify fit screen percentage scale reset view dock',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
   {
     slug: 'minimap',
-    title: 'Minimap',
+    title: 'Map',
     description:
       'The bottom-left Map: a zoomed-out overview with a box for your view. Tap or drag to navigate.',
-    keywords: 'map overview navigate viewport birds eye locate where am i',
+    keywords: 'minimap mini map overview navigate viewport birds eye locate where am i',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -298,7 +298,7 @@ export const articles: Article[] = [
     slug: 'tab-bar',
     title: 'The Tab Bar',
     description:
-      'Switch between the boards in a diagram, add new ones, and group them into folders.',
+      'Switch between the boards in a document, add new ones, and group them into folders.',
     keywords: 'tabs boards pages switch bottom bar sheets add rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -316,7 +316,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
+      'settings preferences options config configure gear cog toggles panel layout floating toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -326,7 +326,7 @@ export const articles: Article[] = [
     title: 'Power User Mode',
     description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
     keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings',
+      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -383,7 +383,7 @@ export const articles: Article[] = [
     title: 'The Welcome Tour',
     description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
     keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar minimal floating',
+      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar floating',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -404,10 +404,10 @@ export const articles: Article[] = [
     categorySlug: 'getting-started',
   },
   {
-    slug: 'sharing-your-diagram',
-    title: 'Sharing Your Diagram',
+    slug: 'sharing-your-document',
+    title: 'Sharing Your Document',
     description: 'Hand a link to anyone and edit together in real time.',
-    keywords: 'share link collaborate invite send url realtime together',
+    keywords: 'share link collaborate invite send url realtime together diagram',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -474,9 +474,9 @@ export const articles: Article[] = [
   {
     slug: 'copy-and-paste',
     title: 'Copy and Paste',
-    description: 'Move elements between tabs, diagrams and windows through the system clipboard.',
+    description: 'Move elements between tabs, documents and windows through the system clipboard.',
     keywords:
-      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between diagrams another tab second window screenshot paste image offset reconnect arrows system clipboard',
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset reconnect arrows system clipboard',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -501,7 +501,7 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description: 'The per-browser id that owns your diagrams when you are not signed in.',
+    description: 'The per-browser id that owns your documents when you are not signed in.',
     keywords: 'anonymous browser id localstorage owner identity without account',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -509,8 +509,10 @@ export const articles: Article[] = [
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest diagrams.',
-    keywords: 'login log in sign up register email code google oauth account create migrate',
+    description:
+      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+    keywords:
+      'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -525,7 +527,7 @@ export const articles: Article[] = [
   {
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
-    description: 'How to remove a diagram or clear everything tied to your id.',
+    description: 'How to remove a document or clear everything tied to your id.',
     keywords: 'delete remove erase gdpr clear account wipe forget',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -533,7 +535,7 @@ export const articles: Article[] = [
   {
     slug: 'trash',
     title: 'Trash',
-    description: 'Deleted diagrams wait 30 days: restore one, or delete it for good.',
+    description: 'Deleted documents wait 30 days: restore one, or delete it for good.',
     keywords:
       'trash bin recycle deleted undo undelete restore recover get back permanently empty thirty days',
     category: 'Account and Data',
@@ -550,8 +552,17 @@ export const articles: Article[] = [
   {
     slug: 'connect-ai-mcp',
     title: 'Connect an AI tool (MCP)',
-    description: 'Connect Claude or any MCP client to find, view, create, and edit your diagrams.',
+    description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
     keywords: 'claude chatgpt cursor model context protocol ai integration assistant llm connector',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'google-drive',
+    title: 'Google Drive',
+    description: 'Sync your Personal Space to your own Google Drive, both ways.',
+    keywords:
+      'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -582,10 +593,10 @@ export const articles: Article[] = [
     categorySlug: 'developers',
   },
   {
-    slug: 'working-with-diagrams',
-    title: 'Working with Diagrams',
-    description: 'Worked examples: list, read, create, and update diagrams, tabs, and folders.',
-    keywords: 'examples curl crud create update list read api requests',
+    slug: 'working-with-documents',
+    title: 'Working with Documents',
+    description: 'Worked examples: list, read, create, and update documents, tabs, and folders.',
+    keywords: 'examples curl crud create update list read api requests diagrams',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -622,7 +633,7 @@ export const articles: Article[] = [
   {
     slug: 'data-privacy',
     title: 'Data Privacy',
-    description: 'Where your diagrams live and how they are handled.',
+    description: 'Where your documents live and how they are handled.',
     keywords: 'storage stored cloudflare security where data location safe',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
@@ -631,7 +642,7 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Save a diagram only in this browser, and move it to or from your account.',
+    description: 'Save a document only in this browser, and move it to or from your account.',
     keywords: 'local only browser private no sync device localstorage disconnect save location',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
@@ -697,10 +708,10 @@ export const articles: Article[] = [
 
   // ---- Troubleshooting ----
   {
-    slug: 'diagram-not-loading',
-    title: 'A Diagram Will Not Load',
-    description: 'What to check when a diagram is blank or stuck loading.',
-    keywords: 'blank stuck loading error broken empty spinner wont open 404',
+    slug: 'document-not-loading',
+    title: 'A Document Will Not Load',
+    description: 'What to check when a document is blank or stuck loading.',
+    keywords: 'blank stuck loading error broken empty spinner wont open 404 diagram',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
@@ -732,7 +743,8 @@ export const articles: Article[] = [
     slug: 'missing-changes',
     title: 'My Changes Are Missing',
     description: 'How autosave works and how to recover with history.',
-    keywords: 'lost work autosave recover restore disappeared gone save history',
+    keywords:
+      'lost work autosave recover restore disappeared gone save history new version reload update',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
@@ -800,7 +812,7 @@ export const articles: Article[] = [
   {
     slug: 'highlighter',
     title: 'Highlighter',
-    description: 'Mark up the board with a wide translucent marker in five colours.',
+    description: 'Mark up the canvas with a wide translucent marker in five colours.',
     keywords:
       'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color strength thin medium bold review workshop',
     category: 'Selection Modes',
@@ -833,7 +845,7 @@ export const articles: Article[] = [
   {
     slug: 'avatar-mode',
     title: 'Avatar Mode',
-    description: 'Walk a pixel character around the diagram while you talk through it.',
+    description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
       'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small',
     category: 'Selection Modes',
@@ -842,7 +854,7 @@ export const articles: Article[] = [
   {
     slug: 'walking-together',
     title: 'Walking Together',
-    description: "Everyone on a shared diagram sees everyone else's walking character.",
+    description: "Everyone on a shared document sees everyone else's walking character.",
     keywords:
       'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence',
     category: 'Selection Modes',
@@ -853,7 +865,7 @@ export const articles: Article[] = [
     slug: 'slide-deck',
     title: 'Slide Deck',
     description:
-      'Build slides from your diagram and present them full screen, with notes, transitions and auto-advance.',
+      'Build slides from what is on your canvas and present them full screen, with notes, transitions and auto-advance.',
     keywords:
       'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
     category: 'Selection Modes',
@@ -1146,20 +1158,11 @@ export const articles: Article[] = [
     group: 'Palette Settings',
   },
   {
-    slug: 'minimal-panels',
-    title: 'Minimal Panels',
-    description: 'Swap floating panels for a compact button bar.',
-    keywords: 'compact dock hide chrome small collapse reduce clutter',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Palette Settings',
-  },
-  {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
     description: 'The palette as one strip across the top of the canvas.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles recent recently used order reorder',
+      'toolbar strip top bar excalidraw panel layout floating compact menu button explorer more tiles recent recently used order reorder',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1202,7 +1205,7 @@ export const articles: Article[] = [
   {
     slug: 'themes',
     title: 'Themes',
-    description: 'Restyle a whole diagram, including multi-colour and custom themes.',
+    description: 'Restyle a whole tab, including multi-colour and custom themes.',
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -1211,7 +1214,8 @@ export const articles: Article[] = [
     slug: 'templates',
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
-    keywords: 'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start',
+    keywords:
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1226,9 +1230,19 @@ export const articles: Article[] = [
     parentSlug: 'templates',
   },
   {
+    slug: 'whiteboards',
+    title: 'Whiteboards',
+    description:
+      'A tab for freehand drawing: a dock of pens, a Path tool, erasers, stickies and shapes.',
+    keywords:
+      'whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple boards in one diagram: add, name, reorder, and switch between them.',
+    description: 'Multiple boards in one document: add, name, reorder, and switch between them.',
     keywords: 'boards pages multiple sheets add rename reorder switch',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1244,7 +1258,7 @@ export const articles: Article[] = [
   {
     slug: 'linking-tabs',
     title: 'Linking Across Tabs',
-    description: 'Turn an element into a jump point to another tab, element, diagram, or URL.',
+    description: 'Turn an element into a jump point to another tab, element, document, or URL.',
     keywords: 'jump navigation cross reference hyperlink go to connect boards',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1252,16 +1266,16 @@ export const articles: Article[] = [
   {
     slug: 'locking-tabs',
     title: 'Locking a Tab',
-    description: 'Make a whole board read-only so it cannot be changed by accident.',
+    description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
     keywords: 'read only protect freeze prevent editing lock board',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
   {
-    slug: 'add-to-diagram',
-    title: 'Add a Tab to Another Diagram',
-    description: 'Add the active tab to another diagram you own; both share the same live tab.',
-    keywords: 'reuse share tab sync across diagrams move copy live',
+    slug: 'add-to-document',
+    title: 'Add a Tab to Another Document',
+    description: 'Add the active tab to another document you own; both share the same live tab.',
+    keywords: 'reuse share tab sync across documents diagrams move copy live',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1269,9 +1283,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram, a Markdown outline, an Excalidraw scene, or a draw.io diagram (a tab per page), images included, into the active tab by pasting text or picking a file.',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile file paste upload load convert migrate pages png svg image images picture photo gallery placeholder embedded scene',
+      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1338,7 +1352,17 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description: 'The full-page library: the sidebar sections, list view, and folders.',
-    keywords: 'library home dashboard files my diagrams list manage browse',
+    keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'microsoft-whiteboard-import',
+    title: 'Importing Microsoft Whiteboard boards',
+    description:
+      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
+    keywords:
+      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1346,9 +1370,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer for switching diagrams without leaving the canvas.',
+      'The compact in-editor Explorer for switching documents without leaving the canvas.',
     keywords:
-      'sidebar switch diagrams files library in editor open more menu new share export github',
+      'sidebar switch documents diagrams files library in editor open more menu new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1373,25 +1397,25 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Activity',
     description:
-      'What is outstanding for you across every diagram: open actions and comment threads.',
+      'What is outstanding for you across every document: open actions and comment threads.',
     keywords:
-      'inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross diagram all diagrams',
+      'inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'recent',
-    title: 'Recent Diagrams',
-    description: 'The default view: the diagrams you opened or edited most recently.',
+    title: 'Recent Documents',
+    description: 'The default view: the documents you opened or edited most recently.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed unsorted breadcrumb',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed unsorted breadcrumb diagrams',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'shared-with-you',
     title: 'Shared With You',
-    description: 'Diagrams other people have shared with you, collected in one place.',
+    description: 'Documents other people have shared with you, collected in one place.',
     keywords: 'received from others incoming shares collaborations',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1399,7 +1423,7 @@ export const articles: Article[] = [
   {
     slug: 'folders',
     title: 'Folders',
-    description: 'Group diagrams into a nestable tree, and move them between folders.',
+    description: 'Group documents into a nestable tree, and move them between folders.',
     keywords: 'organise organize directory nest move tree group files',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1407,7 +1431,7 @@ export const articles: Article[] = [
   {
     slug: 'unsorted',
     title: 'The Unsorted Folder',
-    description: 'The catch-all for diagrams that are not filed in any folder yet.',
+    description: 'The catch-all for documents that are not filed in any folder yet.',
     keywords: 'inbox uncategorised uncategorized catch all unfiled bucket',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1418,7 +1442,7 @@ export const articles: Article[] = [
     description:
       'Your own library: the Unsorted and Favourites buckets, and the folders you create.',
     keywords:
-      'personal library my work your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
+      'personal library my work your documents your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1458,7 +1482,7 @@ export const articles: Article[] = [
   {
     slug: 'teams',
     title: 'Teams',
-    description: 'Invite members, assign roles, and share diagrams across a team.',
+    description: 'Invite members, assign roles, and share documents across a team.',
     keywords: 'workspace organisation organization members invite group company',
     category: 'Collaboration',
     categorySlug: 'collaboration',
@@ -1739,8 +1763,9 @@ export const articles: Article[] = [
   {
     slug: 'images',
     title: 'Images',
-    description: 'Add images to the canvas from your per-owner gallery.',
-    keywords: 'picture photo upload png jpg insert logo screenshot',
+    description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
+    keywords:
+      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1847,7 +1872,7 @@ export const articles: Article[] = [
   {
     slug: 'session-buttons',
     title: 'Session Buttons',
-    description: 'Start a timer, a dot vote or a poll for the room from the board.',
+    description: 'Start a timer, a dot vote or a poll for the room from the canvas.',
     keywords:
       'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only',
     category: 'Palette',
@@ -1867,7 +1892,7 @@ export const articles: Article[] = [
   {
     slug: 'reaction-pads',
     title: 'Reaction Pads',
-    description: 'A pad the room can press to throw a burst over the board.',
+    description: 'A pad the room can press to throw a burst over the canvas.',
     keywords:
       'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks avatar walk onto ephemeral moment nothing saved',
     category: 'Palette',
@@ -1899,7 +1924,7 @@ export const articles: Article[] = [
   {
     slug: 'comment-panels',
     title: 'Comment Panels',
-    description: 'A whole comment thread, left out on the board.',
+    description: 'A whole comment thread, left out on the canvas.',
     keywords:
       'comment panel thread remark note reply discuss feedback annotate composer resolve reopen badge popover pinned about an element arrow export',
     category: 'Palette',
@@ -1909,7 +1934,7 @@ export const articles: Article[] = [
   {
     slug: 'action-panels',
     title: 'Action Panels',
-    description: 'One assigned action as a card on the board, set up from the card.',
+    description: 'One assigned action as a card on the canvas, set up from the card.',
     keywords:
       'action panel card task todo to-do assign assignee owner follow-up action item complete done reopen email teammate board',
     category: 'Palette',
@@ -1989,7 +2014,7 @@ export const articles: Article[] = [
   {
     slug: 'roll-calls',
     title: 'Roll Calls',
-    description: 'Who was in the room, frozen into the diagram.',
+    description: 'Who was in the room, frozen into the document.',
     keywords:
       'roll call attendance register present participants who was here minutes snapshot take roll take again latecomers record',
     category: 'Palette',
@@ -2070,10 +2095,10 @@ export const articles: Article[] = [
     parentSlug: 'teams',
   },
   {
-    slug: 'team-shared-diagrams',
-    title: 'Team Shared Diagrams',
+    slug: 'team-shared-documents',
+    title: 'Team Shared Documents',
     description: 'A per-team folder tree every member can manage.',
-    keywords: 'shared library folder team files workspace common',
+    keywords: 'shared library folder team files workspace common diagrams',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -2110,7 +2135,7 @@ export const articles: Article[] = [
   {
     slug: 'embeds',
     title: 'Embeds',
-    description: 'Drop a live diagram into another page, read-only or editable by link role.',
+    description: 'Drop a live document into another page, read-only or editable by link role.',
     keywords: 'iframe embed website notion confluence wiki blog integrate',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -2119,7 +2144,7 @@ export const articles: Article[] = [
   {
     slug: 'live-image',
     title: 'Live Image',
-    description: 'Copy an always-current image of a diagram for READMEs and docs.',
+    description: 'Copy an always-current image of a document for READMEs and docs.',
     keywords: 'readme badge always current screenshot png url auto updating',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -2141,7 +2166,7 @@ export const articles: Article[] = [
   {
     slug: 'what-it-is',
     title: 'What the Activity Panel Is',
-    description: 'A running record of every change to a diagram: who did what, and when.',
+    description: 'A running record of every change to a document: who did what, and when.',
     keywords: 'history log changes record audit trail events',
     category: 'Activity Panel',
     categorySlug: 'activity-panel',
@@ -2348,10 +2373,10 @@ export const articles: Article[] = [
     categorySlug: 'search-panel',
   },
   {
-    slug: 'search-diagrams',
-    title: 'Finding Diagrams and Folders',
-    description: 'Search across your diagrams, folders, and the diagrams shared with you.',
-    keywords: 'find lookup locate files library open',
+    slug: 'search-documents',
+    title: 'Finding Documents and Folders',
+    description: 'Search across your documents, folders, and the documents shared with you.',
+    keywords: 'find lookup locate files library open diagrams',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -2359,7 +2384,7 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and diagrams from the search panel.',
+    description: 'Find teams and their shared folders and documents from the search panel.',
     keywords: 'find team shared folders lookup locate',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -2368,7 +2393,8 @@ export const articles: Article[] = [
   {
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Elements',
-    description: 'Inside a diagram, jump to any tab or element, including text inside table cells.',
+    description:
+      'Inside a document, jump to any tab or element, including text inside table cells.',
     keywords: 'find jump locate text label shape board lookup',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

@@ -1,4 +1,11 @@
-import { ARROW_THICKNESS_PX, DEFAULT_ANIMATION_SPEED, type Element } from '@livediagram/diagram';
+import {
+  ARROW_THICKNESS_PX,
+  DEFAULT_ANIMATION_SPEED,
+  encodeStrokePoints,
+  freehandPressures,
+  type Element,
+  type FreehandElement,
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {
@@ -27,6 +34,7 @@ const el = (type: string, over: Record<string, unknown> = {}): Element =>
     id: 'e',
     type,
     ...(type === 'shape' ? { shape: 'square' } : {}),
+    ...(type === 'freehand' ? { packedPoints: 'AQA=' } : {}),
     ...over,
   }) as unknown as Element;
 
@@ -225,6 +233,39 @@ describe('border field setters', () => {
     const sticky = el('sticky');
     expect(applyBorderStrokeToEl(sticky, 'thin')).toBe(sticky);
     expect(applyBorderStyleToEl(el('shape'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
+  });
+
+  it('lets a border width replace the pen width a stroke recorded', () => {
+    const pen = applyBorderStrokeToEl(el('freehand', { penWidth: 8 }), 'thin');
+    expect(pen).toMatchObject({ strokeWidth: 'thin' });
+    expect('penWidth' in pen).toBe(false);
+  });
+
+  it('drops a pen stroke\u2019s pressures and streamline with its pen width', () => {
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
+    const pen = applyBorderStrokeToEl(
+      el('freehand', {
+        penWidth: 2.5,
+        packedPoints: encodeStrokePoints(points, [0.2, 0.9]),
+        streamline: 0.2,
+      }),
+      'thin',
+    ) as FreehandElement;
+    // The same points, re-packed without their pressures.
+    expect(pen.packedPoints).toBe(encodeStrokePoints(points));
+    expect(freehandPressures(pen)).toBeUndefined();
+    expect('streamline' in pen).toBe(false);
+  });
+
+  it('keeps the width of a highlighter stroke, which the preset never drew', () => {
+    const marker = applyBorderStrokeToEl(
+      el('freehand', { pen: 'highlighter', penWidth: 20 }),
+      'thin',
+    );
+    expect(marker).toMatchObject({ penWidth: 20 });
   });
 
   it('radius is shape-only', () => {

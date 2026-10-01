@@ -1,4 +1,4 @@
-import { BORDER_RADIUS_PX, statRowLayout, WEB_TEXT_MAX } from '@livediagram/diagram';
+import { BORDER_RADIUS_PX, statRowLayout, WEB_TEXT_MAX } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 

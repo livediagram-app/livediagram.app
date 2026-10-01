@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Element, StickyElement, Tab } from '@livediagram/diagram';
+import type { Element, StickyElement, Tab } from '@livediagram/document';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
 import { track } from '@/lib/telemetry';
 import { useEditorDrag } from './useEditorDrag';
@@ -301,7 +301,7 @@ describe('useEditorDrag — inserting a note already on the board (docs/specs/02
   });
 
   describe('hostile paths', () => {
-    it('does nothing on an ordinary board, Alt or no Alt', () => {
+    it('does nothing on an ordinary tab, Alt or no Alt', () => {
       const h = harness({ esBoard: false });
       press(h, 'drag');
       move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });

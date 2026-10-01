@@ -16,8 +16,8 @@ function handlers(): CommandHandlers {
     addComment: vi.fn(),
     editNote: vi.fn(),
     createTab: vi.fn(),
-    renameDiagram: vi.fn(),
-    deleteDiagram: vi.fn(),
+    renameDocument: vi.fn(),
+    deleteDocument: vi.fn(),
     renameTab: vi.fn(),
     openTheme: vi.fn(),
     openCanvasOptions: vi.fn(),
@@ -62,14 +62,14 @@ const base: CommandContext = {
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
 
-describe('buildEditorCommands — diagram/tab commands', () => {
-  it('always offers the in-diagram commands regardless of selection', () => {
+describe('buildEditorCommands — document/tab commands', () => {
+  it('always offers the in-document commands regardless of selection', () => {
     expect(ids(base)).toEqual(
       expect.arrayContaining([
         'create-tab',
         'rename-tab',
-        'rename-diagram',
-        'delete-diagram',
+        'rename-document',
+        'delete-document',
         'open-theme',
         'open-canvas',
         'share',
@@ -81,7 +81,7 @@ describe('buildEditorCommands — diagram/tab commands', () => {
     expect(ids({ ...base, isOwner: false })).not.toContain('share');
   });
 
-  it('hides Share for offline diagrams (docs/specs/006-diagram/offline-mode.md)', () => {
+  it('hides Share for offline documents (docs/specs/006-document/offline-mode.md)', () => {
     expect(ids({ ...base, isOffline: true })).not.toContain('share');
   });
 
@@ -104,7 +104,7 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out).not.toContain('note');
   });
 
-  it('ranks selection commands ahead of the diagram/tab commands', () => {
+  it('ranks selection commands ahead of the document/tab commands', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
     expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
   });
@@ -217,7 +217,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 
   it('read-only sessions get exactly the view-safe subset', () => {
     // The three view verbs plus the tools that only change how you LOOK at
-    // the canvas. Nothing here writes to the diagram, which is the property
+    // the canvas. Nothing here writes to the document, which is the property
     // this test exists to hold: the eraser and the format painter are
     // withheld, and so is every command below the read-only return.
     expect(ids({ ...base, isReadOnly: true })).toEqual([
@@ -236,8 +236,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   it('offers Collaborators to everyone, shared or not, owner or not', () => {
-    // The panel answers "who is in this diagram" — a question that is just as
-    // valid alone, on someone else's link, or on an offline diagram.
+    // The panel answers "who is in this document" — a question that is just as
+    // valid alone, on someone else's link, or on an offline document.
     for (const over of [
       {},
       { isOwner: false },
@@ -337,6 +337,11 @@ describe('canvas tool commands', () => {
     expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
   });
 
+  it('withholds Slide Deck on mobile', () => {
+    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
+    expect(ids(base)).toContain('tool:slide-deck');
+  });
+
   it('gives a read-only visitor the presenting tools but not the editing ones', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
     expect(got).toContain('tool:laser');
@@ -382,5 +387,14 @@ describe('the photo-import command', () => {
       .find((c) => c.id === 'photo-import')!
       .run();
     expect(h.openPhotoImport).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('tool commands on a whiteboard (docs/specs/023-whiteboard/whiteboard.md)', () => {
+  it('offers neither the highlighter nor the format painter', () => {
+    const onBoard = ids({ ...base, whiteboard: true });
+    expect(onBoard).not.toContain('tool:highlighter');
+    expect(onBoard).not.toContain('tool:format');
+    expect(ids(base)).toContain('tool:highlighter');
   });
 });

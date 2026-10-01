@@ -6,9 +6,9 @@ import type {
   StickyElement,
   TableElement,
   TextElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from '@livediagram/diagram';
+import { createPinnedArrow, createShape } from '@livediagram/document';
 import {
   THEMES,
   deriveNewBoxedColours,
@@ -34,6 +34,7 @@ import {
   registerCustomTheme,
   unregisterCustomTheme,
 } from './custom-theme-registry';
+import { encodeStrokePoints } from '@livediagram/document';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {
@@ -370,10 +371,10 @@ describe('recolourElementForTheme', () => {
     y: 0,
     width: 100,
     height: 100,
-    points: [
+    packedPoints: encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
-    ],
+    ]),
     closed: true,
   };
 
@@ -620,7 +621,7 @@ describe('switchThemeElement', () => {
     expect(switchThemeElement(sNote, prev, next)).toEqual(sNote);
   });
 
-  it('switches stroke on arrows so themed connectors flip with the diagram', () => {
+  it('switches stroke on arrows so themed connectors flip with the canvas', () => {
     const a: ArrowElement = {
       id: 'a',
       type: 'arrow',
@@ -641,10 +642,10 @@ describe('switchThemeElement', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: true,
       fillColor: '#ff00ff', // customised: must survive
       strokeColor: prev.elementStroke ?? undefined, // on old theme: must flip
@@ -806,10 +807,10 @@ describe('resetThemeElement', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: true,
       fillColor: '#ff00ff',
       strokeColor: '#003366',
@@ -999,7 +1000,7 @@ describe('multi-colour (rainbow) themes', () => {
   it('gives each multi-colour theme a backdrop that visibly differs from the default white canvas', () => {
     // Regression guard: the first cut shipped white/near-white grid
     // backdrops, so picking a multi-colour theme left the canvas looking
-    // unchanged (and did nothing visible on an empty diagram). Each must
+    // unchanged (and did nothing visible on an empty canvas). Each must
     // shift the canvas colour and/or pattern away from the brand default.
     const brand = THEMES.find((t) => t.id === 'brand')!;
     for (const t of THEMES.filter((x) => themeCategory(x.id) === 'multicolour')) {

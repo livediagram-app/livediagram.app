@@ -20,8 +20,8 @@ import {
   visibleLayerElements,
   type BoxedElement,
   type Tab,
-} from '@livediagram/diagram';
-// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the diagram package so the
+} from '@livediagram/document';
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
@@ -41,7 +41,7 @@ import {
   svgShadowDefs,
   xmlEscape,
   type ExportShape,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
 import {
@@ -62,7 +62,7 @@ import type { ExportImageMap } from './export-tab-images';
 // `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
 // elements embed their photo instead of a placeholder; absent ids (or no map)
 // fall back to the placeholder. Build it with loadTabImages (export-tab-images).
-// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-diagram/layers.md); off by default
+// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-document/layers.md); off by default
 // so the export matches what the canvas shows.
 export type ImageExportOpts = {
   isometric?: boolean;
@@ -144,7 +144,7 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
   // Hidden layers drop out of the export (bounds included) unless the
-  // dialog's include-hidden option is on (docs/specs/006-diagram/layers.md). `ordered` is the
+  // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
   // with each element carrying its band's opacity factor.
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
@@ -208,9 +208,8 @@ export async function renderTabToCanvas(
       if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el, alpha, surface);
     }
   }
-  // Boxed elements first so arrows draw over them with the right
-  // z-order on either end; framesFirst keeps frame sections behind
-  // their contents (docs/specs/008-canvas/canvas-and-palette.md).
+  // `ordered` keeps frame sections behind their contents
+  // (docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
   // Elements the canvas drawers can't reproduce (tables, freehand, shape
   // silhouettes, rotation, icon glyphs — boxedNeedsSvgRaster) rasterise via
@@ -261,8 +260,33 @@ export async function renderTabToCanvas(
       // Fall through to drawBoxed's plain box below.
     }
   }
+  // One pass in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
+  // interleave by array order, so an arrow sent behind a box stays behind it.
+  // Arrows rasterise from the SAME markup the SVG export emits (heads, fans,
+  // wrapped captions, knockouts, route-behind gaps), batched: each run of
+  // consecutive arrows becomes one full-size layer. Endpoint resolution keeps
+  // the FULL list, so an arrow pinned to a hidden element still lands where
+  // the canvas draws it.
+  const ax = bounds.x - EXPORT_PADDING;
+  const ay = bounds.y - EXPORT_PADDING;
+  const aw = bounds.w + EXPORT_PADDING * 2;
+  const ah = bounds.h + EXPORT_PADDING * 2;
+  let arrowRun: string[] = [];
+  const flushArrows = async () => {
+    if (arrowRun.length === 0) return;
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(aw * scale)}" height="${r2(ah * scale)}"` +
+      ` viewBox="${r2(ax)} ${r2(ay)} ${r2(aw)} ${r2(ah)}">${fontDefs}${arrowRun.join('')}</svg>`;
+    arrowRun = [];
+    ctx.drawImage(await svgToImage(svg), ax, ay, aw, ah);
+  };
   for (const { el, alpha } of ordered) {
-    if (el.type === 'arrow') continue;
+    if (el.type === 'arrow') {
+      const svg = svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els);
+      arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
+      continue;
+    }
+    await flushArrows();
     const raster = rasterImages.get(el.id);
     if (raster) {
       // The raster bakes the ELEMENT's opacity into its markup; the
@@ -280,27 +304,7 @@ export async function renderTabToCanvas(
     }
     drawBoxed(ctx, el, resolveImage, alpha, tabFont, surface);
   }
-  // Arrows rasterise from the SAME markup the SVG export emits (heads, fans,
-  // wrapped captions, knockouts), in one layer over the boxes. Endpoint
-  // resolution keeps the FULL list, so an arrow pinned to a hidden element
-  // still lands where the canvas draws it.
-  const arrowMarkup = ordered
-    .filter(({ el }) => el.type === 'arrow')
-    .map(({ el, alpha }) => {
-      const svg = el.type === 'arrow' ? svgArrow(el, tab.elements, surface, tabFont, labels) : '';
-      return alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg;
-    })
-    .join('');
-  if (arrowMarkup) {
-    const ax = bounds.x - EXPORT_PADDING;
-    const ay = bounds.y - EXPORT_PADDING;
-    const aw = bounds.w + EXPORT_PADDING * 2;
-    const ah = bounds.h + EXPORT_PADDING * 2;
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(aw * scale)}" height="${r2(ah * scale)}"` +
-      ` viewBox="${r2(ax)} ${r2(ay)} ${r2(aw)} ${r2(ah)}">${fontDefs}${arrowMarkup}</svg>`;
-    ctx.drawImage(await svgToImage(svg), ax, ay, aw, ah);
-  }
+  await flushArrows();
   return canvas;
 }
 
@@ -434,7 +438,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   }
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
-  // sections behind their band-mates (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
+  // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   for (const band of bands) {
     const inner: string[] = [];

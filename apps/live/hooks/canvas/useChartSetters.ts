@@ -8,7 +8,7 @@ import {
   type PieAnim,
   type PieSlice,
   type RatingAnim,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
 // THE DATA CATEGORY'S SETTERS: the star rating (docs/specs/009-elements/rating.md) and the charts

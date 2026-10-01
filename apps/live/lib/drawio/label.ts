@@ -3,7 +3,7 @@
 // inert document (no scripts, no loads), and only text plus a closed set of
 // formats is read out of it.
 
-import { normalizeRuns, type RunHeading, type TextRun } from '@livediagram/diagram';
+import { normalizeRuns, type RunHeading, type TextRun } from '@livediagram/document';
 import { hexOf } from './colour';
 
 export type DrawioLabel = { plain: string; runs?: TextRun[] };

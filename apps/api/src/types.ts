@@ -7,8 +7,8 @@
 // the worker-only `Env` binding shape that has nowhere else to live.
 
 export type {
-  Diagram as DiagramDTO,
-  DiagramSummary,
+  LiveDoc as DocumentDTO,
+  DocumentSummary,
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
@@ -29,7 +29,7 @@ export type {
 // wire format (purely a server-side capability handle).
 export type Env = {
   DB: D1Database;
-  DIAGRAM_ROOM: DurableObjectNamespace;
+  DOCUMENT_ROOM: DurableObjectNamespace;
   // Clerk JWKS URL: when set, the request handler verifies Bearer
   // tokens against it via `src/auth/clerk.ts` and prefers the
   // resulting userId over `X-Owner-Id`. When unset, the worker stays
@@ -70,7 +70,7 @@ export type Env = {
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
-  // real diagram writes. Keyed on CF-Connecting-IP. Optional: absent
+  // real document writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),
@@ -83,6 +83,11 @@ export type Env = {
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
   // absent (self-host) → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Tokens"): each call reaches Google's token endpoint, so it gets a far
+  // tighter bound than the general write limiter. Keyed on the Clerk user id.
+  // Optional: absent (self-host) → "allow".
+  DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
@@ -110,8 +115,9 @@ export type Env = {
   APP_BASE_URL?: string;
   // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
   // these keys is set, because a key is provider-specific and its name should
-  // say so — see ai-provider.ts. Exactly one may be set; none = the whole AI
-  // surface is hidden (capabilities reports aiEnabled:false and the AI routes
+  // say so — see ai-provider.ts. Each feature takes its own provider from them
+  // (the assistant prefers OpenAI, the crop reader Google); one key serves
+  // both. None = the whole AI surface is hidden (capabilities reports aiEnabled:false and the AI routes
   // answer 503), which is the self-host default.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
@@ -122,10 +128,10 @@ export type Env = {
   // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
   AI_API_KEY?: string;
   AI_BASE_URL?: string;
-  // Overrides the preset's default model for any provider.
+  // The assistant's model, overriding its provider's default. Reaches the
+  // reader only when the reader runs on the same provider.
   AI_MODEL?: string;
-  // Overrides it for the crop reader only (docs/specs/021-event-storming/event-storming.md Phase 8); defaults to the
-  // resolved AI_MODEL, so a deployment only sets it to split the two apart.
+  // The crop reader's model (docs/specs/021-event-storming/event-storming.md Phase 8), beating every default.
   AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
   // per IP so a single client can't exhaust the operator's model budget.
@@ -170,4 +176,18 @@ export type Env = {
   // Unset or non-positive = no limit. Hosted livediagram.app sets
   // this to "104857600" (100 MB).
   IMAGE_MAX_BYTES_PER_OWNER?: string;
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
+  // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
+  // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
+  // refresh tokens, otherwise the browser holds its own short-lived tokens.
+  // Unset = every /api/drive route answers 503 drive_not_configured.
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  // base64 of 32 random bytes (`openssl rand -base64 32`): seals refresh
+  // tokens (AES-GCM) and, through HKDF, signs the consent state.
+  DRIVE_TOKEN_KEY?: string;
+  // Test-only: where the token exchange and revoke go instead of
+  // https://oauth2.googleapis.com (the e2e suite's fake Google). Never set
+  // by a real deployment.
+  GOOGLE_OAUTH_BASE_URL?: string;
 };

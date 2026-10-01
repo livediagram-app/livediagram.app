@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
-import { Brand, Button, buttonClassName, ButtonContent } from '@livediagram/ui';
+import { Button, buttonClassName, ButtonContent } from '@livediagram/ui';
+import {
+  Body,
+  Eyebrow,
+  Heading,
+  LandingCard as Card,
+  PrimaryLink,
+  SecondaryLink,
+} from '@/components/chrome/LandingCard';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { ensureGuestSelfId, getGuestSelfId, subscribeGuestSelfId } from '@/lib/local-identity';
@@ -108,7 +116,7 @@ export function TeamInviteJoin() {
       <Card>
         <Heading>This invite link isn&apos;t valid</Heading>
         <Body>It may have been turned off or expired. Ask a team admin for a fresh link.</Body>
-        <PrimaryLink href="/explorer">Back to your diagrams</PrimaryLink>
+        <PrimaryLink href="/explorer">Back to your documents</PrimaryLink>
       </Card>
     );
   }
@@ -170,59 +178,5 @@ export function TeamInviteJoin() {
         </a>
       </div>
     </Card>
-  );
-}
-
-// --- Small presentational pieces (one centred card) --------------------
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
-      <div className="w-[26rem] max-w-full rounded-2xl border border-slate-200 bg-white px-8 py-9 text-center shadow-xl shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900">
-        <div className="mb-5 flex justify-center">
-          <Brand size="md" />
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Eyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
-      {children}
-    </p>
-  );
-}
-
-function Heading({ children }: { children: React.ReactNode }) {
-  return (
-    <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-50">{children}</h1>
-  );
-}
-
-function Body({ children }: { children: React.ReactNode }) {
-  return <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{children}</p>;
-}
-
-function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
-  // Anchor styled as the shared primary button (buttonClassName is the
-  // anchor escape hatch; Button itself is <button>-only).
-  return (
-    <a href={href} className={buttonClassName({ size: 'md', className: 'mt-5 px-5' })}>
-      <ButtonContent>{children}</ButtonContent>
-    </a>
-  );
-}
-
-function SecondaryLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      className={buttonClassName({ variant: 'secondary', size: 'md', className: 'px-5' })}
-    >
-      <ButtonContent>{children}</ButtonContent>
-    </a>
   );
 }

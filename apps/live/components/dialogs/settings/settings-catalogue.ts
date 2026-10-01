@@ -1,16 +1,41 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
-import type { SettingsCategoryId } from './settings-icons';
+import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
+  showProfilePictureEnabled,
+  panelEnabled,
   resolvePanelLayout,
   withPanelLayout,
   type MapSize,
   type PanelLayout,
+  type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
+import {
+  UI_SCALE_MAX,
+  UI_SCALE_MIN,
+  UI_SCALE_STEP,
+  resolveUiScale,
+  resolveUiScalePart,
+  uiScalePartPatch,
+  uiScalePatch,
+  withUiScalePatch,
+  type UiScalePart,
+} from '@/lib/ui-scale';
+import { setUiScalePreview } from '@/lib/ui-scale-preview';
+import {
+  readWhiteboardDockPosition,
+  withWhiteboardDockPosition,
+  type WhiteboardDockPosition,
+} from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
+import {
+  CLOUD_SYNC_PROVIDERS,
+  CLOUD_SYNC_SECTION,
+  type CloudSyncProviderId,
+} from '@/lib/cloud-sync/providers';
 
 // The Settings dialog as DATA: the categories, and per category the rows
 // (docs/specs/007-editor/user-preferences.md). The dialog used to spell every row out as JSX inside one
@@ -39,10 +64,20 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
+// `preferences` (the live values) lets a nested row follow its parent switch
+// for the same reason: a setting for a panel that is off has nothing to act on.
+// `authEnabled` is whether this deployment offers sign-in at all
+// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth self-host they
+// are absent end to end rather than a sign-in prompt with nowhere to go
+// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
 export type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
+  authEnabled?: boolean;
   powerUserMode?: boolean;
+  preferences?: UserPreferences;
+  // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
+  cloudProviders?: readonly CloudSyncProviderId[];
 };
 
 type RowBase = {
@@ -69,8 +104,7 @@ type RowBase = {
   // description: a test fails if a row that needs them has none.
   keywords?: string;
   // Sub-heading this row sits under, within its category. A category holding
-  // several unrelated clusters (Panels covers Layers, Activity and the
-  // minimap) reads as one long undifferentiated list without them. Rows
+  // several unrelated clusters (Editor's Power User rows) reads as one long undifferentiated list without them. Rows
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
@@ -119,6 +153,9 @@ export type SettingsSliderRowSpec = RowBase & {
   format: (value: number) => string;
   read: (prefs: UserPreferences) => number;
   write: (prefs: UserPreferences, next: number) => UserPreferences;
+  // Shows the value live while the thumb is dragged, before the release
+  // commits it; called with null once the drag ends. Absent = no live effect.
+  preview?: (value: number | null) => void;
   event: { category: TelemetryCategory; changed: string };
 };
 
@@ -128,16 +165,28 @@ export type SettingsSliderRowSpec = RowBase & {
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 
-// API tokens (docs/specs/015-api/public-api-and-tokens.md): a read-only listing plus a link out to the Explorer's
-// tokens page. Not a preference at all: it reads account state from the api
-//, so like the appearance row it carries no read/write pair.
+// API tokens (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
+// the whole manager, create, one-time reveal, list and revoke. Not a
+// preference at all: it reads account state from the api, so like the
+// appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
+
+// A way into another category of this same dialog, opened in place: the
+// setting lives there, and this is where a reader might look for it first.
+export type SettingsLinkRowSpec = RowBase & {
+  kind: 'link';
+  target: SettingsCategoryId;
+  // The link's own words, which name the destination ("Manage API Tokens").
+  cta: string;
+};
 
 // A card with no control: it stands in for settings the reader cannot use
 // yet and says why. A section whose rows all vanish would otherwise take the
 // section heading with it, so the reader never learns the settings exist ,
 // which is the opposite of what a "find everything here" panel is for.
-export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string };
+// `signIn` marks a note whose reason is "you need an account", which then
+// ends with the Sign In link (docs/specs/007-editor/user-preferences.md).
+export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string; signIn?: boolean };
 
 // Keyboard shortcuts, like appearance, are a PER-DEVICE localStorage toggle
 // rather than a synced preference (docs/specs/007-editor/live-app.md): whether you want Cmd-Z bound
@@ -165,23 +214,38 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
+// One Cloud Sync provider (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"): its
+// connection, status and actions. Not a preference: it reads the provider's
+// own state, so it carries no read/write pair.
+export type SettingsCloudSyncRowSpec = RowBase & {
+  kind: 'cloudSync';
+  provider: CloudSyncProviderId;
+};
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
   | SettingsTokensRowSpec
+  | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsPresetSummaryRowSpec
+  | SettingsCloudSyncRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
+  // The top-level category this is a sub-category of (Panels holds one per
+  // panel). The list nests it, untiled and indented, beneath its
+  // parent; it is still its own pane. A parent's sub-categories follow it
+  // directly, like a section's rows.
+  parent?: SettingsIconId;
   // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
   requiresAi?: boolean;
   rows: SettingsRowSpec[];
@@ -189,8 +253,56 @@ export type SettingsCategorySpec = {
 
 // A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
 // three of its rows are inert there and share this note.
+// What every UI scale slider shares (docs/specs/007-editor/ui-scale.md).
+const UI_SCALE_SLIDER = {
+  kind: 'slider',
+  desktopOnly:
+    'UI Scale is desktop only, so a phone always uses 100%. Your choice still applies on a larger screen.',
+  min: UI_SCALE_MIN,
+  max: UI_SCALE_MAX,
+  step: UI_SCALE_STEP,
+  format: (v: number) => `${Math.round(v * 100)}%`,
+} as const;
+
+// One part's slider, nested under UI Scale: it reads the part's own value or,
+// without one, the master's, and writes only its own.
+function uiScalePartRow(
+  part: UiScalePart,
+  copy: { label: string; keywords: string; description: string; changed: string },
+): SettingsSliderRowSpec {
+  return {
+    ...UI_SCALE_SLIDER,
+    key: `uiScale-${part}`,
+    parent: 'uiScale',
+    label: copy.label,
+    keywords: copy.keywords,
+    description: copy.description,
+    read: (p) => resolveUiScalePart(p, part),
+    write: (p, v) => withUiScalePatch(p, uiScalePartPatch(part, v)),
+    preview: (v) => setUiScalePreview(v === null ? null : uiScalePartPatch(part, v)),
+    event: { category: 'UI', changed: copy.changed },
+  };
+}
+
 const MINIMAP_DESKTOP_ONLY =
-  'The minimap is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
+  'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
+
+// The panel switches (docs/specs/007-editor/user-preferences.md), each on
+// unless stored `false`. One row per Panels sub-category, first in its pane,
+// with that panel's other rows nested beneath it (`parent`), so they are
+// offered only while it is on (see `visibleCategories`).
+function panelSwitch(
+  key: PanelSwitch,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key,
+    ...row,
+    read: (p) => panelEnabled(p, key),
+    write: (p, v) => ({ ...p, [key]: v }),
+  };
+}
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -235,6 +347,36 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: autoRebindArrowsEnabled,
         write: (p, v) => ({ ...p, autoRebindArrows: v }),
         event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'middleMousePan',
+        keywords: 'scroll wheel drag pan navigate mouse',
+        label: 'Middle-Mouse Pan',
+        description:
+          'Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere, over empty space or over elements, whatever tool is active. Turn off to leave the middle button to your browser.',
+        read: (p) => p.middleMousePan !== false,
+        write: (p, v) => ({ ...p, middleMousePan: v }),
+        event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
+      },
+      {
+        // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": only a whiteboard has a
+        // dock, so only a whiteboard moves with this.
+        kind: 'choice',
+        key: 'whiteboardDockPosition',
+        keywords: 'whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
+        section: 'Whiteboard',
+        label: 'Dock Position',
+        description:
+          "Where a whiteboard's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only whiteboards have a dock, so other tabs are unchanged.",
+        helpArticle: 'whiteboards',
+        options: [
+          { id: 'top', label: 'Top' },
+          { id: 'bottom', label: 'Bottom' },
+        ],
+        read: readWhiteboardDockPosition,
+        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
+        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
       },
       {
         // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
@@ -287,84 +429,48 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'appearance',
         key: 'appearance',
         keywords: 'dark mode light theme colour color night scheme',
-        section: 'Theme',
         label: 'Theme',
         description:
           "Sets whether the editor chrome is light or dark. System follows your device. A tab's own canvas theme is a separate setting, except for Default, which follows this one. Stored on this device only, so it does not sync with your other settings.",
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
       },
+      // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
+      // never the canvas, dialogs or menus. The master sets every part; each
+      // part's row beneath it overrides that part alone.
       {
-        // Three layouts, one choice (docs/specs/007-editor/toolbar-layout.md). Replaced the Minimal Panel
-        // Layout toggle when the Toolbar layout arrived; the key is new so
-        // the telemetry token is too, and the old On/Off tokens simply stop.
-        kind: 'choice',
-        key: 'panelLayout',
+        ...UI_SCALE_SLIDER,
+        key: 'uiScale',
         keywords:
-          'minimal compact dock button bar hide panels layout tidy toolbar strip top bar excalidraw floating',
-        section: 'Layout',
-        label: 'Panel Layout',
+          'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+        label: 'UI Scale',
         description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
-        helpArticle: 'toolbarLayout',
-        illustration: 'panelLayout',
-        options: [
-          { id: 'floating', label: 'Floating', desktopOnly: true },
-          { id: 'minimal', label: 'Minimal' },
-          { id: 'toolbar', label: 'Toolbar' },
-        ],
-        read: (p, view) => resolvePanelLayout(p, view),
-        write: (p, v) => withPanelLayout(p, v as PanelLayout),
-        event: { category: 'UI', changed: 'PanelLayout' },
+          'Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below.',
+        read: (p: UserPreferences) => resolveUiScale(p),
+        write: (p: UserPreferences, v: number) => withUiScalePatch(p, uiScalePatch(v)),
+        preview: (v) => setUiScalePreview(v === null ? null : uiScalePatch(v)),
+        event: { category: 'UI', changed: 'UiScale' },
       },
-      {
-        kind: 'toggle',
-        key: 'showMinimap',
-        keywords: 'map overview thumbnail navigator birds eye',
-        section: 'Layout',
-        illustration: 'showMinimap',
-        label: 'Show Minimap',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
+      uiScalePartRow('panels', {
+        label: 'Panel Scale',
+        keywords: 'panels explorer palette layers popover size bigger smaller zoom',
+        description: 'Every panel, floating or opened from a button, and the Quick Style panel.',
+        changed: 'UiScalePanels',
+      }),
+      uiScalePartRow('toolbar', {
+        label: 'Toolbar Scale',
+        keywords: 'toolbar strip top bar menu button size bigger smaller zoom',
+        description: 'The Toolbar layout’s strip and its menu button.',
+        changed: 'UiScaleToolbar',
+      }),
+      uiScalePartRow('cornerButtons', {
+        label: 'Corner Buttons Scale',
+        keywords:
+          'undo redo zoom controls layers theme activity corner buttons size bigger smaller',
         description:
-          'Shows a small overview of the whole canvas in the bottom-left corner once a tab has a few elements and the Activity panel is minimised. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
-        read: (p) => p.showMinimap !== false,
-        write: (p, v) => ({ ...p, showMinimap: v }),
-        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
-      },
-      {
-        kind: 'slider',
-        key: 'panelOpacity',
-        keywords: 'transparency translucent fade see through alpha',
-        section: 'Layout',
-        label: 'Panel Opacity',
-        description:
-          'Fades the floating panels so the canvas shows through behind them; they snap back to fully opaque while hovered or focused. The minimal button bar is unaffected.',
-        helpArticle: 'panelOpacity',
-        min: 0.3,
-        max: 1,
-        step: 0.05,
-        format: (v) => `${Math.round(v * 100)}%`,
-        read: (p) => p.panelOpacity ?? 1,
-        write: (p, v) => ({ ...p, panelOpacity: v }),
-        event: { category: 'UI', changed: 'PanelOpacity' },
-      },
-    ],
-  },
-  {
-    id: 'controls',
-    label: 'Controls',
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'middleMousePan',
-        keywords: 'scroll wheel drag pan navigate mouse',
-        label: 'Middle-Mouse Pan',
-        description:
-          'Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere, over empty space or over elements, whatever tool is active. Turn off to leave the middle button to your browser.',
-        read: (p) => p.middleMousePan !== false,
-        write: (p, v) => ({ ...p, middleMousePan: v }),
-        event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
-      },
+          'The buttons in the bottom-right corner: Activity, Undo and Redo, Layers, theme and zoom.',
+        changed: 'UiScaleCornerButtons',
+      }),
     ],
   },
   {
@@ -398,10 +504,58 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Panels',
     rows: [
       {
+        // Two layouts, one choice (docs/specs/007-editor/toolbar-layout.md).
+        kind: 'choice',
+        key: 'panelLayout',
+        keywords: 'compact hide panels layout tidy toolbar strip top bar excalidraw floating',
+        label: 'Panel Layout',
+        description:
+          'Floating shows the Explorer, Palette and other panels over the canvas. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
+        helpArticle: 'toolbarLayout',
+        illustration: 'panelLayout',
+        options: [
+          { id: 'floating', label: 'Floating', desktopOnly: true },
+          { id: 'toolbar', label: 'Toolbar' },
+        ],
+        read: (p, view) => resolvePanelLayout(p, view),
+        write: (p, v) => withPanelLayout(p, v as PanelLayout),
+        event: { category: 'UI', changed: 'PanelLayout' },
+      },
+      {
+        kind: 'slider',
+        key: 'panelOpacity',
+        keywords: 'transparency translucent fade see through alpha',
+        label: 'Panel Opacity',
+        description:
+          'Fades every panel, in every layout, so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
+        helpArticle: 'panelOpacity',
+        min: 0.3,
+        max: 1,
+        step: 0.05,
+        format: (v) => `${Math.round(v * 100)}%`,
+        read: (p) => p.panelOpacity ?? 1,
+        write: (p, v) => ({ ...p, panelOpacity: v }),
+        event: { category: 'UI', changed: 'PanelOpacity' },
+      },
+    ],
+  },
+  {
+    id: 'layers',
+    label: 'Layers',
+    parent: 'panels',
+    rows: [
+      panelSwitch('layersPanelEnabled', {
+        label: 'Enable Layers Panel',
+        keywords: 'layers panel hide show turn off remove move to layer',
+        description:
+          'Shows the Layers panel, its button in the bottom-right corner and the “Move to layer” choices in the element menu. Turned off, layers keep working: their order, visibility and lock still apply.',
+        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
+      }),
+      {
         kind: 'toggle',
         key: 'layersShowPreview',
+        parent: 'layersPanelEnabled',
         keywords: 'thumbnail preview layer picture',
-        section: 'Layers',
         illustration: 'layerThumbnails',
         label: 'Layer Thumbnails',
         description:
@@ -413,8 +567,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'layersShowCount',
+        parent: 'layersPanelEnabled',
         keywords: 'number badge count layer',
-        section: 'Layers',
         label: 'Layer Element Counts',
         description:
           'Shows how many elements each layer holds, beside its name in the Layers panel.',
@@ -425,8 +579,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'toggle',
         key: 'layerHoverPreview',
+        parent: 'layersPanelEnabled',
         keywords: 'highlight hover layer preview',
-        section: 'Layers',
         label: 'Preview Layer on Hover',
         description:
           'Highlights a layer’s elements on the canvas while you hover its row, so you can find what a layer holds without selecting it.',
@@ -434,11 +588,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
       },
+    ],
+  },
+  {
+    id: 'activity',
+    label: 'Activity',
+    parent: 'panels',
+    rows: [
+      panelSwitch('activityPanelEnabled', {
+        label: 'Enable Activity Panel',
+        keywords: 'activity history panel hide show turn off remove',
+        description:
+          'Shows the Activity panel, the tab’s history of changes, and its button beside Undo and Redo. Turned off, Undo and Redo stay.',
+        event: { category: 'UI', on: 'ActivityPanelOn', off: 'ActivityPanelOff' },
+      }),
       {
         kind: 'toggle',
         key: 'activityRevertHoverPreview',
+        parent: 'activityPanelEnabled',
         keywords: 'undo history revert preview hover activity',
-        section: 'Activity',
         label: 'Preview Revert on Hover',
         description:
           'Shows what the canvas would look like after a revert while you hover that entry in the Activity panel, so you can check before committing to it.',
@@ -446,16 +614,39 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, activityRevertHoverPreview: v }),
         event: { category: 'UI', on: 'ActivityRevertPreviewOn', off: 'ActivityRevertPreviewOff' },
       },
+    ],
+  },
+  {
+    id: 'map',
+    label: 'Map',
+    parent: 'panels',
+    rows: [
+      {
+        // The Map's switch, written out rather than a panelSwitch: it keeps its
+        // older key and telemetry tokens so stored choices and the dashboard
+        // carry over the rename from "Show Map".
+        kind: 'toggle',
+        key: 'showMinimap',
+        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off',
+        illustration: 'showMinimap',
+        label: 'Enable Map',
+        desktopOnly: MINIMAP_DESKTOP_ONLY,
+        description:
+          'Shows the Map, a small overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
+        read: (p) => p.showMinimap !== false,
+        write: (p, v) => ({ ...p, showMinimap: v }),
+        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
+      },
       {
         kind: 'toggle',
         key: 'mapDimOutside',
-        keywords: 'shade minimap viewport dim map',
-        section: 'Minimap',
+        parent: 'showMinimap',
+        keywords: 'shade minimap viewport dim',
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
-          'Shades the part of the minimap that falls outside what you are currently looking at, so the viewport rectangle stands out.',
+          'Shades the part of the Map that falls outside what you are currently looking at, so the viewport rectangle stands out.',
         read: (p) => p.mapDimOutside !== false,
         write: (p, v) => ({ ...p, mapDimOutside: v }),
         event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
@@ -463,11 +654,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'choice',
         key: 'mapSize',
-        keywords: 'minimap height short medium tall map size',
-        section: 'Minimap',
-        label: 'Minimap Size',
+        parent: 'showMinimap',
+        keywords: 'minimap height short medium tall',
+        label: 'Map Size',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'How much of the bottom-left corner the minimap takes up.',
+        description: 'How much of the bottom-left corner the Map takes up.',
         options: [
           { id: 'short', label: 'Short' },
           { id: 'medium', label: 'Medium' },
@@ -477,6 +668,34 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, mapSize: v as MapSize }),
         event: { category: 'UI', changed: 'MapSize' },
       },
+    ],
+  },
+  {
+    id: 'collaborate',
+    label: 'Collaborate',
+    parent: 'panels',
+    rows: [
+      panelSwitch('collaboratePanelEnabled', {
+        label: 'Enable Collaborate Panel',
+        keywords: 'collaborate comments threads actions tasks panel hide show turn off',
+        description:
+          'Shows the Collaborate panel, a list of the tab’s comment threads and actions, and its button in the bottom-right corner. It only appears while the tab has a comment or an action. Turned off, comments and actions still work from the elements themselves.',
+        event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
+      }),
+    ],
+  },
+  {
+    id: 'quickStyle',
+    label: 'Quick Style',
+    parent: 'panels',
+    rows: [
+      panelSwitch('quickStylePanelEnabled', {
+        label: 'Enable Quick Style Panel',
+        keywords: 'quick style colour color stroke fill width panel selection hide show turn off',
+        description:
+          'Shows the Quick Style panel beside a selected shape or arrow, with its most-used colours, widths and alignments. Turned off, every style is still in the element’s right-click menu.',
+        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
+      }),
     ],
   },
   {
@@ -490,7 +709,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the editor',
         label: 'In-Editor Notifications',
         description:
-          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
+          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -507,21 +726,22 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Email',
         label: 'Email Notifications',
         note: 'Sign in to choose which emails you get.',
+        signIn: true,
         description:
-          'We can email you when someone joins one of your diagrams, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       {
         kind: 'toggle',
-        key: 'notifyDiagramJoin',
+        key: 'notifyDocumentJoin',
         keywords: 'email join collaborator opened',
         section: 'Email',
-        label: 'Someone Joins My Diagram',
-        description: 'When a new person opens one of your shared diagrams for the first time.',
+        label: 'Someone Joins My Document',
+        description: 'When a new person opens one of your shared documents for the first time.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyDiagramJoin !== false,
-        write: (p, v) => ({ ...p, notifyDiagramJoin: v }),
-        event: { category: 'UI', on: 'NotifyDiagramJoinOn', off: 'NotifyDiagramJoinOff' },
+        read: (p) => p.notifyDocumentJoin !== false,
+        write: (p, v) => ({ ...p, notifyDocumentJoin: v }),
+        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
       },
       {
         kind: 'toggle',
@@ -540,8 +760,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'notifyComments',
         keywords: 'email comment reply feedback',
         section: 'Email',
-        label: 'Someone Comments on My Diagram',
-        description: 'When someone leaves a comment on a diagram you own.',
+        label: 'Someone Comments on My Document',
+        description: 'When someone leaves a comment on a document you own.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyComments !== false,
         write: (p, v) => ({ ...p, notifyComments: v }),
@@ -553,11 +773,23 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email action assigned task todo',
         section: 'Email',
         label: 'Someone Assigns Me an Action',
-        description: 'When a teammate assigns you an action on a diagram element.',
+        description: 'When a teammate assigns you an action on an element.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyActionAssigned !== false,
         write: (p, v) => ({ ...p, notifyActionAssigned: v }),
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyMentions',
+        keywords: 'email mention tag at comment',
+        section: 'Email',
+        label: 'Someone Mentions Me in a Comment',
+        description: 'When a teammate @mentions you in a comment.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyMentions !== false,
+        write: (p, v) => ({ ...p, notifyMentions: v }),
+        event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
       },
       {
         kind: 'toggle',
@@ -579,7 +811,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Email',
         label: 'Milestones',
         description:
-          'A note when you hit a milestone, like sharing your first diagram or reaching your tenth.',
+          'A note when you hit a milestone, like sharing your first document or reaching your tenth.',
         available: (ctx) => ctx.emailEnabled && ctx.signedIn,
         read: (p) => p.notifyMilestones !== false,
         write: (p, v) => ({ ...p, notifyMilestones: v }),
@@ -608,7 +840,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'walkthrough onboarding intro show me around getting started',
         label: 'Show Welcome Tour',
         description:
-          'Offers the Show me around tour the next time you open a diagram. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
+          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
         helpArticle: 'welcomeTour',
         // INVERTED against the stored preference: the row asks "show me the
         // tour?", `tourSeen` records "already seen". Switch on === not seen.
@@ -652,14 +884,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
       },
       {
-        kind: 'tokens',
-        key: 'apiTokens',
+        kind: 'link',
+        key: 'apiTokensLink',
         keywords: 'api token key mcp integration script developer access',
         section: 'API Access',
         label: 'API Tokens',
+        cta: 'Manage API Tokens',
+        target: 'tokens',
         description:
-          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Each one expires six months after it is created, and you can revoke any of them at any time.',
-        alsoIn: 'the Explorer’s API Tokens page',
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. They have their own category in Settings.',
+        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },
@@ -672,10 +906,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'identity',
         section: 'You',
         label: 'Guest',
-        keywords: 'account profile identity name email signed in sign in avatar joined',
+        keywords:
+          'account profile identity name email signed in sign in avatar picture photo google joined',
         description:
-          'Your name and email come from your account and are changed there, not here. Signing in keeps your diagrams across browsers and devices; without it they belong to this browser alone.',
+          'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'toggle',
+        key: 'showProfilePicture',
+        keywords: 'profile picture photo avatar google show hide privacy collaborators',
+        section: 'You',
+        label: 'Show My Profile Picture',
+        description:
+          'Signed-in collaborators see your picture on presence, cursors, comments and teams. People who open your share links without signing in always see your initials. You always see it yourself.',
+        available: (ctx) => ctx.signedIn,
+        read: (p) => showProfilePictureEnabled(p),
+        write: (p, v) => ({ ...p, showProfilePicture: v }),
+        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
       },
       {
         kind: 'trash',
@@ -683,11 +931,23 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back diagram permanently empty',
+          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
         description:
-          'Deleted diagrams wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
+          'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
         helpArticle: 'trash',
       },
+      // One row per provider, from the Cloud Sync catalogue.
+      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
+        kind: 'cloudSync',
+        key: `cloudSync-${p.id}`,
+        provider: p.id,
+        section: CLOUD_SYNC_SECTION,
+        label: p.label,
+        keywords: p.keywords,
+        description: p.description,
+        helpArticle: p.helpArticle,
+        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
+      })),
       {
         kind: 'deleteAccount',
         key: 'deleteAccount',
@@ -695,7 +955,23 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your diagrams, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+          'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+      },
+    ],
+  },
+  {
+    id: 'tokens',
+    label: 'API Tokens',
+    rows: [
+      {
+        kind: 'tokens',
+        key: 'apiTokens',
+        keywords: 'api token key mcp integration script developer access create revoke secret',
+        label: 'API Tokens',
+        description:
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Treat one like a password. Each expires six months after it is created, and you can revoke any of them at any time.',
+        helpArticle: 'apiTokens',
+        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },
@@ -719,6 +995,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
+// A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
+// (docs/specs/007-editor/user-preferences.md).
+export function settingsSectionId(section: string): string {
+  return section.trim().toLowerCase().replace(/\s+/g, '-');
+}
+
 // The categories actually offered right now, with each one's rows filtered to
 // those that apply. AI only appears when the api worker advertises the
 // capability, so a self-hosted deploy without it never shows an empty group ,
@@ -729,8 +1011,34 @@ export function visibleCategories(
   ctx: SettingsRowContext,
 ): SettingsCategorySpec[] {
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .map((c) => ({ ...c, rows: c.rows.filter((r) => !r.available || r.available(ctx)) }))
+    .map((c) => ({
+      ...c,
+      rows: c.rows.filter(
+        (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+      ),
+    }))
     .filter((c) => c.rows.length > 0);
+}
+
+// A row nested under a switch (`parent`) is offered only while that switch is
+// on, when the live preferences are known. One rule for every nested row, so
+// a new panel's rows follow its Enable switch with no extra wiring.
+function parentSwitchOn(
+  category: SettingsCategorySpec,
+  row: SettingsRowSpec,
+  preferences: UserPreferences | undefined,
+): boolean {
+  if (!row.parent || !preferences) return true;
+  const parent = category.rows.find((r) => r.key === row.parent);
+  return parent?.kind !== 'toggle' || parent.read(preferences);
+}
+
+// A category's name as a path from the top level: "Panels › Layers" for a
+// sub-category, just the label otherwise. Where the name is shown away from
+// the list that nests it (the canvas search's "in …").
+export function settingsCategoryPath(category: SettingsCategorySpec): string {
+  const parent = category.parent && SETTINGS_CATEGORIES.find((c) => c.id === category.parent);
+  return parent ? `${parent.label} › ${category.label}` : category.label;
 }
 
 // A choice row by key, for a surface outside Settings that offers the same

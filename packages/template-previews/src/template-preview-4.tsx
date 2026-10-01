@@ -1,7 +1,7 @@
 import type { ReactElement, SVGProps } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
-import { FILL_BOX, Pop, PopDot, popGroup } from './story-parts';
+import { FILL_BOX, Pop, popGroup } from './story-parts';
 
 // Group 4 of 4 (the roadmap / canvas / workshop / hierarchy / UML /
 // cloud batch). Static SVG preview tiles (one branch per TemplateKind; see
@@ -13,211 +13,354 @@ import { FILL_BOX, Pop, PopDot, popGroup } from './story-parts';
 export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'roadmap':
-      // Three horizon lanes (green / blue / slate) of initiative cards.
-      // Hover story: a Later item is pulled forward into Next, then the Now
-      // lane's second item ships. At rest Next is one item short, the gap
-      // the pulled item fills; both moving cards are drawn last.
+      // One goal pill over three theme swimlanes (violet / blue / green,
+      // tinted gutters) crossed by Now / Next / Later columns, each column
+      // with a confidence meter that empties to the right. Card borders go
+      // thick, normal, dashed. Hover story: the Now cards' status stickers
+      // land one after another.
       return (
         <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          {[
-            { x: 4, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)', cards: [15] },
-            { x: 30, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)', cards: [15] },
-            { x: 56, fill: 'rgb(226 232 240)', stroke: 'rgb(203 213 225)', cards: [15] },
-          ].map((lane, i) => (
-            <g key={i}>
+          <rect
+            x="3"
+            y="2"
+            width="30"
+            height="5"
+            rx="2.5"
+            fill="rgb(224 242 254)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.5"
+          />
+          <circle cx="7" cy="4.5" r="1.2" fill="none" stroke="rgb(14 165 233)" strokeWidth="0.5" />
+          {[0, 1, 2].map((c) => (
+            <g key={c}>
               <rect
-                x={lane.x}
-                y="4"
-                width="20"
-                height="42"
-                rx="2"
-                fill={lane.fill}
-                stroke={lane.stroke}
-                strokeWidth="1"
+                x={17 + c * 20.5}
+                y="9.5"
+                width="7"
+                height="2.2"
+                rx="0.6"
+                fill="rgb(15 23 42)"
               />
-              <rect x={lane.x + 3} y="8" width="10" height="3" rx="1" fill="rgb(15 23 42)" />
-              {lane.cards.map((y) => (
-                <RoadCard key={y} x={lane.x + 3} y={y} />
+              {[0, 1, 2].map((d) => (
+                <circle
+                  key={d}
+                  cx={30 + c * 20.5 + d * 2.2}
+                  cy="10.6"
+                  r="0.8"
+                  fill={d < 3 - c ? 'rgb(51 65 85)' : 'white'}
+                  stroke="rgb(51 65 85)"
+                  strokeWidth="0.35"
+                />
               ))}
             </g>
           ))}
-          <RoadCard x={7} y={30} className="pv-leave" style={pv({ '--pv-at': '1900ms' })} />
-          <RoadCard
-            x={59}
-            y={30}
-            className="pv-shift"
-            style={pv({ '--pv-dx': '-26px', '--pv-at': '1000ms', '--pv-dur': '800ms' })}
-          />
+          {[
+            {
+              y: 14,
+              fill: 'rgb(245 243 255)',
+              gutter: 'rgb(237 233 254)',
+              stroke: 'rgb(196 181 253)',
+            },
+            {
+              y: 25.5,
+              fill: 'rgb(239 246 255)',
+              gutter: 'rgb(219 234 254)',
+              stroke: 'rgb(147 197 253)',
+            },
+            {
+              y: 37,
+              fill: 'rgb(236 253 245)',
+              gutter: 'rgb(209 250 229)',
+              stroke: 'rgb(110 231 183)',
+            },
+          ].map((lane) => (
+            <g key={lane.y}>
+              <rect
+                x="3"
+                y={lane.y}
+                width="74"
+                height="10"
+                rx="1"
+                fill={lane.fill}
+                stroke={lane.stroke}
+                strokeWidth="0.5"
+              />
+              <rect x="3" y={lane.y} width="12" height="10" rx="1" fill={lane.gutter} />
+              <rect x="5" y={lane.y + 4.2} width="8" height="1.6" rx="0.5" fill={lane.stroke} />
+              {[0, 1, 2].map((c) => (
+                <g key={c}>
+                  <rect
+                    x={16.5 + c * 20.5}
+                    y={lane.y + 1.5}
+                    width="19"
+                    height="7"
+                    rx="1.2"
+                    fill="white"
+                    stroke={lane.stroke}
+                    strokeWidth={c === 0 ? 0.9 : 0.5}
+                    strokeDasharray={c === 2 ? '1.4 0.9' : undefined}
+                  />
+                  <rect
+                    x={18.5 + c * 20.5}
+                    y={lane.y + 3}
+                    width="9"
+                    height="1.3"
+                    rx="0.4"
+                    fill="rgb(51 65 85)"
+                  />
+                  <rect
+                    x={18.5 + c * 20.5}
+                    y={lane.y + 5.6}
+                    width="13"
+                    height="1.1"
+                    rx="0.4"
+                    fill="rgb(148 163 184)"
+                  />
+                </g>
+              ))}
+            </g>
+          ))}
+          {[
+            { y: 14.8, fill: 'rgb(217 119 6)' },
+            { y: 26.3, fill: 'rgb(22 163 74)' },
+            { y: 37.8, fill: 'rgb(217 119 6)' },
+          ].map((s, i) => (
+            <rect
+              key={s.y}
+              x="30.5"
+              y={s.y}
+              width="5.5"
+              height="2.2"
+              rx="1.1"
+              fill={s.fill}
+              className="pv-pulse"
+              style={pv({ '--pv-at': `${900 + i * 450}ms` })}
+            />
+          ))}
         </svg>
       );
     case 'raci-matrix':
-      // Tasks-by-roles grid: header band + column, letter dots in the body.
+      // Tasks-by-roles grid whose letter cells take their role's tint (R
+      // green, A blue, C amber, I slate), over the four-card legend.
       return (
-        <svg width="72" height="44" viewBox="0 0 80 50" aria-hidden>
+        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
           <rect
-            x="6"
-            y="6"
-            width="68"
-            height="38"
-            rx="2"
+            x="4"
+            y="3"
+            width="72"
+            height="34"
+            rx="1.5"
             fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.2"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.8"
           />
-          <rect x="6" y="6" width="68" height="9" fill="rgb(186 230 253)" />
-          <rect x="6" y="6" width="20" height="38" fill="rgb(224 242 254)" />
-          <rect
-            x="6"
-            y="6"
-            width="68"
-            height="9"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          {[15, 24.5, 34].map((y) => (
-            <line
-              key={y}
-              x1="6"
-              y1={y}
-              x2="74"
-              y2={y}
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.7"
-            />
-          ))}
-          {[26, 42, 58].map((x) => (
-            <line
-              key={x}
-              x1={x}
-              y1="6"
-              x2={x}
-              y2="44"
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.7"
-            />
-          ))}
-          {/* Scattered R/A/C/I marks as tinted dots. Hover story: the bottom
-              task's grey mark is handed to the next role, then the middle
-              task gains a Responsible (green). */}
+          <rect x="4" y="3" width="72" height="6.8" fill="rgb(226 232 240)" />
+          <rect x="4" y="3" width="20" height="34" fill="rgb(241 245 249)" />
+          {(
+            [
+              ['A', 'C', 'C', 'I'],
+              ['A', 'R', 'C', 'I'],
+              ['I', 'C', 'A', 'C'],
+              ['I', 'I', 'C', 'A'],
+            ] as const
+          ).map((row, r) =>
+            row.map((l, c) => (
+              <rect
+                key={`${r}-${c}`}
+                x={24.4 + c * 13}
+                y={10.2 + r * 6.7}
+                width="12.2"
+                height="5.9"
+                fill={
+                  l === 'R'
+                    ? 'rgb(220 252 231)'
+                    : l === 'A'
+                      ? 'rgb(219 234 254)'
+                      : l === 'C'
+                        ? 'rgb(254 243 199)'
+                        : 'rgb(241 245 249)'
+                }
+              />
+            )),
+          )}
           {[
-            { cx: 34, cy: 19.5, f: 'rgb(134 239 172)' },
-            { cx: 50, cy: 19.5, f: 'rgb(147 197 253)' },
-            { cx: 66, cy: 29, f: 'rgb(252 211 77)' },
-            { cx: 66, cy: 39, f: 'rgb(134 239 172)' },
-            { cx: 50, cy: 29, f: 'rgb(252 211 77)' },
-          ].map((d, i) => (
-            <circle key={i} cx={d.cx} cy={d.cy} r="2.6" fill={d.f} />
+            ['rgb(220 252 231)', 'rgb(21 128 61)'],
+            ['rgb(219 234 254)', 'rgb(29 78 216)'],
+            ['rgb(254 243 199)', 'rgb(161 98 7)'],
+            ['rgb(241 245 249)', 'rgb(71 85 105)'],
+          ].map(([fill, stroke], i) => (
+            <rect
+              key={fill}
+              x={4 + i * 18.4}
+              y="40"
+              width="16.8"
+              height="7"
+              rx="1"
+              fill={fill}
+              stroke={stroke}
+              strokeWidth="0.6"
+            />
           ))}
-          <circle
-            cx="34"
-            cy="39"
-            r="2.6"
+          {/* Hover story: the bottom task's grey I is handed to the next
+              role, then the third task gains a Responsible (green). */}
+          <rect
+            x="24.4"
+            y="30.3"
+            width="12.2"
+            height="5.9"
             fill="rgb(203 213 225)"
             className="pv-shift"
-            style={pv({ '--pv-dx': '16px', '--pv-at': '1000ms' })}
+            style={pv({ '--pv-dx': '13px', '--pv-at': '1000ms' })}
           />
-          <PopDot at={1700} cx="34" cy="29" r="2.6" fill="rgb(134 239 172)" />
+          <Pop at={1700} x={37.4} y={23.6} width="12.2" height="5.9" fill="rgb(134 239 172)" />
         </svg>
       );
     case 'user-story-map':
-      // Activity backbone over two release bands of stickies, cut by a
-      // dashed release line.
+      // A journey arrow over three orange activities, each spanning two
+      // blue tasks; yellow stories stacked beneath in three release lanes
+      // (MVP bold-bordered), the persona in the gutter.
       return (
         <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          {[4, 24, 44, 64].map((x) => (
+          <path
+            d="M 16 2.5 L 76 2.5 M 74 1 L 76 2.5 L 74 4"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.7"
+          />
+          <rect x="2" y="5" width="11" height="11.5" rx="0.8" fill="rgb(233 213 255)" />
+          {[0, 1, 2].map((a) => (
             <rect
-              key={x}
-              x={x}
-              y="4"
-              width="14"
-              height="8"
-              rx="1.5"
-              fill="rgb(186 230 253)"
-              stroke="rgb(14 165 233)"
-              strokeWidth="0.9"
+              key={a}
+              x={16 + a * 20.7}
+              y="5"
+              width="19.4"
+              height="5"
+              rx="0.6"
+              fill="rgb(254 215 170)"
             />
           ))}
-          {/* Hover story: the third activity's later story is promoted
-              over the release line into the first release, and a new story
-              backfills the later release. At rest the first release has
-              the gap it fills. */}
-          {[4, 24, 64].map((x) => (
-            <Sticky key={x} x={x} y={17} />
+          {[0, 1, 2, 3, 4, 5].map((t) => (
+            <rect
+              key={t}
+              x={16 + t * 10.35}
+              y="11.5"
+              width="9.05"
+              height="5"
+              rx="0.6"
+              fill="rgb(186 230 253)"
+            />
           ))}
-          {[4, 24, 64].map((x) => (
-            <Sticky key={x} x={x} y={38} />
+          {[
+            { y: 19, h: 13, stroke: 'rgb(14 165 233)', w: 1 },
+            { y: 33.5, h: 7, stroke: 'rgb(125 211 252)', w: 0.6 },
+            { y: 42, h: 7, stroke: 'rgb(125 211 252)', w: 0.6 },
+          ].map((l) => (
+            <g key={l.y}>
+              <rect
+                x="2"
+                y={l.y}
+                width="76"
+                height={l.h}
+                rx="1"
+                fill="rgb(240 249 255)"
+                stroke={l.stroke}
+                strokeWidth={l.w}
+              />
+              <rect x="2" y={l.y} width="11" height={l.h} rx="1" fill="rgb(224 242 254)" />
+            </g>
           ))}
-          <line
-            x1="2"
-            y1="32.5"
-            x2="78"
-            y2="32.5"
-            stroke="rgb(100 116 139)"
-            strokeWidth="1"
-            strokeDasharray="4 3"
-          />
+          {/* Stories: two rows in the MVP, one in each later lane. Hover
+              story: the fourth column's Release 2 story is promoted into the
+              MVP gap, and a new story backfills Release 2. */}
+          {[0, 1, 2, 3, 4, 5].map((t) => (
+            <g key={t}>
+              <Sticky x={16 + t * 10.35} y={20.2} width="9.05" height="5" />
+              {t === 0 || t === 4 ? (
+                <Sticky x={16 + t * 10.35} y={26.1} width="9.05" height="5" />
+              ) : null}
+              {t !== 3 ? <Sticky x={16 + t * 10.35} y={34.4} width="9.05" height="5" /> : null}
+              <Sticky x={16 + t * 10.35} y={42.9} width="9.05" height="5" />
+            </g>
+          ))}
           <Sticky
-            x={44}
-            y={38}
+            x={16 + 3 * 10.35}
+            y={34.4}
+            width="9.05"
+            height="5"
             className="pv-shift"
-            style={pv({ '--pv-dy': '-21px', '--pv-at': '1000ms', '--pv-dur': '800ms' })}
+            style={pv({ '--pv-dy': '-8.3px', '--pv-at': '1000ms', '--pv-dur': '800ms' })}
           />
           <Sticky
-            x={44}
-            y={38}
+            x={16 + 3 * 10.35}
+            y={34.4}
+            width="9.05"
+            height="5"
             className="pv-arrive"
             opacity="0"
-            style={pv({ '--pv-from-y': '10px', '--pv-at': '1900ms' })}
+            style={pv({ '--pv-from-y': '6px', '--pv-at': '1900ms' })}
           />
         </svg>
       );
     case 'affinity-map':
-      // Two dashed theme clusters of tilted stickies plus a loose note.
+      // Two dashed rose theme frames, each a pink theme note over two blue
+      // insight notes over tilted yellow notes, and a loose note to the side.
       return (
         <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          {[3, 32].map((x) => (
-            <rect
-              key={x}
-              x={x}
-              y="6"
-              width="25"
-              height="38"
-              rx="3"
-              fill="none"
-              stroke="rgb(148 163 184)"
-              strokeWidth="1"
-              strokeDasharray="4 3"
-            />
+          {[2, 32].map((x) => (
+            <g key={x}>
+              <rect
+                x={x}
+                y="3"
+                width="28"
+                height="44"
+                rx="2"
+                fill="none"
+                stroke="rgb(225 29 72)"
+                strokeWidth="0.8"
+                strokeDasharray="3 2"
+              />
+              <rect x={x + 2} y="5.5" width="24" height="5" rx="0.6" fill="rgb(254 205 211)" />
+              {[0, 1].map((g) => (
+                <rect
+                  key={g}
+                  x={x + 2 + g * 12.5}
+                  y="12.5"
+                  width="11.5"
+                  height="5"
+                  rx="0.6"
+                  fill="rgb(186 230 253)"
+                />
+              ))}
+            </g>
           ))}
           {[
-            { x: 7, y: 11, r: -4 },
-            { x: 8, y: 26, r: 3 },
-            { x: 36, y: 11, r: 3 },
-            { x: 37, y: 26, r: -3 },
+            { x: 4, y: 20, r: -3 },
+            { x: 16.5, y: 20, r: 3 },
+            { x: 4, y: 29, r: 3 },
+            { x: 34, y: 20, r: 3 },
+            { x: 46.5, y: 20, r: -3 },
+            { x: 34, y: 29, r: -3 },
           ].map((s, i) => (
             <rect
               key={i}
               x={s.x}
               y={s.y}
-              width="17"
-              height="11"
-              rx="1"
-              fill="rgb(254 243 199)"
-              stroke="rgb(253 230 138)"
-              strokeWidth="0.9"
-              transform={`rotate(${s.r} ${s.x + 8.5} ${s.y + 5.5})`}
+              width="11.5"
+              height="7"
+              rx="0.6"
+              fill="rgb(253 230 138)"
+              transform={`rotate(${s.r} ${s.x + 5.75} ${s.y + 3.5})`}
             />
           ))}
-          {/* Hover story: the loose note is grouped onto the second theme's
-              pile, then a fresh note turns up loose. The tilted note moves
-              inside a <g> so its own rotate() survives. */}
+          {/* Hover story: the loose note is filed under the second theme's
+              second insight, then that insight's dot-vote tally pops. The
+              tilted note moves inside a <g> so its own rotate() survives. */}
           <g
             className="pv-shift"
             style={{
               ...pv({
-                '--pv-dx': '-22px',
-                '--pv-dy': '13px',
+                '--pv-dx': '-18.5px',
+                '--pv-dy': '9px',
                 '--pv-at': '1000ms',
                 '--pv-dur': '800ms',
               }),
@@ -225,162 +368,223 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
             }}
           >
             <rect
-              x="62"
-              y="16"
-              width="15"
-              height="10"
-              rx="1"
-              fill="rgb(254 243 199)"
-              stroke="rgb(253 230 138)"
-              strokeWidth="0.9"
-              transform="rotate(7 69.5 21)"
+              x="65"
+              y="20"
+              width="11.5"
+              height="7"
+              rx="0.6"
+              fill="rgb(253 230 138)"
+              transform="rotate(7 70.75 23.5)"
             />
           </g>
-          <Sticky
-            x={62}
-            y={16}
-            className="pv-arrive"
+          <circle
+            className="pv-new"
             opacity="0"
-            style={pv({ '--pv-from-x': '10px', '--pv-at': '2000ms' })}
+            cx="56.5"
+            cy="12.5"
+            r="2"
+            fill="rgb(15 23 42)"
+            style={pv({ '--pv-at': '2000ms' })}
           />
         </svg>
       );
     case 'business-model-canvas':
-      // The iconic nine-block Osterwalder grid with the value column tinted.
+      // The nine-block Osterwalder grid coloured by area: infrastructure
+      // blue, the offer amber (the thick-bordered heart), customers green,
+      // finances violet, under a title and the area key.
       return (
-        <svg width="72" height="44" viewBox="0 0 80 50" aria-hidden>
-          <rect
-            x="4"
-            y="4"
-            width="72"
-            height="42"
-            rx="2"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.2"
-          />
-          {/* Value-proposition centre column. */}
-          <rect x="33" y="4" width="14" height="30" fill="rgb(186 230 253)" />
-          {/* Vertical partitions of the top area. */}
-          {[18.5, 33, 47, 61.5].map((x) => (
-            <line
-              key={x}
-              x1={x}
-              y1="4"
-              x2={x}
-              y2="34"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.8"
+        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+          <rect x="4" y="2.5" width="24" height="2.6" rx="0.6" fill="rgb(51 65 85)" />
+          {['rgb(147 197 253)', 'rgb(245 158 11)', 'rgb(134 239 172)', 'rgb(196 181 253)'].map(
+            (fill, i) => (
+              <rect key={fill} x={49 + i * 7} y="2.5" width="6" height="2.6" rx="1.3" fill={fill} />
+            ),
+          )}
+          {[
+            { x: 4, y: 8, h: 27, a: 0 },
+            { x: 18.6, y: 8, h: 13, a: 0 },
+            { x: 18.6, y: 22, h: 13, a: 0 },
+            { x: 47.8, y: 8, h: 13, a: 2 },
+            { x: 47.8, y: 22, h: 13, a: 2 },
+            { x: 62.4, y: 8, h: 27, a: 2 },
+          ].map((b) => (
+            <rect
+              key={`${b.x}-${b.y}`}
+              x={b.x}
+              y={b.y}
+              width="13.6"
+              height={b.h}
+              rx="1"
+              fill={b.a === 0 ? 'rgb(219 234 254)' : 'rgb(220 252 231)'}
+              stroke={b.a === 0 ? 'rgb(147 197 253)' : 'rgb(134 239 172)'}
+              strokeWidth="0.6"
             />
           ))}
-          {/* Stacked halves for the activities/resources + relationships/channels columns. */}
-          <line x1="18.5" y1="19" x2="33" y2="19" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="47" y1="19" x2="61.5" y2="19" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          {/* Costs / revenue base row. */}
-          <line x1="4" y1="34" x2="76" y2="34" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="40" y1="34" x2="40" y2="46" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          {/* Hover story: the canvas fills in, value proposition first, then
-              who it's for, who helps, and how it earns. */}
+          <rect
+            x="33.2"
+            y="8"
+            width="13.6"
+            height="27"
+            rx="1"
+            fill="rgb(254 243 199)"
+            stroke="rgb(245 158 11)"
+            strokeWidth="1.1"
+          />
+          <rect x="35" y="11.5" width="10" height="7" rx="0.4" fill="rgb(253 230 138)" />
+          {[4, 40.5].map((x) => (
+            <rect
+              key={x}
+              x={x}
+              y="36.5"
+              width="35.5"
+              height="10"
+              rx="1"
+              fill="rgb(237 233 254)"
+              stroke="rgb(196 181 253)"
+              strokeWidth="0.6"
+            />
+          ))}
+          {/* Hover story: the canvas fills in its numbered order, who it's
+              for, what we promise them, how we reach them, how it earns. */}
           {[
-            [36, 8, 1000],
-            [36, 15, 1250],
-            [65, 8, 1550],
-            [7, 8, 1850],
-            [58, 38, 2150],
-          ].map(([x, y, at]) => (
+            [64, 11.5, 'rgb(187 247 208)', 1000],
+            [35, 20.5, 'rgb(253 230 138)', 1300],
+            [49.6, 25.5, 'rgb(187 247 208)', 1600],
+            [49.6, 11.5, 'rgb(187 247 208)', 1900],
+            [42.5, 40, 'rgb(233 213 255)', 2200],
+          ].map(([x, y, fill, at]) => (
             <Pop
               key={at}
-              at={at!}
-              x={x}
-              y={y}
-              width="8"
-              height="5"
-              rx="0.8"
-              fill="rgb(254 243 199)"
-              stroke="rgb(245 158 11)"
-              strokeWidth="0.6"
+              at={at as number}
+              x={x as number}
+              y={y as number}
+              width="10"
+              height="4.5"
+              rx="0.4"
+              fill={fill as string}
             />
           ))}
         </svg>
       );
     case 'empathy-map':
-      // Says / Thinks / Does / Feels quadrants around the persona circle.
+      // A persona card over Says / Thinks / Does / Feels, with the Pains /
+      // Gains strip underneath; each block's notes take its own hue.
       return (
         <svg width="72" height="44" viewBox="0 0 80 50" aria-hidden>
           <rect
             x="6"
-            y="4"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(219 234 254)"
-            stroke="rgb(147 197 253)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="41"
-            y="4"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(237 233 254)"
-            stroke="rgb(196 181 253)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="6"
-            y="26"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(220 252 231)"
-            stroke="rgb(134 239 172)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="41"
-            y="26"
-            width="33"
-            height="20"
-            rx="2"
-            fill="rgb(255 228 230)"
-            stroke="rgb(253 164 175)"
-            strokeWidth="0.9"
+            y="2"
+            width="68"
+            height="8"
+            rx="1.5"
+            fill="rgb(248 250 252)"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.7"
           />
           <circle
-            cx="40"
-            cy="25"
-            r="7.5"
+            cx="10.5"
+            cy="6"
+            r="2.6"
             fill="rgb(186 230 253)"
             stroke="rgb(14 165 233)"
-            strokeWidth="1.2"
+            strokeWidth="0.6"
           />
-          {/* Head-and-shoulders glyph inside the persona circle. */}
-          <circle cx="40" cy="22.6" r="2.2" fill="rgb(14 165 233)" />
-          <path d="M 35.8 29.2 Q 40 24.8 44.2 29.2" fill="rgb(14 165 233)" />
-          {/* Hover story: an observation comes out of the persona into each
+          <line x1="15" y1="4.8" x2="40" y2="4.8" stroke="rgb(51 65 85)" strokeWidth="1.1" />
+          <line x1="15" y1="7.6" x2="55" y2="7.6" stroke="rgb(148 163 184)" strokeWidth="0.6" />
+          {[
+            {
+              x: 6,
+              y: 12,
+              fill: 'rgb(219 234 254)',
+              stroke: 'rgb(147 197 253)',
+              note: 'rgb(186 230 253)',
+            },
+            {
+              x: 41,
+              y: 12,
+              fill: 'rgb(237 233 254)',
+              stroke: 'rgb(196 181 253)',
+              note: 'rgb(233 213 255)',
+            },
+            {
+              x: 6,
+              y: 24,
+              fill: 'rgb(220 252 231)',
+              stroke: 'rgb(134 239 172)',
+              note: 'rgb(187 247 208)',
+            },
+            {
+              x: 41,
+              y: 24,
+              fill: 'rgb(255 228 230)',
+              stroke: 'rgb(253 164 175)',
+              note: 'rgb(254 205 211)',
+            },
+          ].map((q) => (
+            <g key={`${q.x}-${q.y}`}>
+              <rect
+                x={q.x}
+                y={q.y}
+                width="33"
+                height="10.5"
+                rx="1.5"
+                fill={q.fill}
+                stroke={q.stroke}
+                strokeWidth="0.7"
+              />
+              <rect x={q.x + 2} y={q.y + 4.5} width="13.5" height="4.5" rx="0.3" fill={q.note} />
+            </g>
+          ))}
+          {[
+            {
+              x: 6,
+              fill: 'rgb(255 237 213)',
+              stroke: 'rgb(253 186 116)',
+              note: 'rgb(254 215 170)',
+            },
+            {
+              x: 41,
+              fill: 'rgb(204 251 241)',
+              stroke: 'rgb(94 234 212)',
+              note: 'rgb(153 246 228)',
+            },
+          ].map((b) => (
+            <g key={b.x}>
+              <rect
+                x={b.x}
+                y="37.5"
+                width="33"
+                height="10"
+                rx="1.5"
+                fill={b.fill}
+                stroke={b.stroke}
+                strokeWidth="0.7"
+              />
+              <rect x={b.x + 2} y="41.5" width="13.5" height="4.5" rx="0.3" fill={b.note} />
+              <rect x={b.x + 17.5} y="41.5" width="13.5" height="4.5" rx="0.3" fill={b.note} />
+            </g>
+          ))}
+          {/* Hover story: an observation comes from the persona into each
               quadrant in turn: says, thinks, does, feels. */}
           {[
-            [12, 10, 1000],
-            [59, 10, 1300],
-            [12, 34, 1600],
-            [59, 34, 1900],
-          ].map(([x, y, at]) => (
+            [23, 16.5, 1000, 'rgb(186 230 253)'],
+            [58, 16.5, 1300, 'rgb(233 213 255)'],
+            [23, 28.5, 1600, 'rgb(187 247 208)'],
+            [58, 28.5, 1900, 'rgb(254 205 211)'],
+          ].map(([x, y, at, fill]) => (
             <rect
               key={at}
               className="pv-arrive"
               opacity="0"
               x={x}
               y={y}
-              width="9"
-              height="6"
-              rx="0.8"
-              fill="white"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.6"
+              width="13.5"
+              height="4.5"
+              rx="0.3"
+              fill={fill as string}
               style={pv({
-                '--pv-from-x': `${35.5 - x!}px`,
-                '--pv-from-y': `${22 - y!}px`,
+                '--pv-from-x': `${10.5 - (x as number)}px`,
+                '--pv-from-y': `${6 - (y as number)}px`,
                 '--pv-at': `${at}ms`,
               })}
             />
@@ -388,49 +592,81 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'funnel':
-      // Four tiers tapering downward, mouth tinted, exit narrow.
+      // Four tiers ramping pale to deep sky, a count rail beside them, and
+      // the weakest step's rose chip wired to the drop-off callout.
       return (
-        <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>
-          <polygon
-            points="5,4 65,4 55,13 15,13"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+          {[
+            { pts: '3,6 43,6 36,15 10,15', fill: 'rgb(224 242 254)' },
+            { pts: '10,18 36,18 31,27 15,27', fill: 'rgb(186 230 253)' },
+            { pts: '15,30 31,30 28,39 18,39', fill: 'rgb(125 211 252)' },
+            { pts: '18,42 28,42 26.5,48 19.5,48', fill: 'rgb(56 189 248)' },
+          ].map((t) => (
+            <polygon
+              key={t.pts}
+              points={t.pts}
+              fill={t.fill}
+              stroke="rgb(14 165 233)"
+              strokeWidth="0.7"
+            />
+          ))}
+          {[10.5, 22.5, 34.5, 45].map((y) => (
+            <rect key={y} x="46" y={y - 1.2} width="9" height="2.4" rx="0.6" fill="rgb(51 65 85)" />
+          ))}
+          {[16.5, 28.5].map((y) => (
+            <rect key={y} x="46" y={y - 1} width="7" height="2" rx="1" fill="rgb(226 232 240)" />
+          ))}
+          <rect x="46" y="39.5" width="7" height="2" rx="1" fill="rgb(253 164 175)" />
+          <path
+            d="M 54 40.5 L 60 40.5"
+            fill="none"
+            stroke="rgb(251 113 133)"
+            strokeWidth="0.7"
+            strokeDasharray="1.2 1"
+          />
+          <rect
+            x="60"
+            y="28"
+            width="17"
+            height="19"
+            rx="1.2"
+            fill="rgb(255 241 242)"
+            stroke="rgb(253 164 175)"
+            strokeWidth="0.7"
           />
           <polygon
-            points="16,17 54,17 47,26 23,26"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+            points="63,33.5 65,30 67,33.5"
+            fill="none"
+            stroke="rgb(190 18 60)"
+            strokeWidth="0.6"
           />
-          <polygon
-            points="24,30 46,30 42,39 28,39"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          <polygon
-            points="29,43 41,43 39,48 31,48"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
+          {[37, 40.5, 44].map((y) => (
+            <rect
+              key={y}
+              x="62.5"
+              y={y - 0.8}
+              width="12"
+              height="1.6"
+              rx="0.5"
+              fill="rgb(254 205 211)"
+            />
+          ))}
           {/* Hover story: prospects drop through the stages on a loop; the
               ones at the edges fall out after the first stage. */}
           {[
-            { x: 35, dx: 0, dy: 38, at: 1000 },
-            { x: 20, dx: -4, dy: 11, at: 1300 },
-            { x: 35, dx: 0, dy: 38, at: 1600 },
-            { x: 50, dx: 4, dy: 11, at: 1900 },
-            { x: 35, dx: 0, dy: 38, at: 2200 },
+            { x: 23, dx: 0, dy: 38, at: 1000 },
+            { x: 12, dx: -4, dy: 11, at: 1300 },
+            { x: 23, dx: 0, dy: 38, at: 1600 },
+            { x: 34, dx: 4, dy: 11, at: 1900 },
+            { x: 23, dx: 0, dy: 38, at: 2200 },
           ].map((d) => (
             <circle
               key={d.at}
               className="pv-travel"
               opacity="0"
               cx={d.x}
-              cy="7"
-              r="1.6"
+              cy="8.5"
+              r="1.5"
               fill="rgb(2 132 199)"
               style={pv({
                 '--pv-dx': `${d.dx}px`,
@@ -443,147 +679,201 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'okr-tree':
-      // Objective root over three key results, initiatives beneath.
+      // A bold objective over three key-result cards, each with a progress
+      // ring and coloured by health (on track, at risk, on track), and two
+      // badged initiatives dropping straight from each card's quarters.
       return (
         <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          <rect
-            x="30"
-            y="3"
-            width="20"
-            height="9"
-            rx="1.5"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+          <path
+            d="M31 10 V13.5 H14 V17 M40 10 V17 M49 10 V13.5 H66 V17"
+            fill="none"
+            stroke="rgb(100 116 139)"
+            strokeWidth="0.8"
           />
-          {[8, 33, 58].map((x) => (
-            <rect
-              key={x}
-              x={x}
-              y="21"
-              width="14"
-              height="8"
-              rx="1.5"
-              fill="white"
-              stroke="rgb(14 165 233)"
-              strokeWidth="0.9"
-            />
-          ))}
-          {[4, 21, 29, 46, 54, 71].map((x, i) => (
-            <rect
-              key={i}
-              x={x}
-              y="38"
-              width="9"
-              height="7"
-              rx="1"
-              fill="white"
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.8"
-            />
-          ))}
-          {/* Root → KR connectors. */}
-          {[15, 40, 65].map((x) => (
-            <line
-              key={x}
-              x1="40"
-              y1="12"
-              x2={x}
-              y2="21"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.8"
-            />
-          ))}
-          {/* KR → initiative connectors. */}
+          <rect x="22" y="2" width="36" height="8" rx="1.5" fill="rgb(3 105 161)" />
           {[
-            [15, 8.5],
-            [15, 25.5],
-            [40, 33.5],
-            [40, 50.5],
-            [65, 58.5],
-            [65, 75.5],
-          ].map(([fx, tx], i) => (
-            <line
-              key={i}
-              x1={fx}
-              y1="29"
-              x2={tx}
-              y2="38"
-              stroke="rgb(100 116 139)"
-              strokeWidth="0.7"
-            />
-          ))}
-          {/* Hover story: each key result's progress bar fills to where it
-              stands this quarter. The bar pops in with its track, then grows. */}
-          {[
-            [8, 10, 1000],
-            [33, 5, 1300],
-            [58, 8, 1600],
-          ].map(([x, w, at]) => (
-            <g key={x} className="pv-new" opacity="0" style={popGroup(at!)}>
-              <rect x={x! + 2} y="25.5" width="10" height="1.8" rx="0.9" fill="rgb(226 232 240)" />
-              <rect
-                x={x! + 2}
-                y="25.5"
-                width={w}
-                height="1.8"
-                rx="0.9"
-                fill="rgb(34 197 94)"
-                className="pv-grow-x"
-                style={pv({ '--pv-at': `${at! + 150}ms`, '--pv-dur': '900ms' })}
+            {
+              x: 2,
+              fill: 'rgb(220 252 231)',
+              hue: 'rgb(22 163 74)',
+              arc: 'M8 19.8 A3.2 3.2 0 1 1 6.12 25.59',
+              at: 900,
+            },
+            {
+              x: 28,
+              fill: 'rgb(254 243 199)',
+              hue: 'rgb(217 119 6)',
+              arc: 'M34 19.8 A3.2 3.2 0 0 1 36.8 24.54',
+              at: 1200,
+            },
+            {
+              x: 54,
+              fill: 'rgb(220 252 231)',
+              hue: 'rgb(22 163 74)',
+              arc: 'M60 19.8 A3.2 3.2 0 1 1 56.8 23',
+              at: 1500,
+            },
+          ].map((kr, i) => (
+            <g key={kr.x}>
+              <path
+                d={`M${kr.x + 6} 29 V34 M${kr.x + 18} 29 V34`}
+                fill="none"
+                stroke="rgb(100 116 139)"
+                strokeWidth="0.7"
               />
+              <rect
+                x={kr.x}
+                y="17"
+                width="24"
+                height="12"
+                rx="1.5"
+                fill={kr.fill}
+                stroke={kr.hue}
+                strokeWidth="0.8"
+              />
+              <circle cx={kr.x + 6} cy="23" r="3.2" fill="none" stroke="white" strokeWidth="1.3" />
+              {/* Hover story: each ring fills to where its key result
+                  stands this quarter. */}
+              <path
+                d={kr.arc}
+                pathLength="1"
+                fill="none"
+                stroke={kr.hue}
+                strokeWidth="1.3"
+                className="pv-draw"
+                style={pv({ '--pv-at': `${kr.at}ms`, '--pv-dur': '900ms' })}
+              />
+              {[20.5, 23, 25.5].map((y, j) => (
+                <line
+                  key={y}
+                  x1={kr.x + 11}
+                  y1={y}
+                  x2={kr.x + (j === 0 ? 22 : 18)}
+                  y2={y}
+                  stroke={j === 0 ? kr.hue : 'rgb(148 163 184)'}
+                  strokeWidth="0.8"
+                />
+              ))}
+              {[kr.x + 1, kr.x + 13].map((ix, j) => (
+                <g key={ix}>
+                  <rect
+                    x={ix}
+                    y="34"
+                    width="10"
+                    height="6"
+                    rx="1"
+                    fill="white"
+                    stroke="rgb(14 165 233)"
+                    strokeWidth="0.7"
+                  />
+                  <rect
+                    x={ix + 6}
+                    y="32.8"
+                    width="5"
+                    height="2"
+                    rx="0.6"
+                    fill={
+                      [
+                        ['rgb(22 163 74)', 'rgb(217 119 6)'],
+                        ['rgb(217 119 6)', 'rgb(71 85 105)'],
+                        ['rgb(22 163 74)', 'rgb(217 119 6)'],
+                      ][i]![j]
+                    }
+                  />
+                </g>
+              ))}
             </g>
           ))}
+          {/* ...then a WIP initiative ships: its badge turns DONE. */}
+          <rect
+            className="pv-new"
+            opacity="0"
+            x="21"
+            y="32.8"
+            width="5"
+            height="2"
+            rx="0.6"
+            fill="rgb(22 163 74)"
+            style={pv({ '--pv-at': '2300ms' })}
+          />
         </svg>
       );
     case 'sitemap':
-      // Home over sections and pages, wired with elbow connectors.
+      // Home over three hued nav sections, each spanning two pages with a
+      // route beneath; footer and utility pages flank Home on dashed lines.
       return (
         <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          <rect
-            x="31"
-            y="3"
-            width="18"
-            height="9"
-            rx="1.5"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
+          <path
+            d="M32 3.75 H25 V3 H18 M32 7.25 H25 V9 H18 M48 3.75 H55 V3 H62 M48 7.25 H55 V9 H62"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.6"
+            strokeDasharray="1.2 0.8"
           />
-          {[7, 33, 59].map((x) => (
-            <rect
-              key={x}
-              x={x}
-              y="22"
-              width="14"
-              height="8"
-              rx="1.5"
-              fill="white"
-              stroke="rgb(14 165 233)"
-              strokeWidth="0.9"
-            />
-          ))}
-          {[3, 15, 29, 41, 55, 67].map((x, i) => (
-            <rect
-              key={i}
-              x={x}
-              y="39"
-              width="10"
-              height="7"
-              rx="1"
-              fill="white"
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.8"
-            />
-          ))}
-          {/* Elbow connectors: down from Home, across, down into each tier.
-              Hover story: the site's links wire up from Home down, tier by
-              tier, then a visitor's route lights up to its last page. */}
+          {[6, 62].map((x) =>
+            [1, 7].map((y) => (
+              <rect
+                key={`${x}-${y}`}
+                x={x}
+                y={y}
+                width="12"
+                height="4"
+                rx="0.8"
+                fill="white"
+                stroke="rgb(148 163 184)"
+                strokeWidth="0.6"
+              />
+            )),
+          )}
+          <rect x="32" y="2" width="16" height="7" rx="1.5" fill="rgb(3 105 161)" />
           {[
-            ['M 40 12 V 17 H 14 V 22 M 40 17 V 22 M 40 17 H 66 V 22', 0.8, 900],
-            ['M 14 30 V 34.5 H 8 V 39 M 14 34.5 H 20 V 39', 0.7, 1300],
-            ['M 40 30 V 34.5 H 34 V 39 M 40 34.5 H 46 V 39', 0.7, 1450],
-            ['M 66 30 V 34.5 H 60 V 39 M 66 34.5 H 72 V 39', 0.7, 1600],
+            [2, 'rgb(224 242 254)', 'rgb(14 165 233)', 'rgb(125 211 252)'],
+            [29, 'rgb(209 250 229)', 'rgb(16 185 129)', 'rgb(110 231 183)'],
+            [56, 'rgb(237 233 254)', 'rgb(139 92 246)', 'rgb(196 181 253)'],
+          ].map(([x, fill, hue, edge]) => (
+            <g key={x as number}>
+              <rect
+                x={x as number}
+                y="18"
+                width="22"
+                height="6"
+                rx="1.2"
+                fill={fill as string}
+                stroke={hue as string}
+                strokeWidth="1"
+              />
+              {[(x as number) + 1, (x as number) + 12].map((px) => (
+                <g key={px}>
+                  <rect
+                    x={px}
+                    y="32"
+                    width="9"
+                    height="5"
+                    rx="0.8"
+                    fill="white"
+                    stroke={edge as string}
+                    strokeWidth="0.7"
+                  />
+                  <line
+                    x1={px + 1.5}
+                    y1="39.5"
+                    x2={px + 7.5}
+                    y2="39.5"
+                    stroke="rgb(148 163 184)"
+                    strokeWidth="0.6"
+                  />
+                </g>
+              ))}
+            </g>
+          ))}
+          {/* Rakes from Home's three exits, then straight drops to pages.
+              Hover story: the links wire up from Home down, tier by tier,
+              then a visitor's route lights up to its last page. */}
+          {[
+            ['M36 9 V13.5 H13 V18 M40 9 V18 M44 9 V13.5 H67 V18', 0.8, 900],
+            ['M7.5 24 V32 M18.5 24 V32', 0.7, 1300],
+            ['M34.5 24 V32 M45.5 24 V32', 0.7, 1450],
+            ['M61.5 24 V32 M72.5 24 V32', 0.7, 1600],
           ].map(([d, w, at]) => (
             <path
               key={at}
@@ -598,10 +888,10 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
           ))}
           <g className="pv-new" opacity="0" style={popGroup(2200)}>
             <path
-              d="M 40 12 V 17 H 66 V 22 M 66 30 V 34.5 H 72 V 39"
+              d="M44 9 V13.5 H67 V18 M72.5 24 V32"
               pathLength="1"
               fill="none"
-              stroke="rgb(14 165 233)"
+              stroke="rgb(139 92 246)"
               strokeWidth="1.6"
               className="pv-draw"
               style={pv({ '--pv-at': '2200ms', '--pv-dur': '900ms' })}
@@ -615,21 +905,6 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
 }
 
 // Helpers for the hover stories (preview-motion.css).
-
-// A roadmap initiative card.
-function RoadCard(props: { x: number; y: number } & Omit<SVGProps<SVGRectElement>, 'x' | 'y'>) {
-  return (
-    <rect
-      width="14"
-      height="11"
-      rx="1.5"
-      fill="white"
-      stroke="rgb(148 163 184)"
-      strokeWidth="0.8"
-      {...props}
-    />
-  );
-}
 
 // An amber sticky (user story map, affinity map).
 function Sticky(props: { x: number; y: number } & Omit<SVGProps<SVGRectElement>, 'x' | 'y'>) {

@@ -3,11 +3,12 @@
 // Palette drag-drop onto the canvas, lifted out of Canvas. Accepts drops
 // carrying a palette shape / line-art icon / tech-icon / sticker MIME,
 // converts the drop point to world-space canvas coords, and dispatches
-// onDropPalette. Returns the onDragOver / onDrop handlers to spread onto the
+// onDropPalette (and dropped files to onDropPhoto / onDropFile). Returns the
+// onDragOver / onDrop handlers to spread onto the
 // canvas <main>.
 
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
-import type { ShapeKind } from '@livediagram/diagram';
+import type { ShapeKind } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
@@ -31,9 +32,13 @@ type PaletteDropDeps = {
   // A photo dropped on an EVENT-STORMING board is a piece of wall, not a
   // picture (docs/specs/021-event-storming/event-storming.md Phase 8): it is read, and nothing becomes an image
   // element. Supplied only on such a board with the model configured, so
-  // every other board — and this one without a key — keeps today's behaviour
+  // every other tab — and this one without a key — keeps today's behaviour
   // exactly, which is that a dropped file does nothing here at all.
   onDropPhoto?: (file: File) => void;
+  // Any other file dropped on the canvas, with the canvas point it was released at: an Excalidraw
+  // file or export lands there as its scene (docs/specs/020-import-export/excalidraw-import-export.md
+  // "Paste"). Absent where the canvas takes no files.
+  onDropFile?: (file: File, at: { x: number; y: number }) => void;
 };
 
 export function usePaletteDrop({
@@ -41,6 +46,7 @@ export function usePaletteDrop({
   viewportZoom,
   wrapperRef,
   onDropPhoto,
+  onDropFile,
 }: PaletteDropDeps) {
   // The one file the drop would read, or null. `image/*` only, and only when
   // the board is one that reads photos.
@@ -58,9 +64,9 @@ export function usePaletteDrop({
       e.dataTransfer.dropEffect = 'none';
       return;
     }
-    // A photo on an event-storming board is accepted the same way a tile is,
+    // A file (a photo on an event-storming board, an Excalidraw file) is accepted the same way a tile is,
     // so the cursor says it will land rather than showing the no-drop sign.
-    if (onDropPhoto && e.dataTransfer.types.includes('Files')) {
+    if ((onDropPhoto || onDropFile) && e.dataTransfer.types.includes('Files')) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
       return;
@@ -89,6 +95,14 @@ export function usePaletteDrop({
     if (photo) {
       e.preventDefault();
       onDropPhoto?.(photo);
+      return;
+    }
+    const file = onDropFile ? e.dataTransfer.files?.[0] : undefined;
+    if (file) {
+      e.preventDefault();
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      onDropFile?.(file, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
       return;
     }
     const payload = e.dataTransfer.getData(PALETTE_DND_MIME);

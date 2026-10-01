@@ -1,5 +1,5 @@
 import { bytesToBase64 } from '@livediagram/api-schema';
-import { googleFontsHref } from '@livediagram/diagram';
+import { googleFontsHref } from '@livediagram/document';
 
 // Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //
@@ -17,11 +17,11 @@ import { googleFontsHref } from '@livediagram/diagram';
 
 // Only the Latin subsets are embedded. Google serves a `@font-face` per
 // script (latin, latin-ext, cyrillic, greek, vietnamese...); taking all of
-// them multiplies an export's weight for coverage a diagram almost never
+// them multiplies an export's weight for coverage a canvas almost never
 // uses. Text outside these ranges still renders — in the fallback face.
 const EMBEDDED_SUBSETS = ['latin', 'latin-ext'];
 
-// Keyed by the id list, because a second export of the same board should
+// Keyed by the id list, because a second export of the same canvas should
 // not re-download a font we already hold.
 const cache = new Map<string, Promise<string>>();
 

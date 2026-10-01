@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { clamp } from '@livediagram/diagram';
+import { clamp } from '@livediagram/document';
 import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
 import { TourHelpArt } from './TourHelpArt';
@@ -152,7 +152,7 @@ export function TourPopover({
       ) : null}
       {/* Keyed on the step so each phase slides in directionally (forward
           from the right, back from the left) — the same motion the New
-          Diagram wizard uses between its phases. */}
+          Document wizard uses between its phases. */}
       <div
         key={stepId}
         className={`flex flex-col gap-2 ${stepDir === 'forward' ? 'animate-tip-next' : 'animate-tip-prev'}`}

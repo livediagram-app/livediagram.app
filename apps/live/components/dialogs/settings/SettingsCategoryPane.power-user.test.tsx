@@ -69,7 +69,7 @@ describe('Power User Mode children', () => {
 
   it('goes to a preset setting in its own row', () => {
     const onGoToRow = renderEditor(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Appearance' }));
-    expect(onGoToRow).toHaveBeenCalledWith('appearance', 'panelLayout');
+    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Panels' }));
+    expect(onGoToRow).toHaveBeenCalledWith('panels', 'panelLayout');
   });
 });

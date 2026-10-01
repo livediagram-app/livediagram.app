@@ -15,11 +15,6 @@
 // the canvas; the poll keeps running) and End Poll. Everyone else gets a
 // local Dismiss, which hides their own panel without ending anything —
 // the escape hatch if the host disconnects mid-poll.
-//
-// In the dock layout (a phone, or the minimal panel preference on desktop)
-// it lives under the dock's Poll button like every other panel, closable
-// with it, and opens by itself when a poll starts or when you answer one
-// (useOpenDockPanelOnChange), since that is exactly when you want it.
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -37,10 +32,6 @@ export function PollPanel({
   onMoveTo,
   onReset,
   dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
   stackBelowY,
 }: {
   poll: LivePoll;
@@ -61,10 +52,6 @@ export function PollPanel({
   return (
     <MovablePanel
       helpArticle="sessionPolls"
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
       title="Poll"
       position={position}
       defaultCorner="top-right-stacked"
@@ -112,7 +99,7 @@ export function PollPanel({
           {isHost ? (
             <>
               {/* Keeping the result is the LOUD action (docs/specs/012-collaboration/poll-result-capture.md): a poll that
-                  leaves no trace is still one press away, but the board is the
+                  leaves no trace is still one press away, but the canvas is the
                   record of the session and the tallies belong on it. So it
                   gets the primary row. It does not end the poll: keep a chart
                   now, keep another later, end when the room is done. */}

@@ -2,11 +2,12 @@
 
 import dynamic from 'next/dynamic';
 
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import { useSelectTab } from '@/app/diagram/[id]/useSelectTab';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 
-const CollaboratorsDialog = dynamic(() =>
-  import('@/components/dialogs/CollaboratorsDialog').then((m) => m.CollaboratorsDialog),
+const CollaboratorsDialog = dynamic(
+  () => import('@/components/dialogs/CollaboratorsDialog').then((m) => m.CollaboratorsDialog),
+  { ssr: false },
 );
 
 // Mounts the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md) from EditorContext, so EditorView

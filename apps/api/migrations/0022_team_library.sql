@@ -1,4 +1,4 @@
--- Team shared diagrams (docs/specs/013-workspace/team-shared-diagrams.md): both folders and diagrams gain a
+-- Team shared diagrams (docs/specs/013-workspace/team-shared-documents.md): both folders and diagrams gain a
 -- nullable team scope. NULL = personal (every pre-existing row);
 -- non-null = part of that team's shared library, authorised by
 -- joined membership (docs/specs/013-workspace/teams.md) rather than ownership. A team diagram

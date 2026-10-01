@@ -6,7 +6,7 @@
 // and the Idea box can't drift apart.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { canvasSurface, defaultStrokeColor, type ShapeElement } from '@livediagram/diagram';
+import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from './collab-chrome';
 
@@ -27,7 +27,7 @@ export function CollabAccentScope({
   // theme's accent (and a user who recolours the border recolours the accent).
   const paper = useCanvasSurface();
   const accent = element.strokeColor ?? defaultStrokeColor(element, paper);
-  const onAccent = canvasSurface(accent) === 'dark' ? '#ffffff' : '#0f172a';
+  const onAccent = inkOn(accent);
   const accentInk =
     canvasSurface(accent) === canvasSurface(surface)
       ? `color-mix(in srgb, ${accent} 40%, ${textColor})`

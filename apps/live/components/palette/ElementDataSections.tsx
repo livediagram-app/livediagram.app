@@ -35,7 +35,7 @@ import {
   type PieSlice,
   type ElementAnimation,
   type IconAnimation,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   AvatarModeIcon,
   EraserIcon,
@@ -427,7 +427,11 @@ export function ElementDataSections({
               icon={<DataMenuGlyph />}
               {...sectionProps('mind-flow')}
             >
-              <MindFlowTiles current={props.mindFlow} onSet={props.onSetMindFlow} />
+              <MindFlowTiles
+                current={props.mindFlow}
+                onSet={props.onSetMindFlow}
+                onTidy={props.onTidyMindMap}
+              />
             </MenuAccordionSection>
           ) : null}
           {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands

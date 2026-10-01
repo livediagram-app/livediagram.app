@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { CheckGlyph, QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
+import { CheckGlyph, LOUD_ACCENT, stopPointer } from '../qa/qa-parts';
 
 export function DoneButton({
   mine,
@@ -25,15 +25,7 @@ export function DoneButton({
       {...stopPointer}
       disabled={!onToggle}
       className="done-button pointer-events-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl py-2 text-[12px] font-semibold disabled:cursor-default disabled:opacity-50"
-      style={
-        mine
-          ? { color: textColor, backgroundColor: tint(textColor, 0.08) }
-          : {
-              color: QA_ON_ACCENT,
-              backgroundColor: QA_ACCENT,
-              boxShadow: `0 8px 16px -10px ${QA_ACCENT}`,
-            }
-      }
+      style={mine ? { color: textColor, backgroundColor: tint(textColor, 0.08) } : LOUD_ACCENT}
     >
       <span
         key={mine ? 'mine' : 'not'}

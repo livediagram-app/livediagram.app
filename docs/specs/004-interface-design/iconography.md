@@ -7,7 +7,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - **Outline icon**: single-colour line art on a 24-unit square grid, round caps and joins, painted with `currentColor` (chrome) or the element's stroke colour (canvas).
 - **On-screen stroke**: the stroke width a person sees, in CSS pixels: `strokeWidth × renderedSize / viewBox`. Weight is specified in on-screen pixels, never in viewBox units.
 - **Chrome icon**: an icon in the application interface (toolbars, menus, panels, dialogs, the help centre, marketing, telemetry).
-- **Canvas icon**: a line-art glyph from the Icons catalogue placed on a diagram (`shape: 'icon'`), or shown as a palette thumbnail.
+- **Canvas icon**: a line-art glyph from the Icons catalogue placed on the canvas (`shape: 'icon'`), or shown as a palette thumbnail.
 - **Technology tile**: a coloured tile with a white generic glyph ([Technology icons](../010-palette/technology-icons.md)).
 - **Art**: pictures that are not icons: marketing feature art, background-pattern thumbnails, style swatches, effect previews, brand marks. Art is outside this grammar.
 

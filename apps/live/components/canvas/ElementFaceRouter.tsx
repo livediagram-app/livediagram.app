@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/diagram';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
@@ -19,7 +19,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
@@ -27,6 +27,8 @@ import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
+import { PathSvg } from '@/components/canvas/path/PathSvg';
+import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
@@ -110,9 +112,12 @@ type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
+  // A pen stroke not yet selected: only its drawn line picks it.
+  lineHit: boolean;
 };
 
 export function ElementFaceRouter({
+  lineHit,
   element,
   isEditing,
   isSelected,
@@ -178,6 +183,8 @@ export function ElementFaceRouter({
   // A collaboration panel has a title row, and the `…` leads its title
   // (CollabSettingsSlot); everything else keeps it in the top-right corner.
   const inTitleRow = element.type === 'shape' && isCollabPanelShape(element.shape);
+  // A card's own fill, for the modern collab faces' accent scope.
+  const cardFill = element.fillColor ?? defaultFillColor(element, surface);
   const settingsMenu =
     settingsButton && !inTitleRow ? (
       <span className="absolute right-1 top-1 z-10">{settingsButton}</span>
@@ -308,7 +315,9 @@ export function ElementFaceRouter({
            only job is to carry a commentThread. */
         <CommentPanelFace
           element={element}
+          label={label}
           textColor={textColor}
+          surface={cardFill}
           selfId={commentSelfId ?? ''}
           onAddComment={commentActions?.add}
           onDeleteComment={commentActions?.remove}
@@ -320,9 +329,12 @@ export function ElementFaceRouter({
            SAME action machinery the popover and the Assign Action dialog do. */
         <ActionPanelFace
           element={element}
+          label={label}
           textColor={textColor}
+          surface={cardFill}
           selfId={actionSelfId ?? null}
-          onConfigure={actionActions?.configure}
+          onAdd={actionActions?.add}
+          onEdit={actionActions?.edit}
           onComplete={actionActions?.complete}
           onReopen={actionActions?.reopen}
         />
@@ -364,7 +376,7 @@ export function ElementFaceRouter({
           <ImageElementView
             element={element}
             ownerId={imageContext.ownerId}
-            diagramId={imageContext.diagramId}
+            documentId={imageContext.documentId}
             shareCode={imageContext.shareCode}
             canOpenPicker={!!imageContext.onOpenPicker}
           />
@@ -388,6 +400,7 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
+            hitWidth={lineHit ? strokeHitWidth(element.penWidth ?? 0, zoom) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
@@ -403,6 +416,18 @@ export function ElementFaceRouter({
               the drawn stroke. */}
           {isEditing || label.length > 0 ? labelNode : null}
         </>
+      ) : element.type === 'path' ? (
+        // A path (docs/specs/023-whiteboard/path-tool.md) draws its curve and takes no label.
+        <PathSvg
+          element={element}
+          hitWidth={
+            lineHit
+              ? strokeHitWidth(BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE], zoom)
+              : undefined
+          }
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+        />
       ) : element.type === 'table' ? (
         <TableView
           element={element}

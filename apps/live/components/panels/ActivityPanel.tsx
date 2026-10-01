@@ -5,7 +5,7 @@ import { memo } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import type { DockAnchor } from '@/lib/canvas-chrome';
+import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
 import {
   ActivityRow,
   RedoIcon,
@@ -53,7 +53,7 @@ type ActivityPanelProps = {
   // the editor to jump to the related element (tab-meta entries like
   // "Changed theme to X" just clear the selection).
   onRowClick: (entry: ChangeLogEntry) => void;
-  // Wipe every audit entry for the active tab. The diagram state is
+  // Wipe every audit entry for the active tab. The document state is
   // untouched (only the log dies). Disabled when the list is empty
   // so the button doesn't no-op. Optional so view-role visitors can
   // open the panel (to see the trail of edits) without exposing a
@@ -68,17 +68,11 @@ type ActivityPanelProps = {
   onToggleMinimized: () => void;
   // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
-  // Dock layouts (minimal, or a phone outside Toolbar): the panel is a
-  // popover over the cluster's Activity button, open while the dock has it.
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: DockAnchor;
-  forceDockMode?: boolean;
-  // Close the popover on a press outside it (see MovablePanelPlacementProps).
-  dismissOnOutside?: boolean;
-  onMobileClose?: () => void;
-};
+  // The Toolbar layout: the panel is a popover over the cluster's Activity
+  // button, open while that button has it.
+} & MovablePanelPopoverProps;
 
-// Floating "Activity" panel — per-diagram audit of every edit, with a
+// Floating "Activity" panel — per-document audit of every edit, with a
 // surgical Revert button on each row and the Undo / Redo controls
 // docked at the top. Same shape language as Explorer / Palette so the
 // editor's chrome stays consistent. See docs/specs/012-collaboration/activity-and-audit.md.
@@ -105,11 +99,11 @@ function ActivityPanelImpl({
   onReset,
   onToggleMinimized,
   dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
+  popoverOpen,
+  popoverAnchor,
+  asPopover,
   dismissOnOutside,
-  onMobileClose,
+  onPopoverClose,
 }: ActivityPanelProps) {
   if (minimized) return null;
   return (
@@ -122,11 +116,11 @@ function ActivityPanelImpl({
       onReset={onReset}
       onMoveTo={onMoveTo}
       {...dock}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
+      popoverOpen={popoverOpen}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
-      onMobileClose={onMobileClose}
+      onPopoverClose={onPopoverClose}
       onMinimize={onToggleMinimized}
       headerExtra={<SaveStatusBadge status={saveStatus} savedAt={savedAt} />}
     >
@@ -202,7 +196,7 @@ function ActivityPanelImpl({
             <HoverCard
               block
               title="Clear Activity"
-              description="Delete every entry for this tab. The diagram is untouched."
+              description="Delete every entry for this tab. The document is untouched."
             >
               <button
                 type="button"

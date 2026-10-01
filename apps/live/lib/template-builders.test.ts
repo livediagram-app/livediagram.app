@@ -5,7 +5,7 @@ import {
   laneCentre,
   runsPlainText,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { primsBounds } from '@livediagram/icons';
 import { ICON_CATALOG_1 } from '@livediagram/icons/icon-catalog-1';
@@ -85,6 +85,19 @@ const ALL_KINDS = [
   'state-machine',
   'floor-plan',
   'event-storming',
+  'start-stop-continue',
+  'mad-sad-glad',
+  'four-ls',
+  'sailboat',
+  'incident-postmortem',
+  'opportunity-solution-tree',
+  'crazy-eights',
+  'stakeholder-map',
+  'risk-matrix',
+  'user-persona',
+  'meeting-agenda',
+  'objectives-planner',
+  'whiteboard',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -111,6 +124,12 @@ function coordsOf(el: Element): { x: number; y: number }[] {
   }
   return [{ x: el.x, y: el.y }];
 }
+
+describe('the whiteboard template', () => {
+  it('starts empty: a whiteboard is a clean board to draw on', () => {
+    expect(buildTemplate('whiteboard', 0, 0)).toEqual([]);
+  });
+});
 
 describe('the event-storming template', () => {
   it('seeds one domain event reading Board Created, and no text element', () => {
@@ -142,10 +161,10 @@ describe('buildTemplate translation invariance', () => {
   const DX = 137;
   const DY = -421;
 
-  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-diagram-route.md), so it has no
+  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
-  it.each(ALL_KINDS.filter((k) => k !== 'blank'))(
+  it.each(ALL_KINDS.filter((k) => k !== 'blank' && k !== 'whiteboard'))(
     '%s: every coordinate shifts by (cx, cy)',
     (kind) => {
       const atOrigin = buildTemplate(kind, 0, 0);
@@ -184,7 +203,7 @@ describe('buildTemplate translation invariance', () => {
   it.each(ALL_KINDS)('%s: returns a fresh array per call (no shared mutable state)', (kind) => {
     // Builders are documented as pure, returning "a fresh array of
     // Element". A future revision that memoised or returned a
-    // module-level constant would silently let one diagram's edits
+    // module-level constant would silently let one document's edits
     // leak into another template instantiation. Asserting distinct
     // references rules that out.
     const a = buildTemplate(kind, 0, 0);
@@ -221,60 +240,85 @@ describe('buildTemplatedTab', () => {
   });
 
   it('non-mindmap templates do not inherit mindmap-specific overrides', () => {
-    const tab = buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow');
-    expect(tab.backgroundOpacity).toBeUndefined();
+    // A dot-grid board carries no opacity at all; a graph-paper one only the
+    // quiet-pattern step back (0.4), never the mind map's 0.8.
+    expect(
+      buildTemplatedTab('retrospective', 'slate', 'tab-1', 'retro').backgroundOpacity,
+    ).toBeUndefined();
+    expect(buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
   });
 });
 
-describe('gantt milestone bars survive theming', () => {
-  // The six milestone bars carry distinct intrinsic fills. They opt out
-  // of theme recolouring via `themeLockFill` so a non-brand theme (which
-  // maps every shape to one element-fill) can't merge them into a single
-  // indistinguishable block. The header + tracks must NOT carry the flag:
-  // they are background chrome and should adopt the theme fill.
-  it('pins exactly the six milestone-bar fills and leaves chrome unpinned', () => {
+describe('gantt workstream bars survive theming', () => {
+  // The six progress bars carry their workstream's tint as the track fill.
+  // They opt out of theme recolouring via `themeLockFill` so a non-brand
+  // theme (which maps every shape to one element-fill) can't merge the three
+  // workstreams into one colour. The sheet, header and group bands must NOT
+  // carry the flag: they are background chrome and adopt the theme fill.
+  const bars = (els: Element[]) =>
+    els.filter(
+      (el): el is Extract<Element, { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'progress-bar',
+    );
+
+  it('locks every bar track and leaves the chrome unlocked', () => {
     const els = buildTemplate('gantt', 0, 0);
-    const locked = els.filter(
-      (el) => (el as { themeLockFill?: boolean }).themeLockFill === true,
-    ) as Array<Extract<Element, { type: 'shape' }>>;
-    expect(locked.length).toBe(6);
-    // Each pinned bar has a fill, and the six fills are all distinct.
-    const fills = locked.map((b) => b.fillColor);
-    expect(fills.every((f) => typeof f === 'string')).toBe(true);
-    expect(new Set(fills).size).toBe(6);
+    expect(bars(els)).toHaveLength(6);
+    expect(bars(els).every((b) => b.themeLockFill)).toBe(true);
+    // One track tint per workstream.
+    expect(new Set(bars(els).map((b) => b.fillColor)).size).toBe(3);
+    const squares = els.filter(
+      (el): el is Extract<Element, { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'square' && el.width > 1000,
+    );
+    // The sheet, the calendar header and the three group bands.
+    expect(squares).toHaveLength(5);
+    expect(squares.some((s) => s.themeLockFill)).toBe(false);
   });
 
-  it('themed gantt build keeps the six bar fills distinct', () => {
+  it('themed gantt build keeps the three workstream tints distinct', () => {
     // End-to-end through buildTemplatedTab (the /live/new path), which
     // recolours to the chosen theme. Without the lock, all bars would
     // collapse to the Slate element-fill and the Set would be size 1.
     const tab = buildTemplatedTab('gantt', 'slate', 'tab-g', 'Gantt');
-    const barFills = tab.elements
-      .filter((el) => (el as { themeLockFill?: boolean }).themeLockFill === true)
-      .map((el) => (el as Extract<Element, { type: 'shape' }>).fillColor);
-    expect(barFills.length).toBe(6);
-    expect(new Set(barFills).size).toBe(6);
+    expect(new Set(bars(tab.elements).map((b) => b.fillColor)).size).toBe(3);
   });
 });
 
-describe('system architecture uses full-colour technology icons', () => {
-  // The infrastructure nodes are Technology icon tiles (docs/specs/010-palette/technology-icons.md): a
-  // shape==='icon' element whose iconId resolves in the tech-icon
-  // registry renders as a branded colour tile rather than a stroke-tinted
-  // glyph. A regression that reverted the nodes to plain boxes / line
-  // glyphs would drop every tech iconId, so assert the branded set holds.
-  it('emits the gateway / service / datastore nodes as branded tiles', () => {
-    const els = buildTemplate('system-architecture', 0, 0);
-    const techIds = els
-      .filter(
-        (el): el is Extract<Element, { type: 'shape' }> =>
-          el.type === 'shape' && el.shape === 'icon',
-      )
-      .map((el) => el.iconId)
-      .filter((id): id is string => isTechIconId(id));
-    // Gateway (nginx), two services (docker / k8s), database (postgres),
-    // cache (redis) — the client glyph (globe) is line-art, not branded.
-    expect(new Set(techIds)).toEqual(new Set(['nginx', 'docker', 'k8s', 'postgres', 'redis']));
+describe('system architecture is a vendor-neutral tiered diagram', () => {
+  // The logical sibling of Cloud architecture (docs/specs/008-canvas/canvas-and-palette.md): four tier lanes
+  // holding labelled nodes, no vendor marks, every edge pinned and named.
+  const els = buildTemplate('system-architecture', 0, 0);
+  const shapes = els.filter((el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape');
+
+  it('stacks the Clients / Edge / Services / Data lanes', () => {
+    expect(shapes.filter((el) => el.shape === 'lane').map((el) => el.label)).toEqual([
+      'Clients',
+      'Edge',
+      'Services',
+      'Data',
+    ]);
+  });
+
+  it('names every node on the node and uses no technology marks', () => {
+    const nodes = shapes.filter((el) => el.shape !== 'lane');
+    expect(nodes.length).toBeGreaterThan(0);
+    for (const n of nodes) {
+      expect(n.label?.length).toBeGreaterThan(0);
+      if (n.iconId) expect(isTechIconId(n.iconId)).toBe(false);
+    }
+  });
+
+  it('pins and labels every edge', () => {
+    const arrows = els.filter(
+      (el): el is Extract<Element, { type: 'arrow' }> => el.type === 'arrow',
+    );
+    expect(arrows.length).toBeGreaterThan(0);
+    for (const a of arrows) {
+      expect(a.from.kind).toBe('pinned');
+      expect(a.to.kind).toBe('pinned');
+      expect(a.label?.length).toBeGreaterThan(0);
+    }
   });
 });
 
@@ -300,34 +344,15 @@ describe('board templates seed per-range rich text', () => {
     const cards = buildTemplate('kanban', 0, 0).filter((el) =>
       Array.isArray((el as { richText?: unknown }).richText),
     );
-    // Realistic mid-sprint board: varied card counts per lane (4 + 3 + 2 + 3).
-    expect(cards.length).toBe(12);
+    // Realistic mid-sprint board: varied card counts per lane (4 + 3 + 3 + 1 + 4).
+    expect(cards.length).toBe(15);
     for (const card of cards) {
       const runs = (card as { richText: { text: string; bold?: boolean }[] }).richText;
-      // Bold ticket id lead-in (e.g. "LIVE-241:") + a plain summary run.
+      // Bold ticket id lead-in (e.g. "CHK-241:") + a plain summary run.
       expect(runs[0]?.bold).toBe(true);
-      expect(runs[0]?.text).toMatch(/^LIVE-\d+:$/);
+      expect(runs[0]?.text).toMatch(/^CHK-\d+:$/);
       expect(runs[1]?.bold).toBeUndefined();
     }
-  });
-
-  it('swot bullets tint the marker to the quadrant hue, leaving the text plain', () => {
-    labelMirrorsRuns('swot');
-    const bullets = buildTemplate('swot', 0, 0).filter((el) =>
-      Array.isArray((el as { richText?: unknown }).richText),
-    );
-    // Four quadrants, three starter bullets each.
-    expect(bullets.length).toBe(12);
-    const markerColours = new Set<string>();
-    for (const bullet of bullets) {
-      const runs = (bullet as { richText: { text: string; color?: string }[] }).richText;
-      expect(runs[0]!.text).toBe('• ');
-      expect(typeof runs[0]!.color).toBe('string');
-      expect(runs[1]?.color).toBeUndefined();
-      markerColours.add(runs[0]!.color!);
-    }
-    // One distinct hue per quadrant.
-    expect(markerColours.size).toBe(4);
   });
 });
 
@@ -342,8 +367,16 @@ describe('floor plan geometry', () => {
     const b = el as { x: number; y: number; width: number; height: number };
     return { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height };
   };
-  // Rooms are the square scaffold shapes; the frame is the outer wall.
-  const rooms = elements.filter((el) => el.type === 'shape' && el.shape === 'square').map(boxOf);
+  // Rooms are the opaque square scaffold shapes (the translucent squares
+  // are their zone washes); the frame is the outer wall.
+  const rooms = elements
+    .filter(
+      (el) =>
+        el.type === 'shape' &&
+        el.shape === 'square' &&
+        (el as { opacity?: number }).opacity === undefined,
+    )
+    .map(boxOf);
   // Furniture is everything on the content layer (doors ride the
   // scaffold with the walls, because they straddle one).
   const furniture = elements.filter((el) => el.layerId === 'layer:template:content');

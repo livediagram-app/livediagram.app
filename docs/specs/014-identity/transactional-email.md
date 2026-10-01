@@ -17,7 +17,7 @@ Five messages, two kinds:
    building a first diagram (shapes, arrows, templates).
 2. **Week 1** — ~7 days after the welcome. Tips on the Explorer (folders,
    search, recents, sharing from the grid).
-3. **Week 2** — ~14 days after the welcome. Introduces Teams (shared diagrams,
+3. **Week 2** — ~14 days after the welcome. Introduces Teams (shared documents,
    inviting people, Admin/Member roles — [Teams](../013-workspace/teams.md)).
 
 **Transactional — always send (when the feature is on):**
@@ -29,26 +29,32 @@ Five messages, two kinds:
    self-deletion), a confirmation that the account and its data are gone.
 
 [Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
-notifications — **someone joined my diagram** and **someone responded to my team
+notifications — **someone joined my document** and **someone responded to my team
 invite** — read from the [User preferences](../007-editor/user-preferences.md) preference blob, set in the Settings dialog.
 
 **Later additions (same gate + best-effort `ctx.waitUntil` contract):**
 
 6. **Activation nudge** (#4, onboarding) — ~3 days after sign-up, to anyone who
-   still has zero diagrams (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
+   still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
    not opt-out. `activation_sent_at`, migration 0031.
 7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
-   (last diagram activity via `MAX(updated_at)`; zero-diagram owners are excluded,
+   (last document activity via `MAX(updated_at)`; zero-document owners are excluded,
    that's #4's job). Daily cron. `winback_sent_at`, migration 0032.
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
-   diagram count reaches 10, fired on a genuine create. Atomic `claimMilestone`
+   document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
    dedups a burst of saves. `milestone_sent_at`, migration 0033.
 9. **API-token expiry** (#3, transactional) — 7 days before a token's 6-month
    expiry, so a script / connected tool doesn't silently break. Daily cron.
    `api_tokens.expiry_warned_at`, migration 0030.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
-    owner comments on a diagram (either comment path), the owner is emailed
+    owner comments on a document (either comment path), the owner is emailed
     **immediately** (no cron). Never includes the comment text.
+11. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
+    the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
+12. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
+    recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
+    quotes the comment (the first 280 characters): the recipient was named in
+    it, and the document is in their own team's library.
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -113,7 +119,7 @@ owners are marked as already-sent (no email fires for them):
 ```sql
 INSERT OR IGNORE INTO email_lifecycle
   (owner_id, email, created_at, welcome_sent_at, week1_sent_at, week2_sent_at)
-SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM diagrams WHERE owner_id LIKE 'user_%';
+SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM documents WHERE owner_id LIKE 'user_%';
 ```
 
 (The `'user_%'` prefix targets Clerk ids, skipping guest UUID owners.)
@@ -162,7 +168,7 @@ name, or a recipient count.
 ## 7. Privacy / security
 
 - Authenticated-only; the address is the verified token claim, never input.
-- No diagram content, names, or anything the user typed is ever in an email
+- No document content, names, or anything the user typed is ever in an email
   beyond the team name (already known to the invitee's inviter) and the user's
   own email.
 - Off by default; self-hosters opt in by providing their own Resend key + domain

@@ -25,13 +25,15 @@ API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time 
 
 ## Creating a token
 
-Open the **Explorer**, and in the **External connections** section of the sidebar (just below the Library section) choose **API Tokens**. Give the token a name (for example, "CI bot") and create it.
+Open **Settings** (the gear at the end of the bottom bar, in the editor or the Explorer) and choose the **API Tokens** category, between Account and Privacy. You can also get there from **Manage API Tokens** in the AI Tools category.
 
-The token's secret is shown **once**, right after you create it. Copy it then, because for your security it is never displayed again, here or anywhere else. If you lose it, revoke it and create a new one.
+The first time, the form to create one is already open; after that, choose **New**. Name it (or pick one of the suggestions, like "CI Bot" or "Claude"), and choose **Create Token**. The form shows the date the token will expire before you create it. The meter at the top shows how many of your ten slots are in use.
+
+The token's secret is shown **once**, right after you create it. Copy it then with the copy button at the end of the field, because for your security it is never displayed again, here or anywhere else. Choose **Done** when you have it. If you lose the secret, revoke the token and create a new one.
 
 ## What a token can do, and for how long
 
-- **Access:** a token has your account's full read + write access to diagrams and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created on this page are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you tick that option on the consent screen, and such tokens show a **Read-only** badge in the list here.
+- **Access:** a token has your account's full read + write access to documents and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created in Settings are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you tick that option on the consent screen, and such tokens show a **Read-only** badge in the list here.
 - **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
 - **Limit:** you can have up to **10** live tokens at once. Revoke one (or let it expire) to free a slot.
 
@@ -40,18 +42,18 @@ The token's secret is shown **once**, right after you create it. Copy it then, b
 Send the token as a **bearer header** to the API, which lives under `/api` on your livediagram host (`https://livediagram.app/api` on the hosted service):
 
 ```bash
-# List your diagrams
-curl https://livediagram.app/api/diagrams \
+# List your documents
+curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 
 Every request authenticated this way acts as your account, with the same read and write access you have in the editor, so the endpoints behave just as they do for the app. Keep the `Authorization` header on each request; there is no separate login step.
 
-For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-diagrams/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
+For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-documents/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
 
-## Revoking a token
+## Viewing and revoking tokens
 
-Revoke a token from the same **API Tokens** section any time. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.
+Every live token is listed in the same **API Tokens** category, newest first, with when it was created and when it was last used (a green dot means in the last day). A bar under each one shows how much of its six months has passed, turning amber when it expires within two weeks. Choose **Revoke** on one to revoke it; you are asked to confirm first. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.
 
 <Tip>
   Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create

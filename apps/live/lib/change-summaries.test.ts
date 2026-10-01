@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement } from '@livediagram/diagram';
+import type { ArrowElement, Element, ShapeElement } from '@livediagram/document';
 import { summarizeChange, summarizeEdits } from './change-summaries';
+import { encodeStrokePoints } from '@livediagram/document';
 
 // The activity panel's one-line vocabulary (docs/specs/012-collaboration/activity-and-audit.md): each field group
 // gets a verb a user recognises, so entries never degrade to a vague
@@ -192,7 +193,7 @@ describe('summarizeChange — mixed commits', () => {
       y: 0,
       width: 50,
       height: 50,
-      points: [{ nx: 0, ny: 0 }],
+      packedPoints: encodeStrokePoints([{ nx: 0, ny: 0 }]),
       closed: false,
     } as Element;
     expect(summarizeChange('edit', [shape('a')], [sketch], [])).toBe(
@@ -227,5 +228,42 @@ describe('summarizeChange — mixed commits', () => {
         [{ before: shape('b'), after: shape('b', { x: 5 }) }],
       ),
     ).toBe('Added a Square & edited a Square');
+  });
+});
+
+describe('actions on an Action panel (docs/specs/012-collaboration/action-panel.md)', () => {
+  const act = (id: string, status: 'open' | 'done' = 'open') =>
+    ({
+      id,
+      name: id,
+      description: '',
+      assignee: { userId: 'u', name: 'U' },
+      teamId: null,
+      assignerId: 'u',
+      assignerName: 'U',
+      status,
+      createdAt: 1,
+      updatedAt: 1,
+    }) as const;
+  const card = (overrides: Partial<ShapeElement>) =>
+    shape('c', { shape: 'action-card', ...overrides });
+
+  it('names adding, removing and updating one of the list', () => {
+    expect(edit(card({ actions: [act('a')] }), card({ actions: [act('a'), act('b')] }))).toMatch(
+      /^Assigned an action on/,
+    );
+    expect(edit(card({ actions: [act('a'), act('b')] }), card({ actions: [act('a')] }))).toMatch(
+      /^Removed an action from/,
+    );
+    expect(edit(card({ actions: [act('a')] }), card({ actions: [act('a', 'done')] }))).toMatch(
+      /^Updated an action on/,
+    );
+  });
+
+  it('reads a card moving its lone action into the list as an update, not a new one', () => {
+    const { actions: _none, ...legacy } = card({ action: act('a') });
+    expect(edit(legacy as ShapeElement, card({ actions: [act('a', 'done')] }))).toMatch(
+      /^Updated an action on/,
+    );
   });
 });

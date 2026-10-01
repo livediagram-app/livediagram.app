@@ -8,8 +8,8 @@
 // components, so the geometry stays simple + declarative.
 
 import { useState } from 'react';
-import { RAIL_DEFAULT_POINTS } from '@livediagram/diagram';
-import type { ShapeElement } from '@livediagram/diagram';
+import { RAIL_DEFAULT_POINTS } from '@livediagram/document';
+import type { ShapeElement } from '@livediagram/document';
 
 // Evenly-spaced x positions across the inset span (first point at the left
 // inset, last at the right inset).

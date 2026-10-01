@@ -14,7 +14,7 @@ import {
 } from './share';
 
 // share_links is the enforcement choke point for every visitor who isn't the
-// owner: `getShareLink` is what auth/diagram-access.ts, the WebSocket upgrade
+// owner: `getShareLink` is what auth/document-access.ts, the WebSocket upgrade
 // and GET /api/share/:code all ask. The expiry predicate living in ONE query
 // is the reason an expired link stops working everywhere at once — and the
 // reason a drift in that one query would quietly re-open every expired link
@@ -22,7 +22,7 @@ import {
 
 const row = (over: Record<string, unknown> = {}) => ({
   code: 'ABCD2345',
-  diagram_id: 'diag-1',
+  document_id: 'diag-1',
   role: 'edit',
   created_at: 1_000,
   expiry: null,
@@ -55,7 +55,7 @@ describe('generateShareCode', () => {
   });
 
   it('draws from the CSPRNG, not Math.random', () => {
-    // A guessable share code is an unauthenticated read of someone's diagram.
+    // A guessable share code is an unauthenticated read of someone's document.
     const spy = vi.spyOn(crypto, 'getRandomValues');
     generateShareCode();
     expect(spy).toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('listShareLinks (owner-facing, docs/specs/013-workspace/share-link-expi
     expect(db.one('FROM share_links').sql).not.toContain('expires_at >');
   });
 
-  it('is scoped to the diagram and ordered oldest first', async () => {
+  it('is scoped to the document and ordered oldest first', async () => {
     const db = fakeD1(() => ({ all: [] }));
     await listShareLinks(db.env, 'diag-1');
     const query = db.one('FROM share_links');
@@ -92,7 +92,7 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
     const db = fakeD1(() => ({ first: row({ role: 'view' }) }));
     expect(await getShareLink(db.env, 'ABCD2345')).toEqual({
       code: 'ABCD2345',
-      diagramId: 'diag-1',
+      documentId: 'diag-1',
       role: 'view',
       createdAt: 1_000,
       expiry: 'never',
@@ -102,12 +102,12 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a scoped link is only a link while its tab is still in
-  // the diagram, in the same query, so no caller can skip the check.
-  it('only resolves a scoped link while its tab is still in the diagram', async () => {
+  // the document, in the same query, so no caller can skip the check.
+  it('only resolves a scoped link while its tab is still in the document', async () => {
     const db = fakeD1(() => ({ first: null }));
     await getShareLink(db.env, 'ABCD2345');
     expect(db.one('FROM share_links').sql).toMatch(
-      /tab_id IS NULL OR EXISTS \(SELECT 1 FROM diagram_tabs dt WHERE dt\.diagram_id = share_links\.diagram_id AND dt\.tab_id = share_links\.tab_id\)/,
+      /tab_id IS NULL OR EXISTS \(SELECT 1 FROM document_tabs dt WHERE dt\.document_id = share_links\.document_id AND dt\.tab_id = share_links\.tab_id\)/,
     );
   });
 
@@ -149,7 +149,7 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     const link = await createShareLink(db.env, 'diag-1', 'ABCD2345', 'edit');
     expect(link).toEqual({
       code: 'ABCD2345',
-      diagramId: 'diag-1',
+      documentId: 'diag-1',
       role: 'edit',
       createdAt: 1_000,
       expiry: 'never',
@@ -182,10 +182,10 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     expect(db.one('INSERT INTO share_links').bindings[4]).toBe('week');
   });
 
-  it('flips the diagram shareable, which is what opens the realtime room', async () => {
+  it('flips the document shareable, which is what opens the realtime room', async () => {
     const db = fakeD1();
     await createShareLink(db.env, 'diag-1', 'ABCD2345', 'edit');
-    expect(db.one('UPDATE diagrams SET shareable = 1').bindings).toEqual(['diag-1']);
+    expect(db.one('UPDATE documents SET shareable = 1').bindings).toEqual(['diag-1']);
   });
 });
 
@@ -225,7 +225,7 @@ describe('deleteShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     });
     await deleteShareLink(db.env, 'ABCD2345');
     expect(db.one('DELETE FROM share_links').bindings).toEqual(['ABCD2345']);
-    expect(db.one('UPDATE diagrams SET shareable = 0').bindings).toEqual(['diag-1']);
+    expect(db.one('UPDATE documents SET shareable = 0').bindings).toEqual(['diag-1']);
   });
 
   it('leaves sharing on while another link survives', async () => {
@@ -237,7 +237,7 @@ describe('deleteShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
       return {};
     });
     await deleteShareLink(db.env, 'ABCD2345');
-    expect(db.matching('UPDATE diagrams SET shareable = 0')).toEqual([]);
+    expect(db.matching('UPDATE documents SET shareable = 0')).toEqual([]);
   });
 
   it('closes sharing when the remaining-count query answers nothing at all', async () => {
@@ -247,7 +247,7 @@ describe('deleteShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
       return {};
     });
     await deleteShareLink(db.env, 'ABCD2345');
-    expect(db.one('UPDATE diagrams SET shareable = 0')).toBeDefined();
+    expect(db.one('UPDATE documents SET shareable = 0')).toBeDefined();
   });
 
   it('is a no-op for a code that does not exist', async () => {
@@ -291,7 +291,7 @@ describe('deleteShareLinksForTab (docs/specs/013-workspace/tab-scoped-share-link
     expect(codes).toEqual(['AAAA2222', 'BBBB3333']);
     expect(db.one('SELECT code FROM share_links').bindings).toEqual(['diag-1', 'tab-2']);
     expect(db.one('DELETE FROM share_links').bindings).toEqual(['diag-1', 'tab-2']);
-    expect(db.matching('UPDATE diagrams SET shareable = 0')).toEqual([]);
+    expect(db.matching('UPDATE documents SET shareable = 0')).toEqual([]);
   });
 
   it('closes sharing when those were the last links', async () => {
@@ -301,7 +301,7 @@ describe('deleteShareLinksForTab (docs/specs/013-workspace/tab-scoped-share-link
       return {};
     });
     await deleteShareLinksForTab(db.env, 'diag-1', 'tab-2');
-    expect(db.one('UPDATE diagrams SET shareable = 0').bindings).toEqual(['diag-1']);
+    expect(db.one('UPDATE documents SET shareable = 0').bindings).toEqual(['diag-1']);
   });
 
   it('writes nothing when no link is scoped to the tab', async () => {

@@ -3,7 +3,7 @@ import { Tooltip, Glyph } from '@livediagram/ui';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
-import { type IconPosition } from '@livediagram/diagram';
+import { type IconPosition } from '@livediagram/document';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
 const NOOP = () => {};
@@ -311,7 +311,7 @@ export function MenuToggleRow({
 }
 
 // A pipette: the tool that lifts a colour off something already there.
-function PipetteIcon() {
+export function PipetteIcon() {
   return (
     <Glyph size={14} units={24}>
       <path d="m2 22 1-1h3l9-9" />

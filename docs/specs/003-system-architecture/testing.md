@@ -1,6 +1,8 @@
 # Testing
 
-How livediagram is unit-tested. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
+How livediagram is tested below the browser: unit tests, and hook and component tests in jsdom. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
+
+The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it runs after merge, not on the per-PR gate.
 
 ## Runner
 
@@ -48,8 +50,16 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **No magic globals.** `describe` / `it` / `expect` are imported from
   `vitest`. This keeps test files lint-clean and explicit (`globals: false`).
 - **Prefer pure-function tests.** The highest-value, lowest-cost units are the
-  pure helpers: the diagram data model, the wire-format serializers, and the
+  pure helpers: the document data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
+- **Speed budgets are CPU time, not wall-clock.** A test asserting that work
+  is fast (a linear scan, a converter, the sticky detector) measures it with
+  `cpuMsOf` from `@livediagram/vitest-config/cpu-time`, never
+  `performance.now()`. Turbo runs every package's suite at once, and a
+  wall-clock budget also counts the time a test waits for a core, which made
+  those tests flake on a busy machine. CPU time still catches the regression
+  the budget is for. The one exception is a test that asserts nothing WAITS
+  (no sleep, no retry delay): only wall-clock time can see a wait.
 - **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
   with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
@@ -85,7 +95,7 @@ gitignored `coverage/` directory per workspace (`text` summary in the
 terminal, plus `html` + `lcov` for tooling). Only first-party source
 (`src/**`, `lib/**`) is counted; test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
-package's `index.ts` is its implementation (e.g. `@livediagram/diagram`), not
+package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
 a barrel of re-exports.
 
 There is no repo-wide percentage gate: the bar for most code is "logic has
@@ -94,13 +104,13 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                                 | Why                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                                         | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                         | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/diagram-share-routes.ts`                   | The only unauthenticated read path into a diagram, and the owner-only routes that grant it                                                                    |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/diagram-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                                                  | Why                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                                          | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                                                           |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                 | Mint, resolve and revoke the credentials that act as an account                                                                                               |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
+| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/document-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring
@@ -128,66 +138,89 @@ v5 test runner with every check green: nothing invoked the broken path.
 
 ## What's tested now, what's ahead
 
-- **Tested now** (each bullet maps to one or more `*.test.ts` files in the
-  named workspace; the inventory grew well past the original list as features
-  landed, so this section captures the SHAPE of coverage rather than every
-  filename — counts below are as of 2026-07-14):
-  - `packages/diagram` (37 suites): the data model end to end — element
+- **Tested now.** Every bullet maps to `*.test.ts` / `*.test.tsx` files in the
+  named workspace. This section records the SHAPE of coverage, not counts or
+  filenames: `pnpm test` reports the counts, which change with every feature.
+  A workspace that gains its first test file joins this list in the same change.
+  - `packages/document`: the data model end to end: element
     factories + defaults, geometry / anchor / snap math, arrow path +
-    avoidance + endpoint-spread + auto-rebind and crossing swaps, group + layer mutations,
-    auto-layout (clusters + styles), Mermaid import/export (flowchart, state,
-    ER), graph authoring, freehand + shape recognition, rich text, tables,
-    comments, session tools, element shadows, the headless SVG renderer,
-    validation.
-  - `apps/live` (96 suites): the lib layer's helpers (api client, auto-align,
-    canvas geometry + backgrounds, change-log, export/import-tab, search,
-    templates + theme catalogues, user preferences, telemetry policy,
-    draw-commit + quick-add placement, offline store, help deep links, and
-    more), pure helpers behind hooks (history, favourites, panel layout),
-    pure component-adjacent logic (template previews + bounds, placement,
-    auth-shared), and the cross-app guard that every `HELP_ARTICLES` deep
-    link resolves to a real help page.
+    avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels,
+    layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
+    Mermaid import/export (flowchart, state, ER), graph authoring, freehand +
+    shape recognition, rich text, tables, comments + mentions, element ops and
+    deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds and the
+    event-storming lanes + photo placement, names, themes, element shadows,
+    the headless SVG renderer's fidelity and coverage, validation.
+  - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
+    auto-align, canvas geometry + backgrounds, change-log, export/import,
+    search, templates + theme catalogues, user preferences, telemetry policy,
+    placement, help deep links, the photo-model worker's plumbing), the pure
+    helpers behind hooks, and a large jsdom layer of hook and component tests
+    (below). Cross-app guards: every `HELP_ARTICLES` deep link resolves to a
+    real help page.
     Source guards read the class strings where a rule cannot fail a build:
     `dark-mode-coverage.test.ts` and `dark-palette.test.ts` (the dark palette's
     tokens, solid brand fills, brand text, identity colours;
-    [Colour scheme](../004-interface-design/color-scheme.md)), and every workspace's
+    [Colour scheme](../004-interface-design/color-scheme.md)), every workspace's
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
-    [Optical alignment](../004-interface-design/optical-alignment.md)).
-  - `apps/api` (46 suites): auth guards (Clerk, diagram access, tokens),
-    every defensive D1 row mapper, the `DiagramRoom` Durable Object's
-    security-critical paths, route handlers (diagrams, share, images,
-    thumbnails, folders, teams, unfurl, events, ai), the AI assistant's
-    prompt layer, the OpenAPI manifest ↔ dispatch drift guards, email
-    lifecycle, response helpers, MIME sniffing.
-  - `packages/api-schema` (2 suites): the SHA-256 wire-format contract
-    (FIPS 180-4 vectors) and the telemetry-event validator's closed
-    vocabulary + type-pattern gate — both moved here from `apps/api`
-    once the package got its own harness, so they sit next to the code
-    they pin.
-  - `apps/mcp` (5 suites): tool argument schemas, tab builders, the
-    find-diagrams search, OAuth state handling, and the api service-binding
-    client.
-  - `apps/router` (1 suite): the dispatch table (prefix strips, clean live
+    [Optical alignment](../004-interface-design/optical-alignment.md)), and every
+    UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
+  - `apps/api`: auth guards (Clerk, guest signatures, document access, tokens),
+    every defensive D1 row mapper, the D1 modules against real SQLite
+    (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
+    and multiplayer paths, every route family (documents, tabs, share, images,
+    thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
+    events, AI incl. the photo reader), the Timeline's writers and its catalogue
+    against its spec, the image reference index, email lifecycle, the OpenAPI
+    manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
+  - `packages/api-schema`: the wire contracts both sides share: the SHA-256
+    contract (FIPS 180-4 vectors), the telemetry-event validator's closed
+    vocabulary + type-pattern gate, request auth, image limits, trash and poll
+    shapes, error telemetry and page views.
+  - `packages/sticky-vision`: the classical sticky-note detector for the photo
+    import ([Event storming](../021-event-storming/event-storming.md)): colour
+    classification, contours, seams, necks and spill, the boundary-model hybrid,
+    and a ground-truth set of photos scored against their truth.
+  - `packages/sticky-model`: the learned boundary model's browser-safe parts
+    and training helpers: cues, tiling, stride, resize, quantisation, decode and
+    the wall / notes layout.
+  - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
+    appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
+    and the Timeline's cards, stacking, grouping, tones and categories, rendered
+    in jsdom where they hold state.
+  - `packages/icons`: the icon resolver, catalogues, markup builders, stroke
+    weight, cap-band and ink centring, and the vendored Lucide set.
+  - `packages/template-previews`: preview SVGs, their bounds and motion. The
+    template builders themselves (`packages/templates`, which has no suite of
+    its own) are covered from their callers: `apps/live`'s template and
+    builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
+  - `packages/tailwind-config`: the theme's budgets, motion and optical
+    utilities, scrollbars.
+  - `packages/eslint-config`: the custom rules (raw SVG, native `title`) and
+    the TypeScript alias wiring.
+  - `packages/telemetry-client`: the shared buffer / flush / beacon engine
+    both apps emit through: batching, caps, opt-in gates, page-hide beacon,
+    error-tracking caps.
+  - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
+    SDK), tool registration + telemetry, graph input, element normalising, tab
+    builders, the find-diagrams search, OAuth state handling, the request scope,
+    and the api service-binding client.
+  - `apps/router`: the dispatch table (prefix strips, clean live
     routes, origin fallback, 503) plus the drift guard that every top-level
     `apps/live/app` segment routes to the live worker rather than falling
     through to marketing's 404.
-  - `packages/telemetry-client` (1 suite): the shared buffer / flush /
-    beacon engine both apps emit through — batching, caps, opt-in gates,
-    page-hide beacon, error-tracking caps.
-  - `packages/icons` (1 suite): the icon resolver.
-  - `apps/marketing/lib` (3 suites): the metadata + content registries:
-    alternatives list + slug map, legal revision date, subpage metadata
-    generator.
-  - `apps/telemetry` (1 suite): the dashboard's event-vocab layer —
-    category grouping/ordering, row labels, category colours, and the
-    layered hover-card explanations' never-blank guarantee.
-  - `apps/help` (3 suites): the article registry's consistency with the
-    filesystem (slugs ↔ `page.mdx`, per-category `articleCount`), the
-    registry query / href helpers, the internal-link guard (every
-    `/help/...` cross-link in an article resolves to a real page), and the
-    schema.org JSON-LD builders.
+  - `apps/marketing`: the content registries (alternatives, landing beats,
+    template gallery, feature anchors), brand and category icons, dark art.
+  - `apps/telemetry`: the dashboard's event-vocab layer and maths:
+    category grouping/ordering, row labels, colours, metric series and
+    emitters, ranking rules, the CTA funnel, and the hover-card explanations'
+    never-blank guarantee.
+  - `apps/help`: the article registry's consistency with the
+    filesystem (slugs ↔ `page.mdx`, per-category counts), the internal-link,
+    UI-label, template and shortcut guards over article text, search and
+    article telemetry, and the schema.org JSON-LD builders.
 
-- **Hook bodies** in `apps/live` and `packages/ui` are testable, and the
+- **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test
   that needs a document opens with a docblock:
 
@@ -195,11 +228,11 @@ v5 test runner with every check green: nothing invoked the broken path.
   // @vitest-environment jsdom
   ```
 
-  and renders through `@testing-library/react` (`renderHook`, `act`,
-  `waitFor`). The ~1,645 existing tests are pure logic and stay on `node`,
-  which is both faster and honest about what they exercise — flipping the
-  whole workspace to `jsdom` to serve a handful of files would tax every
-  other suite for nothing.
+  and renders through `@testing-library/react` (`renderHook` for a hook,
+  `render` for a component, with `act` and `waitFor`). The majority of tests
+  are pure logic and stay on `node`, which is both faster and honest about
+  what they exercise; flipping the whole workspace to `jsdom` to serve the
+  files that render would tax every other suite for nothing.
 
   This exists because real bugs could not be caught without it, both in the
   Timeline, whose state lives in hooks rather than in pure helpers:
@@ -237,4 +270,6 @@ v5 test runner with every check green: nothing invoked the broken path.
     Conventions); a future move to `@cloudflare/vitest-pool-workers` would
     let the D1 binding + Durable Object run in a real `workerd` runtime, but
     that's an aspiration, not the current setup.
-  - End-to-end tests are out of scope for this spec (unit tests only).
+
+Browser end-to-end tests are not part of this gate; they are specified in
+[End-to-end tests](e2e-smoke.md).

@@ -16,7 +16,7 @@ describe('pascalToken', () => {
   it('PascalCases words split on anything non-alphanumeric', () => {
     expect(pascalToken('save tab')).toBe('SaveTab');
     expect(pascalToken('room-ticket')).toBe('RoomTicket');
-    expect(pascalToken('find_diagrams')).toBe('FindDiagrams');
+    expect(pascalToken('find_documents')).toBe('FindDocuments');
     expect(pascalToken('PUT')).toBe('PUT');
   });
 
@@ -33,8 +33,8 @@ describe('errorTypeToken', () => {
   });
 
   it('keeps the dots inside a dotted part such as a route label', () => {
-    expect(errorTypeToken('Internal', apiRouteLabel('PUT', '/api/diagrams/x/tabs/y'))).toBe(
-      'Internal.Put.Diagrams.Tabs',
+    expect(errorTypeToken('Internal', apiRouteLabel('PUT', '/api/documents/x/tabs/y'))).toBe(
+      'Internal.Put.Documents.Tabs',
     );
   });
 
@@ -47,7 +47,7 @@ describe('errorTypeToken', () => {
 
   it('always passes the ingest validator', () => {
     for (const t of [
-      errorTypeToken('Internal', 'Put', 'Diagrams', 'Tabs', 'Comments'),
+      errorTypeToken('Internal', 'Put', 'Documents', 'Tabs', 'Comments'),
       errorTypeToken('Render', 'ContextMenu', 'ChunkLoadError'),
       errorTypeToken('Network', 'dismiss timeline events'),
     ]) {
@@ -79,7 +79,7 @@ describe('errorNameToken', () => {
 
 describe('errorPageToken', () => {
   it('names the page by its first segment', () => {
-    expect(errorPageToken('/diagram')).toBe('Diagram');
+    expect(errorPageToken('/document')).toBe('Document');
     expect(errorPageToken('/explorer/team')).toBe('Explorer');
     expect(errorPageToken('/sso-callback')).toBe('SsoCallback');
     expect(errorPageToken('/help/canvas/the-canvas')).toBe('Help');
@@ -93,11 +93,11 @@ describe('errorPageToken', () => {
 
 describe('apiRouteLabel', () => {
   it('keeps the resource and route words, drops ids', () => {
-    expect(apiRouteLabel('PUT', '/api/diagrams/0b7c5f9e-1111/tabs/abc123')).toBe(
-      'Put.Diagrams.Tabs',
+    expect(apiRouteLabel('PUT', '/api/documents/0b7c5f9e-1111/tabs/abc123')).toBe(
+      'Put.Documents.Tabs',
     );
-    expect(apiRouteLabel('POST', 'https://livediagram.app/api/diagrams/x/tabs/y/comments')).toBe(
-      'Post.Diagrams.Tabs.Comments',
+    expect(apiRouteLabel('POST', 'https://livediagram.app/api/documents/x/tabs/y/comments')).toBe(
+      'Post.Documents.Tabs.Comments',
     );
     expect(apiRouteLabel('GET', 'http://localhost:8787/api/timeline?cursor=abc')).toBe(
       'Get.Timeline',

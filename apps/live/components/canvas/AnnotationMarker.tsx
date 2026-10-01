@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useState } from 'react';
-import type { TextRun } from '@livediagram/diagram';
+import type { TextRun } from '@livediagram/document';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';

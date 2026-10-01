@@ -1,4 +1,4 @@
-import { FONTS } from '@livediagram/diagram';
+import { FONTS } from '@livediagram/document';
 import { SizeButton } from '@/components/palette/palette-controls';
 
 // Shared font picker (docs/specs/004-interface-design/fonts.md) used by the Tab Look & Feel dialog's Font

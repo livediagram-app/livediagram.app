@@ -387,7 +387,7 @@ export function BackgroundRippleIcon() {
   );
 }
 
-// Ribbons: thick curved flowing lines (the new-diagram page backdrop).
+// Ribbons: thick curved flowing lines (the new-document page backdrop).
 export function BackgroundRibbonsIcon() {
   return (
     <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>

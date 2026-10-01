@@ -13,8 +13,8 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import { type CanvasSurface, shade, type BoxedElement } from '@livediagram/diagram';
-// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the diagram package so the
+import { type CanvasSurface, shade, type BoxedElement } from '@livediagram/document';
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
@@ -27,7 +27,7 @@ import {
   wrapLabel,
   type ExportRun,
   type ExportShape,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isoDepthLayers, isoExtrudes, isoLayerBrightness, ISO_TILT_DEG } from './isometric';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
@@ -68,7 +68,7 @@ function boxedSilhouettePath(
 // space so that, once the iso matrix is applied to the context, every copy
 // lands at the right SCREEN depth offset (0, z·sin(elevation)); inverting that
 // projection gives the element-space offset z·tan(elevation)·(sinAz, cosAz).
-// `alpha` is an extra opacity FACTOR (per-layer opacity, docs/specs/006-diagram/layers.md)
+// `alpha` is an extra opacity FACTOR (per-layer opacity, docs/specs/006-document/layers.md)
 // multiplied over the element's own — same rule on all three drawers.
 export function drawBoxedExtrusion(
   ctx: CanvasRenderingContext2D,

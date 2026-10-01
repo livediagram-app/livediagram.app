@@ -7,7 +7,7 @@
 // table cells keep their plain editors and don't auto-open a menu.
 
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/document';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -16,11 +16,14 @@ export function useEditModeContextMenu({
   editingId,
   elements,
   isReadOnly,
+  whiteboard = false,
   setContextMenu,
 }: {
   editingId: string | null;
   elements: Element[];
   isReadOnly: boolean;
+  // The active tab is a whiteboard (docs/specs/023-whiteboard/whiteboard.md).
+  whiteboard?: boolean;
   setContextMenu: React.Dispatch<React.SetStateAction<EditorContextMenuState | null>>;
 }) {
   const isMobile = useIsMobileViewport();
@@ -42,6 +45,13 @@ export function useEditModeContextMenu({
       // and a menu popping open beside every note is noise — right-click /
       // long-press still opens the element menu deliberately.
       if (el.type === 'sticky') return;
+      // A path's edit mode is its points, with a toolbar of its own
+      // (docs/specs/023-whiteboard/path-tool.md "Editing"): no menu rides beside it.
+      if (el.type === 'path') return;
+      // A whiteboard text box starts caret-sized and grows with the words
+      // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"): a menu at its
+      // corner would sit on the line being typed.
+      if (whiteboard && el.type === 'text') return;
       // The element's on-screen rect. A freshly created element (double-click
       // text, palette drop) enters edit mode on its mount commit, so this
       // effect measures while the pop-in entry animation is still at scale ~0

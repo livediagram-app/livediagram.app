@@ -1,4 +1,4 @@
-import type { ShapeKind } from '@livediagram/diagram';
+import type { ShapeKind } from '@livediagram/document';
 
 // SVG border for the four CSS-rendered shapes (square / circle /
 // stadium / browser). Their fill + corner radius still come from the

@@ -6,16 +6,18 @@
 // draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
 // become new tabs).
 
-import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
-import { mergeImportedTab } from '@/lib/import-merge';
+import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
+import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
+import { mergeImportedTab } from '@/lib/import-merge';
+import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported
-// elements can't collide with anything already on the diagram. Shared
-// with useTabActions' cross-diagram tab link, which copies elements the
+// elements can't collide with anything already on the document. Shared
+// with useTabActions' cross-document tab link, which copies elements the
 // same way.
 export const remintElementIds = (elements: Element[]): Element[] => {
   const idMap = new Map<string, string>();
@@ -43,14 +45,14 @@ const EXCALIDRAW_TELEMETRY_TYPE = {
 
 type TabImportDeps = {
   tabs: Tab[];
-  // A fresh tab for each further page of a multi-page import, marked loaded
-  // once committed so the per-tab loader does not fetch it (useTabActions).
+  // A fresh tab for each further page of a multi-page draw.io import, marked loaded once
+  // committed so the per-tab loader does not fetch it (useTabActions).
   createTab: (name: string) => Tab;
   markTabLoaded: (id: string) => void;
-  // Who stores the imported images, and whether this diagram is an Offline
-  // Mode one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
+  // Who stores a draw.io file's embedded images, and whether this document is an Offline Mode
+  // one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
   ownerId: string;
-  diagramId: string | null;
+  documentId: string | null;
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -60,6 +62,8 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Replaces the active tab with a board scene (useBoardSceneImport): the Excalidraw format's commit.
+  importScene: (scene: BoardScene, onProgress?: ImportProgressListener) => Promise<ImportOutcome>;
 };
 
 export function useTabImport({
@@ -67,7 +71,7 @@ export function useTabImport({
   createTab,
   markTabLoaded,
   ownerId,
-  diagramId,
+  documentId,
   activeId,
   commitTabs,
   setSelectedId,
@@ -75,6 +79,7 @@ export function useTabImport({
   setFormatSourceId,
   setImportError,
   requestFit,
+  importScene,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -97,76 +102,48 @@ export function useTabImport({
   // the exact same parse + replace. The parsers are lazy-loaded so their
   // code stays out of the editor's initial bundle. Never throws — returns
   // the outcome the dialog renders (close / stay / show error).
-  // Excalidraw: a scene as JSON text, or inside a PNG / SVG export; its images
-  // go through the import image pipeline BEFORE the tab changes, so the whole
+  // Excalidraw: a scene as JSON text, or inside a PNG / SVG export, read into a board scene and
+  // landed by the shared commit path; its images are stored BEFORE the tab changes, so the whole
   // import stays one undo step (docs/specs/020-import-export/excalidraw-import-export.md).
   const importExcalidraw = async (
     input: Uint8Array | string,
     onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
-    const active = tabs.find((t) => t.id === activeId);
-    const [{ extractExcalidrawScene }, { buildElementsFromExcalidraw }] = await Promise.all([
+    const [{ extractExcalidrawScene }, { sceneFromExcalidrawText }] = await Promise.all([
       import('@/lib/excalidraw-embedded'),
-      import('@/lib/excalidraw-import'),
+      import('@/lib/excalidraw-read'),
     ]);
-    const scene = await extractExcalidrawScene(input);
-    if (!scene.ok) return { status: 'error', error: scene.error };
-    const result = buildElementsFromExcalidraw(scene.text);
-    if (!result.ok) return { status: 'error', error: result.error };
-    let elements = result.elements;
-    let images;
-    if (result.images.length > 0) {
-      const [{ attachImportImages }, { createBrowserImportImageSession }] = await Promise.all([
-        import('@/lib/import-images'),
-        import('@/lib/import-images/browser'),
-      ]);
-      const session = createBrowserImportImageSession({ ownerId, diagramId });
-      ({ elements, report: images } = await attachImportImages(
-        elements,
-        result.images,
-        session,
-        onProgress,
-      ));
-    }
+    const extracted = await extractExcalidrawScene(input);
+    if (!extracted.ok) return { status: 'error', error: extracted.error };
+    const read = sceneFromExcalidrawText(extracted.text);
+    if (!read.ok) return { status: 'error', error: read.error };
+    // The shared board-scene commit: landed for the tab's profile, images stored, one replace.
+    const outcome = await importScene(read.scene, onProgress);
     console.info('[excalidraw-import]', {
-      container: scene.container,
-      elements: elements.length,
-      images: result.images.length,
-      skipped: result.skipped,
+      container: extracted.container,
+      items: read.scene.items.length,
+      status: outcome.status,
     });
-    // Ids are already re-minted inside the converter (docs/specs/020-import-export/excalidraw-import-export.md), so this
-    // skips the JSON path's remintElementIds step.
-    replaceActiveTabContent({
-      id: activeId,
-      name: active?.name ?? '',
-      elements,
-      theme: active?.theme,
-      backgroundColor: result.backgroundColor,
-    });
-    track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[scene.container]);
-    return images
-      ? {
-          status: 'done',
-          report: { source: 'excalidraw', pages: 1, elements: elements.length, notes: [], images },
-        }
-      : { status: 'done' };
+    if (outcome.status === 'done') {
+      track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[extracted.container]);
+    }
+    return outcome;
   };
 
-  // draw.io (docs/specs/020-import-export/drawio-import.md): the first page
-  // replaces the active tab, every further page becomes a new tab after it,
-  // all in ONE commit so a single undo takes the whole import back. Embedded
-  // images go through the import image pipeline BEFORE the tabs change, for
-  // the same reason, in one pass across every page.
+  // draw.io (docs/specs/020-import-export/drawio-import.md): the first page replaces the active
+  // tab, every further page becomes a new tab after it, all in ONE commit so a single undo takes
+  // the whole import back. Embedded images go through the import image pipeline BEFORE the tabs
+  // change, for the same reason, in one pass across every page.
   const importDrawioInput = async (
     input: DrawioInput,
     onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
-    const [{ importDrawio }, { applyDrawioPages }, { attachDrawioImages }, { reportHasNews }] =
+    const [{ importDrawio }, { applyDrawioPages }, { attachDrawioImages }, { drawioOutcome }] =
       await Promise.all([
         import('@/lib/drawio/import'),
         import('./drawio-apply'),
         import('@/lib/drawio/images'),
-        import('@/lib/import-report'),
+        import('@/lib/drawio/report'),
       ]);
     const result = await importDrawio(input, {
       tabIdForPage: (index) => (index === 0 ? activeId : crypto.randomUUID()),
@@ -180,7 +157,7 @@ export function useTabImport({
           import('@/lib/import-images'),
           import('@/lib/import-images/browser'),
         ]);
-        const session = createBrowserImportImageSession({ ownerId, diagramId });
+        const session = createBrowserImportImageSession({ ownerId, documentId });
         return attachImportImages(elements, requests, session, onProgress);
       },
     );
@@ -192,14 +169,13 @@ export function useTabImport({
     setFormatSourceId(null);
     if ((pages[0]?.elements.length ?? 0) > 0) requestFit();
     track('Tab', 'Imported', 'Drawio');
-    const report = { ...result.report, ...(images ? { images } : {}) };
     console.info('[drawio-import] applied', {
-      pages: report.pages,
-      elements: report.elements,
-      notes: Object.fromEntries(report.notes.map((n) => [n.kind, n.count])),
+      pages: result.report.pages,
+      elements: result.report.elements,
+      notes: Object.fromEntries(result.report.notes.map((n) => [n.kind, n.count])),
       ...(images ? { images } : {}),
     });
-    return reportHasNews(report) ? { status: 'done', report } : { status: 'done' };
+    return drawioOutcome(result.report, pages, images);
   };
 
   const importTextIntoActiveTab = async (
@@ -216,13 +192,20 @@ export function useTabImport({
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
-      const { parseMermaid, layoutClusteredGraph } = await import('@livediagram/diagram');
+      const { parseMermaid, layoutClusteredGraph, rederiveColorPresetForTheme } =
+        await import('@livediagram/document');
       const parsed = parseMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
       // Uncoloured elements inherit the tab's theme at render, so no
-      // explicit recolour is needed. The cluster-aware layout honours the
-      // flowchart direction (TB / LR) and draws subgraphs as frames.
-      const elements = layoutClusteredGraph(parsed.graph, { direction: parsed.direction });
+      // explicit recolour is needed; only a preset-bound node (a state
+      // diagram's solid start / end dot) takes its colours from the theme
+      // now. The cluster-aware layout honours the flowchart direction
+      // (TB / LR) and draws subgraphs as frames.
+      const theme = getTheme(active?.theme);
+      const elements = layoutClusteredGraph(parsed.graph, { direction: parsed.direction }).map(
+        (el) =>
+          el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
+      );
       replaceActiveTabContent({
         id: activeId,
         name: active?.name ?? '',

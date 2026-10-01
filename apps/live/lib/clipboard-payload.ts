@@ -6,7 +6,7 @@
 // a lingering image so the next paste didn't re-drop it. That works inside one
 // editor instance, and only there — the buffer is component state, so elements
 // could not cross a browser tab, a second window, or a reload, which is exactly
-// where "copy this and put it in that diagram" happens.
+// where "copy this and put it in that document" happens.
 //
 // So the real elements go on the clipboard now, as text. Text rather than a
 // custom MIME type because `navigator.clipboard.writeText` is the one write
@@ -18,9 +18,11 @@
 // `schemaVersion` so a future breaking change can be refused with a clear
 // message instead of pasting nonsense.
 
-import { isValidElement, type Element } from '@livediagram/diagram';
+import { isValidElement, migrateIncomingElements, type Element } from '@livediagram/document';
 
-export const CLIPBOARD_SCHEMA_VERSION = 1;
+// 2: freehand points are packed (docs/specs/006-document/stroke-points.md); an older editor
+// refuses a version 2 payload rather than pasting strokes it cannot draw.
+export const CLIPBOARD_SCHEMA_VERSION = 2;
 export const CLIPBOARD_KIND = 'livediagram.elements';
 
 // A ceiling on what a paste will accept. The tab cap is 10,000 elements
@@ -42,11 +44,11 @@ export type ClipboardEnvelope = {
 
 // Fields that carry WHO did something rather than WHAT the element is. They are
 // stripped on the way out, so a copy handed to another person (or pasted into a
-// diagram with a different participant set) never arrives carrying somebody
+// document with a different participant set) never arrives carrying somebody
 // else's name against a comment or their answer against a poll.
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
-// about the original element, and re-attaching it to a copy in another diagram
+// about the original element, and re-attaching it to a copy in another document
 // misrepresents it whether or not the names survive. `responses` (docs/specs/012-collaboration/participant-responses.md) go
 // for the same reason — a vote is cast in a session, not a property of a shape.
 // An assigned `action` (docs/specs/012-collaboration/assigned-actions.md) is work handed to a person, and carries its own
@@ -60,10 +62,12 @@ export function stripIdentity(el: Element): Element {
     commentThread?: unknown;
     responses?: unknown;
     action?: unknown;
+    actions?: unknown;
   };
   delete out.commentThread;
   delete out.responses;
   delete out.action;
+  delete out.actions;
   return out;
 }
 
@@ -113,8 +117,11 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
 
   // Per-element validation, dropping failures rather than refusing the payload:
   // one unreadable element out of forty should cost you that element, not the
-  // paste. isValidElement is the same guard the api and the AI ingest path use.
-  const elements = env.elements.slice(0, MAX_CLIPBOARD_ELEMENTS).filter(isValidElement);
+  // paste. isValidElement is the same guard the api and the AI ingest path use. A payload from an
+  // older editor carries former stored shapes, migrated first (docs/specs/006-document/stroke-points.md).
+  const elements = migrateIncomingElements(env.elements.slice(0, MAX_CLIPBOARD_ELEMENTS)).filter(
+    isValidElement,
+  );
   if (elements.length === 0) return null;
 
   // Duplicate ids would make the id-remap ambiguous (and a tab with two

@@ -1,4 +1,4 @@
-import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livediagram/diagram';
+import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { AUTO_ALIGN_GRID, autoAlignElement, autoAlignElements } from './auto-align';
 import { MIN_SIZE } from './canvas';

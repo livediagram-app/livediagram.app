@@ -50,7 +50,7 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     const file = handlerFile.get(m[2]!);
     const source = file ? read(file) : null;
     if (!source) continue;
-    // A handler may delegate to sibling route modules (the diagram routes are
+    // A handler may delegate to sibling route modules (the document routes are
     // split across several); follow those too or their verbs go unseen.
     const sources = [source];
     for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
@@ -85,15 +85,15 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
 
   it('documents every HTTP method a dispatched segment handles', () => {
     // The check above is per SEGMENT, so it stays green when an existing
-    // segment grows a verb: adding PATCH to /diagrams passes, because
-    // 'diagrams' is already documented. The published description is what
+    // segment grows a verb: adding PATCH to /documents passes, because
+    // 'documents' is already documented. The published description is what
     // external callers build against (docs/specs/015-api/api-documentation.md, docs/specs/015-api/public-api-and-tokens.md), and an endpoint
     // missing from it is one nobody can discover.
     //
     // Route handlers spell the check two ways: `method === 'PUT'` to select a
     // branch, and `method !== 'POST'` as a single-verb guard clause. Both are
     // read, and the walk follows each handler's sibling route modules so the
-    // split diagram routes are not missed.
+    // split document routes are not missed.
     const handled = handledMethodsBySegment();
     const documented = new Map<string, Set<string>>();
     for (const route of ROUTE_MANIFEST) {
@@ -152,7 +152,7 @@ describe('rate-limited operations declare 429', () => {
     const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
     expect(writes.length).toBeGreaterThan(40);
     for (const route of writes) {
-      const expected = route.path !== '/events' && route.path !== '/diagrams/{id}/room-ticket';
+      const expected = route.path !== '/events' && route.path !== '/documents/{id}/room-ticket';
       expect(Boolean(responsesFor(route)['429']), `${route.method} ${route.path}`).toBe(expected);
     }
   });
@@ -254,14 +254,32 @@ describe('buildOpenApiDocument', () => {
     };
     const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
     expect(svg.map((r) => r.path).sort()).toEqual([
-      '/diagrams/{id}/thumbnail',
+      '/documents/{id}/thumbnail',
       '/share/{code}/image.svg',
     ]);
     for (const route of svg) {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
     }
-    const json = doc.paths['/diagrams/{id}']!.get!.responses['200']!;
+    const json = doc.paths['/documents/{id}']!.get!.responses['200']!;
     expect(Object.keys(json.content ?? {})).toEqual(['application/json']);
+  });
+});
+
+// The document name cap (docs/specs/006-document/name-length.md) is part of the
+// public contract: a token caller reads it from the reference, not by trial.
+describe('document name fields', () => {
+  const nameOf = (method: string, path: string) => {
+    const route = ROUTE_MANIFEST.find((r) => r.method === method && r.path === path);
+    const schema = route?.requestSchema as JsonSchema | undefined;
+    return (schema?.properties as Record<string, JsonSchema> | undefined)?.name;
+  };
+
+  it.each([
+    ['POST', '/documents'],
+    ['PUT', '/documents/{id}'],
+    ['POST', '/documents/{id}/copy'],
+  ])('%s %s states the cap on its name', (method, path) => {
+    expect(nameOf(method, path)?.description).toMatch(/At most 60 characters/);
   });
 });

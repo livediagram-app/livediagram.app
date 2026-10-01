@@ -21,7 +21,7 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 dark:bg-slate-950">
-      {/* Same animated lines backdrop as the new-diagram page; decorative,
+      {/* Same animated lines backdrop as the new-document page; decorative,
           reduced-motion aware, hidden below sm. */}
       <AnimatedLinesBackdrop />
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-xl backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
@@ -60,7 +60,7 @@ function Consent() {
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
   // Read-only opt-in (docs/specs/015-api/mcp-server.md §4.11): grant the tool view-only access — it can
-  // find and read diagrams but not create / edit / delete / share.
+  // find and read documents but not create / edit / delete / share.
   const [readOnly, setReadOnly] = useState(false);
   // The SERVER's account of this authorize request. Deliberately not the
   // `client` / `to` query params the redirect also carries: those are writable
@@ -135,7 +135,7 @@ function Consent() {
           Sign in to connect {client}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          You need to be signed in to connect an app to your diagrams.
+          You need to be signed in to connect an app to your documents.
         </p>
         <div className="mt-5 flex items-center gap-2">
           <a
@@ -213,8 +213,8 @@ function Consent() {
       <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        access your livediagram diagrams on your behalf. Approving creates an API token, which you
-        can revoke any time from the Explorer’s API tokens page.
+        access your livediagram documents on your behalf. Approving creates an API token, which you
+        can revoke any time from the API Tokens category in Settings.
       </p>
       {/* Whole-row toggle with the shared presentational switch (the same
           pattern as ProfilePane / SettingsDialog rows) — this was the last
@@ -227,8 +227,8 @@ function Consent() {
       >
         <span className="min-w-0 text-slate-600 dark:text-slate-300">
           <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span> —
-          let it find and view your diagrams, but not create, edit, delete, or share them. Leave off
-          for full read + write.
+          let it find and view your documents, but not create, edit, delete, or share them. Leave
+          off for full read + write.
         </span>
         <span className="mt-0.5 shrink-0">
           <ToggleSwitch presentational checked={readOnly} label="Read-only access" />

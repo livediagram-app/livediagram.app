@@ -9,7 +9,7 @@ import {
   type ArrowThickness,
   type BorderStyle,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { applyArrowPresetToEl } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
 
@@ -78,6 +78,11 @@ export function useArrowStyleSetters({ currentSelectionIds, commit }: ArrowStyle
   const setArrowRouteBehindSelected = (routeBehind: boolean) =>
     setArrowFieldSelected({ routeBehind }, 'ArrowRouteBehind');
 
+  // Start exactly at the pinned anchor, out of its fan (docs/specs/008-canvas/arrow-anchors.md
+  // "Converging-fan rendering"). Absent means fanned, so off is a delete-free `false`.
+  const setArrowExactStartSelected = (exactStart: boolean) =>
+    setArrowFieldSelected({ exactStart }, 'ArrowExactStart');
+
   // Arrow style presets (docs/specs/010-palette/style-presets.md). A one-click line look — pattern + thickness
   // + optional flow animation — applied in a single step. A preset without a
   // `flow` clears any existing animation; one with a flow defaults its speed to
@@ -119,6 +124,7 @@ export function useArrowStyleSetters({ currentSelectionIds, commit }: ArrowStyle
     setArrowheadShapeSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     applyArrowPresetSelected,
     resetArrowStyleSelected,
     setArrowFlowSelected,

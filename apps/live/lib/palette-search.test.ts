@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SHAPE_KINDS } from '@livediagram/diagram';
+import { SHAPE_KINDS } from '@livediagram/document';
 
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { buildPaletteSearchItems, SHAPE_KEYWORDS } from '@/lib/palette-search';
@@ -35,6 +35,30 @@ describe('buildPaletteSearchItems', () => {
       })
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
+  });
+
+  it('offers every non-shape palette tile too (text, arrow, table, embeds, ...)', () => {
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
+    const missing = PALETTE_TILES.filter(
+      (t) => !['shape', 'icon', 'tech-icon', 'sticker'].includes(t.action.type),
+    )
+      .map((t) => `tile:${t.id}`)
+      .filter((id) => !ids.has(id));
+    expect(missing).toEqual([]);
+    for (const id of [
+      'tile:tools:text',
+      'tile:tools:arrow',
+      'tile:tools:table',
+      'tile:tools:sticky',
+    ])
+      expect(ids).toContain(id);
+  });
+
+  it('hides the image-upload tiles when the editor has no image support', () => {
+    const ids = new Set(buildPaletteSearchItems({ hasImage: false }).map((i) => i.id));
+    const imageTiles = PALETTE_TILES.filter((t) => t.needsImage && t.action.type !== 'shape');
+    expect(imageTiles.length).toBeGreaterThan(0);
+    for (const t of imageTiles) expect(ids).not.toContain(`tile:${t.id}`);
   });
 
   it('covers the element types the palette added most recently', () => {

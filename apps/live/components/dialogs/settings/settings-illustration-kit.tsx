@@ -10,6 +10,12 @@ export const W = 104;
 export const H = 66;
 export const GAP = 18;
 
+// The widest a drawing renders, as rem per viewBox unit. Set by the toggle
+// pair (two frames, the arrow gap, the 4-unit margin each side) at 17rem, so
+// a choice drawing of any option count keeps the same frame size.
+export const TOGGLE_MAX_REM = 17;
+export const REM_PER_UNIT = TOGGLE_MAX_REM / (W * 2 + GAP + 8);
+
 export const PAPER = 'fill-white stroke-slate-300 dark:fill-slate-900 dark:stroke-slate-600';
 export const CHROME = 'fill-slate-100 stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600';
 export const PANEL = 'fill-brand-500/20 stroke-brand-500/70';

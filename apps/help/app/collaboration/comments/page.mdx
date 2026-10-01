@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Comments" description="Drop a comment anywhere on the canvas to ask a question or leave feedback, then resolve it once it has been handled." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("comments")}>
 
-Comments let you have a conversation on top of a diagram without changing the diagram itself. Drop one on the canvas where it matters, leave a question or a piece of feedback, and resolve it once it has been dealt with. They are the lightweight way to review work, agree on changes, and keep a record of why something is the way it is.
+Comments let you have a conversation on top of the canvas without changing anything on it. Drop one on the canvas where it matters, leave a question or a piece of feedback, and resolve it once it has been dealt with. They are the lightweight way to review work, agree on changes, and keep a record of why something is the way it is.
 
 ## Leaving a comment
 
@@ -33,11 +33,22 @@ A comment is attached to the thing it is about, so the reader sees exactly what 
 
 Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place.
 
-To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the board, joined to whatever it is about by an ordinary arrow.
+To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the canvas, joined to whatever it is about by an ordinary arrow.
 
 <Figure caption="A comment pin on the canvas opens a threaded popover with replies, avatars, and a resolve check.">
   <CommentThread />
 </Figure>
+
+## Mentioning a teammate
+
+Type **@** in a comment to tag someone on your team. A list of teammates appears as you type: use the arrow keys and **Enter** (or click) to pick one, and their handle, like `@priya-kaur`, goes into the comment. **Esc** closes the list and leaves what you typed.
+
+A mention does two things for the person you tag:
+
+- The thread appears on their [Activity page](/help/explorer/activity/), marked **Mentioned You**, even if they never commented.
+- They get an email quoting your comment, unless they have turned off **Someone Mentions Me in a Comment** in their [email notifications](/help/account-and-data/email-notifications/).
+
+You can mention the members of the team whose library holds the document, including people who have been invited but not joined yet. On a personal document there is nobody to mention; move it into a team library first. You need to be signed in to mention anyone.
 
 ## Resolving comments
 
@@ -45,11 +56,11 @@ Once a comment has been actioned, resolve it to clear it from the working view w
 
 - **Request changes** during a review without editing someone else's work directly.
 - **Ask a question** anchored to the exact element it is about.
-- **Capture a decision** so the reasoning is not lost once the diagram changes.
+- **Capture a decision** so the reasoning is not lost once the canvas changes.
 
 ## Comments and collaboration
 
-The canvas is multiplayer, so comments are part of how a group works on a diagram together. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later. Because the canvas works without signing in, a guest you hand a share link to can read and join the conversation too.
+The canvas is multiplayer, so comments are part of how a group works on the canvas together. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later. Because the canvas works without signing in, a guest you hand a share link to can read and join the conversation too.
 
 <Tip>
   Keep each comment to one point. A marker that asks a single, specific question is far easier to

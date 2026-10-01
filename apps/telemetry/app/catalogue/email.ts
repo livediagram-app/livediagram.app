@@ -39,7 +39,7 @@ export const WEEK2_EMAILS = email(
 export const ACTIVATION_EMAILS = email(
   'Activation',
   'Activation Nudges',
-  'A new account with no diagrams yet, about three days after sign-up.',
+  'A new account with no documents yet, about three days after sign-up.',
   'neutral',
 );
 
@@ -53,7 +53,7 @@ export const WIN_BACK_EMAILS = email(
 export const MILESTONE_EMAILS = email(
   'Milestone',
   'Milestone Emails',
-  'An owner reached their tenth diagram. Sent once per account.',
+  'An owner reached their tenth document. Sent once per account.',
 );
 
 export const FIRST_SHARE_EMAILS = email(
@@ -74,22 +74,28 @@ export const INVITE_RESPONSE_EMAILS = email(
   "A team's admins told that an invitee accepted or declined.",
 );
 
-export const DIAGRAM_JOINED_EMAILS = email(
-  'DiagramJoined',
-  'Diagram Joined Emails',
-  'An owner told that someone opened one of their shared diagrams for the first time.',
+export const DOCUMENT_JOINED_EMAILS = email(
+  'DocumentJoined',
+  'Document Joined Emails',
+  'An owner told that someone opened one of their shared documents for the first time.',
 );
 
 export const COMMENT_EMAILS = email(
   'CommentNotification',
   'Comment Notifications',
-  'An owner told someone commented on their diagram. At most one per diagram in a burst.',
+  'An owner told someone commented on their document. At most one per document in a burst.',
 );
 
 export const ACTION_EMAILS = email(
   'ActionAssigned',
   'Action Notifications',
   'A teammate was emailed about work assigned to them.',
+);
+
+export const MENTION_EMAILS = email(
+  'Mentioned',
+  'Mention Notifications',
+  'A teammate was emailed because someone @-mentioned them in a comment.',
 );
 
 export const TOKEN_EXPIRING_EMAILS = email(
@@ -116,9 +122,10 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   FIRST_SHARE_EMAILS,
   TEAM_INVITE_EMAILS,
   INVITE_RESPONSE_EMAILS,
-  DIAGRAM_JOINED_EMAILS,
+  DOCUMENT_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
+  MENTION_EMAILS,
   TOKEN_EXPIRING_EMAILS,
   ACCOUNT_DELETED_EMAILS,
 ];

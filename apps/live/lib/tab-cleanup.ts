@@ -10,7 +10,7 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import { autoLayoutElements, isBoxed, unionRects, type Element } from '@livediagram/diagram';
+import { autoLayoutElements, isBoxed, unionRects, type Element } from '@livediagram/document';
 import { autoAlignElements } from '@/lib/auto-align';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 

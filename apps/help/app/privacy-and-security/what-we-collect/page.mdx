@@ -15,10 +15,10 @@ livediagram measures which features get used so the project knows what works, an
 
 ## What an event looks like
 
-When telemetry is enabled, the editor records small product events made of just three fields: a category, an action, and an optional preset type. For example, "a diagram was created", or "a square element was added". That is the entire shape of an event.
+When telemetry is enabled, the editor records small product events made of just three fields: a category, an action, and an optional preset type. For example, "a document was created", or "a square element was added". That is the entire shape of an event.
 
 - **No identity.** Events carry no user id, no account, and no IP address.
-- **No content.** They never include a diagram name, tab name, participant name, element text, share code, or diagram id.
+- **No content.** They never include a document name, tab name, participant name, element text, share code, or document id.
 - **Only a fixed vocabulary.** The type is always a preset value from a closed list, such as a shape kind or a share role, never anything you typed.
 
 The server checks this as well. It throws away any event whose category or action is not on its list, and it will only store a type that is a short token — at most 40 characters of letters, digits, spaces and simple punctuation — so anything the length of a note, or carrying ordinary punctuation, is refused before it is stored. (A page view's address is checked against an even narrower rule instead: lower-case page names separated by `/`, nothing else.)
@@ -32,14 +32,14 @@ The same rules apply to error tracking. When something breaks, the event records
 Every page on livediagram.app (the landing pages, the help centre, the Explorer, the editor and the dashboard) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
 
 - **No query string or link fragment.** Anything after a `?` or `#`, which is where invite and share codes live, is dropped.
-- **No ids.** Every diagram is counted as the same page, `/diagram`. Any other part of the address that looks like an id is cut off the same way.
+- **No ids.** Every document is counted as the same page, `/document`. Any other part of the address that looks like an id is cut off the same way.
 - **Deny by default.** An address that doesn't reduce cleanly to a plain page name is not sent at all.
 
 There is no referrer, no record of which pages one person visited in what order, and no cookie. The same Settings switch below turns page views off along with everything else.
 
 ## Which button brought you in
 
-The buttons on our public pages that open the editor (the landing page's Choose Template, a template card, a help page's Start drawing) each carry a short label in their link naming _which button_ it is, like `Home.Hero`. When the New Diagram page opens from one, it counts that arrival, removes the label from the address bar straight away, and counts once more if you go on to create a diagram. That is how we learn which buttons actually help people get started.
+The buttons on our public pages that open the editor (the landing page's Choose Template, a template card, a help page's Start drawing) each carry a short label in their link naming _which button_ it is, like `Home.Hero`. When the New Document page opens from one, it counts that arrival, removes the label from the address bar straight away, and counts once more if you go on to create a document. That is how we learn which buttons actually help people get started.
 
 The label comes from a fixed list of our own buttons and says nothing about you or where you were before our page. The two counts aren't linked to each other or to anything else, and the Settings switch below turns them off too.
 

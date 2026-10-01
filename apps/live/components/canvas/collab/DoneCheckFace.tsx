@@ -1,6 +1,6 @@
 'use client';
 
-import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diagram';
+import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/document';
 
 import { participantKey, type Participant } from '@/lib/identity';
 import { CollabPanel } from './collab-chrome';
@@ -75,7 +75,7 @@ export function DoneCheckFace({
         textColor={textColor}
         aside={keys.length ? `${done.length}/${keys.length}` : undefined}
         // The flash is the card's payoff: the facilitator does not have to
-        // watch it, the board tells them. A class rather than inline styles so
+        // watch it, the canvas tells them. A class rather than inline styles so
         // the reduced-motion override in canvas-motion.css can reach it.
         className={everyone ? 'lvd-done-complete' : undefined}
         headerExtra={
@@ -122,7 +122,7 @@ export function DoneCheckFace({
       >
         {keys.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody here yet" rows={0}>
-            Share the diagram and the card fills itself in.
+            Share the document and the card fills itself in.
           </EmptyRows>
         ) : (
           <div className="flex min-h-0 flex-1 items-center gap-4">

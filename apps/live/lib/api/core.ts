@@ -1,19 +1,20 @@
 // HTTP/WS plumbing shared by every api-client domain module: base URL,
 // the hybrid-identity header builder, the response-handling helpers, the
 // shared DELETE shape, and the module-level token / share-password
-// state. The per-domain call collections (diagrams, tabs, share, …)
+// state. The per-domain call collections (documents, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
 import type {
   ApiToken,
   ChangeLogEntry,
   CustomTheme,
-  Diagram,
+  LiveDoc,
   Folder,
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
-import { isClerkIdShape } from '@livediagram/api-schema';
-import { stampTabKind, type Tab } from '@livediagram/diagram';
+import { DOCUMENT_FORMAT_HEADER, isClerkIdShape } from '@livediagram/api-schema';
+import { noteServerDocumentFormat } from '../document-format';
+import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
@@ -37,16 +38,16 @@ import {
 //      hostname). This is what the deployed live app uses.
 //
 // All requests carry an `X-Owner-Id` header set to the current
-// participant's id — the API uses it as the diagram-owner filter and
+// participant's id — the API uses it as the document-owner filter and
 // for create-time `owner_id` — unless a Clerk token provider is wired
 // up (see below), in which case a Bearer token replaces it.
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-// Hard cap on how long the Explorer's diagram-list spinner spins before
+// Hard cap on how long the Explorer's document-list spinner spins before
 // we give up and show whatever we have. Both mount paths that load the
-// list (the editor and the new-diagram screen) arm this same safety
+// list (the editor and the new-document screen) arm this same safety
 // timeout, so it lives here next to the list-load calls.
-export const DIAGRAM_LIST_LOAD_SAFETY_MS = 10_000;
+export const DOCUMENT_LIST_LOAD_SAFETY_MS = 10_000;
 
 // WebSocket counterpart of API_BASE. Converts http(s):// to ws(s):// for
 // absolute bases; for the same-origin default it builds from
@@ -83,6 +84,8 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
     throw err;
   }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
+  // The server's document format number rides every response (docs/specs/016-platform/new-version-prompt.md).
+  noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
   return res;
 }
 
@@ -92,7 +95,7 @@ function isTimelinePath(url: string): boolean {
 
 // Envelope shapes the API wraps payloads in. The canonical inner
 // types come from `@livediagram/api-schema`, as do the envelopes the
-// MCP server reads too (DiagramResponse, TabResponse, ...); the ones
+// MCP server reads too (DocumentResponse, TabResponse, ...); the ones
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
@@ -107,24 +110,30 @@ export type CreateTokenResponse = {
   name: string | null;
   expiresAt: number;
 };
-// The share-links list doubles as the owner's read of the diagram's
+// The share-links list doubles as the owner's read of the document's
 // share password (docs/specs/013-workspace/share-password.md): owner-only endpoint, so it's safe in the
-// clear. `password` is null when the diagram has no password.
+// clear. `password` is null when the document has no password.
 export type ShareLinksResponse = { links: ShareLink[]; password: string | null };
 export type SharePasswordResponse = { password: string | null };
 export type ChangeLogListResponse = { entries: ChangeLogEntry[] };
 export type ChangeLogAppendResponse = { entry: ChangeLogEntry };
 export type ParticipantResponse = {
-  participant: { id: string; name: string; color: string; createdAt: number };
+  participant: {
+    id: string;
+    name: string;
+    color: string;
+    createdAt: number;
+    pictureUrl?: string | null;
+  };
 };
 
-// Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected diagram
-// returns `passwordRequired` instead of the diagram until the visitor
+// Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected document
+// returns `passwordRequired` instead of the document until the visitor
 // supplies the matching password; `invalid` is true only when a wrong
 // password was submitted (vs none yet), so the gate can show an error.
-export type SharedDiagramResolution =
+export type SharedDocumentResolution =
   // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  | { diagram: Diagram; role: ShareRole; tabId: string | null }
+  | { document: LiveDoc; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
@@ -158,7 +167,7 @@ type TokenProvider = (opts?: { skipCache?: boolean }) => Promise<string | null>;
 let currentTokenProvider: TokenProvider | null = null;
 
 // The most recent token the provider returned, kept for the ONE caller
-// that can't await: the `beforeunload` save beacon (flushDiagramSavesBeacon).
+// that can't await: the `beforeunload` save beacon (flushDocumentSavesBeacon).
 // The provider is async (Clerk may refresh over the network), so during
 // page teardown it's unusable — but the editor autosaves every ~600ms
 // while editing, so this cache is at most seconds old exactly when the
@@ -166,9 +175,29 @@ let currentTokenProvider: TokenProvider | null = null;
 // signed-out tab can't flush with a dead identity.
 let lastKnownToken: string | null = null;
 
-// Register / clear the Clerk token provider (hooks/persistence/useClerkApiBootstrap.ts).
-// Pass `null` to clear (sign-out / unmount).
+// Every mounted useClerkApiBootstrap registers the same provider; the
+// newest registration is the one in force, and it stays in force until the
+// LAST registration goes. A single slot cleared on unmount let one component
+// leaving (a Settings row, a dialog) take the Bearer away from the page
+// still mounted around it, and its next save failed as unauthenticated.
+const registrations: TokenProvider[] = [];
+
+export function registerTokenProvider(provider: TokenProvider): () => void {
+  registrations.push(provider);
+  currentTokenProvider = provider;
+  lastKnownToken = null;
+  return () => {
+    const at = registrations.lastIndexOf(provider);
+    if (at >= 0) registrations.splice(at, 1);
+    currentTokenProvider = registrations.at(-1) ?? null;
+    lastKnownToken = null;
+  };
+}
+
+// Set / clear the provider outright, dropping every registration (tests,
+// and callers that own the whole identity). Pass `null` to clear.
 export function setTokenProvider(provider: TokenProvider | null): void {
+  registrations.length = 0;
   currentTokenProvider = provider;
   // Clear on EVERY provider change, not just sign-out: a replaced
   // provider means the cached token came from a session we no longer
@@ -198,9 +227,9 @@ export function getSessionSharePassword(): string | null {
   return sessionSharePassword;
 }
 
-// localStorage cache so a returning visitor on a protected diagram
+// localStorage cache so a returning visitor on a protected document
 // doesn't have to retype the password every load. Keyed by share code
-// rather than diagram id because the diagram id only resolves AFTER
+// rather than document id because the document id only resolves AFTER
 // the gate is passed; the share code is what the URL carries on
 // arrival. Entry lifetime is bounded by the share code's validity:
 //   - Code revoked: apiLoadShared returns null, no cache read happens
@@ -285,7 +314,7 @@ export async function apiHeaders(
   if (opts.body) h['Content-Type'] = 'application/json';
   if (opts.share) h['X-Share-Code'] = opts.share;
   // Share password (docs/specs/013-workspace/share-password.md) rides on every request once the visitor
-  // has passed the gate; the api ignores it unless the diagram is
+  // has passed the gate; the api ignores it unless the document is
   // protected + accessed via a share code. Owners never set it.
   if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
   return { ...h, ...opts.extra };
@@ -403,7 +432,7 @@ export async function apiDelete(
     // conversion header — without one the worker cannot tell "take offline"
     // from a real delete and records the wrong timeline event.
     extra?: Record<string, string>;
-    // When this DELETE ends an entity the Timeline narrates (a diagram, a
+    // When this DELETE ends an entity the Timeline narrates (a document, a
     // folder, a theme, a team), name it in the feed's terms so the feed
     // can drop the entity's earlier cards at once, the way the worker's
     // cascade does server-side (docs/specs/013-workspace/timeline.md §3.5). Omit for a DELETE that
@@ -430,13 +459,13 @@ export async function apiDelete(
 // but must never enter the persisted tab body (`tabs.data`):
 //   - `templateChosen` — UI-only (have we dismissed the per-tab
 //     template picker yet?); a pure frontend concern.
-//   - `folder` — per-diagram membership (docs/specs/006-diagram/tab-folders.md) that lives on the
-//     diagram_tabs link, carried via the meta/reorder path. Leaking it
+//   - `folder` — per-document membership (docs/specs/006-document/tab-folders.md) that lives on the
+//     document_tabs link, carried via the meta/reorder path. Leaking it
 //     into the shared body would make a folder follow the tab into
-//     every diagram it's shared into, breaking per-diagram scope.
-// Shared by apiCreateDiagram + apiSaveTab.
+//     every document it's shared into, breaking per-document scope.
+// Shared by apiCreateDocument + apiSaveTab.
 // The single normalisation every tab passes through on its way to the wire:
-// strip the UI-only fields, and stamp the board kind (docs/specs/021-event-storming/event-storming.md).
+// strip the UI-only fields, and stamp the tab kind (docs/specs/021-event-storming/event-storming.md).
 //
 // The kind is stamped HERE rather than only at the editor's commit choke
 // point because several mutation paths reach persistence — the history

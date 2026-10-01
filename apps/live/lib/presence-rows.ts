@@ -14,7 +14,14 @@ import type { LaserConfig } from './laser-config';
 // Row shapes the builders below return. Module-private: only this file's own
 // functions name them, so they carry no `export` (consumers get the inferred
 // return types).
-type CursorRow = { id: string; name: string; color: string; x: number; y: number };
+type CursorRow = {
+  id: string;
+  name: string;
+  color: string;
+  x: number;
+  y: number;
+  picture?: string;
+};
 type LaserTrailRow = {
   participantId: string;
   color: string;
@@ -30,7 +37,7 @@ type RemoteSelector = { id: string; name: string; color: string };
 // their active tab; remote peers without a tab-focus op yet default to the
 // first tab. Status is per-viewer (on my tab -> online, elsewhere -> away)
 // unless idle has dragged them to away/offline. Returns an empty map for
-// private (unshared) diagrams.
+// private (unshared) documents.
 //
 // One person, one avatar (docs/specs/012-collaboration/collaborator-enhancements.md): the room mints an id per socket, so the
 // same browser open in two tabs arrives as two peers. Every tab in a browser
@@ -39,10 +46,10 @@ type RemoteSelector = { id: string; name: string; color: string };
 // a peer with several keeps only their most recently active connection,
 // which is the tab they are actually looking at.
 export function buildParticipantsByTab(input: {
-  diagramShareable: boolean;
-  // A team diagram (docs/specs/013-workspace/team-shared-diagrams.md) is collaborative for its members even
+  documentShareable: boolean;
+  // A team document (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
   // with no share link, so tab presence shows there too.
-  diagramTeamId: string | null;
+  documentTeamId: string | null;
   activeId: string;
   selfParticipant: Participant;
   tabs: { id: string }[];
@@ -53,8 +60,8 @@ export function buildParticipantsByTab(input: {
   now: number;
 }): Map<string, Participant[]> {
   const {
-    diagramShareable,
-    diagramTeamId,
+    documentShareable,
+    documentTeamId,
     activeId,
     selfParticipant,
     tabs,
@@ -65,7 +72,7 @@ export function buildParticipantsByTab(input: {
     now,
   } = input;
   const map = new Map<string, Participant[]>();
-  if (!diagramShareable && !diagramTeamId) return map;
+  if (!documentShareable && !documentTeamId) return map;
   map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
   const defaultTabId = tabs[0]?.id ?? activeId;
   const tabFocus = new Map<string, string>(remoteTabFocus);
@@ -123,7 +130,14 @@ export function buildRemoteCursorRows(
     if (pos.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
+    rows.push({
+      id,
+      name: p.name,
+      color: p.color,
+      x: pos.x,
+      y: pos.y,
+      ...(p.picture ? { picture: p.picture } : {}),
+    });
   }
   return rows;
 }
@@ -198,7 +212,7 @@ export function buildLaserTrailRows(input: {
 //      the avatar (and its online dot) matches what visitors see in
 //      the TabBar.
 //   3. Owner is offline -> fall back to the joined name + colour we
-//      got from the diagram fetch (api worker LEFT JOINs participants
+//      got from the document fetch (api worker LEFT JOINs participants
 //      on owner_id).
 // Returns null only when the owner truly has no participant record on
 // the server.
@@ -206,17 +220,17 @@ export function resolveOwnerBadge(input: {
   isOwner: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
-  diagramOwnerId: string | null;
-  diagramOwnerName: string | null;
-  diagramOwnerColor: string | null;
+  documentOwnerId: string | null;
+  documentOwnerName: string | null;
+  documentOwnerColor: string | null;
 }): Participant | null {
   const {
     isOwner,
     selfParticipant,
     livePresence,
-    diagramOwnerId,
-    diagramOwnerName,
-    diagramOwnerColor,
+    documentOwnerId,
+    documentOwnerName,
+    documentOwnerColor,
   } = input;
   if (isOwner) return selfParticipant;
   // The share endpoint redacts ownerId to '' for visitors (so an
@@ -227,18 +241,18 @@ export function resolveOwnerBadge(input: {
   // which is the same identity the fetch already trusts. Without
   // this, an online owner always resolved to the offline branch
   // below and showed a red (offline) dot to viewers.
-  const live = diagramOwnerId
-    ? livePresence.find((p) => p.id === diagramOwnerId)
-    : livePresence.find((p) => p.name === diagramOwnerName && p.color === diagramOwnerColor);
+  const live = documentOwnerId
+    ? livePresence.find((p) => p.id === documentOwnerId)
+    : livePresence.find((p) => p.name === documentOwnerName && p.color === documentOwnerColor);
   if (live) return live;
   // Owner not in the room: key the badge off the NAME, not the
   // (blanked) id, or viewers never get the badge at all. The id
   // here is display-only, so a synthetic fallback is fine.
-  if (diagramOwnerName) {
+  if (documentOwnerName) {
     return {
-      id: diagramOwnerId || 'owner',
-      name: diagramOwnerName,
-      color: diagramOwnerColor ?? '#94a3b8',
+      id: documentOwnerId || 'owner',
+      name: documentOwnerName,
+      color: documentOwnerColor ?? '#94a3b8',
       status: 'offline' as const,
     };
   }
@@ -254,7 +268,7 @@ export type RemoteSelection = { elementId: string | null; tabId?: string };
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
 // cursors and lasers — entries scoped to a DIFFERENT tab: element ids
-// aren't unique across tabs in older diagrams (tab duplication used to
+// aren't unique across tabs in older documents (tab duplication used to
 // copy them verbatim), so an unscoped badge also LOCKED the same-id
 // element on other tabs via the docs/specs/007-editor/live-app.md selection lock.
 export function buildRemoteSelectionsByElement(

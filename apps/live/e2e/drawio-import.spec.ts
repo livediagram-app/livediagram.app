@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDiagram, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // draw.io import end to end (docs/specs/020-import-export/drawio-import.md): pick a
 // file from the fixture corpus through the real Import dialog, and check the
@@ -50,7 +50,7 @@ test('a multi-page draw.io file becomes a tab per page, with a summary', async (
   page,
   pageErrors,
 }) => {
-  await startBlankDiagram(page);
+  await startBlankDocument(page);
   await dismissQuickTour(page);
   await importFile(page, 'multi-page.drawio');
 
@@ -99,7 +99,7 @@ for (const file of [
   'flowchart.compressed.drawio',
 ]) {
   test(`imports ${file}`, async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await dismissQuickTour(page);
     await importFile(page, file);
     const summary = page.getByTestId('import-report');

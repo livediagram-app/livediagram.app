@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type ArrowElement, type Element, type StickyElement } from '@livediagram/diagram';
+import { type ArrowElement, type Element, type StickyElement } from '@livediagram/document';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
@@ -432,11 +432,11 @@ describe('canInsertBetweenOn', () => {
 
   it('offers nothing without the modifier, however willing the board', () => {
     // The whole point of the gesture: an ordinary drag on an event-storming
-    // board behaves exactly as it does on every other board.
+    // board behaves exactly as it does on every other tab.
     expect(canInsertBetweenOn(editable, false)).toBe(false);
   });
 
-  it('never offers it on an ordinary board', () => {
+  it('never offers it on an ordinary tab', () => {
     expect(canInsertBetweenOn({ ...editable, esBoard: false }, true)).toBe(false);
   });
 

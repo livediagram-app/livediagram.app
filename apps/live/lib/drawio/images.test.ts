@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, ImageElement } from '@livediagram/diagram';
+import type { Element, ImageElement } from '@livediagram/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { attachDrawioImages } from './images';
 

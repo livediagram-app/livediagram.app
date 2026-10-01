@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
 
-import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/diagram';
+import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/document';
 
 import {
   PresentationElementPopover,
@@ -248,7 +248,7 @@ export function PresentationOverlay({
       else onExit();
       return;
     }
-    // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the diagram, and the
+    // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the document, and the
     // laser was built for exactly this room — docs/specs/008-canvas/laser-panel.md opens by calling it
     // "the presenting tool". Pressing the same key again puts the pointer
     // back, so arming one is never a trap.
@@ -354,7 +354,7 @@ export function PresentationOverlay({
           
           It steps aside entirely while a POINTING tool is armed. The laser and
           the spotlight need the pointer on the canvas to work at all, and
-          neither can change the diagram — they are the two tools whose whole
+          neither can change the document — they are the two tools whose whole
           job is to point at it. The cost is that click-to-advance goes with the
           catcher, which is the right trade: while you are drawing a laser
           stroke a click means "point", not "next slide". The keys and the HUD
@@ -373,7 +373,7 @@ export function PresentationOverlay({
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="text-sm font-semibold text-white/90">End of the deck</span>
             <span className="text-[11px] text-white/50">
-              Click, press Space, or hit Esc to go back to the diagram.
+              Click, press Space, or hit Esc to go back to the document.
             </span>
           </div>
         </div>

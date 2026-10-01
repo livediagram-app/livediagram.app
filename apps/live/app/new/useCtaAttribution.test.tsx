@@ -2,7 +2,7 @@
 
 // The landing funnel's editor end (docs/specs/019-marketing/landing-funnel.md): /new reads the CTA source from
 // `via`, counts the arrival once, strips the parameter from the address bar,
-// and counts the diagram at most once per arrival.
+// and counts the document at most once per arrival.
 
 import { renderHook } from '@testing-library/react';
 import { StrictMode } from 'react';
@@ -30,7 +30,7 @@ describe('useCtaAttribution', () => {
     expect(window.location.hash).toBe('#top');
   });
 
-  it('counts the diagram once, however often the commit runs', () => {
+  it('counts the document once, however often the commit runs', () => {
     arriveAt('/new?via=Home.Hero');
     const { result } = renderHook(() => useCtaAttribution());
     result.current.trackCreated();

@@ -3,7 +3,7 @@
 // vote's phase. Kept out of the components so it can be tested without a
 // DOM, and so the dial's snapping rules live in one place.
 
-import { TIMER_MINUTES_RANGE, type TabTimer, type TabVote } from '@livediagram/diagram';
+import { TIMER_MINUTES_RANGE, type TabTimer, type TabVote } from '@livediagram/document';
 
 export type StudioTool = 'timer' | 'vote' | 'poll';
 

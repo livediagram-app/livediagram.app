@@ -10,7 +10,7 @@ on the canvas instead of losing them.
 [Live poll (ephemeral pulse-check)](live-poll.md) makes the poll leave no trace, and lists the costs
 it accepts for that. This closes the one that turned out to hurt: the host asks
 the room a question, the room answers, everyone looks at the bars, and then the
-result exists nowhere. The board is the record of the session, and the one
+result exists nowhere. The canvas is the record of the session, and the one
 number the session produced is the one thing not on it.
 
 The ephemerality itself is still right and is unchanged. What was missing was a

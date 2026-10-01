@@ -2,7 +2,7 @@
 //
 // A timeline row is a nice-to-have hanging off someone else's write. If
 // the emit throws — a malformed snapshot, a D1 hiccup, a scope lookup
-// that raced a team deletion — the diagram save that triggered it must
+// that raced a team deletion — the document save that triggered it must
 // still succeed. So every call site goes through `record`, which
 // swallows and logs rather than propagating.
 //

@@ -1,6 +1,6 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
 // Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
-// settings popover (Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset
+// settings popover (Auto-Attach Arrows, Alignment Guides, Panel Opacity, Reset
 // Palette Position). Composed only from the shared primitives so the house style
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
@@ -307,12 +307,12 @@ export function IsometricMode() {
 export function PaletteSettings({
   highlight,
 }: {
-  highlight?: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal';
+  highlight?: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity';
 }) {
   // `slider` rows draw a mini opacity track instead of a toggle (Panel
   // opacity); the order mirrors the dialog.
   const rows: {
-    key: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal';
+    key: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity';
     label: string;
     slider: boolean;
     on: boolean;
@@ -321,11 +321,10 @@ export function PaletteSettings({
     { key: 'guides', label: 'Alignment guides', slider: false, on: true },
     { key: 'quick-add', label: 'Quick-add on hover', slider: false, on: true },
     { key: 'panel-opacity', label: 'Panel opacity', slider: true, on: true },
-    { key: 'minimal', label: 'Minimal panels', slider: false, on: false },
   ];
   return (
-    <Scene w={400} h={262} bg="plain">
-      <Panel x={92} y={26} w={216} h={210} title="SETTINGS">
+    <Scene w={400} h={228} bg="plain">
+      <Panel x={92} y={26} w={216} h={176} title="SETTINGS">
         {rows.map((r, i) => {
           const ry = 70 + i * 34;
           const hot = highlight === r.key;
@@ -523,89 +522,6 @@ export function AlignmentGuides() {
         strokeWidth={1.5}
         strokeDasharray="4 4"
       />
-    </Scene>
-  );
-}
-
-/** Minimal panels: floating panels (off) versus a compact button bar (on),
- *  shown before and after. */
-export function MinimalPanels() {
-  const uid = useId().replace(/:/g, '');
-  const gridBefore = `grid-mp-${uid}`;
-  const gridAfter = `grid-mp2-${uid}`;
-  return (
-    <Scene w={420} h={210} bg="none">
-      {/* Before: floating panels on the canvas */}
-      <g>
-        <rect
-          x={16}
-          y={20}
-          width={186}
-          height={170}
-          rx={10}
-          fill={`url(#${gridBefore})`}
-          className="stroke-slate-200"
-          strokeWidth={2}
-        />
-        <defs>
-          <pattern id={gridBefore} width="16" height="16" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" className="fill-slate-200" />
-          </pattern>
-        </defs>
-        <Panel x={28} y={32} w={74} h={48} title="EXPLORER" />
-        <Panel x={120} y={30} w={70} h={70} title="PALETTE" />
-        <Panel x={112} y={120} w={76} h={58} title="EDITOR" />
-        <Label x={108} y={200} size={9} weight={700} anchor="middle" tone="muted">
-          Floating panels
-        </Label>
-      </g>
-      {/* After: compact dock */}
-      <g>
-        <rect
-          x={218}
-          y={20}
-          width={186}
-          height={170}
-          rx={10}
-          fill={`url(#${gridAfter})`}
-          className="stroke-slate-200"
-          strokeWidth={2}
-        />
-        <defs>
-          <pattern id={gridAfter} width="16" height="16" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" className="fill-slate-200" />
-          </pattern>
-        </defs>
-        {/* Compact button bar / dock down the left edge */}
-        <rect
-          x={228}
-          y={42}
-          width={28}
-          height={126}
-          rx={9}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        {[0, 1, 2, 3].map((i) => (
-          <Tile key={i} x={231} y={50 + i * 30} size={22} active={i === 1}>
-            <rect
-              x={-5}
-              y={-5}
-              width={10}
-              height={10}
-              rx={2}
-              className={i === 1 ? 'stroke-white' : 'stroke-slate-400'}
-              strokeWidth={1.6}
-              fill="none"
-            />
-          </Tile>
-        ))}
-        {/* Popover opening from a dock button */}
-        <Panel x={268} y={66} w={90} h={64} title="PALETTE" />
-        <Label x={311} y={200} size={9} weight={700} anchor="middle" tone="accent">
-          Compact dock
-        </Label>
-      </g>
     </Scene>
   );
 }

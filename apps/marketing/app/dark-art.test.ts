@@ -13,13 +13,13 @@ import {
   type BoxedElement,
   type CanvasSurface,
   type ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 
 // Every diagram in the mock-ups is drawn as the editor draws it on the Default theme
 // (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md).
 // The art keeps those colours as CSS custom properties (app/hero-animations.css), so these hold
-// each one to what packages/diagram itself returns rather than letting a copy drift.
+// each one to what packages/document itself returns rather than letting a copy drift.
 
 const APP = fileURLToPath(new URL('..', import.meta.url));
 const read = (path: string) => readFileSync(`${APP}${path}`, 'utf8');
@@ -107,7 +107,7 @@ describe('mock-up palette, dark half', () => {
 describe('hero window veil', () => {
   it('fades to the dark page colour in dark appearance', () => {
     const pageDark = read('app/layout.tsx').match(/<body[^>]*\b(dark:bg-slate-\d+)/)?.[1];
-    const veil = read('components/HeroIllustration.tsx').match(
+    const veil = read('components/hero-editor-window.tsx').match(
       /className=\{`pointer-events-none absolute inset-0 z-20 ([^`$]*)/,
     )?.[1];
     expect(pageDark).toBeTruthy();

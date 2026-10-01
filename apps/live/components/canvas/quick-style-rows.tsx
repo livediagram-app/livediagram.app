@@ -6,7 +6,8 @@
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip, Glyph } from '@livediagram/ui';
-import { isLightColor } from '@livediagram/diagram';
+import { isLightColor } from '@livediagram/document';
+import { QUICK_TARGET_PX } from './quick-style-metrics';
 
 export type QuickOption<V> = {
   value: V;
@@ -19,8 +20,8 @@ export type QuickOption<V> = {
   overridden?: boolean;
 };
 
-// Compact (Toolbar, Minimal): 20 px chips in touching 24 px targets, so the row
-// is exactly seven targets wide. Roomy (Floating): 24 px chips spread across
+// Compact (Toolbar): 20 px chips in touching 24 px targets, so the row
+// is exactly seven targets wide (a longer row widens the panel; a row never wraps). Roomy (Floating): 24 px chips spread across
 // the Palette's width. Every target is 24 x 24 px either way (WCAG 2.5.8).
 export type QuickRowDensity = 'compact' | 'roomy';
 
@@ -33,6 +34,7 @@ export function QuickRadioRow<V extends string | number>({
   onOptionContext,
   density = 'roomy',
   testId,
+  columns,
 }: {
   title: string;
   showTitle: boolean;
@@ -43,6 +45,9 @@ export function QuickRadioRow<V extends string | number>({
   onOptionContext?: (value: V, button: HTMLButtonElement) => void;
   density?: QuickRowDensity;
   testId: string;
+  // Swatches on a grid of this many 24 px columns (spread in the roomy layout, touching in the
+  // compact one), so a shorter row lines up under a full one. Unset: a flex row.
+  columns?: number;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const checkedIndex = options.findIndex((o) => o.value === value);
@@ -95,7 +100,21 @@ export function QuickRadioRow<V extends string | number>({
         aria-label={title}
         data-testid={testId}
         className={
-          isSwatchRow ? (compact ? 'flex' : 'flex justify-between gap-1') : 'grid grid-cols-3 gap-1'
+          isSwatchRow && columns
+            ? 'grid'
+            : isSwatchRow
+              ? compact
+                ? 'flex'
+                : 'flex justify-between gap-1'
+              : 'grid grid-cols-3 gap-1'
+        }
+        style={
+          isSwatchRow && columns
+            ? {
+                gridTemplateColumns: `repeat(${columns}, ${QUICK_TARGET_PX}px)`,
+                justifyContent: compact ? 'start' : 'space-between',
+              }
+            : undefined
         }
       >
         {options.map((o, i) => {

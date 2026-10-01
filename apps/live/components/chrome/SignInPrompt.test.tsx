@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: false }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: false, sessionsEnabled: false }));
 vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => ({}) }));
 vi.mock('@/components/chrome/auth-shared', () => ({ useAuthHrefs: () => ({}) }));
 
@@ -18,7 +18,7 @@ afterEach(() => {
 describe('SignInPrompt', () => {
   it('shows the prompt until dismissed, then the fallback, and remembers it', () => {
     render(<SignInPrompt fallback={<span>fallback</span>} />);
-    expect(screen.getByText('Diagrams saved to this browser')).toBeTruthy();
+    expect(screen.getByText('Documents saved to this browser')).toBeTruthy();
     act(() => fireEvent.click(screen.getByRole('button')));
     expect(screen.getByText('fallback')).toBeTruthy();
     expect(window.localStorage.getItem(KEY)).toBe('true');
@@ -27,7 +27,7 @@ describe('SignInPrompt', () => {
   it('shows the fallback straight away for a dismissal made earlier', () => {
     window.localStorage.setItem(KEY, 'true');
     render(<SignInPrompt fallback={<span>fallback</span>} />);
-    expect(screen.queryByText('Diagrams saved to this browser')).toBeNull();
+    expect(screen.queryByText('Documents saved to this browser')).toBeNull();
     expect(screen.getByText('fallback')).toBeTruthy();
   });
 });

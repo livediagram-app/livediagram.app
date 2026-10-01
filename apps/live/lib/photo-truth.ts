@@ -17,7 +17,7 @@ import { truthFrom, type Truth } from '@livediagram/sticky-vision';
 //
 // The flag alone was not enough, and failing it taught the lesson: `?truth=1`
 // is typed on /new, and the editor is three navigations later at
-// /diagram/<id>, so any reload of the page you are actually looking at loses
+// /document/<id>, so any reload of the page you are actually looking at loses
 // it. A rule that depends on remembering to re-type a parameter is a rule that
 // is off when you need it.
 

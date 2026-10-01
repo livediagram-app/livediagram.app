@@ -9,7 +9,7 @@
 // clipboard got a sentinel string, written purely to displace a lingering
 // image. That works within one editor instance and nowhere else — component
 // state cannot cross a browser tab, a second window, or a reload, which is
-// where "copy this and put it in that diagram" actually happens. The real
+// where "copy this and put it in that document" actually happens. The real
 // elements go on the clipboard now.
 //
 // The in-app buffer is KEPT as a fallback rather than deleted. Clipboard
@@ -30,12 +30,18 @@
 // internal.
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
+import { duplicateElements, type Element, type Tab } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
-import { addImageFileForDiagram } from '@/lib/upload-image';
+import { addImageFileForDocument } from '@/lib/upload-image';
+import {
+  DROP_NOT_A_SCENE,
+  excalidrawTextFromPaste,
+  isExcalidrawFileCandidate,
+} from '@/lib/excalidraw-paste';
+import type { BoardScene } from '@/lib/board-scene/scene';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -65,13 +71,13 @@ type ClipboardDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   // Drops a new image element pre-filled with an uploaded image. From
   // useEditorImages; undefined when image support is unavailable (no
-  // diagram id / read-only), in which case image paste is a no-op.
+  // document id / read-only), in which case image paste is a no-op.
   addImageFromGallery?: (image: ImageDescriptor) => void;
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
-  // The current diagram id (null before hydration). Offline diagrams embed
-  // pasted images locally instead of uploading (docs/specs/006-diagram/offline-mode.md).
-  diagramId: string | null;
+  // The current document id (null before hydration). Offline documents embed
+  // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
+  documentId: string | null;
   toast: ReturnType<typeof useToast>;
   // Read a pasted PHOTO as a piece of wall instead of placing it as an image
   // (docs/specs/021-event-storming/event-storming.md Phase 8). Supplied only on an event-storming board with the
@@ -82,6 +88,10 @@ type ClipboardDeps = {
   // board a paste holding a workshop note lands there
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
+  // Lands a board scene pasted from another tool (an Excalidraw copy or file,
+  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
+  // the tab's profile. Absent, such a paste is left alone.
+  insertBoardScene?: (scene: BoardScene, at?: { x: number; y: number }) => void;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -98,10 +108,11 @@ export function useClipboard(deps: ClipboardDeps) {
     setMultiSelectedIds,
     addImageFromGallery,
     ownerId,
-    diagramId,
+    documentId,
     toast,
     onPastePhoto,
     canvasPointerRef,
+    insertBoardScene,
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
@@ -210,9 +221,9 @@ export function useClipboard(deps: ClipboardDeps) {
             type: file.type,
           });
     try {
-      // Cloud diagrams upload; offline diagrams embed the paste locally
-      // as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDiagram(ownerId, diagramId, named);
+      // Cloud documents upload; offline documents embed the paste locally
+      // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDocument(ownerId, documentId, named);
       addImageFromGallery({
         id: image.id,
         width: image.width,
@@ -223,11 +234,54 @@ export function useClipboard(deps: ClipboardDeps) {
       toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
     }
   };
+  // An Excalidraw copy or file: read lazily (the parser stays out of the editor bundle), then
+  // landed by the board-scene insert. A file that turns out not to hold a scene is `otherwise`'s.
+  const pasteExcalidrawText = async (text: string) => {
+    if (!insertBoardScene) return;
+    const { sceneFromExcalidrawText } = await import('@/lib/excalidraw-read');
+    const read = sceneFromExcalidrawText(text);
+    if (!read.ok) {
+      toast.error(read.error);
+      return;
+    }
+    insertBoardScene(read.scene);
+    track('Element', 'Imported', 'Excalidraw');
+  };
+  const pasteExcalidrawFile = async (
+    file: File,
+    otherwise: () => void,
+    at?: { x: number; y: number },
+  ) => {
+    if (!insertBoardScene) return otherwise();
+    const { readExcalidrawFile } = await import('@/lib/excalidraw-read');
+    const read = await readExcalidrawFile(file);
+    if (read.kind === 'not-excalidraw') return otherwise();
+    if (read.kind === 'error') return toast.error(read.error);
+    insertBoardScene(read.scene, at);
+    track('Element', 'Imported', 'Excalidraw');
+  };
+
+  // A file dropped on the canvas, at its canvas point: an Excalidraw file or export lands as its
+  // scene there; any other file is not something the canvas takes, and says so.
+  const dropBoardFile = (file: File, at: { x: number; y: number }) => {
+    if (isReadOnly || !insertBoardScene) return;
+    const refuse = () => toast.info(DROP_NOT_A_SCENE);
+    if (!isExcalidrawFileCandidate(file)) return refuse();
+    void pasteExcalidrawFile(file, refuse, at);
+  };
+
   // Single mutable ref holding the latest paste functions. The paste
   // event listener is only re-registered when isReadOnly/editingId
   // changes, so without this the listener would call stale closures
   // that see clipboard=null even after the user has copied elements.
-  const pasteRef = useLatest({ pasteFromClipboard, pasteImageFile, onPastePhoto });
+  const pasteRef = useLatest({
+    pasteFromClipboard,
+    pasteImageFile,
+    onPastePhoto,
+    pasteExcalidrawText,
+    pasteExcalidrawFile,
+    canPasteScene: !!insertBoardScene,
+  });
 
   // A middle-button release pastes the Linux primary selection. It is never a
   // request to paste on the canvas: with an empty selection it used to drop
@@ -306,12 +360,22 @@ export function useClipboard(deps: ClipboardDeps) {
           // goes to the reader instead. Only for a declared image, only on
           // that board, only when the reader is available: everything else
           // pastes exactly as it always has.
-          const readPhoto = pasteRef.current.onPastePhoto;
-          if (readPhoto && chosen.type.startsWith('image/')) {
-            readPhoto(chosen);
+          const file = chosen;
+          const asImage = () => {
+            const readPhoto = pasteRef.current.onPastePhoto;
+            if (readPhoto && file.type.startsWith('image/')) {
+              readPhoto(file);
+              return;
+            }
+            void pasteRef.current.pasteImageFile(file);
+          };
+          // An Excalidraw file, or a PNG / SVG export holding a scene, lands as that scene;
+          // anything else pastes exactly as before.
+          if (pasteRef.current.canPasteScene && isExcalidrawFileCandidate(file)) {
+            void pasteRef.current.pasteExcalidrawFile(file, asImage);
             return;
           }
-          void pasteRef.current.pasteImageFile(chosen);
+          asImage();
           return;
         }
       }
@@ -345,6 +409,15 @@ export function useClipboard(deps: ClipboardDeps) {
       // event's data needs no permission prompt and arrives synchronously, so
       // the paste cannot land a frame later than the preventDefault that
       // claimed it.
+      // An Excalidraw copy, before our own payload (their envelopes cannot be confused).
+      const excalidraw = pasteRef.current.canPasteScene
+        ? excalidrawTextFromPaste(e.clipboardData ?? null)
+        : null;
+      if (excalidraw) {
+        e.preventDefault();
+        void pasteRef.current.pasteExcalidrawText(excalidraw);
+        return;
+      }
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
@@ -386,6 +459,16 @@ export function useClipboard(deps: ClipboardDeps) {
       const target = e.target as Element | null;
       if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
       if (!target.closest('[data-canvas-a11y-root]')) return;
+      const excalidraw = pasteRef.current.canPasteScene
+        ? excalidrawTextFromPaste(e.clipboardData ?? null)
+        : null;
+      if (excalidraw) {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditingId(null);
+        void pasteRef.current.pasteExcalidrawText(excalidraw);
+        return;
+      }
       const elements = parseElementsPayload(e.clipboardData?.getData('text/plain'));
       if (!elements) return;
       e.preventDefault();
@@ -403,5 +486,10 @@ export function useClipboard(deps: ClipboardDeps) {
   // in-app buffer only; a copy made in another window lives on the OS
   // clipboard, which can't be read synchronously while rendering a menu, and
   // Cmd+V still pastes it.
-  return { copySelection, pasteFromClipboard, hasClipboard: (clipboard?.length ?? 0) > 0 };
+  return {
+    copySelection,
+    pasteFromClipboard,
+    dropBoardFile,
+    hasClipboard: (clipboard?.length ?? 0) > 0,
+  };
 }

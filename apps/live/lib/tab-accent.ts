@@ -3,7 +3,7 @@
 // cursor helpers live in their own modules). Each tab's theme stroke is
 // reused on its pill to tie the bar visually to the tab content.
 
-import { isLightColor, shade, tint, type Tab } from '@livediagram/diagram';
+import { isLightColor, shade, tint, type Tab } from '@livediagram/document';
 import { getTheme } from './themes';
 
 // A theme that paints no stroke — Default, and any unthemed tab —

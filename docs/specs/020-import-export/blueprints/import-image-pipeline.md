@@ -206,8 +206,8 @@ browser); SVG decodes through an `<img>` on an object URL (revoked after load or
 resolves `null`. For `image/webp` it hands `createWebpEncoder` the canvas encode and
 `ctx.getImageData(0, 0, w, h)` as `readPixels`. Drawing uses `imageSmoothingQuality = 'high'`.
 
-`createBrowserImportImageSession({ ownerId, diagramId })`: `offline = !!diagramId &&
-isOfflineIdSync(diagramId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
+`createBrowserImportImageSession({ ownerId, documentId })`: `offline = !!documentId &&
+isOfflineIdSync(documentId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
 prepared type, dimensions and the source `name` as `originalName`; `toDataUrl` is `FileReader`.
 
 Importers depend on `index.ts` (the types, `attachImportImages`, `describeImportImageReport`,
@@ -218,7 +218,7 @@ Importers depend on `index.ts` (the types, `attachImportImages`, `describeImport
 
 No new persisted fields. A stored image sets the existing `ImageElement.imageId`, `naturalWidth`,
 `naturalHeight`. Cloud: a gallery row + R2 object through the existing endpoint. Offline: the
-`data:` URL lives in the tab body in IndexedDB and re-homes on Sync Diagram (existing
+`data:` URL lives in the tab body in IndexedDB and re-homes on Sync Document (existing
 `uploadEmbeddedImages`). No migration.
 
 ## Errors and edge cases
@@ -257,7 +257,7 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 - Encode of a 2048² canvas to WebP: ~50 to 150 ms on a laptop; 30 images ≈ 2 to 5 s plus upload.
 - WASM encoder, only without canvas WebP: one chunk (~20 KB) plus one `.wasm` (340 KB SIMD, 280 KB
   plain), fetched once per page. Never in the editor's first bundle (verified against the built
-  `diagram/placeholder.html`'s chunk list).
+  `document/placeholder.html`'s chunk list).
 - Hosted server cost per image: one D1 sha lookup, one totals query, one R2 put (new) or none.
 - Offline budget caps the tab body growth from one import at 8 MB.
 

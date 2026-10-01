@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-A third panel layout, next to **Floating** (the default) and **Minimal**
-([Canvas and palette](../008-canvas/canvas-and-palette.md)). It works on a phone too (see "On a phone"). The Palette becomes a single horizontal strip pinned
+One of the two panel layouts, next to **Floating** (the desktop default,
+[Canvas and palette](../008-canvas/canvas-and-palette.md)). It is the only layout on a phone (see "On a phone"). The Palette becomes a single horizontal strip pinned
 to the top centre of the canvas, the way Excalidraw's tool bar works:
 
 ```
@@ -22,7 +22,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
 - **Then the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
-- **Then the current category's first ten tiles**, icon-only, each with its
+- **Then the current category's first twelve tiles** (fewer on a narrow window, see "Decided in review"), icon-only, each with its
   hover card, shortcut letter, drag-to-place, theme tint and pressed state. They
   are the same tiles as the Palette's (`palette-tile-defs`, [Palette Favourites](../010-palette/palette-favourites.md)),
   rendered by the same `PaletteTile`, so one change reaches both layouts.
@@ -42,44 +42,41 @@ search field, when the category has one, so typing filters straight away (a cate
 its catalogue a moment later focuses the field as soon as it appears); on a phone it does not,
 because focusing would raise the keyboard over the popover.
 
-More appears when the category has more than ten tiles, and always for
+More appears when the category has more than twelve tiles, and always for
 Favourites, Icons, Stickers, Technology and Behaviours, whose bodies carry
 more than tiles (search, group browsing, Edit / Reorder). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-For Icons / Stickers / Technology the strip's ten are the first ten of the
-catalogue in its own order, after any the user has used (below).
+For Icons / Stickers / Technology the strip's twelve are the first twelve of the
+catalogue in its own order.
 
-In the Favourites body, More shows no **Reorder / Edit** footer: the order
-is by use (below), so a hand-made one would be overridden on the next use.
-Its search results keep their favourite star, which is how a tile joins or
-leaves Favourites from this layout. The Floating Palette's Favourites body is
-unchanged.
+In the Favourites body, More keeps the **Reorder / Edit** footer, as the floating Palette has it:
+Favourites are in the order you set, in every layout.
 
-## Tiles by use
+## The strip's order and dividers
 
-Using a tile brings it to the **first slot** of the strip: it animates in
-there, the others slide right one, and the tile pushed past the last slot
-shrinks away and lives behind More until it is used again. Using a tile from
-More that wasn't on the strip does the same.
+The strip shows a category **in its own order**, always: the first tiles that fit, the rest behind
+More. **Using a tile never reorders it** (an earlier version brought each used tile to the front,
+which moved things under the pointer after every add; it is gone, its stored list with it).
 
-- **One recently-used list** of tile ids, most recent first, across every
-  category (`lib/toolbar-recent-tiles.ts`, capped at 40). Each category shows
-  its used tiles first, in that order, then the rest in the category's own
-  order. A tile used from another category, or not in this one, changes
-  nothing here.
-- **What counts as a use:** a click on a tile or a search-result row, Enter
-  on a Favourites search, a drag that lands on the canvas (one dropped
-  nowhere doesn't), and placing a glyph from the Icons / Stickers /
-  Technology bodies. Keyboard shortcuts don't: they don't go through the
-  strip.
-- **Toolbar layout only.** It is not the Favourites list: the floating
-  Palette and its Favourites order are untouched, and switching back finds
-  them as they were.
-- Per browser, in `localStorage` (`livediagram:v1:toolbar-recent-tiles`),
-  like the palette's other UI state. Not synced.
-- The More body for Favourites follows the same order, so the strip is
-  always the first tiles of what More shows.
+**Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
+
+- **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
+  the rest (Cloud to Bubble).
+- **Write**: Page, Text | Note, Annotation.
+- **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
+- **Build**: Mind node, Table | Lane, Frame, Timeline.
+- **Components**: the cards (Code, Checklist, Entity) | the website blocks.
+- **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
+- **Media**: Image | the embeds | Avatar.
+- **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
+- **Behaviour**: the Selection Mode buttons | everything else.
+- **Event Storming**: the notation | Hotspot.
+
+Favourites (your own set) and the Icons / Stickers / Technology catalogues have none. A category
+has two at most. A divider shows only between two tiles both on the strip. They take room: a
+category that fits whole with them shows them; one whose tiles fit only without them drops them
+before any tile; one that overflows shows one tile fewer, its dividers between those.
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
@@ -89,15 +86,13 @@ so a new page load starts on Favourites.
 
 There is no Explorer **panel** floating in a corner. A **menu button** (☰) in
 the top-left corner of the canvas toggles the real Explorer open as a
-popover hanging under it, and closed again. It goes through the dock's
-popover path (`handleDockButtonClick` with the button passed as its own
-anchor, `computeDockAnchor(..., 'button')`), so the popover hangs from the
-button's left edge instead of tucking against the right like the dock's do.
+popover hanging under it, and closed again. The popover hangs from the
+button's left edge (`computeDockAnchor(..., 'button')`).
 
-Layers and Activity open as **popovers over their bottom-row buttons**, as
-in Minimal ([Live app](live-app.md)): they are not corner panels here. Every other panel
-(Collaborate, AI, the minimap, Poll, Vote and the tool panels) behaves exactly
-as in **Floating**, docking in its corner. Layers and Activity render outside
+Layers, Activity and Collaborate open as **popovers over their bottom-row
+buttons** ([Live app](live-app.md)): they are not corner panels here. Every
+other panel (AI, the minimap, Poll, Vote and the tool panels) behaves exactly
+as in **Floating**, docking in its corner. Layers, Activity and Collaborate render outside
 the corner layer in this layout, since a popover positions against the
 canvas and a corner stack would move it.
 
@@ -108,40 +103,34 @@ are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The
 Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
-Activity popovers in every layout that has them ([Live app](live-app.md)). The Minimal dock's
-top-right popovers on desktop deliberately don't. The strip's dropdown menus are kept
+Activity popovers ([Live app](live-app.md)). The strip's dropdown menus are kept
 on screen sideways as well as vertically, whatever the trigger's position.
 
 ## The setting
 
-`panelLayout?: 'floating' | 'minimal' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
-Settings → Appearance → Layout as a three-way **Panel Layout** choice. It
-replaces the Minimal Panel Layout toggle. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
+`panelLayout?: 'floating' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
+Settings → Panels as a two-way **Panel Layout** choice. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
 offers the same choice, drawn with the same pictures, so a new user picks a
-layout on their first diagram.
+layout on their first document.
 
-- Missing → derived from the legacy `minimalPanels` flag, so nobody's layout
-  changes when this ships.
-- Writing it also writes `minimalPanels = layout === 'minimal'`, so any
-  reader of the old flag (and an older client on another device) shows the
-  toolbar layout as Floating, whose panels it keeps.
+- Missing → Floating on desktop, Toolbar on a phone.
+- A stored value the editor no longer knows (a legacy `'minimal'`) resolves
+  exactly like a missing one; so does the retired `minimalPanels` flag, which
+  is not part of the preferences and is ignored.
 - Telemetry: `UI`/`Changed` with the layout picked in the type,
-  `PanelLayoutFloating` / `PanelLayoutMinimal` / `PanelLayoutToolbar` (a
+  `PanelLayoutFloating` / `PanelLayoutToolbar` (a
   choice row, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), whether picked from the radios or the pictures.
 
 ## On a phone
 
-Toolbar works below `sm` too, and a phone in Toolbar gets the desktop
-chrome rather than the mobile dock ([Live app](live-app.md)): no top-right button bar, panels
-in their corners, Layers and Activity as popovers over their bottom-row
-buttons. Only
-Floating is still desktop only. **On a phone Floating resolves to Toolbar**
-(`resolvePanelLayout(prefs, { mobile: true })`), so Toolbar is the phone
-default: a user who never chose, or chose Floating, gets the strip there and
-Floating back on a desktop, since the stored value is untouched. A phone
-that picked Minimal keeps the button bar. The Settings row greys Floating
-out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome picker leaves Floating
-out ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
+**A phone always uses Toolbar** (`resolvePanelLayout(prefs, { mobile: true })`,
+below `sm`). It gets the same chrome as a desktop in Toolbar ([Live app](live-app.md)):
+panels in their corners, Layers, Activity and Collaborate as popovers over
+their bottom-row buttons. Floating is desktop only: a user who never chose, or
+chose Floating, gets the strip on a phone and Floating back on a desktop,
+since the stored value is untouched. The Settings row greys Floating
+out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome card shows no
+layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
 
 - **The menu button moves into the strip**, at its far left, before the
   selection mode. There is no room for a corner button and a strip side by
@@ -155,12 +144,17 @@ out ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
   stays.
+- **The top corner stacks start below the strip** (68px down rather than
+  the 16px inset), since the strip spans the width. A panel docked top-right,
+  such as the Collaborate banner, otherwise rendered underneath the strip
+  where it could not be reached. Without a strip (read-only, zen, the welcome
+  flow) the corners keep their inset.
 - Read-only visitors have no strip, so their menu button stays top-left.
-- The minimap stays off, as in every phone layout ([Minimap](../008-canvas/minimap.md)).
+- The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
 ## The setting's pictures
 
-The Panel Layout row draws all three layouts side by side, the current one
+The Panel Layout row draws both layouts side by side, the current one
 ringed, so the difference is visible before switching ([User preferences](user-preferences.md)).
 
 ## Layout details
@@ -179,7 +173,8 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 ## Motion
 
-- **A reorder animates** (`ToolbarStripRail`, FLIP): tiles that moved slide
+- **A change to the strip's tiles animates** (`ToolbarStripRail`, FLIP; a favourite added,
+  removed or reordered, or the window letting more or fewer tiles on): tiles that moved slide
   from their old slot to their new one over 200ms (the `short` token of [Motion](../004-interface-design/motion.md)), a tile new to the strip
   pops in, and the one pushed off the end pops out where it stood. Reduced
   motion collapses it to instant.
@@ -216,9 +211,24 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 ## Decided in review
 
 - **The strip opens on Favourites every time**, like the floating Palette
-  ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across diagrams.
-- **Ten tiles is enough** on desktop: the strip does not adapt to the
-  window width there. A phone's strip does (see "On a phone").
+  ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across documents.
+- **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
+  Favourites short). Below that, the strip shows as many as fit, **measured**
+  rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
+  More, dividers and padding, whatever they measure in the current category),
+  one tile's pitch, and the room the centred strip may take (the window less
+  the Explorer menu button on both sides; on a phone, less its gutters). The
+  rest is behind More. A longer category name or a new control keeps fitting
+  with no constant to update; an estimate stands in only for the first paint.
+- **The top corners give way to the strip.** When the strip reaches a panel
+  docked in a top corner, measured against the real corner stack
+  (`useStripCrowdsCorners`, re-checked as panels dock and the window
+  resizes), the top corner stacks start below the strip, 68px down, exactly
+  as they always do on a phone. Otherwise they keep their inset. Without it
+  a docked panel (the Laser panel, say) sat under the strip's right end and
+  could not be reached. A whiteboard's dock at the top gets the same
+  treatment ([Where the dock sits](../023-whiteboard/whiteboard.md#where-the-dock-sits)),
+  in every layout, its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried
@@ -226,13 +236,12 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels follow Floating**, not Minimal: they dock in their
-  corners rather than behind a top-right button bar. Layers and Activity are
-  the exception, popovers over their bottom-row buttons as in Minimal.
+- **The other panels follow Floating**: they dock in their corners. Layers,
+  Activity and Collaborate are the exception, popovers over their bottom-row
+  buttons.
 
 ## Help
 
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
 Palette Settings) explains the strip, More, the menu button and how it
-fits a phone, with two figures. The Panel Layout settings row links to it, and it
-links on to Minimal Panels.
+fits a phone, with two figures. The Panel Layout settings row links to it.

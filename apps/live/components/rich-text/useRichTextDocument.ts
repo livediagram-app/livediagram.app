@@ -15,12 +15,13 @@
 // plain-text length === DOM textContent length and offsets are a string walk.
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
-import { normalizeRuns, type TextRun, runsPlainText } from '@livediagram/diagram';
+import { normalizeRuns, type TextRun, runsPlainText } from '@livediagram/document';
 import {
   dataAttrsForRun,
   domSelectionToOffsets,
   offsetsToDomRange,
   readRunsFromDom,
+  reassertSelection,
   reconcileTrailingNewline,
   selectRange,
 } from '@/components/rich-text/rich-text-dom';
@@ -105,8 +106,11 @@ export function useRichTextDocument({
     if (el) {
       runsRef.current = readRunsFromDom(el);
       // Keep the trailing-newline sentinel in step: typing past a trailing
-      // newline drops it, an Enter at the end adds it.
-      reconcileTrailingNewline(el);
+      // newline drops it, an Enter at the end adds it. When it adds it, the
+      // caret is re-set: WebKit settled a caret after a newline at the very
+      // end back before it (there was no empty line yet), so the next
+      // keystroke landed on the line above.
+      if (reconcileTrailingNewline(el)) reassertSelection();
     }
     refreshActive();
   };

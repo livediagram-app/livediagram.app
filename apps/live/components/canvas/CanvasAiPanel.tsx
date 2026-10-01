@@ -5,7 +5,6 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { CanvasProps } from './Canvas.types';
-import type { DockAnchor } from '@/lib/canvas-chrome';
 
 // The floating AI Assistant panel (docs/specs/007-editor/ai-assistance.md + /63 docking), lifted out
 // of useCanvasChromePanels: the MovablePanel shell with the settings
@@ -17,20 +16,12 @@ export function CanvasAiPanel({
   stackBelowY,
   tabName,
   settings,
-  minimalPanels,
-  activeMobilePanel,
-  activeDockAnchor,
-  onMobileClose,
 }: {
   aiPanel: NonNullable<CanvasProps['aiPanel']>;
   wiring: ReturnType<ReturnType<typeof useCornerDocking>['panelWiringFor']>;
   stackBelowY: number | undefined;
   tabName: string;
   settings: UserPreferences;
-  minimalPanels: boolean;
-  activeMobilePanel: string | null;
-  activeDockAnchor: DockAnchor | undefined;
-  onMobileClose: () => void;
 }) {
   return (
     <MovablePanel
@@ -46,10 +37,6 @@ export function CanvasAiPanel({
       // popover that used to carry it, and the two AI preferences inside it,
       // moved to the Settings dialog (docs/specs/007-editor/user-preferences.md).
       onReset={wiring.onReset}
-      mobileOpenOverride={activeMobilePanel === 'ai'}
-      mobileDockAnchor={activeDockAnchor}
-      forceDockMode={minimalPanels}
-      onMobileClose={onMobileClose}
     >
       <AiPanelContent
         contextElements={aiPanel.contextElements}

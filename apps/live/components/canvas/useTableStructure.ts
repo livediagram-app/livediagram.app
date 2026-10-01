@@ -9,7 +9,7 @@ import {
   setCellStyle,
   type TableCellStyle,
   type TableElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 type TableMenu = { axis: 'col' | 'row'; index: number; x: number; y: number } | null;

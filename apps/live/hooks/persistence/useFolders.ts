@@ -9,11 +9,12 @@ import {
   type Folder,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 
 // Folder state + the three mutation handlers (create / rename /
 // delete). Three pages used to inline this triplet by hand:
 //
-//   - apps/live/app/diagram/[id]/editor-page.tsx
+//   - apps/live/app/document/[id]/editor-page.tsx
 //   - apps/live/app/new/page.tsx
 //   - apps/live/app/explorer/page.tsx
 //
@@ -22,7 +23,7 @@ import { track } from '@/lib/telemetry';
 // re-parents children on delete; the original /explorer version
 // just dropped them, etc.). The hook is the single source of
 // truth — callers that need a separate effect (e.g. re-bucketing
-// diagrams whose folder vanished) chain their own state update
+// documents whose folder vanished) chain their own state update
 // before delegating to `deleteFolder`.
 //
 // `ownerId` may be `null` while auth bootstraps. The hook treats a
@@ -93,6 +94,11 @@ export function useFolders(
   useEffect(() => {
     if (autoLoadOwner) void load(autoLoadOwner);
   }, [autoLoadOwner, load]);
+  // Folders made, renamed or moved in Google Drive (docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Other views follow").
+  useAfterDriveChange(() => {
+    if (ownerId) void load(ownerId);
+  }, !!ownerId);
 
   const createFolder = useCallback(
     async (input: { name?: string; parentId?: string | null }) => {

@@ -1,7 +1,7 @@
 # Assigned actions
 
-**Status: implemented.** Assign a piece of work to a teammate directly from a
-diagram element: a new **Assign Action** tile attaches a named, described,
+**Status: implemented.** Assign a piece of work to a teammate directly from an
+element on the canvas: a new **Assign Action** tile attaches a named, described,
 assigned action to the element, optionally emailing the assignee. To make
 room for it the context menu's collaboration band splits in two:
 **Collaborate** (Assign Action + Comments, the people tiles) and
@@ -21,8 +21,13 @@ unassign someone's work.
 ## 1. Data model
 
 At most **one action per element** (mirrors note + link, keeps the panel,
-badge, and popover 1:1 with elements). A new optional field on boxed
-elements in `packages/diagram`:
+badge, and popover 1:1 with elements). The one exception is the **Action
+panel** ([The Action Panel](action-panel.md)), a card whose job is to hold a list: it carries
+`actions: ElementAction[]`. Everything that reads actions goes through
+`elementActions(el)`, which returns that list or the single `action` as a
+one-item list, so the Collaborate panel, the Activity page, the timeline and
+the email treat both the same. A new optional field on boxed elements in
+`packages/document`:
 
 ```ts
 interface ElementAction {
@@ -58,7 +63,7 @@ interface ElementAction {
 action?: ElementAction;
 ```
 
-**No email address is ever stored in the element blob.** Diagrams travel
+**No email address is ever stored in the element blob.** Documents travel
 (share links, embeds, exports); the blob carries only the Clerk `userId` /
 membership `memberId` and a display name, all already visible to anyone the
 assignee collaborates with. The assignee's address is resolved server-side
@@ -97,7 +102,7 @@ unchanged. The **Assign Action** tile:
 - **Always shows, for everyone.** The feature is not sign-in gated:
   a signed-out user (or a Clerk-less self-host, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
-  every session, so actions double as personal to-dos on the diagram.
+  every session, so actions double as personal to-dos on the document.
   Only assigning to OTHER people needs an account: teammates come from
   teams ([Teams](../013-workspace/teams.md)), so a signed-out picker shows Myself alone plus a
   gentle "sign in and join a team to assign teammates" nudge with the
@@ -112,12 +117,12 @@ Clicking it opens the **Assign Action dialog** (its own component under
 
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
-  of the team whose shared library holds this diagram** (`GET
-/api/teams/<diagramTeamId>` members, via the existing api-client
+  of the team whose shared library holds this document** (`GET
+/api/teams/<documentTeamId>` members, via the existing api-client
   helper), each row showing the member's avatar bubble and display name
   (email local-part fallback, as TeamPane does). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
-  diagram's team, so they almost certainly can't open the diagram to
+  document's team, so they almost certainly can't open the document to
   complete the action — offering them just manufactures the §4 access
   warning. **Invited-but-not-joined members ARE offered** (with the same
   amber "Invited" badge the team pane uses): work often gets divided up
@@ -129,14 +134,14 @@ Clicking it opens the **Assign Action dialog** (its own component under
   which needs an account to ask about. **Myself is preselected** when
   creating, so the common self-assignment is zero-click and handing off
   is one.
-  Myself-only states, each with its own nudge: a **personal diagram**
-  (no team library) offers the fix INLINE — "Move this diagram into a
+  Myself-only states, each with its own nudge: a **personal document**
+  (no team library) offers the fix INLINE — "Move this document into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared diagrams](../013-workspace/team-shared-diagrams.md) placement move (`PUT /api/diagrams/<id>/folder`
+  performs the [Team shared documents](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
   with the team id, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
-  signed-in user **not a member of the diagram's team** (a share-link
+  signed-in user **not a member of the document's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).
   The §4 access check stays as belt-and-braces on the picked assignee.
@@ -159,7 +164,7 @@ like comment mutations in `useEditorComments`), and, when the checkbox was
 ticked, fires the notify request (§4) fire-and-forget: email failure must
 never block or roll back the assignment.
 
-Assigning requires **edit access** to the diagram: the action rides the tab
+Assigning requires **edit access** to the document: the action rides the tab
 blob. View-role visitors see actions read-only (§7).
 
 ## 3. On-canvas surface: badge + popover
@@ -197,7 +202,7 @@ A new **signed-in-only** endpoint on the api worker (Clerk JWT required,
 
 ```
 POST /api/teams/<teamId>/notify-action
-body: { assigneeUserId?, assigneeMemberId?, diagramId, actionName, description? }
+body: { assigneeUserId?, assigneeMemberId?, documentId, actionName, description? }
 ```
 
 The server, not the client, establishes every fact that matters:
@@ -206,8 +211,8 @@ The server, not the client, establishes every fact that matters:
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
-- verifies the caller can access `diagramId` (owner, team library, or
-  shared-with), and reads the **diagram name from D1**, not the body;
+- verifies the caller can access `documentId` (owner, team library, or
+  shared-with), and reads the **document name from D1**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
@@ -220,34 +225,34 @@ The server, not the client, establishes every fact that matters:
 
 Then it sends the **action-assigned** email (new template in
 `email/templates.ts`, dispatcher in `email/notifications.ts` following the
-`notifyDiagramJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
-assigned you an action on _{diagram name}_", the action name, the first
-~200 characters of the description, and a CTA linking to the diagram. All
-user-influenced strings (action name, description, diagram name, assigner
+`notifyDocumentJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
+assigned you an action on _{document name}_", the action name, the first
+~200 characters of the description, and a CTA linking to the document. All
+user-influenced strings (action name, description, document name, assigner
 name) are HTML-escaped. The content stays within [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
-or a diagram/team fact the two already share.
+or a document/team fact the two already share.
 
 **Invited-assignee caveat:** the panel's / popover's "mine" match is by
 `userId`, so an action assigned to a not-yet-identified invitee (null
 `userId`) renders by name but won't join their Mine view even after they
-accept — acceptable v1: the action is still on the board, and reassigning
+accept — acceptable v1: the action is still on the canvas, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 
-**Access caveat:** assigning is allowed on any diagram the assigner can
+**Access caveat:** assigning is allowed on any document the assigner can
 edit, including ones the assignee cannot open. The dialog does a REAL
 check rather than guessing: picking an assignee fires
-`GET /api/teams/<teamId>/access-check?assigneeUserId=&diagramId=`, which
+`GET /api/teams/<teamId>/access-check?assigneeUserId=&documentId=`, which
 applies the same gates as notify-action (caller + assignee joined members
-of the team, caller can access the diagram, 404s that never probe) and
+of the team, caller can access the document, 404s that never probe) and
 answers `{ canAccess }` from the three legs the server can actually see —
-the assignee owns the diagram, is a joined member of the diagram's
+the assignee owns the document, is a joined member of the document's
 team-library team, or has previously opened it through a share link
 (`shared_with`). Only a definite "no" shows the hint ("{name} can't open
-this diagram yet: share it or move it to the team library"); while the
+this document yet: share it or move it to the team library"); while the
 check is in flight nothing shows, and if it errors the dialog falls back
-to the old heuristic (picked team ≠ the diagram's team → hedged "may not
+to the old heuristic (picked team ≠ the document's team → hedged "may not
 be able to open" wording). Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
 than a dead CTA.
@@ -255,47 +260,82 @@ than a dead CTA.
 ## 5. The Collaborate Panel
 
 ONE docked panel ([Panel corner docking](../007-editor/panel-docking.md)) for both ways work gets discussed / divided
-on a diagram — it replaced the separate Comments and Actions panels,
+on a document — it replaced the separate Comments and Actions panels,
 which crowded the same corner:
 
 - `PanelId` `'collaborate'` in `lib/panel-layout.ts` (replacing the old
   `'comments'` + `'actions'` ids; stored layouts naming those are
   dropped by the normaliser and the merged panel takes its default
-  corner), default corner `top-right` stacked under the Palette;
-  `CollaboratePanel.tsx` under `components/panels/` on `MovablePanel`,
-  collapsible, default-collapsed, lazily imported and mounted from
-  `useCanvasChromePanels.tsx`.
-- **Mounted whenever the active tab has at least one comment thread OR
-  one action** (open or not) — nothing to collaborate on, no panel.
-  The same gate adds a **Collaborate** button to the mobile /
-  minimal-layout dock ([Live app](../007-editor/live-app.md) "Mobile chrome"), opening the panel as
-  a popover — the panel is not desktop-only. An
-  **Open / Resolved segmented filter** (with a count on each side)
-  switches the list: **Open** = open actions + unresolved comment
-  threads; **Resolved** = completed actions + RESOLVED comment threads,
-  which now surface here instead of hiding entirely (the thread still
-  reopens from its element badge). It lands on Open, or Resolved when
-  nothing is open, and each side has a quiet empty state. To the LEFT of
-  the segmented control sits a compact **kind filter** button cycling
-  All → Comments → Actions (funnel glyph for All; the kind glyph,
-  brand-tinted, while narrowed) — the Open/Resolved counts and empty
-  states follow the active kind.
-- Rows (the `actionRowsFromElements` + `commentRowsFromElements`
-  derivations, both in `CollaboratePanel.tsx`; comment rows carry a
-  `resolved` flag) share ONE anatomy: a **kind glyph** far left (the
-  action clipboard / comment bubble, so the mixed list scans by type),
-  the **name + one-line description** in the middle (action name over
-  its element label, struck through once done; element label over the
-  latest comment preview, dimmed once resolved), and the **person** far
-  right — an avatar bubble (brand-tinted when the action is **yours**,
-  whose rows sort first; the comment author's colour otherwise) sitting
-  above the relative time, with the name (and the thread's comment
-  count) on the avatar's hover card rather than spent inline.
-  Everything interleaves newest-first on its own timestamp (an action's
-  createdAt, a thread's latest comment).
-- **Row click selects the element and opens its matching popover**
-  (comment thread / action). The panel header shows the OPEN count in
-  the brand-coloured pill (hidden at zero).
+  corner), default corner `bottom-right` (only its reset target: it always
+  renders as a popover); `CollaboratePanel.tsx` under `components/panels/` on
+  `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
+- **It lives behind a button in the bottom-right cluster.** A
+  **Collaborate** button (speech-bubble glyph) sits **right after the Layers
+  button**, in every layout ([Layers](../006-document/layers.md) is the model). It shows the tab's
+  **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
+  zero). Pressing it opens the panel as a **popover hanging above it**
+  (`computeDockAnchor(..., 'above')`) in **every** layout, desktop Floating
+  included; a second press or a press outside closes it, and it shares the
+  dock's one-open-at-a-time slot with Layers, Activity and the Explorer.
+  Floating does not dock it in a corner the way it docks Layers: a panel
+  this tall, docked bottom-right, ran up under the Palette on a short window,
+  and a popover never meets another corner. It renders outside the corner
+  layer for the same reason Toolbar's cluster popovers do.
+- **The button shows only when it is relevant: the active tab has at least
+  one comment thread OR one action**, open or resolved. Nothing to
+  collaborate on, no button and no panel. Unlike Layers it is there for a
+  **view-role** visitor too (they read threads and answer them); it hides in
+  zen and during the welcome flow like the rest of the cluster ([Live app](../007-editor/live-app.md) "Mobile chrome").
+
+**Settings › Panels › Collaborate › Enable Collaborate Panel** (`collaboratePanelEnabled`,
+[User preferences](../007-editor/user-preferences.md)) turns the panel and its cluster button off, even while
+the tab has threads or actions. Comments and actions keep working from the elements.
+
+### The look
+
+The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Q&A board](qa-board.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
+
+- **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero. It no longer floats in the middle of the header.
+- **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.
+- **Kind chips.** Under the segmented control, three small chips: **All**, **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow. (They replace an unlabelled funnel button that cycled through three hidden states.)
+- **Sections.** In the Open view, rows assigned to you lead under a **For You** label, and everything else follows under **Everything Else**. The labels show only when both groups have rows; a single group needs no heading.
+- **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the card and popover use, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
+- **Comment rows** lead with a bubble disc tinted in the latest author's colour, carrying the thread's comment count. The body is the element label over the latest comment, prefixed with its author's first name ("Priya: Agreed, let's queue it"), clamped to two lines, and the relative time sits top-right.
+- **Rows** are rounded, tinted on hover, fully keyboard reachable (the row is a button; the check is its own button with a label naming the action), and slide in on a short stagger (`stagger-enter`).
+- **Row click goes to the conversation.** For an ordinary element it
+  selects the element and opens its matching popover (comment thread /
+  action). For an element that **is** the conversation, a
+  [Comment panel](comment-pin.md) (`comment-pin`) or an [Action panel](action-panel.md) (`action-card`),
+  it selects the card and **scrolls the canvas to centre it** instead: the
+  card already shows the thread or the action, so a popover beside it would
+  only repeat it. As a popover the panel closes once a row is clicked, so it
+  never covers where the click took you.
+- **Density.** Rows breathe: 12px horizontal and 10px vertical padding, a
+  6px gap between rows and 12px between sections, the body at a relaxed
+  line height (the title 13px over a 11px meta line with 3px between), and
+  the controls sit 10px apart. The rows scroll inside the panel past
+  `min(26rem, 50vh)` so it never grows up into the Palette's corner, while
+  the switch and chips stay put. It is an 18rem side panel (16rem before, which
+  the looser rows would have squeezed).
+
+### Empty states
+
+A glyph in a soft brand disc, a Title Case heading, and one line:
+
+| View                 | Heading              | Line                                                             |
+| -------------------- | -------------------- | ---------------------------------------------------------------- |
+| Open, everything     | All Caught Up        | Nothing open on this tab. New comments and actions show up here. |
+| Open, comments       | No Open Comments     | Every thread on this tab is resolved.                            |
+| Open, actions        | No Open Actions      | Every action on this tab is done.                                |
+| Resolved, everything | Nothing Resolved Yet | Finished actions and resolved threads collect here.              |
+| Resolved, comments   | No Resolved Comments | Resolved threads collect here.                                   |
+| Resolved, actions    | No Completed Actions | Finished actions collect here.                                   |
+
+The panel has no loading or error state of its own: its rows derive synchronously from the tab's elements, and it does not mount until there is something to list.
+
+### Derivation
+
+Rows come from the `actionRowsFromElements` + `commentRowsFromElements` derivations in `CollaboratePanel.tsx` (comment rows carry a `resolved` flag). Everything interleaves newest-first on its own timestamp (an action's createdAt, a thread's latest comment), with your own actions first.
 
 ## 6. Preference + profile toggle
 
@@ -318,7 +358,7 @@ consent.
 
 ## 7. Permissions, guests, view role
 
-- **Assign / edit / complete / delete** require edit access to the diagram
+- **Assign / edit / complete / delete** require edit access to the document
   (the mutation is a tab write). Signed-out users can assign only to
   themselves (their guest participant id); assigning to teammates needs
   the signed-in team picker. Every edit-role collaborator can complete or
@@ -356,13 +396,13 @@ enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
-- ~~A cross-diagram "my actions" inbox~~ — shipped as the Explorer's
+- ~~A cross-document "my actions" inbox~~ — shipped as the Explorer's
   **Activity** page ([Activity page](../013-workspace/activity-page.md)), exactly the way this bullet predicted:
   a D1 projection (`collab_actions`) written beside every tab save,
   with the per-element blob still the source of truth.
-- Due dates, priorities, more than one action per element, and multiple
-  assignees.
-- Auto-sharing the diagram with the assignee on assign (§4 caveat).
+- Due dates, priorities, more than one action on an ordinary element (an
+  Action panel is the place for a list), and multiple assignees.
+- Auto-sharing the document with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).
 - Reminder / nag emails; exactly one send per assignment or reassignment
   with the box ticked, nothing recurring.

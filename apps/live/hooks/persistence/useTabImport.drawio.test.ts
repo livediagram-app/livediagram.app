@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useTabImport } from './useTabImport';
 
@@ -33,7 +33,7 @@ function setup(tabs: Tab[]) {
   const deps = {
     tabs,
     ownerId: 'owner-1',
-    diagramId: null,
+    documentId: null,
     createTab: (name: string): Tab => ({ id: crypto.randomUUID(), name, elements: [] }),
     markTabLoaded: vi.fn(),
     activeId: tabs[0]!.id,
@@ -45,6 +45,7 @@ function setup(tabs: Tab[]) {
     setFormatSourceId: vi.fn(),
     setImportError: vi.fn(),
     requestFit: vi.fn(),
+    importScene: vi.fn(),
   };
   const { result } = renderHook(() => useTabImport(deps));
   return { deps, api: result.current, tabs: () => current };
@@ -60,7 +61,10 @@ describe('useTabImport, draw.io', () => {
     expect(deps.markTabLoaded.mock.calls.map(([id]) => id)).toEqual([tabs()[1]!.id, tabs()[2]!.id]);
     expect(deps.requestFit).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Tab', 'Imported', 'Drawio');
-    expect(outcome).toMatchObject({ status: 'done', report: { pages: 3, elements: 17 } });
+    // The shared report: every element of the three pages counted by kind, with what changed.
+    expect(outcome.status).toBe('done');
+    const scene = outcome.status === 'done' ? outcome.scene : undefined;
+    expect(Object.values(scene?.landed ?? {}).reduce((a, n) => a + (n ?? 0), 0)).toBe(17);
     // The page link on the first page points at the tab the second page became.
     const entry = tabs()[0]!.elements.find(
       (e) => 'label' in e && e.label === "Platform team's board",
@@ -98,7 +102,7 @@ describe('useTabImport, draw.io', () => {
     expect(progress).toHaveBeenLastCalledWith({ done: 1, total: 1 });
     expect(outcome).toMatchObject({
       status: 'done',
-      report: { source: 'drawio', images: { imported: 1, deduped: 0, placeholders: {} } },
+      images: { imported: 1, deduped: 0, placeholders: {} },
     });
   });
 });

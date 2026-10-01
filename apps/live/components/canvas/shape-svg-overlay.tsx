@@ -7,8 +7,8 @@ import {
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
-} from '@livediagram/diagram';
-import type { SVGAttributes } from 'react';
+} from '@livediagram/document';
+import type { CSSProperties, SVGAttributes } from 'react';
 import { useShapeSvgAnimation, type ShapeSvgAnimation } from './useShapeSvgAnimation';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
@@ -130,7 +130,7 @@ export function ShapeSvgOverlay({
     animation,
     fill,
   );
-  // The geometry lives in the shared table (@livediagram/diagram
+  // The geometry lives in the shared table (@livediagram/document
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
   // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see
@@ -191,6 +191,7 @@ export function ShapeSvgOverlay({
       className={svgClassName}
       viewBox={geometry?.viewBox ?? '0 0 100 100'}
       preserveAspectRatio={geometry?.preserveAspectRatio ?? 'none'}
+      style={geometry?.strokeInside ? strokeInsideBox(strokeWidth) : undefined}
       aria-hidden
     >
       {gradientDefs}
@@ -199,6 +200,17 @@ export function ShapeSvgOverlay({
       ))}
     </svg>
   );
+}
+
+// The svg box inset by half the stroke, so the outline's outer edge lands on
+// the element's edge like a CSS border (the geometry's strokeInside).
+function strokeInsideBox(strokeWidth: number): CSSProperties {
+  return {
+    left: strokeWidth / 2,
+    top: strokeWidth / 2,
+    width: `calc(100% - ${strokeWidth}px)`,
+    height: `calc(100% - ${strokeWidth}px)`,
+  };
 }
 
 // One table part as its SVG element.

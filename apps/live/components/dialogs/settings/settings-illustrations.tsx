@@ -18,14 +18,13 @@ import {
 
 // Small before/after drawings for the settings whose effect is VISUAL, the
 // ones whose four-line description is really trying to describe a picture. A
-// reader deciding whether they want Minimal Panel Layout wants to see the two
-// layouts, not read about floating panels being replaced by a button bar.
+// reader deciding whether they want the Minimap wants to see it in place, not
+// read about where it docks.
 //
 // A drawing has to match the REAL editor or it is worse than no drawing, so
 // these are traced off the app at 1280x800 rather than invented: the window
 // has the header strip and the bottom tab bar, the Explorer fills the
-// top-left, the Palette the top-right, and the minimal layout's bar is ONE
-// short horizontal row of three buttons in the top-right corner.
+// top-left and the Palette the top-right.
 //
 // Each drawing shows both states and RINGS the one currently in force, so the
 // picture doubles as a readout of the switch beside it.
@@ -235,7 +234,7 @@ const ILLUSTRATIONS: Record<ToggleIllustrationId, Drawing> = {
     off: NoMapArt,
     on: MapArt,
     label:
-      'The editor without the minimap, and with a small canvas overview in the bottom-left corner.',
+      'The editor without the Map, and with a small canvas overview in the bottom-left corner.',
   },
   alignmentGuides: {
     off: NoGuidesArt,
@@ -252,7 +251,7 @@ const ILLUSTRATIONS: Record<ToggleIllustrationId, Drawing> = {
     off: <MiniMapArt dim={false} />,
     on: <MiniMapArt dim />,
     label:
-      'The minimap with the viewport rectangle alone, and with everything outside that rectangle shaded.',
+      'The Map with the viewport rectangle alone, and with everything outside that rectangle shaded.',
   },
 };
 

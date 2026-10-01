@@ -2,6 +2,8 @@
 
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -9,7 +11,7 @@ import { HoverCard, Glyph } from '@livediagram/ui';
 // itself to the toggle as the anchor), so it is the real Explorer, not a
 // second menu that could drift from it.
 //
-// `data-mobile-dock` is what MovablePanel's outside-click check skips, so
+// `data-dock-button` is what MovablePanel's outside-click check skips, so
 // pressing this button while the Explorer is open closes it via the toggle
 // rather than closing it on pointer-down and reopening it on click.
 //
@@ -25,6 +27,10 @@ export function ToolbarExplorerButton({
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
+  // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from
+  // the corner. Inline it sits in the strip, which is scaled already.
+  const scale = useUiScale('toolbar');
+  const scaled = !inline && scale !== 1;
   const button = (
     <button
       type="button"
@@ -47,9 +53,14 @@ export function ToolbarExplorerButton({
   );
   return (
     <div
-      data-mobile-dock=""
+      data-dock-button=""
       data-tour-id="dock-explorer"
       data-toolbar-menu=""
+      style={
+        scaled
+          ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
+          : undefined
+      }
       className={
         inline
           ? 'flex'
@@ -65,7 +76,7 @@ export function ToolbarExplorerButton({
       {open ? (
         button
       ) : (
-        <HoverCard title="Explorer" description="Your diagrams, folders and teams.">
+        <HoverCard title="Explorer" description="Your documents, folders and teams.">
           {button}
         </HoverCard>
       )}

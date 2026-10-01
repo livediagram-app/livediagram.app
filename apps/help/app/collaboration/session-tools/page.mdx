@@ -10,9 +10,9 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/session-tools/',
 });
 
-<ArticleLayout title="Session Tools" description="A timer, dot-voting, and polls that turn a shared diagram into an interactive workshop board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
+<ArticleLayout title="Session Tools" description="A timer, dot-voting, and polls that turn a shared document into an interactive workshop board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
 
-Session tools make a shared diagram interactive for live workshops. There are three: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. All are run by the facilitator and synced to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
+Session tools make a shared document interactive for live workshops. There are three: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. All are run by the facilitator and synced to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
 
 <Figure caption="A shared Timer pill above a dot-voting tally: two of the session tools on one canvas.">
   <SessionTools />
@@ -22,7 +22,7 @@ Session tools make a shared diagram interactive for live workshops. There are th
 
 The tools all live together under one **Collaborate** row at the end of the tab's menu. Open it and a side panel appears with a switcher across the top, **Timer**, **Vote**, and **Poll**, and the chosen tool's controls underneath. A green dot on a switcher tab means that tool is running right now (amber means it is set up but paused or closed), and the panel opens on whatever is running, so coming back mid-session lands you on the thing you need to drive.
 
-The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again. **Polls are the exception**: they are never saved to the diagram, and vanish completely when you end one. While a poll runs, anyone who joins late or reloads is still asked.
+The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again. **Polls are the exception**: they are never saved to the document, and vanish completely when you end one. While a poll runs, anyone who joins late or reloads is still asked.
 
 - **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown as a floating pill at the top of the canvas. See [The Timer](/help/collaboration/session-tools/timer/).
 - **Dot-voting** lets each participant spend a budget of dots on the elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
@@ -30,7 +30,7 @@ The timer and the vote are scoped to a single tab, so different tabs can run dif
 
 ## Who can do what
 
-Session tools follow the diagram's roles automatically. Anyone with an **edit** link can run the controls and take part: starting the timer, casting votes. **View-only** visitors can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot. Typically the facilitator and participants share an edit link, while observers follow a view link.
+Session tools follow the document's roles automatically. Anyone with an **edit** link can run the controls and take part: starting the timer, casting votes. **View-only** visitors can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot. Typically the facilitator and participants share an edit link, while observers follow a view link.
 
 **A vote is narrower still.** Edit access lets you cast dots, but only the person who _started_ the vote can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
 

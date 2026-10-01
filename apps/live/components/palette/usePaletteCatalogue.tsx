@@ -1,4 +1,4 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -19,10 +19,9 @@ import type { PaletteAddHandlers } from './palette-add-handlers';
 // layout's top strip (docs/specs/007-editor/toolbar-layout.md) are two renderings of one palette rather
 // than two palettes that drift.
 //
-// `onDrawArmed` / `onMobileClose` are the host's hooks into "a tile was
-// used": the dock reopens after a draw lands and closes its popover, the
-// strip closes its More popover. Every add-handler calls both, so a tile
-// behaves the same from any category and any surface.
+// `onTileUsed` is the host's hook into "a tile was used": the strip closes
+// its More popover. Every add-handler calls it, so a tile behaves the same
+// from any category and any surface.
 type Deps = Pick<
   CommandPaletteProps,
   | 'canvasTool'
@@ -33,8 +32,7 @@ type Deps = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
-  | 'onDrawArmed'
-  | 'onMobileClose'
+  | 'onTileUsed'
 > &
   PaletteAddHandlers;
 
@@ -69,8 +67,7 @@ export function usePaletteCatalogue({
   pendingDraw,
   esBoard,
   esBoardControls,
-  onDrawArmed,
-  onMobileClose,
+  onTileUsed,
 }: Deps) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
@@ -86,34 +83,28 @@ export function usePaletteCatalogue({
   useEffect(() => {
     if (isMobile && canvasTool === 'spotlight') onSetCanvasTool('select');
   }, [isMobile, canvasTool, onSetCanvasTool]);
-  // On mobile (dock popover mode) close the palette after adding a
-  // shape/tool so the user can draw immediately without dismissing manually.
-  // Draw-to-place tools also signal onDrawArmed so the parent can reopen the
-  // palette once the draw lands; immediate drops (icon/table/...) don't.
+  // Close a popover palette after adding a shape / tool so the user can draw
+  // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
   // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
   // rather than dropped — this adapter silently swallowing it is what made
   // every session tile place a timer and every reaction tile place confetti.
   const armed = (fn: () => void) => () => {
     fn();
-    onDrawArmed?.();
-    onMobileClose?.();
+    onTileUsed?.();
   };
   const addShape = (
-    kind: import('@livediagram/diagram').ShapeKind,
+    kind: import('@livediagram/document').ShapeKind,
     opts?: {
-      session?: import('@livediagram/diagram').SessionTool;
-      reaction?: import('@livediagram/diagram').Reaction;
-      mode?: import('@livediagram/diagram').SelectionMode;
-      estimateScale?: import('@livediagram/diagram').EstimateScale;
+      session?: import('@livediagram/document').SessionTool;
+      reaction?: import('@livediagram/document').Reaction;
+      mode?: import('@livediagram/document').SelectionMode;
+      estimateScale?: import('@livediagram/document').EstimateScale;
     },
   ) => armed(() => onAddShape(kind, opts))();
-  // Icons arm the draw gesture too (they ride the shape intent carrying the
-  // glyph id), so they signal onDrawArmed like the sticker below — without it
-  // the mobile palette never reopened after an icon landed.
+  // Icons, stickers and tech icons arm the draw gesture too (they ride the
+  // shape intent carrying the glyph id).
   const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
-  // Draw-armed like a shape: a sticker taps or drags to place, so the
-  // mobile dock reopens the palette once the drop lands.
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
   const addText = armed(onAddText);
@@ -121,25 +112,21 @@ export function usePaletteCatalogue({
     armed(() => onAddSticky(fill, esKind))();
   const addTable = armed(onAddTable);
   // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
-  // fixed 44x44 marker has no box to draw, so there is no armed gesture for
-  // the mobile dock to wait on.
-  const addAnnotation = () => {
-    onAddAnnotation();
-    onMobileClose?.();
-  };
+  // fixed 44x44 marker has no box to draw.
+  const addAnnotation = armed(onAddAnnotation);
   const addLinkCard = armed(onAddLinkCard);
   const addVideo = (provider?: EmbedProvider) => armed(() => onAddVideo(provider))();
-  // Components arm the draw gesture (tap-or-drag), so they signal onDrawArmed
-  // like shapes do (so the mobile palette reopens once the draw lands) and
-  // close the mobile dock so the canvas is clear to draw on.
-  const addArrow = armed(onAddArrow);
+  // Components arm the draw gesture (tap-or-drag) and close a popover
+  // palette so the canvas is clear to draw on.
+  const addArrow = (ends?: import('@livediagram/document').ArrowEnds) =>
+    armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
-  const addComponent = (kind: import('@livediagram/diagram').ComponentKind) => {
+  const addComponent = (kind: import('@livediagram/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
       banner: onAddBanner,
@@ -215,7 +202,7 @@ export function usePaletteCatalogue({
   // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  const tabs = paletteCategoryTabs({
+  const allTabs = paletteCategoryTabs({
     pendingDraw,
     tileActions,
     // Only on an ES board: the category renders elsewhere too (a favourited
@@ -235,6 +222,9 @@ export function usePaletteCatalogue({
     setTechQuery,
     techResults,
   });
+  // Event Storming is the ES board's own category (docs/specs/021-event-storming/event-storming.md),
+  // where it is the only one: an ordinary tab's category picker does not offer it.
+  const tabs = esBoard ? allTabs : allTabs.filter((t) => t.id !== 'event-storming');
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current

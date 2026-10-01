@@ -1,6 +1,6 @@
 # Multi-colour (rainbow) themes
 
-Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/diagram/src/themes-data.ts`) paint every element one colour — a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the diagram's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
+Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/document/src/themes-data.ts`) paint every element one colour — a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the diagram's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
 
 ## What they are
 
@@ -27,12 +27,12 @@ The catalogue ships five multi-colour themes, all extra (grouped under the picke
 
 ## How a branch is decided
 
-The diagram model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Diagram structure](../006-diagram/diagram-structure.md), `Endpoint.kind === 'pinned'`). `packages/diagram/src/hierarchy.ts` derives branches from them:
+The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
 
 1. Each arrow whose **both** endpoints pin to **boxed** elements defines a directed edge `from → to` (parent → child). Free-floating arrows, arrows pinned to another arrow or to an element no longer on the tab, and self-loops contribute nothing.
 2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the centre of a mind map, the CEO of an org chart). Roots get the sentinel `ROOT_BRANCH`.
 3. Each root's **direct children** seed a fresh branch index, in document order, and that index propagates down the whole subtree (a depth-first walk). So a top-level limb of a mind map and all its sub-topics share one hue. Shared/diamond descendants keep the first index that reaches them.
-4. **Loose** elements — boxed elements no pinned arrow touches — each take the next branch index in document order. This means a flat board with no hierarchy (scattered shapes, a kanban) still gets rainbow variety rather than collapsing to one colour. Loose elements continue the same counter as the root branches, so once the palette wraps a loose element can share a limb's hue; that is accepted, since any fixed palette repeats.
+4. **Loose** elements — boxed elements no pinned arrow touches — each take the next branch index in document order. This means a flat canvas with no hierarchy (scattered shapes, a kanban) still gets rainbow variety rather than collapsing to one colour. Loose elements continue the same counter as the root branches, so once the palette wraps a loose element can share a limb's hue; that is accepted, since any fixed palette repeats.
 5. **Rootless** elements — in the graph but unreachable from any root, as in a loop `A → B → C → A` — take the trunk colour. A loop has no natural limb to name.
 6. **Arrows** themselves take the colour of the branch they feed _into_ (their `to` element's branch), falling back to the `from` element's branch, then the trunk — so a connector matches the limb it draws.
 
@@ -40,7 +40,7 @@ The walk is a pure function over the element list, so it is unit-tested without 
 
 ## Where it applies
 
-Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `packages/diagram/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `packages/diagram/src/themes.ts`:
+Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `packages/document/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `packages/document/src/themes.ts`:
 
 - `recolourElementsForTheme(elements, theme)` — used when a template or Markdown import is painted with a theme.
 - `switchThemeElements(elements, prev, next)` — the Theme accordion / welcome picker "apply a theme" path. Preserves a field the user hand-customised away from the previous theme, same per-field rule as the single-colour `switchThemeElement`.
@@ -64,4 +64,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetr
 
 ## Counts
 
-The catalogue ships **26 themes** (12 default + 14 extra), the extras including a Dark category (led by Default’s dark half, then Pine, Plum, Abyss, Espresso) and five multicolour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). It was 27 until Basic and Charcoal merged into the single, appearance-following **Default** scheme ([Live app](../007-editor/live-app.md)); diagrams saved against Charcoal are migrated to Default on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together.
+The catalogue ships **26 themes** (12 default + 14 extra), the extras including a Dark category (led by Default’s dark half, then Pine, Plum, Abyss, Espresso) and five multicolour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). It was 27 until Basic and Charcoal merged into the single, appearance-following **Default** scheme ([Live app](../007-editor/live-app.md)); documents saved against Charcoal are migrated to Default on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together.

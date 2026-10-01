@@ -1,4 +1,4 @@
-// Theme taxonomy + metadata (docs/specs/007-editor/new-diagram-route.md): the per-theme description blurbs and the
+// Theme taxonomy + metadata (docs/specs/007-editor/new-document-route.md): the per-theme description blurbs and the
 // colour-temperament categories the picker buckets themes into. Pure catalogue
 // data plus its lookups, split out of themes.ts (the recolouring engine) — this
 // is consumed by the theme-picker UI, not by element recolouring, so it stands
@@ -6,7 +6,7 @@
 import type { ThemeId, ThemeCategory } from './themes';
 
 // Short, user-facing blurb per built-in theme, shown under the label on
-// the picker's theme cards (docs/specs/007-editor/new-diagram-route.md). A `Record<ThemeId, string>` so the
+// the picker's theme cards (docs/specs/007-editor/new-document-route.md). A `Record<ThemeId, string>` so the
 // compiler forces every theme to carry one: add a ThemeId without a line
 // here and the build fails, which is how this can't drift from THEMES.
 // Custom themes have no entry (their card shows just the saved name).

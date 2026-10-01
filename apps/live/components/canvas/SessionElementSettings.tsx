@@ -29,8 +29,8 @@ import {
   isPollStyle,
   type SessionButtonConfig,
   type TimerMode,
-} from '@livediagram/diagram';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+} from '@livediagram/document';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { TimerSetupBody } from '@/components/panels/session-studio/TimerSetupBody';
 import { VoteSetupBody } from '@/components/panels/session-studio/VotePane';
 import { PollComposerBody } from '@/components/panels/session-studio/PollPane';
@@ -112,11 +112,11 @@ function SessionPollSettings({
   onChange: (next: SessionButtonConfig) => void;
   onClose?: () => void;
 }) {
-  const { livePoll, pollCollaborators, diagramShareable, diagramTeamId } = useEditorContext();
+  const { livePoll, pollCollaborators, documentShareable, documentTeamId } = useEditorContext();
   return (
     <div className={BODY_CLASS}>
       <PollComposerBody
-        hasAudience={diagramShareable || !!diagramTeamId}
+        hasAudience={documentShareable || !!documentTeamId}
         collaborators={pollCollaborators}
         question={config.question ?? ''}
         onQuestionChange={(question) => onChange({ ...config, question })}

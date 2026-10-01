@@ -3,7 +3,7 @@ import { lucideCircleX, lucideFolder } from '@livediagram/icons/lucide';
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
 
-// Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-diagrams.md), the
+// Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-documents.md), the
 // Tabs label, the sign-in sparkle and the error-state crossed circle. The
 // marketing hero illustration draws the editor's chrome with these same
 // components, so the two can't drift apart.

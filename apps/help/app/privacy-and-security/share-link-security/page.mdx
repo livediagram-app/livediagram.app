@@ -9,20 +9,20 @@ export const metadata = helpMetadata({
   path: '/help/privacy-and-security/share-link-security/',
 });
 
-<ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared diagram and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared document and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-A share link is a capability: anyone holding the URL has its role. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the diagram and an expiry on each link. Both are set from the Share dialog, and both apply to everyone except you, the owner.
+A share link is a capability: anyone holding the URL has its role. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the document and an expiry on each link. Both are set from the Share dialog, and both apply to everyone except you, the owner.
 
-<Figure caption="The Share dialog carries both controls: an expiry on each link and a single password on the diagram.">
+<Figure caption="The Share dialog carries both controls: an expiry on each link and a single password on the document.">
   <ShareLinkControls />
 </Figure>
 
 ## Share password
 
-You can put a single password on a diagram. Once it is set, anyone opening any share link for that diagram must enter it before they can view, and the password rides along on every later request so writes stay gated too.
+You can put a single password on a document. Once it is set, anyone opening any share link for that document must enter it before they can view, and the password rides along on every later request so writes stay gated too.
 
-- **One password covers every link** on the diagram, not one password per link.
-- **You always bypass it.** The owner is identified directly, so you never get prompted on your own diagram.
+- **One password covers every link** on the document, not one password per link.
+- **You always bypass it.** The owner is identified directly, so you never get prompted on your own document.
 - **The owner can read it back.** The password is shown in the clear in the Share dialog so you can hand it to people and change it later.
 
 The goal is to stop people guessing or stumbling onto a share URL, not to provide cryptographic protection. Set, change, or remove it any time from the Share dialog's Password row. See [share passwords](/help/collaboration/sharing/share-passwords/) for the full walkthrough.

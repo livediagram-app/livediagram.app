@@ -7,7 +7,8 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { notifyApiWrite, resetApiWriteListeners } from '@/lib/api/write-signal';
-import { useAfterApiWrite } from './useAfterApiWrite';
+import { AFTER_WRITE_DELAY_MS, useAfterApiWrite } from './useAfterApiWrite';
+import { useAfterDriveChange } from './useAfterDriveChange';
 
 beforeEach(() => {
   resetApiWriteListeners();
@@ -50,7 +51,7 @@ describe('useAfterApiWrite', () => {
   it('hands a purge over immediately and still schedules the re-read', () => {
     const run = vi.fn();
     renderHook(() => useAfterApiWrite(run, { delayMs: 1000, minIntervalMs: 5000 }));
-    const purge = { sourceType: 'diagram', sourceId: 'd1' };
+    const purge = { sourceType: 'document', sourceId: 'd1' };
     notifyApiWrite({ purge });
     expect(run).toHaveBeenCalledWith({ purge });
     vi.advanceTimersByTime(1000);
@@ -65,5 +66,26 @@ describe('useAfterApiWrite', () => {
     vi.advanceTimersByTime(10_000);
     expect(run).not.toHaveBeenCalled();
     unmount();
+  });
+});
+
+describe('useAfterDriveChange (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow")', () => {
+  it('re-reads only for changes applied from Google Drive, not for ordinary writes', () => {
+    const run = vi.fn();
+    renderHook(() => useAfterDriveChange(run));
+    notifyApiWrite();
+    vi.advanceTimersByTime(10_000);
+    expect(run).not.toHaveBeenCalled();
+    notifyApiWrite({ drive: true });
+    vi.advanceTimersByTime(AFTER_WRITE_DELAY_MS);
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing while disabled', () => {
+    const run = vi.fn();
+    renderHook(() => useAfterDriveChange(run, false));
+    notifyApiWrite({ drive: true });
+    vi.advanceTimersByTime(10_000);
+    expect(run).not.toHaveBeenCalled();
   });
 });

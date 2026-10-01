@@ -1,15 +1,20 @@
 import {
   createFreehand,
   createShape,
+  isPenColourName,
+  nearestBorderStroke,
   recogniseShape,
-  simplifyPolyline,
+  type RecognisedShape,
   snapToArrowPoint,
   type ArrowElement,
   type Element,
+  type FreehandElement,
+  type PenColour,
+  type PenStroke,
   type Endpoint,
   type ShapeElement,
-} from '@livediagram/diagram';
-import type { Tab } from '@livediagram/diagram';
+} from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import type { MutableRefObject } from 'react';
 import { ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
 import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
@@ -17,6 +22,8 @@ import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
+import { simplifyPenStroke } from '@/lib/pen-smoothing';
+import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-preview';
 
 // WHAT A PEN STROKE BECOMES (docs/specs/008-canvas/two-pens.md's two pens, docs/specs/008-canvas/highlighter.md's highlighter).
 //
@@ -64,8 +71,11 @@ export function makeCommitFreehand({
   // the memory knows.
   styleNewElement?: <T extends Element>(el: T) => T;
 }) {
-  // Canvas-driven commit for the pen gesture. Receives the raw
-  // pointer-sample polyline in canvas coords and applies:
+  // Canvas-driven commit for the pen gesture. A whiteboard pen's raw samples land as they
+  // are, with their pressures and streamline (`ink`), and draw as the same perfect-freehand
+  // outline the stroke showed while drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"),
+  // so release reshapes nothing. The diagram pencil and the highlighter hand over raw pointer
+  // samples in canvas coords, which get:
   //   1. Ramer-Douglas-Peucker simplification with a tolerance
   //      that scales inversely with zoom so the visible jitter
   //      (~1 px on screen) is what gets smoothed, not absolute
@@ -78,19 +88,23 @@ export function makeCommitFreehand({
   //      doesn't trip the close), commit a closed path. Otherwise
   //      commit an open stroke.
   //   3. createFreehand to mint the element + commit.
-  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean) => {
+  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, ink?: PenInk) => {
     // Disarm on a gesture too short to be a stroke — unless the marker is
     // HELD, where a stray tap must not silently put the tool down.
+    // A whiteboard pen is held too (docs/specs/023-whiteboard/whiteboard.md "Pens").
+    const whiteboardPen =
+      pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
     const disarm = () => {
-      if (!holdingMarker) setPendingDraw(null);
+      if (!holdingMarker && !whiteboardPen) setPendingDraw(null);
     };
     if (editsBlocked || rawPoints.length < 2) {
       disarm();
       return;
     }
     const zoom = zoomRef.current ?? 1;
-    const tolerance = 1.2 / zoom;
-    const simplified = simplifyPolyline(rawPoints, tolerance);
+    // A whiteboard stroke keeps its raw samples; anything else is simplified here
+    // (lib/pen-smoothing).
+    const simplified = whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom);
     if (simplified.length < 2) {
       disarm();
       return;
@@ -120,6 +134,11 @@ export function makeCommitFreehand({
       return;
     }
 
+    if (whiteboardPen) {
+      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen, ink)]);
+      return;
+    }
+
     // Shape-recognition mode: try classifying the simplified
     // polyline before falling back to FreehandElement. Threshold
     // 0.40 leans hard toward "convert it". The bar is low on
@@ -132,7 +151,6 @@ export function makeCommitFreehand({
     // the more frustrating outcome, so erring toward conversion
     // is correct. Previous values: 0.72 (too strict), 0.55 (still
     // too strict per user feedback).
-    const RECOGNITION_THRESHOLD = 0.4;
     if (recogniseShapesMode) {
       const detected = recogniseShape(simplified);
       if (detected !== null && detected.confidence >= RECOGNITION_THRESHOLD) {
@@ -202,7 +220,7 @@ export function makeCommitFreehand({
     const elementToInsert: typeof base = {
       ...base,
       // Theme-aware stroke colour so a freehand sketch reads as
-      // part of the diagram. Falls back to the default in
+      // part of the canvas. Falls back to the default in
       // defaultStrokeColor when the theme has no override.
       ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
       ...(closed && theme.elementFill ? { fillColor: theme.elementFill } : {}),
@@ -212,5 +230,82 @@ export function makeCommitFreehand({
     setSelectedId(elementToInsert.id);
     setPendingDraw(null);
     track('Element', 'Added', 'Freehand');
+  };
+}
+
+type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
+// A whiteboard pen stroke's ink beyond its points: a pressure per point (a pen) and the streamline.
+// What the pen drew with, and, when the stroke locked to a recognised shape (held still, or Alt),
+// that shape as the pen reshaped it: it lands as is, never re-read from the stroke. `keepInk`: the
+// stroke was broken out of a shape (Alt, or the chip), so it lands as drawn, never recognised.
+export type PenInk = Pick<FreehandElement, 'streamline'> & {
+  pressures?: number[];
+  snapped?: RecognisedShape;
+  keepInk?: true;
+};
+
+// What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape
+// recognition"): with recognition on, a stroke that reads as a shape is the
+// clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
+// OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's
+// width. The main pen records no colour, so its marks follow the board; a named colour is recorded
+// by name (drawn in its version for each viewer's board), a custom one as its hex.
+// Style memory is skipped on purpose: a board's marks wear the pen, not the
+// remembered diagram style.
+function penColourFields(
+  colour: PenColour | null,
+): Pick<FreehandElement, 'penColour' | 'strokeColor'> {
+  if (colour === null) return {};
+  return isPenColourName(colour) ? { penColour: colour } : { strokeColor: colour };
+}
+
+function whiteboardStroke(
+  points: { x: number; y: number }[],
+  pen: WhiteboardPenIntent,
+  ink: PenInk | undefined,
+): Element {
+  const colour = penColourFields(pen.colour);
+  const stroke: PenStroke = {
+    points,
+    pressures: ink?.pressures,
+    width: pen.width,
+    streamline: ink?.streamline ?? 0,
+  };
+  // The same test on the same stroke the hold-still preview runs (lib/recognition-preview), so
+  // it is what lands.
+  const detected =
+    ink?.snapped ?? (pen.recognise && !ink?.keepInk ? recogniseBoardStroke(stroke) : null);
+  if (detected) {
+    track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
+    if (detected.kind === 'line') {
+      const from = detected.from ?? points[0]!;
+      const to = detected.to ?? points[points.length - 1]!;
+      return {
+        id: crypto.randomUUID(),
+        type: 'arrow',
+        from: { kind: 'free', ...from },
+        to: { kind: 'free', ...to },
+        arrowEnds: 'none',
+        strokeWidth: pen.width,
+        ...colour,
+      };
+    }
+    return {
+      ...createShape(detected.kind, detected.bbox.x, detected.bbox.y),
+      x: detected.bbox.x,
+      y: detected.bbox.y,
+      width: Math.max(16, detected.bbox.width),
+      height: Math.max(16, detected.bbox.height),
+      fillColor: 'transparent',
+      strokeWidth: nearestBorderStroke(pen.width),
+      ...colour,
+    };
+  }
+  track('Element', 'Added', 'Freehand');
+  return {
+    ...createFreehand(points, false, ink?.pressures),
+    penWidth: pen.width,
+    ...(ink?.streamline !== undefined ? { streamline: ink.streamline } : {}),
+    ...colour,
   };
 }

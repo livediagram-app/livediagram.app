@@ -19,8 +19,19 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   EllipsisIcon,
+  MaximizeIcon,
   MenuIcon,
+  MinimizeIcon,
   SearchIcon,
 } from './navigation';
 export { CircleXIcon, PrivateDotIcon, SharedDotIcon, SparkleIcon, TabsLabelIcon } from './status';
 export { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from './badges';
+export { FlowchartIcon, MarkerIcon, MindmapIcon } from './drawing-kinds';
+export {
+  ActivityIcon,
+  LayersStackIcon,
+  RedoIcon,
+  SettingsIcon,
+  ThemeBrushIcon,
+  UndoIcon,
+} from './editor-chrome';

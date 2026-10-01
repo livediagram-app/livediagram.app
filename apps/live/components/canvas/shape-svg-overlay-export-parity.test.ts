@@ -4,16 +4,16 @@ import {
   renderElementsToSvg,
   SHAPE_GEOMETRY_KINDS,
   type Tab,
-} from '@livediagram/diagram';
-import type { ShapeKind } from '@livediagram/diagram';
+} from '@livediagram/document';
+import type { ShapeKind } from '@livediagram/document';
 
 // Canvas and export must agree on which shapes have a real outline.
 //
 // `ShapeSvgOverlay` (this directory) draws the silhouettes the browser sees;
-// `svg-render-shapes.ts` in packages/diagram redraws them headlessly for the
+// `svg-render-shapes.ts` in packages/document redraws them headlessly for the
 // SVG / PNG / PDF exports, the Explorer thumbnails, the share image and the
 // inline images the MCP server returns. Both now draw from one geometry table
-// (shape-geometry.ts in packages/diagram), and shape-svg-overlay.test.tsx +
+// (shape-geometry.ts in packages/document), and shape-svg-overlay.test.tsx +
 // the package's shape-geometry.test.ts pin each side to its exact paths.
 //
 // This keeps the coarser, behavioural guard it started as: every kind the
@@ -48,10 +48,11 @@ describe('canvas silhouettes survive the headless export', () => {
     // been a false alarm — my initial version of this test failed frame /
     // phone / tablet / smartwatch, which are drawn correctly:
     //
-    //  1. A silhouette: `svg-render-shapes` emits a NESTED <svg> holding the
-    //     outline. Those four are device bezels built from rects, so looking
-    //     for a polygon or path would miss them; the nested element is the
-    //     signal that a silhouette ran at all.
+    //  1. A silhouette: `svg-render-shapes` emits a `<g data-silhouette>`
+    //     holding the outline (mapped into the box; it was a nested <svg>
+    //     until resvg's scaled strokes retired that). Those four are device
+    //     bezels built from rects, so looking for a polygon or path would miss
+    //     them; the group is the signal that a silhouette ran at all.
     //  2. Natively in `svgBoxed`: `diamond` is a bare <polygon>, `circle` an
     //     <ellipse>, with no nested svg.
     //
@@ -59,7 +60,7 @@ describe('canvas silhouettes survive the headless export', () => {
     // wrapper rect, which is exactly the "looked right on canvas, exported as
     // a box" symptom this guards.
     const drawn = (svg: string) =>
-      /<svg[\s\S]*<svg/.test(svg) || /<(polygon|path|ellipse)\b/.test(svg);
+      /<g data-silhouette=/.test(svg) || /<(polygon|path|ellipse)\b/.test(svg);
     const flattened = OVERLAY_KINDS.filter((kind) => !drawn(exportOf(kind as ShapeKind)));
     expect(flattened).toEqual([]);
   });

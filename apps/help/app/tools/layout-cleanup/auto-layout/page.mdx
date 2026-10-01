@@ -21,6 +21,7 @@ Auto Layout, also labelled Tidy Up, is the structural tidier. Rather than nudgin
 ## What it does
 
 - It reads the **arrow graph**, splits it into connected groups, and lays out each group, using a layered arrangement for flow-like diagrams and breaking cycles where the graph loops back on itself.
+- It keeps connections **readable**: each shape settles beside the shapes it connects to, an arrow that skips a level gets its own lane instead of running through the shape in between, and arrows leave and arrive on the sides facing the flow.
 - It **infers direction** from where your shapes roughly sit now, so the result follows the orientation you were already drawing in.
 - It works on the **whole active tab**. Shapes that aren't wired to anything (loose stickies, text, or images) pass through with their positions untouched, and spacing respects each element's size.
 - It is **origin-preserving**: the laid-out block stays pinned to the diagram's current top-left, so the result appears where you're already looking instead of jumping to the canvas origin.

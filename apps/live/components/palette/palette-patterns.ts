@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { type BackgroundPattern } from '@livediagram/diagram';
+import { type BackgroundPattern } from '@livediagram/document';
 import {
   BackgroundAuroraIcon,
   BackgroundBlankIcon,

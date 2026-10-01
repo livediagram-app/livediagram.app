@@ -3,7 +3,7 @@
 // first page replaces the active tab, every further page becomes a new tab
 // straight after it. Pure, so the hook commits it as ONE undo step.
 
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import type { ImportedPage } from '@/lib/drawio/import';
 import { mergeImportedTab } from '@/lib/import-merge';
 

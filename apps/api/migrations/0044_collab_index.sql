@@ -10,7 +10,7 @@
 -- shape: a table added later without moving the source of truth.
 --
 -- Keyed by TAB, not diagram: a tab can belong to several diagrams
--- (docs/specs/006-diagram/tab-diagram-many-to-many.md), so the diagram is resolved at read time through
+-- (docs/specs/006-document/tab-document-many-to-many.md), so the diagram is resolved at read time through
 -- `diagram_tabs`. That is also what makes deletion free — a tab's rows
 -- cascade with the tab, and a diagram's tabs cascade with the diagram.
 --

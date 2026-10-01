@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, TextInput } from '@livediagram/ui';
-import type { ElementAction } from '@livediagram/diagram';
+import type { ElementAction } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { TeamListItem } from '@/lib/api-client';
@@ -30,7 +30,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // The email offer is the shared iOS-style ToggleSwitch, default on, and
 // is hidden entirely for a self-assignment — you don't email yourself
 // about your own action. Picking a teammate also fires a REAL access
-// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this diagram" hint only shows
+// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this document" hint only shows
 // when the server says so.
 
 // What the per-open seed last filled the fields from; a new object per seed.
@@ -54,20 +54,23 @@ type AssignActionDialogProps = {
   // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
-  // The diagram's id + team-library team (null team for a personal
-  // diagram). Drive the access check: picking a teammate asks the server
-  // whether they can actually open this diagram (docs/specs/012-collaboration/assigned-actions.md §4).
-  diagramId: string | null;
-  diagramTeamId: string | null;
+  // The document's id + team-library team (null team for a personal
+  // document). Drive the access check: picking a teammate asks the server
+  // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
+  documentId: string | null;
+  documentTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a self-host
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
-  // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram into the
+  // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document into the
   // picked team's library root so teammates become assignable without an
   // Explorer round-trip. Resolves false on failure (the picker shows a
   // retry-able error line).
   onMoveToTeam?: (teamId: string) => Promise<boolean>;
   onSubmit: (input: SaveActionInput) => void;
+  // Editing one of an Action panel's actions (docs/specs/012-collaboration/action-panel.md): the card has no
+  // popover, so its two-step delete lives here. Absent everywhere else.
+  onDelete?: () => void;
   onClose: () => void;
 };
 
@@ -80,17 +83,19 @@ export function AssignActionDialog({
   ownerId,
   selfUserId,
   selfName,
-  diagramId,
-  diagramTeamId,
+  documentId,
+  documentTeamId,
   emailEnabled,
   onSubmit,
+  onDelete,
   onClose,
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
-  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-diagram fix), and
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-document fix), and
   // whether the last attempt failed.
   const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
   const [moveFailed, setMoveFailed] = useState(false);
@@ -101,15 +106,15 @@ export function AssignActionDialog({
   // The assignee dataset (Myself row, team members incl. invited, the
   // preselect-on-edit, the per-pick access check, and the by-team
   // grouping) lives in useAssigneeOptions.
-  const { selfRow, members, grouped, memberOfDiagramTeam, assigneeAccess } = useAssigneeOptions({
+  const { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess } = useAssigneeOptions({
     open,
     existing,
     teams,
     ownerId,
     selfUserId,
     selfName,
-    diagramId,
-    diagramTeamId,
+    documentId,
+    documentTeamId,
     assignee,
     setAssignee,
   });
@@ -131,6 +136,7 @@ export function AssignActionDialog({
       seededFor.elementLabel !== elementLabel)
   ) {
     setSeededFor({ existing, elementLabel });
+    setConfirmingDelete(false);
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
     setAssignee(existing ? null : selfRow);
@@ -173,7 +179,7 @@ export function AssignActionDialog({
     !(assignee.userId !== null && assignee.userId === selfUserId) &&
     (assigneeAccess === 'no' ||
       assigneeAccess === 'invited' ||
-      (assigneeAccess === 'error' && assignee.teamId !== diagramTeamId));
+      (assigneeAccess === 'error' && assignee.teamId !== documentTeamId));
 
   const canSubmit = name.trim().length > 0 && assignee !== null;
   const submit = () => {
@@ -262,8 +268,8 @@ export function AssignActionDialog({
             selfRow={selfRow}
             grouped={grouped}
             members={members}
-            memberOfDiagramTeam={memberOfDiagramTeam}
-            diagramTeamId={diagramTeamId}
+            memberOfDocumentTeam={memberOfDocumentTeam}
+            documentTeamId={documentTeamId}
             assignee={assignee}
             onPick={setAssignee}
             signInHref={signInHref}
@@ -278,7 +284,7 @@ export function AssignActionDialog({
                     void onMoveToTeam(teamId).then((ok) => {
                       setMovingToTeamId(null);
                       if (!ok) setMoveFailed(true);
-                      else track('Action', 'Moved', 'DiagramToTeam');
+                      else track('Action', 'Moved', 'DocumentToTeam');
                     });
                   }
                 : undefined
@@ -292,14 +298,14 @@ export function AssignActionDialog({
                 // invite acceptance, no owner action needed.
                 <>
                   {assignee?.name} hasn&apos;t accepted the team invite yet — they&apos;ll get
-                  access to this diagram when they join.
+                  access to this document when they join.
                 </>
               ) : (
                 <>
                   {assignee?.name}{' '}
                   {assigneeAccess === 'no'
-                    ? "can't open this diagram yet"
-                    : 'may not be able to open this diagram'}
+                    ? "can't open this document yet"
+                    : 'may not be able to open this document'}
                   : share it or move it to the team library.
                 </>
               )}
@@ -324,6 +330,16 @@ export function AssignActionDialog({
         </div>
 
         <DialogFooter>
+          {onDelete && editing ? (
+            <Button
+              type="button"
+              variant={confirmingDelete ? 'danger' : 'secondary'}
+              onClick={() => (confirmingDelete ? onDelete() : setConfirmingDelete(true))}
+              className="mr-auto"
+            >
+              {confirmingDelete ? 'Confirm Delete' : 'Delete Action'}
+            </Button>
+          ) : null}
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>

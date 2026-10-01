@@ -141,7 +141,7 @@ exactly today's entry.
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/live`**
-  - `micro`: `RecentDiagramsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
+  - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
   - `short`: `ExplorerTabBar` pill, `PaletteTabBar`, `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
@@ -344,7 +344,7 @@ logging, because motion isn't a decision point.
 It emulates `prefers-color-scheme: dark` and `reducedMotion: 'no-preference'`. The run goes like
 this:
 
-1. Just draw.
+1. Start Blank.
 2. Open the palette dropdown, the context menu, the zoom menu, the Settings dialog and the search
    panel in turn.
 3. After each, sample `document.getAnimations()`. Canvas animations are left out: any whose effect

@@ -4,11 +4,31 @@
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
 @import './canvas-motion.css';
+@import './thumbnail-loader.css';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
 @source '../../../packages/ui/src';
+/* The shared template-browse art (PreviewFan) carries its own utility classes. */
+@source '../../../packages/template-previews/src/PreviewFan.tsx';
+
+/*
+ * Editor fade-in (docs/specs/004-interface-design/motion.md): the editor's floating chrome and
+ * the canvas content fade in as they mount rather than popping into place, most visibly as a
+ * document opens. Opacity only, so the canvas world's inline transform and a panel's own
+ * position are untouched; `fade-in` has no `to`, so a translucent panel settles at its own
+ * opacity. In the components layer, so a surface's own entrance utility (a panel's pop-in, a
+ * banner's fade) still wins. Reduced motion collapses it with every other animation.
+ */
+@layer components {
+  [data-floating-panel],
+  [data-editor-tabbar],
+  [data-zoom-cluster],
+  [data-canvas-world] {
+    animation: fade-in var(--transition-duration-short) ease-out;
+  }
+}
 
 @layer base {
   button:not(:disabled),
@@ -19,6 +39,14 @@
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
    * (@livediagram/tailwind-config) so every app gets the same branded ring;
    * see there for the rationale. */
+
+  /* An SVG node focused by a pointer press (an arrow's bend, curve or elbow handle, whose node
+   * React may then reuse as a plain group mid-drag) drew the browser's default focus outline
+   * round the whole arrow: a dark box while dragging its points. A pointer focus shows no ring;
+   * keyboard focus (:focus-visible) keeps it (docs/specs/008-canvas/arrow-bending.md). */
+  svg :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /* iOS Safari refuses to honour `user-scalable=no` for accessibility,
@@ -83,8 +111,20 @@
  */
 @theme {
   --animate-pop-in: pop-in var(--transition-duration-micro) cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Ambient indicators (motion.md): the Explorer's sync marks. Looping, so
+     outside the transition budget; reduced motion stops them. */
+  --animate-sync-spin: sync-spin 2s linear infinite;
+  --animate-sync-rise: sync-rise 1.6s ease-in-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
+     "Templates section"): a longer rise than fly-up-in, so opening a tile below
+     draws the eye back up to what just opened. */
+  --animate-shelf-open: shelf-open var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  /* The template shelf's expand toggle (same spec): the cards the flip
+     reveals rise in as a cascade (with .stagger-enter), so the layout change
+     reads as cards arriving rather than a jump. One cascade item, so micro. */
+  --animate-card-rise: card-rise var(--transition-duration-micro) cubic-bezier(0.16, 1, 0.3, 1);
   /* A sheet rising from the bottom edge of the screen. Distinct from
      fly-up-in's 16px lift: this one travels its own full height, so it reads
      as arriving from off-screen rather than settling into place. */
@@ -130,6 +170,26 @@
    `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
    element — a rotated shape, or any sticker (docs/specs/010-palette/stickers.md) — popped in flat and
    then visibly snapped to its angle when the class dropped. */
+/* The syncing arrows turn about their own centre (transform-box: fill-box). */
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The waiting arrow drifts up and back: about a pixel on screen at 14px. */
+@keyframes sync-rise {
+  0%,
+  100% {
+    transform: translateY(1px);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-1.5px);
+    opacity: 1;
+  }
+}
+
 @keyframes pop-in {
   0% {
     transform: rotate(var(--lvd-enter-rot, 0deg)) scale(0);
@@ -220,6 +280,28 @@
   }
 }
 
+@keyframes shelf-open {
+  from {
+    transform: translateY(28px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes card-rise {
+  from {
+    transform: translateY(16px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 @keyframes fly-up-in {
   from {
     transform: translateY(16px) scale(0.96);
@@ -232,9 +314,9 @@
 }
 
 /*
- * Explorer diagram-row enter / exit. Used by the Explorer to make
+ * Explorer document-row enter / exit. Used by the Explorer to make
  * add + delete feel responsive when the list has many similarly-
- * named diagrams. Max-height collapse + horizontal translate +
+ * named documents. Max-height collapse + horizontal translate +
  * fade gives a real sense of motion; the row above slides up into
  * the gap as the deleted row collapses out.
  *
@@ -295,12 +377,12 @@
 }
 
 /*
- * Panel opacity (docs/specs/007-editor/user-preferences.md). The FULL floating panels render at the user's
- * chosen opacity so the canvas shows through, then snap back to fully
- * opaque while hovered or focused so they stay readable in use. Only the
- * full panels carry `data-panel-translucent` (set in MovablePanel); the
- * minimal dock bar never does, so the minimal layout is unaffected. The
- * var defaults to 1 (fully opaque) when the preference is unset.
+ * Panel opacity (docs/specs/007-editor/user-preferences.md). Every panel renders at the user's chosen
+ * opacity so the canvas shows through, then snaps back to fully opaque while
+ * hovered or focused so it stays readable in use. Panels carry
+ * `data-panel-translucent` (MovablePanel in both branches, the Quick style
+ * panel, the Toolbar strip); buttons do not. The var
+ * defaults to 1 (fully opaque) when the preference is unset.
  */
 [data-panel-translucent] {
   opacity: var(--lvd-panel-opacity, 1);
@@ -507,7 +589,7 @@
 }
 
 /* Sticky-note paper peel (docs/specs/008-canvas/canvas-and-palette.md): the note is glued along its top strip
-   and the rest of the sheet lifts ever so slightly off the board. The note
+   and the rest of the sheet lifts ever so slightly off the canvas. The note
    itself never changes — same flat rectangle, same fill — and no mask or
    clip is involved anywhere, so no hard edge can exist: the lift lives in
    ::before, a caster whose FILL is a long vertical gradient (nothing above
@@ -522,7 +604,7 @@
    pressed-glue shading at the top strip. Element rotation on the wrapper
    rotates sheet and shadow together. A user-set element shadow (docs/specs/008-canvas/element-shadows.md)
    replaces the whole treatment — element-variant.ts drops this class when
-   one is set. Recipe hand-tuned on a live board against Miro's renderer
+   one is set. Recipe hand-tuned on a live canvas against Miro's renderer
    (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md). */
 .lvd-sticky-peel::before {
   content: '';
@@ -591,7 +673,7 @@
 /* The floating chrome gets its OWN compositing layer while isometric is on.
    Isometric puts a large preserve-3d scene on the page, and the panels sit
    above it in z but shared its repaint region — which is why the palette
-   flickered too, not just the diagram. `will-change` is the promotion hint
+   flickered too, not just the canvas. `will-change` is the promotion hint
    that doesn't touch `transform`, which MovablePanel needs for dragging.
    Gated on the scene being there rather than unconditional: a promoted layer
    loses sub-pixel text anti-aliasing on a 1x display, so every panel's small
@@ -622,6 +704,13 @@
   /* Arrows keep their nudge ON TOP of the index stagger: a connector should
      cross above the boxes it joins, whatever order it was added in. */
   translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
+}
+
+/* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
+   the top element (its --iso-z) plus the arrows' nudge, so the handles stay above everything in 3D,
+   where painting goes by z rather than by z-index. */
+[data-iso] [data-selection-grips] {
+  translate: 0 0 calc(2px + var(--iso-z, 0) * 0.01px);
 }
 
 /* Rich-text notes (docs/specs/009-elements/rich-text-notes.md): the ink a linked run takes. Declared as a
@@ -709,4 +798,13 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   --ld-timeline-create-soft: rgb(52 211 153 / 0.07);
   --ld-timeline-neutral: #94a3b8;
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
+}
+
+/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-whiteboard/whiteboard.md "Pens"):
+   elements, handles and labels under it keep the pen cursor instead of their own. A path in its
+   edit mode owns the cursor the same way (docs/specs/023-whiteboard/path-tool.md "Cursors in edit
+   mode"): no label, element or overlay underneath lends its own, a text cursor least of all. */
+[data-pen-in-hand] *,
+[data-path-cursor] * {
+  cursor: inherit !important;
 }

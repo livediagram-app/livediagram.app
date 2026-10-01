@@ -11,7 +11,7 @@ import {
   ESTIMATE_SCALE_VALUES,
   ESTIMATE_SCALES,
   type EstimateScale,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { Glyph, GlyphDisc } from '@livediagram/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';

@@ -1,4 +1,4 @@
-import type { BoxedElement, RunSize, TextRun } from '@livediagram/diagram';
+import type { BoxedElement, RunSize, TextRun } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { effectiveRunStyle, labelTextStyleCss } from './label-style';
 

@@ -10,9 +10,6 @@ import { clickTour, expandPanelIfCollapsed, findTour, waitForSelector } from './
 // What a step gets to work with. Built fresh by TourHost so editor-context
 // handlers are never stale.
 export type TourApi = {
-  // Mobile viewport OR the minimal-panels preference: panels live behind
-  // the dock button row, so steps open them by tapping dock buttons.
-  compact: boolean;
   // The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Explorer is a popover behind
   // the top-left menu button rather than a corner panel.
   toolbar: boolean;
@@ -84,14 +81,11 @@ export function tourStepTelemetryType(stepId: string): string {
   return `TourStep${camel}`;
 }
 
-// Bring the palette on screen whatever the layout: dock tap on compact,
-// banner-expand on desktop. Waits for the panel node so callers can chain.
-async function ensurePaletteOpen(api: TourApi) {
-  if (api.compact) {
-    if (!findTour('palette')) clickTour('dock-palette');
-  } else {
-    expandPanelIfCollapsed('palette', 'Palette');
-  }
+// Bring the palette on screen: expand the floating Palette if it is
+// collapsed (the Toolbar strip is always open). Waits for the node so
+// callers can chain.
+async function ensurePaletteOpen() {
+  expandPanelIfCollapsed('palette', 'Palette');
   await waitForSelector('[data-tour-id="palette"]');
 }
 
@@ -120,8 +114,8 @@ export const TOUR_STEPS: TourStep[] = [
     target: 'canvas-tool-menu',
     alsoHighlight: 'canvas-tool',
     boardSkip: true,
-    prepare: async (api) => {
-      await ensurePaletteOpen(api);
+    prepare: async () => {
+      await ensurePaletteOpen();
       if (!findTour('canvas-tool-menu')) clickTour('canvas-tool');
     },
     cleanup: () => closeDropdown('canvas-tool-menu', 'canvas-tool'),
@@ -133,8 +127,8 @@ export const TOUR_STEPS: TourStep[] = [
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
     boardSkip: true,
-    prepare: async (api) => {
-      await ensurePaletteOpen(api);
+    prepare: async () => {
+      await ensurePaletteOpen();
       closeDropdown('canvas-tool-menu', 'canvas-tool');
       if (!findTour('palette-category-menu')) clickTour('palette-category');
     },
@@ -143,19 +137,17 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'explorer',
     title: 'The Explorer',
-    body: 'Find your diagrams and folders, without leaving the editor. Open, create, and organise from here.',
+    body: 'Find your documents and folders, without leaving the editor. Open, create, and organise from here.',
     target: 'explorer',
     // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): no corner panel to point at, the Explorer
     // opens as a popover under the top-left menu button, so the step opens it
     // there and rings the button + popover as one region.
     toolbar: {
-      body: 'The menu button opens the Explorer: find your diagrams and folders without leaving the editor. Open, create, and organise from here.',
+      body: 'The menu button opens the Explorer: find your documents and folders without leaving the editor. Open, create, and organise from here.',
       alsoHighlight: 'dock-explorer',
     },
     prepare: async (api) => {
-      if (api.compact || api.toolbar) {
-        // The dock (and the Toolbar menu button) shows one panel at a time,
-        // so on a phone this also puts the palette away.
+      if (api.toolbar) {
         if (!findTour('explorer')) clickTour('dock-explorer');
       } else {
         expandPanelIfCollapsed('explorer', 'Explorer');
@@ -163,7 +155,7 @@ export const TOUR_STEPS: TourStep[] = [
       await waitForSelector('[data-tour-id="explorer"]');
     },
     cleanup: (api) => {
-      if ((api.compact || api.toolbar) && findTour('explorer')) clickTour('dock-explorer');
+      if (api.toolbar && findTour('explorer')) clickTour('dock-explorer');
     },
   },
   {
@@ -177,7 +169,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tabs',
     title: 'Tabs',
-    body: 'One diagram can hold many pages: this is your current tab, and + adds another. Each tab also has a menu of helpful tools and ways to organise, cleanup and customise.',
+    body: 'One document can hold many pages: this is your current tab, and + adds another. Each tab also has a menu of helpful tools and ways to organise, cleanup and customise.',
     // The active pill and the add button highlight as one region.
     target: 'active-tab',
     alsoHighlight: 'add-tab',

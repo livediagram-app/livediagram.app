@@ -3,7 +3,7 @@ import {
   voteHidesTallies,
   type BoxedElement,
   type TabVote,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
@@ -52,11 +52,11 @@ export function ElementVoteOverlay({
   // While casting is OPEN, every votable element carries a stepper —
   // minus, the count, plus — showing 0 when nothing has landed yet. The
   // count alone used to appear only once an element had a dot, which made
-  // the first dot on a board an act of faith: nothing on screen said an
+  // the first dot on a canvas an act of faith: nothing on screen said an
   // element was a target or how to add to it.
   const showStepper = !!vote && vote.active && votableInVote === true;
   // Once casting closes the buttons go: the tally is a result to read, not
-  // a control, and the walkthrough wants the board quiet.
+  // a control, and the walkthrough wants the canvas quiet.
   const showReadOnlyCount = !!vote && !vote.active && voteTotal > 0 && votableInVote === true;
   // Budget, and the one-dot-per-item rule when the vote has it (docs/specs/012-collaboration/session-tools.md).
   // Either disables plus rather than hiding it, so the control doesn't move
@@ -81,7 +81,7 @@ export function ElementVoteOverlay({
           // Sits INSIDE the element's bottom-right rather than hanging off
           // the corner: the stepper is a control you aim at, so it wants
           // clearance from the edge (and from a neighbour's stepper on a
-          // tightly packed board).
+          // tightly packed canvas).
           // Semi-transparent at rest, fully opaque on hover. On a small box
           // the stepper covers the label, and during a vote the label is the
           // whole point — you're choosing between them, so you have to be

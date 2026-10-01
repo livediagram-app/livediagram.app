@@ -9,7 +9,7 @@ discussion and folds it away when the room is done with it.
 
 ## Why
 
-A workshop's question queue is the one collaborative object the board could
+A workshop's question queue is the one collaborative object the canvas could
 not hold. Sticky notes plus the dot vote ([Session tools (timer + voting)](session-tools.md)) come close, but they are the
 wrong shape in three ways:
 
@@ -17,7 +17,7 @@ wrong shape in three ways:
   read top-down continuously, while people are still voting. Stickies don't
   sort themselves.
 - **The audience isn't editing.** The people asking questions are usually on a
-  view link ([Per-tab storage](../006-diagram/per-tab-storage.md)). Every other document write needs edit rights.
+  view link ([Per-tab storage](../006-document/per-tab-storage.md)). Every other document write needs edit rights.
 - **It has a lifecycle.** A note goes from asked, to being discussed, to done,
   and a done note should get out of the way without being deleted: the record
   of what the room covered is part of the output.
@@ -87,7 +87,7 @@ authenticated caller (`X-Owner-Id` or the Clerk `sub`). So:
   nor correlated across two boards.
 - **The client can still tell which notes it voted for.** It knows its own
   owner id, so it computes the same hash locally (`qaVoterId`, shared by both
-  sides in `@livediagram/diagram`).
+  sides in `@livediagram/document`).
 
 Votes are **set, not toggled**, on the wire (`{ type: 'vote', on: true }`) so a
 retried request can't flip a vote back off. Pressing your own upvote again
@@ -101,26 +101,26 @@ who clears their browser storage is a new person.
 The board is the one element whose state the **server owns**. Every action,
 from every role, goes through one endpoint:
 
-`POST /api/diagrams/<id>/tabs/<tabId>/qa` with `{ elementId, action }`.
+`POST /api/documents/<id>/tabs/<tabId>/qa` with `{ elementId, action }`.
 
 - Participant actions (`add`, `vote`) pass `gateRead`; the rest need
   `gateEdit`. Same shape as the comment endpoint, which is the precedent for a
   view-role write ([API app](../015-api/api.md)).
 - The route checks access and derives the actor (voter id, server-stamped
-  author), then hands the write to **the diagram's room** (`POST
+  author), then hands the write to **the document's room** (`POST
 https://room/qa` on the Durable Object).
 - The room runs board writes **one at a time**, through an in-memory promise
-  queue (`DiagramRoom.handleQaWrite`). A Durable Object only serialises the
+  queue (`DocumentRoom.handleQaWrite`). A Durable Object only serialises the
   synchronous part of a handler: while one write awaits D1, the runtime starts
   the next request, so without the queue two read-modify-writes of the same
   row would race. Worker requests run in parallel isolates, so the room is the
-  only place every write for one diagram meets.
+  only place every write for one document meets.
 - Each queued step applies the action with the shared pure reducer
   `applyQaAction`, bumps `qaRev`, and writes the tab with a **compare-and-swap**
   on the stored JSON (`UPDATE … WHERE data = <what we read>`,
   `qa-board-write.ts`). The CAS is the second line of defence, against the
   row's other writers: an editor's tab autosave, and a tab linked into a second
-  diagram ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)), whose room queues separately. A lost race re-reads.
+  document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)), whose room queues separately. A lost race re-reads.
 - Still inside the step, the room broadcasts
   `{ kind: 'qa', tabId, elementId, notes, rev }` as a **system op**, so no
   client can forge one, and peers receive states in rev order. Unlike
@@ -142,7 +142,7 @@ closes each route that could do that:
 - **Stale whole-element copies can't roll the board back** (`qaRev`, below),
   on peers or in D1.
 
-`diagram-room-qa.test.ts` fires 40 simultaneous votes at a fake D1 that
+`document-room-qa.test.ts` fires 40 simultaneous votes at a fake D1 that
 yields on every read and write, the worst interleaving there is, and asserts
 all 40 land with revs 1 to 40 broadcast in order. It fails if the queue is
 removed.
@@ -153,7 +153,7 @@ re-applied on top of every authoritative state that arrives, so two quick
 votes don't flicker while the first round-trip is in flight. A failed request
 drops its pending action and the board falls back to the server's state.
 
-An **offline diagram** ([Offline Mode](../006-diagram/offline-mode.md)) has no server, so the reducer runs locally and
+An **offline document** ([Offline Mode](../006-document/offline-mode.md)) has no server, so the reducer runs locally and
 the ordinary tab save persists it. The voter id is computed the same way.
 
 ### Consistency
@@ -217,18 +217,34 @@ Two templates in the Agile category are built around the board
 (`template-builders-sessions.ts`), the first templates to seat a Collaborate
 element:
 
-- **Lean Coffee** (`lean-coffee`): a board labelled Topics between the
-  format's how-it-works steps and its tools: an 8-minute timer, a "Keep going
-  on this topic?" Yes/No poll, and a takeaways checklist. Lean Coffee is the
-  board's loop almost exactly (propose, upvote, discuss the top topic, Done,
-  next), which is why it earned a template.
-- **Town Hall Q&A** (`town-hall`): a "Questions for the panel" board beside an
-  agenda with a Q&A block, a 30-minute timer for it, and a follow-ups
-  checklist for what the panel can't answer live.
+- **Lean Coffee** (`lean-coffee`): "Lean Coffee · Product crew, Thursday
+  9:30" (with a coffee sticker) and a one-line how-to. The loop is drawn down
+  the left as four tinted step cards (1 Propose / 2 Vote / 3 Discuss / 4 Keep
+  going?), each with a number disc, a glyph and one line of how, joined by
+  pinned arrows, plus a curved "Next topic" arrow from step 4 back to step 3,
+  so the ritual's shape is visible before anyone reads it. A board labelled
+  Topics sits in the middle. On the right, a **Facilitator kit** in the order
+  it is pressed, each tool beside the words that say when: the 8-minute
+  timebox timer (step 3), the "Keep going on this topic?" Yes/No poll (step
+  4), and a 4-minute extension timer; then a Takeaways checklist. Lean Coffee
+  is the board's loop almost exactly (propose, upvote, discuss the top topic,
+  Done, next), which is why it earned a template.
+- **Town Hall Q&A** (`town-hall`): "Q3 all-hands · Town hall" (with a
+  microphone sticker) and a one-line how-to. The left column introduces **the
+  panel** (three people, each an initials disc with a name and role) over a
+  **run of show**: an agenda whose segments name their owner ("The quarter in
+  numbers · Dev"), with a 30-minute Open Q&A block. A "Questions for the
+  panel" board is the centre. On the right, the **Facilitator kit**: a
+  30-minute timer for the Q&A, an Applause reaction pad, and a 1-to-5 rating
+  poll ("How useful was today?") to close on; then a Follow-ups checklist for
+  what the panel can't answer live, with an owner and a date.
 
 Both boards start **empty**. A session template is used live, and example
 questions would be the first thing a facilitator had to delete in front of the
-room; the board's own empty state already says what to do.
+room; the board's own empty state already says what to do. The scaffolding
+around each board (the steps, the panel, the agenda) carries the worked
+example instead. Neither ships layers: everything on a session board is used
+live, so there is no scaffold to lock.
 
 ## Export and render
 

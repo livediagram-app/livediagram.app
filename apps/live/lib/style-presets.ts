@@ -10,6 +10,8 @@
 // theme binding, so they only touch their own fields.
 
 import {
+  encodeStrokePoints,
+  freehandNormalisedPoints,
   ARROW_THICKNESS_PX,
   clampShadow,
   DEFAULT_ANIMATION_SPEED,
@@ -35,10 +37,10 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from './tech-icons';
-import type { TablePreset } from '@livediagram/diagram';
+import type { TablePreset } from '@livediagram/document';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
@@ -141,6 +143,8 @@ export function applyStrokeColorToEl(el: Element, color: string): Element {
 export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
   if (el.type === 'table') return { ...el, textColor: color, tablePreset: undefined };
+  // A hand-picked colour is no longer the quick-swatch slot it came from.
+  if (el.type === 'text') return { ...el, textColor: color, textSwatch: undefined };
   if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
   return el;
 }
@@ -170,6 +174,19 @@ export function applyHeaderFillToEl(el: Element, color: string): Element {
 // Border weight / pattern apply to any border-bearing element (shapes + the
 // freehand pen) plus tables; radius is shape-only.
 export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
+  // A pen stroke's recorded width (docs/specs/023-whiteboard/whiteboard.md) outranks the preset when
+  // drawn, so choosing a preset must drop it or the choice would do nothing.
+  // A highlighter never draws the preset, so its width stays.
+  if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {
+    // Its pen ink (pressures, streamline) goes with it: the preset draws a plain stroke, so the
+    // same points are re-packed without their pressures.
+    const { penWidth: _dropped, streamline: _s, ...rest } = el;
+    return {
+      ...rest,
+      packedPoints: encodeStrokePoints(freehandNormalisedPoints(el)),
+      strokeWidth: value,
+    };
+  }
   return supportsBorder(el) || el.type === 'table' ? { ...el, strokeWidth: value } : el;
 }
 

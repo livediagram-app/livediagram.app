@@ -11,23 +11,23 @@
 // new palette glyph belongs here unless it's shared across panels
 // (in which case it goes into a sibling icon module).
 
-import type { TextAlignX, TextAlignY } from '@livediagram/diagram';
+import type { TextAlignX, TextAlignY } from '@livediagram/document';
 import {
   lucideArmchair,
   lucideChartNoAxesColumnIncreasing,
   lucideCircleCheck,
   lucideFileDown,
   lucideFileUp,
-  lucideFootprints,
   lucideLightbulb,
+  lucidePenTool,
   lucideScanEye,
   lucideSpade,
-  lucideSquareDashedMousePointer,
   lucideThermometer,
 } from '@livediagram/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
@@ -85,54 +85,47 @@ export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 export function PanIcon({ size = 14 }: IconSizeProps = {}) {
-  // Open hand (four fingers + thumb): the classic pan/grab glyph.
-  // Each finger is a capsule; the palm curls in from the wrist so the
-  // silhouette still reads as a hand at the 13 px palette size.
+  return <ModeGlyphIcon mode="pan" size={size} />;
+}
+
+// The Shape Pen (docs/specs/008-canvas/two-pens.md): its palette tile and the whiteboard dock's Path
+// tool (docs/specs/023-whiteboard/path-tool.md "Where it lives") wear this one icon, each at its size.
+export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
-      <path d="M18 11V6a2 2 0 0 0-4 0" />
-      <path d="M14 10V4a2 2 0 0 0-4 0v2" />
-      <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
-      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+      <Prims prims={lucidePenTool} />
+    </Glyph>
+  );
+}
+
+// Edit points (docs/specs/023-whiteboard/path-tool.md "Editing"): a curve through a corner node
+// (square, selected) and another, with one handle. On the selection toolbar and on the dock's
+// Select while a path is in its edit mode.
+export function EditPointsIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4.5 19.5 C4.5 9 19.5 15 19.5 4.5" />
+      <path d="M4.5 19.5 V10" strokeWidth={1} />
+      <circle cx="4.5" cy="10" r="1.3" fill="currentColor" stroke="none" />
+      <rect x="2.7" y="17.7" width="3.6" height="3.6" fill="currentColor" />
+      <rect x="17.7" y="2.7" width="3.6" height="3.6" />
     </Glyph>
   );
 }
 
 export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideSquareDashedMousePointer} />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="select" size={size} />;
 }
 
 export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
-  // Stylised laser pointer: a beam emerging from a small body in the
-  // bottom-left toward a glowing dot in the top-right.
-  return (
-    <Glyph size={size} units={16}>
-      <path d="M2.5 13.5l8-8" />
-      <circle cx="11.5" cy="4.5" r="1.4" fill="currentColor" stroke="none" />
-      <path d="M10 3.2l.7-1" strokeWidth="1.2" />
-      <path d="M12.8 3l1-.4" strokeWidth="1.2" />
-      <path d="M12.8 6l1 .4" strokeWidth="1.2" />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="laser" size={size} />;
 }
 
 // Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the diagram in
+// a top rhombus plus the two front faces — signalling "see the canvas in
 // 3-D, tilted". The shared vertical edge hints at the extruded depth.
 export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* top face (rhombus) */}
-      <path d="M8 1.8l5.2 3v0L8 7.8 2.8 4.8z" />
-      {/* left + right front faces share the centre vertical edge */}
-      <path d="M2.8 4.8v5.4L8 13.2v-5.4" />
-      <path d="M13.2 4.8v5.4L8 13.2" />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="isometric" size={size} />;
 }
 
 // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
@@ -143,13 +136,7 @@ export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
 // strokes. Monochrome (unlike the old palette tile's fixed yellow) because this
 // glyph rides the tool dropdown and a Mode Button face, both of which tint it.
 export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      <path d="M3.5 10.5 L9 5 L11.5 7.5 L6 13 Z" />
-      <path d="M9 5 L11 2.5 L14 5.5 L11.5 7.5" />
-      <path d="M2 14.5 H9" strokeWidth="2.4" opacity="0.45" />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="highlighter" size={size} />;
 }
 
 // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
@@ -165,28 +152,14 @@ export function SlideDeckIcon() {
 }
 
 export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      <path d="M3 10.5l4.5-4.5a1.3 1.3 0 0 1 1.8 0l2.7 2.7a1.3 1.3 0 0 1 0 1.8l-2.7 2.7H5.2z" />
-      <path d="M6.2 7.3l3.5 3.5" />
-      <path d="M2.5 13.5h11" />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="eraser" size={size} />;
 }
 
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
-export function ThemeBrushIcon({ size = 20 }: { size?: number }) {
-  return (
-    <Glyph size={size} units={20}>
-      <path d="M17 3c-3 1-6.4 3.6-8.3 6.1l2.2 2.2C13.4 9.4 16 6 17 3z" />
-      <path d="M8.7 9.1 6.5 11.3" />
-      <path d="M8 13.4a2.6 2.6 0 1 1-3.7-2.3c.8-.4 1.9-.2 2.6.5.7.7.9 1.3 1.1 1.8z" />
-    </Glyph>
-  );
-}
+export { ThemeBrushIcon } from '@livediagram/ui';
 
 // Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
 // "Copy formatting" chip (drawn once in @livediagram/ui): picks one
@@ -198,27 +171,14 @@ export { FormatPainterIcon } from '@livediagram/ui';
 // by a circle with short rays beaming outward, reading as "the cursor
 // emits light" without copying the laser-pointer beam.
 export function SpotlightIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      <circle cx="8" cy="8" r="3.2" />
-      <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" />
-      <path d="M8 1.5v2" />
-      <path d="M8 12.5v2" />
-      <path d="M1.5 8h2" />
-      <path d="M12.5 8h2" />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="spotlight" size={size} />;
 }
 
 // Avatar mode (docs/specs/008-canvas/avatar-mode.md): footprints, so the picker entry reads as "a
 // character that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).
 export function AvatarModeIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideFootprints} />
-    </Glyph>
-  );
+  return <ModeGlyphIcon mode="avatar" size={size} />;
 }
 
 // Zen / focus mode (docs/specs/007-editor/zen-mode.md): an "expand to fullscreen" glyph (four
@@ -462,6 +422,18 @@ export function SessionPollIcon() {
   return (
     <Glyph size={18} units={24} strokeLinejoin="miter">
       <path d="M4 6.5h15M4 12h9.5M4 17.5h12.5" />
+    </Glyph>
+  );
+}
+
+// A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
+// @livediagram/icons), the ONE drawing the palette, the Mode button face and
+// the export all use (docs/specs/009-elements/mode-button.md).
+function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
+  const g = MODE_GLYPHS[mode]!;
+  return (
+    <Glyph size={size} units={g.units}>
+      <Prims prims={g.prims} />
     </Glyph>
   );
 }

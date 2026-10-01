@@ -2,7 +2,7 @@
 // worker against hostile or accidental oversized payloads (important ahead of
 // opening the API to external token callers). One place so the caps stay
 // consistent and tunable. Structural validity of tabs/elements lives in
-// @livediagram/diagram (isValidTab); these are the SIZE bounds a structurally
+// @livediagram/document (isValidTab); these are the SIZE bounds a structurally
 // valid payload must also respect.
 
 // Outer bound on any request body, gated on Content-Length before dispatch so
@@ -24,15 +24,57 @@ export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 // that accepts what the server rejects.
 export { MAX_IMAGE_BYTES } from '@livediagram/api-schema';
 
-// A single tab's serialized JSON (the element + comment tree). The body cap
-// above bounds one request; this bounds one tab specifically.
-export const MAX_TAB_BYTES = 4 * 1024 * 1024;
+// A single tab's data (the element + comment tree), held to D1's row cap less headroom
+// (docs/specs/015-api/api.md "Tab size"). Defined in @livediagram/api-schema, so the editor checks
+// the same number before it sends. The body cap above bounds one request; this bounds one tab.
+export {
+  D1_MAX_ROW_BYTES,
+  MAX_TAB_BYTES,
+  tabDataBytes,
+  tabTooLarge,
+} from '@livediagram/api-schema';
+import { MAX_TAB_BYTES as MAX_TAB_BYTES_CAP } from '@livediagram/api-schema';
 
-// Human-facing names: diagram / folder / theme / tab.
+/**
+ * A tab write refused for size at the storage layer (db/tabs.ts): every route that stores a tab
+ * catches it and answers the named 413, so nothing reaches D1 that D1 would refuse.
+ */
+/** The one log line for a tab refused for size: `[tab-size] refused`, its write, bytes and cap. */
+export function logTabRefused(write: string, tabId: string, bytes: number): void {
+  console.warn('[tab-size] refused', { write, tabId, bytes, cap: MAX_TAB_BYTES_CAP });
+}
+
+/** Runs a tab write; false when the storage layer refused it for size (the caller answers 413). */
+export async function storeTab(write: () => Promise<void>): Promise<boolean> {
+  try {
+    await write();
+    return true;
+  } catch (error) {
+    if (error instanceof TabTooLargeError) return false;
+    throw error;
+  }
+}
+
+export class TabTooLargeError extends Error {
+  readonly tabId: string;
+  readonly bytes: number;
+  readonly write: string;
+  constructor(tabId: string, bytes: number, write: string) {
+    super(`tab ${tabId} is ${bytes} bytes, over the tab cap`);
+    this.name = 'TabTooLargeError';
+    this.tabId = tabId;
+    this.bytes = bytes;
+    this.write = write;
+  }
+}
+
+// Human-facing names outside the document / tab name cap: folder / theme / API
+// token / OAuth client. Document and tab names are shortened to the far tighter
+// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-document/name-length.md).
 export const MAX_NAME_LEN = 500;
 
-// A diagram's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
-// element copies, so a deck stays tiny however large the diagram is: a few
+// A document's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
+// element copies, so a deck stays tiny however large the document is: a few
 // hundred bytes per slide. 256KB is roughly a thousand slides and exists to
 // bound a hostile payload, not to constrain any real deck.
 export const MAX_DECK_LEN = 256 * 1024;
@@ -40,11 +82,9 @@ export const MAX_DECK_LEN = 256 * 1024;
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
-// One change-log entry's JSON (docs/specs/012-collaboration/activity-and-audit.md). The before/after payloads are
-// per-gesture element diffs — a few KB in practice — so this bounds a
-// hostile near-8MB entry from bloating both storage and the capped list
-// response (30 entries per GET).
-export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
+// One change-log entry's JSON: shared with the client, which logs a larger change as a summary
+// entry (docs/specs/012-collaboration/activity-and-audit.md).
+export { MAX_CHANGE_LOG_ENTRY_BYTES } from '@livediagram/api-schema';
 
 // Realtime presence identity, broadcast to every connected peer.
 export const MAX_PARTICIPANT_NAME_LEN = 120;

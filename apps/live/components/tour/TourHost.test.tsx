@@ -19,7 +19,7 @@ vi.mock('./tour-dom', () => ({
   waitForTour: async () => null,
 }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/diagram/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
 
 const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {

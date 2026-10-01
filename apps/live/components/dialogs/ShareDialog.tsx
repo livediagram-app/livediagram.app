@@ -25,9 +25,9 @@ import { SECTION_LABEL } from './share-dialog-parts';
 // How long a just-issued pass wears its highlight ring before it fades.
 const PASS_HIGHLIGHT_MS = 1400;
 
-// Share-diagram modal, built on the pass metaphor (docs/specs/007-editor/live-app.md "Share dialog"):
+// Share-document modal, built on the pass metaphor (docs/specs/007-editor/live-app.md "Share dialog"):
 // every share link is a ticket that admits whoever holds it. Top to bottom: a
-// status line saying who can open the diagram right now, the composer that
+// status line saying who can open the document right now, the composer that
 // issues (and copies) a pass, the live passes, the expired ones
 // (docs/specs/013-workspace/share-link-expiry.md), the password switch
 // (docs/specs/013-workspace/share-password.md), and a footer carrying the
@@ -66,7 +66,7 @@ export function ShareDialog({
   const multiTab = tabs.length > 1;
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
-  // `?tab=`. Diagram-wide: the same choice applies to every pass's image.
+  // `?tab=`. Document-wide: the same choice applies to every pass's image.
   const [liveImageTabId, setLiveImageTabId] = useState<string | null>(null);
   const firstTabId = tabs[0]?.id;
   const liveImageTabParam = liveImageTabId ?? undefined;
@@ -141,7 +141,7 @@ export function ShareDialog({
   // prerender (the dialog isn't shown then) doesn't touch window.
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) have nothing to share yet, so swap the whole
+  // Offline documents (docs/specs/006-document/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.
   if (offline && onSyncToCloud) {
     return <ShareOfflineGate onSyncToCloud={onSyncToCloud} onClose={onClose} />;
@@ -151,12 +151,12 @@ export function ShareDialog({
     <Dialog
       open
       onClose={close}
-      ariaLabel="Share this diagram"
+      ariaLabel="Share this document"
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
       <DialogHeader
-        title="Share this diagram"
+        title="Share this document"
         subtitle={<ShareStatus passes={activeLinks.length} password={sharePassword !== null} />}
       >
         <HelpArticleLink article="sharing" size="md" />
@@ -177,7 +177,7 @@ export function ShareDialog({
           {activeLinks.length === 0 ? (
             <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
               {links.length === 0
-                ? 'No passes yet. Only you can open this diagram.'
+                ? 'No passes yet. Only you can open this document.'
                 : 'Every pass has expired. Extend one below or issue a new one.'}
             </p>
           ) : (

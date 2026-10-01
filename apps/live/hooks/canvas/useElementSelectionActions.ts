@@ -18,7 +18,7 @@ import {
   isBoxed,
   type Element,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas';
 import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
@@ -47,10 +47,10 @@ type EditorSelectionActionsDeps = {
   // selection lock, docs/specs/007-editor/live-app.md). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
   lockedByOther: (id: string) => boolean;
-  // Elements on a LOCKED layer (docs/specs/006-diagram/layers.md): protected from deletion like
+  // Elements on a LOCKED layer (docs/specs/006-document/layers.md): protected from deletion like
   // per-element `locked`.
   layerLockedIds: Set<string>;
-  // Elements on a hidden OR locked layer (docs/specs/006-diagram/layers.md): a marquee never
+  // Elements on a hidden OR locked layer (docs/specs/006-document/layers.md): a marquee never
   // selects them.
   layerInertIds: Set<string>;
 };
@@ -97,7 +97,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       return els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
-        // A locked LAYER protects its elements the same way (docs/specs/006-diagram/layers.md).
+        // A locked LAYER protects its elements the same way (docs/specs/006-document/layers.md).
         if (el.locked === true || layerLockedIds.has(el.id)) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
@@ -135,7 +135,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const selectMarquee = (rawIds: Set<string>) => {
     // Drop any element another participant currently holds — a marquee
     // shouldn't pull a remotely-locked element into the selection — and
-    // anything on a hidden / locked layer (docs/specs/006-diagram/layers.md).
+    // anything on a hidden / locked layer (docs/specs/006-document/layers.md).
     const ids = new Set<string>();
     for (const id of rawIds) if (!lockedByOther(id) && !layerInertIds.has(id)) ids.add(id);
     if (ids.size === 0) {
@@ -255,7 +255,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   };
 
   // Intra-LAYER z-order (selection popover). Distinct from the element
-  // menu's Bring to Front, which is a LAYER move (docs/specs/006-diagram/layers.md): these nudge the
+  // menu's Bring to Front, which is a LAYER move (docs/specs/006-document/layers.md): these nudge the
   // selection within its own band, so two notes on the same layer can be
   // stacked without shuffling anyone between layers. A multi-selection
   // travels together, keeping its members' relative order.

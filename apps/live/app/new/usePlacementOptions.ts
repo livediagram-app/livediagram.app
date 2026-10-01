@@ -11,9 +11,9 @@ import {
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
-// Where a new diagram can be filed: the personal folders, the teams, and each
+// Where a new document can be filed: the personal folders, the teams, and each
 // team's folders, plus the inline "New Folder" the Settings step offers
-// (docs/specs/006-diagram/offline-mode.md, extended by docs/specs/013-workspace/team-shared-diagrams.md).
+// (docs/specs/006-document/offline-mode.md, extended by docs/specs/013-workspace/team-shared-documents.md).
 //
 // One concern, so one hook: the three lists are fetched together, and creating
 // a folder has to land in whichever of them the user was browsing. Split
@@ -22,18 +22,27 @@ import { track } from '@/lib/telemetry';
 //
 // Everything degrades rather than throws. A folder or team fetch that fails
 // leaves an empty list, because being unable to offer a team is not a reason to
-// block someone making a diagram — they land in Unsorted and can move it later.
+// block someone making a document — they land in Unsorted and can move it later.
 export function usePlacementOptions({
   selfId,
   clerkUserId,
+  skip,
 }: {
   /** The resolved owner id, or 'pending' while identity is still bootstrapping. */
   selfId: string;
   /** Set once signed in. Teams are Clerk-only, so guests skip that fetch. */
   clerkUserId: string | null | undefined;
+  /**
+   * Whether /new commits straight away (?blank=1, ?template=: the hero's launch, the gallery
+   * links): no Settings step shows, so its placement options are never read, and the editor
+   * loads the folders it needs itself. A function read when the fetch would start, not a
+   * rendered flag: a returning guest's id is known on the very first render, while a
+   * URL-derived flag still holds its prerendered value there.
+   */
+  skip?: () => boolean;
 }) {
   // Personal folders + teams offered by the Settings step's placement picker
-  // (docs/specs/006-diagram/offline-mode.md). Folders work for guests; teams are Clerk-only, so we only fetch
+  // (docs/specs/006-document/offline-mode.md). Folders work for guests; teams are Clerk-only, so we only fetch
   // them once signed in. Empty until the fetch settles / for signed-out users.
   const [folders, setFolders] = useState<PickerFolder[]>([]);
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
@@ -45,7 +54,7 @@ export function usePlacementOptions({
   // Personal folders only (a team's folders live under their own optgroup);
   // teams are Clerk-only so they're skipped for guests.
   useEffect(() => {
-    if (selfId === 'pending') return;
+    if (selfId === 'pending' || skip?.()) return;
     let cancelled = false;
     void (async () => {
       const list = await apiListFolders(selfId).catch(() => []);
@@ -82,10 +91,10 @@ export function usePlacementOptions({
     return () => {
       cancelled = true;
     };
-  }, [selfId, clerkUserId]);
+  }, [selfId, clerkUserId, skip]);
 
   // Inline folder creation from the Settings step's placement browser
-  // (docs/specs/006-diagram/offline-mode.md follow-up): create in the right scope (personal, or a team's
+  // (docs/specs/006-document/offline-mode.md follow-up): create in the right scope (personal, or a team's
   // library) under the open parent, merge into the picker lists, and hand
   // the new folder back so the browser can select it.
   const createPickerFolder = async (

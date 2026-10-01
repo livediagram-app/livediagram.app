@@ -12,7 +12,7 @@ import {
   type BoxedElement,
   type Element,
   type Layer,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   absoluteRect,
   originOf,

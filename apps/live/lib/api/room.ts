@@ -6,7 +6,7 @@
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
 import {
-  DIAGRAM_TRASHED_CLOSE,
+  DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
   type ParticipantPresence,
   type FacilitatorReason,
@@ -14,7 +14,8 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
-import { opForTheWire } from '@livediagram/diagram';
+import { opForTheWire } from '@livediagram/document';
+import { noteServerDocumentFormat } from '../document-format';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -33,13 +34,13 @@ export type RoomHandlers = {
   // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
   onClose?: () => void;
-  // The diagram went to the Trash (docs/specs/013-workspace/trash.md): the room
-  // closed this socket with DIAGRAM_TRASHED_CLOSE and will refuse every
+  // The document went to the Trash (docs/specs/013-workspace/trash.md): the room
+  // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
-  onDiagramTrashed?: () => void;
+  onDocumentTrashed?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
-  // REST, which names a trashed diagram (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
+  // REST, which names a trashed document (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
   onRefused?: () => void;
   // The room could not bridge our reconnect gap from its op log (docs/specs/012-collaboration/realtime-conflict-resolution.md,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
@@ -64,9 +65,9 @@ type RoomAuthOptions = {
 // missing values are stripped so the URL stays clean.
 //   - `t` one-time room ticket (docs/specs/015-api/api.md) — proof the connector passed
 //     the authenticated REST access gates moments ago; required for
-//     team diagrams, where a bare owner id is not trusted.
-//   - `s` share code, `o` owner id (for diagrams the visitor owns)
-//   - `p` share password (docs/specs/013-workspace/share-password.md) for a protected diagram's room.
+//     team documents, where a bare owner id is not trusted.
+//   - `s` share code, `o` owner id (for documents the visitor owns)
+//   - `p` share password (docs/specs/013-workspace/share-password.md) for a protected document's room.
 // (A `g` guest-signature param used to ride along for presence-identity
 // binding; the DO switched to server-random ephemeral presence ids —
 // docs/specs/015-api/public-api-and-tokens.md §6 — and the server-side read was removed, so the client
@@ -90,7 +91,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // Ops held while the socket is down (docs/specs/012-collaboration/collab-race-hardening.md). A change made in that window
 // used to be dropped on the floor: the save still carried it to D1, but no
 // peer saw it until they reloaded, and a dot or an answer never reached the
-// room's ledger at all. Only what changes the diagram or a poll is held: a
+// room's ledger at all. Only what changes the document or a poll is held: a
 // cursor or a selection from a minute ago means nothing. Bounded, so a long
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to D1.
@@ -103,13 +104,19 @@ export function isOutboxOp(msg: RoomOutgoing): boolean {
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 15_000;
 
+/** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
+export type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
+
 export function connectRoom(
-  diagramId: string,
+  documentId: string,
   // `key` is the document-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
-  // an answer saved on the diagram can be joined back to the person in the
+  // an answer saved on the document can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
   // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
-  participant: { id: string; key?: string; name: string; color: string },
+  //
+  // `picture` is the published profile picture (docs/specs/014-identity/profile-picture.md §6); the
+  // room keeps it only for an account session.
+  initialParticipant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomAuthOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
@@ -120,12 +127,15 @@ export function connectRoom(
   send: (msg: RoomOutgoing) => void;
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
+  updateSelf: (participant: RoomSelf) => void;
 } {
+  // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
+  let participant = initialParticipant;
   // Auth identifiers ride on the query string (see roomQueryString). The
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
   const qs = roomQueryString(options, getSessionSharePassword());
-  const url = wsUrl(`/diagrams/${diagramId}/ws${qs ? `?${qs}` : ''}`);
+  const url = wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
 
   let ws: WebSocket;
   let closed = false; // the caller called close() — never reconnect after that
@@ -181,6 +191,8 @@ export function connectRoom(
         if (msg.kind === 'presence') handlers.onPresence(msg.participants);
         else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
+        // The server's document format number (docs/specs/016-platform/new-version-prompt.md).
+        else if (msg.kind === 'format') noteServerDocumentFormat(msg.format);
         else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
         else if (msg.kind === 'cursor') {
           // Our own op's seq, or where the stream stood when we joined. A
@@ -210,9 +222,9 @@ export function connectRoom(
     ws.addEventListener('close', (event: CloseEvent) => {
       handlers.onClose?.();
       if (closed) return;
-      if (event?.code === DIAGRAM_TRASHED_CLOSE) {
+      if (event?.code === DOCUMENT_TRASHED_CLOSE) {
         closed = true;
-        handlers.onDiagramTrashed?.();
+        handlers.onDocumentTrashed?.();
         return;
       }
       if (!socketOpened) handlers.onRefused?.();
@@ -242,6 +254,14 @@ export function connectRoom(
       ws.readyState === WebSocket.OPEN && lastEpoch !== null
         ? { epoch: lastEpoch, seq: lastSeq }
         : null,
+    // An identity change over the open socket (docs/specs/014-identity/profile-picture.md §4): the
+    // room updates the roster in place. A closed socket just remembers it for the next hello.
+    updateSelf: (next) => {
+      participant = next;
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ kind: 'identity', participant } satisfies RoomOutgoing));
+      }
+    },
     close: () => {
       closed = true;
       outbox = [];

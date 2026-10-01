@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { LayoutRect } from '@livediagram/diagram';
+import type { LayoutRect } from '@livediagram/document';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 
 // Where a web component puts its label (docs/specs/009-elements/web-components-and-no-groups.md): the shared label node,

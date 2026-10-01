@@ -6,30 +6,30 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { DiagramListItem } from '@/lib/api-client';
-import type { TeamDiagramRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { DocumentListItem } from '@/lib/api-client';
+import type { TeamDocumentRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
 
 vi.mock('@/lib/shared-tabs-notice', () => ({ fetchSharedTabsNotice: async () => null }));
 
-const row = (id: string) => ({ id, name: id }) as DiagramListItem;
-const teamRow = (id: string): TeamDiagramRow => ({
+const row = (id: string) => ({ id, name: id }) as DocumentListItem;
+const teamRow = (id: string): TeamDocumentRow => ({
   ...row(id),
   team: { id: 'team', name: 'Team' },
 });
 
-type Lists = { diagrams: DiagramListItem[]; teamDiagrams: TeamDiagramRow[] };
+type Lists = { documents: DocumentListItem[]; teamDocuments: TeamDocumentRow[] };
 
 function hook(initial: Lists) {
   // The parent's delete: animate out first, then (in the real app) drop the row from the list.
-  const onDeleteDiagram = vi.fn((_id: string, beforeRemove?: () => void | Promise<void>) => {
+  const onDeleteDocument = vi.fn((_id: string, beforeRemove?: () => void | Promise<void>) => {
     void beforeRemove?.();
   });
   const view = renderHook(
-    (lists: Lists) => useExplorerRowDelete({ ...lists, ownerId: 'me', onDeleteDiagram }),
+    (lists: Lists) => useExplorerRowDelete({ ...lists, ownerId: 'me', onDeleteDocument }),
     { initialProps: initial },
   );
-  return { ...view, onDeleteDiagram };
+  return { ...view, onDeleteDocument };
 }
 
 const confirmDelete = async (
@@ -45,23 +45,23 @@ describe('useExplorerRowDelete', () => {
   it('keeps a personal row sliding out until the list drops it', async () => {
     const a = row('a');
     const b = row('b');
-    const { result, rerender } = hook({ diagrams: [a, b], teamDiagrams: [] });
+    const { result, rerender } = hook({ documents: [a, b], teamDocuments: [] });
     await confirmDelete(result, 'a');
-    expect(result.current.exitingDiagramIds.has('a')).toBe(true);
-    rerender({ diagrams: [a, b], teamDiagrams: [] });
-    expect(result.current.exitingDiagramIds.has('a')).toBe(true);
-    rerender({ diagrams: [b], teamDiagrams: [] });
-    expect(result.current.exitingDiagramIds.has('a')).toBe(false);
+    expect(result.current.exitingDocumentIds.has('a')).toBe(true);
+    rerender({ documents: [a, b], teamDocuments: [] });
+    expect(result.current.exitingDocumentIds.has('a')).toBe(true);
+    rerender({ documents: [b], teamDocuments: [] });
+    expect(result.current.exitingDocumentIds.has('a')).toBe(false);
   });
 
   it('hides a team row until the sweep drops it', async () => {
     const t = teamRow('t');
-    const { result, rerender } = hook({ diagrams: [], teamDiagrams: [t] });
+    const { result, rerender } = hook({ documents: [], teamDocuments: [t] });
     await confirmDelete(result, 't');
     expect(result.current.deletedTeamIds.has('t')).toBe(true);
-    rerender({ diagrams: [], teamDiagrams: [t] });
+    rerender({ documents: [], teamDocuments: [t] });
     expect(result.current.deletedTeamIds.has('t')).toBe(true);
-    rerender({ diagrams: [], teamDiagrams: [] });
+    rerender({ documents: [], teamDocuments: [] });
     expect(result.current.deletedTeamIds.has('t')).toBe(false);
   });
 });

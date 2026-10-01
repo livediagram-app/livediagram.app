@@ -38,7 +38,22 @@ compatibility_date = "2026-05-29"
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
-# D1 database holding diagrams + participants. The local binding name
+# Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md). No binding
+# of its own: it rides the D1 database above (drive_connections, drive_items).
+#   - GOOGLE_CLIENT_ID: plain var, livediagram.app's own OAuth client, so it
+#     lives in `hosted-vars.json` (a fork has its own Google project and must
+#     not inherit ours), per environment: production and staging are separate
+#     Google Cloud projects with separate client ids. The hosted build bakes
+#     the same environment's id into the live app as NEXT_PUBLIC_GOOGLE_CLIENT_ID
+#     (scripts/hosted-vars.mjs build-env --env ...), and verify / verify-build
+#     prove the two agree on every deploy.
+#   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand exactly like
+#     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
+#     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
+# Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the live app
+# shows no Drive entry, which is the self-host default.
+
+# D1 database holding documents + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
 # livediagram` or the dashboard). `database_id` is filled in after the
@@ -79,7 +94,7 @@ simple = { limit = 300, period = 60 }
 
 # Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
 # docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's diagram-write
+# public events endpoint can never eat into a user's document-write
 # budget. 120 batches / 60s per IP is generous for a real editor
 # session (which flushes a handful of batches a minute) while bounding
 # how fast one source can flood D1 / inflate the public dashboard.
@@ -91,16 +106,22 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-diagram realtime (presence + broadcast). One
-# instance per diagram id; clients connect via WebSocket through the
-# `/api/diagrams/<id>/ws` endpoint.
+# Durable Object for per-document realtime (presence + broadcast). One
+# instance per document id; clients connect via WebSocket through the
+# `/api/documents/<id>/ws` endpoint.
 [[durable_objects.bindings]]
-name = "DIAGRAM_ROOM"
-class_name = "DiagramRoom"
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
+
+# The class was DiagramRoom until the container became a document
+# (docs/specs/006-document/document.md). A rename keeps every room's storage.
+[[migrations]]
+tag = "v2"
+renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -122,7 +143,7 @@ new_classes = ["DiagramRoom"]
 crons = ["0 3 * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into diagram-write
+# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway OpenAI spend. Absent binding
 # → helper allows, so self-host still works without this feature.
@@ -163,6 +184,18 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
+# Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
+# "Tokens"): each call reaches Google's token endpoint to mint a one-hour access
+# token, so a healthy browser needs about one an hour. 10 / 60s per Clerk user
+# id bounds a looping client far below the general write limiter's 300. The
+# route answers 429 drive_token_rate_limited, which the browser treats like
+# Google's own rate limit (it backs off). Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "DRIVE_TOKEN_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
+
 # The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
 # endpoint, and WHICH provider is inferred from which key is set — a key is
 # provider-specific, so its name says whose it is (see src/ai-provider.ts):
@@ -175,10 +208,11 @@ simple = { limit = 120, period = 60 }
 #   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
 #   Production: `wrangler secret put <NAME>`.
 #
-# Exactly one may be set: two is refused rather than guessed at, because
-# guessing spends somebody's money. AI_BASE_URL / AI_MODEL / AI_VISION_MODEL
-# are plain [vars]; AI_MODEL overrides the preset's default model and
-# AI_VISION_MODEL overrides it for /api/ai/read-notes only (docs/specs/021-event-storming/event-storming.md Phase 8).
+# Each feature takes its own provider from the keys that are set: the assistant
+# (/api/ai) prefers OpenAI, the crop reader (/api/ai/read-notes) prefers Google,
+# and one key serves both. Production sets both named keys to split them.
+# AI_BASE_URL / AI_MODEL / AI_VISION_MODEL are plain [vars]; AI_MODEL is the
+# assistant's model and AI_VISION_MODEL the reader's (docs/specs/007-editor/ai-assistance.md).
 #
 # With no key the whole surface is hidden: GET /api/capabilities answers
 # { aiEnabled: false }, the editor shows no AI panel and no photo import, and
@@ -366,16 +400,26 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
+[[env.staging.unsafe.bindings]]
+name = "DRIVE_TOKEN_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 10, period = 60 }
+
 # A different script is a different Durable Object namespace, so staging's
-# DIAGRAM_ROOM instances are separate from production's for free. The class
+# DOCUMENT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "DIAGRAM_ROOM"
-class_name = "DiagramRoom"
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
+
+[[env.staging.migrations]]
+tag = "v2"
+renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so
@@ -384,8 +428,18 @@ new_classes = ["DiagramRoom"]
 crons = ["0 3 * * *"]
 
 # CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and
-# OPENAI_API_KEY are provisioned by hand exactly as they are for production:
+# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
+# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
+# hand exactly as they are for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
+# The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:
+#   cd apps/api && wrangler secret put DRIVE_TOKEN_KEY --env staging
+# with a DRIVE_TOKEN_KEY of its own, never production's, so a staging row can
+# never open a production refresh token. Staging has its OWN Google Cloud
+# project: its GOOGLE_CLIENT_ID is the `environments.staging` entry of
+# hosted-vars.json, its client secret belongs to that project, and its Picker
+# key is the NEXT_PUBLIC_GOOGLE_API_KEY_STAGING GitHub secret. Its client lists
+# https://staging.livediagram.app plus the two localhost dev origins, and its
+# Drive UI integration opens https://staging.livediagram.app/drive/open.
 # Worker secrets are per-environment, so staging's never collide with
 # production's.

@@ -9,9 +9,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { TimelineEvent } from '@livediagram/ui';
 import { TIMELINE_RENDERERS } from './renderers';
+import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 
-vi.mock('@/components/panels/DiagramThumbnail', () => ({
-  DiagramThumbnail: () => null,
+vi.mock('@/components/panels/DocumentThumbnail', () => ({
+  DocumentThumbnail: () => null,
 }));
 
 const ME = 'me';
@@ -20,14 +21,14 @@ const ctx = { viewerId: ME };
 function event(over: Partial<TimelineEvent>): TimelineEvent {
   return {
     id: 'e',
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: 'd1',
-    eventType: 'diagram_created',
-    title: 'Diagram Created',
+    eventType: 'document_created',
+    title: 'Document Created',
     description: 'stored description',
     occurredAt: 1_700_000_000_000,
     actorId: ME,
-    snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+    snapshot: { documentId: 'd1', documentName: 'Payments' },
     ...over,
   } as TimelineEvent;
 }
@@ -36,8 +37,8 @@ function render(e: TimelineEvent) {
   return TIMELINE_RENDERERS[e.sourceType]!(e, ctx);
 }
 
-describe('diagram cards', () => {
-  it('titles the card with the diagram and leaves the reason to the stored title', () => {
+describe('document cards', () => {
+  it('titles the card with the document and leaves the reason to the stored title', () => {
     const r = render(event({}));
     expect(r.subject).toBe('Payments');
     expect(r.label).toBeUndefined();
@@ -47,15 +48,15 @@ describe('diagram cards', () => {
     expect(r.preview).toBeTruthy();
   });
 
-  it('opens the diagram on click, except when the row carries no id to open', () => {
+  it('opens the document on click, except when the row carries no id to open', () => {
     expect(render(event({})).onClick).toBeTypeOf('function');
     // A row from an older worker, or one whose snapshot lost its id: the
     // card must not link at nothing.
     const gone = render(
       event({
-        eventType: 'diagram_created',
-        title: 'Diagram Created',
-        snapshot: { diagramName: 'Old' },
+        eventType: 'document_created',
+        title: 'Document Created',
+        snapshot: { documentName: 'Old' },
       }),
     );
     expect(gone.onClick).toBeUndefined();
@@ -69,7 +70,7 @@ describe('diagram cards', () => {
         title: 'Comment Added',
         description: 'Per-shard or global?',
         actorId: 'priya',
-        snapshot: { diagramId: 'd1', diagramName: 'Payments', authorName: 'Priya' },
+        snapshot: { documentId: 'd1', documentName: 'Payments', authorName: 'Priya' },
       }),
     );
     expect(added.description).toBeUndefined();
@@ -91,8 +92,8 @@ describe('diagram cards', () => {
         eventType: 'action_assigned',
         title: 'Action Assigned',
         snapshot: {
-          diagramId: 'd1',
-          diagramName: 'Payments',
+          documentId: 'd1',
+          documentName: 'Payments',
           actionName: 'Add the fallback path',
           assigneeName: 'Sam',
         },
@@ -105,7 +106,7 @@ describe('diagram cards', () => {
         eventType: 'action_completed',
         title: 'Action Completed',
         actorId: 'sam',
-        snapshot: { diagramId: 'd1', diagramName: 'Payments', actionName: 'Wire up webhooks' },
+        snapshot: { documentId: 'd1', documentName: 'Payments', actionName: 'Wire up webhooks' },
       }),
     );
     expect(completed.description).toBe('Wire up webhooks');
@@ -113,14 +114,14 @@ describe('diagram cards', () => {
   });
 
   it('says "by you" for the reader’s own edits and names anyone else', () => {
-    const mine = render(event({ eventType: 'diagram_edited', title: 'Diagram Updated' }));
+    const mine = render(event({ eventType: 'document_edited', title: 'Document Updated' }));
     expect(mine.meta).toBe('by you');
     const theirs = render(
       event({
-        eventType: 'diagram_edited',
-        title: 'Diagram Updated',
+        eventType: 'document_edited',
+        title: 'Document Updated',
         actorId: 'priya',
-        snapshot: { diagramId: 'd1', diagramName: 'Payments', authorName: 'Priya' },
+        snapshot: { documentId: 'd1', documentName: 'Payments', authorName: 'Priya' },
       }),
     );
     expect(theirs.meta).toBe('by Priya');
@@ -164,6 +165,22 @@ describe('team and account cards', () => {
       }),
     );
     expect(deleted.onClick).toBeUndefined();
+  });
+
+  it('opens a token card in Settings, in place', () => {
+    const heard = vi.fn();
+    const onOpen = (e: Event) => heard((e as CustomEvent<string>).detail);
+    window.addEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    render(
+      event({
+        sourceType: 'account',
+        eventType: 'token_expiring',
+        title: 'API Token Expiring',
+        snapshot: { tokenName: 'CI' },
+      }),
+    ).onClick?.();
+    window.removeEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    expect(heard).toHaveBeenCalledWith('tokens');
   });
 
   it('counts uploaded images in the subject', () => {

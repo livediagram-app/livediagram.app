@@ -26,7 +26,7 @@ export const CATEGORY_BANDS: Record<number, string> = {
   0: 'Common',
   // Structure (docs/specs/010-palette/palette-top-level-categories.md): the elements you lay a diagram OUT with — Build's
   // containers, the ready-made Components, the device frames. They sit above
-  // Decorate because arranging a board comes before dressing it.
+  // Decorate because arranging the canvas comes before dressing it.
   1: 'Structure',
   2: 'Decorate',
   3: 'Dynamic',
@@ -53,8 +53,7 @@ export function PaletteTabBar({
   // is never blank.
   defaultOpenId?: string;
   // When set, the chosen category is remembered in localStorage under this
-  // key so it survives the palette being closed + reopened (the mobile /
-  // minimal dock unmounts the popover) and page reloads. A stale id
+  // key so it survives the palette being unmounted and page reloads. A stale id
   // (category removed) falls back to the default.
   storageKey?: string;
   // Hide the whole header band — both the canvas-tool picker and the

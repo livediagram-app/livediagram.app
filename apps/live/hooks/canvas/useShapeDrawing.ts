@@ -18,12 +18,13 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab } from '@livediagram/diagram';
+import { createFreehand, isWhiteboardTab, type Element, type Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
-import type { PendingDraw } from '@/lib/draw-mode';
-import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
+import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
+import { boardShape } from '@/lib/whiteboard-tool';
+import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
@@ -142,23 +143,37 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
+    // A whiteboard shape starts as plain ink, unfilled (a pen never colours
+    // it), then wears the style chosen for its tool, which the board keeps
+    // apart from its diagram tabs' (docs/specs/023-whiteboard/whiteboard.md "Shapes").
+    const whiteboard = isWhiteboardTab(activeTab);
+    const dress = <T extends Element>(el: T): T =>
+      styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
-      const arrow = styleNewElement(
-        buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme)),
+      // Built exactly as the canvas previews it while the drag is in flight.
+      const arrow = buildDressedDrawnArrow(
+        intent,
+        startX,
+        startY,
+        endX,
+        endY,
+        { elements: activeTab.elements, theme: getTheme(activeTab.theme), whiteboard },
+        styleNewElement,
       );
       commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);
       setPendingDraw(null);
-      track('Element', 'Added', 'Arrow');
+      track('Element', 'Added', arrow.arrowEnds === 'none' ? 'Line' : 'Arrow');
       return;
     }
-    // Freehand / polygon never reach commitDraw: freehand routes
-    // through commitFreehand (with the polyline) and polygon through
-    // commitPolygon (with its vertices). If a future regression
+    // Freehand / polygon / path never reach commitDraw: freehand routes
+    // through commitFreehand (with the polyline), polygon through
+    // commitPolygon (with its vertices) and a path through commitPath
+    // (usePathCommits). If a future regression
     // mis-routes either here, bail rather than fall through into the
     // boxed branch and mint a phantom element where the user expected
     // a sketch.
-    if (intent.type === 'freehand' || intent.type === 'polygon') {
+    if (intent.type === 'freehand' || intent.type === 'polygon' || intent.type === 'path') {
       setPendingDraw(null);
       return;
     }
@@ -172,7 +187,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
-    const sized = styleNewElement(
+    const sized = dress(
       buildDrawnBoxed(intent, startX, startY, endX, endY, inheritSizeRef.current, activeTab),
     );
     // Frames don't need special-casing here: the canvas + exporters
@@ -185,7 +200,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // an empty text box is only useful once you type into it, so save the
     // user the extra click. Other element kinds stay selected-but-not-
     // editing so their format popover is the immediate next interaction.
-    if (intent.type === 'text') setEditingId(sized.id);
+    if (opensForTyping(intent, whiteboard)) setEditingId(sized.id);
     setPendingDraw(null);
     const label =
       intent.type === 'shape'

@@ -1,8 +1,8 @@
 'use client';
 
 // Measures the canvas, the chrome and the quick style panel, and places the
-// panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): docked under the Palette in the
-// Floating layout, on the right edge otherwise, clear of the chrome either way.
+// panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge, vertically centred,
+// clear of the chrome.
 // Re-runs when the chrome moves or resizes, coalesced to one run per frame;
 // never on a timer.
 
@@ -14,8 +14,7 @@ import {
 } from '@/lib/quick-style-placement';
 
 const AREA_SELECTOR = 'main[data-canvas-a11y-root]';
-// The floating Palette panel: the one the Floating layout docks under. In the
-// Toolbar layout the same id marks the strip, which the layout rule ignores.
+// The floating Palette panel, whose width the Floating layout's panel wears.
 const PALETTE_SELECTOR = '[data-tour-id="palette"][data-floating-panel]';
 // The Palette in each of its forms, every other floating panel or dock
 // popover, the Toolbar strip's More popover and the bottom-right cluster.
@@ -32,10 +31,8 @@ const toRect = (r: DOMRect): Rect => ({
 export type QuickStyleSpot = {
   left: number;
   top: number;
-  // Docked under the Palette, the panel takes the Palette's width.
+  // In the Floating layout, the panel takes the Palette's width.
   width: number | null;
-  // Docked into too short a space, the panel caps its height and scrolls.
-  maxHeight: number | null;
 };
 
 export function useQuickStylePlacement(
@@ -73,24 +70,17 @@ export function useQuickStylePlacement(
       const natural = body ? box.height - body.clientHeight + body.scrollHeight : box.height;
       const width = anchor ? anchor.width : null;
       const placed = placeQuickStylePanel({
-        layout,
         area: toRect(area.getBoundingClientRect()),
         panel: { width: width ?? box.width, height: natural },
         obstacles,
-        anchor,
       });
       if (placed.fallback) {
         console.debug('[quick-style] placement fallback', { layout, obstacles: obstacles.length });
       }
-      const maxHeight = placed.maxHeight ?? null;
       setSpot((prev) =>
-        prev &&
-        prev.left === placed.left &&
-        prev.top === placed.top &&
-        prev.width === width &&
-        prev.maxHeight === maxHeight
+        prev && prev.left === placed.left && prev.top === placed.top && prev.width === width
           ? prev
-          : { left: placed.left, top: placed.top, width, maxHeight },
+          : { left: placed.left, top: placed.top, width },
       );
       // Watch whatever chrome exists now; a panel that mounts later arrives
       // with a pointer or key gesture, which re-runs this.

@@ -1,4 +1,9 @@
-import type { Comment, Element } from '@livediagram/diagram';
+import {
+  sanitizeMentions,
+  type Comment,
+  type CommentMention,
+  type Element,
+} from '@livediagram/document';
 import type { ParticipantDTO } from './types';
 
 // Rewrite newly-added comments so the author fields come from the
@@ -31,7 +36,7 @@ export function rewriteCommentAuthors(
   // impossible by construction (uuids) so flat indexing is safe.
   const existingComments = new Map<
     string,
-    { authorName: string; authorColor: string; authorId?: string }
+    { authorName: string; authorColor: string; authorId?: string; mentions?: CommentMention[] }
   >();
   for (const el of prevElements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
@@ -41,6 +46,7 @@ export function rewriteCommentAuthors(
         authorName: c.authorName,
         authorColor: c.authorColor,
         authorId: c.authorId,
+        mentions: c.mentions,
       });
     }
   }
@@ -60,24 +66,43 @@ export function rewriteCommentAuthors(
         // writer's own id on it, which only the author's copy does. What it
         // grants is delete-own over REST, and an edit-role writer can already
         // delete any comment through this very PUT.
+        // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
+        // someone else's mention after it was sent.
         const claimed = prior.authorId === undefined && c.authorId === writer.id;
+        const { mentions: _sent, ...body } = c;
         return {
-          ...c,
+          ...body,
           authorName: prior.authorName,
           authorColor: prior.authorColor,
           authorId: claimed ? writer.id : prior.authorId,
+          ...(prior.mentions ? { mentions: prior.mentions } : {}),
         };
       }
       // Somebody else's comment, arriving in this writer's save before
       // their own: credited as the room saw it posted.
+      // A new comment's mentions arrive from a client: cleaned, never trusted.
+      const { mentions: raw, ...fresh } = c;
+      const mentions = sanitizeMentions(raw);
+      const withMentions = mentions ? { mentions } : {};
       const posted = roomAuthors.get(c.id);
       if (posted && c.authorId !== writer.id) {
-        const { authorId: _none, ...rest } = c;
-        return { ...rest, authorName: posted.authorName, authorColor: posted.authorColor };
+        const { authorId: _none, ...rest } = fresh;
+        return {
+          ...rest,
+          authorName: posted.authorName,
+          authorColor: posted.authorColor,
+          ...withMentions,
+        };
       }
       // New comment: server-authoritative author (name, colour, and the
       // stable id that later authorises delete-own).
-      return { ...c, authorName: writer.name, authorColor: writer.color, authorId: writer.id };
+      return {
+        ...fresh,
+        authorName: writer.name,
+        authorColor: writer.color,
+        authorId: writer.id,
+        ...withMentions,
+      };
     });
     return { ...el, commentThread: { ...thread, comments: sanitised } } as Element;
   });
@@ -122,13 +147,13 @@ export function findCommentHost(
 }
 
 // Blank the author id on every comment a given visitor did NOT write,
-// before serving a tab to a non-owner. The author id is the diagram /
+// before serving a tab to a non-owner. The author id is the document /
 // guest owner id of whoever posted the comment; exposing other people's
 // ids to a visitor would re-open the observe-then-claim vector that
-// `redactOwner` closes for the diagram owner id. A visitor still sees
+// `redactOwner` closes for the document owner id. A visitor still sees
 // their OWN author id (which they already know — it's their own id), so
 // the client can light up a delete button on their own comments. Pass
-// the diagram owner's id as `viewerId` to no-op (the owner sees all).
+// the document owner's id as `viewerId` to no-op (the owner sees all).
 export function redactCommentAuthorIds(elements: Element[], viewerId: string | null): Element[] {
   return elements.map((el) => {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
@@ -142,7 +167,7 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
 
 // docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
 // `prevElements`. Used by the tab-autosave handler to fire the "someone
-// commented on your diagram" notification only when a genuinely new comment
+// commented on your document" notification only when a genuinely new comment
 // landed (not on every autosave).
 export function hasNewComments(nextElements: Element[], prevElements: Element[]): boolean {
   const seen = new Set<string>();

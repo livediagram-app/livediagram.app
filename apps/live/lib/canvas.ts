@@ -9,7 +9,7 @@ import {
   type Element,
   type IconPosition,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
 // half-extent so a wide-but-short box still reads top / bottom correctly.
@@ -192,11 +192,16 @@ export type DragMode =
 import type { ShapeBounds } from './resize-geometry';
 
 export {
+  constrainedBounds,
   cornerOf,
+  leadingAxis,
   MIN_SIZE,
+  minUniformScale,
   nextBounds,
+  snapLeadingAxis,
   snapModeOf,
   unionResizeMember,
+  type ResizeAxis,
   type ResizeSnapMode,
   type ShapeBounds,
 } from './resize-geometry';

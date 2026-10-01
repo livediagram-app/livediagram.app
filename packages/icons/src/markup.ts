@@ -5,7 +5,7 @@
 // own modules (async chunk in the editor, static import in the workers via
 // ./resolve).
 
-import type { IconPrim, TechIconDef } from './types';
+import type { IconPrim, StyledPrim, TechIconDef } from './types';
 import { glyphStrokePx, strokeUnits } from './weight';
 import { xmlEscape } from './xml';
 
@@ -21,9 +21,24 @@ function num(n: number): string {
   return String(Math.round(n * 100) / 100);
 }
 
-// One stroke primitive as markup. No per-prim styling: stroke / fill ride
-// on the caller's wrapper group, exactly like the editor's <IconPrims>.
-export function iconPrimMarkup(p: IconPrim): string {
+// One stroke primitive as markup. Stroke / fill ride on the caller's wrapper
+// group, exactly like the editor's <Prims>; a StyledPrim's own paint (a
+// filled dot, a heavier stroke) is added onto the element.
+export function iconPrimMarkup(p: StyledPrim): string {
+  const base = baseMarkup(p);
+  const style = primStyleAttrs(p);
+  return style ? base.replace(/\/>$/, `${style}/>`) : base;
+}
+
+function primStyleAttrs(p: StyledPrim): string {
+  return (
+    (p.fill ? ' fill="currentColor" stroke="none"' : '') +
+    (p.sw !== undefined ? ` stroke-width="${num(p.sw)}"` : '') +
+    (p.opacity !== undefined ? ` opacity="${num(p.opacity)}"` : '')
+  );
+}
+
+function baseMarkup(p: IconPrim): string {
   switch (p.t) {
     case 'path':
       return `<path d="${p.d}"/>`;
@@ -66,7 +81,7 @@ export function iconPrimMarkup(p: IconPrim): string {
 }
 
 // A line-art icon's primitives, colourless (see IconExportArt).
-export function iconPrimsMarkup(prims: IconPrim[]): string {
+export function iconPrimsMarkup(prims: readonly StyledPrim[]): string {
   return prims.map(iconPrimMarkup).join('');
 }
 

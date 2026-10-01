@@ -12,7 +12,7 @@ import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
-import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
+import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
 import { TeamTimeline } from './ScopedTimeline';
 import { useLatest } from '@/hooks/ui/useLatest';
 
@@ -33,7 +33,7 @@ export function TeamPane({
   onLeftTeam,
   onLoadResult,
   moveDests,
-  onMoveDiagramTo,
+  onMoveDocumentTo,
 }: {
   ownerId: string;
   teamId: string;
@@ -49,11 +49,11 @@ export function TeamPane({
   // Whether the team loaded (true) or 404'd (false). The pane header
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
-  // Full move destinations + cross-scope router for the shared-diagrams
-  // move picker (docs/specs/013-workspace/team-shared-diagrams.md): passed straight through to TeamSharedDiagrams
-  // so a team diagram can be re-homed to Personal Space / another team.
-  moveDests?: ComponentProps<typeof TeamSharedDiagrams>['moveDests'];
-  onMoveDiagramTo?: ComponentProps<typeof TeamSharedDiagrams>['onMoveDiagramTo'];
+  // Full move destinations + cross-scope router for the shared-documents
+  // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
+  // so a team document can be re-homed to Personal Space / another team.
+  moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
+  onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -158,10 +158,10 @@ export function TeamPane({
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
-            invite, or head back to your own diagrams.
+            invite, or head back to your own documents.
           </p>
           <Button size="md" onClick={onLeftTeam} className="mt-6 shadow-sm">
-            Back to your diagrams
+            Back to your documents
           </Button>
         </div>
       </div>
@@ -325,18 +325,18 @@ export function TeamPane({
         ) : null}
       </div>
 
-      {/* ---------- Shared diagrams (docs/specs/013-workspace/team-shared-diagrams.md): the team's folder
-          tree + diagrams, managed by every joined member. ---------- */}
+      {/* ---------- Shared documents (docs/specs/013-workspace/team-shared-documents.md): the team's folder
+          tree + documents, managed by every joined member. ---------- */}
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
-      <TeamSharedDiagrams
-        key={teamId}
+      <TeamSharedDocuments
+        key={`library-${teamId}`}
         ownerId={ownerId}
         teamId={teamId}
         teamName={team.name}
         moveDests={moveDests}
-        onMoveDiagramTo={onMoveDiagramTo}
+        onMoveDocumentTo={onMoveDocumentTo}
       />
 
       <TeamFormModal
@@ -360,8 +360,10 @@ export function TeamPane({
           switching teams is a query-string navigation on this route, so
           without it the feed stays mounted and carries team A's view
           settings into team B — the category chips, the Everyone/Other
-          people filter, and the calendar month it was parked on. */}
-      <TeamTimeline key={teamId} ownerId={ownerId} teamId={teamId} />
+          people filter, and the calendar month it was parked on. Its key
+          differs from the library's: they are siblings, and React needs
+          sibling keys to be unique. */}
+      <TeamTimeline key={`timeline-${teamId}`} ownerId={ownerId} teamId={teamId} />
 
       <TeamInviteLinkDialog
         open={linkOpen}

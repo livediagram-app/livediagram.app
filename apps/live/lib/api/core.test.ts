@@ -1,5 +1,7 @@
-import type { Tab } from '@livediagram/diagram';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Tab } from '@livediagram/document';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
+import { resetDocumentFormatForTests, serverDocumentFormat } from '../document-format';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
 // it so the guest-signature header is deterministic per case.
@@ -176,30 +178,30 @@ describe('apiFetch / apiDelete write signal', () => {
 
   it('announces a successful non-GET', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/diagrams/d1`, { method: 'PUT' });
+    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
     expect(heard).toHaveBeenCalledWith({});
     vi.unstubAllGlobals();
   });
 
   it('stays silent for a GET, a failed write, and the feeds own endpoints', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/diagrams`);
+    await apiFetch(`${API_BASE}/documents`);
     await apiFetch(`${API_BASE}/timeline/events/e1`, { method: 'DELETE' });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })));
-    await apiFetch(`${API_BASE}/diagrams/d1`, { method: 'PUT' });
+    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
     expect(heard).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
 
   it('names the entity a DELETE ended, after the plain signal', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
-    await apiDelete(`${API_BASE}/diagrams/d1`, 'g', {
-      action: 'delete diagram',
-      purge: { sourceType: 'diagram', sourceId: 'd1' },
+    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
+      action: 'delete document',
+      purge: { sourceType: 'document', sourceId: 'd1' },
     });
     expect(heard.mock.calls.map(([s]) => s)).toEqual([
       {},
-      { purge: { sourceType: 'diagram', sourceId: 'd1' } },
+      { purge: { sourceType: 'document', sourceId: 'd1' } },
     ]);
     vi.unstubAllGlobals();
   });
@@ -208,9 +210,9 @@ describe('apiFetch / apiDelete write signal', () => {
     // A tolerated 404: nothing was removed, so nothing should vanish
     // from the feed on the strength of it.
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
-    await apiDelete(`${API_BASE}/diagrams/d1`, 'g', {
-      action: 'delete diagram',
-      purge: { sourceType: 'diagram', sourceId: 'd1' },
+    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
+      action: 'delete document',
+      purge: { sourceType: 'document', sourceId: 'd1' },
     });
     expect(heard).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
@@ -239,7 +241,7 @@ describe('stripUiTabFields', () => {
 // the non-undoable session tick, remote applies), and a field that depends on
 // which one ran is a field you cannot trust. Every tab that goes out says
 // what it is.
-describe('tabForWire — board kind', () => {
+describe('tabForWire — tab kind', () => {
   const tab = (over: Partial<Tab> = {}): Tab =>
     ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
 
@@ -264,4 +266,33 @@ describe('tabForWire — board kind', () => {
 
   // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) are BOARD state, not UI state: the
   // facilitator turns them on for the room, so the field has to reach the
+});
+
+// docs/specs/016-platform/new-version-prompt.md: every response's format header is noted, so an open
+// editor learns of a newer server from traffic it already has.
+describe('apiFetch and the document format header', () => {
+  afterEach(() => {
+    resetDocumentFormatForTests();
+    vi.unstubAllGlobals();
+  });
+
+  it('notes the number every response carries, failed ones included', async () => {
+    const newer = String(DOCUMENT_FORMAT + 1);
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response('{}', { status: 404, headers: { [DOCUMENT_FORMAT_HEADER]: newer } }),
+        ),
+    );
+    await apiFetch(`${API_BASE}/documents/d1`);
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+  });
+
+  it('notes nothing from a response without the header', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
+    await apiFetch(`${API_BASE}/documents`);
+    expect(serverDocumentFormat()).toBeNull();
+  });
 });

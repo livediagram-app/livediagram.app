@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HELP_ARTICLES } from '@/lib/help-articles';
-import { SETTINGS_CATEGORIES, visibleCategories } from './settings-catalogue';
+import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
@@ -33,6 +33,25 @@ describe('settings catalogue', () => {
     for (const prefs of [{}, { autoRebindArrows: true }, { autoRebindArrows: false }]) {
       expect(row.read(prefs as UserPreferences)).toBe(autoRebindArrowsEnabled(prefs));
     }
+  });
+
+  it('offers the whiteboard dock position under Editor, in its own Whiteboard section', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": top by default, bottom by choice.
+    const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
+    const row = editor.rows.find((r) => r.key === 'whiteboardDockPosition');
+    if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
+    expect(row.section).toBe('Whiteboard');
+    expect(row.label).toBe('Dock Position');
+    expect(row.options.map((o) => [o.id, o.label])).toEqual([
+      ['top', 'Top'],
+      ['bottom', 'Bottom'],
+    ]);
+    expect(row.read({})).toBe('top');
+    expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
+    expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
+    // Before the Power User section, which closes the category.
+    const at = editor.rows.indexOf(row);
+    expect(editor.rows.findIndex((r) => r.section === 'Power User')).toBeGreaterThan(at);
   });
 
   it('round-trips every toggle through read/write in both directions', () => {
@@ -92,7 +111,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { minimalPanels: true, telemetryEnabled: false };
+    const before: UserPreferences = { panelLayout: 'toolbar', telemetryEnabled: false };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
@@ -146,6 +165,35 @@ describe('settings catalogue', () => {
     const ctx = { emailEnabled: true, signedIn: true };
     expect(visibleCategories(false, ctx).map((c) => c.id)).not.toContain('ai');
     expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
+  });
+
+  it('places API Tokens between Account and Privacy', () => {
+    const ids = SETTINGS_CATEGORIES.filter((c) => !c.parent).map((c) => c.id);
+    expect(ids.slice(-3)).toEqual(['account', 'tokens', 'privacy']);
+  });
+
+  it('offers API Tokens, and the AI link to it, only where sign-in exists', () => {
+    const ids = (authEnabled: boolean) =>
+      visibleCategories(true, { emailEnabled: false, signedIn: false, authEnabled }).map(
+        (c) => c.id,
+      );
+    const aiRows = (authEnabled: boolean) =>
+      visibleCategories(true, { emailEnabled: false, signedIn: true, authEnabled })
+        .find((c) => c.id === 'ai')!
+        .rows.map((r) => r.key);
+    // A guest on a deployment WITH sign-in still sees the category: its row
+    // says why it is empty and links to sign in.
+    expect(ids(true)).toContain('tokens');
+    expect(ids(false)).not.toContain('tokens');
+    expect(aiRows(true)).toContain('apiTokensLink');
+    expect(aiRows(false)).not.toContain('apiTokensLink');
+  });
+
+  it('points every link row at a category that exists', () => {
+    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
+    const links = ALL_ROWS.filter((r) => r.kind === 'link');
+    expect(links.length).toBeGreaterThan(0);
+    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
@@ -207,5 +255,66 @@ describe('settings catalogue', () => {
         }
       }
     }
+  });
+});
+
+// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+describe('settings sub-categories', () => {
+  it('nests one sub-category per panel under Panels, directly after it and in order', () => {
+    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
+    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
+    expect(children).toEqual(['layers', 'activity', 'map', 'collaborate', 'quickStyle']);
+    const at = ids.indexOf('panels');
+    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  });
+
+  it('keeps Panel Layout and Panel Opacity on Panels itself, and Enable Map under Map', () => {
+    const keys = (id: string) =>
+      SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
+    expect(keys('panels')).toEqual(['panelLayout', 'panelOpacity']);
+    expect(keys('map')[0]).toBe('showMinimap');
+  });
+
+  it('opens every panel sub-category with its Enable switch, on by default', () => {
+    const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
+    const switches: Record<string, [string, string]> = {
+      layers: ['layersPanelEnabled', 'Enable Layers Panel'],
+      activity: ['activityPanelEnabled', 'Enable Activity Panel'],
+      map: ['showMinimap', 'Enable Map'],
+      collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
+      quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
+    };
+    for (const [id, [key, label]] of Object.entries(switches)) {
+      const row = first(id);
+      expect([row.key, row.label]).toEqual([key, label]);
+      if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
+      expect(row.read({})).toBe(true);
+      expect(row.write({}, false)).toEqual({ [key]: false });
+    }
+  });
+
+  it("offers a panel's other rows only while its Enable switch is on", () => {
+    const rows = (id: string, preferences: UserPreferences) =>
+      visibleCategories(false, { emailEnabled: false, signedIn: false, preferences })
+        .find((c) => c.id === id)!
+        .rows.map((r) => r.key);
+    expect(rows('layers', {})).toEqual([
+      'layersPanelEnabled',
+      'layersShowPreview',
+      'layersShowCount',
+      'layerHoverPreview',
+    ]);
+    expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
+    expect(rows('activity', { activityPanelEnabled: false })).toEqual(['activityPanelEnabled']);
+    expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
+    expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
+  });
+
+  it('names a sub-category by its path', () => {
+    const map = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
+    expect(settingsCategoryPath(map)).toBe('Panels › Map');
+    expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
+      'Panels',
+    );
   });
 });

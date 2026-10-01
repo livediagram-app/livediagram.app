@@ -7,7 +7,7 @@ import { ActivityGlyph } from './glyphs';
 import { TrendBadge } from './TrendBadge';
 import { rankTrend, windowLabel } from './windows';
 
-// The Pages tab's Landing Funnel (docs/specs/019-marketing/landing-funnel.md): from a public page to a diagram.
+// The Pages tab's Landing Funnel (docs/specs/019-marketing/landing-funnel.md): from a public page to a document.
 // A headline strip across the whole public site, then one card per surface
 // with every CTA on it. Three independent counts, divided by each other; no
 // event links one visitor's steps.
@@ -30,9 +30,9 @@ export function LandingFunnel({
         Landing funnel
       </h3>
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        From a public page to a diagram, for{' '}
+        From a public page to a document, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>. Every call to action into the
-        editor names which button it is; the editor counts the arrival and whether a diagram
+        editor names which button it is; the editor counts the arrival and whether a document
         followed. Three separate counts, never linked to a person.
       </p>
 
@@ -99,14 +99,14 @@ function Headline({
         step={`${formatRate(rate(total.arrived, total.views))} of views`}
       />
       <Stat
-        label="Created a diagram"
+        label="Created a document"
         count={total.created}
         before={before?.created}
         against={against}
         step={`${formatRate(rate(total.created, total.arrived))} of arrivals`}
       />
       <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-500/30 dark:bg-brand-500/10">
-        <p className="text-xs font-medium text-brand-700 dark:text-brand-300">Views to diagrams</p>
+        <p className="text-xs font-medium text-brand-700 dark:text-brand-300">Views to documents</p>
         <p className="mt-1 text-2xl font-semibold tabular-nums text-brand-900 dark:text-brand-100">
           {formatRate(overall)}
         </p>
@@ -115,7 +115,7 @@ function Headline({
             ? overallBefore === null
               ? `No public page views in ${against}`
               : `${formatRate(overallBefore)} in ${against}`
-            : 'Of public page views, how many became a diagram'}
+            : 'Of public page views, how many became a document'}
         </p>
       </div>
     </div>

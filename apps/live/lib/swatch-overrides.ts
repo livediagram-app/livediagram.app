@@ -7,7 +7,7 @@ import {
   type QuickSwatch,
   type QuickSwatchRole,
   type QuickSwatchSlot,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export type SwatchOverrideRow = Partial<Record<QuickSwatchSlot, string>>;
 export type SwatchOverrides = Partial<Record<QuickSwatchRole, SwatchOverrideRow>>;
@@ -48,8 +48,14 @@ export function applySwatchOverrides(
 // Where overrides live (docs/specs/008-canvas/quick-style-panel.md "Custom swatches"): per user, synced,
 // keyed by theme, in the preferences blob beside `customSwatches`. An entry
 // says "in theme t, these slots are these colours". Newest-edited first. Short
-// keys (t / s / f), because the whole blob shares the api's 4 KB cap.
-export type ThemeSwatchOverrides = { t: string; s?: SwatchOverrideRow; f?: SwatchOverrideRow };
+// keys (t / s / f / x), because the whole blob shares the api's 4 KB cap.
+export type ThemeSwatchOverrides = {
+  t: string;
+  s?: SwatchOverrideRow;
+  f?: SwatchOverrideRow;
+  // The Text colour row (x, since t is the theme).
+  x?: SwatchOverrideRow;
+};
 export type SwatchOverrideStore = ThemeSwatchOverrides[];
 
 // A theme id is a built-in id or `custom:<uuid>` (43 chars).
@@ -59,12 +65,18 @@ export const SWATCH_OVERRIDE_MAX_THEMES = 8;
 // ~2.4 KB, so this keeps every other preference writable.
 export const SWATCH_OVERRIDE_MAX_BYTES = 800;
 
-const KEY: Record<QuickSwatchRole, 's' | 'f'> = { stroke: 's', fill: 'f' };
+const KEY: Record<QuickSwatchRole, 's' | 'f' | 'x'> = { stroke: 's', fill: 'f', text: 'x' };
+const ROLES = Object.keys(KEY) as QuickSwatchRole[];
 
 export function overridesForTheme(store: SwatchOverrideStore, themeId: string): SwatchOverrides {
   const entry = store.find((e) => e.t === themeId);
   if (!entry) return {};
-  return { ...(entry.s ? { stroke: entry.s } : {}), ...(entry.f ? { fill: entry.f } : {}) };
+  const out: SwatchOverrides = {};
+  for (const role of ROLES) {
+    const row = entry[KEY[role]];
+    if (row) out[role] = row;
+  }
+  return out;
 }
 
 // The theme just edited moves to the front; the oldest themes go when the
@@ -102,7 +114,7 @@ export function storeWithoutOverride(
   const next: ThemeSwatchOverrides = { ...entry };
   if (Object.keys(rest).length === 0) delete next[key];
   else next[key] = rest;
-  const empty = !next.s && !next.f;
+  const empty = ROLES.every((role) => !next[KEY[role]]);
   return store.flatMap((e) => (e.t !== themeId ? [e] : empty ? [] : [next]));
 }
 
@@ -135,14 +147,17 @@ export function parseSwatchOverrideStore(value: unknown): SwatchOverrideStore {
   const out: SwatchOverrideStore = [];
   for (const item of value) {
     if (!item || typeof item !== 'object') continue;
-    const { t, s, f } = item as Record<string, unknown>;
+    const raw = item as Record<string, unknown>;
+    const t = raw.t;
     if (typeof t !== 'string' || t.length === 0 || t.length > SWATCH_OVERRIDE_MAX_THEME_ID)
       continue;
     if (out.some((e) => e.t === t)) continue;
-    const stroke = parseRow(s);
-    const fill = parseRow(f);
-    if (!stroke && !fill) continue;
-    out.push({ t, ...(stroke ? { s: stroke } : {}), ...(fill ? { f: fill } : {}) });
+    const entry: ThemeSwatchOverrides = { t };
+    for (const role of ROLES) {
+      const row = parseRow(raw[KEY[role]]);
+      if (row) entry[KEY[role]] = row;
+    }
+    if (ROLES.some((role) => entry[KEY[role]])) out.push(entry);
   }
   return capped(out);
 }

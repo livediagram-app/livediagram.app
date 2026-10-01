@@ -21,7 +21,7 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
-import { votesSpentBy, type Element, type TabVote } from '@livediagram/diagram';
+import { votesSpentBy, type Element, type TabVote } from '@livediagram/document';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
@@ -46,10 +46,6 @@ export function VotePanel({
   onMoveTo,
   onReset,
   dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
   stackBelowY,
   readOnly,
 }: {
@@ -57,7 +53,7 @@ export function VotePanel({
   // The active tab's elements, only to resolve a voted id to a label.
   elements: Element[];
   // Everyone in the room right now (remote presence + you). The
-  // denominator for turnout; 1 on a solo diagram.
+  // denominator for turnout; 1 on a solo document.
   participantCount: number;
   // The ranked results from useVoteReview — the SAME array the
   // walkthrough steps through, so the list and Previous / Next can never
@@ -81,10 +77,6 @@ export function VotePanel({
   return (
     <MovablePanel
       helpArticle="sessionVoting"
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
       title="Vote"
       position={position}
       defaultCorner="top-right-stacked"
@@ -114,7 +106,7 @@ export function VotePanel({
           <p className="text-[10px] leading-snug text-slate-400">
             {vote.revealed
               ? 'The host is walking through the results.'
-              : 'Only the person who started this vote can end it.'}
+              : 'Only the person who started this vote, or the facilitator, can end it.'}
           </p>
         ) : (
           <div className="flex items-center gap-1">
@@ -132,7 +124,7 @@ export function VotePanel({
                 </button>
               </>
             ) : (
-              // Results are up: Clear is how the host puts the board back
+              // Results are up: Clear is how the host puts the canvas back
               // (same effect as Done at the end of the walkthrough, but
               // reachable at any point in it).
               <button type="button" onClick={onClearVote} className={quietBtn}>

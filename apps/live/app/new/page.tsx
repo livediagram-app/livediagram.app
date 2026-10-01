@@ -1,6 +1,7 @@
 'use client';
 
-import { truncateName } from '@livediagram/diagram';
+import { truncateName } from '@livediagram/document';
+import dynamic from 'next/dynamic';
 import {
   useEffect,
   useEffectEvent,
@@ -11,16 +12,23 @@ import {
 } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
-import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
-import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
-import { RecentDiagramsCard } from './RecentDiagramsCard';
+import { TemplatePicker, type NewDocumentSettings } from '@/components/palette/TemplatePicker';
+import { BlankCanvasScreen } from '@/components/chrome/BlankCanvasScreen';
+import { DocumentLoading } from '@/components/chrome/DocumentLoading';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
+import { RecentDocumentsCard } from './RecentDocumentsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { usePlacementOptions } from './usePlacementOptions';
-import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
-import { offlineCreateDiagram } from '@/lib/offline/offline-store';
+import {
+  apiCreateDocument,
+  apiLoadSelf,
+  apiSaveSelf,
+  apiSetDocumentFolder,
+} from '@/lib/api-client';
+import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
@@ -35,24 +43,49 @@ import {
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params';
+import {
+  WIZARD_BYPASS_PARAMS,
+  wantsWelcome,
+  wizardBrowseCollection,
+  wizardBypassKind,
+} from '@/lib/new-document-params';
+import { markQuietLanding } from '@/lib/quiet-landing';
+import { backOutTarget } from '@/lib/back-out';
+import { QUIET_LANDING_ATTR, QUIET_LANDING_LOADER_CLASS } from '@/lib/quiet-landing-boot';
+import { CanvasLoader } from '@livediagram/ui';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-// The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-diagram-route.md). The URL does
+// In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
+// renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
+// load. `loadEditor` is also called on mount to fetch the chunk ahead; if it still isn't in at
+// handoff, the opening screen holds at its "opening" stage.
+const loadEditor = () => import('@/app/document/[id]/editor-page');
+const EditorPage = dynamic(loadEditor, {
+  ssr: false,
+  loading: () => <OpeningScreen />,
+});
+
+// The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-document-route.md). The URL does
 // not change under the page, so nothing needs to subscribe.
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
+// The collection the wizard opens on (`?browse=`), read the same way.
+const browseFromUrl = () => wizardBrowseCollection(window.location.search);
+const noBrowse = () => null;
+const isBypassUrl = () => bypassKindFromUrl() !== null;
+const welcomeFromUrl = () => wantsWelcome(window.location.search);
+const noWelcome = () => false;
 
 // Folder shape the Settings step's placement browser consumes.
-// Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
+// Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
-// and the actual "commit a new diagram" handoff. Once the user picks (or
-// skips), we POST the seeded diagram and navigate to /diagram/<id> where
+// and the actual "commit a new document" handoff. Once the user picks (or
+// skips), we POST the seeded document and navigate to /document/<id> where
 // the editor route picks it up cleanly. The Explorer is NOT rendered here:
-// the wizard's "Open Existing Diagram" button sends users to /explorer
+// the wizard's "Open Existing Document" button sends users to /explorer
 // instead, keeping this screen focused on creating.
 const PENDING_SELF: Participant = {
   id: 'pending',
@@ -62,7 +95,7 @@ const PENDING_SELF: Participant = {
 };
 const noGuestId = () => null;
 
-export default function NewDiagramPage() {
+export default function NewDocumentPage() {
   // Stable placeholder so the first paint matches the SSG render; the
   // real participant lands once `useLayoutEffect` runs.
   // Clerk wiring (token provider + guest to authed migration), the same
@@ -84,12 +117,16 @@ export default function NewDiagramPage() {
         ? { id: baseId, name: seed.name, color: seed.color, status: 'online' }
         : PENDING_SELF;
   const [submitting, setSubmitting] = useState(false);
-  // How many diagrams the user owns (null until known). Reported by
-  // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
-  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-diagram) users only.
-  const [diagramCount, setDiagramCount] = useState<number | null>(null);
+  // Set once the created document has been handed to the in-place editor. The ref mirrors it for the
+  // bfcache listener, which must stand down once this document IS the editor.
+  const [openedId, setOpenedId] = useState<string | null>(null);
+  const handedOff = useRef(false);
+  // How many documents the user owns (null until known). Reported by
+  // RecentDocumentsCard's fetch; gates the interactive tour's welcome offer
+  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
+  const [documentCount, setDocumentCount] = useState<number | null>(null);
   // Set when the create POST fails (network / 5xx). Shows a retryable
-  // error instead of navigating to the editor for a diagram that was
+  // error instead of navigating to the editor for a document that was
   // never persisted (which would 404). The ref keeps the last attempt's
   // args so Retry can re-run the exact same create.
   const [createError, setCreateError] = useState(false);
@@ -99,25 +136,16 @@ export default function NewDiagramPage() {
     // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
     // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
     themeId: string;
-    // The Settings step's choices (docs/specs/006-diagram/offline-mode.md): diagram name, placement, offline.
-    settings: NewDiagramSettings;
+    // The Settings step's choices (docs/specs/006-document/offline-mode.md): document name, placement, offline.
+    settings: NewDocumentSettings;
   } | null>(null);
 
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
-  // here, if any. Counts the arrival now and the diagram once it's committed.
+  // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Where this diagram can be filed, and the inline New Folder the Settings
-  // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
-    {
-      selfId: self.id,
-      clerkUserId,
-    },
-  );
-
-  // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
-  // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-diagrams.md)
+  // Placement context from the URL: /new?folder=<id> (Explorer's "new document
+  // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-documents.md)
   // pre-select the Save In picker, so what the Settings step highlights IS
   // what Create files into. The picker is the single source of truth from
   // here on; there is no separate commit-time fallback (it used to override
@@ -132,7 +160,7 @@ export default function NewDiagramPage() {
     return 'unsorted';
   });
 
-  // Wizard bypass (docs/specs/007-editor/new-diagram-route.md): /new?blank=1 ("Just Draw") and
+  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard
   // entirely — the page commits that template (Default theme, the template's
   // default name) the moment it mounts and lands on the editor. The ?folder /
@@ -147,12 +175,56 @@ export default function NewDiagramPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
+
+  // Where this document can be filed, and the inline New Folder the Settings
+  // step offers — see usePlacementOptions.
+  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
+    {
+      selfId: self.id,
+      clerkUserId,
+      // A bypass commits straight away and never shows the Settings step.
+      skip: isBypassUrl,
+    },
+  );
+  // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
+  // grew into rather than the opening screen, so nothing else paints between the two.
+  const quietLanding = useSyncExternalStore(subscribeNever, welcomeFromUrl, noWelcome);
+  // BlankCanvasScreen now paints the canvas the guard painted; lift the guard so the body shows.
+  useLayoutEffect(() => {
+    if (quietLanding) document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
+  }, [quietLanding]);
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
+  // `?browse=<collection>` (docs/specs/007-editor/new-document-route.md): the same external-store read,
+  // and the same guard: the prerendered step is the category overview, so the
+  // wizard card stays hidden until the render that shows the collection (or,
+  // for an unknown one, at once), so the author never sees it swap.
+  const browseShelf = useSyncExternalStore(subscribeNever, browseFromUrl, noBrowse);
+  useLayoutEffect(() => {
+    if (browseFromUrl() === browseShelf) {
+      document.documentElement.removeAttribute('data-wizard-browse');
+    }
+  }, [browseShelf]);
+
+  const backOut = () => {
+    if (submitting) return;
+    const target = backOutTarget({
+      referrer: document.referrer,
+      origin: window.location.origin,
+      historyLength: window.history.length,
+    });
+    console.debug(`[new] back out ${target}`);
+    track('UI', 'Closed', 'NewDocument');
+    if (target === 'back') window.history.back();
+    else window.location.assign('/');
+  };
 
   useEffect(() => {
-    document.title = 'New diagram | livediagram';
+    document.title = 'New document | livediagram';
+    // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
+    // just leaves `dynamic` to retry the import at handoff.
+    loadEditor().catch(() => {});
   }, []);
 
   // Back/forward-cache restore: creating navigates away with
@@ -163,7 +235,7 @@ export default function NewDiagramPage() {
   // state so the page is usable again.
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
-      if (!e.persisted) return;
+      if (!e.persisted || handedOff.current) return;
       // A bypass auto-creates on mount, so a bfcache restore would
       // either strand the user on a frozen "Creating…" card or (if we
       // re-fired the create) trap Back behind a page that always navigates
@@ -210,7 +282,7 @@ export default function NewDiagramPage() {
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
-  // Creating then would file the diagram under the literal owner "pending":
+  // Creating then would file the document under the literal owner "pending":
   // a shared id every raced visitor collides on, and one the editor route
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
@@ -227,25 +299,25 @@ export default function NewDiagramPage() {
     return fallback;
   };
 
-  // Single commit point, shared by the Create Diagram and Skip paths.
+  // Single commit point, shared by the Create Document and Skip paths.
   // Submit passes a template + theme; Skip passes 'blank' + 'brand'. Either
-  // way we persist the diagram so the editor route lands on a real row.
-  const commitNewDiagram = async (
+  // way we persist the document so the editor route lands on a real row.
+  const commitNewDocument = async (
     templateKind: TemplateKind | null,
     name: string,
     themeId: string,
-    settings: NewDiagramSettings,
+    settings: NewDocumentSettings,
   ) => {
     if (submitting) return;
     setSubmitting(true);
-    // Save location (docs/specs/006-diagram/save-locations.md): only Local Browser takes the offline branch.
+    // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
     // The Settings step's name field wins; fall back to the per-template
-    // default when it's left blank (docs/specs/006-diagram/offline-mode.md).
-    // docs/specs/006-diagram/name-length.md: the wizard's name field goes through the same cap.
-    const diagramName =
-      truncateName(settings.diagramName ?? '') || untitledNameForTemplate(templateKind);
+    // default when it's left blank (docs/specs/006-document/offline-mode.md).
+    // docs/specs/006-document/name-length.md: the wizard's name field goes through the same cap.
+    const documentName =
+      truncateName(settings.documentName ?? '') || untitledNameForTemplate(templateKind);
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const who = await resolveSelf();
     // Identity persistence first so any subsequent room broadcasts
@@ -258,7 +330,7 @@ export default function NewDiagramPage() {
     }
     markNameConfirmed();
 
-    const diagramId = crypto.randomUUID();
+    const documentId = crypto.randomUUID();
     const tabId = crypto.randomUUID();
     const tab = templateKind
       ? buildTemplatedTab(templateKind, themeId, tabId, 'Tab 1')
@@ -280,76 +352,92 @@ export default function NewDiagramPage() {
         };
     try {
       if (offline) {
-        // Offline Mode (docs/specs/006-diagram/offline-mode.md): create the diagram in IndexedDB only. This
+        // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.
-        await offlineCreateDiagram({ id: diagramId, name: diagramName, tabs: [tab] }, Date.now());
+        await offlineCreateDocument(
+          { id: documentId, name: documentName, tabs: [tab] },
+          Date.now(),
+        );
       } else {
-        await apiCreateDiagram(who.id, {
-          id: diagramId,
-          name: diagramName,
+        await apiCreateDocument(who.id, {
+          id: documentId,
+          name: documentName,
           tabs: [tab],
         });
       }
     } catch {
       // Create FAILED (network / 5xx for cloud, or no IndexedDB for offline).
-      // Don't navigate to an editor for a diagram that was never persisted
+      // Don't navigate to an editor for a document that was never persisted
       // (that lands on a 404). Surface a retryable error card instead (Retry
       // re-runs this exact create from lastCreateArgs).
       setSubmitting(false);
       setCreateError(true);
       return;
     }
-    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a diagram was created. No id or name is
-    // sent — the `type` records only whether it's an Offline or Cloud diagram
-    // (docs/specs/006-diagram/offline-mode.md). The chosen theme is recorded separately below.
-    track('Diagram', 'Created', offline ? 'Offline' : 'Cloud');
+    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a document was created. No id or name is
+    // sent — the `type` records only whether it's an Offline or Cloud document
+    // (docs/specs/006-document/offline-mode.md). The chosen theme is recorded separately below.
+    track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
+    // A whiteboard tab born from the wizard (docs/specs/023-whiteboard/whiteboard.md "Telemetry").
+    if (templateKind === 'whiteboard') track('Whiteboard', 'Created', 'Template');
     cta.trackCreated();
-    // Placement. The Settings step's picker (docs/specs/006-diagram/offline-mode.md) is authoritative: the
+    // Placement. The Settings step's picker (docs/specs/006-document/offline-mode.md) is authoritative: the
     // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
     // on mount, so what the picker highlighted is exactly what gets filed.
     // Done as a follow-up PUT so the create endpoint signature stays stable
     // and placement can fail independently (a glitch just leaves it in the
-    // personal Unsorted, movable later). Offline diagrams have no server
+    // personal Unsorted, movable later). Offline documents have no server
     // folder / team placement — skip it.
     if (!offline) {
       if (settings.teamId) {
-        // Created straight into a team library: the same Team·Added·Diagram
+        // Created straight into a team library: the same Team·Added·Document
         // an Explorer move into a team sends (docs/specs/017-telemetry/telemetry.md), and only once the
         // placement landed (a failed PUT leaves it personal).
         const placed = await accepted(
-          apiSetDiagramFolder(who.id, diagramId, settings.folderId ?? null, settings.teamId),
+          apiSetDocumentFolder(who.id, documentId, settings.folderId ?? null, settings.teamId),
         );
-        if (placed) track('Team', 'Added', 'Diagram');
+        if (placed) track('Team', 'Added', 'Document');
       } else if (settings.folderId) {
-        await apiSetDiagramFolder(who.id, diagramId, settings.folderId).catch(() => {});
+        await apiSetDocumentFolder(who.id, documentId, settings.folderId).catch(() => {});
       }
     }
-    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned diagrams)
-    // first diagram gets the tour's welcome offer once the editor opens —
+    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned documents)
+    // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
-    if (diagramCount === 0) {
+    // The hero's launch window (/new?blank=1&welcome=1) queues the offer too: its create fires
+    // before the count is known, and the synced tourSeen gate keeps it to people who haven't
+    // answered it. It also lands on the blank canvas the hero grew into (lib/quiet-landing.ts).
+    const welcome = templateKind === 'blank' && wantsWelcome(window.location.search);
+    if (documentCount === 0 || welcome) {
       markTourPending();
     }
-    window.location.assign(`/diagram/${diagramId}`);
+    if (welcome) markQuietLanding();
+    // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
+    // reading the id from the rewritten path exactly as a direct visit would.
+    handedOff.current = true;
+    document.documentElement.removeAttribute('data-just-draw');
+    document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
+    window.history.replaceState(null, '', `/document/${documentId}`);
+    setOpenedId(documentId);
   };
 
-  // Just-Draw fast path (docs/specs/007-editor/new-diagram-route.md): fire the Skip-defaults create on mount.
-  // commitNewDiagram waits out the identity bootstrap itself (resolveSelf),
+  // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
+  // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
   // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue
-  // here: the create fires before RecentDiagramsCard reports a count — which
+  // here: the create fires before RecentDocumentsCard reports a count — which
   // is the behaviour we want for someone who asked to just draw.
   const bypassFired = useRef(false);
   const fireBypass = useEffectEvent((kind: TemplateKind) => {
     // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
     // point, never user content. (The template itself is reported by the
-    // usual Diagram / Created event the commit fires.)
+    // usual Document / Created event the commit fires.)
     track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
     const params = new URLSearchParams(window.location.search);
-    void commitNewDiagram(kind, '', 'brand', {
+    void commitNewDocument(kind, '', 'brand', {
       saveLocation: DEFAULT_SAVE_LOCATION,
       folderId: params.get('folder'),
       teamId: params.get('team'),
@@ -361,11 +449,14 @@ export default function NewDiagramPage() {
     fireBypass(bypassKind);
   }, [bypassKind]);
 
+  // Keyed on the id so a second handoff (not reachable today) would remount a fresh editor.
+  if (openedId) return <EditorPage key={openedId} />;
+
   if (createError) {
     return (
       <div className="flex h-dvh flex-col">
         <EditorHeader
-          diagramName="New diagram"
+          documentName="New document"
           hideTitle
           showShare={false}
           shareable={false}
@@ -374,12 +465,12 @@ export default function NewDiagramPage() {
         />
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
-            title="Couldn’t create the diagram"
-            message="We couldn’t reach the server to create your diagram. Check your connection and try again."
+            title="Couldn’t create the document"
+            message="We couldn’t reach the server to create your document. Check your connection and try again."
             onRetry={() => {
               setCreateError(false);
               const a = lastCreateArgs.current;
-              if (a) void commitNewDiagram(a.kind, a.name, a.themeId, a.settings);
+              if (a) void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
             }}
           />
         </main>
@@ -387,55 +478,36 @@ export default function NewDiagramPage() {
     );
   }
 
-  // A bypass never shows the wizard: a lightweight creating card
-  // holds the screen for the beat between mount and the editor navigation
-  // (the auto-create effect above). It carries the shared nodes-and-arrows
-  // build animation rather than a spinner — the editor's "Loading your
-  // diagram…" screen shows the same illustration, so create → load reads
-  // as one continuous moment (docs/specs/007-editor/new-diagram-route.md). Create failures fall through to
+  // A bypass never shows the wizard: the opening screen, at its "creating" stage, holds the screen
+  // from mount to the handoff (docs/specs/007-editor/new-document-route.md). The editor's own load
+  // renders the same screen, so create → open reads as one moment. Create failures fall through to
   // the retryable error card branch before this one.
-  if (bypassKind) {
-    return (
-      <div className="flex h-dvh flex-col">
-        <EditorHeader
-          diagramName="New diagram"
-          hideTitle
-          showShare={false}
-          shareable={false}
-          onOpenShare={() => {}}
-          onRename={() => {}}
-        />
-        <main className="relative flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
-          <AnimatedLinesBackdrop />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white px-8 py-6 text-slate-700 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-              <DiagramBuildAnimation />
-              <p className="text-sm font-medium">Creating your diagram…</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  if (quietLanding) return <BlankCanvasScreen />;
+  if (bypassKind) return <DocumentLoading stage="creating" />;
 
   return (
     <div className="flex h-dvh flex-col">
-      {/* Bypass pre-hydration guard (docs/specs/007-editor/new-diagram-route.md): this static page's
+      {/* Bypass pre-hydration guard (docs/specs/007-editor/new-document-route.md): this static page's
           prerendered HTML is the wizard, and React only learns about
           ?blank=1 / ?template= at hydration — without this, the wizard paints for the
           beat until then. The script runs as the HTML parses, BEFORE the
           wizard markup below paints, and flags the root element; the style
           rule hides the wizard-only content under that flag until React
-          swaps in the creating card. */}
+          swaps in the opening screen. */}
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('browse'))document.documentElement.setAttribute('data-wizard-browse','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
+      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-browse] [data-wizard-only]{visibility:hidden}`}</style>
+      {/* The quiet landing's loader, prerendered so it paints from the first frame on the
+          hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
+      <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
+        <CanvasLoader />
+      </div>
       <EditorHeader
-        diagramName="New diagram"
+        documentName="New document"
         hideTitle
         showShare={false}
         shareable={false}
@@ -466,25 +538,31 @@ export default function NewDiagramPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}
               onOpenExisting={() => window.location.assign('/explorer/recent')}
               onPick={(kind, name, themeId, settings) =>
-                void commitNewDiagram(kind, name, themeId, settings)
+                void commitNewDocument(kind, name, themeId, settings)
               }
               // Empty name = "keep the resolved participant name" (commit falls
               // back to it); passing self.name here could freeze the
               // pre-bootstrap 'Guest' placeholder into the account.
               onSkip={() =>
-                void commitNewDiagram('blank', '', 'brand', { saveLocation: DEFAULT_SAVE_LOCATION })
+                void commitNewDocument('blank', '', 'brand', {
+                  saveLocation: DEFAULT_SAVE_LOCATION,
+                })
               }
+              // Escape backs out to the page that opened /new, creating nothing
+              // (docs/specs/007-editor/new-document-route.md "Escape backs out").
+              onBackOut={backOut}
             />
           </CustomThemeProvider>
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
-            returning users get "Jump back in" (docs/specs/007-editor/new-diagram-route.md, hidden with no
-            diagrams yet). Its fetch also reports the diagram count that
+            returning users get "Jump back in" (docs/specs/007-editor/new-document-route.md, hidden with no
+            documents yet). Its fetch also reports the document count that
             gates the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md). The
             guided-tour sample card that used to sit under it was removed
             when the interactive tour superseded it. */}
@@ -492,9 +570,9 @@ export default function NewDiagramPage() {
           data-wizard-only
           className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10"
         >
-          <RecentDiagramsCard
+          <RecentDocumentsCard
             ownerId={self.id === 'pending' ? null : self.id}
-            onCount={setDiagramCount}
+            onCount={setDocumentCount}
           />
         </div>
       </main>

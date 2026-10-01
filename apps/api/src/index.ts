@@ -1,3 +1,8 @@
+import {
+  fromLegacyRequest,
+  isLegacyDocumentsPath,
+  toLegacyResponse,
+} from './legacy-documents-alias';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
@@ -25,7 +30,7 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DiagramRoom } from './diagram-room';
+import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { clientIp } from './client-ip';
@@ -38,7 +43,7 @@ import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext } from './routes/context';
-import { handleDiagrams } from './routes/diagrams';
+import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
@@ -54,9 +59,11 @@ import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
+import { handleDrive } from './routes/drive';
+import { withDocumentFormat } from './document-format-header';
 import type { Env } from './types';
 
-export { DiagramRoom };
+export { DocumentRoom };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -73,271 +80,290 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
 // the welcomeOnSighting call below.
 const sightedThisIsolate = new Set<string>();
 
-export default {
-  async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: CORS_HEADERS });
-    }
+// Every request the worker answers; `fetch` below stamps the document format number on it.
+async function routeApiRequest(
+  request: Request,
+  env: Env,
+  executionCtx?: ExecutionContext,
+): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: CORS_HEADERS });
+  }
+  // The deprecated /api/diagrams… alias: served by the /api/documents… routes, in the old shape.
+  if (isLegacyDocumentsPath(new URL(request.url).pathname)) {
+    console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
+    const current = await fromLegacyRequest(request, MAX_BODY_BYTES);
+    if (!current) return payloadTooLarge();
+    return toLegacyResponse(await worker.fetch(current, env, executionCtx));
+  }
 
-    const url = new URL(request.url);
-    const segments = url.pathname.replace(/^\//, '').split('/');
-    if (segments[0] !== 'api') return notFound();
+  const url = new URL(request.url);
+  const segments = url.pathname.replace(/^\//, '').split('/');
+  if (segments[0] !== 'api') return notFound();
 
-    // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify a Clerk Bearer token once at
-    // the top of the handler — null when `CLERK_JWKS_URL` is unset,
-    // no Bearer was sent, or the token failed verification. Every
-    // dispatch site below uses `resolveOwner()` instead of the legacy
-    // `ownerOf(request)`, so a signed-in user's diagrams come back
-    // under their Clerk userId and guests keep working via the
-    // legacy `X-Owner-Id` header.
-    const clerkIdentity = await getClerkIdentity(env, request);
-    const clerkUserId = clerkIdentity?.userId ?? null;
-    // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
-    // `email` claim from the JWKS-checked session token is trusted —
-    // never a client-supplied header. A `X-Owner-Email` fallback used to
-    // exist here, but it let a signed-in caller forge another address and
-    // claim that address's pending team invites (join the team + read its
-    // private library). Invite auto-connection now degrades gracefully to
-    // off when the deployment hasn't added the email claim to the Clerk
-    // session token (dashboard → Sessions → Customize session token →
-    // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
-    const clerkEmail = clerkIdentity?.email ?? null;
-    // docs/specs/017-telemetry/telemetry.md: Session·SignedUp / SignedIn are counted here, server-side, on
-    // the first request of each new Clerk session, so every auth method
-    // (email code, Google OAuth) counts once. Off the response path.
-    noteAuthSighting(env, clerkIdentity, executionCtx?.waitUntil?.bind(executionCtx));
-    // docs/specs/014-identity/transactional-email.md: first authenticated sighting => sign-up. Fire-and-forget (the
-    // sighting + welcome run in the background) so it never delays the response;
-    // a no-op when RESEND_API_KEY is unset.
-    if (clerkUserId && clerkEmail && emailEnabled(env) && !sightedThisIsolate.has(clerkUserId)) {
-      // Once per isolate, not per request: a signed-in editor autosaves
-      // every ~600ms, and each request was scheduling a (no-op after the
-      // first) INSERT OR IGNORE into email_lifecycle — ~100 wasted D1
-      // writes a minute. The INSERT stays idempotent, so a cold isolate
-      // simply pays it once more.
-      sightedThisIsolate.add(clerkUserId);
-      executionCtx?.waitUntil(welcomeOnSighting(env, clerkUserId, clerkEmail));
-    }
-    // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lvd_…` resolves to its owner — always a
-    // Clerk account — via the hashed-token lookup. Only consulted when no Clerk
-    // JWT verified (a token and a JWT can't both be the bearer). The resolved
-    // owner is the token's Clerk userId, so a token request flows through the
-    // exact same ownership / gate checks as a signed-in one.
-    let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
-    if (!clerkUserId) {
-      const bearer = bearerTokenOf(request.headers.get('Authorization'));
-      if (bearer && isApiTokenFormat(bearer)) tokenAuth = await resolveApiToken(env, bearer);
-    }
-    const resolveOwner = (): string | null =>
-      clerkUserId ?? tokenAuth?.ownerId ?? request.headers.get('X-Owner-Id');
-    // Server-verified Clerk account id from either credential (session JWT
-    // or API token). Feeds the team-membership content gates + teams-surface
-    // reads (see RouteContext.verifiedUserId); administration surfaces keep
-    // reading `clerkUserId` directly.
-    const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? null;
+  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify a Clerk Bearer token once at
+  // the top of the handler — null when `CLERK_JWKS_URL` is unset,
+  // no Bearer was sent, or the token failed verification. Every
+  // dispatch site below uses `resolveOwner()` instead of the legacy
+  // `ownerOf(request)`, so a signed-in user's documents come back
+  // under their Clerk userId and guests keep working via the
+  // legacy `X-Owner-Id` header.
+  const clerkIdentity = await getClerkIdentity(env, request);
+  const clerkUserId = clerkIdentity?.userId ?? null;
+  // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
+  // `email` claim from the JWKS-checked session token is trusted —
+  // never a client-supplied header. A `X-Owner-Email` fallback used to
+  // exist here, but it let a signed-in caller forge another address and
+  // claim that address's pending team invites (join the team + read its
+  // private library). Invite auto-connection now degrades gracefully to
+  // off when the deployment hasn't added the email claim to the Clerk
+  // session token (dashboard → Sessions → Customize session token →
+  // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
+  const clerkEmail = clerkIdentity?.email ?? null;
+  // docs/specs/017-telemetry/telemetry.md: Session·SignedUp / SignedIn are counted here, server-side, on
+  // the first request of each new Clerk session, so every auth method
+  // (email code, Google OAuth) counts once. Off the response path.
+  noteAuthSighting(env, clerkIdentity, executionCtx?.waitUntil?.bind(executionCtx));
+  // docs/specs/014-identity/transactional-email.md: first authenticated sighting => sign-up. Fire-and-forget (the
+  // sighting + welcome run in the background) so it never delays the response;
+  // a no-op when RESEND_API_KEY is unset.
+  if (clerkUserId && clerkEmail && emailEnabled(env) && !sightedThisIsolate.has(clerkUserId)) {
+    // Once per isolate, not per request: a signed-in editor autosaves
+    // every ~600ms, and each request was scheduling a (no-op after the
+    // first) INSERT OR IGNORE into email_lifecycle — ~100 wasted D1
+    // writes a minute. The INSERT stays idempotent, so a cold isolate
+    // simply pays it once more.
+    sightedThisIsolate.add(clerkUserId);
+    executionCtx?.waitUntil(welcomeOnSighting(env, clerkUserId, clerkEmail));
+  }
+  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lvd_…` resolves to its owner — always a
+  // Clerk account — via the hashed-token lookup. Only consulted when no Clerk
+  // JWT verified (a token and a JWT can't both be the bearer). The resolved
+  // owner is the token's Clerk userId, so a token request flows through the
+  // exact same ownership / gate checks as a signed-in one.
+  let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
+  if (!clerkUserId) {
+    const bearer = bearerTokenOf(request.headers.get('Authorization'));
+    if (bearer && isApiTokenFormat(bearer)) tokenAuth = await resolveApiToken(env, bearer);
+  }
+  const resolveOwner = (): string | null =>
+    clerkUserId ?? tokenAuth?.ownerId ?? request.headers.get('X-Owner-Id');
+  // Server-verified Clerk account id from either credential (session JWT
+  // or API token). Feeds the team-membership content gates + teams-surface
+  // reads (see RouteContext.verifiedUserId); administration surfaces keep
+  // reading `clerkUserId` directly.
+  const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? null;
 
-    // A Clerk account id presented as the GUEST header is always a replay of
-    // a harvested id, never a real client (see auth/guest-rest.ts): the guest
-    // credential is a server-minted UUID, and a signed-in caller sends
-    // `Authorization` instead. Refused unconditionally, BEFORE the signature
-    // gate below, because that gate is off until an operator arms it — and
-    // this shape needs no grace window, having never been legitimate.
-    if (!clerkUserId && !tokenAuth && OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '')) {
-      const headerOwner = request.headers.get('X-Owner-Id');
-      if (headerOwner && isClerkIdShape(headerOwner)) {
-        return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
-      }
+  // A Clerk account id presented as the GUEST header is always a replay of
+  // a harvested id, never a real client (see auth/guest-rest.ts): the guest
+  // credential is a server-minted UUID, and a signed-in caller sends
+  // `Authorization` instead. Refused unconditionally, BEFORE the signature
+  // gate below, because that gate is off until an operator arms it — and
+  // this shape needs no grace window, having never been legitimate.
+  if (!clerkUserId && !tokenAuth && OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '')) {
+    const headerOwner = request.headers.get('X-Owner-Id');
+    if (headerOwner && isClerkIdShape(headerOwner)) {
+      return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
     }
+  }
 
-    // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4). On owner-scoped routes, a
-    // presented `X-Owner-Id` must carry a valid HMAC signature once
-    // enforcement is on — so a harvested owner id (a guest UUID, or a
-    // signed-up user's Clerk `sub` slipped into the header) can't be used as a
-    // credential. Skipped for Clerk / token callers (they aren't on the guest
-    // path) and during the grace window. A request with NO `X-Owner-Id` is
-    // untouched (it just resolves to no owner), so public reads still work.
+  // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4). On owner-scoped routes, a
+  // presented `X-Owner-Id` must carry a valid HMAC signature once
+  // enforcement is on — so a harvested owner id (a guest UUID, or a
+  // signed-up user's Clerk `sub` slipped into the header) can't be used as a
+  // credential. Skipped for Clerk / token callers (they aren't on the guest
+  // path) and during the grace window. A request with NO `X-Owner-Id` is
+  // untouched (it just resolves to no owner), so public reads still work.
+  if (
+    !clerkUserId &&
+    !tokenAuth &&
+    OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') &&
+    guestSignatureEnforced(env, Date.now())
+  ) {
+    const headerOwner = request.headers.get('X-Owner-Id');
     if (
-      !clerkUserId &&
-      !tokenAuth &&
-      OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') &&
-      guestSignatureEnforced(env, Date.now())
+      headerOwner &&
+      !(await verifyOwnerId(
+        env.GUEST_ID_HMAC_SECRET,
+        headerOwner,
+        request.headers.get('X-Owner-Sig'),
+      ))
     ) {
-      const headerOwner = request.headers.get('X-Owner-Id');
-      if (
-        headerOwner &&
-        !(await verifyOwnerId(
-          env.GUEST_ID_HMAC_SECRET,
-          headerOwner,
-          request.headers.get('X-Owner-Sig'),
-        ))
-      ) {
-        return json({ error: 'signature_required' }, { status: 401 });
-      }
+      return json({ error: 'signature_required' }, { status: 401 });
     }
+  }
 
-    // Per-owner write rate limit. Gates POST / PUT / DELETE at a
-    // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
-    // pacing under Cloudflare's DDoS threshold still can't spam
-    // diagram / image creation through to D1 / R2 quota
-    // exhaustion. Reads pass through untouched. When neither a
-    // Clerk token nor X-Owner-Id resolves the caller, fall back to
-    // a literal 'anonymous' key so one unauthenticated client still
-    // can't burn the global quota. Telemetry ingest (/api/events)
-    // is deliberately exempt: it's anonymous, high-frequency, and
-    // must never compete with a user's real diagram writes for the
-    // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
-    // its volume low instead.
-    const isWrite =
-      request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
-    // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
-    // only GET/HEAD. Reject every write it presents at this single choke point
-    // — so no write route can be reached, present or future, with no per-route
-    // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
-    // or readOnly false). Guest header requests carry no tokenAuth either.
-    if (tokenAuth?.readOnly && isWrite) {
-      return forbidden('read_only_token');
+  // Per-owner write rate limit. Gates POST / PUT / DELETE at a
+  // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
+  // pacing under Cloudflare's DDoS threshold still can't spam
+  // document / image creation through to D1 / R2 quota
+  // exhaustion. Reads pass through untouched. When neither a
+  // Clerk token nor X-Owner-Id resolves the caller, fall back to
+  // a literal 'anonymous' key so one unauthenticated client still
+  // can't burn the global quota. Telemetry ingest (/api/events)
+  // is deliberately exempt: it's anonymous, high-frequency, and
+  // must never compete with a user's real document writes for the
+  // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
+  // its volume low instead.
+  const isWrite =
+    request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
+  // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
+  // only GET/HEAD. Reject every write it presents at this single choke point
+  // — so no write route can be reached, present or future, with no per-route
+  // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
+  // or readOnly false). Guest header requests carry no tokenAuth either.
+  if (tokenAuth?.readOnly && isWrite) {
+    return forbidden('read_only_token');
+  }
+  // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
+  // payload never reaches a route's req.json(). The per-field / per-tab caps
+  // in the routes catch the rest; this is the blunt outer bound.
+  if (isWrite) {
+    const len = Number(request.headers.get('content-length'));
+    // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
+    // the route re-checks it and answers with file_too_large + limitBytes.
+    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    if (Number.isFinite(len) && len > cap) {
+      return payloadTooLarge();
     }
-    // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
-    // payload never reaches a route's req.json(). The per-field / per-tab caps
-    // in the routes catch the rest; this is the blunt outer bound.
-    if (isWrite) {
-      const len = Number(request.headers.get('content-length'));
-      // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
-      // the route re-checks it and answers with file_too_large + limitBytes.
-      const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
-      if (Number.isFinite(len) && len > cap) {
-        return payloadTooLarge();
-      }
-    }
-    // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
-    // is the auth handshake for opening the realtime room, and a 429 —
-    // easily reached because it shares the per-owner budget with the
-    // ~600ms autosave PUTs — would silently cost a team member their
-    // whole session's realtime (the connector has no reconnect loop).
-    // Mint volume is one row per room join and the route does no
-    // unbounded work, so it isn't a quota-exhaustion vector.
-    const isRoomTicketMint = segments[1] === 'diagrams' && segments[3] === 'room-ticket';
-    if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
-      // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
-      // runaway integration is throttled independently of the owner's
-      // interactive app use; everything else keys on the resolved owner.
-      const key = tokenAuth ? `token:${tokenAuth.tokenId}` : (resolveOwner() ?? 'anonymous');
-      if (await isWriteRateLimited(env, key)) return rateLimited();
-    }
-    // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
-    // the write limiter, so an external integration's reads get their own
-    // per-token throttle. Optional binding → allow when absent (self-host).
-    if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
-      const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
-      if (!ok.success) return rateLimited();
-    }
+  }
+  // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
+  // is the auth handshake for opening the realtime room, and a 429 —
+  // easily reached because it shares the per-owner budget with the
+  // ~600ms autosave PUTs — would silently cost a team member their
+  // whole session's realtime (the connector has no reconnect loop).
+  // Mint volume is one row per room join and the route does no
+  // unbounded work, so it isn't a quota-exhaustion vector.
+  const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
+  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
+    // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
+    // runaway integration is throttled independently of the owner's
+    // interactive app use; everything else keys on the resolved owner.
+    const key = tokenAuth ? `token:${tokenAuth.tokenId}` : (resolveOwner() ?? 'anonymous');
+    if (await isWriteRateLimited(env, key)) return rateLimited();
+  }
+  // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
+  // the write limiter, so an external integration's reads get their own
+  // per-token throttle. Optional binding → allow when absent (self-host).
+  if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
+    const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
+    if (!ok.success) return rateLimited();
+  }
 
-    // Throttle blind share-code / password guessing on the share-resolve
-    // read (GET /api/share/<code>), which carries the optional share
-    // password and is otherwise an unauthenticated read exempt from the
-    // write limiter above. Per-IP. Absent binding → allow (self-host).
-    if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
-      const ip = clientIp(request);
-      if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
-    }
+  // Throttle blind share-code / password guessing on the share-resolve
+  // read (GET /api/share/<code>), which carries the optional share
+  // password and is otherwise an unauthenticated read exempt from the
+  // write limiter above. Per-IP. Absent binding → allow (self-host).
+  if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
+    const ip = clientIp(request);
+    if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
+  }
 
-    // Dispatch on the resource segment to its route module. Each
-    // handler owns every request for its segment and returns
-    // notFound() for sub-paths / methods it doesn't recognise, so an
-    // unmatched resource OR an unmatched sub-route both fall through
-    // to the final notFound() (preserving the original behaviour).
-    const ctx: RouteContext = {
-      request,
-      env,
-      url,
-      segments,
-      clerkUserId,
-      verifiedUserId,
-      clerkEmail,
-      resolveOwner,
-      waitUntil: (promise) => executionCtx?.waitUntil(promise),
-    };
-    try {
-      switch (segments[1]) {
-        case 'capabilities':
-          return handleCapabilities(ctx);
-        case 'openapi.json':
-          return handleOpenapi(ctx);
-        case 'unfurl':
-          return await handleUnfurl(ctx);
-        case 'ai':
-          // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
-          // assistant at /api/ai, and the crop reader one segment deeper.
-          if (segments[2] === undefined) return await handleAi(ctx);
-          if (segments[2] === 'read-notes' && segments.length === 3)
-            return await handleAiReadNotes(ctx);
-          return notFound();
-        case 'events':
-          return await handleEvents(ctx);
-        case 'telemetry':
-          return await handleTelemetry(ctx);
-        case 'share':
-          return await handleShare(ctx);
-        case 'shared':
-          return await handleShared(ctx);
-        case 'images':
-          return await handleImages(ctx);
-        case 'diagrams':
-          return await handleDiagrams(ctx);
-        case 'folders':
-          return await handleFolders(ctx);
-        case 'custom-themes':
-          return await handleCustomThemes(ctx);
-        case 'teams':
-          return await handleTeams(ctx);
-        case 'tokens':
-          return await handleTokens(ctx);
-        case 'oauth':
-          return await handleOauthExchange(ctx);
-        case 'account':
-          return await handleAccount(ctx);
-        case 'favourites':
-          return await handleFavourites(ctx);
-        case 'trash':
-          return await handleTrash(ctx);
-        case 'timeline':
-          return await handleTimeline(ctx);
-        case 'activity':
-          return await handleActivity(ctx);
-        case 'preferences':
-          return await handlePreferences(ctx);
-        case 'migrate':
-          return await handleMigrate(ctx);
-        case 'guest-id':
-          return await handleGuestId(ctx);
-        case 'participants':
-          return await handleParticipants(ctx);
-      }
-    } catch (err) {
-      // Log the real error server-side, but don't echo its message to the
-      // client — internal error text can leak implementation details (table
-      // names, stack hints). Return a generic body instead.
-      console.error('api error', err);
-      // Self-report the crash to the events table (docs/specs/017-telemetry/telemetry.md 'Error'
-      // category): the worker owns the D1 binding, so a server-side
-      // exception counts even when no client survives to report it.
-      // Same TELEMETRY_ENABLED gate as the ingest; off the response's
-      // critical path (waitUntil), and its own failure is swallowed —
-      // the 500 must still go out. The type names the endpoint by its
-      // route words only (`Internal.Put.Diagrams.Tabs`), never an id.
-      if (env.TELEMETRY_ENABLED === 'true') {
-        const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
-        const report = insertTelemetryEvents(
-          env,
-          [{ category: 'Error', action: 'Api', type }],
-          Date.now(),
-        ).catch(() => {});
-        executionCtx?.waitUntil?.(report);
-      }
-      return json({ error: 'internal_error' }, { status: 500 });
+  // Dispatch on the resource segment to its route module. Each
+  // handler owns every request for its segment and returns
+  // notFound() for sub-paths / methods it doesn't recognise, so an
+  // unmatched resource OR an unmatched sub-route both fall through
+  // to the final notFound() (preserving the original behaviour).
+  const ctx: RouteContext = {
+    request,
+    env,
+    url,
+    segments,
+    clerkUserId,
+    verifiedUserId,
+    clerkEmail,
+    resolveOwner,
+    waitUntil: (promise) => executionCtx?.waitUntil(promise),
+  };
+  try {
+    switch (segments[1]) {
+      case 'capabilities':
+        return handleCapabilities(ctx);
+      case 'openapi.json':
+        return handleOpenapi(ctx);
+      case 'unfurl':
+        return await handleUnfurl(ctx);
+      case 'ai':
+        // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
+        // assistant at /api/ai, and the crop reader one segment deeper.
+        if (segments[2] === undefined) return await handleAi(ctx);
+        if (segments[2] === 'read-notes' && segments.length === 3)
+          return await handleAiReadNotes(ctx);
+        return notFound();
+      case 'events':
+        return await handleEvents(ctx);
+      case 'telemetry':
+        return await handleTelemetry(ctx);
+      case 'share':
+        return await handleShare(ctx);
+      case 'shared':
+        return await handleShared(ctx);
+      case 'images':
+        return await handleImages(ctx);
+      case 'documents':
+        return await handleDocuments(ctx);
+      case 'folders':
+        return await handleFolders(ctx);
+      case 'custom-themes':
+        return await handleCustomThemes(ctx);
+      case 'teams':
+        return await handleTeams(ctx);
+      case 'tokens':
+        return await handleTokens(ctx);
+      case 'oauth':
+        return await handleOauthExchange(ctx);
+      case 'account':
+        return await handleAccount(ctx);
+      case 'favourites':
+        return await handleFavourites(ctx);
+      case 'trash':
+        return await handleTrash(ctx);
+      case 'timeline':
+        return await handleTimeline(ctx);
+      case 'activity':
+        return await handleActivity(ctx);
+      case 'preferences':
+        return await handlePreferences(ctx);
+      case 'migrate':
+        return await handleMigrate(ctx);
+      case 'guest-id':
+        return await handleGuestId(ctx);
+      case 'participants':
+        return await handleParticipants(ctx);
+      case 'drive':
+        return await handleDrive(ctx);
     }
+  } catch (err) {
+    // Log the real error server-side, but don't echo its message to the
+    // client — internal error text can leak implementation details (table
+    // names, stack hints). Return a generic body instead.
+    console.error('api error', err);
+    // Self-report the crash to the events table (docs/specs/017-telemetry/telemetry.md 'Error'
+    // category): the worker owns the D1 binding, so a server-side
+    // exception counts even when no client survives to report it.
+    // Same TELEMETRY_ENABLED gate as the ingest; off the response's
+    // critical path (waitUntil), and its own failure is swallowed —
+    // the 500 must still go out. The type names the endpoint by its
+    // route words only (`Internal.Put.Documents.Tabs`), never an id.
+    if (env.TELEMETRY_ENABLED === 'true') {
+      const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
+      const report = insertTelemetryEvents(
+        env,
+        [{ category: 'Error', action: 'Api', type }],
+        Date.now(),
+      ).catch(() => {});
+      executionCtx?.waitUntil?.(report);
+    }
+    return json({ error: 'internal_error' }, { status: 500 });
+  }
 
-    return notFound();
+  return notFound();
+}
+
+const worker = {
+  // Every response carries the document format number (docs/specs/016-platform/new-version-prompt.md).
+  async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
+    return withDocumentFormat(await routeApiRequest(request, env, executionCtx));
   },
 
   // Scheduled handler. Wired to the cron schedule in wrangler.toml.
@@ -401,7 +427,7 @@ export default {
       // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
       ctx.waitUntil(
         purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} diagrams`))
+          .then((count) => console.log(`trash sweep: purged ${count} documents`))
           .catch((err) => console.error('trash sweep failed', err)),
       );
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
@@ -410,6 +436,8 @@ export default {
     }
   },
 } satisfies ExportedHandler<Env>;
+
+export default worker;
 
 // Run one daily retention sweep in the background: delete rows older than
 // `cutoff`, then log the count (or the failure) to `wrangler tail`. The

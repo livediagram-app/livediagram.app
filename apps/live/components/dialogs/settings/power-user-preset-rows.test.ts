@@ -18,7 +18,7 @@ describe('presetSummaryLines', () => {
     const prefs = setPowerUserMode({}, true).prefs;
     const lines = presetSummaryLines(prefs, ALL);
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
-      ['Panel Layout', 'Toolbar', 'Appearance'],
+      ['Panel Layout', 'Toolbar', 'Panels'],
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Show Welcome Tour', 'Off', 'Accessibility'],
@@ -28,9 +28,9 @@ describe('presetSummaryLines', () => {
   });
 
   it('marks a setting changed since switching on, as switch-off would', () => {
-    const prefs = withPanelLayout(setPowerUserMode({}, true).prefs, 'minimal');
+    const prefs = withPanelLayout(setPowerUserMode({}, true).prefs, 'floating');
     const layout = presetSummaryLines(prefs, ALL).find((l) => l.rowKey === 'panelLayout')!;
-    expect(layout.value).toBe('Minimal');
+    expect(layout.value).toBe('Floating');
     expect(layout.changed).toBe(true);
   });
 

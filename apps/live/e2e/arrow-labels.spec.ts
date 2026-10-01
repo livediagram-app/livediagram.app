@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { DOUBLE_PRESS_MS } from '../lib/double-press';
-import { expect, expectNoPageErrors, seedTab, startBlankDiagram, test } from './fixtures';
+import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
 
 // Arrow labels on the line and bending by the line, end to end
 // (docs/specs/008-canvas/arrow-labels.md, docs/specs/008-canvas/arrow-bending.md). Unit tests
@@ -50,7 +50,7 @@ const editor = (page: Page) => page.getByRole('textbox', { name: 'Arrow label' }
 
 test.describe('arrow labels and bending', () => {
   test('a label sits on its line, which is broken open behind it', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, linked);
     const line = await onLine(page, 'ar', 0.5);
     const label = (await page.getByText('calls', { exact: true }).boundingBox())!;
@@ -64,7 +64,7 @@ test.describe('arrow labels and bending', () => {
     page,
     pageErrors,
   }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, linked);
     const before = await pathD(page, 'ar');
     const p = await onLine(page, 'ar', 0.3);
@@ -75,7 +75,7 @@ test.describe('arrow labels and bending', () => {
   });
 
   test('a fast double-click on the label edits it', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, linked);
     const before = await pathD(page, 'ar');
     await dblclickLabel(page, 'calls');
@@ -85,7 +85,7 @@ test.describe('arrow labels and bending', () => {
   });
 
   test('Shift+Enter breaks the label, Enter commits it', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, linked);
     await dblclickLabel(page, 'calls');
     await editor(page).fill('calls');
@@ -100,7 +100,7 @@ test.describe('arrow labels and bending', () => {
   });
 
   test('a blank line keeps its height', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, linked);
     await dblclickLabel(page, 'calls');
     await editor(page).fill('');
@@ -117,7 +117,7 @@ test.describe('arrow labels and bending', () => {
   });
 
   test('dragging the line bends it, and one undo straightens it', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, linked);
     const before = await pathD(page, 'ar');
     const p = await onLine(page, 'ar', 0.3);
@@ -133,13 +133,15 @@ test.describe('arrow labels and bending', () => {
   });
 
   test('a free arrow moves by its frame', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
+    // Right of the quick style panel, which opens on the canvas's left once the arrow is selected
+    // (docs/specs/008-canvas/quick-style-panel.md "Where it sits") and would take the frame press.
     await seedTab(page, [
       {
         id: 'free',
         type: 'arrow',
-        from: { kind: 'free', x: 200, y: 300 },
-        to: { kind: 'free', x: 600, y: 300 },
+        from: { kind: 'free', x: 600, y: 300 },
+        to: { kind: 'free', x: 950, y: 300 },
       },
     ]);
     const p = await onLine(page, 'free', 0.3);
@@ -165,7 +167,7 @@ test.describe('arrow labels and bending', () => {
   test('the selection toolbar never covers the label', async ({ page, pageErrors }) => {
     // A label dragged clear above its line: the toolbar used to float over the
     // line's own box and, at some zooms, land exactly on the label.
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, [
       square('a', 'Client', 100, 200),
       square('b', 'Server', 600, 200),
@@ -198,7 +200,7 @@ test.describe('arrow labels and bending', () => {
   });
 
   test('a free arrow scales from its frame corner', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, [
       {
         id: 'free',

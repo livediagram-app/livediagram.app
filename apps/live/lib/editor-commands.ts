@@ -1,7 +1,7 @@
 // The contextual command catalogue for the SearchPanel "Actions" group
 // (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). A pure, handler-injected builder so the
 // applicability logic (which commands apply to the current selection /
-// diagram) is unit-testable without React; `useEditorCommands` binds the
+// document) is unit-testable without React; `useEditorCommands` binds the
 // handlers to the live editor and matching/capping happens in `lib/search.ts`.
 //
 // Every command maps 1:1 to an existing editor action (the same handler the
@@ -13,7 +13,7 @@ import {
   AUTO_LAYOUT_STYLE_IDS,
   type AutoLayoutChoice,
 } from './auto-layout-choices';
-import type { ShapeMarker } from '@livediagram/diagram';
+import type { ShapeMarker } from '@livediagram/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
 
@@ -48,7 +48,7 @@ export type CommandContext = {
   // Owner-only: the Share command is hidden for non-owners (a visitor with
   // an edit link gets "Make a copy" instead, which isn't a palette command).
   isOwner: boolean;
-  // Offline diagram (docs/specs/006-diagram/offline-mode.md): nothing on the server to share, so the Share
+  // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
@@ -64,6 +64,9 @@ export type CommandContext = {
   // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
+  // A whiteboard (docs/specs/023-whiteboard/whiteboard.md): its dock replaces the highlighter and the
+  // format painter, so search does not offer them either.
+  whiteboard?: boolean;
   // Are timeline lanes on right now (docs/specs/021-event-storming/event-storming.md Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
   // Can this deployment read a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 8)? False
@@ -85,8 +88,8 @@ export type CommandHandlers = {
   addComment: () => void;
   editNote: () => void;
   createTab: () => void;
-  renameDiagram: () => void;
-  deleteDiagram: () => void;
+  renameDocument: () => void;
+  deleteDocument: () => void;
   renameTab: () => void;
   openTheme: () => void;
   openCanvasOptions: () => void;
@@ -125,7 +128,7 @@ const CANVAS_TOOLS: {
   keywords: string;
   // Acts on existing content, so it goes away on an empty canvas.
   needsContent?: boolean;
-  // Changes the diagram, so a view-only visitor never sees it.
+  // Changes the document, so a view-only visitor never sees it.
   mutates?: boolean;
   desktopOnly?: boolean;
 }[] = [
@@ -176,10 +179,12 @@ const CANVAS_TOOLS: {
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
     // so it needs content for the same reason: there is nothing to put on a
     // slide on an empty canvas. Picking it opens the panel; Start presents.
+    // Desktop-only: the deck workbench has no room beside a phone's canvas.
     id: 'slide-deck',
     name: 'Slide Deck',
     keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
     needsContent: true,
+    desktopOnly: true,
   },
   {
     id: 'isometric',
@@ -193,13 +198,16 @@ const CANVAS_TOOLS: {
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
+const WHITEBOARD_ABSENT_TOOLS = new Set(['highlighter', 'format']);
+
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
-      !(t.mutates && ctx.isReadOnly),
+      !(t.mutates && ctx.isReadOnly) &&
+      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,
@@ -211,7 +219,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
 export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   // The view-safe subset (docs/specs/007-editor/command-palette.md): navigation / presentation verbs that
   // read-only visitors can run too. Everything below the read-only return
-  // mutates the diagram (or opens an edit surface) and stays editor-only.
+  // mutates the document (or opens an edit surface) and stays editor-only.
   const viewSafe: EditorCommand[] = [
     {
       id: 'zen',
@@ -234,7 +242,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     {
       // View-safe on purpose: it opens a panel and changes nothing, and a
       // view-only visitor has as much reason to ask who else is here as the
-      // owner does. Not gated on the diagram being shared or on anyone else
+      // owner does. Not gated on the document being shared or on anyone else
       // being present either — "nobody yet" is a real answer to the question.
       id: 'collaborators',
       name: 'Collaborators',
@@ -269,7 +277,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     });
   }
 
-  // --- Diagram / tab commands. Always available in-diagram (independent of
+  // --- Document / tab commands. Always available in-document (independent of
   // the selection), so a power user can share / rename / theme without first
   // clearing what's selected.
   // Event-storming board verbs (docs/specs/021-event-storming/event-storming.md). Only on such a board: a timeline
@@ -298,16 +306,16 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     run: h.renameTab,
   });
   out.push({
-    id: 'rename-diagram',
-    name: 'Rename diagram',
-    keywords: 'rename diagram title name relabel',
-    run: h.renameDiagram,
+    id: 'rename-document',
+    name: 'Rename document',
+    keywords: 'rename document diagram title name relabel',
+    run: h.renameDocument,
   });
   out.push({
-    id: 'delete-diagram',
-    name: 'Delete diagram',
-    keywords: 'delete diagram remove trash destroy',
-    run: h.deleteDiagram,
+    id: 'delete-document',
+    name: 'Delete document',
+    keywords: 'delete document diagram remove trash destroy',
+    run: h.deleteDocument,
   });
   out.push({
     id: 'open-theme',
@@ -324,14 +332,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.isOwner && !ctx.isOffline) {
     out.push({
       id: 'share',
-      name: 'Share diagram',
-      keywords: 'share link invite collaborate publish embed export',
+      name: 'Share document',
+      keywords: 'share document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });
   }
 
   // Cleanup (docs/specs/008-canvas/layout-cleanup.md's tab-menu band) + the app-level dialogs, then the
-  // view-safe verbs last so selection / diagram commands keep the better
+  // view-safe verbs last so selection / document commands keep the better
   // ranks for ambiguous queries.
   out.push({
     id: 'auto-layout',

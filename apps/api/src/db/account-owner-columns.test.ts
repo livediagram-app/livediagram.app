@@ -26,7 +26,7 @@ type OwnerColumn = {
 };
 
 const OWNER_COLUMNS: OwnerColumn[] = [
-  { table: 'diagrams', column: 'owner_id', migrate: { kind: 'moves' } },
+  { table: 'documents', column: 'owner_id', migrate: { kind: 'moves' } },
   {
     table: 'folders',
     column: 'owner_id',
@@ -63,6 +63,9 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'email_lifecycle', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'auth_accounts', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
+  { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
+  { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
@@ -90,8 +93,8 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
     .run(...Object.values(row));
 }
 
-function diagram(sql: DatabaseSync, id: string, ownerId: string, teamId: string | null = null) {
-  insert(sql, 'diagrams', {
+function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string | null = null) {
+  insert(sql, 'documents', {
     id,
     owner_id: ownerId,
     name: id,
@@ -103,10 +106,10 @@ function diagram(sql: DatabaseSync, id: string, ownerId: string, teamId: string 
 }
 
 // One row in every guest-holdable owner-keyed column, keyed on `id`, starring
-// and visiting a diagram `peer` owns as well as its own.
-function seedGuestHoldable(sql: DatabaseSync, id: string, peerDiagram: string) {
+// and visiting a document `peer` owns as well as its own.
+function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) {
   insert(sql, 'participants', { id, name: 'Otter', color: '#ff8800', created_at: T0 });
-  diagram(sql, `d-${id}`, id);
+  liveDoc(sql, `d-${id}`, id);
   insert(sql, 'folders', {
     id: `f-${id}`,
     owner_id: id,
@@ -114,11 +117,11 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDiagram: string) {
     created_at: T0,
     updated_at: T0,
   });
-  insert(sql, 'favourites', { owner_id: id, diagram_id: `d-${id}`, created_at: T0 });
-  insert(sql, 'favourites', { owner_id: id, diagram_id: peerDiagram, created_at: T0 });
+  insert(sql, 'favourites', { owner_id: id, document_id: `d-${id}`, created_at: T0 });
+  insert(sql, 'favourites', { owner_id: id, document_id: peerDocument, created_at: T0 });
   insert(sql, 'shared_with', {
     owner_id: id,
-    diagram_id: peerDiagram,
+    document_id: peerDocument,
     role: 'view',
     last_seen: T0,
   });
@@ -144,7 +147,7 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDiagram: string) {
   insert(sql, 'timeline_events', {
     id: `e-${id}`,
     actor_id: id,
-    source_type: 'diagram',
+    source_type: 'document',
     source_id: `d-${id}`,
     event_type: 'created',
     title: 'Created',
@@ -177,6 +180,15 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   });
   insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
   insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
+  insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
+  insert(sql, 'drive_items', {
+    owner_id: id,
+    item_kind: 'document',
+    ld_id: `d-`,
+    drive_file_id: `file-`,
+    name: 'x.livediagram',
+    ld_name: 'x',
+  });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
     insert(sql, 'team_members', {
@@ -189,7 +201,7 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
       updated_at: T0,
     });
   }
-  diagram(sql, `d-team-${id}`, id, 'team-1');
+  liveDoc(sql, `d-team-${id}`, id, 'team-1');
   // A folder in a team this user already left: it stays with the team.
   insert(sql, 'teams', { id: 'team-left', name: 'Old team', created_at: T0, updated_at: T0 });
   insert(sql, 'folders', {
@@ -240,10 +252,10 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
   function arrange() {
     const db = sqliteD1();
     insert(db.sql, 'participants', { id: OTHER, name: 'Peer', color: '#000', created_at: T0 });
-    diagram(db.sql, 'd-other', OTHER);
+    liveDoc(db.sql, 'd-other', OTHER);
     seedGuestHoldable(db.sql, ACCOUNT, 'd-other');
     seedAccountOnly(db.sql, ACCOUNT, OTHER);
-    insert(db.sql, 'favourites', { owner_id: OTHER, diagram_id: 'd-other', created_at: T0 });
+    insert(db.sql, 'favourites', { owner_id: OTHER, document_id: 'd-other', created_at: T0 });
     // The sweep matches the owner on either side of an alias pair.
     insert(db.sql, 'owner_aliases', { owner_id: OTHER, alias_id: ACCOUNT, created_at: T0 });
     return db;
@@ -261,13 +273,13 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     }
   });
 
-  it("erases the stars the owner placed on other people's diagrams", async () => {
+  it("erases the stars the owner placed on other people's documents", async () => {
     const { env, sql } = arrange();
 
     await deleteAccount(env, ACCOUNT);
 
-    const stars = sql.prepare('SELECT owner_id, diagram_id FROM favourites').all();
-    expect(stars.map((s) => ({ ...s }))).toEqual([{ owner_id: OTHER, diagram_id: 'd-other' }]);
+    const stars = sql.prepare('SELECT owner_id, document_id FROM favourites').all();
+    expect(stars.map((s) => ({ ...s }))).toEqual([{ owner_id: OTHER, document_id: 'd-other' }]);
   });
 
   it("keeps what belongs to someone else, a left team's folder included", async () => {
@@ -275,8 +287,8 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
 
     await deleteAccount(env, ACCOUNT);
 
-    const diagrams = sql.prepare('SELECT id, owner_id FROM diagrams ORDER BY id').all();
-    expect(diagrams.map((d) => ({ ...d }))).toEqual([
+    const liveDocs = sql.prepare('SELECT id, owner_id FROM documents ORDER BY id').all();
+    expect(liveDocs.map((d) => ({ ...d }))).toEqual([
       { id: 'd-other', owner_id: OTHER },
       { id: `d-team-${ACCOUNT}`, owner_id: OTHER },
     ]);
@@ -288,7 +300,7 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
 describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.md)', () => {
   function arrange() {
     const db = sqliteD1();
-    diagram(db.sql, 'd-other', OTHER);
+    liveDoc(db.sql, 'd-other', OTHER);
     seedGuestHoldable(db.sql, GUEST, 'd-other');
     return db;
   }
@@ -309,19 +321,19 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     }
   });
 
-  it('keeps the account star when both identities starred the same diagram', async () => {
+  it('keeps the account star when both identities starred the same document', async () => {
     const { env, sql } = arrange();
     // The account starred d-other first, from another device.
-    insert(sql, 'favourites', { owner_id: ACCOUNT, diagram_id: 'd-other', created_at: T0 - 5 });
+    insert(sql, 'favourites', { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 });
 
     await migrateOwnerId(env, GUEST, ACCOUNT);
 
     const stars = sql
-      .prepare('SELECT owner_id, diagram_id, created_at FROM favourites ORDER BY diagram_id')
+      .prepare('SELECT owner_id, document_id, created_at FROM favourites ORDER BY document_id')
       .all();
     expect(stars.map((s) => ({ ...s }))).toEqual([
-      { owner_id: ACCOUNT, diagram_id: `d-${GUEST}`, created_at: T0 },
-      { owner_id: ACCOUNT, diagram_id: 'd-other', created_at: T0 - 5 },
+      { owner_id: ACCOUNT, document_id: `d-${GUEST}`, created_at: T0 },
+      { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 },
     ]);
   });
 
@@ -338,14 +350,14 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
   it('is a no-op on a second run', async () => {
     const { env, sql } = arrange();
     await migrateOwnerId(env, GUEST, ACCOUNT);
-    const before = sql.prepare('SELECT * FROM favourites ORDER BY diagram_id').all();
+    const before = sql.prepare('SELECT * FROM favourites ORDER BY document_id').all();
 
     await expect(migrateOwnerId(env, GUEST, ACCOUNT)).resolves.toEqual({
-      diagrams: 0,
+      documents: 0,
       folders: 0,
       shared: 0,
       images: 0,
     });
-    expect(sql.prepare('SELECT * FROM favourites ORDER BY diagram_id').all()).toEqual(before);
+    expect(sql.prepare('SELECT * FROM favourites ORDER BY document_id').all()).toEqual(before);
   });
 });

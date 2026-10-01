@@ -11,7 +11,11 @@ import * as icons from './index';
 const TOLERANCE_PX = 0.5;
 
 // Glyphs asymmetric by design, each with the reason it is allowed off-centre.
-export const CENTRING_EXCEPTIONS: Record<string, string> = {};
+export const CENTRING_EXCEPTIONS: Record<string, string> = {
+  // The tab-activity clock (the editor's history button): its rewind arrow leaves the dial at the
+  // top left, so the ink leans that way by design; centring it would push the dial off-centre.
+  ActivityIcon: 'a clock with a rewind arrow at its top left',
+};
 
 const ICONS = (Object.entries(icons) as [string, unknown][]).filter(
   (e): e is [string, ComponentType<IconProps>] =>
@@ -34,6 +38,10 @@ describe('shared chrome glyph centring', () => {
       .filter(({ o }) => o && (Math.abs(o.dx) > TOLERANCE_PX || Math.abs(o.dy) > TOLERANCE_PX))
       .map(({ name, o }) => `${name} dx=${o!.dx} dy=${o!.dy}`);
     expect(off).toEqual([]);
+  });
+
+  it('draws the check on the centre line of its box', () => {
+    expect(offset(icons.CheckIcon)).toEqual({ dx: 0, dy: 0 });
   });
 
   it('lists only exceptions that still exist', () => {

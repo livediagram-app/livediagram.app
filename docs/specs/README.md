@@ -9,25 +9,25 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 ## Categories
 
 - ./001-project-vision/README.md - when you need the why: the problem, audience and value proposition
-- ./002-project-scope/README.md - when deciding what is in or out: licence, distribution, hard constraints
+- ./002-project-scope/README.md - when deciding what is in or out: licence, distribution, third-party licences, hard constraints
 - ./003-system-architecture/README.md - when touching source layout, the test setup, or cross-cutting code structure
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
-- ./006-diagram/README.md - when working on the diagram model: tabs, layers, storage, snapshots, offline diagrams
+- ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, layers, storage, snapshots, offline documents, stroke points
 - ./007-editor/README.md - when working on the live editor shell: routes, preferences, power user mode, panels, tours, AI, command palette
 - ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, tool panels
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, favourites, icon and sticker catalogues, presets
-- ./011-theme/README.md - when working on diagram themes: built-in, multi-colour and custom themes
+- ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, folders, teams, favourites, share links or the Trash
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens or the MCP server
-- ./016-platform/README.md - when working on routing, deployment or the staging environment
+- ./016-platform/README.md - when working on routing, deployment or the staging environment, or the new version prompt
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, imported images, board imports from Miro or Microsoft Whiteboard, or export fidelity
+- ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, pasting from Excalidraw, imported images, board imports from Miro or Microsoft Whiteboard, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of Personal Space
 - ./023-whiteboard/README.md - when working on the whiteboard tab kind

@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { NAME_MAX_LENGTH } from '@livediagram/diagram';
+import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
-// (sidebar folder tree, list-view folder row, list-view diagram
-// row, floating Explorer's folder + diagram renames). Three near-
+// (sidebar folder tree, list-view folder row, list-view document
+// row, floating Explorer's folder + document renames). Three near-
 // identical copies of this used to exist; they drifted on focus
 // management and the most fragile copy (the standalone /explorer
 // page) was the one that exposed the focus-bounce bug. Living
@@ -78,7 +78,7 @@ export function InlineRenameInput({
     <input
       ref={ref}
       value={draft}
-      // Names are capped (docs/specs/006-diagram/name-length.md). Enforced on the input too, not only on
+      // Names are capped (docs/specs/006-document/name-length.md). Enforced on the input too, not only on
       // commit, so the limit is visible as you type rather than silently
       // eating the end of what you wrote.
       maxLength={NAME_MAX_LENGTH}

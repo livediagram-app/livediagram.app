@@ -1,4 +1,4 @@
-import { calloutLayout, PAGE_HEADING_MAX, ACCENT_BAR_TEXT } from '@livediagram/diagram';
+import { calloutLayout, PAGE_HEADING_MAX, ACCENT_BAR_TEXT } from '@livediagram/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';

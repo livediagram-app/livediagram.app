@@ -19,7 +19,7 @@ const TABS = [
 
 const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   code: 'CODE2345',
-  diagramId: 'd1',
+  documentId: 'd1',
   role: 'view',
   createdAt: 1,
   expiry: 'never',
@@ -33,7 +33,7 @@ function renderDialog(over: Partial<ShareDialogProps> = {}) {
     participant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
     links: [],
     sharePassword: null,
-    shareUrlFor: (code) => `https://x.test/diagram/shared?s=${code}`,
+    shareUrlFor: (code) => `https://x.test/document/shared?s=${code}`,
     tabs: TABS,
     lockedName: 'Ada',
     onSaveName: vi.fn(),
@@ -85,7 +85,7 @@ describe('ShareDialog scope', () => {
     expect(options.map((o) => o.textContent)).toEqual(['All tabs', 'Pricing', 'Roadmap']);
   });
 
-  it('hides the scope control on a single-tab diagram', () => {
+  it('hides the scope control on a single-tab document', () => {
     renderDialog({ tabs: [TABS[0]!], links: [link()] });
     expect(screen.queryByRole('combobox', { name: 'Tabs this link opens' })).toBeNull();
     expect(screen.queryByRole('combobox', { name: /Tabs link .* opens/ })).toBeNull();
@@ -117,7 +117,7 @@ describe('ShareDialog passes', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create Pass' }));
     await vi.waitFor(() => expect(props.onCreateLink).toHaveBeenCalledWith('view', 'never', null));
     await vi.waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith('https://x.test/diagram/shared?s=NEW23456'),
+      expect(writeText).toHaveBeenCalledWith('https://x.test/document/shared?s=NEW23456'),
     );
   });
 
@@ -152,7 +152,7 @@ describe('ShareDialog passes', () => {
     renderDialog({ links: [link()] });
     fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
     await vi.waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith('https://x.test/diagram/shared?s=CODE2345'),
+      expect(writeText).toHaveBeenCalledWith('https://x.test/document/shared?s=CODE2345'),
     );
     await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy());
   });
@@ -171,7 +171,7 @@ describe('ShareDialog passes', () => {
     await vi.waitFor(() => expect(row.className).toContain('animate-row-open'));
   });
 
-  it('says the diagram is private until a pass is live', () => {
+  it('says the document is private until a pass is live', () => {
     renderDialog();
     expect(screen.getByRole('status').textContent).toMatch(/Private: only you can open it/);
     cleanup();

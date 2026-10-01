@@ -1,183 +1,145 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState } from 'react';
 
-import type { ShapeElement } from '@livediagram/diagram';
+import { elementActions, type ShapeElement } from '@livediagram/document';
 
-import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
-import { initialsOf } from '@/lib/identity';
-import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
-import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
+import { CollabPanel } from '@/components/canvas/collab/collab-chrome';
+import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';
+import { CollabAccentScope } from '@/components/canvas/collab/collab-accent';
+import { CelebrationBurst } from '@/components/canvas/collab/CelebrationBurst';
+import { ActionRow } from '@/components/canvas/collab/action/ActionRow';
+import { ActionGlyph, PlusGlyph } from '@/components/canvas/collab/action/action-parts';
+import {
+  AccentBar,
+  EmptyRows,
+  LOUD_ACCENT,
+  stopPointer,
+} from '@/components/canvas/collab/qa/qa-parts';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
-// The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries ONE
-// assigned action (docs/specs/012-collaboration/assigned-actions.md) and shows it in place.
+// The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the canvas that carries a
+// LIST of assigned actions (docs/specs/012-collaboration/assigned-actions.md) and shows them in place.
 //
-// Like the Comment panel it carries NO action machinery of its own. Every boxed
-// element can already hold an `action`, and the Assign Action dialog, complete
-// / reopen, the Collaborate panel, the Activity page and the assignment email
-// all work against that field, keyed by element id. A panel is an element
-// whose only job is to hold one and show it, so this file is a layout and
-// three callbacks.
+// Like the Comment panel it carries NO action machinery of its own. The Assign
+// Action dialog, complete / reopen, the Collaborate panel, the Activity page
+// and the assignment email all work against the element's actions, read
+// through elementActions and keyed by element id plus action id. This file is
+// a layout and four callbacks.
+//
+// Built from the modern collab parts ("The card"): the accent scope and the
+// CollabPanel frame, reflowing like the Comment panel so a resize makes room
+// for more actions, a round check per row, and a dashed Add Action bar.
 
 export function ActionPanelFace({
   element,
+  label = '',
   textColor,
+  surface,
   selfId,
-  onConfigure,
+  onAdd,
+  onEdit,
   onComplete,
   onReopen,
 }: {
   element: ShapeElement;
+  label?: string;
   textColor: string;
+  /** The card's own fill, for the accent scope. Defaults to white for tests. */
+  surface?: string;
   // The current user's identity (Clerk id, else the guest participant id),
-  // for "Assigned to you", the rule ActionPopover uses.
+  // for "You", the rule ActionPopover uses.
   selfId: string | null;
   // Absent on a surface that cannot edit (a view-role visitor, the embed, a
   // presentation), which renders the card readable but inert.
-  onConfigure?: () => void;
-  onComplete?: () => void;
-  onReopen?: () => void;
+  onAdd?: () => void;
+  onEdit?: (actionId: string) => void;
+  onComplete?: (actionId: string) => void;
+  onReopen?: (actionId: string) => void;
 }) {
-  const touchScroll = useTouchScrollBody<HTMLDivElement>();
-  const action = element.action;
-  const done = action?.status === 'done';
+  const actions = elementActions(element);
+  const open = actions.filter((a) => a.status !== 'done').length;
+  const allDone = actions.length > 0 && open === 0;
+  // Celebrate the last action being ticked off on screen, never a card that
+  // loaded finished. Actions past this index arrived after the first paint.
+  const [initiallyAllDone] = useState(allDone);
+  const [initialCount] = useState(actions.length);
+
+  const aside = allDone ? (
+    <CollabDoneChip>All Done</CollabDoneChip>
+  ) : open > 0 ? (
+    `${open} open`
+  ) : undefined;
 
   return (
-    <div
-      className={`absolute inset-0 flex flex-col overflow-hidden rounded-[inherit] ${
-        done ? 'opacity-60' : ''
-      }`}
-      style={{ color: textColor }}
-    >
-      {/* Right padding keeps the header clear of the shared `…` settings
-          button every Behaviours card carries in its top-right corner. */}
-      <span className="flex w-full shrink-0 items-center gap-1.5 py-2 pl-2.5 pr-8">
-        <span className="opacity-60">
-          <ActionMenuIcon />
-        </span>
-        <span className="text-[11px] font-semibold">Action</span>
-        {done ? (
-          <span className="rounded bg-emerald-500/15 px-1.5 py-[1px] text-[9px] font-semibold text-emerald-700 dark:text-emerald-300">
-            Done
+    <CollabAccentScope element={element} textColor={textColor} surface={surface ?? '#ffffff'}>
+      <CollabPanel
+        element={element}
+        reflow
+        title={label.trim() || 'Actions'}
+        textColor={textColor}
+        aside={aside}
+        footer={
+          onAdd && actions.length > 0 ? (
+            <AccentBar onPress={onAdd} icon={<PlusGlyph size={12} />}>
+              Add Action
+            </AccentBar>
+          ) : undefined
+        }
+      >
+        {allDone && !initiallyAllDone ? (
+          <span className="pointer-events-none absolute left-1/2 top-10">
+            <CelebrationBurst />
           </span>
         ) : null}
-      </span>
-
-      {!action ? (
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-3 pb-3 text-center">
-          <span className="text-[10px] italic opacity-50">No action yet.</span>
-          {onConfigure ? (
-            <FaceButton onPress={onConfigure} primary>
-              Set Up Action
-            </FaceButton>
-          ) : null}
-        </div>
-      ) : (
-        <>
-          {/* touch-none + useTouchScrollBody: see CollabPanel's body. */}
-          <div
-            {...touchScroll}
-            className="flex min-h-0 flex-1 touch-none flex-col gap-1 overflow-y-auto px-2.5 pb-1"
-          >
-            <span
-              className={`break-words text-[13px] font-semibold leading-snug ${
-                done ? 'line-through' : ''
-              }`}
+        {actions.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3">
+            <EmptyRows
+              textColor={textColor}
+              title="No Actions Yet"
+              rows={0}
+              glyph={<ActionGlyph size={14} />}
             >
-              {action.name}
-            </span>
-            {action.description ? (
-              <span className="whitespace-pre-wrap break-words text-[11px] leading-snug opacity-70">
-                {action.description}
-              </span>
-            ) : null}
+              {onAdd ? 'Give someone a clear next step, with their name on it.' : undefined}
+            </EmptyRows>
+            {onAdd ? <AddButton onPress={onAdd} /> : null}
           </div>
-          <AssigneeRow
-            name={action.assignee.name?.trim() || 'Teammate'}
-            mine={selfId !== null && action.assignee.userId === selfId}
-            assignerName={action.assignerName?.trim() || null}
-            createdAt={action.createdAt}
-          />
-          {onConfigure || onComplete || onReopen ? (
-            <div className="flex shrink-0 items-center gap-1.5 px-2.5 pb-2">
-              {done
-                ? onReopen && <FaceButton onPress={onReopen}>Reopen</FaceButton>
-                : onComplete && (
-                    <FaceButton onPress={onComplete} primary>
-                      Complete
-                    </FaceButton>
-                  )}
-              {onConfigure ? <FaceButton onPress={onConfigure}>Edit</FaceButton> : null}
-            </div>
-          ) : null}
-        </>
-      )}
-    </div>
+        ) : (
+          <ul className="flex flex-col gap-1.5">
+            {actions.map((action, i) => {
+              const done = action.status === 'done';
+              const toggle = done ? onReopen : onComplete;
+              return (
+                <ActionRow
+                  key={action.id}
+                  action={action}
+                  mine={selfId !== null && action.assignee.userId === selfId}
+                  textColor={textColor}
+                  fresh={i >= initialCount}
+                  onToggle={toggle ? () => toggle(action.id) : undefined}
+                  onEdit={onEdit ? () => onEdit(action.id) : undefined}
+                />
+              );
+            })}
+          </ul>
+        )}
+      </CollabPanel>
+    </CollabAccentScope>
   );
 }
 
-function AssigneeRow({
-  name,
-  mine,
-  assignerName,
-  createdAt,
-}: {
-  name: string;
-  mine: boolean;
-  assignerName: string | null;
-  createdAt: number;
-}) {
-  const now = useRelativeNow();
-  return (
-    <span className="mx-2.5 mb-1.5 flex shrink-0 items-center gap-2 rounded-md bg-black/[0.04] px-2 py-1.5 dark:bg-white/[0.06]">
-      <GlyphDisc
-        size={24}
-        aria-hidden
-        className={`bg-brand-500 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
-      >
-        {initialsOf(name)}
-      </GlyphDisc>
-      <span className="flex min-w-0 flex-col">
-        <span className="truncate text-[11px] font-medium">
-          {mine ? 'Assigned to you' : `Assigned to ${name}`}
-        </span>
-        <span className="truncate text-[9px] opacity-55">
-          {assignerName ? `by ${assignerName} · ` : ''}
-          {relativeSince(createdAt, now)}
-        </span>
-      </span>
-    </span>
-  );
-}
-
-// A button on the card. Stops the pointer-down so pressing it never starts a
-// drag of the card underneath, the Comment panel's rule for its own controls.
-function FaceButton({
-  onPress,
-  primary = false,
-  children,
-}: {
-  onPress: () => void;
-  primary?: boolean;
-  children: ReactNode;
-}) {
+function AddButton({ onPress }: { onPress: () => void }) {
+  const press = usePressWithoutDrag(onPress);
   return (
     <button
       type="button"
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-      onClick={(e) => {
-        e.stopPropagation();
-        onPress();
-      }}
-      className={`pointer-events-auto cursor-pointer rounded-md px-2 py-1 text-[10px] font-medium transition ${
-        primary
-          ? 'bg-slate-900/85 text-white hover:bg-slate-900 dark:bg-white/85 dark:text-slate-900 dark:hover:bg-white'
-          : 'bg-black/[0.06] hover:bg-black/[0.1] dark:bg-white/10 dark:hover:bg-white/15'
-      }`}
+      {...press}
+      {...stopPointer}
+      className="pointer-events-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold transition hover:scale-[1.03] active:scale-95"
+      style={LOUD_ACCENT}
     >
-      {children}
+      <PlusGlyph size={12} />
+      Add Action
     </button>
   );
 }

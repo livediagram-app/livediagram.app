@@ -69,6 +69,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Auto-Attach Arrows',
       'Arrows re-attaching to the nearest shape.',
     ),
+    changed(
+      'WhiteboardDockPosition',
+      'Whiteboard Dock Position',
+      'A whiteboard dock moved to the top or the bottom.',
+    ),
     toggle(
       'UI',
       'PowerUserModeOn',
@@ -95,9 +100,18 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  changed('PanelLayout', 'Panel Layout', 'Floating, Minimal or Toolbar chrome.'),
+  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
+  changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),
+  changed('UiScalePanels', 'Panel Scale', 'The panels\u2019 own size slider.', true),
+  changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar\u2019s own size slider.', true),
+  changed(
+    'UiScaleCornerButtons',
+    'Corner Buttons Scale',
+    'The bottom-right buttons\u2019 own size slider.',
+    true,
+  ),
 ]);
 
 export const CONTROLS_SETTINGS = settingsStack(
@@ -184,10 +198,10 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyDiagramJoinOn',
-      'NotifyDiagramJoinOff',
-      'Someone Joins My Diagram',
-      'The diagram-joined email.',
+      'NotifyDocumentJoinOn',
+      'NotifyDocumentJoinOff',
+      'Someone Joins My Document',
+      'The document-joined email.',
     ),
     toggle(
       'UI',
@@ -200,7 +214,7 @@ export const NOTIFICATION_SETTINGS = settingsStack(
       'UI',
       'NotifyCommentsOn',
       'NotifyCommentsOff',
-      'Someone Comments on My Diagram',
+      'Someone Comments on My Document',
       'The new-comment email.',
     ),
     toggle(
@@ -209,6 +223,20 @@ export const NOTIFICATION_SETTINGS = settingsStack(
       'NotifyActionAssignedOff',
       'Someone Assigns Me an Action',
       'The action-assigned email.',
+    ),
+    toggle(
+      'UI',
+      'ShowProfilePictureOn',
+      'ShowProfilePictureOff',
+      'Show My Profile Picture',
+      'Whether signed-in collaborators see your profile picture.',
+    ),
+    toggle(
+      'UI',
+      'NotifyMentionsOn',
+      'NotifyMentionsOff',
+      'Someone Mentions Me in a Comment',
+      'The comment-mention email.',
     ),
     toggle(
       'UI',

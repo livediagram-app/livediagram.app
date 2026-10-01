@@ -32,7 +32,7 @@ import {
   rebindArrowAnchorsAfterMove,
   type Element,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
@@ -43,7 +43,7 @@ type NudgeDeps = {
   // An event-storming board: up / down move a workshop note a whole lane
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   laneBoard: boolean;
-  // History coalescing helpers from useDiagramHistory: the first
+  // History coalescing helpers from useDocumentHistory: the first
   // press of a burst takes a checkpoint, subsequent presses tick.
   markCheckpoint: () => number;
   tick: (mapElements: (els: Element[]) => Element[]) => void;

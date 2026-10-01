@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/diagram';
+import type { ArrowElement, FreehandElement, ShapeElement, Tab } from '@livediagram/document';
 import {
   TAB_SCHEMA_VERSION,
   exportTabAsSvg,
@@ -8,6 +8,7 @@ import {
   type ExportedTabEnvelope,
 } from './export-tab';
 import { parseImportedTab } from './import-tab';
+import { encodeStrokePoints } from '@livediagram/document';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -27,10 +28,10 @@ const freehand = (id: string, overrides: Partial<FreehandElement> = {}): Freehan
   y: 0,
   width: 60,
   height: 60,
-  points: [
+  packedPoints: encodeStrokePoints([
     { nx: 0, ny: 0 },
     { nx: 1, ny: 1 },
-  ],
+  ]),
   closed: false,
   ...overrides,
 });

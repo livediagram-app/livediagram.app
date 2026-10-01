@@ -5,13 +5,13 @@ import { CrossTabLink } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Linking Across Tabs',
   description:
-    'Link an element to another tab, or to a specific element on it, so a diagram with many tabs becomes navigable like a small site.',
+    'Link an element to another tab, or to a specific element on it, so a document with many tabs becomes navigable like a small site.',
   path: '/help/tabs/linking-tabs/',
 });
 
-<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, a specific element on that tab, another diagram, or an external address." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, a specific element on that tab, another document, or an external address." categoryTitle="Tabs" categorySlug="tabs">
 
-A diagram spread across many tabs is far more useful when you can move between them by clicking the canvas itself. Any element can carry a **link**, and that link can point at another tab in the same diagram. Click the element, and the editor jumps you there. It turns a multi-tab diagram into something you navigate like a small site.
+A document spread across many tabs is far more useful when you can move between them by clicking the canvas itself. Any element can carry a **link**, and that link can point at another tab in the same document. Click the element, and the editor jumps you there. It turns a multi-tab document into something you navigate like a small site.
 
 ## What an element can link to
 
@@ -19,7 +19,7 @@ A single link on an element can target any one of these:
 
 - **A tab.** Clicking the element opens that tab.
 - **A specific element on another tab.** The editor opens that tab and focuses the linked element, so you land exactly where you meant to.
-- **Another diagram.** Jumps to a separate diagram entirely.
+- **Another document.** Jumps to a separate document entirely.
 - **An external URL.** Opens the address in a new browser tab.
 
 A linked element shows a small "Follow link" badge, and its hover card names the target so you can tell where a link leads before you click it.
@@ -35,7 +35,8 @@ A linked element shows a small "Follow link" badge, and its hover card names the
 </Step>
 
 <Step n={2}>
-  Pick the target: another tab, a specific element on that tab, another diagram, or an external URL.
+  Pick the target: another tab, a specific element on that tab, another document, or an external
+  URL.
 </Step>
 
 <Step n={3}>
@@ -44,7 +45,7 @@ A linked element shows a small "Follow link" badge, and its hover card names the
 
 ## Why cross-tab links hold up
 
-Element IDs are unique across the whole diagram, not just within one tab. That means a link keeps resolving even if you cut an element from one tab and paste it into another: the element keeps its id, so the link still finds it. Some patterns this enables:
+Element IDs are unique across the whole document, not just within one tab. That means a link keeps resolving even if you cut an element from one tab and paste it into another: the element keeps its id, so the link still finds it. Some patterns this enables:
 
 - **Drill-down.** A "Database" node on the Overview tab links to a "Database internals" tab, so a click dives into the detail.
 - **Mindmap deep-dives.** A leaf branch links to its own tab for deeper structure.

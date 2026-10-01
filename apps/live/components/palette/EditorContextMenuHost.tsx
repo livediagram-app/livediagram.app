@@ -1,15 +1,17 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/diagram';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/document';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
+import { panelEnabled } from '@/lib/user-preferences';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
-const EditorContextMenu = dynamic(() =>
-  import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
+const EditorContextMenu = dynamic(
+  () => import('@/components/palette/EditorContextMenu').then((m) => m.EditorContextMenu),
+  { ssr: false },
 );
 
 // The element / multi-selection context menu's wiring, lifted out of
@@ -20,6 +22,7 @@ const EditorContextMenu = dynamic(() =>
 export function EditorContextMenuHost() {
   const {
     contextMenu,
+    userPreferences,
     activeTab,
     isReadOnly,
     selectedId,
@@ -107,6 +110,7 @@ export function EditorContextMenuHost() {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    tidyMindMapSelected,
     setChecklistItemsSelected,
     toggleChecklistItem,
     setEntityFieldsSelected,
@@ -163,6 +167,7 @@ export function EditorContextMenuHost() {
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
@@ -202,7 +207,7 @@ export function EditorContextMenuHost() {
       : DEFAULT_MIND_FLOW;
 
   // The selection's layer for the Layer section's move-to dropdown
-  // (docs/specs/006-diagram/layers.md): the single resolved layer every member shares, or null
+  // (docs/specs/006-document/layers.md): the single resolved layer every member shares, or null
   // when the selection spans layers.
   const ctxLayerIds = new Set(
     ctxMemberIds
@@ -261,7 +266,11 @@ export function EditorContextMenuHost() {
       onStackBack={stackSelectedBack}
       layers={layers}
       selectionLayerId={selectionLayerId}
-      onMoveSelectionToLayer={moveSelectedToLayer}
+      // "Move to layer" goes with the Layers panel's Settings switch
+      // (docs/specs/007-editor/user-preferences.md); layers keep applying either way.
+      onMoveSelectionToLayer={
+        panelEnabled(userPreferences, 'layersPanelEnabled') ? moveSelectedToLayer : undefined
+      }
       onToggleAspectLock={toggleAspectLockSelected}
       onSetOpacity={setOpacitySelected}
       onSetTextColor={setTextColorSelected}
@@ -314,6 +323,7 @@ export function EditorContextMenuHost() {
       onSetLegendItems={setLegendItemsSelected}
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}
+      onTidyMindMap={tidyMindMapSelected}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
       onSetEntityFields={setEntityFieldsSelected}
@@ -383,6 +393,7 @@ export function EditorContextMenuHost() {
       onSetArrowStyle={setArrowStyleSelected}
       onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
       onSetArrowRouteBehind={setArrowRouteBehindSelected}
+      onSetArrowExactStart={setArrowExactStartSelected}
       onSetArrowEnds={setArrowEndsSelected}
       onSetArrowheadSize={setArrowheadSizeSelected}
       onSetArrowheadShape={setArrowheadShapeSelected}

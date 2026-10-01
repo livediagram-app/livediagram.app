@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, seedTab, startBlankDiagram, test } from './fixtures';
+import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
 
 // The auto-rebind end to end (docs/specs/008-canvas/arrow-anchors.md): unit
 // tests prove the rule; only the editor proves it runs LIVE during a drag,
@@ -48,7 +48,7 @@ test.describe('Arrow auto-rebind', () => {
   test('re-anchors live while dragging, on by default', async ({ page, pageErrors }) => {
     const logs: string[] = [];
     page.on('console', (msg) => logs.push(msg.text()));
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, [
       square('a', 'Alpha', 400, 200),
       square('b', 'Beta', 700, 200),
@@ -67,7 +67,7 @@ test.describe('Arrow auto-rebind', () => {
   });
 
   test('a quarter point stays a quarter point on its new side', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, [
       square('a', 'Alpha', 400, 300),
       square('b', 'Beta', 700, 100),
@@ -85,7 +85,7 @@ test.describe('Arrow auto-rebind', () => {
   });
 
   test('the Settings switch turns it off', async ({ page, pageErrors }) => {
-    await startBlankDiagram(page);
+    await startBlankDocument(page);
     await seedTab(page, [
       square('a', 'Alpha', 400, 200),
       square('b', 'Beta', 700, 200),

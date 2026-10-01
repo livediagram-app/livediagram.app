@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { type Element, type Layer } from '@livediagram/diagram';
+import { type Element, type Layer } from '@livediagram/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
@@ -15,10 +15,13 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@/components/panels/layers-panel-icons';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type {
+  MovablePanelPlacementProps,
+  MovablePanelPopoverProps,
+} from '@/components/primitives/MovablePanel.types';
 import { HoverCard } from '@livediagram/ui';
 
-// The Layers panel (docs/specs/006-diagram/layers.md): one row per layer, TOP layer first (the
+// The Layers panel (docs/specs/006-document/layers.md): one row per layer, TOP layer first (the
 // panel mirrors the paint stack like every design tool). Row = eye
 // toggle · a mini preview of just that layer's elements (all rows share
 // the whole tab's framing so content reads in place, like the Map) ·
@@ -40,11 +43,11 @@ export function LayersPanel({
   onReset,
   dock,
   onMinimize,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
+  popoverOpen,
+  popoverAnchor,
+  asPopover,
   dismissOnOutside,
-  onMobileClose,
+  onPopoverClose,
   onSelectLayer,
   onAddLayer,
   onRemoveLayer,
@@ -70,10 +73,6 @@ export function LayersPanel({
   // The tab default face (docs/specs/004-interface-design/fonts.md), so a preview matches the canvas.
   tabFont?: string;
   onMinimize: () => void;
-  forceDockMode?: boolean;
-  // Close the popover on a press outside it (see MovablePanelPlacementProps).
-  dismissOnOutside?: boolean;
-  onMobileClose?: () => void;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;
@@ -85,7 +84,7 @@ export function LayersPanel({
   onReorderLayer: (layerId: string, toIndex: number) => void;
   // Merge the ACTIVE layer into its neighbour; the neighbour survives.
   onMergeLayer: (direction: 'above' | 'below') => void;
-  // Row context-menu verbs (docs/specs/006-diagram/layers.md). Opacity is a live slider (the hook
+  // Row context-menu verbs (docs/specs/006-document/layers.md). Opacity is a live slider (the hook
   // debounces its history step); clear + hide-others are one-shot.
   onSetLayerOpacity: (layerId: string, opacity: number) => void;
   onClearLayer: (layerId: string) => void;
@@ -96,11 +95,12 @@ export function LayersPanel({
   // The hover-solo user preference (docs/specs/007-editor/user-preferences.md) + its setter, surfaced in
   // the header gear alongside Reset position.
   hoverPreviewEnabled: boolean;
-  // Row density (docs/specs/006-diagram/layers.md): the thumbnail and the element count are each
-  // optional, so a diagram with many layers reads as a compact list.
+  // Row density (docs/specs/006-document/layers.md): the thumbnail and the element count are each
+  // optional, so a document with many layers reads as a compact list.
   showPreview: boolean;
   showCount: boolean;
-} & MovablePanelPlacementProps) {
+} & MovablePanelPlacementProps &
+  MovablePanelPopoverProps) {
   // Inline rename: which layer id is being edited. The draft text lives
   // inside InlineRenameInput, so a re-render of this panel mid-rename
   // cannot reach in and reset what has been typed.
@@ -118,7 +118,7 @@ export function LayersPanel({
   // tiles via useLayerThumbnails.
   const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers, tabFont);
 
-  // Row context menu (docs/specs/006-diagram/layers.md): which layer it targets + where to hang
+  // Row context menu (docs/specs/006-document/layers.md): which layer it targets + where to hang
   // it (the panel's left edge at the clicked row).
   const [rowMenu, setRowMenu] = useState<{
     layerId: string;
@@ -211,11 +211,11 @@ export function LayersPanel({
       {...dock}
       onMinimize={onMinimize}
       onReset={onReset}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
+      popoverOpen={popoverOpen}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
-      onMobileClose={onMobileClose}
+      onPopoverClose={onPopoverClose}
     >
       <div className="px-2 pb-2">
         <ul ref={listRef} className="flex flex-col gap-0.5">
@@ -309,7 +309,7 @@ export function LayersPanel({
                 aria-label="Delete Layer"
                 onClick={(e) => {
                   // Empty layers delete straight away; a populated one
-                  // asks first via an anchored popover (docs/specs/006-diagram/layers.md).
+                  // asks first via an anchored popover (docs/specs/006-document/layers.md).
                   if (activeCount === 0) onRemoveLayer(activeLayerId);
                   else setConfirmAnchor(e.currentTarget);
                 }}

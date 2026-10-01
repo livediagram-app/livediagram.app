@@ -17,8 +17,16 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
+import { clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
 import { DEFERRED_AUTH_DEFAULT, DeferredAuthContext } from './deferred-auth';
+
+// Test builds only (see e2eAuthEnabled): never part of a real bundle.
+const LazyE2EAuthBridge = e2eAuthEnabled
+  ? dynamic(() => import('./E2EAuthBridge').then((m) => m.E2EAuthBridge), {
+      ssr: false,
+      loading: () => null,
+    })
+  : null;
 
 const LazyClerkBridge = dynamic(() => import('./ClerkBridge').then((m) => m.ClerkBridge), {
   ssr: false,
@@ -41,7 +49,7 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
   // published would outlive it. Signing in by email code returns to the app
   // with a SOFT navigation (router.push), keeping this provider mounted: the
   // editor then booted on a stale "settled guest" state, skipped the wait for
-  // the guest-data migration, loaded the diagram under the new account before
+  // the guest-data migration, loaded the document under the new account before
   // it owned it, and showed a 404 that a refresh cleared. Resetting here makes
   // every return from an auth page start "not settled", like a fresh load.
   if (staticClerkRoute && authState !== DEFERRED_AUTH_DEFAULT) {
@@ -51,6 +59,7 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
     <DeferredAuthContext.Provider value={authState}>
       {children}
       {configured ? <LazyClerkBridge onState={setAuthState} /> : null}
+      {LazyE2EAuthBridge && !staticClerkRoute ? <LazyE2EAuthBridge onState={setAuthState} /> : null}
     </DeferredAuthContext.Provider>
   );
 }

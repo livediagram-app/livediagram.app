@@ -2,8 +2,8 @@
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react';
-import { setTokenProvider } from '@/lib/api-client';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { registerTokenProvider } from '@/lib/api-client';
+import { sessionsEnabled } from '@/lib/clerk-config';
 import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migration';
 
 // Two things every page that talks to the api needs to do once Clerk
@@ -16,7 +16,7 @@ import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migrati
 //
 //   2. Run the guest → authed migration the first time the user is
 //      signed in AND `livediagram:v2:self-id` is still in localStorage.
-//      `POST /api/migrate` reassigns every `diagrams.owner_id` +
+//      `POST /api/migrate` reassigns every `documents.owner_id` +
 //      `folders.owner_id` row from the guest id to the Clerk userId
 //      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so
 //      subsequent loads skip the call entirely. `authLoaded` stays
@@ -38,7 +38,7 @@ import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migrati
 // the disabled branch never touches Clerk at all. The choice between
 // real-Clerk and stub is made at module load, then frozen — React's
 // rules-of-hooks require the same function to run on every render,
-// which this satisfies because `clerkEnabled` is a compile-time
+// which this satisfies because `sessionsEnabled` is a compile-time
 // constant baked from a `NEXT_PUBLIC_*` env var.
 
 type BootstrapResult = {
@@ -49,7 +49,7 @@ type BootstrapResult = {
   // seed the participant record on first load so a signed-in user
   // never appears under the random "Sleepy Lemur" placeholder, and
   // to lock the welcome-modal name input when joining someone
-  // else's diagram (the user explicitly asked that visitors with a
+  // else's document (the user explicitly asked that visitors with a
   // Clerk account aren't allowed to type a different display name).
   // Null when Clerk hasn't surfaced the user yet, the user signed
   // out, or the user genuinely has no name configured.
@@ -118,15 +118,13 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   // `X-Owner-Id: <Clerk id>`, which the worker refuses with a 401 (a Clerk id
   // is never a guest credential). Every layout effect runs before any
   // passive one, so the provider is in place by the time a child fetches.
+  //
+  // Registered, not set: the page, AuthControls and the Settings rows each
+  // mount this hook, and one of them unmounting must leave the others'
+  // Bearer in place (see registerTokenProvider).
   useLayoutEffect(() => {
-    if (isSignedIn) {
-      setTokenProvider((opts) => getToken(opts));
-    } else {
-      setTokenProvider(null);
-    }
-    return () => {
-      setTokenProvider(null);
-    };
+    if (!isSignedIn) return;
+    return registerTokenProvider((opts) => getToken(opts));
   }, [isSignedIn, getToken]);
 
   return { isSignedIn, authLoaded, clerkUserId, clerkDisplayName };
@@ -145,6 +143,6 @@ function useClerkApiBootstrapDisabled(): BootstrapResult {
   };
 }
 
-export const useClerkApiBootstrap = clerkEnabled
+export const useClerkApiBootstrap = sessionsEnabled
   ? useClerkApiBootstrapEnabled
   : useClerkApiBootstrapDisabled;

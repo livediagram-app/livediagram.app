@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_ANIMATIONS } from '@livediagram/diagram';
+import { ELEMENT_ANIMATIONS } from '@livediagram/document';
 
 // An element's animation is applied by building a class name:
 // `lvd-anim-${element.animation}`. Nothing checks that the class exists, so an

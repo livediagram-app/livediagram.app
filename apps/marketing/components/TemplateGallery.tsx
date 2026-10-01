@@ -4,13 +4,13 @@ import { TemplatePreview } from '@livediagram/template-previews';
 import { ctaHref } from '@livediagram/api-schema';
 import { templateCreateHref, type TemplateCategory } from '@livediagram/templates';
 import { useState, type CSSProperties } from 'react';
+import { CategoryTiles } from '@/components/CategoryTiles';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import { filterGallery, galleryTemplates, groupGallery } from '@/lib/template-gallery';
 import {
   BAND_CARD,
   BAND_CONTROL_HOVER,
   BAND_EYEBROW,
-  BAND_LABEL,
   BAND_LEAD,
   BAND_SECTION,
   BAND_TITLE,
@@ -20,12 +20,12 @@ import { Glyph } from '@livediagram/ui';
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): one card per template the editor
 // ships, each category a four-across carousel (TemplateCarousel), with a
 // search box that filters as you type. Only the first category opens on
-// load; the rest sit folded in a cloud of category chips below it, so the
-// band stays short until the visitor asks for more. A chip opens its
+// load; the rest sit folded as category cards below it (CategoryTiles), so the
+// band stays short until the visitor asks for more. A card opens its
 // category alongside whatever is already open (nothing else folds; an
 // open category stays open for the visit), and a search shows every
-// matching category regardless. Every card is a link that creates that diagram straight away
-// and opens it in the editor (/new?template=<kind>, docs/specs/007-editor/new-diagram-route.md), so the
+// matching category regardless. Every card is a link that creates that document straight away
+// and opens it in the editor (/new?template=<kind>, docs/specs/007-editor/new-document-route.md), so the
 // landing page is one click from a drawn scaffold. The cards' artwork is
 // the editor picker's own preview (@livediagram/template-previews), so a
 // template looks the same here as it does in the app. Replaced the
@@ -127,30 +127,7 @@ export function TemplateGallery() {
                 ))}
               </TemplateCarousel>
             ))}
-            {folded.length > 0 ? (
-              <div>
-                <h3 className={BAND_LABEL}>More categories</h3>
-                {/* The cloud: one chip per folded category, with how many
-                    templates it holds. Clicking opens that category above. */}
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {folded.map((group) => (
-                    <li key={group.id}>
-                      <button
-                        type="button"
-                        onClick={() => openCategory(group.id)}
-                        aria-label={`Show ${group.label} templates`}
-                        className={`rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-white ${BAND_CONTROL_HOVER}`}
-                      >
-                        {group.label}
-                        <span className="ml-1.5 text-xs text-slate-500 dark:text-slate-400">
-                          {group.templates.length}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
+            {folded.length > 0 ? <CategoryTiles groups={folded} onOpen={openCategory} /> : null}
           </div>
         )}
       </div>

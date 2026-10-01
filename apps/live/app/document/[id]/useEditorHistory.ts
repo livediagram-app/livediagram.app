@@ -1,0 +1,206 @@
+import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'react';
+import type { Element, Tab } from '@livediagram/document';
+import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
+import {
+  apiAppendChangeLogEntry,
+  apiDeleteChangeLogEntry,
+  apiDeleteChangeLogForTab,
+  connectRoom,
+  type ChangeLogEntry,
+} from '@/lib/api-client';
+import { applyRevert, changeLogFailure } from '@/lib/change-log';
+import { entryHistoryRedo, entryHistoryUndo, type EntryHistory } from '@/lib/entry-history';
+import { announce } from '@/lib/announcer';
+import { track } from '@/lib/telemetry';
+import { patchTab } from './editor-page-helpers';
+
+type SetState<T> = Dispatch<SetStateAction<T>>;
+
+// Activity log + undo/redo handlers, lifted out of editor-page.tsx. The
+// log and the history stacks move together: undo drops the matching
+// entry (local + D1 + room broadcast), redo re-inserts it. Revert
+// replays an entry's `before` payload onto its tab. All verbatim; the
+// ~20 state slices they touch are passed as grouped set/refs bundles.
+export function useEditorHistory(opts: {
+  activeId: string;
+  documentId: string | null;
+  selfId: string;
+  sessionShareCode: string | null;
+  tabs: Tab[];
+  editsBlocked: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
+  commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
+  tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
+  undoHistory: () => void;
+  redoHistory: () => void;
+  refs: {
+    roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
+    entryHistoryRef: MutableRefObject<EntryHistory>;
+  };
+  set: {
+    setActiveId: SetState<string>;
+    setSelectedId: SetState<string | null>;
+    setMultiSelectedIds: SetState<Set<string>>;
+    setEditingId: SetState<string | null>;
+    setChangeLog: SetState<ChangeLogEntry[]>;
+    setFormatSourceId: SetState<string | null>;
+  };
+}) {
+  const {
+    activeId,
+    documentId,
+    selfId,
+    sessionShareCode,
+    tabs,
+    editsBlocked,
+    canUndo,
+    canRedo,
+    commitTabs,
+    tickTabs,
+    undoHistory,
+    redoHistory,
+    refs,
+    set,
+  } = opts;
+  const { roomRef, entryHistoryRef } = refs;
+  const {
+    setActiveId,
+    setSelectedId,
+    setMultiSelectedIds,
+    setEditingId,
+    setChangeLog,
+    setFormatSourceId,
+  } = set;
+
+  const handleActivityRowClick = (entry: ChangeLogEntry) => {
+    // Switch to the entry's tab if we're not already on it. Without
+    // this, selecting an element on a different tab would silently
+    // fail because tabs[].find(t=>t.id===entry.tabId) is the wrong
+    // active tab.
+    if (entry.tabId && entry.tabId !== activeId) {
+      setActiveId(entry.tabId);
+    }
+    if (entry.elementIds.length > 0) {
+      // Element entry — select the (first) affected element and
+      // clear any marquee multi-selection. The selection popover
+      // takes care of itself from there.
+      const target = entry.elementIds[0]!;
+      setSelectedId(target);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+      return;
+    }
+    // Tab-meta entries (theme / background tweaks) have no element ids, and
+    // the editor side panel is gone (everything's in context menus now), so
+    // there's nothing to expand — just clear any selection.
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+  };
+
+  // Drop every audit entry for the currently active tab. The document
+  // itself is untouched — only the log dies. The Activity Panel
+  // exposes this via its bottom "Clear Activity" button. Mirrors the
+  // server-side cascade that runs on tab delete, just user-triggered.
+  const clearActivityForActiveTab = () => {
+    if (!documentId) return;
+    const targetTabId = activeId;
+    setChangeLog((prev) => prev.filter((entry) => entry.tabId !== targetTabId));
+    // Best-effort: the local clear already happened, and stale rows in D1 reconcile on the next
+    // list fetch. A failure is logged, not hidden.
+    apiDeleteChangeLogForTab(selfId, documentId, targetTabId, sessionShareCode).catch(
+      changeLogFailure('clear', targetTabId),
+    );
+  };
+
+  // Surgical revert: replay the entry's `before` payload onto the
+  // target tab. Other elements (including newer edits) are untouched.
+  // If the tab was deleted in between, the revert is a no-op — the
+  // log entry has already been cascade-dropped.
+  //
+  // The reverted entry is removed from the log rather than getting a
+  // 'reverted' twin appended. Keeps the panel compact: a revert is a
+  // cancellation of an event, not its own event.
+  const revertChange = (entry: ChangeLogEntry) => {
+    const tabId = entry.tabId;
+    if (!tabId) return;
+    const target = tabs.find((t) => t.id === tabId);
+    if (!target) return;
+    const after = applyRevert(target.elements, entry.beforeState as Record<string, Element | null>);
+    commitTabs((ts) => patchTab(ts, tabId, { elements: after }));
+    if (tabId !== activeId) setActiveId(tabId);
+    track('Document', 'Reverted');
+    // Drop the entry locally first so the panel updates immediately;
+    // fire-and-forget the API delete.
+    setChangeLog((prev) => prev.filter((e) => e.id !== entry.id));
+    if (documentId) {
+      // Best-effort: a stale row in D1 reappears on the next list fetch. Logged, not hidden.
+      apiDeleteChangeLogEntry(selfId, documentId, entry.id, sessionShareCode).catch(
+        changeLogFailure('delete', entry.id),
+      );
+    }
+    roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: entry.id } });
+  };
+
+  const tick = (mapElements: (els: Element[]) => Element[]) => {
+    if (editsBlocked) return;
+    tickTabs((ts) =>
+      ts.map((t) => (t.id === activeId ? { ...t, elements: mapElements(t.elements) } : t)),
+    );
+  };
+
+  // Undo / redo are paired with the activity log through the marker
+  // stack (lib/entry-history): one marker per history step, holding
+  // the entry that step emitted or null. Popping markers 1:1 with the
+  // snapshot stack means undoing an entry-less step (add tab, no-op
+  // checkpoint) deletes nothing — the drift where a tab-add undo
+  // erased an unrelated edit's audit row from D1 and every peer.
+  const undo = () => {
+    if (!canUndo) return;
+    track('Document', 'Undone');
+    announce('Undid the last change');
+    undoHistory();
+    const { next, popped } = entryHistoryUndo(entryHistoryRef.current);
+    entryHistoryRef.current = next;
+    if (popped) {
+      setChangeLog((prev) => prev.filter((e) => e.id !== popped.id));
+      if (documentId) {
+        // Best-effort: a redo re-POSTs the same id. Logged, not hidden.
+        apiDeleteChangeLogEntry(selfId, documentId, popped.id, sessionShareCode).catch(
+          changeLogFailure('delete', popped.id),
+        );
+      }
+      roomRef.current?.send({ kind: 'op', op: { kind: 'log-remove', entryId: popped.id } });
+    }
+    setEditingId(null);
+    setSelectedId(null);
+    setFormatSourceId(null);
+  };
+
+  const redo = () => {
+    if (!canRedo) return;
+    track('Document', 'Redone');
+    announce('Redid the last change');
+    redoHistory();
+    const { next: nextMarkers, shifted } = entryHistoryRedo(entryHistoryRef.current);
+    entryHistoryRef.current = nextMarkers;
+    if (shifted) {
+      setChangeLog((prev) => [shifted, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
+      if (documentId) {
+        // Same entry id and content — D1 ends up with the same row
+        // it had before the undo. Idempotent: the API upserts an
+        // existing id from the same author (docs/specs/012-collaboration/activity-and-audit.md), so a redo that
+        // beats its undo's DELETE doesn't fail.
+        apiAppendChangeLogEntry(selfId, documentId, shifted, sessionShareCode).catch(
+          changeLogFailure('append', shifted.id),
+        );
+      }
+      roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: shifted } });
+    }
+    setEditingId(null);
+    setSelectedId(null);
+    setFormatSourceId(null);
+  };
+
+  return { handleActivityRowClick, clearActivityForActiveTab, revertChange, tick, undo, redo };
+}

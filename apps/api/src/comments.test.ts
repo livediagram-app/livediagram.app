@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Comment, Element, ShapeElement } from '@livediagram/diagram';
+import type { Comment, Element, ShapeElement } from '@livediagram/document';
 import {
   findComment,
   hasNewComments,
@@ -44,6 +44,7 @@ const writer: ParticipantDTO = {
   name: 'Server Writer',
   color: '#0ea5e9',
   createdAt: 0,
+  pictureUrl: null,
 };
 
 describe('rewriteCommentAuthors', () => {
@@ -249,5 +250,44 @@ describe('rewriteCommentAuthors with the room ledger (docs/specs/012-collaborati
     const next = [mkShape('a', [mkComment('c1', 'Bea', '#f00', 't', writer.id)])];
     const [c] = commentsOf(rewriteCommentAuthors(next, prev, writer));
     expect(c!.authorId).toBe('bea-id');
+  });
+});
+
+describe('rewriteCommentAuthors: mentions (docs/specs/012-collaboration/comment-mentions.md "Trust")', () => {
+  const tom = { userId: 'u-tom', memberId: 'm-tom', name: 'Tom', handle: 'tom' };
+  const sam = { userId: 'u-sam', memberId: 'm-sam', name: 'Sam', handle: 'sam' };
+  const threadOf = (els: Element[]) => (els[0] as ShapeElement).commentThread!.comments;
+
+  it('cleans a new comment’s mentions and drops the malformed ones', () => {
+    const fresh = {
+      ...mkComment('c1', 'x', '#x', '@tom'),
+      mentions: [tom, { userId: 'u', name: 'no handle' }],
+    } as unknown as Comment;
+    const out = rewriteCommentAuthors([mkShape('s', [fresh])], [], writer);
+    expect(threadOf(out)[0]!.mentions).toEqual([tom]);
+  });
+
+  it('drops the field entirely when nothing survives', () => {
+    const fresh = { ...mkComment('c1', 'x', '#x'), mentions: ['junk'] } as unknown as Comment;
+    const out = rewriteCommentAuthors([mkShape('s', [fresh])], [], writer);
+    expect('mentions' in threadOf(out)[0]!).toBe(false);
+  });
+
+  it('locks an existing comment’s mentions to what was stored', () => {
+    const stored = { ...mkComment('c1', 'A', '#a', '@tom', 'u-a'), mentions: [tom] };
+    const retargeted = { ...stored, mentions: [sam] };
+    const out = rewriteCommentAuthors(
+      [mkShape('s', [retargeted])],
+      [mkShape('s', [stored])],
+      writer,
+    );
+    expect(threadOf(out)[0]!.mentions).toEqual([tom]);
+  });
+
+  it('cannot add mentions to an existing comment that had none', () => {
+    const stored = mkComment('c1', 'A', '#a', 'hi', 'u-a');
+    const added = { ...stored, mentions: [sam] };
+    const out = rewriteCommentAuthors([mkShape('s', [added])], [mkShape('s', [stored])], writer);
+    expect('mentions' in threadOf(out)[0]!).toBe(false);
   });
 });

@@ -12,7 +12,7 @@ standard people already have.
 
 We support the diagram types that are **node/edge graphs at heart**, because
 they map onto livediagram's model losslessly: `graphToElements`
-(packages/diagram, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
+(packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
 - **Flowcharts** (`graph TD`, `flowchart LR`, …) — full import **and**
@@ -22,7 +22,8 @@ arrows.
   States and transitions are nodes and edges; composite states reuse the
   cluster/frame machinery.
 - **ER diagrams** (`erDiagram`) — **import only**. Entities and
-  relationships are nodes and edges; attributes fold into the entity label.
+  relationships are nodes and edges; each entity becomes an Entity element
+  with its attributes as field rows.
 
 Import is per-dialect; **export always emits flowchart text**. The canvas has
 no semantic layer (a state and a flowchart node are both just shapes once
@@ -99,9 +100,10 @@ LR` line sets the layout direction (TB default).
   `state "Long description" as s1`, or `s1 : description` (the description
   becomes the label). `<<choice>>` states render as diamonds; `<<fork>>` /
   `<<join>>` as squares.
-- **Start / end**: each `[*]` becomes a circle — an empty-label start node
-  when it's a transition source, an end node when it's a target (one of
-  each per diagram, matching Mermaid's semantics).
+- **Start / end**: each `[*]` becomes an empty-label circle, drawn as a small
+  solid dot ("Node boxes and text" below): a start node when it's a
+  transition source, an end node when it's a target (one of each per
+  diagram, matching Mermaid's semantics).
 - **Transitions**: `A --> B` with an optional `: label`.
 - **Composite states**: `state Name { … }` becomes a cluster → frame, same
   as a flowchart subgraph; nested composites fold into their top-level
@@ -111,17 +113,23 @@ LR` line sets the layout direction (TB default).
 ## ER diagram coverage (import)
 
 - **Header**: `erDiagram` (no direction syntax; lays out TB).
-- **Entities**: square boxes. An attribute block (`CUSTOMER { string name
-… }`) folds into the label — entity name first line, one `type name`
-  attribute per line. Key/comment columns (PK / FK / UK, "comment") are
-  dropped from the label.
+- **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
+'entity'`), the canvas's own record box: the entity name is the title and
+  each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
+  `name` with its type as the row's type text. Key markers (PK / FK / UK)
+  stay in the type text (`string PK`), the convention the ER template uses;
+  comments are dropped. The box is sized to its rows (a title band plus a row
+  each). This replaced square boxes whose label held the name and every
+  attribute on its own line, which read as a paragraph and did not survive a
+  label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
+  it to "SHARE_LINK text code text document_id…").
 - **Relationships**: `A ||--o{ B : label` becomes an edge labelled `label`.
   Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
   gets an open-V arrowhead on that end (`ends`: the many side(s), `head:
 'cross'`); one-to-one relationships render headless. Non-identifying
   (dotted `..`) relationships render dashed.
 
-## The engine lives in `packages/diagram`
+## The engine lives in `packages/document`
 
 Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 
@@ -187,13 +195,13 @@ Naming: the JSON export/import card is titled **"JSON"** (was "File" /
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-`Tab`/`Imported`/`Mermaid` and `Diagram`/`Exported`/`Mermaid`, added to the
+`Tab`/`Imported`/`Mermaid` and `Document`/`Exported`/`Mermaid`, added to the
 existing import/export type lists, replacing the removed `Text` type.
 
 ## Removed: the `.lvd` text DSL (the removed text-DSL spec)
 
-The text DSL is deleted — `packages/diagram/src/text-dsl/`, its
-`@livediagram/diagram/text-dsl` subpath export, `export-tab-text`'s DSL branch,
+The text DSL is deleted — `packages/document/src/text-dsl/`, its
+`@livediagram/document/text-dsl` subpath export, `export-tab-text`'s DSL branch,
 the Text cards in both dialogs, and the removed text-DSL spec. It was a bespoke format nobody
 outside livediagram speaks; Mermaid does the same job (human-editable,
 connection-preserving, round-trip) with a format the world already uses.
@@ -208,3 +216,29 @@ is a flat, human-readable _summary_ to paste into a doc. Mermaid is the
 connection-faithful text round-trip; Markdown is the outline-in / readable
 summary-out. Full reasoning in [Markdown import](markdown-import.md) ("Still useful
 after Mermaid?").
+
+## Node boxes and text
+
+A graph's nodes (a Mermaid import, the MCP's graph input) are sized to their
+labels and set in one fixed text size (`sm`), not the shape default that
+scales text to fill each box: fitted boxes with scaling text made a short
+heading huge beside a long one set small (`labelBoxSize` in `graph-authoring.ts`).
+The clustered layout **keeps those sizes** rather than stretching each box to
+its widest peer, so one long label no longer inflates every box.
+
+An **unlabelled circle is a dot**: 28 px, solid in the theme's accent through
+the `solid` colour preset (resolved when the import applies the tab's theme).
+That is what a state diagram's `[*]` start and end become; drawn at the default
+circle size they read as large empty boxes waiting for text.
+
+Inside a subgraph, members that no arrow **inside** the subgraph touches (a
+"Core services" group of peers wired only to things outside it) are **lined up
+across the flow** in one row or column, not wrapped into a grid, and every
+group's members that share a rank are then ordered by where their neighbours
+outside the group ended up, so arrows from outside reach each member without
+crossing another.
+
+A subgraph's frame carries its title as a **header**: top-left, bold, at the
+nodes' size, in the band the clustered layout reserves above the members (it
+used to be centred and scaled to fill the frame, a giant word across the nodes
+inside).

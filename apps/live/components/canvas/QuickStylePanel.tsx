@@ -1,7 +1,7 @@
 'use client';
 
 // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): the few most-used style choices for
-// the selected shapes and arrows, on the right edge of the canvas. The context
+// the selected shapes and arrows, on the left edge of the canvas. The context
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
@@ -12,6 +12,8 @@ import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { PanelTitle } from '@/components/primitives/MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import type { QuickStyleLayout } from '@/lib/quick-style-placement';
 import {
   QUICK_ICON_ALIGNS,
@@ -29,9 +31,18 @@ import {
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type TextAlignX,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
+import { BoardColourRows, QuickPenRows } from './QuickPenRows';
+import {
+  QUICK_BORDER_PX,
+  QUICK_COMPACT_PADDING_PX,
+  QUICK_FLOATING_GAP_PX,
+  QUICK_FLOATING_PADDING_PX,
+  QUICK_ROW_TARGETS,
+  QUICK_TARGET_PX,
+} from './quick-style-metrics';
 import {
   ClearStylesGlyph,
   FlowingLineGlyph,
@@ -71,7 +82,38 @@ const swatchOptions = (swatches: ShownSwatch[]): QuickOption<number>[] =>
 
 // The swatch whose custom-colour popover is open.
 type Editing = { role: QuickSwatchRole; slot: QuickSwatchSlot; anchor: HTMLButtonElement };
-const ROW_NAME: Record<QuickSwatchRole, string> = { stroke: 'Stroke', fill: 'Background' };
+// The colour rows, top to bottom: each row's swatch role, the view section it
+// is drawn from, its title, and the action a choice runs.
+const COLOUR_ROWS = [
+  {
+    role: 'stroke',
+    section: 'stroke',
+    title: 'Stroke',
+    testId: 'quick-style-stroke',
+    set: 'setStroke',
+  },
+  {
+    role: 'fill',
+    section: 'background',
+    title: 'Background',
+    testId: 'quick-style-background',
+    set: 'setBackground',
+  },
+  {
+    role: 'text',
+    section: 'textColour',
+    title: 'Text colour',
+    testId: 'quick-style-text-colour',
+    set: 'setTextColour',
+  },
+] as const satisfies readonly {
+  role: QuickSwatchRole;
+  section: keyof QuickStyleView['sections'];
+  title: string;
+  testId: string;
+  set: keyof QuickStyleApi;
+}[];
+const ROW_OF = (role: QuickSwatchRole) => COLOUR_ROWS.find((r) => r.role === role)!;
 
 // Pressing inside the panel must never reach the canvas: no marquee, no pan,
 // no deselect, no tab menu.
@@ -82,10 +124,13 @@ export function QuickStylePanel({
   hidden,
   layout,
   showTitles,
+  powerUser = false,
 }: {
   quickStyle: QuickStyleApi;
-  // Floating docks it under the Palette in the Palette's own panel dress;
-  // Toolbar and Minimal keep it compact on the right edge.
+  // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
+  // or strokes a whiteboard's pen rows style.
+  powerUser?: boolean;
+  // Floating wears the Palette's own panel dress; Toolbar keeps it compact. Always on the left edge.
   layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
@@ -95,6 +140,10 @@ export function QuickStylePanel({
 }) {
   const isMobile = useIsMobileViewport();
   const minimalChrome = useMinimalChrome();
+  // UI scale (docs/specs/007-editor/ui-scale.md): zoomed at the root, so the
+  // placement's screen-px spot is converted to the panel's own px.
+  const scale = useUiScale('panels');
+  const px = (v: number) => toSurfacePx(v, scale);
   // Section titles stay under Minimal chrome: they are what tells two rows of
   // coloured squares (Stroke, Background) apart at a glance.
   const titles = showTitles ?? true;
@@ -106,14 +155,18 @@ export function QuickStylePanel({
   // A popover outlives neither the panel nor its swatch.
   const editingGone =
     editing !== null &&
-    (!active ||
-      !editing.anchor.isConnected ||
-      !view?.sections[editing.role === 'stroke' ? 'stroke' : 'background']);
+    (!active || !editing.anchor.isConnected || !view?.sections[ROW_OF(editing.role).section]);
   if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
+  // Eight-colour rows (the pens', a whiteboard's Stroke and Text colour) need the wider frame.
+  const frame = panelFrame(
+    docked,
+    !!spot?.width,
+    !!view.pen || !!view.sections.boardStroke || !!view.sections.boardText,
+  );
   const editedSwatch = editing
-    ? view.sections[editing.role === 'stroke' ? 'stroke' : 'background']?.swatches[editing.slot]
+    ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
 
   return (
@@ -124,28 +177,30 @@ export function QuickStylePanel({
       data-quick-style-panel=""
       data-testid="quick-style-panel"
       data-layout={layout}
-      // Docked, it is one of the floating panels, so the panel-opacity
-      // preference (docs/specs/007-editor/user-preferences.md) applies to it as to the Palette above.
-      data-panel-translucent={docked ? '' : undefined}
+      // A panel in every layout, so the panel-opacity preference
+      // (docs/specs/007-editor/user-preferences.md) applies to it as to the Palette.
+      data-panel-translucent=""
       onPointerDown={stop}
       onDoubleClick={stop}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={
-        spot
+      style={{
+        ...uiScaleStyle(scale),
+        width: frame.width,
+        padding: frame.padding,
+        ...(spot
           ? {
-              left: spot.left,
-              top: spot.top,
-              ...(spot.width ? { width: spot.width } : {}),
-              ...(spot.maxHeight ? { maxHeight: spot.maxHeight } : {}),
+              left: px(spot.left),
+              top: px(spot.top),
+              ...(spot.width ? { width: px(spot.width) } : {}),
             }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
-            { left: 0, top: 0, visibility: 'hidden' }
-      }
-      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-46 gap-2.5 p-2'}`}
+            { left: 0, top: 0, visibility: 'hidden' as const }),
+      }}
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${frame.className}`}
     >
       {docked && !minimalChrome ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
@@ -161,43 +216,47 @@ export function QuickStylePanel({
       <div
         data-quick-style-body=""
         className={
-          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'
+          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto' : 'contents'
         }
+        style={docked ? { padding: QUICK_FLOATING_PADDING_PX } : undefined}
       >
         <QuickStyleSections
           view={view}
           quickStyle={quickStyle}
           showTitles={titles}
+          showSubject={!powerUser}
           density={docked ? 'roomy' : 'compact'}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
-        <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
-          {titles ? (
-            <span
-              aria-hidden
-              className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-            >
-              Actions
-            </span>
-          ) : null}
-          <div role="group" aria-label="Actions">
-            <button
-              type="button"
-              onClick={quickStyle.clearStyles}
-              data-testid="quick-style-clear"
-              className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              <ClearStylesGlyph />
-              Clear styles
-            </button>
+        {view.targetIds.length > 0 ? (
+          <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
+            {titles ? (
+              <span
+                aria-hidden
+                className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Actions
+              </span>
+            ) : null}
+            <div role="group" aria-label="Actions">
+              <button
+                type="button"
+                onClick={quickStyle.clearStyles}
+                data-testid="quick-style-clear"
+                className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <ClearStylesGlyph />
+                Clear styles
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
       {editing && editedSwatch ? (
         <SwatchOverridePopover
           key={`${editing.role}-${editing.slot}`}
           anchor={editing.anchor}
-          label={`Custom colour for ${editedSwatch.override?.themeName ?? editedSwatch.name}, ${ROW_NAME[editing.role]}`}
+          label={`Custom colour for ${editedSwatch.override?.themeName ?? editedSwatch.name}, ${ROW_OF(editing.role).title}`}
           colour={editedSwatch.color}
           overridden={editedSwatch.override !== undefined}
           themeNote={`Theme colour: ${editedSwatch.override?.themeName ?? editedSwatch.name}`}
@@ -210,16 +269,42 @@ export function QuickStylePanel({
   );
 }
 
+// A fixed width, never the content's (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
+// switching between a one-colour and a seven-colour row must not resize the panel, and a swatch row
+// never wraps and is never clipped, so the width counts the targets, their gaps, the padding and
+// the border exactly. Compact rows put their targets side by side, touching; Floating spreads them
+// with a gap, and takes the Palette's width when a Palette is on screen.
+export function panelFrame(
+  docked: boolean,
+  paletteWidth: boolean,
+  penRows: boolean,
+): { className: string; width?: number; padding?: number } {
+  const targets = penRows ? QUICK_ROW_TARGETS.pen : QUICK_ROW_TARGETS.swatches;
+  const border = 2 * QUICK_BORDER_PX;
+  if (docked) {
+    if (paletteWidth) return { className: '' };
+    const row = targets * QUICK_TARGET_PX + (targets - 1) * QUICK_FLOATING_GAP_PX;
+    return { className: '', width: row + 2 * QUICK_FLOATING_PADDING_PX + border };
+  }
+  return {
+    className: 'gap-2.5',
+    width: targets * QUICK_TARGET_PX + 2 * QUICK_COMPACT_PADDING_PX + border,
+    padding: QUICK_COMPACT_PADDING_PX,
+  };
+}
+
 function QuickStyleSections({
   view,
   quickStyle,
   showTitles,
+  showSubject,
   density,
   onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
+  showSubject: boolean;
   density: QuickRowDensity;
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
@@ -227,33 +312,62 @@ function QuickStyleSections({
   const editFor = (role: QuickSwatchRole) => (slot: number, anchor: HTMLButtonElement) => {
     if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
   };
-  const { stroke, background, width, style, textAlign, iconAlign } = view.sections;
+  const { width, style, textAlign, iconAlign } = view.sections;
+  // Whose style this is when it is not plainly the selection: the pen in hand,
+  // the selected strokes, or a tool's next mark. Power user mode leaves it out.
+  const caption = view.caption ?? view.pen?.subject.name;
   return (
     <>
-      {stroke ? (
-        <QuickRadioRow
-          title="Stroke"
-          testId="quick-style-stroke"
-          showTitle={showTitles}
-          options={swatchOptions(stroke.swatches)}
-          density={density}
-          onOptionContext={editFor('stroke')}
-          value={stroke.value}
-          onChoose={(slot) => quickStyle.setStroke(slot as QuickSwatchValue)}
-        />
+      {showSubject && caption ? (
+        <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">{caption}</p>
       ) : null}
-      {background ? (
-        <QuickRadioRow
-          title="Background"
-          testId="quick-style-background"
-          showTitle={showTitles}
-          options={swatchOptions(background.swatches)}
+      {view.pen ? (
+        <QuickPenRows
+          pen={view.pen}
+          quickStyle={quickStyle}
+          showTitles={showTitles}
           density={density}
-          onOptionContext={editFor('fill')}
-          value={background.value}
-          onChoose={(slot) => quickStyle.setBackground(slot as QuickSwatchValue)}
         />
-      ) : null}
+      ) : null}{' '}
+      {COLOUR_ROWS.map((row) => {
+        // A whiteboard's Stroke and Text colour rows are the whiteboard's colours.
+        const board =
+          row.role === 'stroke'
+            ? view.sections.boardStroke
+            : row.role === 'text'
+              ? view.sections.boardText
+              : undefined;
+        if (board) {
+          return (
+            <BoardColourRows
+              key={row.role}
+              title={row.title}
+              customTitle={row.role === 'stroke' ? 'Custom stroke colours' : 'Custom text colours'}
+              testId={row.testId}
+              section={board}
+              showTitles={showTitles}
+              density={density}
+              onChoose={
+                row.role === 'stroke' ? quickStyle.setBoardStroke : quickStyle.setBoardTextColour
+              }
+            />
+          );
+        }
+        const colours = view.sections[row.section];
+        return colours ? (
+          <QuickRadioRow
+            key={row.role}
+            title={row.title}
+            testId={row.testId}
+            showTitle={showTitles}
+            options={swatchOptions(colours.swatches)}
+            density={density}
+            onOptionContext={editFor(row.role)}
+            value={colours.value}
+            onChoose={(slot) => quickStyle[row.set](slot as QuickSwatchValue)}
+          />
+        ) : null;
+      })}
       {width ? (
         <QuickRadioRow
           title="Stroke width"

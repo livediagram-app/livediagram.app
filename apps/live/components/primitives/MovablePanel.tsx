@@ -4,8 +4,6 @@ import { useRef, useState } from 'react';
 import { useClickOutside } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isMobileViewportSync } from '@/lib/responsive';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { usePhoneDock } from './phone-dock-context';
 
 // The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
@@ -17,6 +15,9 @@ import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { cornerInsetStyle } from './movable-panel-scale';
 
 export type { MovablePanelDockProps };
 
@@ -34,6 +35,7 @@ export function MovablePanel({
   defaultCorner,
   width = 'w-56',
   headerExtra,
+  titleAdornment,
   headerActions,
   helpArticle,
   onReset,
@@ -41,15 +43,13 @@ export function MovablePanel({
   onMinimize,
   stackBelowY,
   onSize,
-  mobileTopOverridePx,
-  outsideExceptSelector,
   collapsible = false,
   defaultCollapsed = false,
-  mobileOpenOverride,
-  forceDockMode = false,
+  popoverOpen,
+  asPopover = false,
   dismissOnOutside = false,
-  onMobileClose,
-  mobileDockAnchor,
+  onPopoverClose,
+  popoverAnchor,
   flushTop = false,
   growBody = false,
   docked = false,
@@ -62,6 +62,10 @@ export function MovablePanel({
   children,
 }: MovablePanelProps) {
   const minimalChrome = useMinimalChrome();
+  // UI scale (docs/specs/007-editor/ui-scale.md): the panel is zoomed at its
+  // root, so every screen-px offset written on it goes through toSurfacePx.
+  const scale = useUiScale('panels');
+  const px = (v: number) => toSurfacePx(v, scale);
   const ref = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   // Banner-collapse state. Only meaningful when `collapsible` is
@@ -74,12 +78,6 @@ export function MovablePanel({
   const [collapsed, setCollapsed] = useState(
     () => collapsible && (defaultCollapsed || isMobileViewportSync()),
   );
-  // Reactive mobile flag so a viewport rotation / desktop->mobile
-  // resize re-applies the mobileTopOverridePx inline-style. A client
-  // mount reads the media query synchronously (useSyncExternalStore),
-  // so there's no one-frame flicker.
-  const isMobile = useIsMobileViewport();
-
   // Header drag machinery (legacy free-move + corner docking) lives in
   // useMovablePanelDrag; the header mounts beginDrag below.
   const { docking, drag, dockDragPos, dockLifted, beginDrag } = useMovablePanelDrag({
@@ -89,7 +87,8 @@ export function MovablePanel({
     collapsible,
     collapsed,
     setCollapsed,
-    mobileOpenOverride,
+    popoverOpen,
+    scale,
     getDockBounds,
     onDockDragStart,
     onDockDrag,
@@ -109,49 +108,27 @@ export function MovablePanel({
     onSize,
   });
 
-  // forceDockMode extends mobile dock behaviour to desktop (minimal panel preference).
-  // A phone under the Toolbar layout has no dock (usePhoneDock).
-  const layoutDocksOnPhone = usePhoneDock();
-  const phoneDock = isMobile && layoutDocksOnPhone;
-  const dockActive = phoneDock || forceDockMode;
-  const dockControlledOpen = dockActive && mobileOpenOverride === true;
-  // Dock-controlled: hide when not active, force open when active.
-  const effectiveCollapsed = dockControlledOpen ? false : collapsed;
+  // A popover off a button (the Toolbar layout's Explorer, the cluster
+  // popovers): shown only while the button has it open.
+  const popoverShown = asPopover && popoverOpen === true;
 
-  // Outside-tap auto-close. On a phone's dock, where the small viewport
-  // makes tap-away-to-dismiss expected, and for a popover that opts in with
-  // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity cluster
-  // popovers: menus off a button). Otherwise a desktop dock popover
-  // (the minimal layout's top-right bar) stays until its button is toggled,
-  // so a click on the canvas to work doesn't lose it. Also disabled while the parent has locked the panel
-  // open — the outside-tap is most often a child portal-menu item
-  // (Rename, Delete) and treating that as "dismiss the panel" hides
-  // the rename input the same tap is about to mount.
+  // Outside-tap auto-close, for a popover that opts in with
+  // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity /
+  // Collaborate cluster popovers: menus off a button). A popover's own
+  // portalled menus count as inside: the outside-tap is most often a child
+  // portal-menu item (Rename, Delete), and treating that as "dismiss the
+  // panel" hides the rename input the same tap is about to mount.
   useClickOutside(
     ref,
-    () => {
-      if (dockControlledOpen) {
-        onMobileClose?.();
-      } else {
-        setCollapsed(true);
-      }
-    },
-    (dismissOnOutside && dockControlledOpen) ||
-      (phoneDock &&
-        (dockControlledOpen ||
-          (collapsible && !effectiveCollapsed && mobileOpenOverride === undefined))),
-    // The tour popover (docs/specs/007-editor/editor-tour.md) is always "inside": it sits next to the
-    // panel it's explaining, so tapping its Next button must not dismiss
-    // that panel out from under the highlight. A popover's own portalled
-    // menus and confirms (a layer's row menu, Delete's confirm) are inside
-    // too, or choosing from one would close the popover under it.
-    dockControlledOpen
-      ? outsideExceptSelector
-        ? `[data-mobile-dock],[data-tour-popover],[role="menu"],[role="dialog"],${outsideExceptSelector}`
-        : '[data-mobile-dock],[data-tour-popover],[role="menu"],[role="dialog"]'
-      : outsideExceptSelector
-        ? `[data-tour-popover],${outsideExceptSelector}`
-        : '[data-tour-popover]',
+    () => onPopoverClose?.(),
+    dismissOnOutside && popoverShown,
+    // The button that opened the popover toggles it itself. The tour popover
+    // (docs/specs/007-editor/editor-tour.md) is always "inside": it sits next to the panel it's
+    // explaining, so tapping its Next button must not dismiss that panel out
+    // from under the highlight. A popover's own portalled menus and confirms
+    // (a layer's row menu, Delete's confirm) are inside too, or choosing
+    // from one would close the popover under it.
+    '[data-dock-button],[data-tour-popover],[role="menu"],[role="dialog"]',
   );
 
   // When stackBelowY is provided and we're still at the default
@@ -181,35 +158,29 @@ export function MovablePanel({
       y: Math.min(Math.max(pos.y, 0), Math.max(0, window.innerHeight - MIN_VISIBLE)),
     };
   };
-  const style: React.CSSProperties = dockControlledOpen
-    ? {}
-    : position
-      ? (() => {
-          const clamped = clampFree(position);
-          return { left: clamped.x, top: clamped.y };
-        })()
-      : useDynamicStack
-        ? { top: stackBelowY + stackGapPx }
-        : isMobile && mobileTopOverridePx !== undefined && defaultCorner === 'top-right'
-          ? { top: mobileTopOverridePx }
-          : {};
-  const cornerClass = dockControlledOpen
+  const style: React.CSSProperties = position
+    ? (() => {
+        const clamped = clampFree(position);
+        return { left: px(clamped.x), top: px(clamped.y) };
+      })()
+    : useDynamicStack
+      ? { top: stackBelowY + stackGapPx }
+      : cornerInsetStyle(defaultCorner, scale);
+  const cornerClass = position
     ? ''
-    : position
-      ? ''
-      : useDynamicStack
-        ? 'inset-x-3 sm:left-auto sm:right-4'
-        : defaultCorner === 'top-right'
-          ? 'inset-x-3 top-3 sm:inset-x-auto sm:right-4 sm:top-4'
-          : defaultCorner === 'top-right-stacked'
-            ? 'inset-x-3 top-[15rem] sm:inset-x-auto sm:right-4'
-            : defaultCorner === 'top-banner'
-              ? 'inset-x-3 top-3'
-              : defaultCorner === 'bottom-left'
-                ? 'bottom-4 left-4'
-                : defaultCorner === 'bottom-right'
-                  ? 'bottom-4 right-4'
-                  : 'left-4 top-4';
+    : useDynamicStack
+      ? 'inset-x-3 sm:left-auto sm:right-4'
+      : defaultCorner === 'top-right'
+        ? 'inset-x-3 top-3 sm:inset-x-auto sm:right-4 sm:top-4'
+        : defaultCorner === 'top-right-stacked'
+          ? 'inset-x-3 top-[15rem] sm:inset-x-auto sm:right-4'
+          : defaultCorner === 'top-banner'
+            ? 'inset-x-3 top-3'
+            : defaultCorner === 'bottom-left'
+              ? 'bottom-4 left-4'
+              : defaultCorner === 'bottom-right'
+                ? 'bottom-4 right-4'
+                : 'left-4 top-4';
 
   // Docked rest (docs/specs/007-editor/panel-docking.md): the panel sits in a corner stack container
   // and lets that flex column own its position + reflow — no absolute
@@ -228,42 +199,51 @@ export function MovablePanel({
     : isDockDragging
       ? // Lift just above the resting panels so a dragged panel passes
         // over the others (but stays below toolbars / modals).
-        { left: dockDragPos?.x ?? 0, top: dockDragPos?.y ?? 0, zIndex: 'calc(var(--z-panel) + 1)' }
+        {
+          left: px(dockDragPos?.x ?? 0),
+          top: px(dockDragPos?.y ?? 0),
+          zIndex: 'calc(var(--z-panel) + 1)',
+        }
       : style;
   const positionClass = isDockedRest ? 'relative' : isDockDragging ? 'fixed' : 'absolute';
   const finalCornerClass = isDockedRest || isDockDragging ? '' : cornerClass;
 
-  if (dockActive && mobileOpenOverride === false) return null;
+  if (asPopover && !popoverShown) return null;
 
-  // Dock-controlled on mobile: render as a popover with arrow, no header.
-  if (dockControlledOpen) {
-    const anchor = mobileDockAnchor;
+  // A popover: hung from its button with an arrow, no draggable header.
+  if (popoverShown) {
+    const anchor = popoverAnchor;
     return (
       <div
         ref={ref}
         data-floating-panel=""
         data-tour-id={dataTourId}
+        // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
+        // popovers included. The buttons that open them are not panels and
+        // stay opaque.
+        data-panel-translucent=""
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
           e.stopPropagation();
         }}
-        style={
-          anchor?.bottom !== undefined
+        style={{
+          ...uiScaleStyle(scale),
+          ...(anchor?.bottom !== undefined
             ? {
-                bottom: anchor.bottom + 12,
-                left: anchor.left,
-                maxHeight: `calc(100% - ${anchor.bottom + 24}px)`,
+                bottom: px(anchor.bottom + 12),
+                left: px(anchor.left),
+                maxHeight: `calc(100% - ${px(anchor.bottom + 24)}px)`,
               }
             : anchor
-              ? { top: anchor.top + 12, left: anchor.left }
-              : { top: 56, right: 12 }
-        }
+              ? { top: px(anchor.top + 12), left: px(anchor.left) }
+              : { top: px(56), right: px(12) }),
+        }}
         className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {anchor ? (
           <div
-            style={{ left: anchor.arrowOffset - 7 }}
+            style={{ left: px(anchor.arrowOffset) - 7 }}
             className={`absolute h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
               anchor.bottom !== undefined
                 ? '-bottom-[7px] rounded-br-sm border-b border-r'
@@ -271,14 +251,16 @@ export function MovablePanel({
             }`}
           />
         ) : null}
-        {/* The minimal/mobile popover has no draggable title row, so the
-            header options (panel title, headerExtra, and headerActions
-            like the Explorer's "New" button) lived only on the desktop
-            header and were unreachable here. Render a slim header band so
-            those stay accessible. Reset-position / drag affordances are
-            intentionally omitted — there's no drag in this layout. */}
+        {/* The popover has no draggable title row, so render a slim header
+            band to keep the header options (panel title, headerExtra, and
+            headerActions like the Explorer's "New" button) reachable.
+            Reset-position / drag affordances are intentionally omitted:
+            a popover doesn't drag. */}
         <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
-          <PanelTitle title={title} />
+          <span className="flex min-w-0 items-center gap-1.5">
+            <PanelTitle title={title} />
+            {titleAdornment}
+          </span>
           {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
             <div className="ml-auto flex items-center gap-1">
               {headerExtra}
@@ -309,11 +291,9 @@ export function MovablePanel({
       ref={ref}
       data-floating-panel=""
       data-tour-id={dataTourId}
-      // Marks the FULL floating panel as opacity-controlled: globals.css
-      // applies the user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores
-      // it to opaque on hover / focus. The minimal dock branch above is
-      // deliberately not tagged, so panel opacity never touches the
-      // minimal layout.
+      // Marks the panel as opacity-controlled: globals.css applies the
+      // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to
+      // opaque on hover / focus. The popover branch above carries it too.
       data-panel-translucent=""
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -324,13 +304,13 @@ export function MovablePanel({
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={finalStyle}
+      style={{ ...uiScaleStyle(scale), ...finalStyle }}
       // cursor-default so the panel body doesn't inherit the canvas's
       // grab cursor (the panel is a DOM descendant of the pannable
       // canvas surface); the header re-asserts cursor-grab since that's
       // the only part you can drag. When docked at rest the panel is a
       // static flex child of its corner stack (no absolute / corner class).
-      className={`pointer-events-auto ${positionClass} ${elevated ? 'z-[calc(var(--z-panel)+1)]' : 'z-[var(--z-panel)]'} flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
+      className={`pointer-events-auto ${positionClass} ${elevated ? 'z-[calc(var(--z-panel)+1)]' : 'z-[var(--z-panel)]'} flex cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
     >
       <MovablePanelHeader
         headerRef={headerRef}
@@ -338,13 +318,12 @@ export function MovablePanel({
         dragging={drag !== null}
         title={title}
         headerExtra={headerExtra}
+        titleAdornment={titleAdornment}
         headerActions={headerActions}
         helpArticle={helpArticle}
         onReset={atDefaultSpot ? undefined : onReset}
         collapsible={collapsible}
-        effectiveCollapsed={effectiveCollapsed}
-        dockControlledOpen={dockControlledOpen}
-        onMobileClose={onMobileClose}
+        effectiveCollapsed={collapsed}
         onToggleCollapsed={() => setCollapsed((v) => !v)}
         onMinimize={onMinimize}
       />
@@ -361,15 +340,15 @@ export function MovablePanel({
       <div
         className={
           'grid transition-[grid-template-rows] duration-short ease-out ' +
-          (collapsible && effectiveCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]')
+          (collapsible && collapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]')
         }
-        aria-hidden={collapsible && effectiveCollapsed ? true : undefined}
+        aria-hidden={collapsible && collapsed ? true : undefined}
       >
         <div
-          style={!growBody && bodyMaxH !== null ? { maxHeight: bodyMaxH } : undefined}
+          style={!growBody && bodyMaxH !== null ? { maxHeight: px(bodyMaxH) } : undefined}
           // Horizontal overflow is always CLIPPED: panels are fixed-width by
           // design, so any x-overflow is a row failing to truncate (e.g. a
-          // long diagram name), and a horizontal scrollbar would surface the
+          // long document name), and a horizontal scrollbar would surface the
           // bug instead of containing it.
           // `overflow-hidden` is required for the grid-rows-[0fr] collapse to
           // actually clip the body: without an overflow set, the grid item's

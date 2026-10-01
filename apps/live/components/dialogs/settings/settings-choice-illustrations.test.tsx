@@ -46,7 +46,7 @@ describe('choice illustrations', () => {
   it('rings the option in force, and only that one', () => {
     const { container } = render(<SettingsIllustration id="panelLayout" value="toolbar" />);
     const captions = [...container.querySelectorAll('text')];
-    expect(captions.map((t) => t.textContent)).toEqual(['Floating', 'Minimal', 'Toolbar']);
+    expect(captions.map((t) => t.textContent)).toEqual(['Floating', 'Toolbar']);
     const current = captions.filter((t) => t.getAttribute('class')?.includes('font-semibold'));
     expect(current.map((t) => t.textContent)).toEqual(['Toolbar']);
   });

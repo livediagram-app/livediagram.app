@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { svgElements } from './svg-tokens';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 
 describe('svgElements', () => {
   it('reads each element tag and its attributes', () => {
@@ -25,11 +26,28 @@ describe('svgElements', () => {
     ]);
   });
 
+  it('reads namespaced, dotted and numbered names, single quotes and spaced equals signs', () => {
+    expect(svgElements("<use xlink:href='#a' data.x-1 = \"2\"\n\ty='3'/><H1>")).toEqual([
+      { tag: 'use', attrs: { 'xlink:href': '#a', 'data.x-1': '2', y: '3' } },
+      { tag: 'H1', attrs: {} },
+    ]);
+  });
+
+  it('skips an unquoted value', () => {
+    expect(svgElements('<a b=c d="e">')).toEqual([{ tag: 'a', attrs: { d: 'e' } }]);
+  });
+
+  it('stops at an unterminated value', () => {
+    expect(svgElements('<a b="open')).toEqual([{ tag: 'a', attrs: {} }]);
+  });
+
   it('stays linear on hostile input', () => {
-    const start = performance.now();
-    svgElements('<path ' + 'A'.repeat(200_000));
-    svgElements('<path'.repeat(50_000));
-    svgElements('<a b="'.repeat(50_000));
-    expect(performance.now() - start).toBeLessThan(200);
+    // CPU time, not wall-clock (cpuMsOf): immune to other suites sharing the box.
+    const spent = cpuMsOf(() => {
+      svgElements('<path ' + 'A'.repeat(200_000));
+      svgElements('<path'.repeat(50_000));
+      svgElements('<a b="'.repeat(50_000));
+    });
+    expect(spent).toBeLessThan(200);
   });
 });

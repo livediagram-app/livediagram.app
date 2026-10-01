@@ -7,7 +7,7 @@
 // The whole card is the click target. The two places a host can put its
 // own interactive content, the menu slot and the title slot, stop their
 // events at the slot boundary so a click on the ⋯ (or a keypress in a
-// rename input) never also opens the diagram behind it.
+// rename input) never also opens the document behind it.
 
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { CARD_PREVIEW, CARD_SHELL } from '../cardGrid';
@@ -48,7 +48,7 @@ export function TimelineCard({
   const interactive = Boolean(rendered.onClick);
   // Colour by WHAT HAPPENED, not by which part of the product it
   // happened in: a reader scanning a busy day asks "is any of this
-  // alarming?" before they ask "was that a diagram or a team".
+  // alarming?" before they ask "was that a document or a team".
   const tone = eventTone(event.eventType);
 
   return (
@@ -83,7 +83,7 @@ export function TimelineCard({
             // identical to a clickable one but ignores the click reads
             // as broken; dimming it answers the question before the
             // pointer gets there. A tombstone is the common case:
-            // there is no diagram left to open.
+            // there is no document left to open.
             'opacity-60'
       }`}
     >

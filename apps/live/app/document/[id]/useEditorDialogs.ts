@@ -1,0 +1,130 @@
+import { useCallback, useEffect, useState } from 'react';
+import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
+import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
+import { track } from '@/lib/telemetry';
+import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
+
+// Top-level modal/dialog visibility for the editor: Search, Settings, the Share dialog, the per-tab Export / Import dialogs, and the
+// Collaborators modal.
+// Pure open/closed UI flags with no document-data coupling — a self-
+// contained slice composed into useEditorState and spread into its
+// view-model.
+export function useEditorDialogs() {
+  const [searchOpen, setSearchOpen] = useState(false);
+  // The `?settings=<category>&section=<id>` deep link opens Settings on load
+  // (docs/specs/007-editor/user-preferences.md); it stays in the URL until Settings closes.
+  const [settingsLink] = useState(() =>
+    typeof window === 'undefined' ? null : readSettingsLink(window.location.search),
+  );
+  const [settingsOpen, setSettingsOpen] = useState(settingsLink !== null);
+  // Where Settings should land when it is opened from a search result
+  // (docs/specs/007-editor/user-preferences.md): the setting itself, not the dialog's front door. Cleared on
+  // close so the next plain open starts on the default category.
+  const [settingsFocus, setSettingsFocus] = useState<{
+    categoryId: string;
+    rowKey: string;
+  } | null>(null);
+  const openSettingsAt = useCallback((categoryId: string, rowKey: string) => {
+    setSettingsFocus({ categoryId, rowKey });
+    setSettingsOpen(true);
+  }, []);
+  // Category to open on WITHOUT ringing a row: the `?` key lands on the
+  // Keyboard category, where the shortcut list lives now that it has no
+  // window of its own.
+  const [settingsCategory, setSettingsCategory] = useState<string | null>(
+    settingsLink?.category ?? null,
+  );
+  // Section of it to scroll to and focus (the Drive connect flow returns to Account > Cloud Sync).
+  const [settingsSection, setSettingsSection] = useState<string | null>(
+    settingsLink?.section ?? null,
+  );
+  const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
+    setSettingsCategory(categoryId);
+    setSettingsSection(sectionId ?? null);
+    setSettingsOpen(true);
+  }, []);
+  // A link elsewhere in the editor naming a category (lib/open-settings.ts).
+  useOpenSettingsRequests(openSettingsOn);
+  const closeSettings = useCallback(() => {
+    setSettingsOpen(false);
+    setSettingsFocus(null);
+    setSettingsCategory(null);
+    setSettingsSection(null);
+    dropSettingsLink();
+  }, []);
+  // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
+  // document with this param): land with the Share dialog already open.
+  const [shareDialogOpen, setShareDialogOpen] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      new URL(window.location.href).searchParams.get('share') === '1',
+  );
+  // Strip the param after consuming it so a refresh / back doesn't keep
+  // reopening the dialog, leaving the document URL clean.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('share') !== '1') return;
+    url.searchParams.delete('share');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, []);
+  // The right-click Canvas/Theme dialog (docs/specs/011-theme/canvas-and-theme-dialog.md). null = closed; the
+  // value is which tab it opened on. A single flag drives both the open
+  // state and the active tab.
+  const [canvasThemeTab, setCanvasThemeTab] = useState<CanvasThemeTab | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  // Whether the open Export dialog targets the whole active tab or just
+  // the current multi-selection. A plain enum flag (no element data) so
+  // this slice stays document-data-free; EditorView derives the scoped
+  // tab live from `multiSelectedIds` when scope is 'selection'.
+  const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
+  const [importOpen, setImportOpen] = useState(false);
+  // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md), opened from a tab's presence stack.
+  // null = closed; otherwise `focusId` is whose avatar was clicked (null from
+  // the "+N" badge), which the modal highlights.
+  const [collaborators, setCollaborators] = useState<{ focusId: string | null } | null>(null);
+  const openCollaborators = useCallback((focusId: string | null) => {
+    setCollaborators({ focusId });
+    track('UI', 'Opened', 'Collaborators');
+  }, []);
+  const closeCollaborators = useCallback(() => setCollaborators(null), []);
+
+  // Rename-request nonces. The command palette (useEditorCommands) can't reach
+  // into EditorHeader / TabBar's local inline-rename state, so it bumps a
+  // monotonic counter that each component watches via an effect to enter edit
+  // mode. A number (not a boolean) so a repeated request always re-triggers.
+  const [renameDocumentNonce, setRenameDocumentNonce] = useState(0);
+  const requestRenameDocument = useCallback(() => setRenameDocumentNonce((n) => n + 1), []);
+  const [renameTabNonce, setRenameTabNonce] = useState(0);
+  const requestRenameTab = useCallback(() => setRenameTabNonce((n) => n + 1), []);
+
+  return {
+    searchOpen,
+    setSearchOpen,
+    settingsOpen,
+    setSettingsOpen,
+    settingsFocus,
+    openSettingsAt,
+    settingsCategory,
+    settingsSection,
+    openSettingsOn,
+    closeSettings,
+    shareDialogOpen,
+    setShareDialogOpen,
+    canvasThemeTab,
+    setCanvasThemeTab,
+    exportOpen,
+    setExportOpen,
+    exportScope,
+    setExportScope,
+    importOpen,
+    setImportOpen,
+    collaborators,
+    openCollaborators,
+    closeCollaborators,
+    renameDocumentNonce,
+    requestRenameDocument,
+    renameTabNonce,
+    requestRenameTab,
+  };
+}

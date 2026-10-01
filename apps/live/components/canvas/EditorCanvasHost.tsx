@@ -4,9 +4,11 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
+import { DEFAULT_BUTTON_MODE, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { createInkProjector } from '@/lib/whiteboard-ink';
+import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
-import { isVoteHost } from '@livediagram/diagram';
+import { isVoteHost } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
@@ -19,7 +21,7 @@ import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -31,6 +33,7 @@ export function EditorCanvasHost() {
   const {
     activeId,
     activeTab,
+    scrollIntoView,
     activeTabLoadState,
     activeTabLocked,
     presentingElements,
@@ -112,6 +115,7 @@ export function EditorCanvasHost() {
     photoImportBlocked,
     openPhotoImport,
     readPhotoFile,
+    dropBoardFile,
     photoDraft,
     createBlocked,
     addTable,
@@ -174,24 +178,27 @@ export function EditorCanvasHost() {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitPath,
+    commitPathEdit,
+    styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,
     createFolder,
     deleteCurvePoint,
-    deleteDiagram,
+    deleteDocument,
     deleteFolder,
     deleteMultiSelected,
     deleteSelected,
-    diagramId,
-    diagramList,
-    diagramListLoading,
-    diagramName,
-    dismissSharedDiagram,
+    documentId,
+    documentList,
+    documentListLoading,
+    documentName,
+    dismissSharedDocument,
     distGuides,
     dropIconOnElement,
     dropPaletteItem,
-    duplicateDiagram,
+    duplicateDocument,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -226,18 +233,18 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDiagramToFolder,
-    moveDiagramTo,
+    moveDocumentToFolder,
+    moveDocumentTo,
     multiSelectedIds,
     narrowMultiSelection,
-    newDiagram,
+    newDocument,
     openActionPopover,
     openAssignActionDialog,
     completeAction,
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openDiagram,
+    openDocument,
     openNote,
     openTemplatePicker,
     palettePosition,
@@ -292,8 +299,8 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDiagramList,
-    setDiagramName,
+    setDocumentList,
+    setDocumentName,
     setEditingId,
     setExplorerPosition,
     setExportOpen,
@@ -312,11 +319,12 @@ export function EditorCanvasHost() {
     appendWebRowTo,
     setHeroCaptionLine,
     growMindNode,
+    abandonMindNode,
     setTextAlignSelected,
     setUserPreferences,
     setViewportOffset,
     setViewportZoom,
-    sharedDiagrams,
+    sharedDocuments,
     shiftDupGhostIds,
     skipTemplatePicker,
     snapGuides,
@@ -325,7 +333,7 @@ export function EditorCanvasHost() {
     startTimer,
     startVote,
     tabSummaries,
-    teamDiagrams,
+    teamDocuments,
     teamFolders,
     teams,
     refreshTeamLibraries,
@@ -340,7 +348,18 @@ export function EditorCanvasHost() {
     viewportOffset,
     viewportZoom,
     zenMode,
+    whiteboardDock,
+    drag,
   } = useEditorContext();
+  // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
+  const reshapingArrowId =
+    drag &&
+    (drag.kind === 'arrow-bend' ||
+      drag.kind === 'arrow-curve' ||
+      drag.kind === 'arrow-elbow' ||
+      drag.kind === 'arrow-endpoint')
+      ? drag.arrowId
+      : null;
 
   // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
   // below fall away for everybody else, exactly as they do on a read-only
@@ -362,7 +381,7 @@ export function EditorCanvasHost() {
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-diagrams.md) - see useTeamFolderActions.
+  // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
     clerkUserId,
@@ -380,12 +399,28 @@ export function EditorCanvasHost() {
   // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
   const isMobile = useIsMobileViewport();
   const panelLayout = resolvePanelLayout(userPreferences, { mobile: isMobile });
+  // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
+  // true when the row's element is that kind of card, now centred in view.
+  const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
+    const el = activeTab.elements.find((e) => e.id === id);
+    if (!el || el.type !== 'shape' || el.shape !== shape) return false;
+    scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
+    return true;
+  };
   const backdrop = resolveTabBackdrop(activeTab, appearance);
+  // A whiteboard draws every unpainted element in its ink (docs/specs/023-whiteboard/whiteboard.md
+  // "Appearance"). Display only: the projector caches per element, so an
+  // unchanged element keeps its identity and the memoised views stay quiet.
+  const [projectInk] = useState(createInkProjector);
+  const shownElements = presentingElements ?? activeTab.elements;
+  const canvasElements = isWhiteboardTab(activeTab)
+    ? projectInk(shownElements, appearance)
+    : shownElements;
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
   );
-  // Lazy per-tab load gate (docs/specs/006-diagram/per-tab-storage.md): show a blocking loader / error over
+  // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
   // overwrite the real server row. Derived once in useEditorState (it also
@@ -401,13 +436,12 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
+    whiteboard: isWhiteboardTab(activeTab),
     setContextMenu,
   });
 
-  // Preference writes (Settings save + the two quick toggles) — see
-  // usePreferenceHandlers.
-  const { onChangeSettings, onToggleMinimalPanels } = usePreferenceHandlers({
-    userPreferences,
+  // Preference writes (the Settings save): see usePreferenceHandlers.
+  const { onChangeSettings } = usePreferenceHandlers({
     setUserPreferences,
     selfParticipantId: selfParticipant?.id ?? null,
   });
@@ -428,7 +462,7 @@ export function EditorCanvasHost() {
         activeTabId={activeTab.id}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
-        diagramName={diagramName}
+        documentName={documentName}
         tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
         tabBackgroundColor={backdrop.backgroundColor}
         tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
@@ -450,9 +484,20 @@ export function EditorCanvasHost() {
         // real canvas still draws them — a slide has to respond to clicks and
         // carry live element state, and there is then exactly one thing that
         // knows how an element looks.
-        elements={presentingElements ?? activeTab.elements}
+        elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
+        whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
+        whiteboardInk={WHITEBOARD_INK[appearance]}
+        previewDrawnArrow={(intent, startX, startY, endX, endY) =>
+          drawnArrowAsShown(intent, startX, startY, endX, endY, {
+            elements: activeTab.elements,
+            theme: getTheme(activeTab.theme),
+            whiteboard: isWhiteboardTab(activeTab),
+            styleNewElement,
+            ink: WHITEBOARD_INK[appearance],
+          })
+        }
         layerInertIds={layerInertIds}
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuides={snapGuides}
@@ -535,7 +580,7 @@ export function EditorCanvasHost() {
           isReadOnly
             ? undefined
             : {
-                add: (id, text) => addComment(id, text),
+                add: (id, text, mentions) => addComment(id, text, undefined, mentions),
                 remove: deleteComment,
                 resolve: resolveThread,
                 unresolve: unresolveThread,
@@ -656,9 +701,11 @@ export function EditorCanvasHost() {
         }}
         onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
+        onDropFile={isReadOnly ? undefined : dropBoardFile}
         createBlocked={createBlocked}
         onAddImage={addImage}
         onAddArrow={addArrow}
+        reshapingArrowId={reshapingArrowId}
         onBeginFreehand={beginFreehand}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
@@ -670,14 +717,14 @@ export function EditorCanvasHost() {
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}
         onCommitPolygon={commitPolygon}
+        onCommitPath={commitPath}
+        onCommitPathEdit={commitPathEdit}
+        onDressPath={styleNewElement}
         settings={userPreferences}
         onChangeSettings={onChangeSettings}
-        // Only Minimal docks the panels. Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's
-        // panels and swaps the Palette + Explorer for the strip and menu button.
-        // A phone resolves Floating to Toolbar, its default.
-        minimalPanels={panelLayout === 'minimal'}
+        // Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's panels and swaps the
+        // Palette + Explorer for the strip and menu button. A phone always shows it.
         toolbarLayout={panelLayout === 'toolbar'}
-        onToggleMinimalPanels={onToggleMinimalPanels}
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
         onRedo={redo}
@@ -685,14 +732,14 @@ export function EditorCanvasHost() {
         onResetPalette={() => setPalettePosition(null)}
         onMoveExplorer={(x, y) => setExplorerPosition({ x, y })}
         onResetExplorer={() => setExplorerPosition(null)}
-        diagramList={diagramList}
+        documentList={documentList}
         folders={folders}
-        sharedDiagrams={sharedDiagrams}
+        sharedDocuments={sharedDocuments}
         teams={explorerTeams}
         teamFolders={teamFolders}
-        teamDiagrams={teamDiagrams}
-        onDismissShared={dismissSharedDiagram}
-        diagramListLoading={diagramListLoading}
+        teamDocuments={teamDocuments}
+        onDismissShared={dismissSharedDocument}
+        documentListLoading={documentListLoading}
         changeLog={activeTabChangeLog}
         changeLogLoading={changeLogLoading}
         activityPosition={activityPosition}
@@ -710,7 +757,7 @@ export function EditorCanvasHost() {
           // closing isn't a feature-reach signal. The closure read is
           // safe because this is a single user click, not a rapid
           // race, so no stale-state risk. The dock / popover layouts
-          // open Activity through useCanvasMobileDock, which counts there.
+          // open Activity through useDockPopovers, which counts there.
           if (activityMinimized) track('UI', 'Opened', 'Activity');
           setActivityMinimized((v) => !v);
         }}
@@ -791,12 +838,16 @@ export function EditorCanvasHost() {
         onResetAvatarPanel={() => setAvatarPanelPosition(null)}
         voteResults={voteResults}
         onJumpToVoteResult={jumpToVoteResult}
-        isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
+        isVoteHost={isVoteHost(
+          activeTab.vote,
+          participantKey(selfParticipant),
+          facilitator.isFacilitator,
+        )}
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
         onToggleLayersMinimized={() => {
           // Emit only the open transition, matching the Activity dock
-          // (the dock / popover layouts count in useCanvasMobileDock).
+          // (the dock / popover layouts count in useDockPopovers).
           if (layersMinimized) track('Layer', 'Opened', 'Panel');
           setLayersMinimized((v) => !v);
         }}
@@ -830,13 +881,22 @@ export function EditorCanvasHost() {
         onResetCommentsPanel={() => setCommentsPanelPosition(null)}
         onOpenCommentsForElement={(id) => {
           setSelectedId(id);
-          openComments(id);
+          // A Comment panel IS the thread (docs/specs/012-collaboration/assigned-actions.md §5): go to it
+          // rather than open a popover repeating it beside the card.
+          if (!jumpToCard(id, 'comment-pin')) openComments(id);
         }}
         actionRows={actionRows}
         onOpenActionForElement={(id) => {
           setSelectedId(id);
-          openActionPopover(id);
+          // An Action panel IS the action: the same jump.
+          if (!jumpToCard(id, 'action-card')) openActionPopover(id);
         }}
+        onToggleActionDone={
+          isReadOnly
+            ? undefined
+            : (id, done, actionId) =>
+                done ? completeAction(id, actionId) : reopenAction(id, actionId)
+        }
         onRevertChange={revertChange}
         onPreviewRevert={previewRevert}
         onClearRevertPreview={clearRevertPreview}
@@ -844,9 +904,9 @@ export function EditorCanvasHost() {
         onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
         saveStatus={saveStatus}
         savedAt={savedAt}
-        currentDiagramId={diagramId}
-        onOpenDiagram={openDiagram}
-        onNewDiagram={newDiagram}
+        currentDocumentId={documentId}
+        onOpenDocument={openDocument}
+        onNewDocument={newDocument}
         explorerMenuActions={{
           // The header's Share gate: owners only (docs/specs/013-workspace/folders.md, docs/specs/015-api/api.md).
           onShare:
@@ -872,23 +932,23 @@ export function EditorCanvasHost() {
           },
         }}
         onRenameCurrent={(next) => {
-          const prev = diagramName.trim();
+          const prev = documentName.trim();
           const nextTrim = next.trim();
-          setDiagramName(next);
-          if (nextTrim && diagramId)
-            setDiagramList((prev) =>
-              prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
+          setDocumentName(next);
+          if (nextTrim && documentId)
+            setDocumentList((prev) =>
+              prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
             );
-          if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
+          if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
         }}
-        onDeleteDiagram={deleteDiagram}
-        onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+        onDeleteDocument={deleteDocument}
+        onDuplicateDocument={(id) => void duplicateDocument(id)}
         onCreateFolder={createFolder}
         onRenameFolder={renameFolder}
         onDeleteFolder={deleteFolder}
         onTeamFolders={onTeamFolders}
-        onMoveDiagramToFolder={moveDiagramToFolder}
-        onMoveDiagramTo={moveDiagramTo}
+        onMoveDocumentToFolder={moveDocumentToFolder}
+        onMoveDocumentTo={moveDocumentTo}
         onDeselect={() => {
           // Clicking empty canvas also cancels an armed arrow-connect, and
           // wraps up the Format tool — restoring the pre-Format tool — so a
@@ -1011,6 +1071,7 @@ export function EditorCanvasHost() {
         onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
         onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
         onGrowMindNode={growMindNode}
+        onAbandonMindNode={abandonMindNode}
         chartPalette={themeChartPalette(getTheme(activeTab.theme))}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
@@ -1049,7 +1110,7 @@ export function EditorCanvasHost() {
         }
         hydrated={hydrated}
         templatePickerMode={effectiveTemplatePickerMode}
-        // Visitor on someone else's diagram + signed in → lock the
+        // Visitor on someone else's document + signed in → lock the
         // identity input to their Clerk name. Owner branch never
         // shows the identity prompt so `lockedName` is moot there;
         // pure guests pass null and keep the editable name field.

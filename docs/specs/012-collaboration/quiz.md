@@ -2,7 +2,7 @@
 
 Status: **implemented** (first cut, for review).
 
-One multiple-choice question on the board, run by the facilitator: it opens
+One multiple-choice question on the canvas, run by the facilitator: it opens
 for everyone at once, locks when its time is up, and the reveal shows the
 right answer and who got it.
 
@@ -82,6 +82,16 @@ your own pick, softer on the rest). Unset, they are washes of the text colour,
 so an unstyled quiz follows the tab theme. The right answer's green is not
 affected.
 
+**Only the disc is the element's body.** Pressing or dragging the disc
+selects and moves the quiz like any element. The rest of its square box (the
+empty corners, the gaps between the answers) takes no presses and behaves as
+bare canvas. Pressing an answer is a pick and nothing else: it never selects
+the quiz (which would lock it to the picker for everyone else) and never
+drags it, in any phase.
+
+**The card's `…`** sits inside the disc at its top edge, with the rest of the
+quiz's controls, not in the corner of the box.
+
 **Double-click never edits the text.** The label is the question, and the
 Edit Quiz dialog is its only editor: editing it inline would print the hidden
 question over the closed disc, and would let anyone reword it mid-round.
@@ -107,7 +117,7 @@ simply in place, the right answer is simply green.
   `responses`, and mints a new `collabRound`, so a pick from a previous round
   can never land in this one ([Collaboration race hardening](collab-race-hardening.md)).
 - **Run again** returns the card to `ready` the same way, with a new round.
-- **Edit** is a dialog (Edit Quiz) opened from the card's own `…`: the
+- **Edit** is a dialog (Edit Quiz) opened from the `…` at the top of the disc: the
   question, the answers with a Correct marker on one, and the time limit.
   Saving is an ordinary undoable edit and returns the card to `ready`, because
   picks cast against the old answers no longer mean anything. It is not
@@ -121,7 +131,7 @@ other live fields, so one person's Ctrl+Z cannot un-start somebody's round.
 ## Limits, stated plainly
 
 - **The right answer is in the document.** `quizCorrect` syncs to everyone
-  like any field, so someone reading the raw diagram (the JSON export, the
+  like any field, so someone reading the raw document (the JSON export, the
   network tab) can see it before the reveal. The face never shows it early,
   and the Edit dialog is only offered to people who can run the card. Hiding
   it for real would need the server to hold it, the way the Q&A board's

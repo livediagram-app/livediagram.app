@@ -56,9 +56,9 @@ async function recorded(page: Page): Promise<MotionRecord[]> {
 const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
-async function justDraw(page: Page): Promise<void> {
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+async function startBlank(page: Page): Promise<void> {
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
+  await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }
@@ -95,7 +95,7 @@ async function tourTheChrome(page: Page): Promise<void> {
   await toggle(page, 'Canvas tool');
   await toggle(page, 'Palette category');
   await toggle(page, 'Fit to screen');
-  await openAndClose(page, () => page.getByRole('button', { name: 'Diagram menu' }).click());
+  await openAndClose(page, () => page.getByRole('button', { name: 'Document menu' }).click());
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
   await openAndClose(page, () => square.click({ button: 'right' }));
   await openAndClose(page, () =>
@@ -108,7 +108,7 @@ test.describe('Motion budget', () => {
   test('every chrome animation settles within 250ms', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
     await page.addInitScript(recordMotion);
-    await justDraw(page);
+    await startBlank(page);
     await tourTheChrome(page);
 
     const seen = transitions(await recorded(page));
@@ -127,7 +127,7 @@ test.describe('Motion budget', () => {
   test('reduced motion collapses every animation to instant', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
     await page.addInitScript(recordMotion);
-    await justDraw(page);
+    await startBlank(page);
     await tourTheChrome(page);
 
     const all = await recorded(page);

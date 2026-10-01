@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, openJustDraw } from './fixtures';
+import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
 
 // Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Toolbar layout's strip
 // (docs/specs/007-editor/toolbar-layout.md): a row found by searching the More popover drags onto the
@@ -13,7 +13,7 @@ async function openToolbarBoard(page: Page): Promise<void> {
     const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
     localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
   });
-  await openJustDraw(page);
+  await openStartBlank(page);
 }
 
 async function searchMore(page: Page, query: string): Promise<void> {

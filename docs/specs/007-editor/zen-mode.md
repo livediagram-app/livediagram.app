@@ -12,7 +12,7 @@ When zen mode is on, the editor hides:
 - the tab bar,
 - the palette (tools + add-element), the context / inspector
   panel, the Explorer, the Activity panel, the Collaborate panel, the AI
-  panel, the mobile dock, and the owner / role status badge,
+  panel, the Toolbar layout's strip and menu button, and the owner / role status badge,
 - the empty-canvas prompt and the undo/redo history dock.
 
 What stays:
@@ -23,7 +23,7 @@ What stays:
 - an **exit-zen button on the zoom controls**, shown only while zen is
   active, so there's always a visible way out.
 
-Zen mode is purely a view state. It changes nothing about the diagram,
+Zen mode is purely a view state. It changes nothing about the document,
 never persists to the server, and is not synced to other participants —
 each viewer focuses independently. It is available to everyone, including
 view-only visitors (focusing is read-only).
@@ -49,12 +49,12 @@ view-only visitors (focusing is read-only).
 
 Flipping zen mode emits `UI / Toggled / ZenModeOn` and
 `UI / Toggled / ZenModeOff` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), the same shape as the dark-mode
-and minimal-panel toggles.
+toggle.
 
 ## Implementation notes
 
 - State lives in `usePanelLayout` (`zenMode` / `setZenMode`) — it's pure
-  UI chrome state with no diagram coupling, alongside the other panel
+  UI chrome state with no document coupling, alongside the other panel
   visibility flags. `useEditorState` wraps it in `toggleZenMode` (adds
   the telemetry) and exposes that to the keyboard hook, the canvas-tool
   dropdown's Zen entry, and the zoom-dock exit button.

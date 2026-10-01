@@ -11,16 +11,17 @@ import {
   type TextAlignY,
   type TextRun,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,
-  FIXED_FONT_PX,
   labelTypographyClass,
+  labelBasePx,
+  labelRunPx,
   labelTextStyleCss,
   MULTI_FONT_PX,
-  MULTI_RUN_PX,
   TEXT_ALIGN,
+  type LabelPadding,
   type LabelTextStyle,
 } from '@/components/canvas/label-style';
 
@@ -110,7 +111,7 @@ export function ScalingLabel({
 
 export function FixedSizeLabel({
   text,
-  size,
+  px,
   alignX,
   alignY,
   padding,
@@ -118,10 +119,12 @@ export function FixedSizeLabel({
   animClass,
 }: {
   text: string;
-  size: Exclude<TextSize, 'scale'>;
+  // The label's font px: its size preset's, times a text box's Shift-resize scale.
+  px: number;
   alignX: TextAlignX;
   alignY: TextAlignY;
-  padding: number;
+  // A number of px on every side, or a CSS padding (a whiteboard text box's 2px 4px).
+  padding: LabelPadding;
   style?: LabelTextStyle;
   // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
   animClass?: string;
@@ -131,7 +134,7 @@ export function FixedSizeLabel({
     <div
       className="pointer-events-none absolute inset-0 flex overflow-hidden font-medium leading-tight"
       style={{
-        fontSize: `${FIXED_FONT_PX[size]}px`,
+        fontSize: `${px}px`,
         alignItems: ALIGN_ITEMS[alignY],
         padding,
       }}
@@ -219,6 +222,7 @@ export function RichLabel({
   alignX,
   alignY,
   padding,
+  textScale = 1,
   fontFamily,
   multiline,
   uppercase,
@@ -230,7 +234,9 @@ export function RichLabel({
   textSize: TextSize;
   alignX: TextAlignX;
   alignY: TextAlignY;
-  padding: number;
+  padding: LabelPadding;
+  // A Shift-resized text box's scale on every size (docs/specs/023-whiteboard/whiteboard.md).
+  textScale?: number;
   fontFamily?: string;
   multiline: boolean;
   // Paint in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md) — whole-label, so
@@ -240,12 +246,8 @@ export function RichLabel({
   // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
   animClass?: string;
 }) {
-  const basePx = multiline
-    ? MULTI_FONT_PX[textSize]
-    : textSize === 'scale'
-      ? 16
-      : FIXED_FONT_PX[textSize];
-  const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
+  const basePx = labelBasePx(multiline, textSize) * textScale;
+  const runSizePx = labelRunPx(multiline, textScale);
   return (
     <div
       className={`pointer-events-none absolute inset-0 flex overflow-hidden ${labelTypographyClass(

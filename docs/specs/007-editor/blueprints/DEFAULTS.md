@@ -16,3 +16,5 @@ One row per default applied where a spec is silent or qualitative.
 | D10 | power-user-mode | Where Help sits in the Explorer's menu        | First row of the app band, above Search                                                                    |
 | D11 | power-user-mode | Order of the mode's children                  | Minimal Chrome first (a setting), then the preset readout (a summary)                                      |
 | D12 | power-user-mode | How "Change" goes to a row                    | Select the row's category and ring the row, the search result path                                         |
+| D13 | ui-scale        | How a value between steps resolves            | Snapped to the nearest 5% step, then rounded to 2 decimals                                                 |
+| D14 | ui-scale        | Where the row sits in Appearance              | Second, after Theme                                                                                        |

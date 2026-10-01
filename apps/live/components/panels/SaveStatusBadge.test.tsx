@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Activity panel's save badge (docs/specs/006-diagram/per-tab-storage.md): one label per failed-save
+// The Activity panel's save badge (docs/specs/006-document/per-tab-storage.md): one label per failed-save
 // cause, each announced as a status.
 
 import { render, screen } from '@testing-library/react';

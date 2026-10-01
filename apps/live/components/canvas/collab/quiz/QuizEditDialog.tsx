@@ -10,7 +10,7 @@ import {
   QUIZ_SECONDS_CHOICES,
   quizOptionLetter,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogHeader } from '@/components/dialogs/DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';

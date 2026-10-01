@@ -1,6 +1,6 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livediagram/diagram so the MCP worker (docs/specs/015-api/mcp-server.md)
-// themes diagrams identically to the editor. This file re-exports it and adds
+// transforms) now lives in @livediagram/document so the MCP worker (docs/specs/015-api/mcp-server.md)
+// themes tabs identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: custom-theme (per-owner, docs/specs/011-theme/custom-themes.md) resolution and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
 // consumers are unchanged — every symbol they imported is still exported here.
@@ -14,13 +14,17 @@ import {
   deriveShapeColours,
   deriveTextColorForBg,
   isDefaultSchemeBackdrop,
+  isWhiteboardTab,
   schemeBackdrop,
+  WHITEBOARD_BOARD,
+  WHITEBOARD_UNSET_PATTERN,
+  WHITEBOARD_PATTERN,
   type Appearance,
   type BackgroundPattern,
   type BoxedElement,
   type Tab,
   type ThemeDefinition,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { getResolvedAppearance } from '@livediagram/ui';
 import { lookupCustomTheme } from './custom-theme-registry';
 
@@ -40,14 +44,14 @@ export {
   rederiveColorPresetForTheme,
   themePresetColors,
   themeChartPalette,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 export type {
   ThemeId,
   ThemeDefinition,
   ThemeCategory,
   ShapeColorPreset,
   TablePreset,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner
@@ -73,7 +77,7 @@ export function resolveTheme(
 // into the module registry, so a `custom:<uuid>` id resolves here synchronously
 // like any built-in. Falls through to the catalogue (and ultimately the default)
 // when the id isn't a registered custom theme — including a deleted one, so a
-// diagram never breaks. The MCP worker, which has no registry, uses
+// document never breaks. The MCP worker, which has no registry, uses
 // getBuiltInTheme directly instead.
 // `appearance` defaults to the CURRENT VIEWER's (the module-level appearance
 // store, no React needed), so every one of the ~120 existing callers gets the
@@ -91,7 +95,7 @@ export function getTheme(
 // stores. A tab on the Default scheme whose canvas is still the scheme's own
 // (nobody has hand-picked a colour) follows the viewer's appearance instead:
 // white grid in light chrome, blue-slate grid in dark. Nothing is written back —
-// the diagram keeps whichever half was current when the scheme was applied,
+// the document keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.
 //
 // Only the two COLOURS swap. The pattern, its opacity and its scale are layout
@@ -107,9 +111,21 @@ export function resolveTabBackdrop(
   tab: Pick<
     Tab,
     'theme' | 'backgroundColor' | 'backgroundPattern' | 'patternColor' | 'backgroundOpacity'
-  >,
+  > &
+    Partial<Pick<Tab, 'kind'>>,
   appearance: Appearance = getResolvedAppearance(),
 ): ResolvedBackdrop {
+  // A whiteboard (docs/specs/023-whiteboard/whiteboard.md "Appearance") has no theme: it is always the
+  // Default scheme's board for the viewer's appearance. Only its pattern
+  // (Plain / Dots / Grid) is the board's own.
+  if (isWhiteboardTab(tab)) {
+    return {
+      backgroundColor: WHITEBOARD_BOARD[appearance],
+      patternColor: WHITEBOARD_PATTERN[appearance],
+      backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
+      backgroundOpacity: 1,
+    };
+  }
   const stored = {
     backgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
     patternColor: tab.patternColor ?? DEFAULT_PATTERN_COLOR,
@@ -142,7 +158,7 @@ export function deriveNewBoxedColours(
   // its whole trick is that an element carries no colour, so it can read as
   // dark ink to one viewer and light ink to another (docs/specs/007-editor/live-app.md). Deriving from
   // the dark half's canvas here would bake one viewer's chrome into the
-  // diagram for everybody. A canvas the USER coloured still derives normally —
+  // document for everybody. A canvas the USER coloured still derives normally —
   // that is their choice, and it is stored.
   if (
     (tab.theme === undefined || tab.theme === DEFAULT_SCHEME_ID) &&
@@ -150,14 +166,14 @@ export function deriveNewBoxedColours(
   ) {
     return colours;
   }
-  // A page (docs/specs/009-elements/page-element.md) is paper, not a node in the diagram's theme.
+  // A page (docs/specs/009-elements/page-element.md) is paper, not a node in the tab's theme.
   // Tinting it with the backdrop-derived shape colours is what stopped it
   // reading as a page at all, so it keeps the fill / stroke createShape gave
   // it. The user can still recolour it from the menu like anything else.
   if (base.type === 'shape' && base.shape === 'page') return colours;
   // The Behaviour and Collaborate elements used to opt OUT of theme tinting on
   // the reasoning that they are controls and scenery rather than nodes in the
-  // diagram's theme. Dropped: it left a board where a mode button, a
+  // tab's theme. Dropped: it left a canvas where a mode button, a
   // reveal cover and a comment panel each sat in their own palette while
   // everything around them followed the tab, which reads as an oversight
   // rather than as emphasis — the theme is the whole point of picking one.

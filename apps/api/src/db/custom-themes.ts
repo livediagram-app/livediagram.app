@@ -69,7 +69,7 @@ export async function updateCustomTheme(
 }
 
 export async function deleteCustomTheme(env: Env, id: string): Promise<void> {
-  // Diagrams that reference this theme id keep rendering: the editor's
+  // Documents that reference this theme id keep rendering: the editor's
   // getTheme falls back to the default when an id no longer resolves
   // (docs/specs/011-theme/custom-themes.md), so there's nothing to cascade here.
   await env.DB.prepare('DELETE FROM custom_themes WHERE id = ?').bind(id).run();

@@ -15,7 +15,7 @@ const {
   settleGuestMigration,
 } = await import('./guest-migration');
 
-const MIGRATED = { diagrams: 1, folders: 0, shared: 0, images: 0 };
+const MIGRATED = { documents: 1, folders: 0, shared: 0, images: 0 };
 
 beforeEach(() => {
   localStorage.clear();

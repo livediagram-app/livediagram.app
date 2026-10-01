@@ -1,4 +1,4 @@
-import { THEMES, quickSwatches } from '@livediagram/diagram';
+import { THEMES, quickSwatches } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
   SWATCH_OVERRIDE_MAX_BYTES,
@@ -143,5 +143,15 @@ describe('parseSwatchOverrideStore', () => {
   it('reads anything else as none', () => {
     for (const bad of [undefined, null, '[]', {}, 5])
       expect(parseSwatchOverrideStore(bad)).toEqual([]);
+  });
+});
+
+describe('the Text colour row', () => {
+  it('stores, reads back, clears and parses its own row beside the others', () => {
+    const store = storeWithOverride([], 'forest', 'text', 2, '#aa0000');
+    expect(store).toEqual([{ t: 'forest', x: { 2: '#aa0000' } }]);
+    expect(overridesForTheme(store, 'forest')).toEqual({ text: { 2: '#aa0000' } });
+    expect(parseSwatchOverrideStore(JSON.parse(JSON.stringify(store)))).toEqual(store);
+    expect(storeWithoutOverride(store, 'forest', 'text', 2)).toEqual([]);
   });
 });

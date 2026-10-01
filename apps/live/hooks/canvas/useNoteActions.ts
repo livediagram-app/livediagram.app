@@ -9,7 +9,7 @@ import {
   type EsSide,
   type EventStormingNoteKind,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { planNextNote } from '@/lib/next-note-add';
 import type { InsertionSlot } from '@/lib/insert-between';
@@ -27,7 +27,7 @@ import { track } from '@/lib/telemetry';
 
 type NoteActionsDeps = {
   activeTab: Tab;
-  // The whole creation gate (docs/specs/006-diagram/layers.md): a view-only session, a locked tab, or a
+  // The whole creation gate (docs/specs/006-document/layers.md): a view-only session, a locked tab, or a
   // hidden / locked active layer. Every act here creates or changes, so all
   // three refuse.
   createBlocked: boolean;

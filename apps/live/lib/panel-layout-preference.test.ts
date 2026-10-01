@@ -1,34 +1,31 @@
-// The three-way panel layout preference (docs/specs/007-editor/toolbar-layout.md) and its legacy flag.
+// The two-way panel layout preference (docs/specs/007-editor/toolbar-layout.md).
 
 import { describe, expect, it } from 'vitest';
 import { PANEL_LAYOUTS, resolvePanelLayout, withPanelLayout } from './user-preferences';
 
 describe('resolvePanelLayout', () => {
-  it('reads the legacy flag when no layout has been chosen', () => {
-    // Nobody's layout may move on the day the choice ships.
+  it('defaults to Floating when no layout has been chosen', () => {
     expect(resolvePanelLayout({})).toBe('floating');
-    expect(resolvePanelLayout({ minimalPanels: false })).toBe('floating');
-    expect(resolvePanelLayout({ minimalPanels: true })).toBe('minimal');
   });
 
-  it('lets an explicit layout win over the legacy flag', () => {
-    expect(resolvePanelLayout({ panelLayout: 'toolbar', minimalPanels: true })).toBe('toolbar');
-    expect(resolvePanelLayout({ panelLayout: 'floating', minimalPanels: true })).toBe('floating');
+  it('honours an explicit layout', () => {
+    expect(resolvePanelLayout({ panelLayout: 'toolbar' })).toBe('toolbar');
+    expect(resolvePanelLayout({ panelLayout: 'floating' })).toBe('floating');
   });
 
-  it('falls back to the legacy flag for a layout this client does not know', () => {
-    const fromNewerClient = { panelLayout: 'sidebar', minimalPanels: true } as never;
-    expect(resolvePanelLayout(fromNewerClient)).toBe('minimal');
+  it('reads a retired or unknown layout as the default', () => {
+    // 'minimal' was a third layout; a stored pick of it now lands on Floating.
+    expect(resolvePanelLayout({ panelLayout: 'minimal' } as never)).toBe('floating');
+    expect(resolvePanelLayout({ panelLayout: 'sidebar' } as never)).toBe('floating');
+    expect(resolvePanelLayout({ minimalPanels: true } as never)).toBe('floating');
   });
 
-  it('shows Toolbar on a phone where Floating would be, the default included', () => {
+  it('shows Toolbar on a phone whatever is stored', () => {
     const mobile = { mobile: true };
     expect(resolvePanelLayout({}, mobile)).toBe('toolbar');
     expect(resolvePanelLayout({ panelLayout: 'floating' }, mobile)).toBe('toolbar');
-    // A phone can show Minimal and Toolbar, so a real pick of either stands.
-    expect(resolvePanelLayout({ minimalPanels: true }, mobile)).toBe('minimal');
-    expect(resolvePanelLayout({ panelLayout: 'minimal' }, mobile)).toBe('minimal');
     expect(resolvePanelLayout({ panelLayout: 'toolbar' }, mobile)).toBe('toolbar');
+    expect(resolvePanelLayout({ panelLayout: 'minimal' } as never, mobile)).toBe('toolbar');
     // Desktop is unchanged.
     expect(resolvePanelLayout({}, { mobile: false })).toBe('floating');
   });
@@ -39,14 +36,6 @@ describe('withPanelLayout', () => {
     for (const layout of PANEL_LAYOUTS) {
       expect(resolvePanelLayout(withPanelLayout({}, layout))).toBe(layout);
     }
-  });
-
-  it('keeps the legacy flag in step so older readers see the nearest layout', () => {
-    expect(withPanelLayout({}, 'floating').minimalPanels).toBe(false);
-    expect(withPanelLayout({}, 'minimal').minimalPanels).toBe(true);
-    // Toolbar keeps Floating's panels, so a client that only knows the
-    // boolean shows it as Floating.
-    expect(withPanelLayout({}, 'toolbar').minimalPanels).toBe(false);
   });
 
   it('leaves every other preference alone', () => {

@@ -2,9 +2,8 @@
 
 // The Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet for Avatar mode. Present
 // only while the mode is active — like the Poll / Vote panels, it joins and
-// leaves its corner stack rather than sitting there — and it is one of the
-// mobile / minimal-layout dock buttons, so a phone reaches it the same way it
-// reaches Layers. Same width as the Palette it stacks under.
+// leaves its corner stack rather than sitting there. Same width as the
+// Palette it stacks under.
 //
 // Four choices: Gender, Clothing, Hair, Size. Deliberately NOT colour — the
 // shirt takes the participant's presence colour so a character always matches
@@ -32,7 +31,7 @@ import { AvatarSprite } from '@/components/canvas/avatar-sprite';
 // meaning (give me another random one), so it stays the same icon.
 import { RefreshIcon, HoverCard } from '@livediagram/ui';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/diagram';
+import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/document';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 

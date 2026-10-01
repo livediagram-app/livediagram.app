@@ -5,8 +5,10 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
+import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
-import { googleFontsHref } from '@livediagram/diagram';
+import { googleFontsHref } from '@livediagram/document';
+import { QUIET_LANDING_BOOT_SCRIPT, QUIET_LANDING_CSS } from '@/lib/quiet-landing-boot';
 import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
 import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 import './globals.css';
@@ -71,7 +73,7 @@ export const viewport: Viewport = {
 // additive (signed-in users get per-account persistence; guests keep
 // the localStorage participant id).
 //
-// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-diagram-route.md, fixes
+// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-document-route.md, fixes
 // the static-export dynamic-segment 404) is unaffected by the provider
 // — ClerkProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -83,6 +85,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // doesn't cascade to children), so real mismatches elsewhere still warn.
     <html lang="en-GB" suppressHydrationWarning>
       <head>
+        {/* The hero launch window's landing paints its blank canvas from the first frame
+            (lib/quiet-landing-boot.ts). In the head, not the body: the body can paint before a
+            script inside it has run. */}
+        <script dangerouslySetInnerHTML={{ __html: QUIET_LANDING_BOOT_SCRIPT }} />
+        <style>{QUIET_LANDING_CSS}</style>
         {/* Text fonts (docs/specs/004-interface-design/fonts.md). One stylesheet defines every option's
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
@@ -106,7 +113,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <TruthArmBoot />
         <ClerkProvider>
           <ToastProvider>
-            <ConfirmProvider>{children}</ConfirmProvider>
+            <ConfirmProvider>
+              {/* The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): runs in one
+                  tab per browser, signed in, on a deployment that offers it. */}
+              <DriveMirrorProvider>{children}</DriveMirrorProvider>
+            </ConfirmProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>

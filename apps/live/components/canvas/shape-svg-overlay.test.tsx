@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The canvas side of the shared shape geometry table (@livediagram/diagram
+// The canvas side of the shared shape geometry table (@livediagram/document
 // shape-geometry.ts). The export side is pinned in the package
 // (shape-geometry.test.ts); this pins the overlay to the same data, so a
 // silhouette edited here instead of in the table fails rather than drifting.
@@ -15,7 +15,7 @@ import {
   shapeGeometry,
   type ShapeElement,
   type ShapeKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { BrowserChrome } from './boxed-element-overlays';
 import { ChairView } from './collab/ChairView';
 import { ShapeSvgOverlay } from './shape-svg-overlay';
@@ -47,6 +47,18 @@ describe('ShapeSvgOverlay draws the shared table', () => {
         .map((p) => (p.tag === 'path' ? p.d : p.tag === 'polygon' ? p.points : '')),
     );
   });
+
+  it.each(['diamond', 'parallelogram', 'hexagon', 'document', 'cylinder', 'cloud'] as const)(
+    'insets the %s by half its stroke so it stays inside the box',
+    (shape) => {
+      const { container } = render(
+        <ShapeSvgOverlay shape={shape} fill="#fff" stroke="#000" strokeWidth={4} />,
+      );
+      const style = container.querySelector('svg')!.style;
+      expect([style.left, style.top]).toEqual(['2px', '2px']);
+      expect([style.width, style.height]).toEqual(['calc(100% - 4px)', 'calc(100% - 4px)']);
+    },
+  );
 
   it('paints a frame with its fill, like every other shape', () => {
     const { container } = render(<ShapeSvgOverlay shape="frame" fill="#fef3c7" stroke="#000" />);

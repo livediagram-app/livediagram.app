@@ -13,7 +13,7 @@ import {
   type ArrowStyle,
   type BoxedElement,
   type Endpoint,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { DrawioCell, Pt } from './cells';
 import { readColour } from './colour';
 import { readLabel } from './label';

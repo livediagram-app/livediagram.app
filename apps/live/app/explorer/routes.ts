@@ -11,7 +11,7 @@
 //
 // Folder / team ids ride in the query string rather than a path
 // segment ON PURPOSE: `output: 'export'` can't enumerate user-minted
-// ids, and the /diagram/<id> workaround (placeholder file + worker
+// ids, and the /document/<id> workaround (placeholder file + worker
 // rewrite + the not-found rescue in app/not-found.tsx) is a hack we
 // don't want a second consumer of. A static /explorer/folder page
 // reading ?id= needs none of that.
@@ -46,8 +46,6 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/images';
     case 'themes':
       return '/explorer/themes';
-    case 'tokens':
-      return '/explorer/tokens';
     case 'trash':
       return '/explorer/trash';
     case 'invites':
@@ -97,8 +95,6 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'gallery' };
     case '/explorer/themes':
       return { kind: 'themes' };
-    case '/explorer/tokens':
-      return { kind: 'tokens' };
     case '/explorer/trash':
       return { kind: 'trash' };
     case '/explorer/invites':

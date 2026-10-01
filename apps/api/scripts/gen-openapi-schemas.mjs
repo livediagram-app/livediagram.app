@@ -26,11 +26,11 @@ const OUTPUT = resolve(here, '../src/openapi/schemas.generated.ts');
 // that references a type missing here fails the drift test's reference check;
 // add the type below and regenerate.
 export const ROOT_TYPES = [
-  'Diagram',
-  'DiagramSummary',
+  'LiveDoc',
+  'DocumentSummary',
   'SharedTabsSummary',
-  'TrashedDiagram',
-  'DiagramSource',
+  'TrashedDocument',
+  'DocumentSource',
   'TabSummary',
   'Tab',
   'Folder',
@@ -62,7 +62,18 @@ export const ROOT_TYPES = [
   'ReadNotesResponse',
   'CapabilitiesResponse',
   'UnfurlResult',
+  'DriveConnection',
+  'DriveItem',
+  'DriveLease',
+  'DriveAccessToken',
 ];
+
+// Code names that differ from the published component name. The document's TypeScript type is
+// `LiveDoc` so it never shadows the DOM's `Document` (docs/specs/006-document/document.md);
+// the API publishes it as `Document`.
+export const PUBLIC_NAMES = { LiveDoc: 'Document' };
+
+const publicName = (name) => PUBLIC_NAMES[name] ?? name;
 
 // Recursively rewrite the generator's draft-07 `#/definitions/<Name>` refs to
 // OpenAPI's `#/components/schemas/<Name>`, and drop the per-schema `$schema`
@@ -74,7 +85,7 @@ function toOpenApiRefs(value) {
     for (const [key, val] of Object.entries(value)) {
       if (key === '$schema') continue;
       if (key === '$ref' && typeof val === 'string') {
-        out.$ref = val.replace('#/definitions/', '#/components/schemas/');
+        out.$ref = `#/components/schemas/${publicName(val.replace('#/definitions/', ''))}`;
       } else {
         out[key] = toOpenApiRefs(val);
       }
@@ -122,7 +133,7 @@ export function generateComponentSchemas() {
   for (const type of ROOT_TYPES) {
     const { definitions = {} } = generator.createSchema(type);
     for (const [name, schema] of Object.entries(definitions)) {
-      schemas[name] = schema;
+      schemas[publicName(name)] = schema;
     }
   }
   return sortObject(toOpenApiRefs(schemas));

@@ -25,12 +25,13 @@ import {
   ES_LANES,
   isEventStormingNote,
   isBoxed,
+  isWhiteboardTab,
   nearestElementTowards,
   opposingAnchor,
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -45,10 +46,12 @@ import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
 import { applyShiftDuplicateSwap, type ShiftDupSwap } from './shift-duplicate-swap';
 import {
+  resizedElement,
   resolveBoxedMove,
   resolveBoxedResize,
   translateBoxedSelection,
 } from './boxed-drag-resolve';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
@@ -95,7 +98,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // selects an element — or a press on a locked element / tab that never
   // mutates — leaves the undo history untouched. Taking the checkpoint at
   // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
-  // every click, evicting real states under the 3-deep HISTORY_LIMIT.
+  // every click, evicting real states from the bounded HISTORY_LIMIT.
   const checkpointPendingRef = useRef(false);
   // One-shot guard so an arrow-to-arrow connection (docs/specs/008-canvas/arrow-to-arrow.md) is tracked once
   // per endpoint drag, not on every pointer-move tick. Reset on drag start.
@@ -428,11 +431,21 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
+          // A lone whiteboard text box hugs its text through the resize
+          // (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+          const textHug =
+            isWhiteboardTab(activeTab) && drag.startBounds.size === 1
+              ? {
+                  mode: drag.mode,
+                  constrain: drag.aspectLocked || e.shiftKey,
+                  measure: measureDrawnText(activeTab.font),
+                }
+              : null;
           tick((els) =>
             els.map((el) => {
               if (!isBoxed(el)) return el;
               const next = resize.boundsById.get(el.id);
-              return next ? { ...el, ...next } : el;
+              return next ? resizedElement(el, next, textHug) : el;
             }),
           );
         }

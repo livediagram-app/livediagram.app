@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Polls',
   description:
-    'Ask everyone in the diagram a quick question and see the answers tally live, with nothing saved to the diagram afterwards.',
+    'Ask everyone in the document a quick question and see the answers tally live, with nothing saved to the document afterwards.',
   path: '/help/collaboration/session-tools/polls/',
 });
 
@@ -25,8 +25,8 @@ Polls live in the tab's menu under **Collaborate → Poll**, beside Timer and Vo
 </Step>
 
 <Step n={2}>
-  Everyone currently in the diagram gets the question as a modal. They can answer, or press **Skip**
-  if they would rather not weigh in.
+  Everyone currently in the document gets the question as a modal. They can answer, or press
+  **Skip** if they would rather not weigh in.
 </Step>
 
 <Step n={3}>
@@ -45,19 +45,19 @@ Polls live in the tab's menu under **Collaborate → Poll**, beside Timer and Vo
 
 ## Who can answer, and who can see results
 
-**Everyone in the diagram is asked, including view-only visitors.** That is the point: if you have shared a view link with an audience, a poll is how you hear back from them. Starting and ending a poll still needs edit access, so an audience member can answer but cannot open a poll of their own or close yours. On a diagram you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
+**Everyone in the document is asked, including view-only visitors.** That is the point: if you have shared a view link with an audience, a poll is how you hear back from them. Starting and ending a poll still needs edit access, so an audience member can answer but cannot open a poll of their own or close yours. On a document you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
 
 **The results panel is for people who have responded**, plus whoever started the poll. Answering is what unlocks it. That way nobody can watch the numbers build up and let them sway their own answer.
 
-**Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and neither the diagram nor the activity log records who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
+**Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and neither the document nor the activity log records who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
 
 ## Nothing is saved
 
-A poll exists only while it is running. It never reaches the diagram, so there is no poll in the activity log, nothing to undo, and nothing left over when you reopen the diagram tomorrow.
+A poll exists only while it is running. It never reaches the document, so there is no poll in the activity log, nothing to undo, and nothing left over when you reopen the document tomorrow.
 
 While it runs, the live session holds on to it, so nobody gets left behind:
 
-- **Someone who opens the diagram after the poll started is asked too**, and sees the answers so far.
+- **Someone who opens the document after the poll started is asked too**, and sees the answers so far.
 - **Refreshing the page keeps you in the poll**, with your answer still counted.
 - **If the host refreshes or reconnects**, they can still end the poll. Anyone can press **Dismiss** to clear their own panel.
 

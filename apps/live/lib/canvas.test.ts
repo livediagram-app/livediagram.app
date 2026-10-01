@@ -5,7 +5,7 @@ import {
   createShape,
   type ArrowElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
   cornerOf,

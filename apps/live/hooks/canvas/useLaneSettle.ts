@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { isEventStormingTab, settleNotesOnLanes, type Tab } from '@livediagram/diagram';
+import { isEventStormingTab, settleNotesOnLanes, type Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 
 // The one-time settle of an older event-storming board

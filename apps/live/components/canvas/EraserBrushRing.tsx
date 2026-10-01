@@ -3,7 +3,7 @@
 // An eraser you can't see the size of is a worse tool than a precise one: at
 // Large the brush reaches 72px, which is most of a sticky note, and the only
 // way to know what a sweep will take is to see it first. So the ring follows
-// the pointer at the brush's true radius, above the diagram and below the
+// the pointer at the brush's true radius, above the canvas and below the
 // chrome, and never takes a pointer event itself.
 //
 // It turns AMBER whenever a target filter is on, matching the panel's preview,

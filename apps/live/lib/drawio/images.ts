@@ -3,7 +3,7 @@
 // images go through ONE pass (one progress count, one session, identical
 // pictures stored once across pages), then each page gets its own elements back.
 
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import type { ImportImageReport, ImportImageRequest } from '@/lib/import-images';
 
 /** `attachImportImages` with its session and progress listener already bound. */

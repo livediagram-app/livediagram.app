@@ -28,7 +28,7 @@ import {
   getTeamInviteLink,
   getTeamMember,
   joinTeamByInviteToken,
-  listDiagramsByTeam,
+  listDocumentsByTeam,
   listFoldersByTeam,
   listInvitesByUser,
   listTeamMembers,
@@ -70,6 +70,7 @@ import {
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleTeamActionRoutes } from './team-action-routes';
+import { handleTeamMentionRoutes } from './team-mention-routes';
 import type { RouteContext } from './context';
 
 // Light shape check, not RFC 5322: something@something.tld. The real
@@ -198,7 +199,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         segments[3] === 'invite-link' ||
         segments[3] === 'members' ||
         segments[3] === 'access-check' ||
-        segments[3] === 'notify-action')) ||
+        segments[3] === 'notify-action' ||
+        segments[3] === 'notify-mention')) ||
     (segments.length === 5 && segments[3] === 'members') ||
     (segments.length === 6 && segments[3] === 'members' && segments[5] === 'accept');
   if (!teamScoped) return notFound();
@@ -212,17 +214,17 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const isAdmin = me.role === 'admin' && me.status === 'joined';
 
   // /api/teams/<id>/library — the team's shared folder tree +
-  // diagrams (docs/specs/013-workspace/team-shared-diagrams.md). Any membership row passes the gate above,
+  // documents (docs/specs/013-workspace/team-shared-documents.md). Any membership row passes the gate above,
   // but the library is for JOINED members only — an invitee deciding
   // on an invite sees the team's shape, not its content.
   if (segments.length === 4 && segments[3] === 'library') {
     if (request.method === 'GET') {
       if (me.status !== 'joined') return forbidden();
-      const [folders, diagrams] = await Promise.all([
+      const [folders, liveDocs] = await Promise.all([
         listFoldersByTeam(env, teamId),
-        listDiagramsByTeam(env, teamId),
+        listDocumentsByTeam(env, teamId),
       ]);
-      return json({ folders, diagrams });
+      return json({ folders, documents: liveDocs });
     }
     return notFound();
   }
@@ -310,6 +312,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   // /notify-action — see team-action-routes.ts.
   const actionResp = await handleTeamActionRoutes(ctx, { teamId, me, userId });
   if (actionResp) return actionResp;
+  // Comment mentions (docs/specs/012-collaboration/comment-mentions.md): /notify-mention.
+  const mentionResp = await handleTeamMentionRoutes(ctx, { teamId, me, userId });
+  if (mentionResp) return mentionResp;
 
   // /api/teams/<id>/members — invite
   if (segments.length === 4 && segments[3] === 'members') {
@@ -414,7 +419,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const audience = await audienceForTeam(env, teamId);
       // What they made stays with the team. Left owned by them, the owner
       // leg of every access gate would keep it open to somebody the team
-      // just removed (docs/specs/013-workspace/team-shared-diagrams.md).
+      // just removed (docs/specs/013-workspace/team-shared-documents.md).
       if (member.status === 'joined' && member.userId) {
         await handTeamWorkToHeir(env, teamId, member.userId);
       }

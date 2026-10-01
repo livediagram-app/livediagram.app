@@ -2,9 +2,6 @@ import {
   addTableColumn,
   addTableRow,
   CHECKLIST_MAX_ITEMS,
-  isMindNode,
-  mindRootOf,
-  type MindFlow,
   LEGEND_MAX_ITEMS,
   LEGEND_MAX_TEXT,
   type LegendItem,
@@ -34,9 +31,10 @@ import {
   type Element,
   type ProgressAnim,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
+import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
@@ -192,29 +190,6 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'Legend');
   };
 
-  // Mind-map flow (docs/specs/009-elements/mind-node.md). Written to the tree's ROOT, not the selected
-  // node: the flow is the map's, and a map half tree and half bubble is not a
-  // map anyone meant to draw. Selecting several nodes of one map therefore
-  // sets it once.
-  const setMindFlowSelected = (flow: MindFlow) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((all) => {
-      // Resolved inside the updater, against the elements as they stand: the
-      // walk up to the root has to read the same array it writes back.
-      const roots = new Set(
-        all
-          .filter((el) => ids.has(el.id))
-          .filter(isMindNode)
-          .map((el) => mindRootOf(all, el).id),
-      );
-      return roots.size === 0
-        ? all
-        : all.map((el) => (roots.has(el.id) ? { ...el, mindFlow: flow } : el));
-    });
-    track('Element', 'Changed', 'MindFlow');
-  };
-
   const setCodeWrapSelected = (wrap: boolean) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -353,11 +328,14 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
 
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
+  // Mind map flow + Tidy Map (docs/specs/009-elements/mind-node.md) — see useMindMapSetters.
+  const mindSetters = useMindMapSetters({ currentSelectionIds, commit });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
 
   return {
     ...chartSetters,
+    ...mindSetters,
     ...webSetters,
     setProgressSelected,
     setProgressAnimSelected,
@@ -370,7 +348,6 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setRailLabelSelected,
     setCodeSelected,
     setCodeWrapSelected,
-    setMindFlowSelected,
     setLegendItemsSelected,
     setPageHeading,
     setChecklistItemsSelected,

@@ -37,7 +37,7 @@ and the id of who cast it (see below — it is NOT the owner id).
   `pieSlices`, so it bounds in `validate.ts` with the same array clamp as the
   rest and round-trips through JSON export with no key-order surprise.
 
-Helpers live in `packages/diagram/src/responses.ts` — a leaf module (types
+Helpers live in `packages/document/src/responses.ts` — a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
 
 ## `participantId` is the COLLAB KEY, not the owner id
@@ -56,7 +56,7 @@ here:
 | **Collab key**                                                                        | yes                       | yes              |
 
 The owner id is a credential: for a guest it is exactly what authenticates
-their API calls, so writing it into a shared diagram hands it to every
+their API calls, so writing it into a shared document hands it to every
 co-viewer. The presence id is deliberately a fresh server-minted random per
 socket, so peers never read an owner id off a roster — which also means it
 matches nothing that was ever saved, and changes on every reconnect.
@@ -122,14 +122,14 @@ this field and has nowhere to put an author at all.
 ## Each one looks like what it is
 
 Every Behaviours element rendered as the same rounded rectangle with a title
-and some controls, so a board of them read as one repeated component in
+and some controls, so a canvas of them read as one repeated component in
 thirteen sizes. The thing each of them IS — a clipboard, a ballot box, a ticket
 stub, a filed record — was carried entirely by the words on it.
 
 The **paper kit** (`components/canvas/paper-kit.tsx`) is the shared set of
 textures that fixes that. Its one rule: everything is built from
 `tint(textColor, alpha)`, so a card is drawn in ITS OWN colour and the tab
-theme still owns the palette ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)). A pink board stays a pink board. All
+theme still owns the palette ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)). A pink canvas stays a pink canvas. All
 the distinction comes from **form** — a folded corner, a punched margin, a torn
 edge, a rotated stamp — which survives any hue, any theme, and light or dark
 mode, none of which a per-kind colour would.
@@ -162,7 +162,7 @@ House rules for anything added to the kit: decorative, so `aria-hidden` and
 `pointer-events-none` without exception (these sit over cards whose controls
 must stay clickable); absolutely positioned, so a texture can never change the
 layout it decorates; built from `tint`, never a Tailwind colour class; and no
-animation — a board of thirteen moving textures is a board nobody can read.
+animation — a canvas of thirteen moving textures is a canvas nobody can read.
 
 `CollabPanel` takes the textures as **two** slots, `backdrop` and `overlay`,
 because the layering is the effect: rules under the words read as a page they
@@ -182,7 +182,7 @@ Three lessons are worth keeping:
   appeared. Anything at an edge has to lie ACROSS it.
 - **Small hardware does not survive the size these elements are used at.** The
   Done check went through a clipboard's jaw and then wire binder rings, and
-  both came out. At the size a card actually sits on a board a 5px loop and a
+  both came out. At the size a card actually sits on a canvas a 5px loop and a
   7px hole are not a mechanism, they are specks, and they read as debris beside
   the card rather than as something gripping it. The ruling alone says "sheet"
   at every size, which was the whole job. The Session button's tally marks went

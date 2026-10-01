@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement } from '@livediagram/diagram';
+import type { ArrowElement } from '@livediagram/document';
 import { ReportTally } from '@/lib/import-report';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';

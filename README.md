@@ -6,7 +6,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 
 ```
 apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router
-packages/    shared diagram model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, telemetry client, configs
+packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, sticky-note photo detection, telemetry client, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -26,11 +26,11 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 ## The 30-second tour
 
 - **Marketing** at `/` is the pitch and feature tour.
-- **Editor** is the canvas, served at clean routes (`/new`, `/diagram/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on the **Timeline**, a day-grouped feed of everything that happened across your diagrams, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)); the **Activity** section beside it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every diagram ([Activity page](docs/specs/013-workspace/activity-page.md)).
-- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per diagram, backed by D1).
+- **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on the **Timeline**, a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)); the **Activity** section beside it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Activity page](docs/specs/013-workspace/activity-page.md)). Signed-in users can mirror their Personal Space to their own Google Drive, kept in step both ways while a tab is open ([Google Drive mirror](docs/specs/022-drive-mirror/drive-mirror.md)).
+- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
 - **Telemetry** at `/telemetry` is the public anonymous-events dashboard (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
-- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the diagram tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
+- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
 - **Router** stitches the five under one hostname.
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
@@ -46,4 +46,4 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 [MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
 
-Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livediagram.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

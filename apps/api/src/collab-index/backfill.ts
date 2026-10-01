@@ -8,7 +8,7 @@
 // full-replace statements a save writes, so overlapping with a live
 // save is harmless: whichever lands last is a complete snapshot.
 
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import {
   collabIndexStatements,
   listCollabTabsToBackfill,

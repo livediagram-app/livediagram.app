@@ -1,18 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  Button,
-  CloseIcon,
-  TrashIcon,
-  useClickOutside,
-  useEscape,
-  GlyphDisc,
-} from '@livediagram/ui';
+import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import type { Comment, CommentThread } from '@livediagram/diagram';
+import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
+import { MentionMenu } from '@/components/primitives/MentionMenu';
+import { MentionText } from '@/components/primitives/MentionText';
+import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
+import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import { initialsOf } from '@/lib/identity';
+import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
@@ -23,7 +21,7 @@ type CommentThreadPopoverProps = {
   // the DOM for the matching `[data-element-id]` wrapper.
   elementId: string;
   thread: CommentThread | undefined;
-  onAddComment: (text: string) => void;
+  onAddComment: (text: string, mentions: CommentMention[]) => void;
   onDeleteComment: (commentId: string) => void;
   onResolve: () => void;
   onUnresolve: () => void;
@@ -70,6 +68,14 @@ export function CommentThreadPopover({
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [draft, setDraft] = useState('');
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  // @-mentions (docs/specs/012-collaboration/comment-mentions.md): who can be tagged, from the editor.
+  const mentionScope = useMentionScope();
+  const mention = useMentionAutocomplete({
+    value: draft,
+    setValue: setDraft,
+    scope: mentionScope,
+    fieldRef: composerRef,
+  });
 
   // Focus the composer when the popover opens, but only on desktop.
   // On mobile, autofocus would pop the soft keyboard the instant the
@@ -114,7 +120,7 @@ export function CommentThreadPopover({
   const submit = () => {
     const text = draft.trim();
     if (!text) return;
-    onAddComment(text);
+    onAddComment(text, mention.take(text));
     setDraft('');
   };
 
@@ -208,12 +214,27 @@ export function CommentThreadPopover({
           thread and that's a deliberate intent best surfaced as the
           reopen button up top, not a sneaky side effect of typing. */}
         {!resolved ? (
-          <footer className="border-t border-slate-100 p-2 dark:border-slate-800">
+          <footer className="relative border-t border-slate-100 p-2 dark:border-slate-800">
+            {mention.open ? (
+              <MentionMenu
+                items={mention.items}
+                highlight={mention.highlight}
+                hint={mention.hint}
+                onPick={mention.pick}
+              />
+            ) : null}
             <textarea
               ref={composerRef}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                mention.onType(e);
+              }}
+              {...mention.bind}
               onKeyDown={(e) => {
+                // The @-mention list, while open, owns Enter / Tab / arrows / Esc
+                // (docs/specs/012-collaboration/comment-mentions.md).
+                if (mention.onKeyDown(e)) return;
                 // Cmd/Ctrl+Enter submits — Enter alone keeps newline support.
                 if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                   e.preventDefault();
@@ -258,15 +279,19 @@ function CommentRow({
   const now = useRelativeNow();
   return (
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
-      <GlyphDisc
-        size={24}
-        as="div"
-        aria-hidden
-        style={identityVars(comment.authorColor)}
-        className={`mt-0.5 text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
-      >
-        {initialsOf(comment.authorName)}
-      </GlyphDisc>
+      <span className="mt-0.5 inline-flex">
+        <AuthorDisc
+          commentId={comment.id}
+          authorId={comment.authorId}
+          size={24}
+          as="div"
+          aria-hidden
+          style={identityVars(comment.authorColor)}
+          className={`text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
+        >
+          {initialsOf(comment.authorName)}
+        </AuthorDisc>
+      </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-[11px]">
           <span className="truncate font-semibold text-slate-800 dark:text-slate-100">
@@ -277,7 +302,11 @@ function CommentRow({
           </span>
         </div>
         <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-200">
-          {comment.text}
+          <MentionText
+            text={comment.text}
+            mentions={comment.mentions}
+            chipClassName="bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+          />
         </p>
       </div>
       {!resolved && onDelete ? (

@@ -27,7 +27,7 @@ platforms.
   itself stays a normal move throughout — same snapping, guides, frame
   sections.
 - **Connections come along**: arrows linking the dragged set to the rest
-  of the diagram (one end pinned to a dragged element, the other outside
+  of the canvas (one end pinned to a dragged element, the other outside
   the set) are DUPLICATED onto the clone — the copy is wired the same way
   the original is (an incoming connector is drawn to both boxes after the
   drop). Internal both-ends-inside connectors ride along as before;

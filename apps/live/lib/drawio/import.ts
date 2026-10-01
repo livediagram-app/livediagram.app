@@ -5,7 +5,7 @@
 // applying the pages to tabs is the hook's job, which is what lets a future
 // bulk import reuse this unchanged. Never throws.
 
-import type { Element, Layer } from '@livediagram/diagram';
+import type { Element, Layer } from '@livediagram/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { ReportTally, type ImportReport } from '@/lib/import-report';
 import { readGraph } from './cells';

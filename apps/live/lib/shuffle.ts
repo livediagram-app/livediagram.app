@@ -1,11 +1,11 @@
 // Returns a new array with the pinned items (kept in their original
 // relative order) at the front and every other item in random order.
 //
-// Used by the new-diagram / template picker to rotate which templates and
+// Used by the new-document / template picker to rotate which templates and
 // themes greet the user on each open, so they discover options beyond the
 // usual first rows, while always keeping the sensible default pinned first
-// (Blank diagram for templates, Brand for themes). See
-// components/TemplatePicker.tsx and docs/specs/007-editor/new-diagram-route.md.
+// (Blank Canvas for templates, Brand for themes). See
+// components/TemplatePicker.tsx and docs/specs/007-editor/new-document-route.md.
 //
 // `rng` is injectable so tests can pin the order deterministically; it
 // defaults to the shared CSPRNG-backed unit draw (see lib/random.ts).

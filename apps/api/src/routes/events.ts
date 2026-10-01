@@ -29,7 +29,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       catches.
   //   (2) Per-IP rate limit keyed on CF-Connecting-IP (which the
   //       client can't forge, unlike X-Owner-Id). A SEPARATE
-  //       limiter from the diagram write limiter, so it never
+  //       limiter from the document write limiter, so it never
   //       touches real users; the IP is a transient key, never
   //       stored. Both degrade to "allow" when unconfigured, so
   //       self-host / OSS forks still work. Cloudflare's edge DDoS
@@ -66,7 +66,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // request can't bulk-insert. Unknown categories/actions/types
   // are dropped, never stored.
   // Pairs the worker counts itself (Session·SignedUp / SignedIn,
-  // Diagram·Joined, Email·Sent) are dropped here too, so a stale editor
+  // Document·Joined, Email·Sent) are dropped here too, so a stale editor
   // bundle that still emits them can't double count (docs/specs/017-telemetry/telemetry.md).
   const valid = raw
     .filter(isValidTelemetryEvent)

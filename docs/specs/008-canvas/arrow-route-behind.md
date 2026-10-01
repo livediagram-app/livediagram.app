@@ -41,7 +41,11 @@ a wrong obstacle **erases a line that should be visible**:
   could have.
 - **`text` and `annotation` never cut.** They have no fill to hide behind, so
   a gap under a transparent label reads as a bug, not as depth.
-- **Arrows and freehand never cut**: not boxes.
+- **Arrows and freehand never cut**: not boxes. A freehand stroke is a boxed
+  element in the model, so it is excluded by name; ink hides nothing.
+- **A shape with no fill never cuts** (`fillColor: transparent`, as every
+  whiteboard shape starts): there is nothing to hide behind, and a line
+  broken under an outline reads as a fault.
 - **The arrow's own endpoint elements never cut.** The line has to reach their
   edges, and the arrowhead sits on one.
 - **A box containing an endpoint never cuts** — and containment is tested
@@ -53,7 +57,11 @@ a wrong obstacle **erases a line that should be visible**:
   swallowed the **arrowhead** and left the line running into nothing.
   Whatever we would cut is exactly what must not contain an endpoint.
 
-Everything else opaque — shapes, stickies, images, tables, link cards — cuts.
+Everything else opaque — shapes, stickies, images, tables, link cards — cuts,
+**provided it is being drawn**: a box on a hidden layer, or one a thumbnail or
+export leaves out, never cuts (a gap around nothing reads as a broken line).
+The canvas hands each arrow the elements it paints; each export and thumbnail
+hands it the ones it draws.
 **Every** crossed box does, not just the first: the mask below takes N holes
 for the cost of one, so a single-box limit would be extra code for less.
 
@@ -66,7 +74,7 @@ deliberate rather than ragged. Being canvas units it scales with zoom like
 everything else. Box-proportional sizing was rejected — a large box already
 makes a long break by being wide, so scaling on top over-cuts the line.
 
-## How (packages/diagram/src/arrow-behind.ts + ArrowView)
+## How (packages/document/src/arrow-behind.ts + ArrowView)
 
 `routeBehindHoles(arrow, from, to, elements)` returns the margin-inflated
 rects, filtered by the rules above and by intersection with the arrow's padded
@@ -96,6 +104,15 @@ to the visible path and the selection halo:
   stub.
 - The holes are memoised on the element-map identity, so a pan or selection
   re-render doesn't rescan every element per arrow.
+
+## Exports
+
+The shared SVG arrow renderer (`svgArrow` in `packages/document/src/svg-render-arrows.ts`)
+punches the same holes into the same mask as the label knockouts, so every
+export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
+arrows from that markup), server snapshots and thumbnails, and the MCP's inline
+preview. It used to skip them, so an arrow the canvas drew passing behind a box
+came out drawn straight across it.
 
 ## Relationship to [Arrow collision avoidance at draw time](arrow-collision-avoidance.md)
 

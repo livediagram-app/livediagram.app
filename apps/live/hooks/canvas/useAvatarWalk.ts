@@ -3,7 +3,7 @@
 // per-frame animation loop, and the camera nudge all read one source of truth.
 //
 // The avatar lives in CANVAS coordinates (unlike the spotlight beam, which
-// is screen-space): it stands IN the diagram, so it has to pan and zoom
+// is screen-space): it stands ON the canvas, so it has to pan and zoom
 // with the content. Position is the FEET, so it stands on the point you
 // clicked rather than being centred over it. Nothing here is persisted or
 // written to the change log; the only thing that leaves the browser is the
@@ -11,7 +11,7 @@
 // Realtime), which the room relays like a cursor.
 
 import { useEffect, useEffectEvent, useInsertionEffect, useRef, useState } from 'react';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
@@ -104,13 +104,13 @@ export function useAvatarWalk({
   // Portal (docs/specs/009-elements/portal-element.md): the character walked onto a portal element. Fired once on
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
-  onWalkIntoPortal?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onWalkIntoPortal?: (element: import('@livediagram/document').ShapeElement) => void;
   // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair. Fired once on ARRIVAL,
   // like the portal above.
-  onWalkIntoChair?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onWalkIntoChair?: (element: import('@livediagram/document').ShapeElement) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): the character walked onto a pad. Same arrival
   // hook as the portal and the chair, so a pad costs no third mechanism.
-  onWalkIntoReactionPad?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onWalkIntoReactionPad?: (element: import('@livediagram/document').ShapeElement) => void;
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until

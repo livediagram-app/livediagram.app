@@ -1,10 +1,10 @@
 // What a reader would call a kind of event (docs/specs/013-workspace/timeline.md §2.3).
 //
-// The filter chips used to slice by SOURCE type — Diagrams, Teams,
+// The filter chips used to slice by SOURCE type — Documents, Teams,
 // Account — which sounds reasonable and is nearly useless: comments,
-// edits, renames, actions, sharing and deletions are all `diagram`, so
+// edits, renames, actions, sharing and deletions are all `document`, so
 // one chip covered most of a personal feed and turning it off left
-// almost nothing. "Hide the diagram stuff" is not a thing anyone wants.
+// almost nothing. "Hide the document stuff" is not a thing anyone wants.
 //
 // These are the groupings people actually ask for. Coarser than the
 // event type (nobody wants a chip for `comment_resolved` separately
@@ -35,16 +35,16 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   comment_added: 'comments',
   comment_resolved: 'comments',
 
-  diagram_created: 'new',
-  diagram_duplicated: 'new',
+  document_created: 'new',
+  document_duplicated: 'new',
 
-  diagram_edited: 'edits',
+  document_edited: 'edits',
 
-  diagram_renamed: 'renames',
+  document_renamed: 'renames',
   team_renamed: 'renames',
 
   // Grouped by consequence, not by which table the row was in: losing a
-  // diagram, a folder, a team, or a working token are the same kind of
+  // document, a folder, a team, or a working token are the same kind of
   // news, and someone scanning for "did anything disappear?" wants them
   // in one place.
   folder_deleted: 'deletions',
@@ -52,14 +52,14 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   team_deleted: 'deletions',
   token_revoked: 'deletions',
 
-  // Everything about who can reach a diagram, including the two events
+  // Everything about who can reach a document, including the two events
   // that say somebody actually did.
   share_link_created: 'sharing',
   share_link_expiring: 'sharing',
-  diagram_opened_by_visitor: 'sharing',
-  diagram_copied_by_visitor: 'sharing',
-  team_diagram_added: 'sharing',
-  team_diagram_removed: 'sharing',
+  document_opened_by_visitor: 'sharing',
+  document_copied_by_visitor: 'sharing',
+  team_document_added: 'sharing',
+  team_document_removed: 'sharing',
 
   action_assigned: 'actions',
   action_completed: 'actions',
@@ -75,10 +75,10 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   team_invite_link_enabled: 'teams',
   team_invite_link_disabled: 'teams',
 
-  // Where a diagram lives, including which side of the network it's on.
-  diagram_moved: 'filing',
-  diagram_offline: 'filing',
-  diagram_synced: 'filing',
+  // Where a document lives, including which side of the network it's on.
+  document_moved: 'filing',
+  document_offline: 'filing',
+  document_synced: 'filing',
   folder_created: 'filing',
 
   token_created: 'account',
@@ -93,7 +93,7 @@ export function eventCategory(eventType: string): TimelineCategory {
 
 export const CATEGORY_LABELS: Record<TimelineCategory, string> = {
   comments: 'Comments',
-  new: 'New diagrams',
+  new: 'New documents',
   edits: 'Edits',
   renames: 'Renames',
   deletions: 'Deletions',
@@ -102,7 +102,7 @@ export const CATEGORY_LABELS: Record<TimelineCategory, string> = {
   teams: 'Teams',
   // The id stays `filing` (it is the telemetry token and the stack
   // bucket); the chip says Organisation, which is what moving, filing,
-  // and taking diagrams offline have in common to a reader.
+  // and taking documents offline have in common to a reader.
   filing: 'Organisation',
   account: 'Account',
   other: 'Other',

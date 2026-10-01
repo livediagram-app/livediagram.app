@@ -4,15 +4,16 @@
 // tables + per-run style resolution without an import cycle through
 // element-labels.tsx (which imports the editor).
 
-import { LABEL_FONT_PX, NOTE_FONT_PX } from '@livediagram/diagram';
+import { LABEL_FONT_PX, NOTE_FONT_PX } from '@livediagram/document';
 import type {
   BoxedElement,
   RunSize,
   TextAlignX,
   TextAlignY,
   TextRun,
+  TextSize,
   RunHeading,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
 
 // The base a label run's unset deltas inherit: the element's whole-element
@@ -39,17 +40,17 @@ export const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
   right: 'right',
 };
 
-// The label px tables live in @livediagram/diagram, because the EXPORTERS
+// The label px tables live in @livediagram/document, because the EXPORTERS
 // need the same numbers: they kept their own set (12 / 14 / 20 / 18 against
 // these) and every exported label came out about two thirds the size it was
 // drawn at. Re-exported here so the canvas's label renderers keep importing
 // them from the module they always have.
 export const FIXED_FONT_PX: Record<
-  Exclude<import('@livediagram/diagram').TextSize, 'scale'>,
+  Exclude<import('@livediagram/document').TextSize, 'scale'>,
   number
 > = LABEL_FONT_PX;
 
-export const MULTI_FONT_PX: Record<import('@livediagram/diagram').TextSize, number> = NOTE_FONT_PX;
+export const MULTI_FONT_PX: Record<import('@livediagram/document').TextSize, number> = NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
 // so a run's size override reads consistently against its neighbours.
@@ -58,6 +59,22 @@ export const MULTI_RUN_PX: Record<RunSize, number> = {
   md: MULTI_FONT_PX.md,
   lg: MULTI_FONT_PX.lg,
 };
+
+// The base px a label is drawn at: a note's scale for a multi-line label, else the single-line
+// scale, where 'scale' is a middling fixed size (only a note fits its text to its box). A
+// Shift-resized text box multiplies it by its own scale (docs/specs/023-whiteboard/whiteboard.md).
+export function labelBasePx(multiline: boolean, textSize: TextSize): number {
+  return multiline ? MULTI_FONT_PX[textSize] : LABEL_FONT_PX[textSize];
+}
+
+// The px a run's own size override draws at, scaled with the label.
+export function labelRunPx(multiline: boolean, scale = 1): Record<RunSize, number> {
+  const table = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
+  return { sm: table.sm * scale, md: table.md * scale, lg: table.lg * scale };
+}
+
+// A label's inset: px on every side, or a CSS padding (a whiteboard text box's 2px 4px).
+export type LabelPadding = number | string;
 
 // Inline label-style props applied by every label renderer (scaling,
 // fixed, multiline). Stored independently so any combination, e.g.

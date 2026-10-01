@@ -3,7 +3,7 @@
 // stencil lookups, and the container kinds; everything else is unmatched and
 // becomes a labelled box.
 
-import type { ShapeKind } from '@livediagram/diagram';
+import type { ShapeKind } from '@livediagram/document';
 import type { DrawioCell, DrawioGraph } from './cells';
 import { shapeName } from './style';
 import { azureImageIcon, readableStencilName, stencilIcon, type IconMatch } from './stencils';

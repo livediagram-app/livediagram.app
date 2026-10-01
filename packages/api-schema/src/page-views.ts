@@ -5,10 +5,13 @@
 // router can't disagree about who serves a path.
 
 // The live app's top-level page route segments. These serve at clean URLs
-// (`/diagram`, `/explorer`, ...), and the router forwards them to the live
+// (`/document`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
-  'diagram',
+  'document',
+  // The Google Drive mirror's /drive/connected and /drive/open
+  // (docs/specs/022-drive-mirror/drive-mirror.md).
+  'drive',
   'embed',
   'explorer',
   'get-started',
@@ -46,7 +49,7 @@ function looksLikeId(segment: string): boolean {
 /**
  * Reduce a browser pathname to the page it is, for a `Page·View` event.
  * An id, and everything after it, is dropped: what follows an id is about
- * that one thing, not a different page. So every diagram is `/diagram`.
+ * that one thing, not a different page. So every document is `/document`.
  * Returns null when the path can't be expressed safely: deny-by-default, so
  * an odd path is lost rather than leaked. The query string and hash are never
  * part of a pathname, so they cannot reach here.
@@ -62,9 +65,9 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/diagram/...` URL is the editor on one diagram (docs/specs/007-editor/new-diagram-route.md), and
-  // whatever follows the segment is the diagram's id.
-  if (segments[0] === 'diagram') segments = ['diagram'];
+  // Every `/document/...` URL is the editor on one document (docs/specs/007-editor/new-document-route.md), and
+  // whatever follows the segment is the document's id.
+  if (segments[0] === 'document') segments = ['document'];
   const last = segments[segments.length - 1];
   if (last === 'index.html') segments.pop();
   else if (last?.endsWith('.html')) segments[segments.length - 1] = last.slice(0, -5);
@@ -81,11 +84,17 @@ export function pageViewPath(pathname: string): string | null {
   return isValidPageViewPath(path) ? path : null;
 }
 
+// The first path segments another app serves; every other path is a marketing page.
+const APP_SEGMENTS: ReadonlyMap<string, PageViewApp> = new Map<string, PageViewApp>([
+  ['help', 'Help'],
+  ['telemetry', 'Dashboard'],
+  ...[...LIVE_ROUTE_SEGMENTS].map((segment): [string, PageViewApp] => [segment, 'Live']),
+]);
+
+/** First path segments served by an app other than marketing. */
+export const NON_MARKETING_SEGMENTS: readonly string[] = [...APP_SEGMENTS.keys()];
+
 /** Which app serves a normalised page path (the router's routing, docs/specs/016-platform/router-app.md). */
 export function pageViewApp(path: string): PageViewApp {
-  const first = path.split('/')[1] ?? '';
-  if (first === 'help') return 'Help';
-  if (first === 'telemetry') return 'Dashboard';
-  if (LIVE_ROUTE_SEGMENTS.has(first)) return 'Live';
-  return 'Marketing';
+  return APP_SEGMENTS.get(path.split('/')[1] ?? '') ?? 'Marketing';
 }

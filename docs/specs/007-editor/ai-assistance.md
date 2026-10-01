@@ -75,7 +75,7 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   creation/editing and to return a structured error rather than comply.
 - For the mutating mode (Clean) `response_format: { type: "json_object" }` is set on the
   OpenAI request so the model can only return parseable JSON, preventing injection of
-  arbitrary text through the diagram data layer.
+  arbitrary text through the document data layer.
 - Max-token caps: the mutating mode (Clean) 8 000, the text mode (Ask) 400.
 
 ## API
@@ -88,7 +88,9 @@ No auth required. Response:
 { "aiEnabled": true }
 ```
 
-`aiEnabled` is `true` iff exactly one model key resolves to a provider (see below).
+`aiEnabled` is `true` iff a model key resolves to a provider (see below). Both AI features
+resolve from the same set of keys and fall back to each other's provider, so they are available
+together or not at all: one flag answers for both.
 
 ### `POST /api/ai`
 
@@ -107,7 +109,7 @@ Request body:
 }
 ```
 
-`elements` is the full active-tab `Element[]` from `@livediagram/diagram`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
+`elements` is the full active-tab `Element[]` from `@livediagram/document`. `focusIds` is the optional list of selected element IDs; the system prompt steers the model toward editing those while preserving everything else. `history` is the optional prior-turn list (capped server-side at the last 6 turns); both fields default to `[]`.
 
 Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE format piped through with CORS headers added. The JSON-mode payload (Clean) is collected by the client into a single `{ elements: [...] }` block on stream completion:
 
@@ -121,7 +123,7 @@ Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE forma
 `Clean` never re-flows: it preserves the layout the user arranged and only tidies sizes,
 labels, and styles in place. With **Generate** removed, the AI assistant no longer produces
 fresh graphs, so it runs no auto-layout pass. The deterministic layout engine itself —
-`autoLayoutElements` (`packages/diagram/src/auto-layout.ts`, pure + unit-tested) — still
+`autoLayoutElements` (`packages/document/src/auto-layout.ts`, pure + unit-tested) — still
 exists and is now driven by the MCP server ([MCP server](../015-api/mcp-server.md)), where the calling model produces the
 graph and the server lays it out on request. (`mergeAiElements` in `editor-page-helpers.ts`
 retains a general clean/replace merge; the Clean path spreads the AI patch over each
@@ -146,7 +148,7 @@ what drifted: `checklist` was requested by name, with its `checklistItems` schem
 squared on arrival.
 
 Past that normalisation (kind coerced, a missing size defaulted), a streamed element is held
-to the same structural guard every save is: `isValidElement` from `@livediagram/diagram`,
+to the same structural guard every save is: `isValidElement` from `@livediagram/document`,
 limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
 check used to live in the client and let through what the api then refused on save (an
 arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every
@@ -186,21 +188,53 @@ variable that holds it should say whose it is, and the endpoint follows.
 | `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o`                                                              |
 | `AI_API_KEY` + `AI_BASE_URL` | generic  | whatever `AI_BASE_URL` says                               | none — `AI_MODEL` is REQUIRED                                         |
 
-`AI_MODEL` overrides the default for any provider; `AI_VISION_MODEL` overrides
-it for `/api/ai/read-notes` only. The READER has its own Google default,
+The generic row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything
+that speaks the OpenAI chat-completions wire.
+
+### Each feature has its own provider
+
+The worker runs two AI features, and each one resolves its own provider from the
+keys that are set, taking the first present key in its own preference order:
+
+| feature                                 | route                | preference order          |
+| --------------------------------------- | -------------------- | ------------------------- |
+| **assistant** (Ask / Clean)             | `/api/ai`            | openai → google → generic |
+| **reader** (event-storming crop reader) | `/api/ai/read-notes` | google → openai → generic |
+
+- **One key serves both.** A deployment with a single key runs both features on
+  that provider; a self-hoster sets one key and changes nothing.
+- **Two named keys split the features.** With `OPENAI_API_KEY` and
+  `GOOGLE_AI_STUDIO_API_KEY` both set, the assistant runs on OpenAI and the
+  reader on Google. This is the hosted site's configuration: the assistant
+  stays on the OpenAI model it has always used, and the reader uses Gemini,
+  which reads handwriting better for less.
+- **The generic key is the last resort.** `AI_API_KEY` serves a feature only
+  when neither named key is set. Set beside a named key it serves nothing, so
+  it is logged as an error on every resolution (`[ai] AI_API_KEY is set but
+unused`) rather than left as a dead secret nobody notices.
+- **A half-configured generic key resolves to no provider.** `AI_API_KEY`
+  without `AI_BASE_URL` or `AI_MODEL` logs one loud line and the AI surface
+  hides, exactly as with no key.
+
+### Which model
+
+- **Assistant**: `AI_MODEL`, else its provider's default model.
+- **Reader**: `AI_VISION_MODEL`, else `AI_MODEL` **when the reader shares the
+  assistant's provider**, else its provider's reader default, else its
+  provider's default model.
+
+`AI_MODEL` names a model of the provider serving the assistant, so it reaches
+the reader only when both run on that provider: a `gpt-4o` id sent to Gemini is
+a guaranteed failure. The READER has its own Google default,
 `gemini-2.5-flash-lite`, because reading handwriting is literal work: measured
 on a real wall it read 99% of the words against 95% for `gemini-3.6-flash`,
 while costing about a quarter as much and finishing four times faster
-(docs/research/vision/handwriting-readers.md). That default applies only when the
-operator has named NO model — setting `AI_MODEL` means it for the reader too,
-and `AI_VISION_MODEL` beats both. The generic
-row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything that speaks
-the OpenAI chat-completions wire.
+(docs/research/vision/handwriting-readers.md). An operator who names `AI_MODEL`
+for a single-provider deployment means it for the reader too, and
+`AI_VISION_MODEL` beats everything. The generic preset has no defaults, so it
+requires `AI_MODEL` for both features, keeping them available together.
 
-**Exactly one key may be set.** Two of them, or a generic key without a base URL
-or a model, resolves to NO provider and logs one loud line naming the conflict:
-picking one would be spending somebody's money on a coin flip, and picking one
-silently is how that goes unnoticed. `aiEnabled` is "a provider resolved".
+`aiEnabled` is "a provider resolved".
 
 `OPENAI_API_KEY` is not a compatibility alias — it is the OpenAI preset's own
 key, so a self-hoster already on OpenAI changes nothing. `OPENAI_MODEL` is gone;
@@ -226,8 +260,8 @@ The model half of the event-storming photo import ([Event storming](../021-event
 stickies are FOUND in the browser by classical computer vision; this route is
 asked only to read the handwriting on the crops that came out of that.
 
-- Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): key
-  present → origin allow-list → Clerk-only flag → owner → method → rate limiter.
+- Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): the
+  reader's provider resolves → origin allow-list → Clerk-only flag → owner → method → rate limiter.
 - **Body**: `{ crops: { id, image }[] }` — at most `READ_MAX_CROPS_PER_REQUEST`
   (6) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
   `image/jpeg`, `image/png`, `image/webp`. The client batches a bigger run and
@@ -260,14 +294,14 @@ fires it, because the route cannot know whether the author kept the result).
 
 ## Environment variables
 
-| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                 |
-| ------------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model key; exactly one enables AI, and which one names the provider (see "Whose model? The key says."). None = every AI surface hidden.                                                                             |
-| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                    |
-| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                          |
-| `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults to `AI_MODEL`, so a deployment only sets it to split the two apart.                 |
-| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
-| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
+| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                   |
+| ------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI, and each feature takes its provider from them (see "Each feature has its own provider"). None = every AI surface hidden.                                                              |
+| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                      |
+| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                            |
+| `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults as in "Which model": `AI_MODEL` only when the reader shares the assistant's provider. |
+| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim.   |
+| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                    |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so
@@ -286,7 +320,7 @@ Missing / `false` = panel hidden. Only shown in Settings when `capabilities.aiEn
 Fetches `GET /api/capabilities` once at editor mount. Returns `{ aiEnabled: boolean }`.
 On network failure defaults to `{ aiEnabled: false }` (fail-closed). The hook takes an
 `enabled` flag so the call is deferred while a visitor is behind a share-link password
-gate ([Share password](../013-workspace/share-password.md)): on a password-protected diagram, capabilities (and the server-side
+gate ([Share password](../013-workspace/share-password.md)): on a password-protected document, capabilities (and the server-side
 preferences sync) don't fire until the correct password is entered, so wrong attempts
 cost no extra requests.
 
@@ -294,9 +328,9 @@ cost no extra requests.
 
 A floating, draggable panel rendered over the canvas via `MovablePanel` (drag to
 reposition; reset returns it to its default spot). It's surfaced from the **Assistant**
-accordion in the Editor side panel, and on mobile through the bottom dock popover. Visible
+accordion in the Editor side panel, and docks in its corner in both panel layouts, a phone's too. Visible
 when `capabilities.aiEnabled && userPreferences.aiAssistanceEnabled`. Hidden in read-only /
-view-role sessions (AI mutates the diagram; guests can't persist changes they don't own).
+view-role sessions (AI mutates the document; guests can't persist changes they don't own).
 
 Contains:
 

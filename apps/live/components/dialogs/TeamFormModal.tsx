@@ -96,7 +96,7 @@ export function TeamFormModal({
           {/* Concise "what teams do" primer so first-time creators know what
               they're setting up before naming it. */}
           <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
-            Teams let you invite people by email and share a library of diagrams everyone can open.
+            Teams let you invite people by email and share a library of documents everyone can open.
             Members edit shared work; admins also manage who&rsquo;s in the team.
           </p>
           <label className="mt-4 block">

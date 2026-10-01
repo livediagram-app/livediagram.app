@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { MAX_ELEMENTS_PER_TAB, isValidElement } from '@livediagram/diagram';
+import { MAX_ELEMENTS_PER_TAB, isValidElement } from '@livediagram/document';
 import { ReportTally } from '@/lib/import-report';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';

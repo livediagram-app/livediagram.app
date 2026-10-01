@@ -12,10 +12,10 @@ spirit of customising iOS Control Centre.
 - A new entry, **Favourites**, in the palette category dropdown
   (`PaletteTabBar` — see [Canvas and palette](../008-canvas/canvas-and-palette.md)), listed
   **first** (above Shapes) with a star icon.
-- **Favourites is the default open category** on every diagram load — the
+- **Favourites is the default open category** on every document load — the
   palette lands on the user's own go-to tiles. (This supersedes [Canvas and palette](../008-canvas/canvas-and-palette.md)'s
   earlier Shapes-by-default rule; the palette still deliberately does not
-  persist the last-used category across diagrams.)
+  persist the last-used category across documents.)
 
 ## The grid
 
@@ -24,10 +24,15 @@ spirit of customising iOS Control Centre.
   ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Palette tiles preview the active tab theme"), draw-to-size
   arming, drag-to-place, and pending-draw highlight. A favourite behaves
   IDENTICALLY to the same tile in its home tab; only the grouping differs.
-- **Default set (9)** — the nine highest-value creation actions:
-  **Square (R), Circle (O), Diamond (D), Text (T), Pencil (P), Arrow (A),
-  Sticky note (N), Frame, Image (9)** — mostly the tiles important enough
-  to have earned single-key shortcuts.
+- **Default set (12)**, four rows of three so the starting grid has no
+  ragged row: **Square (R), Circle (O), Diamond (D), Text (T), Arrow (A),
+  Frame, Sticky note (N), Image (9), Shape Pen, Table, Code, Entity**. The
+  shapes and the things you put on a diagram come first, then the two
+  structured cards technical diagrams lean on (a code block and an entity).
+  Session tools such as Timer and Comment panel are deliberately not
+  defaults: a facilitator reaches for them on purpose, from Collaborate.
+  Changing the defaults only affects browsers with no stored favourites; a
+  saved list is never rewritten.
 - Tiles gated on capabilities elsewhere stay gated here: the Image / Avatar
   / Hero / Header tiles only render when the editor supplies `onAddImage`
   (matching the Tools / Components tabs), so a favourited Image tile
@@ -88,7 +93,7 @@ Curation happens in a centred dialog (`PaletteFavouritesDialog`, the shared
   synced to the account — like the palette's other UI state ([User preferences](../007-editor/user-preferences.md) scope).
 - Unknown / stale FIXED ids (a tile renamed or removed in a later release)
   are silently dropped on load; a missing or corrupt key falls back to the
-  default nine. Saving an edit writes the full array. **Dynamic ids
+  default set. Saving an edit writes the full array. **Dynamic ids
   (`icon:` / `tech:`) are kept verbatim** — their catalogues load async, so
   validating them at load time would wrongly drop every icon favourite (and
   the next save would persist the loss); they validate at render instead,

@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'The livediagram Settings dialog: minimal panels, the minimap, the welcome tour, notifications, reduce motion, the AI assistant and anonymous usage events, and how preferences follow you between devices.',
+    'The livediagram Settings dialog: panel layout, the Map, the welcome tour, notifications, reduce motion, the AI assistant and anonymous usage events, and how preferences follow you between devices.',
   path: '/help/user-interface/settings/',
 });
 
@@ -15,17 +15,34 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-**Settings** opens from the gear in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular diagram, which is why there is one set of them and not one per diagram.
+**Settings** opens from the gear in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular document, which is why there is one set of them and not one per document.
 
 They are grouped, and **one group is open at a time**, so the dialog is a short list you read rather than a wall of switches.
 
 ## Editor
 
-- **Panel Layout** — Floating (the default), Minimal, or Toolbar. Minimal replaces the floating Explorer, Palette, Editor and AI panels with a compact button bar that opens each as a popover. Good when you want the canvas back. A phone can use Minimal or Toolbar, and starts in Toolbar; Floating shows as Toolbar there. See [Minimal Panels](/help/palette/minimal-panels/) and [Toolbar Layout](/help/palette/toolbar-layout/).
-- **Show minimap** — the small overview of the whole tab in the bottom-left corner, once a tab has a few elements and the Activity panel is minimised. Desktop only. See [The Minimap](/help/user-interface/minimap/).
+- **Middle-Mouse Pan**: hold the middle mouse button and drag to pan the canvas from anywhere, whatever tool is active. Turn it off to leave the middle button to your browser.
 - **Welcome Tour Completed** — ticked once you have taken or dismissed the tour, which is how it only offers itself once. **Untick it and close Settings to run the tour again.** See [The Welcome Tour](/help/getting-started/welcome-tour/).
 
 - **Power User Mode** — applies a set of recommended settings in one go, and unlocks **Minimal Chrome**, which hides labels and hints while keeping every control. Switching it off puts back the settings you did not change. See [Power User Mode](/help/user-interface/power-user-mode/).
+
+## Appearance
+
+- **Theme**: Light, Dark or System, which follows your device. It is saved per device, not per account (see below).
+- **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo, layers) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own; moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
+
+## Panels
+
+- **Panel Layout**: Floating (the default) or Toolbar. Toolbar puts the palette in one strip across the top of the canvas and opens the Explorer from a menu button. A phone always uses Toolbar; Floating shows as Toolbar there. See [Toolbar Layout](/help/palette/toolbar-layout/).
+- **Panel Opacity**: fades every panel so the canvas shows through. See [Panel Opacity](/help/palette/panel-opacity/).
+
+**Panels** holds five sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it while it is on. On a computer, click **Panels** (or its arrow) to show them, and again to fold them away. On a phone, tap **Panels** and they are listed at the bottom of its page:
+
+- **Layers**: **Enable Layers Panel**, then layer thumbnails, element counts, and previewing a layer on hover. Turning the panel off also hides its button and the **Move to layer** choices in the element menu; your layers keep working as before. See [Layers](/help/canvas/layers/).
+- **Activity**: **Enable Activity Panel**, then previewing a revert while you hover its entry. With the panel off, **Undo** and **Redo** stay in the bottom-right corner.
+- **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), dimming everything outside your view, and the Map's size. Desktop only. See [The Map](/help/user-interface/minimap/).
+- **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements.
+- **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu.
 
 ## Keyboard
 
@@ -34,7 +51,7 @@ They are grouped, and **one group is open at a time**, so the dialog is a short 
 
 ## Notifications
 
-- **Show notifications** — the brief confirmation shown when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. **Errors are always shown**, whatever this is set to, so a failure is never silently swallowed.
+- **Show notifications** — the brief confirmation shown when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. **Errors are always shown**, whatever this is set to, so a failure is never silently swallowed.
 
 ## Accessibility
 
@@ -43,6 +60,13 @@ They are grouped, and **one group is open at a time**, so the dialog is a short 
 ## AI
 
 - **AI Assistant** — shows the AI panel, with its **Ask** and **Clean** modes. Off by default, and the group is absent entirely on a deployment with no AI configured. See [AI Tools](/help/tools/ai/ai-tools/).
+- **Manage API Tokens** — jumps to the **API Tokens** category below, since the AI tools you connect over MCP use a token.
+
+## API Tokens
+
+- Create, view and revoke the tokens your own scripts and connected AI tools use to call livediagram as you. A new token's secret is shown once, so copy it before you choose **Done**. Signed-in only: a guest sees a **Sign In** link instead, and the category is absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+
+Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 
 ## Privacy
 
@@ -50,16 +74,11 @@ They are grouped, and **one group is open at a time**, so the dialog is a short 
 
 ## Settings follow you, most of them
 
-Everything in this dialog is **stored against your identity, not your browser**, and applies to every diagram you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your diagrams](/help/getting-started/guest-vs-account/) if you later sign up.
+Everything in this dialog is **stored against your identity, not your browser**, and applies to every document you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your documents](/help/getting-started/guest-vs-account/) if you later sign up.
 
 Two things to know about where settings live:
 
-- **The canvas-behaviour toggles** live here too, under **Editor** and **Appearance**: [auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/). They used to sit in the palette's own gear menu; every setting now has one home.
+- **The canvas-behaviour toggles** live here too, under **Editor** and **Panels**: [auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/). They used to sit in the palette's own gear menu; every setting now has one home.
 - **Tool settings are per device**, not per account: the eraser's brush, the laser's pen, the presenter's settings, and the **Keyboard Shortcuts** switch in the **Keyboard** category that [turns single-key shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/). These are about the machine you are sitting at, so they deliberately do not follow you to another one.
-
-<Note>
-  Switching **Panel Layout** to Minimal docks the panels, which hides the palette header the
-  canvas-behaviour popover opens from. The Settings dialog is the way back out.
-</Note>
 
 </ArticleLayout>

@@ -1,5 +1,5 @@
 // folders — self-referential tree, personal (owner-scoped, docs/specs/013-workspace/folders.md)
-// or team-scoped (docs/specs/013-workspace/team-shared-diagrams.md) via the nullable team_id column.
+// or team-scoped (docs/specs/013-workspace/team-shared-documents.md) via the nullable team_id column.
 
 import { rowToFolder, type FolderRow } from '../folder-row';
 import type { Env, FolderDTO } from '../types';
@@ -7,7 +7,7 @@ import type { Env, FolderDTO } from '../types';
 const FOLDER_COLS = 'id, owner_id, parent_id, team_id, name, created_at, updated_at';
 
 // Personal tree only: team folders never bleed into the owner's
-// Explorer sidebar (they render on the team page instead — docs/specs/013-workspace/team-shared-diagrams.md).
+// Explorer sidebar (they render on the team page instead — docs/specs/013-workspace/team-shared-documents.md).
 export async function listFoldersByOwner(env: Env, ownerId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${FOLDER_COLS} FROM folders WHERE owner_id = ? AND team_id IS NULL ORDER BY name ASC`,
@@ -17,7 +17,7 @@ export async function listFoldersByOwner(env: Env, ownerId: string): Promise<Fol
   return (result.results ?? []).map(rowToFolder);
 }
 
-// One team's shared folder tree (docs/specs/013-workspace/team-shared-diagrams.md).
+// One team's shared folder tree (docs/specs/013-workspace/team-shared-documents.md).
 export async function listFoldersByTeam(env: Env, teamId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${FOLDER_COLS} FROM folders WHERE team_id = ? ORDER BY name ASC`,
@@ -81,13 +81,17 @@ export async function updateFolder(
 
 export async function deleteFolder(env: Env, id: string): Promise<void> {
   // Promote direct children before deleting: subfolders become root,
-  // diagrams fall to Unsorted. ON DELETE SET NULL on both FKs would
+  // documents fall to Unsorted. ON DELETE SET NULL on both FKs would
   // do the same thing, but we run it explicitly so the behaviour is
   // visible in code (and not dependent on SQLite enforcing the FK,
-  // which is opt-in via PRAGMA).
-  await env.DB.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').bind(id).run();
-  await env.DB.prepare('UPDATE diagrams SET folder_id = NULL WHERE folder_id = ?').bind(id).run();
-  await env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(id).run();
+  // which is opt-in via PRAGMA). One batch, so the folder and its Drive
+  // mirror row (docs/specs/022-drive-mirror/drive-mirror.md, "Data") go together.
+  await env.DB.batch([
+    env.DB.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').bind(id),
+    env.DB.prepare('UPDATE documents SET folder_id = NULL WHERE folder_id = ?').bind(id),
+    env.DB.prepare("DELETE FROM drive_items WHERE item_kind = 'folder' AND ld_id = ?").bind(id),
+    env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(id),
+  ]);
 }
 
 // Cycle check for folder moves. Walks the proposed ancestor chain

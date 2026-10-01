@@ -18,7 +18,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 //   middle-button drag, Space + drag   pan
 //   + / − / 0                          zoom in, zoom out, whole photo
 //
-// The WHEEL zooms here, where on the canvas it pans: the canvas is a board you
+// The WHEEL zooms here, where on the canvas it pans: the canvas is a surface you
 // travel across, this is one photograph you look INTO, and the operator asked
 // for the wheel to do what it does in every photo viewer.
 //

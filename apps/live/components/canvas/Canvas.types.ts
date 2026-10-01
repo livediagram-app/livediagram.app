@@ -4,11 +4,13 @@
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type {
+  CommentMention,
   EmbedProvider,
   EsSide,
   EventStormingNoteKind,
   FrameHandle,
-} from '@livediagram/diagram';
+  RecognisedShape,
+} from '@livediagram/document';
 import type {
   AlignmentGuide,
   BackgroundPattern,
@@ -21,14 +23,14 @@ import type {
   TextAlignX,
   TextAlignY,
   TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
-import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { ChangeLogEntry, DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
-import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
@@ -43,7 +45,7 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
-  diagramName: string;
+  documentName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
   tabBackgroundOpacity: number;
@@ -64,17 +66,21 @@ export type CanvasProps = {
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
-  // The active tab's raw layers array (docs/specs/006-diagram/layers.md), undefined until the tab
+  // The active tab's raw layers array (docs/specs/006-document/layers.md), undefined until the tab
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
-  // The tab’s board kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
+  // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The whiteboard dock's model and the board's ink for this appearance
+  // (docs/specs/023-whiteboard/whiteboard.md), present on a whiteboard tab.
+  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
+  whiteboardInk?: string;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
   // undefined: a note dragged in from the palette snaps onto it, and the
   // overlay lights the lane it is landing on.
-  // Element ids on a hidden or locked layer (docs/specs/006-diagram/layers.md) — inert to every
+  // Element ids on a hidden or locked layer (docs/specs/006-document/layers.md) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
   // Dragged element ids to render translucent while a shift-duplicate is
@@ -100,13 +106,13 @@ export type CanvasProps = {
   // Press a Mode Button element (docs/specs/009-elements/mode-button.md): hands the LOCAL participant the
   // mode the element carries. Optional — the read-only embed has no tool picker
   // to drive, so its buttons render inert.
-  onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onPressModeButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
   // this element. Absent on a surface with nobody to ask (an export, a solo
-  // board), which renders the face inert.
-  onPressFocusButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // canvas), which renders the face inert.
+  onPressFocusButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
-  onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;
   // True when this viewer can't start session tools (view role): the button
   // renders inert and says why instead of failing silently on press.
   sessionStartBlocked?: boolean;
@@ -124,7 +130,7 @@ export type CanvasProps = {
   // the anchored popover already drives them.
   commentSelfId?: string;
   commentPanelActions?: {
-    add: (elementId: string, text: string) => void;
+    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
     remove: (elementId: string, commentId: string) => void;
     resolve: (elementId: string) => void;
     unresolve: (elementId: string) => void;
@@ -134,13 +140,14 @@ export type CanvasProps = {
   // drives an action. Absent on a read-only surface: the card renders inert.
   actionSelfId?: string | null;
   actionPanelActions?: {
-    configure: (elementId: string) => void;
-    complete: (elementId: string) => void;
-    reopen: (elementId: string) => void;
+    // Opens the Assign Action dialog: to add (no action id) or edit one.
+    configure: (elementId: string, actionId?: string | null) => void;
+    complete: (elementId: string, actionId?: string | null) => void;
+    reopen: (elementId: string, actionId?: string | null) => void;
   };
   onSetSessionConfig?: (
-    element: import('@livediagram/diagram').ShapeElement,
-    config: import('@livediagram/diagram').SessionButtonConfig,
+    element: import('@livediagram/document').ShapeElement,
+    config: import('@livediagram/document').SessionButtonConfig,
   ) => void;
   // Open an element's own context menu from the `…` on its face, anchored at
   // the trigger's screen position (docs/specs/008-canvas/canvas-and-palette.md). Absent on a read-only surface,
@@ -149,7 +156,7 @@ export type CanvasProps = {
   // Picker (docs/specs/012-collaboration/picker.md): the candidates a roll can land on, and the roll itself.
   // `shared` says whether this viewer's roll is written back (and so reaches
   // the room), which is how the face tells its own landing apart from a peer's.
-  onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
+  onRollPicker?: (element: import('@livediagram/document').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
@@ -167,16 +174,19 @@ export type CanvasProps = {
   ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {
+  onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
   };
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): set one off. Absent on a read-only surface, which
   // renders the pad inert rather than hiding it.
-  onFireReaction?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onFireReaction?: (element: import('@livediagram/document').ShapeElement) => void;
   // The bursts currently playing, keyed by the pad's element id, plus the way
   // to retire one when its animation ends. Ephemeral: never document state.
-  reactionBursts?: Map<string, { reaction: import('@livediagram/diagram').Reaction; seed: number }>;
+  reactionBursts?: Map<
+    string,
+    { reaction: import('@livediagram/document').Reaction; seed: number }
+  >;
   onReactionBurstDone?: (elementId: string) => void;
   // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for the tool that preceded it. Wired to the
   // palette (any tile pick) and to a palette drag-drop, both of which are
@@ -234,7 +244,7 @@ export type CanvasProps = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -253,7 +263,7 @@ export type CanvasProps = {
     avatar: import('@livediagram/api-schema').AvatarPresence;
   }[];
   // Publishes the local character to the room (null when leaving the mode).
-  // Optional: a private, un-shared diagram has no room to publish to.
+  // Optional: a private, un-shared document has no room to publish to.
   onAvatarPresence?: (avatar: import('@livediagram/api-schema').AvatarPresence | null) => void;
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
@@ -328,15 +338,22 @@ export type CanvasProps = {
   // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
   // Present only on an event-storming board with the model configured.
   onDropPhoto?: (file: File) => void;
+  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
+  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
+  onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
-  // session, or a hidden / locked active layer (docs/specs/006-diagram/layers.md). The insert-between
+  // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.
   createBlocked?: boolean;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
-  onAddArrow: () => void;
+  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
+  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
+  // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
+  reshapingArrowId?: string | null;
   onBeginFreehand: () => void;
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
@@ -374,22 +391,41 @@ export type CanvasProps = {
   // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
   // through recogniseShape and may mint a real shape primitive instead of a
   // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone.
-  onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
+  // preference — the toggle that used to set it is gone. A whiteboard pen's points are its raw
+  // samples, landed as they are with their `ink` (pressures, streamline; lib/live-stroke).
+  onCommitFreehand: (
+    points: { x: number; y: number }[],
+    recogniseShapes: boolean,
+    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke).
+    ink?: { pressures?: number[]; streamline?: number; snapped?: RecognisedShape },
+  ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // Minimal panel layout preference (docs/specs/007-editor/user-preferences.md). When true, the floating
-  // panels render as dock popovers on desktop too (always on mobile).
-  minimalPanels?: boolean;
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn or continued path lands, an
+  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
+  // drawn shows the style it will land with.
+  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
+  onCommitPathEdit: (
+    id: string,
+    next: { anchors: import('@livediagram/document').PathAnchor[]; closed: boolean },
+    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
+  ) => void;
+  onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
+  // The line or arrow a draw would land if released now, as the canvas would show it
+  // (docs/specs/023-whiteboard/whiteboard.md "Shapes"), drawn in place of a stand-in while the drag
+  // is in flight. From lib/drawn-arrow-preview.
+  previewDrawnArrow?: (
+    intent: Extract<PendingDraw, { type: 'arrow' }>,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+  ) => import('@livediagram/document').ArrowElement;
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Palette as a top strip and a menu button
-  // in place of the Explorer. Implies `minimalPanels` for every other panel.
-  // Desktop only; the chrome falls back to the mobile dock below `sm`.
+  // in place of the Explorer. Always on below `sm`, where Floating is not offered.
   toolbarLayout?: boolean;
-  // Toggle the minimal-panel layout. Surfaced in the Palette header
-  // (desktop) as the one-click normal <-> minimal switch.
-  onToggleMinimalPanels?: () => void;
   // Lifted user preferences + a write-through setter, forwarded to the
   // Palette settings popover (docs/specs/007-editor/user-preferences.md). Holds the canvas-behaviour
   // toggles (auto-attach arrows, alignment guides) that the popover edits.
@@ -402,29 +438,29 @@ export type CanvasProps = {
   onResetPalette: () => void;
   onMoveExplorer: (x: number, y: number) => void;
   onResetExplorer: () => void;
-  diagramList: DiagramListItem[];
-  // Lightweight id + name of this diagram's tabs, so a link badge's
+  documentList: DocumentListItem[];
+  // Lightweight id + name of this document's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
   // Portals (docs/specs/009-elements/portal-element.md) link ACROSS tabs, so the canvas needs every tab's
   // elements to resolve where one leads, plus which tab is showing. Optional so
   // read-only / embed mounts that never travel can omit them.
-  portalTabs?: import('@livediagram/diagram').Tab[];
+  portalTabs?: import('@livediagram/document').Tab[];
   activeTabId?: string;
   folders: Folder[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.
-  sharedDiagrams?: SharedWithItem[];
-  onDismissShared?: (diagramId: string) => void;
+  sharedDocuments?: SharedWithItem[];
+  onDismissShared?: (documentId: string) => void;
   // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-diagrams.md), forwarded to the floating Explorer panel for its Teams
-  // accordion, team rows in Recent, and the current team diagram.
+  // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the floating Explorer panel for its Teams
+  // accordion, team rows in Recent, and the current team document.
   // Empty by default so guest / legacy callers can omit them.
   teams?: { id: string; name: string }[];
   teamFolders?: TeamFolderRow[];
-  teamDiagrams?: TeamDiagramRow[];
-  diagramListLoading: boolean;
+  teamDocuments?: TeamDocumentRow[];
+  documentListLoading: boolean;
   changeLog: ChangeLogEntry[];
   changeLogLoading: boolean;
   activityPosition: { x: number; y: number } | null;
@@ -436,7 +472,7 @@ export type CanvasProps = {
   onMoveActivity: (x: number, y: number) => void;
   onToggleActivityMinimized: () => void;
   onResetActivity: () => void;
-  // Layers panel (docs/specs/006-diagram/layers.md). `layers` is the NORMALISED stack (bottom ->
+  // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
   // field for the render-order helpers. Minimised by default into a
   // bottom-right dock button, mirroring Activity.
@@ -469,10 +505,10 @@ export type CanvasProps = {
   // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
   // (docs/specs/013-workspace/hide-from-recent.md), for the Explorer panel's Recent list.
   userPreferences: import('@/lib/user-preferences').UserPreferences;
-  onToggleRecentExclusion: (diagramId: string) => void;
+  onToggleRecentExclusion: (documentId: string) => void;
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
-  onToggleFavourite: (diagramId: string) => void;
+  onToggleFavourite: (documentId: string) => void;
   votePanelPosition: { x: number; y: number } | null;
   onMoveVotePanel: (x: number, y: number) => void;
   onResetVotePanel: () => void;
@@ -498,13 +534,13 @@ export type CanvasProps = {
   onSetLayerOpacity: (layerId: string, opacity: number) => void;
   onClearLayer: (layerId: string) => void;
   onHideOtherLayers: (layerId: string) => void;
-  // Hover-to-solo (docs/specs/006-diagram/layers.md): while set, the canvas renders ONLY this
+  // Hover-to-solo (docs/specs/006-document/layers.md): while set, the canvas renders ONLY this
   // layer. Driven by hovering a Layers-panel row; pure view state.
   layerPreviewId: string | null;
   onPreviewLayer: (layerId: string | null) => void;
   // Floating Comments panel. Only mounted when commentRows is
   // non-empty: the panel exists to list discussion that already
-  // exists, so on diagrams without it the panel stays out of the
+  // exists, so on documents without it the panel stays out of the
   // chrome entirely.
   commentRows: import('@/components/panels/CollaboratePanel').CommentRow[];
   commentsPanelPosition: { x: number; y: number } | null;
@@ -518,6 +554,9 @@ export type CanvasProps = {
   actionRows: import('@/components/panels/CollaboratePanel').ActionRow[];
   // Row click: editor selects the element + opens its action popover.
   onOpenActionForElement: (elementId: string) => void;
+  // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
+  // (done) or reopen the action in place. Absent for a read-only visitor.
+  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   onRevertChange: (entry: ChangeLogEntry) => void;
   // Hover-to-preview for a row's Revert (docs/specs/012-collaboration/activity-and-audit.md): enter shows the
   // revert result live on the canvas, leave restores. Nothing commits.
@@ -527,29 +566,29 @@ export type CanvasProps = {
   onClearActivity?: () => void;
   saveStatus: import('@/components/chrome/EditorHeader').SaveStatus;
   savedAt: number | null;
-  currentDiagramId: string | null;
-  onOpenDiagram: (id: string, shareCode?: string) => void;
-  onNewDiagram: () => void;
+  currentDocumentId: string | null;
+  onOpenDocument: (id: string, shareCode?: string) => void;
+  onNewDocument: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
   onRenameCurrent: (name: string) => void;
-  onDeleteDiagram: (id: string) => void;
-  onDuplicateDiagram: (id: string) => void;
+  onDeleteDocument: (id: string) => void;
+  onDuplicateDocument: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
   // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-diagrams.md); absent while signed out or without teams.
+  // (docs/specs/013-workspace/team-shared-documents.md); absent while signed out or without teams.
   onTeamFolders?: TeamFolderHandlers;
-  onMoveDiagramToFolder: (diagramId: string, folderId: string | null) => void;
-  // Scope-crossing move (docs/specs/013-workspace/team-shared-diagrams.md): the Explorer panel's move picker routes
+  onMoveDocumentToFolder: (documentId: string, folderId: string | null) => void;
+  // Scope-crossing move (docs/specs/013-workspace/team-shared-documents.md): the Explorer panel's move picker routes
   // any pick that involves a team (either side) here — re-folder within a
   // team, personal -> team, or team -> personal.
-  onMoveDiagramTo?: (
-    diagramId: string,
+  onMoveDocumentTo?: (
+    documentId: string,
     dest: { teamId: string | null; folderId: string | null },
-    // Where the diagram is coming from (null = the personal tree), so a
-    // personal -> team move counts as Team·Added·Diagram (docs/specs/017-telemetry/telemetry.md).
+    // Where the document is coming from (null = the personal tree), so a
+    // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;
   onDeselect: () => void;
@@ -563,7 +602,13 @@ export type CanvasProps = {
   // active. The canvas intercepts it in the capture phase (before element
   // select/drag) and hands the screen coords here to start an erase
   // gesture; the gesture's move/release are tracked by useCanvasEraser.
-  onEraseStart?: (clientX: number, clientY: number) => void;
+  // `frame`: where the canvas sits on screen at the press (the whiteboard's
+  // geometric erase, docs/specs/023-whiteboard/whiteboard.md).
+  onEraseStart?: (
+    clientX: number,
+    clientY: number,
+    frame?: { left: number; top: number; zoom: number },
+  ) => void;
   // Right-click on an element. Forwarded from BoxedElementView's
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.
@@ -593,7 +638,7 @@ export type CanvasProps = {
     id: string,
     patch: Partial<
       Pick<
-        import('@livediagram/diagram').TableElement,
+        import('@livediagram/document').TableElement,
         'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
       >
     >,
@@ -614,14 +659,16 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Escape on the empty node a Tab made one time too many removes it.
+  onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: import('@livediagram/diagram').WebRows) => void;
+  onSetWebRows?: (elementId: string, rows: import('@livediagram/document').WebRows) => void;
   onAppendWebRow?: (elementId: string) => void;
   onSetHeroCaptionLine?: (
     elementId: string,
-    field: keyof import('@livediagram/diagram').HeroCaption,
+    field: keyof import('@livediagram/document').HeroCaption,
     value: string,
   ) => void;
   // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used
@@ -644,7 +691,7 @@ export type CanvasProps = {
   // single-shot painter): drops back to the Select tool. Drives the
   // format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
+  onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
   // read-only sessions too — visitors may read an action; the popover
@@ -666,11 +713,11 @@ export type CanvasProps = {
   onEditCode?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
-  // welcome / new-diagram surface (where Canvas mounts before
+  // welcome / new-document surface (where Canvas mounts before
   // identity / share-code are settled) can omit it.
   imageContext?: {
     ownerId: string;
-    diagramId: string;
+    documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
   };
@@ -678,10 +725,10 @@ export type CanvasProps = {
   // ellipsis button opens the same context menu under the cursor.
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
   showTemplatePicker: boolean;
-  // True after the page has resolved its initial identity + diagram
+  // True after the page has resolved its initial identity + document
   // fetch. Used to suppress the empty-state card during the brief
   // window between "loader dropped" and "welcome modal mounted" so
-  // a fresh New Diagram doesn't flash the Empty Canvas message.
+  // a fresh New Document doesn't flash the Empty Canvas message.
   hydrated: boolean;
   templatePickerMode: 'welcome' | 'templates' | 'identity';
   // When non-null, the visitor is signed in via Clerk and their
@@ -718,9 +765,9 @@ export type CanvasProps = {
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off
   // the tab; handlers no-op when edits are blocked.
-  tabTimer?: import('@livediagram/diagram').TabTimer;
-  tabVote?: import('@livediagram/diagram').TabVote;
-  onStartTimer: (mode: import('@livediagram/diagram').TimerMode, durationMs?: number) => void;
+  tabTimer?: import('@livediagram/document').TabTimer;
+  tabVote?: import('@livediagram/document').TabVote;
+  onStartTimer: (mode: import('@livediagram/document').TimerMode, durationMs?: number) => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
   onResetTimer: () => void;
@@ -728,7 +775,10 @@ export type CanvasProps = {
   // Change a running / paused countdown's length, restarting it at the new
   // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
   onSetTimerDuration?: (durationMs: number) => void;
-  onStartVote: (votesPerPerson: number, privacy?: import('@livediagram/diagram').VoteSetup) => void;
+  onStartVote: (
+    votesPerPerson: number,
+    privacy?: import('@livediagram/document').VoteSetup,
+  ) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
@@ -786,18 +836,18 @@ export type CanvasProps = {
   // can stand down (one gesture, one answer).
   elementMenuOpen?: boolean;
   onDuplicateSelected: () => void;
-  // Intra-LAYER z-order from the selection popover (docs/specs/006-diagram/layers.md): stack the
+  // Intra-LAYER z-order from the selection popover (docs/specs/006-document/layers.md): stack the
   // selection within its own band, never between layers.
   onBringSelectedToFront: () => void;
   onSendSelectedToBack: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
-  // Lazy per-tab load (docs/specs/006-diagram/per-tab-storage.md). While the active tab's content is being
+  // Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). While the active tab's content is being
   // fetched ('loading') or after that fetch failed ('error'), Canvas
   // renders a blocking TabLoadOverlay so the user never edits a blank
   // placeholder whose autosave would wipe the real server row. 'ready'
   // (or undefined) renders the canvas normally. `onRetryTabLoad`
   // re-issues the fetch from the error card.
-  tabLoadState?: import('@/app/diagram/[id]/editor-page-helpers').TabLoadState;
+  tabLoadState?: import('@/app/document/[id]/editor-page-helpers').TabLoadState;
   onRetryTabLoad?: () => void;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). When true, CanvasChrome hides every
   // floating panel + the history dock + the owner badge, keeping only

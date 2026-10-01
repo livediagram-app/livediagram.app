@@ -5,7 +5,7 @@
 // (tiny windows). Cross-axis position is clamped into the viewport with
 // the shared 8px edge margin (packages/ui popover convention).
 
-import { clamp } from '@livediagram/diagram';
+import { clamp } from '@livediagram/document';
 
 export type TourRect = { left: number; top: number; width: number; height: number };
 type TourSize = { width: number; height: number };

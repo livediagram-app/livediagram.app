@@ -17,11 +17,11 @@ import {
   type Element,
   type Tab,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import { cleanupElements } from '@/lib/tab-cleanup';
-import { FONTS } from '@livediagram/diagram';
+import { FONTS } from '@livediagram/document';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
 import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runsPlainText, type TextRun } from '@livediagram/diagram';
+import { runsPlainText, type TextRun } from '@livediagram/document';
 import { canonicalNote, noteFieldsEqual } from './note-value';
 
 describe('canonicalNote', () => {

@@ -1,15 +1,17 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/diagram';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/document';
 
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
-const SettingsDialog = dynamic(() =>
-  import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
+const SettingsDialog = dynamic(
+  () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
+  { ssr: false },
 );
-const CanvasThemeDialog = dynamic(() =>
-  import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
+const CanvasThemeDialog = dynamic(
+  () => import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
+  { ssr: false },
 );
 
 // The editor's global modal dialogs (settings, canvas theme). Each is gated on its own open flag and reads everything it needs
@@ -22,6 +24,7 @@ export function EditorModals() {
     settingsOpen,
     settingsFocus,
     settingsCategory,
+    settingsSection,
     closeSettings,
     userPreferences,
     setUserPreferences,
@@ -62,6 +65,7 @@ export function EditorModals() {
           onClose={closeSettings}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
+          initialSectionId={settingsSection}
           aiCapable={aiCapable}
         />
       ) : null}

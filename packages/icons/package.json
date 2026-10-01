@@ -14,7 +14,8 @@
     "./resolve": "./src/resolve.ts",
     "./sticker-catalog": "./src/sticker-catalog.ts",
     "./centring": "./src/centring.ts",
-    "./lucide": "./src/lucide.generated.ts"
+    "./lucide": "./src/lucide.generated.ts",
+    "./mode-glyphs": "./src/mode-glyphs.ts"
   },
   "scripts": {
     "lint": "eslint .",

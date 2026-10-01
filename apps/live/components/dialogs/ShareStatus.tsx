@@ -1,5 +1,5 @@
 // The Share dialog's status line (docs/specs/007-editor/live-app.md "Layout, top to bottom"): the
-// diagram's exposure in one phrase, with a dot that is slate while only the
+// document's exposure in one phrase, with a dot that is slate while only the
 // owner can get in and emerald once any pass is live.
 export function ShareStatus({ passes, password }: { passes: number; password: boolean }) {
   const open = passes > 0;

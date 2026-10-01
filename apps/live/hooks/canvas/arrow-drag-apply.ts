@@ -19,15 +19,18 @@
 // semantics that `tick` carries, and the once-per-gesture guard behind
 // `onArrowConnected`.
 
-import type { DragState } from '@/lib/canvas';
+import { ALIGN_SNAP_THRESHOLD, type DragState } from '@/lib/canvas';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import {
   applyArrowBend,
+  otherArrowBends,
   scaleFreeArrow,
+  snapArrowPoint,
   type AlignmentGuide,
+  type BendPlan,
   type DistributionGuide,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
 
@@ -151,8 +154,15 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
   }
 
   if (drag.kind === 'arrow-bend') {
-    // The plan was made at the press; this applies it to the total delta.
-    const patch = applyArrowBend(drag.plan, { x: dx, y: dy });
+    // The plan was made at the press; this applies it to the total delta. An angled segment
+    // slid sideways snaps that sideways position to other arrows' bends and to element edges and
+    // centres (arrow-bending.md "Bends line up").
+    const { delta, guides } =
+      drag.plan.kind === 'slide' && !noSnap
+        ? snapSlidSegment(drag.plan, { x: dx, y: dy }, drag.arrowId, elements)
+        : { delta: { x: dx, y: dy }, guides: [] };
+    if (drag.plan.kind === 'slide') scheduleGuides(guidesOn ? guides : []);
+    const patch = applyArrowBend(drag.plan, delta);
     tick((els) =>
       els.map((el) => (el.id === drag.arrowId && el.type === 'arrow' ? { ...el, ...patch } : el)),
     );
@@ -204,4 +214,40 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
       el.id === drag.arrowId && el.type === 'arrow' ? { ...el, [drag.end]: endpoint } : el,
     ),
   );
+}
+
+// A slid angled segment (an `arrow-bend` slide plan) snapped sideways: its midpoint after the
+// delta is snapped against other arrows' bends and element edges / centres, and only the sideways
+// part of the snap is kept (the segment does not move along itself). Its guides are the sideways
+// axis's only: a horizontal segment lines up on a y, a vertical one on an x.
+function snapSlidSegment(
+  plan: Extract<BendPlan, { kind: 'slide' }>,
+  delta: { x: number; y: number },
+  arrowId: string,
+  elements: Element[],
+): { delta: { x: number; y: number }; guides: AlignmentGuide[] } {
+  const a = plan.route[plan.segment]!;
+  const b = plan.route[plan.segment + 1]!;
+  const mid = { x: (a.x + b.x) / 2 + delta.x, y: (a.y + b.y) / 2 + delta.y };
+  const arrow = elements.find((el) => el.id === arrowId);
+  const exclude = new Set<string>();
+  if (arrow?.type === 'arrow') {
+    if (arrow.from.kind === 'pinned') exclude.add(arrow.from.elementId);
+    if (arrow.to.kind === 'pinned') exclude.add(arrow.to.elementId);
+  }
+  const { point, guides } = snapArrowPoint(
+    mid,
+    otherArrowBends(arrowId, elements),
+    elements,
+    ALIGN_SNAP_THRESHOLD,
+    exclude,
+  );
+  // The sideways axis: across a horizontal segment it is y, across a vertical one x.
+  const horizontal = Math.abs(plan.dir.x) >= Math.abs(plan.dir.y);
+  return {
+    delta: horizontal
+      ? { x: delta.x, y: delta.y + (point.y - mid.y) }
+      : { x: delta.x + (point.x - mid.x), y: delta.y },
+    guides: guides.filter((g) => g.axis === (horizontal ? 'y' : 'x')),
+  };
 }

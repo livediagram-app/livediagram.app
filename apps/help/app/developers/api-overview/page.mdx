@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The livediagram API',
   description:
-    'The livediagram REST API lets your own scripts and integrations read and write diagrams. Learn the base URL, how to authenticate, and where to find the full reference.',
+    'The livediagram REST API lets your own scripts and integrations read and write documents. Learn the base URL, how to authenticate, and where to find the full reference.',
   path: '/help/developers/api-overview/',
 });
 
@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update diagrams, tabs, folders, images, and themes, exactly as the app does.
+Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, and themes, exactly as the app does.
 
 If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly.
 
@@ -27,14 +27,14 @@ The API lives under `/api` on your livediagram host. On the hosted service that 
 https://livediagram.app/api
 ```
 
-On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /diagrams` means `GET https://livediagram.app/api/diagrams`.
+On a self-hosted instance it is `/api` on your own domain. Every path in these docs is relative to that base, so `GET /documents` means `GET https://livediagram.app/api/documents`.
 
 ## Authenticating in one line
 
 Send an API token as a bearer header on each request:
 
 ```bash
-curl https://livediagram.app/api/diagrams \
+curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 
@@ -44,13 +44,13 @@ API tokens are a [signed-in-only](/help/account-and-data/signing-in/) feature. [
 
 The token-callable surface mirrors the app:
 
-- **Diagrams and tabs** — list, read, create, update, copy, and delete diagrams, and read or replace the contents of individual tabs.
-- **Folders** — organise diagrams into your personal folder tree.
+- **Documents and tabs** — list, read, create, update, copy, and delete documents, and read or replace the contents of individual tabs.
+- **Folders** — organise documents into your personal folder tree.
 - **Sharing** — create, list, and revoke share links, and set a share password.
 - **Images and themes** — upload and reference images, and manage your saved custom themes.
-- **Activity** — read or append a diagram's change log.
+- **Activity** — read or append a document's change log.
 
-[Working with Diagrams](/help/developers/working-with-diagrams/) walks through the common calls with copy-pasteable examples.
+[Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples.
 
 ## The full reference
 

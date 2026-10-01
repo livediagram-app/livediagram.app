@@ -13,7 +13,7 @@ import {
   supportsShadow,
   type BoxedElement,
   type CanvasSurface,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 
@@ -81,7 +81,7 @@ export function describeVariant(
       // selection ring.
       // A portal (docs/specs/009-elements/portal-element.md) is in the same family: its ring IS the element, so
       // a wrapper box behind it would frame the energy in a rectangle.
-      // SELF_PAINTING_SHAPES (@livediagram/diagram) is the single list of
+      // SELF_PAINTING_SHAPES (@livediagram/document) is the single list of
       // kinds that draw their own body. The menu reads the same set to decide
       // whether to offer Border at all — they used to keep separate lists and
       // drifted, leaving dead Border controls on a code block, a checklist, a
@@ -97,17 +97,14 @@ export function describeVariant(
       // free-corner shapes (NOT circle / stadium, whose radii
       // are part of the silhouette).
       const fixedRadius =
-        element.shape === 'circle'
-          ? '50%'
-          : element.shape === 'stadium'
-            ? '9999px'
-            : // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box: rounded
-              // enough to read as a node in a tree rather than a flowchart box.
-              element.shape === 'mind-node'
-              ? '12px'
-              : null;
+        element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
       const userRadius =
         element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : null;
+      // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
+      // rounded enough to read as a node in a tree rather than a flowchart
+      // box. Unlike the fixed silhouettes above it honours a radius pick, so a
+      // full radius on a square node draws a bubble-map circle.
+      const mindRadius = element.shape === 'mind-node' ? `${userRadius ?? 12}px` : null;
       const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
       const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
       // The composite dash patterns can't be drawn by a CSS border, so
@@ -130,7 +127,8 @@ export function describeVariant(
         className: `text-brand-800 shadow-sm dark:text-white ${ring}`,
         style: {
           ...(fill === 'transparent' ? filterShadow : boxShadow),
-          borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
+          borderRadius:
+            fixedRadius ?? mindRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
           backgroundColor: fill,
           borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
@@ -210,7 +208,8 @@ export function describeVariant(
         },
       };
     }
-    case 'freehand': {
+    case 'freehand':
+    case 'path': {
       // The freehand element renders its SVG path as the child
       // content. The wrapper here just contributes the selection
       // ring + remote-selector outline, with a transparent
@@ -292,4 +291,15 @@ export function describeVariant(
       };
     }
   }
+}
+
+// How an element in its edit mode sits on the canvas. A label being typed rises above its
+// neighbours and wears the text cursor; a path in its edit mode (docs/specs/023-whiteboard/path-tool.md
+// "Editing") does neither: its points are edited, never typed, and its nodes must stay above it.
+export function editingLook(
+  element: { type: string },
+  isEditing: boolean,
+): { raise: boolean; textCursor: boolean } {
+  const typing = isEditing && element.type !== 'path';
+  return { raise: typing, textCursor: typing };
 }

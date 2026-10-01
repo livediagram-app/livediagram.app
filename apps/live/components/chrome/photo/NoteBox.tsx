@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { Tooltip } from '@livediagram/ui';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { Corner } from '@/lib/photo-boxes';

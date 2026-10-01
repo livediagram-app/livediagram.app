@@ -50,8 +50,10 @@ export const HELP_ARTICLES = {
   exportingDiagrams: 'account-and-data/exporting-diagrams',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
+  googleDrive: 'account-and-data/google-drive',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
+  microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
@@ -77,14 +79,13 @@ export const HELP_ARTICLES = {
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   activity: 'explorer/activity',
-  recentDiagrams: 'explorer/recent',
+  recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   unsorted: 'explorer/unsorted',
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings
-  minimalPanels: 'palette/minimal-panels',
   toolbarLayout: 'palette/toolbar-layout',
   powerUserMode: 'user-interface/power-user-mode',
   welcomeTour: 'getting-started/welcome-tour',
@@ -93,6 +94,7 @@ export const HELP_ARTICLES = {
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
+  whiteboards: 'canvas/whiteboards',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
 } as const;
@@ -148,11 +150,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   avatarMode: {
     title: 'Learn about Avatar mode',
-    description: 'Tips for walking the board as an avatar and leading a session.',
+    description: 'Tips for walking the canvas as an avatar and leading a session.',
   },
   laser: {
     title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the diagram.',
+    description: 'Tips for pointing things out to the room without touching the document.',
   },
   spotlight: {
     title: 'Learn about the Spotlight',
@@ -168,11 +170,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   highlighter: {
     title: 'Learn about the Highlighter',
-    description: 'Tips for marking up the board with translucent strokes.',
+    description: 'Tips for marking up the canvas with translucent strokes.',
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your diagram.',
+    description: 'Tips for building and presenting slides from your document.',
   },
   aiTools: {
     title: 'Learn about the AI tools',
@@ -180,7 +182,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your diagrams from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -192,11 +194,19 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted diagrams wait, and how to restore one.',
+    description: 'How long deleted documents wait, and how to restore one.',
+  },
+  googleDrive: {
+    title: 'Learn about Google Drive sync',
+    description: 'What is copied to Drive, how often, and what travels back.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
+  },
+  microsoftWhiteboardImport: {
+    title: 'Learn about Microsoft Whiteboard import',
+    description: 'What a board export is and how each board becomes a document.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',
@@ -212,16 +222,16 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   changingTheBackground: {
     title: 'Learn about the canvas',
-    description: 'Tips for the background, patterns and the canvas behind your diagram.',
+    description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle your whole diagram.' },
+  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
   },
   customThemes: {
     title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across diagrams.',
+    description: 'Build your own palette and reuse it across documents.',
   },
   choosingFonts: {
     title: 'Learn about fonts',
@@ -229,11 +239,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, diagrams, and web addresses.',
+    description: 'Linking elements to tabs, documents, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a diagram right on the board.',
+    description: 'Tips and tricks for discussing a document right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -252,8 +262,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
   minimap: {
-    title: 'Learn about the Minimap',
-    description: 'Tips for finding your way around a big diagram.',
+    title: 'Learn about the Map',
+    description: 'Tips for finding your way around a big canvas.',
   },
   sessionPolls: {
     title: 'Learn about polls',
@@ -261,35 +271,35 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sessionVoting: {
     title: 'Learn about voting',
-    description: 'Tips for running a quick vote across the elements on the board.',
+    description: 'Tips for running a quick vote across the elements on the canvas.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across diagrams.',
+    description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
     title: 'Learn about the Timeline',
-    description: 'Everything that has happened across your diagrams, teams and account.',
+    description: 'Everything that has happened across your documents, teams and account.',
   },
   activity: {
     title: 'Learn about Activity',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDiagrams: {
+  recentDocuments: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened diagrams, personal and team, in one list.',
+    description: 'Your most recently opened documents, personal and team, in one list.',
   },
   sharedWithYou: {
     title: 'Learn about Shared with You',
-    description: 'Diagrams other people have shared with you, collected here.',
+    description: 'Documents other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising diagrams into a nestable tree of folders.',
+    description: 'Tips for organising documents into a nestable tree of folders.',
   },
   unsorted: {
     title: 'Learn about the Unsorted folder',
-    description: 'Where diagrams live until you file them into a folder.',
+    description: 'Where documents live until you file them into a folder.',
   },
   dataElements: {
     title: 'Learn about data elements',
@@ -298,10 +308,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  minimalPanels: {
-    title: 'Learn about minimal panels',
-    description: 'The compact button bar that replaces the floating panels.',
   },
   toolbarLayout: {
     title: 'Learn about the toolbar layout',
@@ -321,7 +327,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Diagrams saved only in this browser, and how to sync them.',
+    description: 'Documents saved only in this browser, and how to sync them.',
   },
   yourFirstDiagram: {
     title: 'Learn about your first diagram',
@@ -331,9 +337,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
   },
+  whiteboards: {
+    title: 'Learn about whiteboards',
+    description: 'The dock, its pens and shapes, and where it sits.',
+  },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the diagram, where they are, and following them.',
+    description: 'Who is in the document, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

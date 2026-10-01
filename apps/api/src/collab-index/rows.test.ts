@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import { collabIndexRowsFromElements } from './rows';
 
 // The pure projection every tab write feeds the collaboration index
@@ -104,6 +104,7 @@ describe('collabIndexRowsFromElements', () => {
         resolved: false,
         commentCount: 4,
         participantIds: ['guest-1', 'user_b'],
+        mentionedIds: [],
         latestText: 'newest',
         latestAuthorName: 'Author 2',
         latestAuthorColor: '#2',
@@ -111,6 +112,30 @@ describe('collabIndexRowsFromElements', () => {
         latestAt: 30,
       },
     ]);
+  });
+
+  it('collects every mentioned user id and member id, once each', () => {
+    const mention = (userId: string | null, memberId: string, handle: string) => ({
+      userId,
+      memberId,
+      name: handle,
+      handle,
+    });
+    const { threads } = collabIndexRowsFromElements([
+      shape('s1', 'a', {
+        commentThread: {
+          resolved: false,
+          comments: [
+            { ...comment('1', 1, 'u'), mentions: [mention('user_t', 'm_t', 'tom')] },
+            {
+              ...comment('2', 2, 'u'),
+              mentions: [mention('user_t', 'm_t', 'tom'), mention(null, 'm_inv', 'inv')],
+            },
+          ],
+        },
+      }),
+    ]);
+    expect(threads[0]!.mentionedIds).toEqual(['user_t', 'm_t', 'm_inv']);
   });
 
   it('skips an empty thread and flags a resolved one', () => {

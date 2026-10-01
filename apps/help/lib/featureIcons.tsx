@@ -334,6 +334,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="8" y="13.5" width="8" height="8" rx="1" transform="rotate(-3 12 17.5)" />
     </Glyph>
   ),
+  // A board on its stand with a marker scribble.
+  whiteboards: (
+    <Glyph>
+      <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
+      <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
+      <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
+    </Glyph>
+  ),
   'using-tabs': (
     <Glyph>
       <Prims prims={lucidePanelsTopLeft} />
@@ -465,7 +473,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // A folder handed outward: the team library is a folder every member can reach.
   // `search-teams` is a folder with people INSIDE it, which is a different claim.
-  'team-shared-diagrams': (
+  'team-shared-documents': (
     <Glyph>
       <path d="M2.5 8A1.5 1.5 0 014 6.5h4L9.5 8.5h5A1.5 1.5 0 0116 10v7.5A1.5 1.5 0 0114.5 19H4A1.5 1.5 0 012.5 17.5z" />
       <path d="M17.5 8.5H22" />
@@ -514,7 +522,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M15.5 11.5v3l2.2 1.4" />
     </Glyph>
   ),
-  // A diagram inside somebody else's page — the outer frame is the point.
+  // A document inside somebody else's page — the outer frame is the point.
   embeds: (
     <Glyph>
       <rect x="2" y="3.5" width="20" height="17" rx="2" />
@@ -673,7 +681,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M18.5 16.5h.01M21 16.5h.01" />
     </Glyph>
   ),
-  // A pad, and the burst it throws over the board.
+  // A pad, and the burst it throws over the canvas.
   'reaction-pads': (
     <Glyph>
       <rect x="4" y="12" width="12" height="8" rx="2" />
@@ -803,8 +811,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="16" cy="15.5" r="2" />
     </Glyph>
   ),
-  // A globe in the window, not a diagram: `embeds` is a diagram inside somebody
-  // else's page, and this is somebody else's page inside a diagram.
+  // A globe in the window, not a document: `embeds` is a document inside somebody
+  // else's page, and this is somebody else's page inside a document.
   website: (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="2" />
@@ -987,7 +995,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7.8h.01" />
     </Glyph>
   ),
-  // The board, with its small map and the viewport box inside it.
+  // The canvas, with its small map and the viewport box inside it.
   minimap: (
     <Glyph>
       <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
@@ -1195,12 +1203,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="14" y="14" width="6" height="4" rx="1" />
     </Glyph>
   ),
-  'minimal-panels': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 8h18M6 14h4M6 17h7" />
-    </Glyph>
-  ),
   // The strip across the top of a window, with the menu button's three bars
   // in the corner: the two things the layout adds.
   'toolbar-layout': (
@@ -1367,7 +1369,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 12.5A1.5 1.5 0 0110.5 11h2l1.5 1.5h4a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 019 19z" />
     </Glyph>
   ),
-  // Loose diagrams sitting OUTSIDE the folder, which is what Unsorted holds.
+  // Loose documents sitting OUTSIDE the folder, which is what Unsorted holds.
   unsorted: (
     <Glyph>
       <path d="M3 13.5A1.5 1.5 0 014.5 12h3L9 13.5h9a1.5 1.5 0 011.5 1.5v4A1.5 1.5 0 0118 20.5H4.5A1.5 1.5 0 013 19z" />
@@ -1433,7 +1435,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideLink} />
     </Glyph>
   ),
-  'add-to-diagram': (
+  'add-to-document': (
     <Glyph>
       <rect x="3" y="3" width="12" height="12" rx="2" />
       <path d="M9 21h10a2 2 0 0 0 2-2V9" />
@@ -1444,6 +1446,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />
       <path d="M12 3v9M9 9l3 3 3-3" />
+    </Glyph>
+  ),
+  // A board's ink arriving in a tab.
+  'microsoft-whiteboard-import': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
     </Glyph>
   ),
   'export-tabs': (
@@ -1459,7 +1468,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // Search Panel guides. Six articles about one control, so by the rule the
   // Behaviour batch settled on, none of these draws a magnifier — `the-search-
-  // panel` below already does. Each draws WHAT you find: diagrams, a team, a tab
+  // panel` below already does. Each draws WHAT you find: documents, a team, a tab
   // and an element, a shape landing on the canvas, a new tab.
   'command-palette': (
     <Glyph>
@@ -1468,7 +1477,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 13.5h7" />
     </Glyph>
   ),
-  'search-diagrams': (
+  'search-documents': (
     <Glyph>
       <path d="M3 7a1.5 1.5 0 011.5-1.5h4L10 7.5h8A1.5 1.5 0 0119.5 9v8.5A1.5 1.5 0 0118 19H4.5A1.5 1.5 0 013 17.5z" />
       <rect x="5.5" y="11" width="4.5" height="3.5" rx="0.5" />

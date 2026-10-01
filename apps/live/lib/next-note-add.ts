@@ -9,7 +9,7 @@ import {
   type ElementId,
   type EsSide,
   type EventStormingNoteKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { travellingIdsFrom, type InsertionSlot } from '@/lib/insert-between';
 
 // Where a next note goes, and what has to stand aside for it (docs/specs/021-event-storming/event-storming.md
@@ -33,7 +33,7 @@ export function planNextNote(
   fromId: ElementId,
   side: EsSide,
   kind: EventStormingNoteKind,
-  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): invisible, so they cannot
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): invisible, so they cannot
   // be what the board opens around — but they travel with the ripple, exactly
   // as they do for the Alt insertion.
   inertIds: ReadonlySet<ElementId> = new Set(),

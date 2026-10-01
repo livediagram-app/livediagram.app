@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Importing Microsoft Whiteboard boards',
+  description:
+    'Bring boards from Microsoft Whiteboard across from the Explorer: each board becomes its own document with one whiteboard tab, named and dated as the board, its pen strokes, colours, sticky notes, text, shapes, lines and images all editable.',
+  path: '/help/explorer/microsoft-whiteboard-import/',
+});
+
+<ArticleLayout
+  title="Importing Microsoft Whiteboard boards"
+  description="Bring Microsoft Whiteboard boards across as documents, ink and all."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026 and are deleted on **16 October 2026**. **Import from Microsoft Whiteboard** brings your boards across, each as its **own document** holding one [whiteboard tab](/help/canvas/whiteboards/) you can keep drawing on: every pen stroke stays a stroke, with its pressure and colour, and sticky notes, text, shapes, lines and images come with it.
+
+## What you need
+
+The import reads a **board export**: a folder per board holding the board's edit history, the way the Whiteboard web app syncs it. A board folder contains:
+
+- `manifest.json`, `metadata.json`, `session.json` and `changes.json`
+- an `objects` folder with the board's images
+
+Other files beside them (such as a screenshot) are ignored. You can import **one board folder**, a **folder holding many board folders**, or a **.zip** of either.
+
+## Importing
+
+On the [Explorer page](/help/explorer/explorer-page/), next to **Help** and **New document** at the top right, **Import from** shows a button for each tool you can import from. (Excalidraw files have their own button: see [Excalidraw files as new documents](/help/tabs/import-tabs/#excalidraw-files-as-new-documents).) Press the **Microsoft Whiteboard** button (hover it to see its name). From inside a folder, the new documents go into that folder. Then choose a folder or a .zip, or drop one onto the panel. A single board imports straight away. When there are several, the panel lists them, newest first, each under the name its document will get, with the date it was last edited and how many items it holds. Every board starts ticked; untick the ones you don't want and press **Import**.
+
+Each board becomes **its own document**, named after the board and **dated as the board**: it shows when the board was made and last edited, so your library keeps its history. A board that never had a title is named after the day it was made, such as "Whiteboard, 14 Aug 2020". When the import finishes, it lists the new documents so you can open them, and the Explorer shows them straight away. Nothing in your other documents changes.
+
+## How boards come across
+
+- **Pen strokes** become marker strokes with their pressure, so thick and thin stay as you drew them.
+- **Colours** follow your board: black ink on a light board, and white ink on a dark board, become your whiteboard's own ink, so they read on either background. Other colours keep their hue.
+- **Highlighter** strokes stay highlighter strokes, and arrowheads drawn on pen strokes come with them.
+- **Sticky notes**, **text** and **shapes** keep their position, size and text.
+- **Images** are saved to your [image gallery](/help/explorer/image-gallery/) like any imported image.
+- The board's **background** (plain, dots or grid, light or dark) carries over.
+
+A few things change on the way, and the import says how many of each:
+
+- **Rainbow ink** is drawn in pink, and **galaxy ink** in violet.
+- **Tables** become rectangles, with the ink inside them kept.
+- **Strokes drawn in the board's own colour**, which you could never see on the board, are left out.
+
+<Tip>
+  Importing many boards at once can take a moment while the images save. The panel counts the boards
+  and images as it goes.
+</Tip>
+
+</ArticleLayout>

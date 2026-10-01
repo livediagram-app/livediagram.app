@@ -1,20 +1,18 @@
 # Chair
 
-Status: **implemented**.
-
 A Behaviour element an Avatar-mode character **sits down in** when it walks
 into one.
 
 ## Why
 
-Avatar mode ([Avatar mode](../008-canvas/avatar-mode.md)) put people inside the diagram and gave them one thing to
+Avatar mode ([Avatar mode](../008-canvas/avatar-mode.md)) put people inside the canvas and gave them one thing to
 do there: walk. A chair gives the room furniture, and furniture is what turns a
 space into a place.
 
-It earns its keep the moment a board has more than one: eight chairs around a
+It earns its keep the moment a canvas has more than one: eight chairs around a
 table is a seating plan, an attendance display, and a turn-taking device all at
 once, drawn with elements the author already knows how to place. "Everyone grab
-a seat" is a thing facilitators say, and on this board it becomes literal.
+a seat" is a thing facilitators say, and on this canvas it becomes literal.
 
 It is also the cheapest possible version of the idea — the walk hook already
 fires when a character arrives on top of something, which is exactly how the
@@ -28,22 +26,21 @@ button, portal, session button, reveal zone and picker.
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
   reads as furniture rather than as a box with a label.
 - **`ShapeElement.chairFacing`** — `'n' | 'e' | 's' | 'w'`, which way the seat
-  points. Absent = `'n'` (back at the top, sitter facing down the board, toward
+  points. Absent = `'n'` (back at the top, sitter facing down the canvas, toward
   the reader). Set from the element's context menu.
 - **No settings `…` on its face.** Every other Behaviours card carries the
   shared ellipsis in its corner ([Canvas and palette](../008-canvas/canvas-and-palette.md)); a chair is furniture, not a card,
   and its one setting is set once from the element menu, so an ellipsis over
-  the backrest only read as a control on the seat.
+  the backrest only reads as a control on the seat.
 - Its `label` is optional and renders under the chair: "Scribe", "Facilitator",
   "Alex" — a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
   lock, copy, export.
 - **One drawing, on the canvas and in an export.** `ChairView` and the
   headless render (`svg-render-faces.ts`) both draw from `CHAIR_GEOMETRY` in
-  `packages/diagram/src/shape-geometry.ts`, and share its facing rotation and
+  `packages/document/src/shape-geometry.ts`, and share its facing rotation and
   seat rule (`chairSeatFill`: the element's fill, or with the default
-  `transparent` a wash of its stroke). An exported chair used to ignore its
-  facing and paint its seat with that literal `transparent`.
+  `transparent` a wash of its stroke).
 - **Animations ([Canvas and palette](../008-canvas/canvas-and-palette.md)) run on the drawing, not the box.** The element box is
   transparent, so the box versions of glow / pulse / trace / gradient would
   ring and fill a rectangle around nothing. Those four ride the chair's own
@@ -59,7 +56,7 @@ there).
 
 - The character **snaps to the chair's seat point** and switches to a seated
   pose — legs forward, body lowered, **facing the way the chair faces**
-  (`n` down the board, `e` left, `s` up, `w` right: the same words the menu
+  (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu
   tiles use). The seat point turns with the chair, so the sitter lands on the
   seat rather than on the backrest of a sideways chair.
 - While seated it **ignores walk targets**: clicking elsewhere on the canvas
@@ -72,9 +69,9 @@ there).
 
 ## Occupancy is presence, never document state
 
-Who is in a chair rides the existing `avatar` RoomOp, as a new
+Who is in a chair rides the `avatar` RoomOp, as
 `seatedOn: elementId | null` on `AvatarPresence`. **Nothing is written to the
-diagram.**
+document.**
 
 This is the rule that makes the feature safe, and it is [Avatar mode](../008-canvas/avatar-mode.md)'s rule
 unchanged: everyone's character is authoritative on its owner's machine. So a

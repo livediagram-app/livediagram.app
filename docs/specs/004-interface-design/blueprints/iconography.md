@@ -13,8 +13,8 @@ Derived from [Iconography](../iconography.md).
 | Non-scaling rule   | `.lvd-glyph *`                                                                                                       | `packages/tailwind-config/theme.css`                 |
 | Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES`                                                            | `packages/icons/src/weight.ts`                       |
 | Icon primitive     | `Glyph`                                                                                                              | `packages/ui/src/icons/Glyph.tsx`                    |
-| Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                       | `packages/diagram/src/icon-weight.ts`                |
-| Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                                                                              | `packages/diagram/src/icon-weight.ts`                |
+| Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                       | `packages/document/src/icon-weight.ts`               |
+| Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                                                                              | `packages/document/src/icon-weight.ts`               |
 | Element field      | `iconWeight?: IconWeight`                                                                                            | `BoxedElement` in `element-types.ts`                 |
 | Vendored Lucide    | one `lucide<Name>` export per glyph in `packages/icons/src/lucide.generated.ts`, subpath `@livediagram/icons/lucide` | written by `packages/icons/scripts/vendor-lucide.ts` |
 | Vendor manifest    | `packages/icons/lucide-manifest.json`                                                                                | pinned version + glyph names                         |
@@ -52,7 +52,7 @@ type IconProps = Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'strokeWidth
 };
 type GlyphProps = IconProps & { units?: number; filled?: boolean };
 
-// packages/diagram/src/icon-weight.ts
+// packages/document/src/icon-weight.ts
 export type IconWeight = 'thin' | 'regular' | 'bold';
 export const ICON_WEIGHTS: readonly IconWeight[];
 export const ICON_WEIGHT_PX: Record<IconWeight, number>; // thin 0.75, regular 1.25, bold 2
@@ -67,7 +67,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 ## Data and persistence
 
 - `iconWeight` is optional and persisted with the element like `iconSize`. Absent means `regular`. No migration.
-- Diagrams saved before this change render at 1.25px instead of 2px. This is the intended refinement.
+- Documents saved before this change render at 1.25px instead of 2px. This is the intended refinement.
 - The format painter copies `iconWeight` (format group `size`). Change summaries list it under `ICON_KEYS`.
 
 ## Errors and edge cases

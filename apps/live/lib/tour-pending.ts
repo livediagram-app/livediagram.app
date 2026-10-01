@@ -1,7 +1,7 @@
 // Handoff + relaunch signals for the interactive editor tour (docs/specs/007-editor/editor-tour.md).
 //
-// /new marks the tour pending just before hard-navigating to /diagram/<id>
-// for a brand-new (zero-diagram) user; the editor shows the welcome offer
+// /new marks the tour pending just before hard-navigating to /document/<id>
+// for a brand-new (zero-document) user; the editor shows the welcome offer
 // card while the flag is set. The flag is cleared only when the offer is
 // RESOLVED (taken to the end, skipped, or declined) — never on mere page
 // load — so reloading mid-offer or mid-tour brings the offer back instead
@@ -18,7 +18,7 @@ export function markTourPending() {
     sessionStorage.setItem(TOUR_PENDING_KEY, '1');
   } catch {
     // Storage unavailable (private mode quirks): the tour silently doesn't
-    // start, which beats blocking diagram creation.
+    // start, which beats blocking document creation.
   }
 }
 

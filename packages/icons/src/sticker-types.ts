@@ -1,7 +1,7 @@
 // Sticker catalogue types (docs/specs/010-palette/stickers.md). A sticker is NOT an icon: it is its own
 // element kind, with its own catalogue, because the two answer different
 // questions. An icon is a glyph you tint and fold into a shape's label; a
-// sticker is a thing you slap on the board — die-cut, shadowed, tilted, never
+// sticker is a thing you slap on the canvas — die-cut, shadowed, tilted, never
 // recoloured by the theme.
 //
 // Two flavours, and the badge is the reason this can't be an IconDef: a word
@@ -26,7 +26,7 @@ export type StickerDef =
   | (StickerBase & { kind: 'badge'; text: string; tone: StickerTone });
 
 // The pill colours, one per tone. Fixed hexes rather than theme colours: a
-// sticker means the same thing on every board, and a green APPROVED that
+// sticker means the same thing on every canvas, and a green APPROVED that
 // turned violet with the theme would be a worse APPROVED.
 export const STICKER_TONE_COLOR: Record<StickerTone, string> = {
   green: '#16a34a',

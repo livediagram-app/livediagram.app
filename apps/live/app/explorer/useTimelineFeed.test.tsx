@@ -48,9 +48,9 @@ function periodCallsFor(scopeId: string) {
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: `d-${id}`,
-    eventType: 'diagram_updated',
+    eventType: 'document_updated',
     title: id,
     occurredAt,
     ...over,
@@ -228,8 +228,8 @@ describe('useTimelineFeed on return to the tab', () => {
 });
 
 // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). The bug this was reported
-// for: delete a diagram from a card's menu and the feed sat unchanged —
-// no tombstone, the deleted diagram's cards still up — until a browser
+// for: delete a document from a card's menu and the feed sat unchanged —
+// no tombstone, the deleted document's cards still up — until a browser
 // refresh.
 describe('useTimelineFeed after the readers own write', () => {
   afterEach(() => {
@@ -266,7 +266,7 @@ describe('useTimelineFeed after the readers own write', () => {
     const { result } = renderHook(() => useTimelineFeed('me', true));
     await waitFor(() => expect(result.current.events).toHaveLength(3));
 
-    act(() => notifyApiWrite({ purge: { sourceType: 'diagram', sourceId: 'd-b' } }));
+    act(() => notifyApiWrite({ purge: { sourceType: 'document', sourceId: 'd-b' } }));
     expect(result.current.events.map((e) => e.id)).toEqual(['a']);
 
     apiListTimeline.mockResolvedValue({

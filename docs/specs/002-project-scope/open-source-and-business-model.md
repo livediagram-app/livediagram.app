@@ -6,6 +6,8 @@ livediagram is **open source software** with one official hosted deployment alon
 
 The codebase is licensed under **MIT** (see `LICENSE` at the repo root). Permissive on purpose: anyone may self-host, fork, modify, embed, or build derivative works, commercial or not. No copyleft.
 
+The third-party work the apps ship is credited on the generated `/licences` page ([Third-party licences](third-party-licences.md)).
+
 ## Distribution model
 
 There are two ways people use livediagram:

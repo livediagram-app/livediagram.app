@@ -5,26 +5,29 @@
 // that blob, used by the api worker to decide whether to send a transactional
 // notification email (docs/specs/014-identity/transactional-email.md) on someone else's request.
 
+import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 // Both flags default to true: a missing key / row / corrupt blob means
 // "notify" (the toggles are opt-OUT, mirroring docs/specs/007-editor/user-preferences.md's notificationsEnabled).
 type NotificationPrefs = {
-  notifyDiagramJoin: boolean;
+  notifyDocumentJoin: boolean;
   notifyInviteResponse: boolean;
   notifyComments: boolean;
   notifyTips: boolean;
   notifyMilestones: boolean;
   notifyActionAssigned: boolean;
+  notifyMentions: boolean;
 };
 
 const DEFAULTS: NotificationPrefs = {
-  notifyDiagramJoin: true,
+  notifyDocumentJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
   notifyTips: true,
   notifyMilestones: true,
   notifyActionAssigned: true,
+  notifyMentions: true,
 };
 
 // One SELECT + JSON.parse. Reads only the two notification keys; every other
@@ -39,16 +42,17 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
   try {
     const parsed: unknown = JSON.parse(row.prefs);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return DEFAULTS;
-    const blob = parsed as Record<string, unknown>;
+    const blob = upgradeLegacyPreferences(parsed as Record<string, unknown>);
     return {
       // Only an explicit `false` opts out; anything else (missing,
       // true, or a non-boolean a misbehaving client wrote) means notify.
-      notifyDiagramJoin: blob.notifyDiagramJoin !== false,
+      notifyDocumentJoin: blob.notifyDocumentJoin !== false,
       notifyInviteResponse: blob.notifyInviteResponse !== false,
       notifyComments: blob.notifyComments !== false,
       notifyTips: blob.notifyTips !== false,
       notifyMilestones: blob.notifyMilestones !== false,
       notifyActionAssigned: blob.notifyActionAssigned !== false,
+      notifyMentions: blob.notifyMentions !== false,
     };
   } catch {
     return DEFAULTS;

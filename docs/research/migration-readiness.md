@@ -6,7 +6,7 @@ product code. The decisions below turned the proposals into specs:
 [Board import](../specs/020-import-export/board-import.md),
 [Miro import](../specs/020-import-export/miro-import.md) and
 [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md);
-the Drive decision amended [Save Locations](../specs/006-diagram/save-locations.md).
+the Drive decision amended [Save Locations](../specs/006-document/save-locations.md).
 
 - **Checked:** 2026-09-27, against the official pages listed in [Sources](#sources)
   (each page's own "last updated" date is recorded there).
@@ -24,7 +24,7 @@ Taken by the operator on 2026-09-27, after the first version of this report.
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
 | Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
-| Drive's role       | Drive is a **mirror** of cloud diagrams, never a save location.                                                                                               | [Save Locations](../specs/006-diagram/save-locations.md)                       |
+| Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md)                      |
 | Drive bin          | Maps to the livediagram **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
 | Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | [Board import](../specs/020-import-export/board-import.md)                     |
 
@@ -158,7 +158,7 @@ per browser. Consent with `prompt=consent` only when D1 has no token.
 **Implication for the design:** store, per mirrored file, the last state we
 wrote (`name`, `parents`, `trashed`, `md5Checksum`, `headRevisionId`) and treat a
 change as foreign only when one of those differs. Do not rely on `version`.
-Put `ldDiagramId` in `appProperties` so a file maps back to a diagram even after
+Put `ldDocumentId` in `appProperties` so a file maps back to a document even after
 a rename or move. Request `fields=` explicitly on every call (the default
 subset omits these).
 
@@ -186,7 +186,7 @@ subset omits these).
 
 **Implication:** each mirror write is one multipart `files.update` for the
 `.livediagram` JSON (with a PNG thumbnail in `contentHints`) and one for the
-`.svg` preview, both from the browser. Diagrams whose JSON exceeds 5 MB need
+`.svg` preview, both from the browser. Documents whose JSON exceeds 5 MB need
 resumable upload (verify E-A4 first).
 
 ### What the findings change in the decided design
@@ -195,10 +195,10 @@ resumable upload (verify E-A4 first).
   `contentHints`; SVG is not accepted there.
 - **Trash:** livediagram has no diagram Trash yet; it is being specified
   separately (see [Decisions](#decisions)). A Drive bin maps to it; a restore in
-  Drive restores the diagram; a Drive permanent delete (`removed: true`)
-  empties the diagram from Trash.
+  Drive restores the document; a Drive permanent delete (`removed: true`)
+  empties the document from Trash.
 - **Save locations:** amended. Drive is a mirror, never a tile in the New
-  Diagram wizard.
+  Document wizard.
 - **Quota budget:** polling `changes.list` every 5 minutes plus a write per
   autosave does not fit 10M users under the free daily threshold. The
   [proposed sync cadence](#proposed-sync-cadence) does.
@@ -270,13 +270,13 @@ logic. Units assume `files.update` costs 50 (edit) and `changes.list` 100
 | Constant                                   | Value                 | Rule                                                                                                                                                                                |
 | ------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DRIVE_POLLER`                             | one tab per browser   | The Web Locks API elects one tab to poll and write; other tabs of the same browser do neither.                                                                                      |
-| `DRIVE_CATCH_UP`                           | on arrival            | The poller runs `changes.list` from the stored page token once when it takes the lock, and re-uploads any diagram whose `saved_at` is newer than its mirrored revision.             |
+| `DRIVE_CATCH_UP`                           | on arrival            | The poller runs `changes.list` from the stored page token once when it takes the lock, and re-uploads any document whose `saved_at` is newer than its mirrored revision.            |
 | `DRIVE_POLL_INTERVAL_MS`                   | 20 minutes            | Poll only while a livediagram tab is visible; never while hidden.                                                                                                                   |
 | `DRIVE_FOCUS_POLL_MIN_GAP_MS`              | 5 minutes             | On window focus or `visibilitychange` to visible, poll if the last poll is older than this.                                                                                         |
 | `DRIVE_CHANGES_PAGE_SIZE`                  | 1,000                 | The maximum, so a catch-up is usually one call.                                                                                                                                     |
-| `DRIVE_WRITE_IDLE_MS`                      | 60 seconds            | Mirror a diagram once it has had no edits for this long.                                                                                                                            |
-| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 minutes             | At most one mirror write (JSON with thumbnail, then SVG) per diagram per interval.                                                                                                  |
-| `DRIVE_WRITE_FLUSH`                        | on hide and on switch | Flush pending writes on `visibilitychange` to hidden and when the user leaves a diagram; anything missed is caught up on the next arrival.                                          |
+| `DRIVE_WRITE_IDLE_MS`                      | 60 seconds            | Mirror a document once it has had no edits for this long.                                                                                                                           |
+| `DRIVE_WRITE_MIN_INTERVAL_MS`              | 5 minutes             | At most one mirror write (JSON with thumbnail, then SVG) per document per interval.                                                                                                 |
+| `DRIVE_WRITE_FLUSH`                        | on hide and on switch | Flush pending writes on `visibilitychange` to hidden and when the user leaves a document; anything missed is caught up on the next arrival.                                         |
 | `DRIVE_BACKOFF`                            | double, capped        | On `403 userRateLimitExceeded` or `429`, double the poll interval (cap 60 minutes) and the write interval (cap 30 minutes); return to the base values after an hour without errors. |
 | `DRIVE_PAGE_TOKEN_PERSIST_MIN_INTERVAL_MS` | 10 minutes            | Write the page token to D1 only when it changed, at most this often, and on flush.                                                                                                  |
 

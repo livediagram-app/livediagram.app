@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 // The welcome card's panel-layout picker (docs/specs/007-editor/editor-tour.md): picks write the
-// preference the way the Settings row does (panelLayout + the legacy
-// minimalPanels flag), tracked with the option in the type, and Floating
-// isn't offered on a phone.
+// preference the way the Settings row does, tracked with the option in the
+// type, and a phone, which only has Toolbar, gets no picker.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UserPreferences } from '@/lib/user-preferences';
@@ -19,7 +18,7 @@ const ctx = vi.hoisted(() => ({
   writeUserPreferences: vi.fn(),
   selfParticipant: { id: 'me' },
 }));
-vi.mock('@/app/diagram/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
+vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
 
 import { TourLayoutPicker } from './TourLayoutPicker';
 
@@ -42,9 +41,9 @@ describe('TourLayoutPicker', () => {
 
   it('writes and tracks a pick like the Settings row', () => {
     render(<TourLayoutPicker />);
-    fireEvent.click(option('Minimal'));
-    const next = { panelLayout: 'minimal', minimalPanels: true };
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'PanelLayoutMinimal');
+    fireEvent.click(option('Toolbar'));
+    const next = { panelLayout: 'toolbar' };
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'PanelLayoutToolbar');
     expect(ctx.setUserPreferences).toHaveBeenCalledWith(next);
     expect(ctx.writeUserPreferences).toHaveBeenCalledWith(next, 'me');
   });
@@ -56,18 +55,9 @@ describe('TourLayoutPicker', () => {
     expect(track).not.toHaveBeenCalled();
   });
 
-  it('leaves Floating out on a phone', () => {
-    mobile.value = true;
-    ctx.userPreferences = { panelLayout: 'toolbar' };
-    render(<TourLayoutPicker />);
-    expect(screen.queryByRole('radio', { name: 'Floating' })).toBeNull();
-    expect(screen.getAllByRole('radio')).toHaveLength(2);
-    expect(option('Toolbar').getAttribute('aria-checked')).toBe('true');
-  });
-
-  it('rings Toolbar on a phone when Floating is stored, as that is what the phone shows', () => {
+  it('offers no choice on a phone, where Toolbar is the only layout', () => {
     mobile.value = true;
     render(<TourLayoutPicker />);
-    expect(option('Toolbar').getAttribute('aria-checked')).toBe('true');
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
   });
 });

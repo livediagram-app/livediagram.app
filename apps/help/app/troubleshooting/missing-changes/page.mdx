@@ -11,20 +11,24 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with history and the Activity Panel." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Work in livediagram is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different diagram, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them from history.
+Work in livediagram is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different document, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them from history.
 
 ## First, find them
 
 1. **Check the right tab.** Each tab stores its own content. If a tab looks empty, confirm you are on the tab you actually edited. See [tabs](/help/tabs/using-tabs/).
-2. **Check the right diagram.** It is easy to have two similar diagrams open. Open [your diagrams](/explorer/recent) and confirm you are in the one you edited.
-3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers, switched devices, or signed in, you are looking at a different owner's set of diagrams. See [working as a guest](/help/getting-started/guest-vs-account/).
-4. **Reload the page.** A refresh reloads your saved diagram and clears any temporary display issue.
+2. **Check the right document.** It is easy to have two similar documents open. Open [your documents](/explorer/recent) and confirm you are in the one you edited.
+3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers, switched devices, or signed in, you are looking at a different owner's set of documents. See [working as a guest](/help/getting-started/guest-vs-account/).
+4. **Reload the page.** A refresh reloads your saved document and clears any temporary display issue.
 
 ## How saving works
 
 Changes are saved automatically after you make them, per tab, to the server, not just to your browser. There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
 
-If you edited offline or on a flaky connection, a save may not have reached the server. Reconnect, make sure the diagram is loaded, and let the autosave run again.
+If you edited offline or on a flaky connection, a save may not have reached the server. Reconnect, make sure the document is loaded, and let the autosave run again.
+
+### "A new version of livediagram is ready"
+
+When livediagram is updated while you have a document open, and the update changes how documents are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. **Not now** hides the notice; reload whenever suits you.
 
 <Figure caption="When autosave settles, the editor confirms your work reached the server.">
   <SavedState />
@@ -49,13 +53,13 @@ If a specific change was undone, reverted, or overwritten, the [Activity Panel](
 
 **Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while somebody else has it selected, so you can see that it is spoken for before you start.
 
-If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the diagram, still without a page reload.
+If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the document, still without a page reload.
 
 <Note>
   Whatever happened, the Activity Panel records who changed what, so you can see it and revert the
   entry rather than reconstructing the work.
 </Note>
 
-If you have checked the right tab, diagram, and identity, reloaded, and cannot find the change in the Activity Panel, [contact us](/help/contact/) with the diagram URL and roughly when you made the edit.
+If you have checked the right tab, document, and identity, reloaded, and cannot find the change in the Activity Panel, [contact us](/help/contact/) with the document URL and roughly when you made the edit.
 
 </ArticleLayout>

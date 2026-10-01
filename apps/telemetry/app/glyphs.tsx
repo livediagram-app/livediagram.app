@@ -453,7 +453,7 @@ export function ToggleGlyph() {
     </Glyph>
   );
 }
-export function DiagramGlyph() {
+export function DocumentGlyph() {
   return (
     <Glyph size={14} units={14}>
       <rect x="2.5" y="2.5" width="9" height="9" rx="0.8" />

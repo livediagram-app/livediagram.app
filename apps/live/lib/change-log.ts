@@ -1,4 +1,4 @@
-// Helpers for the per-diagram audit log. See
+// Helpers for the per-document audit log. See
 // docs/specs/012-collaboration/activity-and-audit.md.
 //
 // The live app captures a snapshot of the active tab's elements
@@ -6,12 +6,13 @@
 // turns those two snapshots into a ChangeLogEntry's payload (kind,
 // summary, element ids, before / after maps).
 
-import type { Element } from '@livediagram/diagram';
+import { MAX_CHANGE_LOG_ENTRY_BYTES, type ChangeLogEntry } from '@livediagram/api-schema';
+import type { Element } from '@livediagram/document';
 import { summarizeChange, type EditedPair } from './change-summaries';
 import type { ChangeLogKind } from './api-client';
 
 // What the diff function returns. The caller wraps this with the
-// participant + diagram identifiers before POSTing.
+// participant + document identifiers before POSTing.
 type ChangeDiff = {
   kind: ChangeLogKind;
   summary: string;
@@ -146,3 +147,25 @@ export function applyRevert(
   }
   return next;
 }
+
+/**
+ * An entry the server will store (docs/specs/012-collaboration/activity-and-audit.md): one whose
+ * JSON is over `MAX_CHANGE_LOG_ENTRY_BYTES` becomes a summary entry (same id, kind, author, time
+ * and summary; no element ids and empty before / after), which the panel lists without Revert.
+ */
+export function fitChangeLogEntry(entry: ChangeLogEntry): ChangeLogEntry {
+  const bytes = new TextEncoder().encode(JSON.stringify(entry)).length;
+  if (bytes <= MAX_CHANGE_LOG_ENTRY_BYTES) return entry;
+  console.info('[activity-log] summary entry', { id: entry.id, kind: entry.kind, bytes });
+  return { ...entry, elementIds: [], beforeState: {}, afterState: {} };
+}
+
+/**
+ * A failed write to the log never goes silent: the console names the entry (or tab) D1 is missing
+ * or still holds, and why. Use as `.catch(changeLogFailure('append', entry.id))`.
+ */
+export const changeLogFailure =
+  (what: 'append' | 'delete' | 'clear', id: string) =>
+  (error: unknown): void => {
+    console.warn(`[activity-log] ${what} failed`, { id, error });
+  };

@@ -1,4 +1,4 @@
-import { clamp, EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { clamp, EVENT_STORMING_NOTES } from '@livediagram/document';
 import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
 
 // Correcting the boxes on a photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9): move,

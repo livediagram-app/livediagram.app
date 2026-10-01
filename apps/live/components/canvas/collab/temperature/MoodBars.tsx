@@ -5,7 +5,7 @@
 // rises after the card first painted pops.
 
 import { useState } from 'react';
-import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livediagram/diagram';
+import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livediagram/document';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from './mood-grid';
 

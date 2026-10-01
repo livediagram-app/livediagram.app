@@ -16,12 +16,11 @@ theirs without adding a settings screen.
 
 ## Scope
 
-- **Desktop only.** The snap + dock behaviour applies to the standard floating-panel
-  layout (`sm:` and up). Mobile (the top-right dock, [Live app](live-app.md)) and the desktop **Minimal
-  panel layout** opt-in (`minimalPanels`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) render panels as dock popovers and are
-  **unchanged** — they have no corners to dock into. **Zen mode** ([Zen mode](zen-mode.md)) still hides
-  all chrome. When any of those modes is active the docking system is inert and panels
-  fall back to their existing behaviour.
+- **Both panel layouts.** The corner stacks apply in Floating and in Toolbar
+  ([Toolbar layout](toolbar-layout.md)), and so on a phone, which always uses Toolbar. In Toolbar the
+  Palette is the strip and the Explorer, Layers, Activity and Collaborate are popovers over
+  their buttons, so they take no corner. **Zen mode** ([Zen mode](zen-mode.md)) still hides
+  all chrome; while it is on the docking system is inert.
 - **Participating panels:** Palette, Explorer, Activity, Comments, AI, Minimap — every
   panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
@@ -103,7 +102,7 @@ Shape:
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel; 'layers' is
-// docs/specs/006-diagram/layers.md. Eight panels are NOT always available — they exist only while
+// docs/specs/006-document/layers.md. Eight panels are NOT always available — they exist only while
 // their session tool / mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'poll' (docs/specs/012-collaboration/live-poll.md), 'vote'
 // (docs/specs/012-collaboration/session-tools.md), 'avatar' (docs/specs/008-canvas/avatar-mode.md, the Avatar-mode character sheet),
@@ -172,19 +171,18 @@ later, or reading a layout written by a newer client, never strands the UI.
   and make the panel jump. Its siblings reflow into the gap. Optional drag-lifecycle
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
-  decision. The mobile dock, `forceDockMode`, `collapsible`, and `stackBelowY` paths are
+  decision. The popover, `collapsible`, and `stackBelowY` paths are
   untouched. The persisted corner/free placement only changes on pointer-up.
 - **`apps/live/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
   land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.
-- **`CanvasChrome`** — in the standard desktop layout, renders four corner **stack
+- **`CanvasChrome`** — renders four corner **stack
   containers** (absolutely positioned flex columns, `gap-4`; bottom corners
   `flex-col-reverse`; bottom-right raised to clear the zoom controls) and distributes each
   visible panel node into the container for its **persisted** corner. A panel mid-drag stays
   in its current container (it just lifts to fixed); only free-placement panels render in a
-  separate free layer. The whole corner-container path is gated behind "not mobile, not
-  `minimalPanels`, not zen"; otherwise the existing inline rendering runs as before. The
+  separate free layer. The whole corner-container path is gated behind "not zen". The
   Minimap is rendered here alongside the others rather than from `Canvas.tsx`.
 
 ## Telemetry

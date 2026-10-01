@@ -37,15 +37,16 @@ describe('ImportTabDialog, draw.io', () => {
   it('shows the summary instead of closing when the import reports changes', async () => {
     const { onClose } = open({
       status: 'done',
-      report: {
-        source: 'drawio',
-        pages: 1,
-        elements: 4,
-        notes: [{ kind: 'label-moved', count: 2 }],
+      scene: {
+        landed: { shape: 4 },
+        degraded: [
+          { rule: 'Labels were moved inside their shapes or merged onto one line', count: 2 },
+        ],
+        skipped: [],
       },
     });
-    await screen.findByTestId('import-report');
-    expect(screen.getByText('Here is what changed on the way in.')).toBeTruthy();
+    await screen.findByTestId('import-image-report');
+    expect(screen.getByText("Here's how your board came across.")).toBeTruthy();
     expect(screen.queryByText(/This replaces everything/)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
@@ -55,15 +56,9 @@ describe('ImportTabDialog, draw.io', () => {
   it('shows the same report for an import that only met images', async () => {
     open({
       status: 'done',
-      report: {
-        source: 'excalidraw',
-        pages: 1,
-        elements: 2,
-        notes: [],
-        images: { imported: 2, deduped: 0, placeholders: {} },
-      },
+      images: { imported: 2, deduped: 0, placeholders: {} },
     });
-    expect((await screen.findByTestId('import-report-images')).textContent).toContain(
+    expect((await screen.findByTestId('import-image-report')).textContent).toContain(
       '2 images imported',
     );
     expect(screen.getByText("Here's how your images came across.")).toBeTruthy();

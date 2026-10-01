@@ -1,12 +1,14 @@
 import {
   ARROW_THICKNESS_PX,
   THEMES,
+  createPath,
   quickSwatchColor,
   type ArrowElement,
   type Element,
   type ShapeElement,
   type StickyElement,
-} from '@livediagram/diagram';
+  type TextElement,
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
   applyQuickFill,
@@ -14,6 +16,7 @@ import {
   applyQuickStroke,
   applyQuickStrokeStyle,
   applyQuickTextAlign,
+  applyQuickTextColour,
   applyQuickWidth,
   clearQuickStyle,
   quickStyleView,
@@ -31,6 +34,7 @@ const shape = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement => (
   y: 0,
   width: 100,
   height: 100,
+  label: 'Box',
   ...extra,
 });
 const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
@@ -52,6 +56,14 @@ describe('quickStyleView: which sections show', () => {
 
   it('gives a plain shape every section but icon alignment', () => {
     expect(sections([shape('a')])).toEqual(['stroke', 'background', 'width', 'style', 'textAlign']);
+  });
+
+  it('offers text alignment only once the shape has text', () => {
+    expect(sections([shape('a', { label: undefined })])).not.toContain('textAlign');
+    expect(sections([shape('a', { label: '' })])).not.toContain('textAlign');
+    expect(sections([shape('a', { label: '  \n ' })])).not.toContain('textAlign');
+    expect(sections([shape('a', { label: 'Hi' })])).toContain('textAlign');
+    expect(sections([shape('a', { label: '' }), shape('b')])).toContain('textAlign');
   });
 
   it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
@@ -298,5 +310,200 @@ describe('custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom sw
       custom,
     )!;
     expect(view.sections.stroke?.value).toBeNull();
+  });
+});
+
+describe('Text colour: text elements', () => {
+  const text = (id: string, extra: Partial<TextElement> = {}): TextElement => ({
+    id,
+    type: 'text',
+    x: 0,
+    y: 0,
+    width: 220,
+    height: 64,
+    label: 'Hello',
+    ...extra,
+  });
+
+  it('gives a text element only the Text colour row', () => {
+    expect(sections([text('t')])).toEqual(['textColour']);
+  });
+
+  it('adds the row beside a shape without giving the shape one', () => {
+    expect(sections([shape('a'), text('t')])).toEqual([
+      'stroke',
+      'background',
+      'textColour',
+      'width',
+      'style',
+      'textAlign',
+    ]);
+    expect(sections([shape('a')])).not.toContain('textColour');
+  });
+
+  it('leaves a locked text element alone', () => {
+    expect(quickStyleView([text('t', { locked: true })], forest)).toBeNull();
+  });
+
+  it('binds a slot, and reads it back as the row value', () => {
+    const next = applyQuickTextColour(text('t'), forest, 4) as TextElement;
+    expect(next.textSwatch).toBe(4);
+    expect(next.textColor).toBe(quickSwatchColor(forest, 'text', 4));
+    expect(quickStyleView([next], forest)?.sections.textColour?.value).toBe(4);
+  });
+
+  it('slot 0 writes the theme label colour and unbinds', () => {
+    const bound = text('t', { textColor: '#123456', textSwatch: 2 });
+    const next = applyQuickTextColour(bound, forest, 0) as TextElement;
+    expect(next.textSwatch).toBeUndefined();
+    expect(next.textColor).toBe(forest.elementText ?? undefined);
+    expect(quickStyleView([text('u')], forest)?.sections.textColour?.value).toBe(0);
+  });
+
+  it('an overridden slot writes the custom colour unbound', () => {
+    const next = applyQuickTextColour(text('t'), forest, 3, {
+      text: { 3: '#aa0000' },
+    }) as TextElement;
+    expect(next).toMatchObject({ textColor: '#aa0000', textSwatch: undefined });
+  });
+
+  it('is a no-op on other elements, and the other rows skip text', () => {
+    const s = shape('a');
+    expect(applyQuickTextColour(s, forest, 4)).toBe(s);
+    const t = text('t');
+    expect(applyQuickStroke(t, forest, 4)).toBe(t);
+    expect(applyQuickWidth(t, 'thick')).toBe(t);
+    expect(applyQuickStrokeStyle(t, 'dashed')).toBe(t);
+  });
+
+  it('Clear styles returns the text colour to the theme and drops the binding', () => {
+    const next = clearQuickStyle(
+      text('t', { textColor: '#aa0000', textSwatch: 1 }),
+      forest,
+    ) as TextElement;
+    expect(next.textSwatch).toBeUndefined();
+    expect(next.textColor).toBe(forest.elementText ?? undefined);
+  });
+});
+
+describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+  const open = createPath(
+    [
+      { x: 0, y: 0, mode: 'corner' },
+      { x: 40, y: 0, mode: 'corner' },
+      { x: 40, y: 40, mode: 'corner' },
+    ],
+    false,
+  );
+  const closed = { ...open, id: 'closed', closed: true };
+
+  it('styles its line, and its fill only when closed', () => {
+    expect(sections([open])).toEqual(['stroke', 'width', 'style']);
+    expect(sections([closed])).toEqual(['stroke', 'background', 'width', 'style']);
+    expect(quickStyleView([open], forest)!.sections.style!.options).toEqual([
+      'solid',
+      'dashed',
+      'dotted',
+    ]);
+  });
+
+  it('writes stroke, width and style, and a fill on a closed path only', () => {
+    expect(applyQuickWidth(open, 'thick')).toMatchObject({ strokeWidth: 'thick' });
+    expect(applyQuickStrokeStyle(open, 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
+    expect(applyQuickStroke(open, forest, 2)).toMatchObject({
+      strokeColor: quickSwatchColor(forest, 'stroke', 2),
+      strokeSwatch: 2,
+    });
+    expect(applyQuickFill(open, forest, 2)).toBe(open);
+    expect(applyQuickFill(closed, forest, 2)).toMatchObject({ fillSwatch: 2 });
+  });
+
+  it('clears back to plain ink', () => {
+    const styled = {
+      ...closed,
+      strokeColor: '#f00',
+      fillColor: '#0f0',
+      strokeWidth: 'thick' as const,
+    };
+    const cleared = clearQuickStyle(styled, { ...forest, elementStroke: null, elementFill: null });
+    expect(cleared).not.toHaveProperty('strokeColor');
+    expect(cleared).not.toHaveProperty('fillColor');
+    expect(cleared).not.toHaveProperty('strokeWidth');
+  });
+
+  it('is left alone when locked', () => {
+    expect(quickStyleView([{ ...open, locked: true }], forest)).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
+// name marks no theme swatch, and a choice or Clear styles replaces it.
+describe('named stock colours', () => {
+  const theme = THEMES.find((t) => t.id === 'brand')!;
+  it('marks no swatch for a named stroke or text colour', () => {
+    const view = quickStyleView(
+      [shape('s', { penColour: 'blue' }), arrow('a', { penColour: 'blue' })],
+      theme,
+    )!;
+    expect(view.sections.stroke!.value).toBeNull();
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      penTextColour: 'red',
+    } as TextElement;
+    expect(quickStyleView([text], theme)!.sections.textColour!.value).toBeNull();
+  });
+
+  it('replaces the name when a swatch is chosen', () => {
+    const named = shape('s', { penColour: 'blue' });
+    const out = applyQuickStroke(named, theme, 0) as ShapeElement;
+    expect(out.penColour).toBeUndefined();
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      penTextColour: 'red',
+    } as TextElement;
+    expect((applyQuickTextColour(text, theme, 2) as TextElement).penTextColour).toBeUndefined();
+    const path = {
+      ...createPath(
+        [
+          { x: 0, y: 0, mode: 'corner' },
+          { x: 9, y: 9, mode: 'corner' },
+        ],
+        false,
+      ),
+      penColour: 'green' as const,
+    };
+    expect((applyQuickStroke(path, theme, 1) as typeof path).penColour).toBeUndefined();
+  });
+
+  it('clears names with Clear styles', () => {
+    const out = clearQuickStyle(
+      shape('s', { penColour: 'blue', penTextColour: 'red' }),
+      theme,
+    ) as ShapeElement;
+    expect(out.penColour).toBeUndefined();
+    expect(out.penTextColour).toBeUndefined();
+    expect(
+      (clearQuickStyle(arrow('a', { penColour: 'teal' }), theme) as ArrowElement).penColour,
+    ).toBeUndefined();
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 9,
+      height: 9,
+      penTextColour: 'red',
+    } as TextElement;
+    expect((clearQuickStyle(text, theme) as TextElement).penTextColour).toBeUndefined();
   });
 });

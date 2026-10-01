@@ -1,19 +1,27 @@
 'use client';
 
-// Card view for the Explorer page (docs/specs/006-diagram/diagram-snapshots.md): the same folders + diagrams
+// Card view for the Explorer page (docs/specs/006-document/document-snapshots.md): the same folders + documents
 // the ListView shows, as a responsive grid of cards with a large SVG
 // snapshot. Takes the SAME props as ListView so ExplorerPane can swap the
 // two on the view toggle without re-wiring callbacks. Badge + actions
-// menu come from diagram-row-shared, so list and card can't drift.
+// menu come from document-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
-import type { CardViewProps, DiagramEntryProps } from '@/app/explorer/explorer-view-props';
+import type { CardViewProps, DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { DiagramEntryMenu, hrefForDiagram, ownerLabelFor } from './diagram-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge } from './diagram-badges';
+import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
+import {
+  FavouriteMarker,
+  FolderChip,
+  VisibilityBadge,
+  isMirrorable,
+  useIconOnlyBadges,
+} from './document-badges';
+import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
+import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
@@ -24,20 +32,20 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 export function CardView(props: CardViewProps) {
   const {
     folders,
-    diagrams,
+    documents: liveDocs,
     ownerId,
     onOpenFolder,
     onCommitRenameFolder,
     onCancelRenameFolder,
     renamingFolderId,
-    renamingDiagramId,
-    onCommitRenameDiagram,
-    onCancelRenameDiagram,
+    renamingDocumentId,
+    onCommitRenameDocument,
+    onCancelRenameDocument,
     folderActions,
-    onStartRenameDiagram,
-    onDuplicateDiagram,
-    onDeleteDiagram,
-    onMoveDiagram,
+    onStartRenameDocument,
+    onDuplicateDocument,
+    onDeleteDocument,
+    onMoveDocument,
     onDismissShared,
     recentExcludedIds,
     favouriteIds,
@@ -46,7 +54,7 @@ export function CardView(props: CardViewProps) {
     onToggleRecentExclusion,
     onShowHistory,
     childrenCount,
-    diagramsCount,
+    documentsCount,
     folderContents,
     showOwner = false,
     showVisibilityBadge = true,
@@ -70,7 +78,7 @@ export function CardView(props: CardViewProps) {
           key={f.id}
           folder={f}
           renaming={renamingFolderId === f.id}
-          childCount={childrenCount(f.id) + diagramsCount(f.id)}
+          childCount={childrenCount(f.id) + documentsCount(f.id)}
           preview={
             folderContents ? (
               <FolderPreview contents={folderContents(f.id)} ownerId={ownerId} />
@@ -82,20 +90,20 @@ export function CardView(props: CardViewProps) {
           getActions={(anchor) => folderActions(f, anchor)}
         />
       ))}
-      {diagrams.map((d) => (
-        <DiagramCard
+      {liveDocs.map((d) => (
+        <DocumentCard
           key={d.id}
-          diagram={d}
+          document={d}
           ownerId={ownerId}
           showOwner={showOwner}
           showVisibilityBadge={showVisibilityBadge}
-          renaming={renamingDiagramId === d.id}
-          onStartRename={() => onStartRenameDiagram(d.id)}
-          onCommitRename={(name) => onCommitRenameDiagram(d.id, name)}
-          onCancelRename={onCancelRenameDiagram}
-          onDuplicate={() => onDuplicateDiagram(d.id)}
-          onDelete={() => onDeleteDiagram(d.id)}
-          onMove={(anchor) => onMoveDiagram(d.id, anchor)}
+          renaming={renamingDocumentId === d.id}
+          onStartRename={() => onStartRenameDocument(d.id)}
+          onCommitRename={(name) => onCommitRenameDocument(d.id, name)}
+          onCancelRename={onCancelRenameDocument}
+          onDuplicate={() => onDuplicateDocument(d.id)}
+          onDelete={() => onDeleteDocument(d.id)}
+          onMove={(anchor) => onMoveDocument(d.id, anchor)}
           onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
           folderChip={folderChipFor?.(d) ?? null}
           favourite={favouriteIds?.has(d.id) === true}
@@ -111,14 +119,14 @@ export function CardView(props: CardViewProps) {
   );
 }
 
-function DiagramCard(
-  props: DiagramEntryProps & {
+function DocumentCard(
+  props: DocumentEntryProps & {
     // Card-only: the list view shows visibility in its own column.
     showVisibilityBadge: boolean;
   },
 ) {
   const {
-    diagram,
+    document: liveDoc,
     ownerId,
     showOwner,
     showVisibilityBadge,
@@ -129,27 +137,28 @@ function DiagramCard(
     favourite,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
-  const href = hrefForDiagram(diagram);
-  const ownerLabel = showOwner ? ownerLabelFor(diagram) : null;
+  const iconOnlyBadges = useIconOnlyBadges();
+  const href = hrefForDocument(liveDoc);
+  const ownerLabel = showOwner ? ownerLabelFor(liveDoc) : null;
   const thumbnail = (
-    <DiagramThumbnail
+    <DocumentThumbnail
       ownerId={ownerId}
-      diagramId={diagram.id}
-      version={diagram.savedAt}
-      shareCode={diagram.shared?.shareCode}
-      offline={diagram.ownerId === OFFLINE_OWNER_ID}
+      documentId={liveDoc.id}
+      version={liveDoc.savedAt}
+      shareCode={liveDoc.shared?.shareCode}
+      offline={liveDoc.ownerId === OFFLINE_OWNER_ID}
       className="h-full w-full"
     />
   );
 
   return (
     <div className={cardShell} onContextMenu={menu.onContextMenu}>
-      {/* Larger snapshot. The whole preview links to the diagram unless
+      {/* Larger snapshot. The whole preview links to the document unless
           we're renaming (then it's inert so the input keeps focus). */}
       {renaming ? (
         <span className={previewArea}>{thumbnail}</span>
       ) : (
-        <Link href={href} className={previewArea} aria-label={`Open ${diagram.name}`}>
+        <Link href={href} className={previewArea} aria-label={`Open ${liveDoc.name}`}>
           {thumbnail}
         </Link>
       )}
@@ -158,7 +167,7 @@ function DiagramCard(
         <div className="flex items-start gap-1">
           {renaming ? (
             <InlineRenameInput
-              initial={diagram.name}
+              initial={liveDoc.name}
               onCommit={onCommitRename}
               onCancel={onCancelRename}
               className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
@@ -168,26 +177,44 @@ function DiagramCard(
               href={href}
               className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
             >
-              {diagram.name}
+              {liveDoc.name}
             </Link>
           )}
           {renaming ? null : (
-            <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${diagram.name}`} />
+            <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${liveDoc.name}`} />
           )}
         </div>
         {/* Keep every column the list shows: owner, visibility, updated. */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          {showVisibilityBadge ? <VisibilityBadge diagram={diagram} /> : null}
+        {/* One line: the badges keep their size, the time gives way with an
+            ellipsis, the sync mark holds the right edge. */}
+        <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
+          {showVisibilityBadge ? (
+            <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />
+          ) : null}
           {favourite ? <FavouriteMarker /> : null}
+          <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
-          <RelativeTimeChip at={diagram.savedAt} />
+          {/* A flex box, so the time centres on the row like its neighbours;
+              the time truncates itself. */}
+          <span className="flex min-w-0 !shrink items-center">
+            <RelativeTimeChip at={liveDoc.savedAt} />
+          </span>
+          {/* A flex box, not an inline span: an inline wrapper sits the mark on
+              the text baseline and lifts it off the row's centre. */}
+          <span className="ml-auto flex items-center">
+            <DocumentSyncMark
+              documentId={liveDoc.id}
+              savedAt={liveDoc.savedAt}
+              mirrorable={isMirrorable(liveDoc)}
+            />
+          </span>
         </div>
         {ownerLabel ? (
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{ownerLabel}</span>
         ) : null}
       </div>
       {menu.open ? (
-        <DiagramEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
+        <DocumentEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}
     </div>
   );

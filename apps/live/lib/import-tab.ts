@@ -6,13 +6,21 @@
 // remain export-only.
 
 // The result of an import attempt, surfaced back to the Import dialog:
-// 'done' (replaced the tab — close, or show its report when it met images or
-// changed anything on the way in: one report shape for every importer,
-// docs/specs/020-import-export/drawio-import.md "The import report"),
+// 'done' (replaced the tab — close, or show the image report when the import
+// met images, docs/specs/020-import-export/import-image-pipeline.md),
 // 'cancelled' (file dialog dismissed — stay open, no error), or 'error'
 // (parse / build failed — show it).
 export type ImportOutcome =
-  | { status: 'done'; report?: ImportReport }
+  | {
+      status: 'done';
+      images?: ImportImageReport;
+      // A board scene's report (docs/specs/020-import-export/board-scene.md "The report").
+      scene?: BoardSceneReport;
+      // Boards of a several-board import that could not land (the rest did).
+      failures?: { title: string; message: string }[];
+      // The documents an import made, one per board (docs/specs/020-import-export/board-import.md).
+      documents?: { id: string; name: string }[];
+    }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
 
@@ -23,8 +31,9 @@ export type ImportOutcome =
 // when we bump the schema we add a `migrate(version, tab)` branch in
 // parseImportedTab that walks old shapes forward.
 
-import { isValidElement, type Tab } from '@livediagram/diagram';
-import type { ImportReport } from './import-report';
+import { isValidElement, migrateIncomingElements, type Tab } from '@livediagram/document';
+import type { ImportImageReport } from './import-images';
+import type { BoardSceneReport } from './board-scene/report';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
@@ -66,14 +75,15 @@ export function parseImportedTab(text: string): ImportResult {
   if (typeof tab.id !== 'string' || typeof tab.name !== 'string' || !Array.isArray(tab.elements)) {
     return { ok: false, error: 'Tab payload is missing required fields (id, name, elements).' };
   }
-  // Schema v1 doesn't need migration — passes straight through.
-  // Future bumps: insert `if (env.schemaVersion < 2) tab = migrateV1ToV2(tab);` etc here.
+  // Every older version (v1: freehand points as `{ nx, ny }`, docs/specs/006-document/stroke-points.md)
+  // migrates through the stored-element migrations, which leave current elements alone.
   //
   // Each element through the same guard clipboard paste uses. An array check
   // alone let `null`, `{}` or an arrow with no endpoints through: the last
   // threw in the id re-mint (leaving the Import dialog stuck on busy), the
   // others landed on the canvas as junk.
-  return { ok: true, tab: { ...tab, elements: tab.elements.filter(isValidElement) } };
+  const elements = migrateIncomingElements(tab.elements).filter(isValidElement);
+  return { ok: true, tab: { ...tab, elements } };
 }
 
 // Open the browser's file picker and resolve with the chosen file's name

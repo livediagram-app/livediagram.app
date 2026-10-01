@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/document';
 import type { Env } from '../types';
 import {
   collabIndexCopyStatements,
@@ -110,7 +110,20 @@ describe('collabIndexStatements', () => {
       2,
     ]);
     expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_threads/);
-    expect(stmts[3]!.args).toEqual(['tab-1', 's1', 's1', 0, 1, '["u1"]', 'hi', 'A', '#a', 5, 5]);
+    expect(stmts[3]!.args).toEqual([
+      'tab-1',
+      's1',
+      's1',
+      0,
+      1,
+      '["u1"]',
+      '[]',
+      'hi',
+      'A',
+      '#a',
+      5,
+      5,
+    ]);
   });
 });
 
@@ -131,9 +144,9 @@ describe('readActivity', () => {
     tab_id: 't1',
     element_id: 'e1',
     element_label: 'Checkout',
-    diagram_id: 'd1',
-    diagram_name: 'Payments',
-    diagram_team_id: null,
+    document_id: 'd1',
+    document_name: 'Payments',
+    document_team_id: null,
     tab_name: 'Flow',
   };
   const actionRow = (over: Record<string, unknown>) => ({
@@ -184,8 +197,8 @@ describe('readActivity', () => {
     const { actions } = await readActivity(env, 'me', { limit: 10 });
     expect(actions).toEqual([
       {
-        diagramId: 'd1',
-        diagramName: 'Payments',
+        documentId: 'd1',
+        documentName: 'Payments',
         teamId: null,
         via: 'own',
         shareCode: null,
@@ -209,14 +222,14 @@ describe('readActivity', () => {
   it('keeps one row per element, preferring own > team > shared', async () => {
     const { env } = fakeEnv([
       [
-        actionRow({ via: 'shared', share_code: 'abc', diagram_id: 'd-shared' }),
-        actionRow({ via: 'own', diagram_id: 'd-own' }),
-        actionRow({ via: 'team', diagram_id: 'd-team', diagram_team_id: 'tm' }),
+        actionRow({ via: 'shared', share_code: 'abc', document_id: 'd-shared' }),
+        actionRow({ via: 'own', document_id: 'd-own' }),
+        actionRow({ via: 'team', document_id: 'd-team', document_team_id: 'tm' }),
       ],
       [],
     ]);
     const { actions } = await readActivity(env, 'me', { limit: 10 });
-    expect(actions.map((a) => a.diagramId)).toEqual(['d-own']);
+    expect(actions.map((a) => a.documentId)).toEqual(['d-own']);
   });
 
   it('drops a shared row whose link has lapsed (nowhere to open it)', async () => {
@@ -239,7 +252,7 @@ describe('readActivity', () => {
           ...place,
           via: 'team',
           share_code: null,
-          diagram_team_id: 'tm',
+          document_team_id: 'tm',
           comment_count: 3,
           latest_text: 'ok',
           latest_author_name: 'Priya',
@@ -247,15 +260,16 @@ describe('readActivity', () => {
           first_at: 1,
           latest_at: 9,
           you_commented: 1,
-          on_your_diagram: 0,
+          on_your_document: 0,
+          mentions_you: 0,
         },
       ],
     ]);
     const { threads } = await readActivity(env, 'me', { limit: 10 });
     expect(threads).toEqual([
       {
-        diagramId: 'd1',
-        diagramName: 'Payments',
+        documentId: 'd1',
+        documentName: 'Payments',
         teamId: 'tm',
         via: 'team',
         shareCode: null,
@@ -267,7 +281,8 @@ describe('readActivity', () => {
         latest: { text: 'ok', authorName: 'Priya', authorColor: '#p', at: 9 },
         firstAt: 1,
         youCommented: true,
-        onYourDiagram: false,
+        onYourDocument: false,
+        mentionsYou: false,
       },
     ]);
   });

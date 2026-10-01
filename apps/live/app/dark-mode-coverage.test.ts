@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 // Appearance (docs/specs/007-editor/live-app.md) is only as good as its least-converted screen, and the
 // screens that get missed are never the editor — they are the ones a user is
-// only ever in for a second: the diagram loading placeholder, the illustrative
-// tiles in the New Diagram dialog. Nothing failed when those stayed light. The
+// only ever in for a second: the document loading placeholder, the illustrative
+// tiles in the New Document dialog. Nothing failed when those stayed light. The
 // build was green, the types were fine, and the only symptom was a white flash
 // on a dark machine, which every automated check in the repo was blind to.
 //
@@ -102,7 +102,7 @@ describe('tiles of light-canvas illustration art', () => {
 
   it('no longer prop up the old light-plate workaround', () => {
     // `dark:bg-slate-200` was the previous answer: keep the plate LIGHT in dark
-    // chrome so the light art stays legible. That is what made the New Diagram
+    // chrome so the light art stays legible. That is what made the New Document
     // dialog a grid of white cards on near-black.
     const offenders = FILES.filter(({ source }) =>
       classNames(source).some((cls) => /dark:bg-slate-200\b/.test(cls) && /\bh-1[0-9]\b/.test(cls)),

@@ -1,49 +1,89 @@
 # Excalidraw import & export
 
-The Import and Export dialogs each gain an **Excalidraw** format: a `.excalidraw`
-file (Excalidraw's plain-JSON save format, also what excalidraw.com's
-"Save to disk" produces), or a `.png` / `.svg` Excalidraw exported with its
-scene embedded, can be imported into the active tab, and the active tab can be
-exported as a `.excalidraw` file. Import is the headline: it is near-lossless and is
-the migration path for people arriving from Excalidraw. Export is deliberately
-lossy (Excalidraw has ~8 element types to our ~20+) and follows the explicit
-degradation table below — nothing degrades silently outside that table.
+Excalidraw content reaches livediagram four ways, all through **one parser**:
+
+- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. On a
+  whiteboard tab it lands as whiteboard-native content (marker strokes, shapes,
+  text boxes that hug, stickies, arrows, a frame) as if drawn there; on a
+  diagram tab it lands as diagram elements.
+- **Import dialog**: a `.excalidraw` file (Excalidraw's plain-JSON save format,
+  also what excalidraw.com's "Save to disk" produces), or a `.png` / `.svg`
+  Excalidraw exported with its scene embedded, replaces the active tab.
+- **Drop**: a `.excalidraw` file, or an Excalidraw PNG / SVG with an embedded
+  scene, dropped on the canvas lands like a paste.
+- **New documents** (the Explorer's Import from group): each picked file becomes
+  its own document with one whiteboard tab, named and dated after the file.
+
+The parser turns Excalidraw into a [Board scene](board-scene.md), the
+source-neutral intermediate every board import shares; the shared landing turns
+that into elements for the tab's profile. Export is deliberately lossy
+(Excalidraw has ~10 element types to our ~20+) and follows the explicit
+degradation table below; nothing degrades silently outside that table.
 
 ## Where it lives
 
-- `apps/live/lib/excalidraw-import.ts` — `buildElementsFromExcalidraw(text)`,
-  the parser/converter. Sibling of `markdown-import.ts`; lazy-loaded by
-  `useTabImport` the same way. It never throws on bad input: it returns
-  `{ ok: false, error }` with a human-readable message. It stays pure and
-  synchronous: image elements come back as placeholders plus one image request
-  each, which `useTabImport` runs through the
+- `apps/live/lib/excalidraw-envelope.ts`: `readExcalidrawEnvelope(text)`, the
+  envelope reader (detection, size cap, `JSON.parse`, the named rejections) and
+  `looksLikeExcalidraw(text)`, the cheap prefix test a paste runs first.
+- `apps/live/lib/excalidraw-scene.ts`: `excalidrawToBoardScene(envelope)`, the
+  pure mapping from Excalidraw elements to a `BoardScene`. Helpers for colours,
+  text and linear geometry sit beside it (`excalidraw-scene-*.ts`).
+- `apps/live/lib/excalidraw-read.ts`: `sceneFromExcalidrawText(text)` (envelope,
+  then scene, or the rejection's message) and `readExcalidrawFile(file)` (a
+  dropped or pasted file: its scene, `not-excalidraw`, or an error). Never
+  throws. Lazy-loaded by its callers, so the parser stays out of the editor's
+  first bundle.
+- `apps/live/lib/excalidraw-paste.ts`: the cheap, synchronous recognisers a paste
+  or drop runs first: `excalidrawTextFromPaste(data)` and
+  `isExcalidrawFileCandidate(file)`, plus the drop refusal copy.
+- The Import dialog (`useTabImport`) reads the scene and hands it to the shared
+  replace-the-tab commit (`useBoardSceneImport`, [Board scene](board-scene.md)),
+  which lands it for the tab's profile and runs its images through the
   [Import image pipeline](import-image-pipeline.md) before the tab changes.
+  `useClipboard` hands a pasted or dropped scene to the board-scene insert
+  (`useBoardSceneInsert`); `usePaletteDrop` passes dropped files to it.
 - `apps/live/lib/excalidraw-embedded.ts`: `extractExcalidrawScene(input)`,
   which finds the scene JSON inside an Excalidraw PNG or SVG export (see
-  "Embedded-scene PNG and SVG" below) and hands plain `.excalidraw` text through
-  untouched.
-- `apps/live/lib/excalidraw-export.ts` — `tabToExcalidrawText(tab)`, a pure
+  "Embedded-scene PNG and SVG") and hands plain JSON text through untouched.
+- `apps/live/lib/excalidraw-export.ts`: `tabToExcalidrawText(tab)`, a pure
   `Tab -> string` serialiser plugged into the Export dialog's text-panel
   registry (`TEXT_PANELS`), like `tabToJsonText` / `tabToMarkdownText`.
-- Neither module is needed by the MCP worker or any other app, so they stay in
-  `apps/live/lib` (Mermaid lives in `packages/diagram` only because the MCP
+- None of these is needed by the MCP worker or any other app, so they stay in
+  `apps/live/lib` (Mermaid lives in `packages/document` only because the MCP
   server also renders it).
 
-## The file envelope
+## Envelopes
 
-An Excalidraw scene is `{ type: "excalidraw", version: 2, source, elements,
-appState, files }`. Import requires `type === "excalidraw"` and an `elements`
-array, tolerates any `version` (the format is additive in practice; unknown
-fields are ignored), and skips `isDeleted` elements. `files` maps a `fileId`
-to `{ mimeType, dataURL }`, the bytes of each image on the board; a missing or
-malformed `files` reads as empty.
+Excalidraw writes three JSON envelopes; each carries an `elements` array and
+an optional `files` map (`fileId` to `{ mimeType, dataURL }`, the bytes of each
+image). The parser accepts all three:
+
+| `type`                     | Where it comes from                                                      | Extra fields read                                          |
+| -------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `excalidraw/clipboard`     | Copy in Excalidraw (no `version`, no `appState`)                         | none                                                       |
+| `excalidraw-api/clipboard` | Copy from an app embedding Excalidraw's component                        | none                                                       |
+| `excalidraw`               | A saved scene (`.excalidraw`), or the scene inside an embedded PNG / SVG | `appState.viewBackgroundColor`, `appState.gridModeEnabled` |
+
+- Detection is by content: the text's first characters must read
+  `{"type":"excalidraw…` (whitespace allowed, as a saved file is indented), the
+  `type` must be one of the three, and `elements` must be an array. `version`
+  is tolerated whatever it is (the format is additive in practice; unknown
+  fields are ignored).
+- A text longer than `EXCALIDRAW_MAX_SCENE_CHARS` is refused **before**
+  `JSON.parse`: _"This Excalidraw scene is too large to import."_
+- Named rejections, each with its message: not JSON (_"File isn't valid
+  JSON."_), not an object (_"Expected a JSON object at the top level."_), not
+  Excalidraw (_"This isn't an Excalidraw scene (missing "type": "excalidraw")."_),
+  no elements (_"Scene is missing its elements array."_), too large (above).
+- A missing or malformed `files` reads as empty.
+- `isDeleted` elements are skipped without a note (they are not content).
 
 ## Embedded-scene PNG and SVG
 
 Excalidraw's PNG and SVG exports can carry the whole scene ("Embed scene" in
 the export dialog, which also names the file `.excalidraw.png` /
 `.excalidraw.svg`). Import reads the scene back out and runs it through the
-same converter, images included (the embedded scene carries `files` too).
+same parser, images included (the embedded scene carries `files` too).
 
 - **PNG:** a `tEXt` chunk with the keyword `application/vnd.excalidraw+json`.
   Its Latin-1 text is JSON: either an encoded wrapper
@@ -60,100 +100,247 @@ same converter, images included (the embedded scene carries `files` too).
   byte string; with version 1 (or no version) they are UTF-8 JSON. The wrapper
   then decodes as for PNG.
 - Detection is by content, not by file name: PNG by its signature, SVG by the
-  payload marker, anything else as `.excalidraw` JSON. A PNG or SVG with no
+  payload marker, anything else as JSON. A PNG or SVG with no
   embedded scene fails with: _"This image doesn't contain an Excalidraw scene.
   In Excalidraw, export it with Embed scene switched on."_ A corrupt payload
   fails with: _"The Excalidraw scene inside this image couldn't be read."_
 - The paste panel accepts SVG text as well (an SVG is text), so an exported SVG
-  can be pasted as readily as a `.excalidraw` scene. Export emits `version: 2`
-  with `source: "https://livediagram.app"`, `appState.viewBackgroundColor` from
-  the tab's background colour, and an empty `files` map.
+  can be pasted as readily as a `.excalidraw` scene.
 
-## Import mapping (`.excalidraw` → Tab)
+## Paste
 
-Element ids are re-minted to fresh UUIDs inside the converter (with a map so
-arrow bindings follow), so nothing can collide with
-elements already on the diagram — the JSON import's `remintElementIds` step is
-not needed on this path.
+Copying in Excalidraw puts the `excalidraw/clipboard` envelope on the system
+clipboard twice: as `application/vnd.excalidraw.clipboard+json` and as
+`text/plain` (Excalidraw's `copyToClipboard`; when the copy event is not
+available it falls back to `navigator.clipboard.writeText`, which writes
+`text/plain` only). It writes no HTML and no image. A browser paste event
+exposes the custom type only to pages in the same browser engine, so:
 
-| Excalidraw                        | livediagram                                                                                                                                                                                                                            |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rectangle`                       | `shape: 'square'` (`roundness` set → `borderRadius: 'md'`, absent → `'none'`)                                                                                                                                                          |
-| `ellipse`                         | `shape: 'circle'`                                                                                                                                                                                                                      |
-| `diamond`                         | `shape: 'diamond'`                                                                                                                                                                                                                     |
-| `frame` / `magicframe`            | `shape: 'frame'` with the frame's `name` as label                                                                                                                                                                                      |
-| `text` with `containerId`         | the container's `label` (+ its text styling); the text element itself is consumed                                                                                                                                                      |
-| `text` standalone                 | `text` element                                                                                                                                                                                                                         |
-| `arrow`                           | `arrow`; `startBinding`/`endBinding` → `pinned` endpoints at the nearest anchor the shape offers; 3+ points → `arrowStyle: 'curved'` with `curvePoints`                                                                                |
-| `line`, 2 points                  | `arrow` with `arrowEnds: 'none'`                                                                                                                                                                                                       |
-| `line`, 3+ points                 | `freehand` with `straightEdges: true`; first ≈ last point → `closed: true` + fill                                                                                                                                                      |
-| `freedraw`                        | `freehand` (points normalised into the bounding box); first ≈ last point → `closed: true` + fill, same geometric rule as `line`                                                                                                        |
-| `image`                           | `image`; its `fileId`'s bytes go through the [Import image pipeline](import-image-pipeline.md), `naturalWidth`/`naturalHeight` from the stored image; a `crop` → `objectFit: 'cover'`; a failure stays a placeholder (`imageId: null`) |
-| `embeddable` / `iframe` / unknown | skipped; the count is returned in the result (`skipped`) so tests can assert it                                                                                                                                                        |
+- The paste reads `application/vnd.excalidraw.clipboard+json` first, then
+  `text/plain`, and takes the first that passes `looksLikeExcalidraw`.
+- It runs after the image-file branch and before our own element payload in
+  `useClipboard`'s paste handler (the two envelopes cannot be confused: ours is
+  `livediagram.elements`). Everything that already gates a canvas paste (a
+  modal open, a text field focused, read-only, a label being edited) gates it
+  too.
+- A recognised paste on a **whiteboard** tab lands with the whiteboard profile;
+  on a **diagram** or **event-storming** tab with the diagram profile.
+- It lands through the shared board-scene insert ([Board scene](board-scene.md)):
+  the scene's bounds centred on the canvas pointer when the pointer is over the
+  canvas, else on the viewport centre; **one undo step**; the landed elements
+  are **selected**, so the quick style panel restyles them at once; images go
+  through the [Import image pipeline](import-image-pipeline.md) in insert mode.
+- A paste that degraded or skipped anything shows the shared non-blocking
+  paste notice; a lossless paste is silent.
+- A text that looks like Excalidraw but fails to read shows the rejection's
+  message as an error toast; the paste does nothing else.
+- **Pasted files**: a `.excalidraw` file (by name or by the
+  `application/vnd.excalidraw+json` type) is read and lands the same way. A
+  pasted PNG or SVG is checked for an embedded scene first: with one, the scene
+  lands; without one, it is an ordinary image paste, as before.
+- **Dropped files** (on a tab that is not read-only): the same files land at the point
+  they are released. Any other dropped file (a photo, a PNG or SVG without a scene) is
+  refused with an info toast: _"Only Excalidraw files, or images exported from
+  Excalidraw with the scene embedded, can be dropped on the canvas."_ A photo dropped on
+  an event-storming board still goes to the wall reader first
+  ([Event storming](../021-event-storming/event-storming.md)).
 
-Property mapping, applied to every imported element where present:
+## Scene mapping (Excalidraw to board scene)
 
-- `strokeColor` → `strokeColor` verbatim; `backgroundColor` → `fillColor`
-  (`"transparent"` carries through as the CSS keyword, matching the unfilled
-  Excalidraw look). Text elements use `strokeColor` as `textColor` (that is
-  where Excalidraw keeps text ink).
-- `strokeWidth` (1/2/4) → `thin` / `medium` / `thick` (≤1, ≤2.5, else).
-- `strokeStyle` `solid`/`dashed`/`dotted` map 1:1.
-- `opacity` 0–100 → 0–1 (100 → field omitted).
-- `angle` (radians, clockwise) → `rotation` (degrees, clockwise); 0 omitted.
-- `groupIds` are **dropped**: livediagram has no groups
-  ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)), so grouped elements arrive
-  as separate elements in the same places.
-- `locked` → `locked`; `link` (a URL string) → `link: { kind: 'url', url }`.
-- `fontSize` → `textSize`: ≤16 `sm`, ≤22 `md`, else `lg`. `fontFamily` 1
-  (hand-drawn) → `caveat`, 3 (code) → `roboto-mono`, else default.
-  `textAlign` → `textAlignX`, `verticalAlign` → `textAlignY`.
-- Arrowheads: `arrow`→`line`, `bar`→`line`, `triangle`→`triangle`,
-  `triangle_outline`→`triangle-hollow`, `dot`/`circle`→`circle`,
-  `circle_outline`→`circle-hollow`, `diamond`→`diamond`,
-  `diamond_outline`→`diamond-hollow`. `arrowEnds` derives from which of
-  start/end carry a head (an absent `endArrowhead` field counts as Excalidraw's
-  default `arrow`).
-- `appState.viewBackgroundColor` → the tab's `backgroundColor` (kept only when
-  the scene sets one).
+Checked against real clipboard copies (two boards, 827 elements: rectangles,
+text, lines, freedraw, arrows, diamonds, ellipses, a frame, sticky notes).
+Coordinates are canvas px and stay absolute; every item's `key` is the
+Excalidraw element id (the landing re-mints ids). `authoredOn` is `unknown`:
+neither envelope records a theme. Items keep the scene's z-order (below).
 
-Accepted loss on import: the hand-drawn aesthetic (`roughness`, `fillStyle`
-hachure / cross-hatch / zigzag flatten to solid), `seed`-based wobble,
-per-point pressure on freedraw strokes, an image's exact `crop` rectangle (the
-image fills its box, centred) and its flip (`scale` of -1).
+| Excalidraw                                         | Board scene item                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `rectangle`                                        | `shape` `rectangle`; `rounded` when `roundness` is set (type 1 legacy, 2 proportional, 3 adaptive)                                                                                                                                                                                                                                                                 |
+| `ellipse`                                          | `shape` `ellipse`                                                                                                                                                                                                                                                                                                                                                  |
+| `diamond`                                          | `shape` `diamond`; `rounded` when `roundness` is set                                                                                                                                                                                                                                                                                                               |
+| `text` with a `containerId`                        | the container's `label` (`shape`, `sticky`) or the arrow's `label` (`connector`); consumed. A container that is not in the scene leaves it standalone                                                                                                                                                                                                              |
+| `text` standalone                                  | `text` with the element's box; `autoWidth` from `autoResize` (absent reads `true`); the unwrapped `originalText` (else `text`)                                                                                                                                                                                                                                     |
+| `freedraw`                                         | `ink`: absolute points; `p` from `pressures` when `simulatePressure` is `false` and there is one pressure per point; `closed` when the ends coincide (within `EXCALIDRAW_CLOSE_EPSILON_PX`), the repeated end point dropped; `streamline` from `strokeOptions.streamline` (Excalidraw's default 0.5 when absent); a non-transparent background is the ink's `fill` |
+| `line`                                             | `polyline`: absolute points; `closed` when `polygon` is `true` or the ends coincide (3+ points); `curved` when `roundness` is set and there are 3+ points; a non-transparent background on a closed line is its `fill`; arrowheads as `heads`                                                                                                                      |
+| `arrow`                                            | `connector`: absolute points; `from` / `to` the keys of the bound elements when they are in the scene; `curved` when `roundness` is set, it bends (3+ points) and it is not `elbowed` (an elbow or sharp arrow is not curved; the landing draws its bends as a curve and says so); `heads` per the table below; bound text as `label`                              |
+| `stickynote`                                       | `sticky` with the element's box and `backgroundColor` as `fill`; its bound text as `text`                                                                                                                                                                                                                                                                          |
+| `frame` / `magicframe`                             | `frame` with its `name`; the elements inside it (`frameId`) stay ordinary items                                                                                                                                                                                                                                                                                    |
+| `image`                                            | `image` with `asset` = `fileId` (the element id when absent); a `crop` sets `crop`. Its `files` entry with a `dataURL` becomes a `data-url` asset, once per `fileId`                                                                                                                                                                                               |
+| `embeddable`, `iframe`, `selection`, anything else | skipped, counted in a note by its type                                                                                                                                                                                                                                                                                                                             |
+
+Properties, applied wherever present:
+
+- **Colours** are passed through as light-reference `SceneColour`s: Excalidraw
+  stores light-mode colours and paints dark mode by inverting the canvas, so a
+  stored `#1e1e1e` is what a dark-mode user saw as white. The landing decides
+  which colours become adaptive ink or stock colours ([Board scene](board-scene.md));
+  the parser never does. `#rgb` expands to `#rrggbb`, `#rrggbbaa` splits into
+  hex and `alpha`, `transparent` is no colour (no fill; a `transparent` stroke
+  is a shape with `stroke: null`). Any other value (a CSS name, `rgb()`) is
+  unreadable: the stroke falls back to `ink`, a fill to none, and a note counts it.
+- `opacity` (0 to 100) multiplies into every colour the element paints: the
+  stroke's `opacity`, the fill's and the text's `alpha`. 100 is omitted.
+- **Stroke width**: `strokeWidth` px for shapes, lines and arrows. Freedraw
+  reports the width Excalidraw paints: `strokeWidth × 2.8` for constant-width
+  strokes (`strokeOptions.variability: 'constant'`), `strokeWidth × 4.25` for
+  variable ones (absent options read as variable, as in Excalidraw).
+- `strokeStyle` `solid` / `dashed` / `dotted` map to `dash` 1:1.
+- **Rotation**: `angle` (radians, clockwise) becomes `rotationDeg` on boxed
+  items; linear items (`freedraw`, `line`, `arrow`) have it baked into their
+  points, rotated about the element's centre.
+- **Text**: `fontSize` px is `fontPx` exactly (sizes are continuous, 13 to 63 px
+  in the real boards). `fontFamily` 1 (Virgil) and 5 (Excalifont) are `hand`;
+  3 (Cascadia) and 8 (Comic Shanns) are `mono`; every other family is `sans`.
+  `textAlign` and `verticalAlign` map 1:1 (Excalidraw draws bound text centred
+  and middle, standalone text left and top). The text colour is the text
+  element's `strokeColor`. Line breaks are kept.
+- **Arrowheads**: `arrow` to `arrow`, `bar` to `bar`, `triangle` to
+  `triangle`, `triangle_outline` to `triangle-hollow`, `dot` and `circle` to
+  `circle`, `circle_outline` to `circle-hollow`, `diamond` to `diamond`,
+  `diamond_outline` to `diamond-hollow`; `crowfoot_one`, `crowfoot_many` and
+  `crowfoot_one_or_many` (and any unknown head) to `arrow` with a note. On an `arrow`, a missing
+  `endArrowhead` field reads as Excalidraw's default `arrow`; `null` is no head.
+- **Bindings**: only the bound element's id is read. Excalidraw's `fixedPoint`
+  and `mode` (`orbit`, `inside`) are not: the landing pins each bound end to the
+  target's anchor nearest the arrow's end point.
+- `locked` is kept; `link` (a URL string) becomes `link`.
+- **Z-order**: when every element carries a string `index` (Excalidraw's
+  fractional order key), items are ordered by it (plain string comparison,
+  which is the keys' order), the array order breaking ties; otherwise the
+  array order stands.
+- `appState.viewBackgroundColor` (saved scenes only) becomes the scene
+  background's colour and `appState.gridModeEnabled` its `grid` pattern.
+
+## What degrades
+
+Each degradation is a scene note: a rule (its final, user-facing sentence), a
+count and a kind, shown by the shared report (import) or paste notice (paste)
+as "count · rule". The landing adds its own rules on top ([Board scene](board-scene.md):
+dashed pen strokes, bar heads, sharp bends, filled pen strokes, links).
+
+| Rule (copy)                                               | Kind     | Counted                                                            |
+| --------------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| "Groups were dropped"                                     | degraded | per distinct group id among the items                              |
+| "Tapered strokes drawn at an even width"                  | degraded | per freedraw with `variability: 'variable'` and simulated pressure |
+| "Arrowheads with no match here drawn as plain arrowheads" | degraded | per crow's-foot or unknown head                                    |
+| "Arrow labels moved to the middle of their arrow"         | degraded | per arrow label whose `labelPosition` is set and not 0.5           |
+| "Colours that couldn't be read use the ink"               | degraded | per unreadable colour value                                        |
+| "<Type> elements were skipped"                            | skipped  | per skipped element, by its type (e.g. "Embeddable elements…")     |
+
+An image whose `fileId` has no `dataURL` is not a note: it is the image
+pipeline's `missing-bytes` placeholder, reported there.
+
+Accepted loss, by design and without a note (it is a matter of look, not
+content): the hand-drawn wobble (`roughness`, `seed`), hachure / cross-hatch /
+zigzag fill styles (drawn solid), the frame's clipping of its children, a
+sticky note's creation-date footer, an image's exact `crop` rectangle and its
+flip (`scale` of -1), and the Excalifont typeface itself (drawn in our
+hand-drawn font).
+
+## Landing, per profile
+
+The landing is [Board scene](board-scene.md)'s, one for every source:
+
+- **Whiteboard profile** (a whiteboard tab): ink as marker strokes with
+  pressure where recorded, adaptive ink and stock colours, text boxes that hug
+  their text at the exact font size, stickies, whiteboard shapes, arrows
+  pinned to their shapes, the frame.
+- **Diagram profile** (a diagram or event-storming tab, and the Import
+  dialog on such a tab): the element mapping this importer has always had:
+  rectangles as `square` shapes (rounded corners as `md`), ellipses as
+  `circle`, diamonds, frames, text elements, arrows with pinned ends and curve
+  points, two-point lines as headless arrows, longer lines and freedraw as
+  `freehand` (straight-edged for lines), images, and the scene background as
+  the tab's background colour. Colours stay exact, except near-black ink
+  (the landing's ink rule, [Board scene](board-scene.md)), which lands unset
+  so the tab's theme ink shows: Excalidraw's `#1e1e1e` is legible on a dark
+  theme as on a light one.
 
 ## Images
 
-Every `image` element becomes one image request keyed by its `fileId`, so a
-image used twice on the board is stored once. The request's source is the
+Every `image` element becomes one image request keyed by its `fileId`, so an
+image used twice in the scene is stored once. The request's source is the
 `dataURL` from `files`; a `fileId` that `files` lacks is `missing-bytes`.
-`useTabImport` opens one import session for the diagram, resolves every request,
-fills `imageId` / `naturalWidth` / `naturalHeight` on the elements that stored,
-and only then replaces the tab. Limits, offline handling, failures and the
+The shared commit (an import's replace or a paste's insert, [Board scene](board-scene.md))
+opens one import session for the document, resolves every request, fills
+`imageId` / `naturalWidth` / `naturalHeight` on the elements that stored, and
+only then changes the tab, so either stays one undo step. Limits, offline handling, failures and the
 report are the pipeline's ([Import image pipeline](import-image-pipeline.md)).
+
+## Import as new documents (Explorer)
+
+Excalidraw is a source of the Explorer page header's **Import from** group
+([Folders](../013-workspace/folders.md)), beside Microsoft Whiteboard: a board
+saved in Excalidraw comes in as its own document, with no editor open.
+
+- **What it takes**: one or more `.excalidraw` files, or `.png` / `.svg` exports
+  with the scene embedded, picked at once (`.excalidraw,.json,.png,.svg`).
+  A saved file and a clipboard copy of the same board carry identical elements;
+  only the envelope differs (`type: "excalidraw"`, `version`, `source`,
+  `appState`), so a file lands exactly as the same board pasted on a whiteboard.
+- **What it makes**: each file becomes **a new document with one whiteboard
+  tab**, through the shared new-document target
+  ([Board import](board-import.md) "new-document", `importBoardsAsDocuments`):
+  the whiteboard profile, filed where New document files, images through the
+  [Import image pipeline](import-image-pipeline.md). Several files make one
+  document each; a file that cannot be read is listed with its reason and the
+  rest still land. A whiteboard ignores the file's `viewBackgroundColor` (it is
+  Excalidraw's light canvas even for an author working in dark mode); the board
+  keeps its own light and dark look.
+- **Name**: the file name without its extension (`.excalidraw`,
+  `.excalidraw.png`, `.excalidraw.svg`, `.png`, `.svg`, `.json`). Excalidraw's
+  default name, `Untitled-YYYY-MM-DD-HHMM` (its local save moment), becomes
+  "Excalidraw board, 12 Apr 2026".
+- **Dates**: created is the moment in Excalidraw's default name, else the
+  file's `lastModified`; last modified is the file's `lastModified`. Both are
+  checked by the same rule as Microsoft Whiteboard's board dates
+  ([Board import](board-import.md)): an impossible pair keeps what holds and is
+  reported ("Board dates that couldn't be read were set to today").
+- **Refusals**, listed per file: a file with no Excalidraw scene ("This file
+  isn't an Excalidraw scene."), and the envelope's and embedded-scene messages.
+- **Entry**: the header button "Import from Excalidraw" (tooltip "Excalidraw"),
+  its icon an original glyph (a hand-drawn box and pencil on a violet tile), not
+  Excalidraw's logo: the repo ships no vendor marks
+  ([Iconography](../004-interface-design/iconography.md)).
+- **Flow**: the button opens the dialog "Import from Excalidraw" (subtitle "Each
+  file becomes its own document, named and dated after the file."): the intro,
+  a drop zone that is also a button ("Drop .excalidraw files here, or choose
+  files") and a "Choose files" button; then "Reading files…", "Importing board 3
+  of 5…" ("Importing board…" for one) and "Importing images 3 of 12…"; then the
+  shared report (what landed, every rule, the files left out with their
+  reasons). When no picked file holds a scene, nothing is imported and the pick
+  step shows the first file's reason (`role="alert"`).
+- Telemetry: one `track('Tab', 'Imported', 'Excalidraw' | 'ExcalidrawPng' |
+'ExcalidrawSvg')` per board that lands (by its container), as the Import
+  dialog's card and Microsoft Whiteboard's import count; the shared target adds
+  `Document · Created` and `Whiteboard · Created · Import`.
+
+The editor's tab-scoped Import dialog card, paste and drop stay as they are.
 
 ## Export degradation table (Tab → `.excalidraw`)
 
-Every element exports — nothing is dropped — but only geometry, colours, label
+Every element exports (nothing is dropped), but only geometry, colours, label
 text, links, rotation, opacity and lock survive (`groupIds` is always empty); livediagram-only
 behaviour (animations, markers, notes, comments, actions, non-URL links,
-layers — the list flattens) does not. Kind by kind:
+layers: the list flattens) does not. Export emits `version: 2` with
+`source: "https://livediagram.app"`, `appState.viewBackgroundColor` from the
+tab's background colour, and an empty `files` map. Kind by kind:
 
-| livediagram                                                                                                | Excalidraw                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `square`                                                                                                   | `rectangle` (`borderRadius: 'none'` → sharp, else rounded)                                                                                           |
-| `circle`, `annotation`                                                                                     | `ellipse`                                                                                                                                            |
-| `diamond`                                                                                                  | `diamond`                                                                                                                                            |
-| `stadium`                                                                                                  | `rectangle` with rounded corners                                                                                                                     |
-| every other shape kind (cylinder, cloud, actor, devices, progress, charts, code block, checklist, icon, …) | `rectangle` carrying the label — the documented "labelled box" degrade                                                                               |
-| `frame`                                                                                                    | `rectangle` (transparent fill) with the frame label                                                                                                  |
-| `text`                                                                                                     | `text`                                                                                                                                               |
-| `sticky`                                                                                                   | `rectangle` with the sticky fill + bound label                                                                                                       |
-| `table`                                                                                                    | `rectangle` placeholder (cells don't survive; the label does if set)                                                                                 |
-| `image`                                                                                                    | `rectangle` placeholder labelled with the alt text (bytes live in R2, not the export)                                                                |
-| `link-card`                                                                                                | `rectangle` with the card title/URL as label + the `link`                                                                                            |
-| `freehand`                                                                                                 | `freedraw`; `straightEdges` → `line`. Any `closed` stroke re-appends the first point + fill, pencil sketches included                                |
-| `arrow`                                                                                                    | `arrow` with `startBinding`/`endBinding` for pinned ends, curve points flattened into the point list, label as bound text, arrowheads reverse-mapped |
+| livediagram                                                                                                | Excalidraw                                                                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `square`                                                                                                   | `rectangle` (`borderRadius: 'none'` → sharp, else rounded)                                                                                                                                                                                         |
+| `circle`, `annotation`                                                                                     | `ellipse`                                                                                                                                                                                                                                          |
+| `diamond`                                                                                                  | `diamond`                                                                                                                                                                                                                                          |
+| `stadium`                                                                                                  | `rectangle` with rounded corners                                                                                                                                                                                                                   |
+| every other shape kind (cylinder, cloud, actor, devices, progress, charts, code block, checklist, icon, …) | `rectangle` carrying the label: the documented "labelled box" degrade                                                                                                                                                                              |
+| `frame`                                                                                                    | `rectangle` (transparent fill) with the frame label                                                                                                                                                                                                |
+| `text`                                                                                                     | `text`                                                                                                                                                                                                                                             |
+| `sticky`                                                                                                   | `rectangle` with the sticky fill + bound label                                                                                                                                                                                                     |
+| `table`                                                                                                    | `rectangle` placeholder (cells don't survive; the label does if set)                                                                                                                                                                               |
+| `image`                                                                                                    | `rectangle` placeholder labelled with the alt text (bytes live in R2, not the export)                                                                                                                                                              |
+| `link-card`                                                                                                | `rectangle` with the card title/URL as label + the `link`                                                                                                                                                                                          |
+| `freehand`                                                                                                 | `freedraw`; `straightEdges` → `line`. Any `closed` stroke re-appends the first point + fill, pencil sketches included. A whiteboard pen stroke's recorded pressures travel (`simulatePressure: false`); without them Excalidraw simulates pressure |
+| `arrow`                                                                                                    | `arrow` with `startBinding`/`endBinding` for pinned ends, curve points flattened into the point list, label as bound text, arrowheads reverse-mapped                                                                                               |
 
 Labels export as **bound text elements** (`containerId` + a `boundElements`
 entry on the container) so they stay attached when edited in Excalidraw.
@@ -168,18 +355,21 @@ with the colours you see, not blanks.
 - **Import dialog** ([Markdown import](markdown-import.md) + [Mermaid import & export](mermaid.md)): a fourth format card, "Excalidraw",
   opening the same paste-or-file panel; the file picker accepts
   `.excalidraw`, `.json`, `.png` and `.svg`. Same replace-the-tab semantics +
-  single undo step. While images upload the footer beside the buttons reads
-  "Importing images 3 of 12…"; an import with images ends on the pipeline's
-  report instead of closing.
+  single undo step; on a whiteboard tab the scene lands with the whiteboard
+  profile, elsewhere with the diagram profile. While images upload the footer
+  beside the buttons reads "Importing images 3 of 12…"; an import with images
+  or notes ends on the shared report instead of closing.
 - **Export dialog** ([Mermaid import & export](mermaid.md)): a seventh card in the text-format group with the
   view/edit/copy panel; download saves `<name>.excalidraw`
   (`application/json`).
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Tab', 'Imported', type)` with
   `Excalidraw` for a scene, `ExcalidrawPng` / `ExcalidrawSvg` for an embedded
-  scene, and `track('Diagram', 'Exported', 'Excalidraw')`. The existing
+  scene, `track('Element', 'Imported', 'Excalidraw')` for a paste or drop on
+  the canvas, and `track('Document', 'Exported', 'Excalidraw')`. The existing
   category/action vocabulary, no schema change.
 - Help centre: the Importing a Tab + Exporting a Tab articles list the format,
-  and their registry keywords gain `excalidraw` so searching it finds them.
+  the importing article explains pasting from Excalidraw, and their registry
+  keywords gain `excalidraw` so searching it finds them.
 
 ## Follow-up: excalidraw.com share links
 
@@ -214,6 +404,9 @@ and a network failure surface of its own.
 ## Non-goals
 
 - Migrating image bytes on **export** (export gives a labelled box).
-- Rasterising exotic shapes into Excalidraw `image` elements — the labelled-box
+- Rasterising exotic shapes into Excalidraw `image` elements: the labelled-box
   degrade is honest and keeps the exporter pure/sync; revisit if demand shows.
 - Reproducing the hand-drawn rendering style on our canvas.
+- Dropping an ordinary image (no Excalidraw scene) on the canvas to add it as an
+  image element: refused with the drop toast for now; image drop is a separate,
+  later feature.

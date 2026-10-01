@@ -16,10 +16,11 @@ export function ChromeControls({
   settingsDescription = 'Configure editor behaviour.',
   labelled = false,
   github = true,
+  powerUser = false,
 }: {
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
-  // The editor's settings are per-diagram; the Explorer's read the same
+  // The editor's settings are per-document; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
   settingsLabel?: string;
   settingsDescription?: string;
@@ -27,12 +28,15 @@ export function ChromeControls({
   // The editor moved its GitHub link into the Explorer panel's ⋯ menu
   // (docs/specs/013-workspace/folders.md); the full-page Explorer's bar keeps it.
   github?: boolean;
+  // Power user mode: the Appearance control becomes a quick switch
+  // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
+  powerUser?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   return (
     <>
       {onOpenSearch ? (
-        <HoverCard title="Search" description="Find diagrams, folders, tabs and elements.">
+        <HoverCard title="Search" description="Find documents, folders, tabs and elements.">
           <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
             <SearchGlyph />
             <ChromeLabel show={labelled}>Search</ChromeLabel>
@@ -77,7 +81,7 @@ export function ChromeControls({
           </button>
         </HoverCard>
       ) : null}
-      <AppearanceToggle labelled={labelled} />
+      <AppearanceToggle labelled={labelled} quick={powerUser} />
     </>
   );
 }

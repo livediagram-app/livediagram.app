@@ -1,38 +1,38 @@
 'use client';
 
-import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 
 // Presentational primitives for the floating Explorer panel
 // (apps/live/components/panels/Explorer.tsx). Lifted here so the
 // Explorer component itself can focus on data flow + the panel
 // shell: the synthetic Unsorted / Offline nodes and the Shared row,
-// with FolderNode and DiagramRow re-exported beside them (each has
+// with FolderNode and DocumentRow re-exported beside them (each has
 // its own file). Same pattern as the route's
 // app/explorer/views.tsx split: stateless or near-stateless
 // renderers that take their data + callbacks via props.
 //
 // Mirror of (not duplicate with) app/explorer/views.tsx: the
-// route's full-page list view has its own DiagramRow / FolderRow
+// route's full-page list view has its own DocumentRow / FolderRow
 // shape (grid layout, dropdown menu, no drag), whereas this file
 // owns the floating-panel shape (pill rows, drag source / drop
 // target, recursive tree). The two coexist by design.
 
 // Row data shapes come straight from the api client (the same rows
-// apiListDiagrams / useFolders / apiListSharedWith return) so the
+// apiListDocuments / useFolders / apiListSharedWith return) so the
 // panel and the /explorer route can't drift apart on what a list
 // item carries.
-import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
+import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { SYNTHETIC_FOLDERS, type SyntheticFolderKind } from '@/app/explorer/synthetic-folders';
-import { useDiagramDropTarget } from './useDiagramDropTarget';
-import { DiagramRow } from './DiagramRow';
-import { PanelDiagramRows, type PanelRowActions } from './PanelDiagramRows';
+import { useDocumentDropTarget } from './useDocumentDropTarget';
+import { DocumentRow } from './DocumentRow';
+import { PanelDocumentRows, type PanelRowActions } from './PanelDocumentRows';
 import { TreeNodeHeader } from './TreeNodeHeader';
 import { HoverCard } from '@livediagram/ui';
 
 export { FolderNode } from './FolderNode';
-export { DiagramRow };
+export { DocumentRow };
 
 // A synthetic node's header: its glyph and italic name from the shared
 // synthetic-folder table, keyed into the panel's expanded record by kind.
@@ -49,7 +49,7 @@ function SyntheticNodeHeader({
   onToggleExpanded: (key: string) => void;
   count: number;
   iconClassName?: string;
-  drop?: ReturnType<typeof useDiagramDropTarget>;
+  drop?: ReturnType<typeof useDocumentDropTarget>;
 }) {
   const { Icon, label } = SYNTHETIC_FOLDERS[kind];
   return (
@@ -67,53 +67,53 @@ function SyntheticNodeHeader({
   );
 }
 
-// Synthetic root-level "Unsorted" folder. Holds every diagram with
+// Synthetic root-level "Unsorted" folder. Holds every document with
 // folder_id IS NULL. Can't be renamed or deleted, but is a drop target:
-// a diagram dropped here goes back to the root (a null folder id).
+// a document dropped here goes back to the root (a null folder id).
 export function UnsortedNode({
   expanded,
   onToggleExpanded,
-  diagrams,
+  documents: liveDocs,
   rows,
 }: {
   expanded: Record<string, boolean>;
   onToggleExpanded: (key: string) => void;
-  diagrams: DiagramListItem[];
+  documents: DocumentListItem[];
   rows: PanelRowActions;
 }) {
-  const drop = useDiagramDropTarget(null, rows.onMoveDiagramToFolder);
+  const drop = useDocumentDropTarget(null, rows.onMoveDocumentToFolder);
   return (
     <li>
       <SyntheticNodeHeader
         kind="unsorted"
         expanded={expanded}
         onToggleExpanded={onToggleExpanded}
-        count={diagrams.length}
-        drop={rows.onMoveDiagramToFolder ? drop : undefined}
+        count={liveDocs.length}
+        drop={rows.onMoveDocumentToFolder ? drop : undefined}
       />
       {expanded.unsorted ? (
         <ul className="flex flex-col gap-0.5">
-          <PanelDiagramRows diagrams={diagrams} indent={16} rows={rows} />
+          <PanelDocumentRows documents={liveDocs} indent={16} rows={rows} />
         </ul>
       ) : null}
     </li>
   );
 }
 
-// Synthetic "Offline" folder (docs/specs/006-diagram/offline-mode.md): every diagram saved only in this
+// Synthetic "Offline" folder (docs/specs/006-document/offline-mode.md): every document saved only in this
 // browser, mirroring the /explorer route's dynamic Offline folder. Always
 // rendered (even empty) so the local-only bucket stays discoverable. Not a
-// drop target, and its rows are not drag sources: moving a cloud diagram
+// drop target, and its rows are not drag sources: moving a cloud document
 // offline is the explicit, confirmed Take Offline action, never a drag.
 export function OfflineNode({
   expanded,
   onToggleExpanded,
-  diagrams,
+  documents: liveDocs,
   rows,
 }: {
   expanded: Record<string, boolean>;
   onToggleExpanded: (key: string) => void;
-  diagrams: DiagramListItem[];
+  documents: DocumentListItem[];
   rows: PanelRowActions;
 }) {
   return (
@@ -122,20 +122,20 @@ export function OfflineNode({
         kind="offline"
         expanded={expanded}
         onToggleExpanded={onToggleExpanded}
-        count={diagrams.length}
+        count={liveDocs.length}
         iconClassName="text-amber-500"
       />
       {expanded.offline ? (
-        diagrams.length === 0 ? (
+        liveDocs.length === 0 ? (
           <p className="px-8 py-1.5 text-[10px] text-slate-400 dark:text-slate-400">
-            Diagrams saved only in this browser collect here.
+            Documents saved only in this browser collect here.
           </p>
         ) : (
           <ul className="flex flex-col gap-0.5">
-            <PanelDiagramRows
-              diagrams={diagrams}
+            <PanelDocumentRows
+              documents={liveDocs}
               indent={16}
-              rows={{ ...rows, onMoveDiagramToFolder: undefined }}
+              rows={{ ...rows, onMoveDocumentToFolder: undefined }}
             />
           </ul>
         )
@@ -146,7 +146,7 @@ export function OfflineNode({
 
 // One row in the "Shared with you" accordion. Visually similar to
 // the recents list but stripped of folder / move / duplicate menu
-// affordances: the visitor doesn't own these diagrams, so the
+// affordances: the visitor doesn't own these documents, so the
 // only meaningful actions are "open" and "dismiss this row from my
 // list." A small role pill ("View" / "Edit") communicates what they
 // can do once they're in.
@@ -160,7 +160,7 @@ export function SharedRow({
   item: SharedWithItem;
   active: boolean;
   // Viewer identity for the thumbnail fetch (the share code authorises
-  // the read; see DiagramThumbnail).
+  // the read; see DocumentThumbnail).
   ownerId: string | null;
   onOpen: () => void;
   onDismiss?: () => void;
@@ -181,9 +181,9 @@ export function SharedRow({
         {/* The real preview, like every owned row — the share code
             authorises the snapshot read, so shared rows are no longer a
             generic glyph while the full-page Shared list shows previews. */}
-        <DiagramThumbnail
+        <DocumentThumbnail
           ownerId={ownerId}
-          diagramId={item.id}
+          documentId={item.id}
           version={item.savedAt}
           shareCode={item.shareCode}
         />

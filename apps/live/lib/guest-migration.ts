@@ -2,7 +2,7 @@ import { apiMigrateGuestData } from './api-client';
 import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from './local-identity';
 
 // Guest → account migration (docs/specs/014-identity/auth-and-guest-access.md).
-// Owner data waits for it: until it settles, the guest's diagrams still
+// Owner data waits for it: until it settles, the guest's documents still
 // belong to the guest id, and a read as the Clerk userId 404s. One run per
 // page load, shared by every component that mounts useClerkApiBootstrap.
 

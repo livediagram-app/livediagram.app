@@ -6,53 +6,44 @@ describe('computeDockAnchor', () => {
   const popover = 256;
   const rightAligned = 1000 - 256 - 8; // 736
 
-  it('right-aligns to the dock edge, so every button opens in the same spot', () => {
-    // The leftmost (Explorer) and a rightmost dock button land at the SAME
-    // left — they used to disagree (Explorer drifted toward the centre).
-    const leftBtn = computeDockAnchor({ left: 760, bottom: 40, width: 40 }, canvas, popover);
-    const rightBtn = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover);
-    expect(leftBtn.left).toBe(rightAligned);
-    expect(rightBtn.left).toBe(rightAligned);
-    expect(leftBtn.top).toBe(40);
-  });
-
-  it('points the arrow up at the tapped button', () => {
-    const a = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover);
-    expect(a.arrowOffset).toBe(920 - rightAligned); // button centre 920
-  });
-
-  it('clamps the arrow to stay on the popover', () => {
-    // A far-left button would push the arrow off the popover's left edge.
-    const a = computeDockAnchor({ left: 100, bottom: 30, width: 40 }, canvas, popover);
-    expect(a.left).toBe(rightAligned);
-    expect(a.arrowOffset).toBe(14);
-  });
-
-  it('clamps to 8px from the left edge on a canvas narrower than the popover', () => {
-    const narrow = { left: 0, top: 0, width: 200 };
-    const a = computeDockAnchor({ left: 150, bottom: 30, width: 40 }, narrow, popover);
-    expect(a.left).toBe(8); // 200 - 256 - 8 = -64, clamped to 8
-  });
-
-  it("hangs a lone button's popover from the button itself", () => {
+  it("hangs a button's popover from the button itself", () => {
     // The Toolbar layout's menu button, top-left (docs/specs/007-editor/toolbar-layout.md): the Explorer
     // opens under it, not tucked against the far right edge.
     const a = computeDockAnchor({ left: 16, bottom: 58, width: 36 }, canvas, popover, 'button');
     expect(a.left).toBe(16);
+    expect(a.top).toBe(58);
     expect(a.arrowOffset).toBe(34 - 16); // button centre 34
   });
 
-  it("keeps a lone button's popover on the canvas near the right edge", () => {
+  it("keeps a button's popover on the canvas near the right edge", () => {
     const a = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover, 'button');
     expect(a.left).toBe(rightAligned);
+    expect(a.arrowOffset).toBe(920 - rightAligned); // button centre 920
+  });
+
+  it('clamps to 8px from the left edge on a canvas narrower than the popover', () => {
+    const narrow = { left: 0, top: 0, width: 200 };
+    const a = computeDockAnchor({ left: 150, bottom: 30, width: 40 }, narrow, popover, 'button');
+    expect(a.left).toBe(8); // 200 - 256 - 8 = -64, clamped to 8
+  });
+
+  it('clamps the arrow to stay on the popover', () => {
+    const a = computeDockAnchor({ left: 0, bottom: 30, width: 10 }, canvas, popover, 'button');
+    expect(a.left).toBe(8);
+    expect(a.arrowOffset).toBe(14);
   });
 
   it('subtracts the canvas offset so the anchor is canvas-relative', () => {
     const offsetCanvas = { left: 100, top: 50, width: 1000 };
-    const a = computeDockAnchor({ left: 880, bottom: 90, width: 40 }, offsetCanvas, popover);
+    const a = computeDockAnchor(
+      { left: 300, bottom: 90, width: 40 },
+      offsetCanvas,
+      popover,
+      'button',
+    );
     expect(a.top).toBe(40); // 90 - 50
-    expect(a.left).toBe(rightAligned); // width - popover - 8, offset-independent
-    expect(a.arrowOffset).toBe(800 - rightAligned); // centre 880 + 20 - 100 = 800
+    expect(a.left).toBe(200); // 300 - 100
+    expect(a.arrowOffset).toBe(20); // centre 320 - 100 - 200
   });
 
   it("opens a cluster button's popover up from the button", () => {
@@ -81,9 +72,9 @@ describe('computeDockAnchor', () => {
   });
 
   it('leaves `bottom` unset for a popover that opens down', () => {
-    expect(computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover).bottom).toBe(
-      undefined,
-    );
+    expect(
+      computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover, 'button').bottom,
+    ).toBe(undefined);
   });
 });
 

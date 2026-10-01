@@ -1,9 +1,10 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/diagram';
-import { COMPONENT_SIZE } from '@livediagram/diagram';
+import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/document';
+import { COMPONENT_SIZE } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
 import {
   buildDrawnArrow,
+  buildDressedDrawnArrow,
   buildDrawnBoxed,
   buildDrawnComponent,
   NEW_ARROW_THEME_STROKE_FALLBACK,
@@ -21,6 +22,56 @@ const bareTheme = {} as unknown as ThemeDefinition;
 const tab = (overrides: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [], ...overrides }) as unknown as Tab;
 
+// docs/specs/023-whiteboard/whiteboard.md "Shapes": the preview and the commit build one arrow.
+describe('buildDressedDrawnArrow', () => {
+  const thick = <T extends Element>(el: T): T => ({
+    ...el,
+    strokeWidth: 6,
+    arrowheadSize: 'large',
+  });
+  const board = { elements: [] as Element[], theme: themed, whiteboard: true };
+
+  it('is the drawn arrow in its tool style, unpainted on a whiteboard', () => {
+    const out = buildDressedDrawnArrow(
+      { type: 'arrow', ends: 'to', board: true },
+      10,
+      20,
+      150,
+      90,
+      board,
+      thick,
+    );
+    const { id: _id, ...rest } = out;
+    const { id: _raw, ...raw } = buildDrawnArrow(10, 20, 150, 90, [], themed, {
+      ends: 'to',
+      unpainted: true,
+    });
+    expect(rest).toEqual({ ...raw, strokeWidth: 6, arrowheadSize: 'large' });
+    expect(out.strokeColor).toBeUndefined();
+  });
+
+  it('paints a diagram arrow in the theme stroke, then dresses it', () => {
+    const out = buildDressedDrawnArrow(
+      { type: 'arrow' },
+      0,
+      0,
+      100,
+      0,
+      { ...board, whiteboard: false },
+      thick,
+    );
+    expect(out.strokeColor).toBe('#123456');
+    expect(out.strokeWidth).toBe(6);
+    expect(out.arrowEnds).toBe('none');
+  });
+
+  it('lands the tap placeholder while the drag is still a tap', () => {
+    const out = buildDressedDrawnArrow({ type: 'arrow' }, 500, 300, 505, 302, board, (el) => el);
+    expect(out.from).toEqual({ kind: 'free', x: 420, y: 300 });
+    expect(out.to).toEqual({ kind: 'free', x: 580, y: 300 });
+  });
+});
+
 describe('buildDrawnArrow', () => {
   it('lays a flat 160px placeholder across a stray click, unsnapped', () => {
     const out = buildDrawnArrow(500, 300, 505, 310, [], themed); // <16px travel = click
@@ -33,6 +84,15 @@ describe('buildDrawnArrow', () => {
   it('falls back to the brand stroke when the theme has no elementStroke', () => {
     const out = buildDrawnArrow(0, 0, 5, 5, [], bareTheme);
     expect(out.strokeColor).toBe(NEW_ARROW_THEME_STROKE_FALLBACK);
+  });
+
+  it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
+    // docs/specs/023-whiteboard/whiteboard.md: unpainted, so it takes the board's ink.
+    const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
+    expect(arrow.arrowEnds).toBe('to');
+    expect(arrow.strokeColor).toBeUndefined();
+    const line = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'none', unpainted: true });
+    expect(line.arrowEnds).toBe('none');
   });
 
   it('uses the dragged endpoints as-is on a real drag', () => {
@@ -80,6 +140,40 @@ describe('buildDrawnComponent', () => {
 
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
+
+  // docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box hugs its text.
+  it('places a whiteboard text box empty, caret-sized, at the click', () => {
+    const out = buildDrawnBoxed(
+      { type: 'text' },
+      500,
+      300,
+      502,
+      301,
+      null,
+      tab({ kind: 'whiteboard' }),
+    );
+    // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
+    expect(out).toMatchObject({ label: '', autoWidth: true, x: 496, y: 289, width: 8, height: 22 });
+  });
+
+  it('sets a dragged whiteboard text box to the dragged width and one line', () => {
+    const out = buildDrawnBoxed(
+      { type: 'text' },
+      100,
+      50,
+      340,
+      200,
+      null,
+      tab({ kind: 'whiteboard' }),
+    );
+    expect(out).toMatchObject({ label: '', x: 100, y: 50, width: 240, height: 22 });
+    expect('autoWidth' in out).toBe(false);
+  });
+
+  it('keeps a diagram tab text box at its default size', () => {
+    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab());
+    expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
+  });
 
   it('centres the factory-default size on a tap', () => {
     const out = buildDrawnBoxed(shapeIntent, 500, 300, 504, 303, null, tab());

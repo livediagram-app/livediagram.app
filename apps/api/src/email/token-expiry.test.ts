@@ -25,7 +25,7 @@ describe('tokenExpiringEmail', () => {
     expect(e.subject).toMatch(/expires/i);
     expect(e.html).toContain('CI deploy');
     expect(e.html).toContain('January 5, 2026');
-    expect(e.html).toContain('https://app.test/explorer/tokens');
+    expect(e.html).toContain('https://app.test/explorer?settings=tokens');
   });
 
   it('falls back when the token is unnamed', () =>

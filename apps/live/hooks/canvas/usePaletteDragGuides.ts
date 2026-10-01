@@ -6,7 +6,7 @@ import {
   type DistributionGuide,
   type Element,
   type EsTimeline,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import {
@@ -166,7 +166,7 @@ export function usePaletteDragGuides({
         height: preview.height,
         elements: live,
         // Lanes are a NOTE grammar: a shape dragged in from the palette lands
-        // exactly as it does on every other board.
+        // exactly as it does on every other tab.
         timeline: preview.note === true ? lanes : null,
         laneHeld: preview.workshop === true,
       });
@@ -204,6 +204,6 @@ export function usePaletteDragGuides({
   return { guides, distGuides };
 }
 
-// The DOM Element type, aliased so the diagram package's `Element` (the
+// The DOM Element type, aliased so the document package's `Element` (the
 // domain model) can keep the unqualified name in this file.
 type Element2 = globalThis.Element;

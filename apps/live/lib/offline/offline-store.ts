@@ -1,51 +1,54 @@
-// Offline Mode (docs/specs/006-diagram/offline-mode.md): diagrams saved only in THIS browser, in IndexedDB,
+// Offline Mode (docs/specs/006-document/offline-mode.md): documents saved only in THIS browser, in IndexedDB,
 // never to the API. This module is the local counterpart of `lib/api/*` — it
-// produces the same wire shapes (Diagram / DiagramSummary / Tab) so the editor
-// and Explorer render an offline diagram exactly like a cloud one; the
-// persistence dispatch in `lib/api/*` routes to these when a diagram id is
+// produces the same wire shapes (LiveDoc / DocumentSummary / Tab) so the editor
+// and Explorer render an offline document exactly like a cloud one; the
+// persistence dispatch in `lib/api/*` routes to these when a document id is
 // registered offline (see `isOfflineId`).
 //
-// Storage: one IndexedDB record per diagram, holding its meta + all tab bodies
-// inline (offline diagrams load whole — no lazy per-tab fetch). The set of
+// Storage: one IndexedDB record per document, holding its meta + all tab bodies
+// inline (offline documents load whole — no lazy per-tab fetch). The set of
 // offline ids IS the set of record keys, mirrored in an in-memory cache so the
 // dispatch can answer "is this id offline?" cheaply.
 
-import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
-import { migrateStoredTab, stampTabKind } from '@livediagram/diagram';
-import type { Tab } from '@livediagram/diagram';
-import { DiagramTrashedError } from '../diagram-trashed';
+import { upgradeStores } from './legacy-offline-store';
+import type { ChangeLogEntry, LiveDoc, DocumentSummary, TabSummary } from '@livediagram/api-schema';
+import { migrateStoredTab, stampTabKind } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
+import { DocumentTrashedError } from '../document-trashed';
 
-// Sentinel owner id stamped on offline diagrams. They have no server owner;
+// Sentinel owner id stamped on offline documents. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
 export const OFFLINE_OWNER_ID = 'offline';
 
 const DB_NAME = 'livediagram-offline';
-const DB_VERSION = 1;
-const STORE = 'diagrams';
+// Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
+// ./legacy-offline-store moves every record across.
+const DB_VERSION = 2;
+const STORE = 'documents';
 
-// The stored shape for one offline diagram.
-export type OfflineDiagramRecord = {
+// The stored shape for one offline document.
+export type OfflineDocumentRecord = {
   id: string;
   name: string;
   folderId: string | null;
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Activity / change log, newest first (docs/specs/006-diagram/offline-mode.md: local-only, kept in the
-  // diagram record). Optional so records written before the field existed
+  // Activity / change log, newest first (docs/specs/006-document/offline-mode.md: local-only, kept in the
+  // document record). Optional so records written before the field existed
   // stay valid. Managed by ./offline-change-log.ts.
   log?: ChangeLogEntry[];
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline diagrams get
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
   // decks for the same reason they get everything else: Offline Mode is the
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
   // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // diagram_id is a foreign key into `diagrams`, which an offline diagram has
+  // document_id is a foreign key into `documents`, which an offline document has
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // When the diagram was moved to this browser's local Trash
+  // When the document was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
@@ -57,13 +60,13 @@ export type OfflineDiagramRecord = {
 
 export function tabToSummary(
   tab: Tab,
-  diagramId: string,
+  documentId: string,
   orderIndex: number,
   at: number,
 ): TabSummary {
   const summary: TabSummary = {
     id: tab.id,
-    diagramId,
+    documentId,
     name: tab.name,
     orderIndex,
     updatedAt: at,
@@ -72,10 +75,10 @@ export function tabToSummary(
   return summary;
 }
 
-// Project a stored record into the full `Diagram` the editor hydrates from.
+// Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
-// provenance, no owner join) — offline diagrams are private by construction.
-export function recordToDiagram(rec: OfflineDiagramRecord): Diagram {
+// provenance, no owner join) — offline documents are private by construction.
+export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,
@@ -95,7 +98,7 @@ export function recordToDiagram(rec: OfflineDiagramRecord): Diagram {
 }
 
 // Project a record into a list row (drops tab bodies).
-function recordToSummary(rec: OfflineDiagramRecord): DiagramSummary {
+function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,
@@ -110,20 +113,20 @@ function recordToSummary(rec: OfflineDiagramRecord): DiagramSummary {
   };
 }
 
-// Apply a diagram-meta change (rename + tab order/folder) to a record,
-// returning a new record. Mirrors `apiSaveDiagramMeta`: `tabs` (when given)
+// Apply a document-meta change (rename + tab order/folder) to a record,
+// returning a new record. Mirrors `apiSaveDocumentMeta`: `tabs` (when given)
 // reorders the existing tab bodies by id and refreshes each tab's folder.
 export function applyMeta(
-  rec: OfflineDiagramRecord,
+  rec: OfflineDocumentRecord,
   patch: {
     name?: string;
     tabs?: { id: string; folder?: string }[];
     // Absent leaves the stored deck alone; null clears it. Same contract as
-    // the server's PUT, so an offline diagram behaves identically.
+    // the server's PUT, so an offline document behaves identically.
     presentation?: string | null;
   },
   at: number,
-): OfflineDiagramRecord {
+): OfflineDocumentRecord {
   let tabs = rec.tabs;
   if (patch.tabs) {
     const byId = new Map(rec.tabs.map((t) => [t.id, t] as const));
@@ -146,10 +149,10 @@ export function applyMeta(
 
 // Upsert one tab body into a record (the autosave path). A new tab id is
 // appended; an existing one is replaced in place, preserving order.
-export function upsertTab(rec: OfflineDiagramRecord, tab: Tab, at: number): OfflineDiagramRecord {
-  // Stamp the board kind here for the same reason the cloud path stamps it
+export function upsertTab(rec: OfflineDocumentRecord, tab: Tab, at: number): OfflineDocumentRecord {
+  // Stamp the tab kind here for the same reason the cloud path stamps it
   // in tabForWire (docs/specs/021-event-storming/event-storming.md): both stores must agree on what a tab IS, or a
-  // Sync Diagram would hand the cloud a board that has forgotten itself.
+  // Sync Document would hand the cloud a board that has forgotten itself.
   const stamped = stampTabKind(tab);
   const i = rec.tabs.findIndex((t) => t.id === stamped.id);
   const tabs =
@@ -158,10 +161,10 @@ export function upsertTab(rec: OfflineDiagramRecord, tab: Tab, at: number): Offl
 }
 
 export function removeTab(
-  rec: OfflineDiagramRecord,
+  rec: OfflineDocumentRecord,
   tabId: string,
   at: number,
-): OfflineDiagramRecord {
+): OfflineDocumentRecord {
   return { ...rec, tabs: rec.tabs.filter((t) => t.id !== tabId), savedAt: at };
 }
 
@@ -170,10 +173,10 @@ export function removeTab(
 // ---------------------------------------------------------------------------
 
 export type OfflineBackend = {
-  get(id: string): Promise<OfflineDiagramRecord | undefined>;
-  put(rec: OfflineDiagramRecord): Promise<void>;
+  get(id: string): Promise<OfflineDocumentRecord | undefined>;
+  put(rec: OfflineDocumentRecord): Promise<void>;
   delete(id: string): Promise<void>;
-  all(): Promise<OfflineDiagramRecord[]>;
+  all(): Promise<OfflineDocumentRecord[]>;
 };
 
 function idbRequest<T>(req: IDBRequest<T>): Promise<T> {
@@ -190,10 +193,7 @@ function openDb(): Promise<IDBDatabase> {
       return;
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
-    };
+    req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error ?? new Error('IndexedDB open failed'));
   });
@@ -213,10 +213,10 @@ async function run<T>(
 }
 
 const indexedDbBackend: OfflineBackend = {
-  get: (id) => run('readonly', (s) => s.get(id) as IDBRequest<OfflineDiagramRecord | undefined>),
+  get: (id) => run('readonly', (s) => s.get(id) as IDBRequest<OfflineDocumentRecord | undefined>),
   put: (rec) => run('readwrite', (s) => s.put(rec)).then(() => undefined),
   delete: (id) => run('readwrite', (s) => s.delete(id)).then(() => undefined),
-  all: () => run('readonly', (s) => s.getAll() as IDBRequest<OfflineDiagramRecord[]>),
+  all: () => run('readonly', (s) => s.getAll() as IDBRequest<OfflineDocumentRecord[]>),
 };
 
 let backend: OfflineBackend = indexedDbBackend;
@@ -236,15 +236,15 @@ export function __setOfflineBackend(b: OfflineBackend | null): void {
 }
 
 // ---------------------------------------------------------------------------
-// Offline id cache — cheap "is this diagram offline?" for the dispatch
+// Offline id cache — cheap "is this document offline?" for the dispatch
 // ---------------------------------------------------------------------------
 
 let idCache: Set<string> | null = null;
 let idCacheLoad: Promise<Set<string>> | null = null;
 // Ids registered before the cache finished loading (a create racing the
 // first lookup). Merged into the cache when it lands and consulted by both
-// checks, so a just-created offline diagram can never read as "not offline"
-// (a miss would leak its writes to the server; see docs/specs/006-diagram/offline-mode.md and the ghost-row
+// checks, so a just-created offline document can never read as "not offline"
+// (a miss would leak its writes to the server; see docs/specs/006-document/offline-mode.md and the ghost-row
 // bug the meta PUT's create-on-first-write used to turn that into).
 const pendingIds = new Set<string>();
 
@@ -274,7 +274,7 @@ export async function isOfflineId(id: string): Promise<boolean> {
 
 // Synchronous check off the already-loaded cache — for the `beforeunload`
 // beacon flush, which can't await. Returns false until the cache has loaded
-// (by which point any diagram being edited has already been through the async
+// (by which point any document being edited has already been through the async
 // path, so its id is cached).
 export function isOfflineIdSync(id: string): boolean {
   return pendingIds.has(id) || (idCache?.has(id) ?? false);
@@ -290,7 +290,7 @@ function forgetId(id: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// Public operations — the local mirror of the diagram/tab api surface
+// Public operations — the local mirror of the document/tab api surface
 // ---------------------------------------------------------------------------
 
 // Every mutation below rewrites the WHOLE record after reading it, so two
@@ -302,8 +302,8 @@ function forgetId(id: string): void {
 let writeChain: Promise<unknown> = Promise.resolve();
 
 // A record the editor may still write: present, and not in the local Trash
-// (an editor left open on a binned diagram must not keep changing it).
-function writable(rec: OfflineDiagramRecord | undefined): rec is OfflineDiagramRecord {
+// (an editor left open on a binned document must not keep changing it).
+function writable(rec: OfflineDocumentRecord | undefined): rec is OfflineDocumentRecord {
   return rec !== undefined && rec.trashedAt === undefined;
 }
 export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
@@ -316,44 +316,47 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
 }
 
 // Live records only: a trashed one waits in the local Trash.
-export async function offlineListDiagrams(): Promise<DiagramSummary[]> {
+export async function offlineListDocuments(): Promise<DocumentSummary[]> {
   const recs = await backend.all();
   return recs.filter((r) => r.trashedAt === undefined).map(recordToSummary);
 }
 
 // A trashed record reads as the deleted state, the local twin of the api's 410.
-export async function offlineLoadDiagram(id: string): Promise<Diagram | null> {
+export async function offlineLoadDocument(id: string): Promise<LiveDoc | null> {
   const rec = await backend.get(id);
-  if (rec?.trashedAt !== undefined) throw new DiagramTrashedError(id);
-  return rec ? recordToDiagram(rec) : null;
+  if (rec?.trashedAt !== undefined) throw new DocumentTrashedError(id);
+  return rec ? recordToDocument(rec) : null;
 }
 
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await backend.get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a diagram kept in this browser can
+  // The offline twin of the api's rowToTab: a document kept in this browser can
   // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
   return tab ? migrateStoredTab(tab) : null;
 }
 
-export async function offlineCreateDiagram(
+// `extra`: a document's own created and last-modified dates (an imported board,
+// docs/specs/015-api/api.md "Document dates"), absent now; the personal folder it is filed in.
+export async function offlineCreateDocument(
   d: { id: string; name: string; tabs?: Tab[] },
   now: number,
-): Promise<Diagram> {
-  const rec: OfflineDiagramRecord = {
+  extra: { createdAt?: number; savedAt?: number; folderId?: string | null } = {},
+): Promise<LiveDoc> {
+  const rec: OfflineDocumentRecord = {
     id: d.id,
     name: d.name,
-    folderId: null,
-    createdAt: now,
-    savedAt: now,
+    folderId: extra.folderId ?? null,
+    createdAt: extra.createdAt ?? now,
+    savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
   };
   await backend.put(rec);
   rememberId(rec.id);
-  return recordToDiagram(rec);
+  return recordToDocument(rec);
 }
 
-export async function offlineSaveDiagramMeta(
+export async function offlineSaveDocumentMeta(
   id: string,
   patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
   now: number,
@@ -365,10 +368,10 @@ export async function offlineSaveDiagramMeta(
   });
 }
 
-// Personal-folder placement for an offline diagram (docs/specs/013-workspace/folders.md). Folders are
+// Personal-folder placement for an offline document (docs/specs/013-workspace/folders.md). Folders are
 // server-side rows, but an offline record carries a folderId so its row can
 // sit in the Explorer's personal tree like any other.
-export async function offlineSetDiagramFolder(
+export async function offlineSetDocumentFolder(
   id: string,
   folderId: string | null,
   now: number,
@@ -380,9 +383,9 @@ export async function offlineSetDiagramFolder(
   });
 }
 
-// Star / un-star an offline diagram (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
+// Star / un-star an offline document (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
 // alone on purpose: a star is a per-user bookmark, not an edit to the
-// diagram, and bumping it would reorder Recent on a click that changed
+// document, and bumping it would reorder Recent on a click that changed
 // nothing about the content.
 export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
   await serializeOfflineWrite(async () => {
@@ -399,12 +402,12 @@ export async function offlineListFavouriteIds(): Promise<string[]> {
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
   await serializeOfflineWrite(async () => {
-    // No create-on-missing: a save must never resurrect a deleted diagram.
+    // No create-on-missing: a save must never resurrect a deleted document.
     // A pending debounced autosave can land AFTER a sync-to-cloud deleted
     // the record; recreating it here would shadow the freshly-synced cloud
     // copy behind a 1-tab offline ghost (the local analog of the server's
     // old create-on-first-write bug). Records are only ever created by
-    // offlineCreateDiagram / offlinePutRecord.
+    // offlineCreateDocument / offlinePutRecord.
     const rec = await backend.get(id);
     if (!writable(rec)) return;
     await backend.put(upsertTab(rec, tab, now));
@@ -419,7 +422,7 @@ export async function offlineDeleteTab(id: string, tabId: string, now: number): 
   });
 }
 
-export async function offlineDeleteDiagram(id: string): Promise<void> {
+export async function offlineDeleteDocument(id: string): Promise<void> {
   // Serialized with the tab / meta writes so a queued save can't interleave
   // with (or observe a half-applied) delete.
   await serializeOfflineWrite(async () => {
@@ -428,13 +431,13 @@ export async function offlineDeleteDiagram(id: string): Promise<void> {
   });
 }
 
-// Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-diagram/offline-mode.md) to
-// upload the whole diagram, and by "take offline" to seed one.
-export async function offlineGetRecord(id: string): Promise<OfflineDiagramRecord | null> {
+// Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-document/offline-mode.md) to
+// upload the whole document, and by "take offline" to seed one.
+export async function offlineGetRecord(id: string): Promise<OfflineDocumentRecord | null> {
   return (await backend.get(id)) ?? null;
 }
 
-export async function offlinePutRecord(rec: OfflineDiagramRecord): Promise<void> {
+export async function offlinePutRecord(rec: OfflineDocumentRecord): Promise<void> {
   await backend.put(rec);
   rememberId(rec.id);
 }

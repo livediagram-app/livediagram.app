@@ -74,7 +74,7 @@ export function usePowerUserOffer(deps: PowerUserOfferDeps): { onShortcutUsed: (
   };
 
   // One editing session per page load, counted once the preferences settle
-  // and only while the diagram is editable.
+  // and only while the document is editable.
   const sessionRecorded = useRef(false);
   const { settled, editable } = deps;
   useEffect(() => {

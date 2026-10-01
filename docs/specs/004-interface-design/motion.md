@@ -21,7 +21,7 @@ the one switch, and it goes further: it collapses all motion to instant.
   list, grid, menu or feed whose items enter one beat apart. Each item runs at most 150ms, and the
   delay stops growing at 100ms.
 
-Chrome is everything that isn't the diagram. That includes panels, menus, popovers, flyouts,
+Chrome is everything that isn't the canvas. That includes panels, menus, popovers, flyouts,
 dropdowns, tooltips, dialogs, sheets, drawers, toasts, banners, tab bars, the tour, the Explorer,
 the help centre, the telemetry dashboard and the marketing site's own navigation and cards.
 
@@ -42,15 +42,15 @@ Tailwind's bare `transition` utility runs at `micro`.
 
 Every duration in the codebase belongs to exactly one kind. The budget applies to the first two.
 
-| Kind                     | What it is                                                                                              | Budget                                    |
-| ------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                         | 250ms, or 150ms for hovers                |
-| **Cascade**              | Chrome items entering one beat apart                                                                    | 250ms for the whole cascade               |
-| **Canvas animation**     | Motion of or on the diagram. Element entry and animations, arrow flow, slide transitions, collab boards | Its own spec                              |
-| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control               | Its own spec                              |
-| **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                   | About half its original length, see below |
-| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat   | Exempt; not a transition                  |
-| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss  | Untouched; not motion                     |
+| Kind                     | What it is                                                                                             | Budget                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers                |
+| **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade               |
+| **Canvas animation**     | Motion of or on the canvas. Element entry and animations, arrow flow, slide transitions, collab boards | Its own spec                              |
+| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                              |
+| **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                  | About half its original length, see below |
+| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition                  |
+| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss | Untouched; not motion                     |
 
 A timer that only waits for an exit animation to finish before unmounting is an **exit hold**. It
 belongs to the animation it waits for, not to the timers, so it runs for that animation's token.
@@ -83,6 +83,24 @@ motion is stricter still.
   transition. A position written and measured in the same frame then reads back its old value. The
   tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
   on `transitionend`.
+
+## Editor arrival
+
+The editor's floating chrome (the Explorer, Palette and Map panels, the tab bar, the zoom cluster)
+and the canvas content **fade in** as they mount, `fade-in` at the short token (200ms), opacity
+only, so a document opens softly rather than its parts popping into place. It is one rule in
+`apps/live/app/globals.css` keyed on the surfaces' existing markers (`data-floating-panel`,
+`data-editor-tabbar`, `data-zoom-cluster`, `data-canvas-world`), in the components layer so a
+surface's own entrance utility still wins. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
+brush, collaborate / activity, zoom), used to scale in from nothing with an overshoot
+(`pop-in`); a whole panel or toolbar popping read as abrupt, so they fade (`animate-fade-in`)
+instead. `pop-in` stays
+on small controls, where it reads as feedback.
+
+A picker's first paint does not animate: the template picker's open shelf plays its entrance
+(`shelf-open`) only when the person opens a category, not on load, and a carousel reserves its
+arrows' space from the first frame ([Canvas and palette](../008-canvas/canvas-and-palette.md)
+"Templates section"), so nothing shifts as the modal arrives.
 
 ## Layout stability
 

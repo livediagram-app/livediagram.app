@@ -1,6 +1,6 @@
 // DOM <-> runs glue for the rich-text editor (docs/specs/008-canvas/canvas-and-palette.md). Kept separate from
 // the React component so the offset mapping is small, framework-free, and
-// easy to reason about. The pure runs algebra lives in @livediagram/diagram
+// easy to reason about. The pure runs algebra lives in @livediagram/document
 // (rich-text.ts); this module only bridges it to a live contentEditable.
 //
 // Invariant the whole design rests on: the editor renders runs as a flat
@@ -9,7 +9,7 @@
 // and a single string-length walk converts between DOM points and character
 // offsets in both directions.
 
-import { normalizeRuns, type RunSize, type TextRun } from '@livediagram/diagram';
+import { normalizeRuns, type RunSize, type TextRun } from '@livediagram/document';
 
 // data-* attribute names carried on each rendered span. Render
 // (`dataAttrsForRun`) and read-back (`readRunsFromDom`) must agree, so they
@@ -41,7 +41,7 @@ const RENDER_NEWLINE_ATTR = 'data-rt-render-nl';
 // the editor's text ends in a newline. Caret-safe: the sentinel always sits
 // at the very end (after any caret), so adding/removing it never moves the
 // selection. Call after any edit that may change the trailing character.
-export function reconcileTrailingNewline(editorEl: HTMLElement): void {
+export function reconcileTrailingNewline(editorEl: HTMLElement): boolean {
   const last = editorEl.lastChild;
   const isSentinel =
     last instanceof HTMLElement && last.tagName === 'BR' && last.hasAttribute(RENDER_NEWLINE_ATTR);
@@ -50,9 +50,19 @@ export function reconcileTrailingNewline(editorEl: HTMLElement): void {
     const br = document.createElement('br');
     br.setAttribute(RENDER_NEWLINE_ATTR, '');
     editorEl.appendChild(br);
-  } else if (!endsWithNewline && isSentinel) {
-    editorEl.removeChild(last);
+    return true;
   }
+  if (!endsWithNewline && isSentinel) editorEl.removeChild(last);
+  return false;
+}
+
+/** Set the live selection again, so the browser re-settles it against the current DOM. */
+export function reassertSelection(): void {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0).cloneRange();
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 /** React props (data-* attrs) describing a run's deltas, for the editor to spread onto its span. */

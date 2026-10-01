@@ -24,7 +24,7 @@ describe('firstTabToLoad', () => {
     expect(firstTabToLoad(tabs, 't2')).toBe('t2');
   });
 
-  it('is nothing for an empty diagram', () => {
+  it('is nothing for an empty document', () => {
     expect(firstTabToLoad([], null)).toBeNull();
   });
 });

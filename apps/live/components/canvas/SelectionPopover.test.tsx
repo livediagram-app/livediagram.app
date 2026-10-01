@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SelectionPopover } from './SelectionPopover';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
@@ -22,9 +22,9 @@ function setTouch(touch: boolean) {
 
 const BOUNDS = { x: 100, y: 100, width: 80, height: 40 };
 
-function renderSingle(minimal = false) {
+function renderSingle(minimal = false, powerUser = minimal) {
   render(
-    <MinimalChromeProvider value={minimal}>
+    <MinimalChromeProvider value={minimal} powerUser={powerUser}>
       <SelectionPopover
         bounds={BOUNDS}
         canvasOffset={{ x: 0, y: 0 }}
@@ -38,9 +38,9 @@ function renderSingle(minimal = false) {
   );
 }
 
-function renderMulti(minimal = false) {
+function renderMulti(minimal = false, powerUser = minimal) {
   render(
-    <MinimalChromeProvider value={minimal}>
+    <MinimalChromeProvider value={minimal} powerUser={powerUser}>
       <MultiSelectionToolbar
         anyLocked={false}
         allLocked={false}
@@ -61,16 +61,22 @@ afterEach(() => {
 });
 
 describe('SelectionPopover', () => {
-  it('has no More button on desktop: right-click opens the menu', () => {
+  it('shows More on desktop, the visible way into the element menu', () => {
     setTouch(false);
     renderSingle();
-    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy();
   });
 
-  it('keeps More on touch, which cannot right-click', () => {
+  it('drops More on desktop in power user mode, where right-click opens the menu', () => {
+    setTouch(false);
+    renderSingle(false, true);
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+  });
+
+  it('keeps More on touch, which cannot right-click, even in power user mode', () => {
     setTouch(true);
-    renderSingle();
+    renderSingle(true, true);
     expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
   });
 
@@ -97,13 +103,16 @@ describe('SelectionPopover', () => {
 });
 
 describe('MultiSelectionToolbar', () => {
-  it('has no More button on desktop, and keeps it on touch', () => {
+  it('shows More on desktop except in power user mode, and always on touch', () => {
     setTouch(false);
     renderMulti();
+    expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
+    cleanup();
+    renderMulti(false, true);
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
     cleanup();
     setTouch(true);
-    renderMulti();
+    renderMulti(true, true);
     expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
   });
 
@@ -115,5 +124,54 @@ describe('MultiSelectionToolbar', () => {
     setTouch(true);
     renderMulti(true);
     expect(screen.getByRole('button', { name: 'Delete selected elements' })).toBeTruthy();
+  });
+});
+
+// Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling ride the toolbar of a mind node.
+describe('SelectionPopover mind-node growth', () => {
+  it('offers Add child and Add sibling, each firing its own grower', () => {
+    setTouch(false);
+    const child = vi.fn();
+    const sibling = vi.fn();
+    render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        onAddMindChild={child}
+        onAddMindSibling={sibling}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add child' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add sibling' }));
+    expect(child).toHaveBeenCalledOnce();
+    expect(sibling).toHaveBeenCalledOnce();
+  });
+
+  it('shows neither on an element that is not a mind node', () => {
+    setTouch(false);
+    renderSingle();
+    expect(screen.queryByRole('button', { name: 'Add child' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add sibling' })).toBeNull();
+  });
+});
+
+describe('Edit points (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+  afterEach(cleanup);
+
+  it('offers Edit points for a path and opens its edit mode', () => {
+    setTouch(false);
+    const onEditPoints = vi.fn();
+    render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        title="Selected Path"
+        onEditPoints={onEditPoints}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Edit points/ }));
+    expect(onEditPoints).toHaveBeenCalled();
   });
 });

@@ -15,7 +15,7 @@ export const CUSTOM_THEME_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 // The built-in brand theme was labelled Basic until #73 renamed it Default
-// (packages/diagram themes-data.ts), and the token follows the label. Rows
+// (packages/document themes-data.ts), and the token follows the label. Rows
 // stored before the rename fold into Default so one theme ranks once.
 export const THEME_ALIASES: TypeAliases = { Basic: 'Default' };
 

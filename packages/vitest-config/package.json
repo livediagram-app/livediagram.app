@@ -10,7 +10,11 @@
       "types": "./index.d.ts",
       "default": "./index.js"
     },
-    "./react-cleanup": "./react-cleanup.js"
+    "./react-cleanup": "./react-cleanup.js",
+    "./cpu-time": {
+      "types": "./cpu-time.d.ts",
+      "default": "./cpu-time.js"
+    }
   },
   "scripts": {
     "clean": "rm -rf node_modules .turbo"

@@ -36,7 +36,7 @@ import {
   type IconWeight,
   type RunBoolKey,
   type TextRun,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 type BoxedKind = BoxedElement['type'];
 
@@ -113,6 +113,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     colorPreset?: string;
     strokeSwatch?: QuickSwatchSlot;
     fillSwatch?: QuickSwatchSlot;
+    textSwatch?: QuickSwatchSlot;
     themeLockFill?: boolean;
     headerFill?: string;
     headerTextColor?: string;
@@ -152,6 +153,9 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
   }
   if (RADIUS_KINDS.has(kind)) out.borderRadius = ext.borderRadius;
   if (kind === 'table') out.headerTextColor = ext.headerTextColor;
+  // A text element's quick-swatch binding, beside its colour; not when a
+  // uniform run colour is what was painted, which the slot does not describe.
+  if (kind === 'text') out.textSwatch = uniformRunValue(rt, 'color') ? undefined : ext.textSwatch;
   if (kind === 'shape') {
     // Colour-preset binding (docs/specs/010-palette/style-presets.md) + the fill's theme lock: carried
     // alongside the colours so a painted shape tracks the theme exactly
@@ -229,6 +233,7 @@ const PRESET_COLOURS = ['fillColor', 'strokeColor', 'textColor'] as const;
 const SWATCH_BINDINGS = [
   ['fillColor', 'fillSwatch'],
   ['strokeColor', 'strokeSwatch'],
+  ['textColor', 'textSwatch'],
 ] as const;
 
 // Lay a (filtered) projection onto the target. Defined values are set,

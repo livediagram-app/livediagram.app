@@ -11,8 +11,8 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // until you take it. That is the one place this parts company with Follow Me
 // (docs/specs/012-collaboration/follow-me-viewport.md), which is unilateral by design: the difference is push versus
 // pull. A follower chose to be moved and can stop whenever; a yank arrives
-// unasked, in the middle of whatever you were doing, and a board where anybody
-// can teleport everybody is a board where somebody's half-typed note is lost.
+// unasked, in the middle of whatever you were doing, and a canvas where anybody
+// can teleport everybody is a canvas where somebody's half-typed note is lost.
 
 /** A live invitation: where it points, and who sent it. */
 export type FocusInvite = {
@@ -87,7 +87,7 @@ export function useFocusInvite(deps: {
     if (!current) return;
     setInvite(null);
     // Tab first: centring a point on a tab you are not on yet would leave you
-    // looking at the right coordinates of the wrong board.
+    // looking at the right coordinates of the wrong canvas.
     ref.current.onFollowTab(current.tabId);
     ref.current.onCentreOn(current.at, current.zoom);
   }, [ref, liveRef]);

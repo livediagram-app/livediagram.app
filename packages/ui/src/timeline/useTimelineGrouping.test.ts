@@ -13,10 +13,10 @@ function event(occurredAt: number): TimelineEvent {
   seq += 1;
   return {
     id: `e${seq}`,
-    sourceType: 'diagram',
+    sourceType: 'document',
     sourceId: `s${seq}`,
-    eventType: 'diagram_edited',
-    title: 'Diagram Updated',
+    eventType: 'document_edited',
+    title: 'Document Updated',
     description: null,
     occurredAt,
     actorId: null,

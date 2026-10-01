@@ -2,7 +2,7 @@
 // line-art glyphs (docs/specs/008-canvas/canvas-and-palette.md "Icons") and the Technology brand marks (docs/specs/010-palette/technology-icons.md),
 // both living as data modules in @livediagram/icons (shared with the Workers'
 // headless renders). Together they are ~60 kB of pure data that almost no
-// first paint needs — a diagram with no icon elements never touches them — so
+// first paint needs — a document with no icon elements never touches them — so
 // they are dynamic-imported here into an async chunk instead of riding the
 // editor's first-load JS.
 //

@@ -18,7 +18,7 @@ import { apiFetch, apiHeaders, ApiError, expectOkVoid, setTokenProvider } from '
 describe('apiErrorType', () => {
   it('appends the action as one PascalCase token', () => {
     expect(apiErrorType(403, 'save tab')).toBe('Http403.SaveTab');
-    expect(apiErrorType(500, 'create diagram')).toBe('Http500.CreateDiagram');
+    expect(apiErrorType(500, 'create document')).toBe('Http500.CreateDocument');
     expect(apiErrorType(429, 'resolve team invite link')).toBe('Http429.ResolveTeamInviteLink');
   });
 
@@ -28,7 +28,7 @@ describe('apiErrorType', () => {
   it('produces a token the ingest validator accepts', () => {
     const actions = [
       'save tab',
-      'save diagram meta',
+      'save document meta',
       'resolve team invite link',
       'notify assigned action',
       'oauth exchange',
@@ -44,8 +44,8 @@ describe('apiErrorType', () => {
   // Nothing user-typed reaches these strings today, but the filter is what
   // guarantees a future action string can't smuggle in a path or an id.
   it('keeps only letters and digits, so a path or id cannot leak', () => {
-    expect(apiErrorType(404, 'load /diagrams/8f3e-9a21/tabs')).toBe(
-      'Http404.LoadDiagrams8f3e9a21Tabs',
+    expect(apiErrorType(404, 'load /documents/8f3e-9a21/tabs')).toBe(
+      'Http404.LoadDocuments8f3e9a21Tabs',
     );
     expect(apiErrorType(403, 'share?code=SEKRIT')).toMatch(TELEMETRY_TYPE_PATTERN);
   });
@@ -95,8 +95,8 @@ describe('network failures', () => {
   });
 
   it('labels the route without ids', () => {
-    expect(networkErrorType('PUT', 'http://localhost:8787/api/diagrams/abc-123/tabs/t9')).toBe(
-      'Network.Put.Diagrams.Tabs',
+    expect(networkErrorType('PUT', 'http://localhost:8787/api/documents/abc-123/tabs/t9')).toBe(
+      'Network.Put.Documents.Tabs',
     );
     expect(networkErrorType('GET', '/api/share/SEKRIT')).toBe('Network.Get.Share');
   });
@@ -202,7 +202,7 @@ describe('reportSaveFailure', () => {
     const res = new Response('{}', { status: 500 });
     const apiErr = await expectOkVoid(res, 'save tab').catch((e: unknown) => e);
     vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
-    const netErr = await apiFetch('/api/diagrams/d/tabs/t', { method: 'PUT' }).catch(
+    const netErr = await apiFetch('/api/documents/d/tabs/t', { method: 'PUT' }).catch(
       (e: unknown) => e,
     );
     const noTokenErr = await apiHeaders('user_abc').catch((e: unknown) => e);

@@ -46,7 +46,7 @@ export const REALTIME_RESYNCS: Metric = {
   typeIn: isRecovery,
   title: 'Realtime Resyncs',
   blurb:
-    'Not an exception: the editor noticed it had missed live updates and refetched the diagram to catch up. A rising line means the realtime room is dropping updates.',
+    'Not an exception: the editor noticed it had missed live updates and refetched the document to catch up. A rising line means the realtime room is dropping updates.',
 };
 
 export const WARNINGS: Metric = {

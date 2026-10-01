@@ -4,9 +4,9 @@ import { deleteChangeLogEntry, listChangeLog } from './change-log';
 
 // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads and removes log entries of
 // their own tab only. Filtered in SQL, so the list still carries the latest
-// entries of THAT tab rather than whatever survived a diagram-wide cap.
+// entries of THAT tab rather than whatever survived a document-wide cap.
 describe('listChangeLog', () => {
-  it('lists the whole diagram when unscoped', async () => {
+  it('lists the whole document when unscoped', async () => {
     const db = fakeD1(() => ({ all: [] }));
     await listChangeLog(db.env, 'd1');
     const query = db.one('FROM change_log cl');
@@ -24,7 +24,7 @@ describe('listChangeLog', () => {
 });
 
 describe('deleteChangeLogEntry', () => {
-  it('deletes within the diagram when unscoped', async () => {
+  it('deletes within the document when unscoped', async () => {
     const db = fakeD1();
     await deleteChangeLogEntry(db.env, 'd1', 'e1');
     expect(db.one('DELETE FROM change_log').bindings).toEqual(['e1', 'd1']);

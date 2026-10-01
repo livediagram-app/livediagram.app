@@ -6,7 +6,7 @@ import {
   type Element,
   type EsTimeline,
   type StickyElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import { resolveBoxedMove } from './boxed-drag-resolve';
 

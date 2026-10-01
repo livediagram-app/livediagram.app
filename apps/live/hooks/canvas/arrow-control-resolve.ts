@@ -1,13 +1,15 @@
 import {
+  angledCornerPoints,
   arrowStyleOf,
   curveAnchorPoints,
   endpointPosition,
+  otherArrowBends,
   projectToArrow,
   snapArrowPoint,
   type AlignmentGuide,
   type ArrowElement,
   type Element,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 
 // The arrow control-handle frame resolvers (docs/specs/008-canvas/canvas-and-palette.md arrows), lifted out
@@ -33,7 +35,11 @@ function snapArrowControlPoint(
   if (!arrow) return { point: raw, guides: [] };
   const from = endpointPosition(arrow.from, els);
   const to = endpointPosition(arrow.to, els);
-  const anchors = arrow.curvePoints ? curveAnchorPoints(from, to, arrow.curvePoints) : [];
+  const anchors = !arrow.curvePoints
+    ? []
+    : arrowStyleOf(arrow) === 'angled'
+      ? angledCornerPoints(from, to, arrow.curvePoints, arrow.from, arrow.to)
+      : curveAnchorPoints(from, to, arrow.curvePoints);
   const poly = [from, ...anchors, to];
   const neighbours =
     pointIndex != null && arrow.curvePoints
@@ -44,7 +50,14 @@ function snapArrowControlPoint(
   const exclude = new Set<string>();
   if (arrow.from.kind === 'pinned') exclude.add(arrow.from.elementId);
   if (arrow.to.kind === 'pinned') exclude.add(arrow.to.elementId);
-  return snapArrowPoint(raw, neighbours, els, ALIGN_SNAP_THRESHOLD, exclude);
+  // Other arrows' bends too, so bends line up across arrows (arrow-bending.md "Bends line up").
+  return snapArrowPoint(
+    raw,
+    [...neighbours, ...otherArrowBends(arrowId, els)],
+    els,
+    ALIGN_SNAP_THRESHOLD,
+    exclude,
+  );
 }
 
 // Resolve one curve / elbow handle frame. The control point should sit

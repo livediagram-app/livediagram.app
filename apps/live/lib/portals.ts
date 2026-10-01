@@ -4,15 +4,15 @@
 // TWO-WAY: whatever you can step into, you can step back out of. Linking from
 // the menu writes both ends (see useDataShapeSetters), and resolution below
 // also honours an INCOMING link, so a portal someone points at leads back even
-// if its own target was never written — by an older diagram, an import, or the
+// if its own target was never written — by an older document, an import, or the
 // API.
 //
 // Resolution is deliberately forgiving — a target that has been deleted,
 // re-pointed at a non-portal, or points at itself resolves to "unlinked" rather
-// than throwing — because a diagram is edited in any order and a half-wired
+// than throwing — because a document is edited in any order and a half-wired
 // portal is a normal intermediate state, not corrupt data.
 
-import type { Element, ShapeElement, Tab } from '@livediagram/diagram';
+import type { Element, ShapeElement, Tab } from '@livediagram/document';
 
 export type PortalBox = { x: number; y: number; width: number; height: number; label?: string };
 
@@ -34,11 +34,11 @@ export function portalName(elements: Element[], portal: ShapeElement): string {
 // A portal together with the tab it lives on. Links cross tabs (docs/specs/009-elements/portal-element.md): a
 // portal on the Overview tab can drop you into the Detail tab, which is the
 // cheapest way to build a walkable multi-tab presentation. Element ids are
-// unique across the whole diagram, so the stored `portalTarget` needs no tab
+// unique across the whole document, so the stored `portalTarget` needs no tab
 // component — the tab is looked up, not recorded.
 export type PortalSite = { tabId: string; tabName: string; portal: ShapeElement };
 
-// Every portal in the diagram, tab by tab, in tab then element order.
+// Every portal in the document, tab by tab, in tab then element order.
 export function portalSites(tabs: Tab[]): PortalSite[] {
   return tabs.flatMap((tab) =>
     portalsOnTab(tab.elements).map((portal) => ({

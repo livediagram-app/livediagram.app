@@ -1,6 +1,6 @@
 import { Glyph } from '@livediagram/ui';
-// Inline SVG icons for the template picker (create-diagram CTA,
-// folder-open, spinner, sparkle, pencil). Pure presentational; split out
+// Inline SVG icons for the template picker (create-document CTA,
+// folder-open, spinner, sparkle). Pure presentational; split out
 // of TemplatePicker.tsx.
 export function ArrowRightIcon() {
   return (
@@ -19,22 +19,12 @@ export function FolderOpenIcon() {
   );
 }
 
-// Inline spinner for the Create Diagram button while the host commits.
+// Inline spinner for the Create Document button while the host commits.
 export function Spinner() {
   return (
     <Glyph size={13} units={16} className="animate-spin" strokeLinejoin="miter">
       <circle cx="8" cy="8" r="6" strokeOpacity="0.25" />
       <path d="M14 8a6 6 0 0 0-6-6" />
-    </Glyph>
-  );
-}
-
-// Pencil for the step rail's "Just Draw" shortcut (docs/specs/007-editor/new-diagram-route.md).
-export function PencilIcon() {
-  return (
-    <Glyph size={13} units={16}>
-      <path d="m11.1 2.6 2.3 2.3-7.8 7.8-3 .7.7-3z" />
-      <path d="m9.6 4.1 2.3 2.3" />
     </Glyph>
   );
 }

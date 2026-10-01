@@ -1,0 +1,188 @@
+'use client';
+
+// The marks a document carries in the Explorer's list rows and cards, and
+// in its actions menu's header: the visibility badge, the favourite star
+// and the folder chip. Split from document-row-shared (the menu) so each
+// file holds one concern.
+
+import { SharedDotIcon } from '@/components/chrome/share-state-icons';
+import { FolderOutlineIcon, StarIcon } from '@/components/primitives/explorer-icons';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import type { PaneDocument } from './views';
+import { HoverCard, Glyph } from '@livediagram/ui';
+import { isMinimalChrome } from '@/lib/power-user-mode';
+import { useOptionalExplorer } from './ExplorerContext';
+
+// Minimal chrome (power user mode, docs/specs/007-editor/power-user-mode.md):
+// a visibility badge shows only its icon; its name is on hover and focus.
+export function useIconOnlyBadges(): boolean {
+  const explorer = useOptionalExplorer();
+  return explorer ? isMinimalChrome(explorer.prefs) : false;
+}
+
+const badgeBase =
+  // Labels sit in text-optical-line + text-optical-caps (optical-alignment.md), so the base carries no case.
+  'optical-edges inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1';
+
+// The star a favourited document carries wherever it's listed (docs/specs/013-workspace/favourites.md),
+// so you can tell a starred document from an unstarred one without opening
+// its menu. Amber rather than the brand colour: it's a personal mark on
+// someone else's palette of status badges, and reads as "mine" next to
+// them.
+//
+// Unlike hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md), which stays menu-only, this IS
+// worth a marker: hiding is a set-and-forget negative you rarely revisit,
+// where a favourite is a positive you actively scan for.
+export function FavouriteMarker() {
+  return (
+    <HoverCard
+      title="Favourite"
+      description="Starred by you. Find it under Favourites in Quick find."
+    >
+      <span className="inline-flex shrink-0 items-center text-amber-500 dark:text-amber-400">
+        <StarIcon filled />
+      </span>
+    </HoverCard>
+  );
+}
+
+// Where a document lives, shown on Recent rows (docs/specs/013-workspace/recent-folder-chip.md). Recent spans every
+// folder, so without this you can't tell a "Q3 plan" in Design from one in
+// Archive without opening it.
+//
+// Deliberately NOT the badgeBase treatment: those badges are uppercase,
+// ring-outlined statements about the document (Offline / Shared / Team /
+// Private). This is a quiet, lower-case location that happens to be
+// clickable, so it reads as a link rather than competing with them.
+//
+// Only the IMMEDIATE parent is shown. Folders nest arbitrarily deep, and a
+// full path would be unbounded on a row that has to stay compact; the
+// containing folder is the identifying bit in practice.
+export function FolderChip({ label, onOpen }: { label: string; onOpen: () => void }) {
+  return (
+    <HoverCard title={label} description="Go to this folder.">
+      <button
+        type="button"
+        onClick={(e) => {
+          // The whole row is a link to the document; this jumps to the
+          // folder instead, so it must not bubble into that.
+          e.preventDefault();
+          e.stopPropagation();
+          onOpen();
+        }}
+        className="inline-flex max-w-[10rem] items-center gap-1 rounded px-1 py-0.5 text-[11px] text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+      >
+        <span className="shrink-0 [&_svg]:h-3 [&_svg]:w-3">
+          <FolderOutlineIcon />
+        </span>
+        <span className="truncate">{label}</span>
+      </button>
+    </HoverCard>
+  );
+}
+
+// The visibility badge: Offline (saved only in this browser, docs/specs/006-document/offline-mode.md), Shared
+// (a shared-with-me row / a share-link owned row), Team, or Private. Each
+// carries a concise hover card explaining what the state means. Offline
+// wins first: an offline document is never shared or in a team.
+// Whether a row's document is one the Google Drive mirror copies
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
+// own, in their Personal Space, saved in the cloud. Team documents, documents
+// shared with the user and offline documents are not mirrored.
+export function isMirrorable(liveDoc: PaneDocument): boolean {
+  return !liveDoc.team && !liveDoc.shared && liveDoc.ownerId !== OFFLINE_OWNER_ID;
+}
+
+export function VisibilityBadge({
+  document: liveDoc,
+  iconOnly = false,
+}: {
+  document: PaneDocument;
+  iconOnly?: boolean;
+}) {
+  // Icon only (optical-alignment.md): the badge becomes a circle of the full
+  // badge's own height. An empty strut on the same text line gives it exactly
+  // that height, and the icon is centred by ink; the word stays for assistive
+  // technology, the hover card for everyone else.
+  const word = (text: string) =>
+    iconOnly ? (
+      <>
+        <span aria-hidden className="text-optical-line w-0 overflow-hidden">
+          {'\u200b'}
+        </span>
+        <span className="sr-only">{text}</span>
+      </>
+    ) : (
+      <span className="text-optical-line text-optical-caps">{text}</span>
+    );
+  // Width = the badge's height: one text line plus its block padding. No
+  // optical-edges: that pulls a LEADING icon towards the edge beside a word, and
+  // a lone icon is centred by its ink instead.
+  const base = iconOnly
+    ? `${badgeBase.replace('optical-edges ', '').replace('gap-1 ', '').replace('px-2 ', '')} w-[calc(1lh+0.25rem)] justify-center`
+    : badgeBase;
+  if (liveDoc.ownerId === OFFLINE_OWNER_ID) {
+    return (
+      <HoverCard title="Offline" description="Saved only in this browser. Not synced or backed up.">
+        <span
+          tabIndex={iconOnly ? 0 : undefined}
+          className={`${base} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
+        >
+          <Glyph size={9} units={9}>
+            <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
+            <path d="M1.4 1.4l6.2 6.2" />
+          </Glyph>
+          {word('Offline')}
+        </span>
+      </HoverCard>
+    );
+  }
+  if (liveDoc.shared || liveDoc.shareCode) {
+    return (
+      <HoverCard title="Shared" description="Anyone with the link can open it.">
+        <span
+          tabIndex={iconOnly ? 0 : undefined}
+          className={`${base} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
+        >
+          <SharedDotIcon />
+          {word('Shared')}
+        </span>
+      </HoverCard>
+    );
+  }
+  if (liveDoc.team) {
+    return (
+      <HoverCard
+        title="Team"
+        description="In a team library, so every member of the team can open it."
+      >
+        <span
+          tabIndex={iconOnly ? 0 : undefined}
+          className={`${base} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
+        >
+          <Glyph size={9} units={9} strokeLinejoin="miter">
+            <circle cx="3.2" cy="3.2" r="1.4" />
+            <path d="M1.2 7.8c.3-1.4 1-2.1 2-2.1s1.7.7 2 2.1" />
+            <circle cx="6.6" cy="3.6" r="1.1" />
+            <path d="M6.3 5.7c.9.1 1.5.7 1.7 1.8" />
+          </Glyph>
+          {word('Team')}
+        </span>
+      </HoverCard>
+    );
+  }
+  return (
+    <HoverCard title="Private" description="Only visible to you.">
+      <span
+        tabIndex={iconOnly ? 0 : undefined}
+        className={`${base} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
+      >
+        <Glyph size={9} units={9}>
+          <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
+          <path d="M3 4V2.9a1.5 1.5 0 0 1 3 0V4" />
+        </Glyph>
+        {word('Private')}
+      </span>
+    </HoverCard>
+  );
+}

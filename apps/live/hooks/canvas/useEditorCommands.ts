@@ -9,11 +9,12 @@
 // get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
+import { isWhiteboardTab } from '@livediagram/document';
 import { useCallback, useMemo } from 'react';
-import { isBoxed } from '@livediagram/diagram';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { isBoxed } from '@livediagram/document';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
-import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
@@ -39,8 +40,8 @@ const INERT_HANDLERS: CommandHandlers = {
   addComment: noop,
   editNote: noop,
   createTab: noop,
-  renameDiagram: noop,
-  deleteDiagram: noop,
+  renameDocument: noop,
+  deleteDocument: noop,
   renameTab: noop,
   openTheme: noop,
   openCanvasOptions: noop,
@@ -68,10 +69,11 @@ export function useEditorCommands(): {
   runCommand: (id: string) => void;
 } {
   const ctx = useEditorContext();
+  const whiteboard = isWhiteboardTab(ctx.activeTab);
   const {
     isReadOnly,
     isOwner,
-    diagramId,
+    documentId,
     selectedId,
     multiSelectedIds,
     activeTab,
@@ -90,10 +92,10 @@ export function useEditorCommands(): {
     openComments,
     openNote,
     addTab,
-    deleteDiagram,
+    deleteDocument,
     setShareDialogOpen,
     setCanvasThemeTab,
-    requestRenameDiagram,
+    requestRenameDocument,
     requestRenameTab,
     undo,
     redo,
@@ -117,9 +119,9 @@ export function useEditorCommands(): {
     setCanvasTool,
   } = ctx;
 
-  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) have nothing on the server to share, so the
+  // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
-  const isOffline = useIsOfflineDiagram(diagramId);
+  const isOffline = useIsOfflineDocument(documentId);
   // Spotlight is desktop-only, so the tool commands need the same viewport
   // answer the palette's tool dropdown uses.
   const isMobile = useIsMobileViewport();
@@ -162,6 +164,7 @@ export function useEditorCommands(): {
       canvasEmpty,
       isMobile,
       esBoard,
+      whiteboard,
       photoImportAvailable,
     }),
     [
@@ -180,6 +183,7 @@ export function useEditorCommands(): {
       canvasEmpty,
       isMobile,
       esBoard,
+      whiteboard,
       photoImportAvailable,
     ],
   );
@@ -204,11 +208,11 @@ export function useEditorCommands(): {
       if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
-    renameDiagram: requestRenameDiagram,
-    // deleteDiagram confirms internally and (for the current diagram)
-    // redirects to /explorer; it needs the diagram's own id.
-    deleteDiagram: () => {
-      if (diagramId) void deleteDiagram(diagramId);
+    renameDocument: requestRenameDocument,
+    // deleteDocument confirms internally and (for the current document)
+    // redirects to /explorer; it needs the document's own id.
+    deleteDocument: () => {
+      if (documentId) void deleteDocument(documentId);
     },
     renameTab: requestRenameTab,
     // Replicate the telemetry the menu/header entry points fire, since the

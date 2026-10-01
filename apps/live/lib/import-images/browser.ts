@@ -129,17 +129,21 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-// One session per import: cloud diagrams upload to the owner's gallery,
-// Offline Mode diagrams embed (docs/specs/006-diagram/offline-mode.md).
+// One session per import: cloud documents upload to the owner's gallery,
+// Offline Mode documents embed (docs/specs/006-document/offline-mode.md).
+// `offline` states it outright where there is no open document to ask (an import from the
+// Explorer page); otherwise the document's id decides.
 export function createBrowserImportImageSession({
   ownerId,
-  diagramId,
+  documentId,
+  offline,
 }: {
   ownerId: string;
-  diagramId: string | null;
+  documentId: string | null;
+  offline?: boolean;
 }): ImportImageSession {
   return createImportImageSession({
-    offline: !!diagramId && isOfflineIdSync(diagramId),
+    offline: offline ?? (!!documentId && isOfflineIdSync(documentId)),
     codec: browserImageCodec,
     toDataUrl: blobToDataUrl,
     upload: async (prepared, name) => {

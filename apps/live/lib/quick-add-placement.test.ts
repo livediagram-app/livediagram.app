@@ -1,4 +1,4 @@
-import type { ArrowElement, ShapeElement } from '@livediagram/diagram';
+import type { ArrowElement, ShapeElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { quickAddPlacement } from './quick-add-placement';
 

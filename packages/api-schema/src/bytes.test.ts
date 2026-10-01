@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bytesToBase64, bytesToBase64Url } from './bytes';
+import { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
 
 // Vectors from RFC 4648 §10, plus the bytes that differ between the standard
 // and URL-safe alphabets (0xfb 0xff encodes to `+/8` / `-_8`).
@@ -44,5 +44,22 @@ describe('bytesToBase64Url', () => {
       text('dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'),
     );
     expect(bytesToBase64Url(digest)).toBe('E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
+  });
+});
+
+describe('base64ToBytes', () => {
+  it('decodes both alphabets, with or without padding', () => {
+    expect([...base64ToBytes('+/8=')!]).toEqual([0xfb, 0xff]);
+    expect([...base64ToBytes('-_8')!]).toEqual([0xfb, 0xff]);
+    expect(new TextDecoder().decode(base64ToBytes('Zm9vYmFy')!)).toBe('foobar');
+  });
+
+  it('answers null for text that is not base64', () => {
+    expect(base64ToBytes('not base64!')).toBeNull();
+  });
+
+  it('round-trips bytesToBase64Url', () => {
+    const bytes = new Uint8Array(40).map((_, i) => (i * 37) % 256);
+    expect([...base64ToBytes(bytesToBase64Url(bytes))!]).toEqual([...bytes]);
   });
 });

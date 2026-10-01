@@ -1,20 +1,20 @@
 # Rating
 
 A **Rating** element is a row of five stars showing a 1–5 score. Drag it in from
-the palette (Tools tab, by the progress elements), set the score, and optionally
+the palette (Data category, by the progress elements), set the score, and optionally
 give it a star-specific animation — the same shape of feature as the progress
 elements ([Progress elements](progress.md)).
 
 ## Behaviour
 
 - Drops as five stars, **three filled** by default, in an amber accent.
-- A **Rating** context-menu category carries:
+- A **Rating** context-menu category (in the menu's Tools flyout) carries:
   - a **star picker** — click a star to set the score (1–5);
   - an **Animation** row of star-specific animations (None / Pop / Twinkle /
     Pulse / Rock), with a **Speed** row + **Repeat** toggle once one is picked.
     Pop / Rock play once (an entrance); Twinkle / Pulse loop by default.
 - It's a normal boxed element otherwise (move / resize / rotate / select /
-  group / lock / theme-colour). Its accent (stroke colour) tints the filled
+  lock / theme-colour). Its accent (stroke colour) tints the filled
   stars; the wrapper draws no box border.
 
 ## Model
@@ -26,14 +26,14 @@ render/copy/export branches.
 - `ShapeElement.rating?` (0..`RATING_MAX` = 5), `ratingAnim?` (`RatingAnim`),
   `ratingAnimSpeed?`, `ratingAnimRepeat?`. The `RatingAnim` union +
   `RATING_ANIMS` + `clampRating()` + `isRatingShape()` live in
-  `@livediagram/diagram` (`src/data-shapes.ts`).
+  `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `RatingView` (`apps/live/components/canvas/RatingView.tsx`): five star
   SVGs sized to the box, filled up to the score; the filled stars carry the
-  `lvd-rating-*` animation (CSS in `globals.css`, reduced-motion-safe) with
+  `lvd-rating-*` animation (CSS in `apps/live/app/canvas-motion.css`, reduced-motion-safe) with
   speed / iteration from inline custom properties and a per-star stagger for
   pop / twinkle. `element-variant.ts` gives it a borderless wrapper.
-- Setters in `useElementStyle.ts` (`setRatingSelected` +
-  `setRatingAnim*Selected`) mirror the progress setters, gated to rating shapes.
+- Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts` (`setRatingSelected` +
+  `setRatingAnim*Selected`), mirror the progress setters, gated to rating shapes.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Added', 'Rating')` on create,
   `track('Element', 'Changed', 'Rating' | 'RatingAnim')` on edits.
 

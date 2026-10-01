@@ -21,6 +21,9 @@
 export type ApiWriteSignal = {
   /** The entity a DELETE just ended, in the Timeline's own terms. */
   purge?: { sourceType: string; sourceId: string };
+  /** A change made in Google Drive was applied here (docs/specs/022-drive-mirror/drive-mirror.md,
+   *  "Other views follow"): views that list documents re-read. */
+  drive?: true;
 };
 
 type Listener = (signal: ApiWriteSignal) => void;

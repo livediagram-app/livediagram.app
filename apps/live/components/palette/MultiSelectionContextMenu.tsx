@@ -25,7 +25,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
@@ -351,6 +351,8 @@ export function MultiSelectionContextMenu({
                       // reflecting one arrow's state, and arrows in the
                       // selection can disagree. Set it per arrow.
                       routeBehind={null}
+                      exactStart={null}
+                      onSetExactStart={props.onSetArrowExactStart}
                       onSetStrokeStyle={props.onSetArrowStrokeStyle}
                       onSetRouteBehind={props.onSetArrowRouteBehind}
                     />

@@ -8,58 +8,57 @@
 // without updating the client (or vice versa) used to be a routine
 // hazard; defining the shapes once means the typechecker catches it.
 //
-// Naming convention: bare nouns (`Diagram`, `Folder`, `ShareLink`).
-// Each app re-exports under its own historical aliases — the api
-// worker continues to use `DiagramDTO` etc. internally, the live app
-// continues to use `StoredDiagram` — so this extraction is a
-// drop-in. New code should prefer the canonical names here.
+// Naming convention: bare nouns (`LiveDoc`, `Folder`, `ShareLink`).
+// The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
+// new code should prefer the canonical names here.
 
-import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/diagram';
+import type { DriveMode } from './drive';
+import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
 // ---------------------------------------------------------------------
-// Diagrams
+// Documents
 // ---------------------------------------------------------------------
 
-// Full diagram payload returned by `GET /api/diagrams/:id`. After
-// per-tab storage (docs/specs/006-diagram/per-tab-storage.md), `tabs` is a list of `TabSummary`
-// How a diagram came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
+// Full document payload returned by `GET /api/documents/:id`. After
+// per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
+// How a document came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
 // null = authored by a person in the editor; 'mcp' = created by an
 // external AI tool via the MCP server; 'ai' = created by the in-editor
 // AI assistant (reserved — no producer today). Drives the synthetic
 // "Generated" Explorer folder (source != null).
-export type DiagramSource = 'ai' | 'mcp';
+export type DocumentSource = 'ai' | 'mcp';
 
 // (metadata only) — element content is fetched separately via
-// `GET /api/diagrams/:id/tabs/:tabId`.
-export type Diagram = {
+// `GET /api/documents/:id/tabs/:tabId`.
+export type LiveDoc = {
   id: string;
   ownerId: string;
   name: string;
   tabs: TabSummary[];
   // Sharing state. `shareable` is the on/off switch the owner toggles
-  // via POST/DELETE /api/diagrams/:id/share. `shareCode` is the short
+  // via POST/DELETE /api/documents/:id/share. `shareCode` is the short
   // code that goes into the share URL; null when never shared,
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
-  // Folder placement. null means the diagram is in the conceptual
+  // Folder placement. null means the document is in the conceptual
   // Unsorted bucket. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md). null = the owner's personal
+  // Team library placement (docs/specs/013-workspace/team-shared-documents.md). null = the owner's personal
   // tree; non-null = this team's shared library (where folderId then
   // refers to one of THAT team's folders, or null for the team's
   // Unsorted). Joined members of the team get edit access.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
-  // (see DiagramSource). Set on create, never rewritten by meta updates.
-  source: DiagramSource | null;
+  // (see DocumentSource). Set on create, never rewritten by meta updates.
+  source: DocumentSource | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
-  // the diagram has no deck (every diagram until somebody builds one).
-  // Deliberately absent from DiagramSummary: the Explorer lists diagrams and
+  // the document has no deck (every document until somebody builds one).
+  // Deliberately absent from DocumentSummary: the Explorer lists documents and
   // has no use for their decks, and a deck is the one metadata field that can
-  // grow with the diagram.
+  // grow with the document.
   presentation: string | null;
   savedAt: number;
   createdAt: number;
@@ -67,42 +66,42 @@ export type Diagram = {
   // participants table so visitors can render "Owner: <name>" without
   // waiting for the owner to come online in the realtime room. Null
   // when the owner has no participant row yet (e.g. Clerk-authed
-  // owners who never set a name on a diagram); the UI falls back to
+  // owners who never set a name on a document); the UI falls back to
   // hiding the badge in that case.
   ownerName: string | null;
   ownerColor: string | null;
 };
 
-// Lightweight list projection — drops `tabs` so listing 100 diagrams
+// Lightweight list projection — drops `tabs` so listing 100 documents
 // doesn't ship 100 tab arrays.
-export type DiagramSummary = {
+export type DocumentSummary = {
   id: string;
   ownerId: string;
   name: string;
   shareable: boolean;
   shareCode: string | null;
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md) — see Diagram.teamId.
+  // Team library placement (docs/specs/013-workspace/team-shared-documents.md) — see LiveDoc.teamId.
   teamId: string | null;
-  // Provenance (docs/specs/013-workspace/folders.md) — see Diagram.source.
-  source: DiagramSource | null;
+  // Provenance (docs/specs/013-workspace/folders.md) — see LiveDoc.source.
+  source: DocumentSource | null;
   savedAt: number;
   createdAt: number;
 };
 
-// A diagram's shared tabs: how many of its tabs are also linked into another
-// diagram, and how many other diagrams hold them. What the delete and Take
+// A document's shared tabs: how many of its tabs are also linked into another
+// document, and how many other documents hold them. What the delete and Take
 // Offline confirmations say stays behind
-// (docs/specs/006-diagram/tab-diagram-many-to-many.md, "Shared-tab notice").
+// (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab notice").
 export type SharedTabsSummary = {
   tabs: number;
-  diagrams: number;
+  documents: number;
 };
 
 // One row of the "Shared with you" list (shared_with, migration 0010):
-// a diagram a non-owner has previously opened via a share link. The api
+// a document a non-owner has previously opened via a share link. The api
 // worker (`listSharedWith` in db/shared.ts) builds this by joining
-// shared_with → diagrams → participants; the live editor's Explorer
+// shared_with → documents → participants; the live editor's Explorer
 // renders it. Canonical home here so the worker's emit and the client's
 // read can't drift apart (consistency review #7) — both import this one
 // type instead of redeclaring the shape on each side.
@@ -113,7 +112,7 @@ export type SharedWithItem = {
   // The role the visitor was granted on the share link they used.
   role: ShareRole;
   // Still-live share code for that same role, so the client can rebuild
-  // the openable `/diagram/<id>?s=<code>` URL — without it the link
+  // the openable `/document/<id>?s=<code>` URL — without it the link
   // lands on the owner-only path and 404s. The worker filters out rows
   // whose share was revoked (no code left), so this is never null here.
   shareCode: string;
@@ -131,18 +130,18 @@ export type SharedWithItem = {
 // Tabs
 // ---------------------------------------------------------------------
 
-// One row of `Diagram.tabs`. Stored in D1 with id + diagram_id + name
+// One row of `LiveDoc.tabs`. Stored in D1 with id + document_id + name
 // + order_index as columns and the rest of the payload as a JSON
-// `data` column. The summary projection is what list / diagram
+// `data` column. The summary projection is what list / document
 // responses ship; the full payload (below) is fetched per-tab on
 // demand so the editor only ever holds the tabs the user opens.
 export type TabSummary = {
   id: string;
-  diagramId: string;
+  documentId: string;
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-diagram folder name (docs/specs/006-diagram/tab-folders.md), read from the diagram_tabs
+  // Per-document folder name (docs/specs/006-document/tab-folders.md), read from the document_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -151,13 +150,13 @@ export type TabSummary = {
   outOfScope?: true;
 };
 
-// Full tab payload returned by `GET /api/diagrams/:id/tabs/:tabId`:
+// Full tab payload returned by `GET /api/documents/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
-// row's audit metadata. `folder` here is the per-diagram membership
-// from the diagram_tabs link (docs/specs/006-diagram/tab-folders.md), distinct from anything in the
+// row's audit metadata. `folder` here is the per-document membership
+// from the document_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 export type TabRecord = Tab & {
-  diagramId: string;
+  documentId: string;
   orderIndex: number;
   updatedAt: number;
 };
@@ -167,7 +166,7 @@ export type TabRecord = Tab & {
 // ---------------------------------------------------------------------
 
 // A folder row. `parentId === null` means the folder lives at the
-// tree root. `teamId` (docs/specs/013-workspace/team-shared-diagrams.md): null = a personal folder gated on
+// tree root. `teamId` (docs/specs/013-workspace/team-shared-documents.md): null = a personal folder gated on
 // `ownerId`; non-null = a folder in that team's shared library,
 // gated on joined membership (ownerId then records the creator for
 // audit only).
@@ -291,6 +290,9 @@ export type TeamMember = {
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
   name: string | null;
+  // The joined member's published profile picture (docs/specs/014-identity/profile-picture.md §5), or
+  // null (pending invite, no picture, or the switch off).
+  pictureUrl: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -350,7 +352,7 @@ export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, num
 
 export type ShareLink = {
   code: string;
-  diagramId: string;
+  documentId: string;
   role: ShareRole;
   createdAt: number;
   // Expiry (docs/specs/013-workspace/share-link-expiry.md). `expiry` is the duration chosen at creation —
@@ -379,6 +381,10 @@ export type ParticipantRecord = {
   name: string;
   color: string;
   createdAt: number;
+  // The published profile picture (docs/specs/014-identity/profile-picture.md §6): set only by the
+  // participant's own verified Clerk session, null when they have none or turned it off, and
+  // returned only to signed-in callers (null for everyone else).
+  pictureUrl: string | null;
 };
 
 // What the realtime room broadcasts as presence. Identical shape to
@@ -388,7 +394,7 @@ export type ParticipantPresence = {
   id: string;
   name: string;
   color: string;
-  // Server-resolved role inside this diagram. Set by the api worker
+  // Server-resolved role inside this document. Set by the api worker
   // at WebSocket upgrade time before the request reaches the Durable
   // Object — derived from owner-id match (always 'edit') or the
   // share-code the visitor used to join. Optional so existing
@@ -421,6 +427,10 @@ export type ParticipantPresence = {
   // older client's hello still parses (the roster falls back to `id`, which
   // simply matches nothing — the behaviour before this field existed).
   key?: string;
+  // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
+  // room keeps it only from a verified account session and sends it only to account sessions;
+  // anonymous recipients get the roster without it.
+  picture?: string;
 };
 
 // ---------------------------------------------------------------------
@@ -430,7 +440,7 @@ export type ParticipantPresence = {
 // One row returned by `GET /api/images` (the gallery list) + the
 // inner shape of the `POST /api/images` response (`{ image, deduped }`).
 // The bytes themselves are fetched separately via
-// `GET /api/images/<id>?d=<diagramId>` (owner or share-code gated).
+// `GET /api/images/<id>?d=<documentId>` (owner or share-code gated).
 export type ImageSummary = {
   id: string;
   contentType: string;
@@ -454,10 +464,10 @@ export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
 export type ChangeLogEntry = {
   id: string;
   // Tab the change happened on. Nullable in the schema for legacy
-  // diagram-scoped entries; new entries always carry a real id
-  // (since #14 dropped the diagram_id column the tab id is now the
-  // canonical pointer into the change_log → tabs → diagram_tabs
-  // chain — see docs/specs/006-diagram/tab-diagram-many-to-many.md).
+  // document-scoped entries; new entries always carry a real id
+  // (since #14 dropped the document_id column the tab id is now the
+  // canonical pointer into the change_log → tabs → document_tabs
+  // chain — see docs/specs/006-document/tab-document-many-to-many.md).
   tabId: string | null;
   participantId: string;
   participantName: string;
@@ -478,8 +488,14 @@ export type ChangeLogEntry = {
 // Older entries stay in D1 for audit completeness; the UI just pages to N.
 export const CHANGE_LOG_LIST_LIMIT = 30;
 
+// One change-log entry's JSON (docs/specs/012-collaboration/activity-and-audit.md). The before/after
+// payloads are per-gesture element diffs, a few KB in practice, so this bounds a hostile near-8MB
+// entry from bloating both storage and the capped list response (30 entries per GET). The worker
+// refuses anything larger; the client logs a larger change as a summary entry instead.
+export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
+
 // The 409 `error` token `POST .../log` answers when the entry names a tab
-// that isn't (yet) linked to the diagram. The common cause is benign: the
+// that isn't (yet) linked to the document. The common cause is benign: the
 // editor logs an edit the moment it happens, but a brand-new tab only
 // reaches D1 on the debounced autosave, so the first edit on it can beat
 // its own tab row. The client retries that one quietly (docs/specs/012-collaboration/activity-and-audit.md).
@@ -492,7 +508,7 @@ export { sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
-export { bytesToBase64, bytesToBase64Url } from './bytes';
+export { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
@@ -508,6 +524,8 @@ export {
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { titleCase } from './title-case';
+// The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
+export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
 // so the two can't disagree on what a request presented (see ./request-auth.ts).
@@ -544,6 +562,9 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
+  // gets Google access tokens. Optional so an older worker parses as 'off'.
+  driveMode?: DriveMode;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -574,3 +595,12 @@ export * from './timeline';
 export * from './activity';
 export * from './responses';
 export * from './trash';
+export { upgradeLegacyPreferences } from './legacy-preferences';
+export * from './drive';
+export * from './profile-picture';
+// A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
+// check, and the editor's before it sends an imported board's dates.
+export * from './document-dates';
+// A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
+// enforces it, the editor checks it before sending.
+export * from './tab-size';

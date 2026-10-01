@@ -11,7 +11,7 @@ import {
   type Element,
   type EsSide,
   type EventStormingNoteKind,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
 
 // The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7): on each side of the SELECTED note
@@ -135,7 +135,7 @@ export function NextNoteButtons({
                 setPreviewKey(null);
                 onAdd(t.fromId, t.side);
               }}
-              className={`group absolute flex items-center focus-visible:outline-none ${
+              className={`group pointer-events-auto absolute flex items-center focus-visible:outline-none ${
                 outward ? 'justify-start' : 'justify-end'
               }`}
               style={{

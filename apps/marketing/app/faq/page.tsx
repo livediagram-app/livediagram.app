@@ -26,7 +26,7 @@ export const metadata = pageMetadata({
 const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   {
     q: 'Do I need an account to use livediagram?',
-    a: 'No. Open the editor and start drawing straight away, with no sign-up. An account is optional, and signing in (for free) keeps your diagrams synced across your devices.',
+    a: 'No. Open the editor and start drawing straight away, with no sign-up. An account is optional, and signing in (for free) keeps your documents synced across your devices.',
   },
   {
     q: 'Is it free?',
@@ -34,7 +34,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'What can I make with it?',
-    a: 'Flowcharts, mind maps, org charts, retrospectives, Lean Coffee and town hall Q&A boards, kanban boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, editable tables, pie, bar and line charts, UML class and state diagrams, UI wireframes for browser, laptop, phone and tablet screens, and a to-scale floor plan. Fifty starter templates and twenty-six themes get you going in seconds.',
+    a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, editable tables, pie, bar and line charts, UML class and state diagrams, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, a personal objectives planner, UI wireframes for browser, laptop, phone and tablet screens, and a to-scale floor plan. Sixty-two starter templates and twenty-six themes get you going in seconds.',
   },
   {
     q: 'Can AI help me build or tidy a diagram?',
@@ -46,11 +46,11 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'How do share links work?',
-    a: 'From a diagram you own, create an editor link (full edit access) or a view-only link (look, do not touch). Anyone with the link can join. You can give a link an expiry when you create it, a week, a month, six months, or never, so it stops working on its own; extend it later if you need longer, or revoke it at any time and it stops working immediately.',
+    a: 'From a document you own, create an editor link (full edit access) or a view-only link (look, do not touch). Anyone with the link can join. You can give a link an expiry when you create it, a week, a month, six months, or never, so it stops working on its own; extend it later if you need longer, or revoke it at any time and it stops working immediately.',
   },
   {
-    q: 'Can I set up a team with shared diagrams?',
-    a: 'Yes, once you sign in (for free). Create a team from the Explorer, invite people by their email address, and everyone gets a shared folder of diagrams that every member can open and edit. Teams have Admin and Member roles: admins manage who is in the team, everyone else just gets to work. The canvas itself still needs no account; teams simply add a shared home and proper membership on top.',
+    q: 'Can I set up a team with shared documents?',
+    a: 'Yes, once you sign in (for free). Create a team from the Explorer, invite people by their email address, and everyone gets a shared folder of documents that every member can open and edit. Teams have Admin and Member roles: admins manage who is in the team, everyone else just gets to work. The canvas itself still needs no account; teams simply add a shared home and proper membership on top.',
   },
   {
     q: 'Can I embed a diagram in my docs or wiki?',
@@ -58,11 +58,11 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Can I connect my own AI assistant, like Claude?',
-    a: 'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool (such as Claude) and, after a one-time authorization, it can find, read, create, and edit the diagrams in your account on your behalf.',
+    a: 'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool (such as Claude) and, after a one-time authorization, it can find, read, create, and edit the documents in your account on your behalf.',
   },
   {
     q: 'Is there an API?',
-    a: 'Yes. Once you sign in, you can create API tokens and call the REST API to read and manage your diagrams programmatically. It is an optional power-user feature; guests and the canvas itself stay completely account-free.',
+    a: 'Yes. Once you sign in, you can create API tokens and call the REST API to read and manage your documents programmatically. It is an optional power-user feature; guests and the canvas itself stay completely account-free.',
   },
   {
     q: 'What happens if two people edit the same thing at once?',
@@ -70,7 +70,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Is my work saved automatically?',
-    a: 'Yes. Every change autosaves on its own, with a status that shows saving, saved, or a problem. Close the tab and reload, and your diagram comes back exactly as you left it.',
+    a: 'Yes. Every change autosaves on its own, with a status that shows saving, saved, or a problem. Close the tab and reload, and your document comes back exactly as you left it.',
   },
   {
     q: 'Can I undo a mistake?',
@@ -82,7 +82,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Can I export my diagrams?',
-    a: 'Yes. Each tab can be exported as a Mermaid flowchart, Markdown, PDF, PNG, SVG, or a portable .json file you can import into another diagram. Mermaid, Markdown, and JSON also import back (paste the text or pick a file), and Mermaid keeps every connection. The same Import / Export accordion in the Palette covers both directions.',
+    a: 'Yes. Each tab can be exported as a Mermaid flowchart, Markdown, PDF, PNG, SVG, or a portable .json file you can import into another document. Mermaid, Markdown, and JSON also import back (paste the text or pick a file), and Mermaid keeps every connection. The same Import / Export accordion in the Palette covers both directions.',
   },
   {
     q: 'Does it work with Mermaid?',
@@ -92,7 +92,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
     q: 'Where is my data stored, and do you track me?',
     a: (
       <>
-        Your diagrams are stored in our database on Cloudflare. There are no tracking pixels, no
+        Your documents are stored in our database on Cloudflare. There are no tracking pixels, no
         advertising, and no third-party analytics. We do record anonymous, first-party usage (which
         features get used, never your content or name), and show it openly on our{' '}
         <a href="/telemetry">telemetry page</a>. See the{' '}
@@ -100,7 +100,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
       </>
     ),
     aText:
-      'Your diagrams are stored in our database on Cloudflare. There are no tracking pixels, no advertising, and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name), shown openly on our telemetry page. See the privacy policy for the details.',
+      'Your documents are stored in our database on Cloudflare. There are no tracking pixels, no advertising, and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name), shown openly on our telemetry page. See the privacy policy for the details.',
   },
   {
     q: 'Can I self-host livediagram?',
@@ -119,7 +119,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'How do I delete my data or account?',
-    a: 'You can delete any diagram you own at any time, and delete your account and its data yourself from your account settings.',
+    a: 'You can delete any document you own at any time, and delete your account and its data yourself from your account settings.',
   },
   {
     q: 'Who makes livediagram?',

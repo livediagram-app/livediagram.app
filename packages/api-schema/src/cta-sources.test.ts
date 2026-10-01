@@ -20,6 +20,8 @@ describe('CTA_SOURCES', () => {
       'Home.HeaderDraw',
       'Home.Hero',
       'Home.HeroDraw',
+      'Home.HeroBrainstorm',
+      'Home.HeroCanvas',
       'Home.Gallery',
       'Home.GalleryDraw',
       'Home.Closing',
@@ -122,7 +124,7 @@ describe('ctaSurfaceOfPath', () => {
 
   it('leaves the editor and other pages out', () => {
     expect(ctaSurfaceOfPath('/new')).toBeNull();
-    expect(ctaSurfaceOfPath('/diagram')).toBeNull();
+    expect(ctaSurfaceOfPath('/document')).toBeNull();
     expect(ctaSurfaceOfPath('/explorer/recent')).toBeNull();
     expect(ctaSurfaceOfPath('/features')).toBeNull();
     expect(ctaSurfaceOfPath('/terms')).toBeNull();

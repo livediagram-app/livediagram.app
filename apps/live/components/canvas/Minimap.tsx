@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, type Ref } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
   endpointPosition,
@@ -11,13 +11,14 @@ import {
   svgBoxed,
   type Element,
   type Point,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { selectionBoxColors } from '@/lib/selection-box';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
@@ -47,16 +48,24 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 type MinimapProps = {
   elements: Element[];
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
-  // paints, so a marker board reads as one in the map too.
+  // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   setViewportZoom: (zoom: number) => void;
-  mainRef: Ref<HTMLElement>;
-  // The active tab theme's accent (matches the on-canvas selection), used to
-  // colour the current-view highlight instead of a fixed brand blue.
-  accentColor: string;
+  // The canvas <main>'s size, measured by the Canvas that owns it. Not observed here: the map renders
+  // INSIDE <main>, and a child's layout effect runs before its parent's ref attaches, so a map mounted
+  // in the same commit as the canvas (any document opened with enough elements) would read a null ref,
+  // never measure, and lose its current-view window.
+  mainSize: { width: number; height: number };
+  // The tab's resolved paper colour (the backdrop the canvas paints). The map
+  // paints the same paper behind its miniature, so a card reads against the
+  // colour it sits on in the canvas rather than a fixed grey.
+  paperColor: string;
+  // The active tab theme's own stroke (null when it sets none), used to colour
+  // the current-view window like the canvas marquee (selectionBoxColors).
+  accentColor: string | null;
   // Panel position (null = default corner) + its move handler, shared with
   // the other floating panels via the docking layout.
   position: { x: number; y: number } | null;
@@ -100,7 +109,8 @@ export function Minimap({
   viewportZoom,
   setViewportOffset,
   setViewportZoom,
-  mainRef,
+  mainSize,
+  paperColor,
   accentColor,
   position,
   onMove,
@@ -111,12 +121,13 @@ export function Minimap({
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
-  // mainRef is the canvas <main>; read it fresh (it's an object ref at runtime,
-  // but the prop type allows a callback ref, so narrow defensively).
-  const getMain = () => (mainRef && typeof mainRef !== 'function' ? mainRef.current : null);
-  // Its size, for the current-view window: observed, not read while rendering.
-  const mainSize = useObservedSize(mainRef);
 
+  // Which paper the canvas is (light / dark), from the SAME context the canvas
+  // elements read (docs/specs/008-canvas/minimap.md "Fidelity"). The renderer
+  // resolves every unstyled colour against it, so a Behaviour card that is a
+  // dark card on a dark canvas is a dark card here too, not the light skin.
+  const surface = useCanvasSurface();
+  const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
@@ -145,32 +156,32 @@ export function Minimap({
           resolveIconArt,
           resolveStickerArt,
           tabFont,
+          surface,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, elements, 'light', tabFont, labels, 'lvd-minimap-ko-'));
+      parts.push(svgArrow(el, elements, surface, tabFont, labels, 'lvd-minimap-ko-'));
       corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
     }
     return {
       markup: parts.join(''),
       bounds: boundsOfPoints(corners),
     };
-  }, [elements, tabFont, iconsLoaded]);
+  }, [elements, tabFont, iconsLoaded, surface]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
     const ctm = svg?.getScreenCTM();
-    const r = getMain()?.getBoundingClientRect();
-    if (!svg || !ctm || !r) return null;
+    if (!svg || !ctm || !mainSize.width) return null;
     const pt = svg.createSVGPoint();
     pt.x = clientX;
     pt.y = clientY;
     const world = pt.matrixTransform(ctm.inverse());
-    const nx = r.width / 2 - world.x;
-    const ny = r.height / 2 - world.y;
+    const nx = mainSize.width / 2 - world.x;
+    const ny = mainSize.height / 2 - world.y;
     // Only write when it actually changes: setting an equal-valued new object
     // every render would re-render forever (max update depth).
     if (nx !== viewportOffset.x || ny !== viewportOffset.y) {
@@ -201,8 +212,8 @@ export function Minimap({
   }
   const vb = `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
 
-  const w = mainSize?.width ?? 0;
-  const h = mainSize?.height ?? 0;
+  const w = mainSize.width;
+  const h = mainSize.height;
   const z = viewportZoom || 1;
   const viewCx = w / 2 - viewportOffset.x;
   const viewCy = h / 2 - viewportOffset.y;
@@ -243,7 +254,8 @@ export function Minimap({
           ref={svgRef}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
-          className={`block w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 ${MAP_HEIGHT[size]}`}
+          className={`block w-full cursor-pointer touch-none text-slate-400 ${MAP_HEIGHT[size]}`}
+          style={{ backgroundColor: paperColor }}
           role="img"
           aria-label="Canvas map — tap or drag to navigate, scroll to zoom"
           onPointerDown={(e) => {
@@ -266,13 +278,13 @@ export function Minimap({
             <>
               {/* Dim everything outside the current view (even-odd: outer box
                 minus the view hole) so the lit window reads at a glance as
-                "where you are on the canvas". Optional: on a dense board some
+                "where you are on the canvas". Optional: on a dense canvas some
                 people would rather read the whole map. */}
               {dimOutside ? (
                 <path
                   d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
                   fillRule="evenodd"
-                  className="fill-slate-500/25 dark:fill-slate-950/55"
+                  className={surface === 'dark' ? 'fill-black/45' : 'fill-slate-500/25'}
                 />
               ) : null}
               <rect
@@ -281,8 +293,8 @@ export function Minimap({
                 width={vx1 - vx}
                 height={vy1 - vy}
                 rx={3}
-                fill={`color-mix(in srgb, ${accentColor} 14%, transparent)`}
-                stroke={accentColor}
+                fill={viewColors.fill}
+                stroke={viewColors.stroke}
                 strokeWidth={1.75}
                 vectorEffect="non-scaling-stroke"
               />

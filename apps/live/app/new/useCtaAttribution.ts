@@ -9,7 +9,7 @@ import { track } from '@/lib/telemetry';
 // address bar (keeping every other one), so a reload, a bookmark or Back from
 // the editor can't count the same arrival again and nobody shares a URL with
 // a tracking parameter in it. The returned `trackCreated` sends
-// `Cta·Created·<source>` when the diagram is committed: at most once per
+// `Cta·Created·<source>` when the document is committed: at most once per
 // arrival, since the funnel asks whether the visit converted, not how often.
 export function useCtaAttribution(): { trackCreated: () => void } {
   const source = useRef<CtaSource | null>(null);

@@ -4,29 +4,29 @@ import {
   isAnimatedPattern,
   isBoxed,
   type ShapeElement,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
-import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
-import { drawIntentCursor } from '@/lib/draw-mode';
+import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
+import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/diagram';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { isEventStormingTab, isWhiteboardTab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
 // is gated on `showTemplatePicker`, which is false for the common
-// path (a returning user opening an existing diagram with tabs that
-// already have content). For first-time guests on a fresh diagram
+// path (a returning user opening an existing document with tabs that
+// already have content). For first-time guests on a fresh document
 // the gate is true on first paint, but the empty canvas underneath
 // has already rendered by then, so the user sees the welcome modal
 // fade in a frame later rather than blocking the route on the
@@ -41,12 +41,15 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
+import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
+import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
+import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
@@ -58,11 +61,11 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
-import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/diagram';
+import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/document';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
-import type { Reaction } from '@livediagram/diagram';
+import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
@@ -72,6 +75,10 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
+import { usePathTool } from '@/components/canvas/path/usePathTool';
+import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
+import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
+import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
@@ -121,13 +128,19 @@ export function Canvas(props: CanvasProps) {
   } = props;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
+  const penCursorValue = useWhiteboardPenCursor(
+    pendingDraw,
+    props.whiteboardDock?.prefs.cursor,
+    viewportZoom,
+  );
 
   // Paint mode covers BOTH painter entry points: a single-shot armed source
   // (toolbar) and the persistent Format canvas tool — the tool must read as
   // paint mode from its first click (copy cursor, handles/label-drag/dblclick
   // suppressed on boxed elements AND arrows), not only once a source is armed.
   const isPaintMode = formatSourceId !== null || canvasTool === 'format';
-  // Nudge above the Fit button when the whole diagram has scrolled out of view.
+  // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
@@ -142,30 +155,19 @@ export function Canvas(props: CanvasProps) {
   // paletteBottomY + 16 regardless of whether the palette pins to
   // top-2 (mobile) or top-4 (desktop).
   const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
-  // Explorer's measured bottom edge on mobile. The Palette sits BELOW
-  // this via its `mobileTopOverridePx` so the diagram switcher fits
-  // above the Palette without overlapping. Desktop ignores it (the
-  // Explorer pins to top-left there, not as a banner).
-  const [explorerBottomY, setExplorerBottomY] = useState<number>(0);
   // Which quick-connect ring (if any) is open. Self-contained state + reset /
   // outside-close effects live in useQuickRing.
   const [quickRingOpen, setQuickRingOpen] = useQuickRing(selectedId);
-  // Mobile dock state + toggle (compact button row replacing the four
-  // full-width collapse banners on mobile). See useCanvasMobileDock; the
-  // popover anchor math is the tested computeDockAnchor.
+  // Which panel is open as a popover off its button (the Toolbar Explorer,
+  // the cluster popovers). See useDockPopovers; the popover anchor math is
+  // the tested computeDockAnchor.
   const {
-    activeMobilePanel,
-    setActiveMobilePanel,
-    dockButtonRefs,
+    activeDockPanel,
+    setActiveDockPanel,
     activeDockAnchor,
     setActiveDockAnchor,
     handleDockButtonClick,
-    openDockPanel,
-  } = useCanvasMobileDock(mainRef);
-  // A session panel opens under its dock button when it arrives (docs/specs/012-collaboration/live-poll.md,
-  // docs/specs/012-collaboration/session-tools.md): a new poll (or the one you just answered), a vote just opened.
-  useOpenDockPanelOnChange(props.pollPanel ? props.pollPanel.poll.id : null, 'poll', openDockPanel);
-  useOpenDockPanelOnChange(props.tabVote ? 'vote' : null, 'vote', openDockPanel);
+  } = useDockPopovers(mainRef);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -181,29 +183,16 @@ export function Canvas(props: CanvasProps) {
     wrapperRef,
     onDeselect,
     onSelectMarquee,
+    onShiftSelect,
+    currentSelection: () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
     isPinchingRef,
-  });
-
-  // Touch has no right-click, so a press-and-hold on the empty canvas opens
-  // the tab / canvas context menu (the same one desktop reaches via
-  // right-click). Element presses stopPropagation in their own pointerdown,
-  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
-  //
-  // The same press also armed a marquee (or a pan), still live under the
-  // finger when the hold fires. Its release reads as a sub-4px "drag", which
-  // deselects, and deselecting closes the context menu: the menu flashed
-  // open on the hold and vanished on the lift (iPhone / iPad). The hold has
-  // claimed the press, so drop whatever the press started.
-  const canvasLongPress = useLongPress((x, y) => {
-    setMarquee(null);
-    setPan(null);
-    onCanvasContextMenu?.(x, y);
   });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropPhoto: props.onDropPhoto,
+    onDropFile: props.onDropFile,
     // A tile DRAGGED onto the canvas is an edit too (docs/specs/008-canvas/avatar-mode.md), so it leaves
     // Avatar mode the same way a tile click does — otherwise the element
     // landed while the canvas still read as read-only.
@@ -351,7 +340,7 @@ export function Canvas(props: CanvasProps) {
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
 
-  // Who is sitting in each chair, from PRESENCE — never from the diagram. Our
+  // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
   // itself the moment its occupant leaves the mode, changes tab or drops off.
   const chairSitters = useMemo(() => {
@@ -432,7 +421,7 @@ export function Canvas(props: CanvasProps) {
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
   const handlePointerMoveCanvas = (e: React.PointerEvent) => {
     // Spotlight tracks the cursor in SCREEN space (px relative to <main>),
-    // not canvas-coords: its light must stay put on screen as the diagram
+    // not canvas-coords: its light must stay put on screen as the canvas
     // pans / zooms under it. <main> is `position: relative` with no border,
     // so its content origin is its bounding-rect top-left.
     if (canvasTool === 'spotlight' || canvasTool === 'eraser') {
@@ -455,14 +444,18 @@ export function Canvas(props: CanvasProps) {
 
   // Stable selection-routing wrappers for the memo'd element / arrow
   // views — see useCanvasSelectHandlers.
-  const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
-    inertIds: props.layerInertIds,
-    multiSelectedIds,
-    onSelect,
-    onShiftSelect,
-    onElementContextMenu,
-    onMultiContextMenu,
-  });
+  const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
+    useCanvasSelectHandlers({
+      inertIds: props.layerInertIds,
+      isPaintMode,
+      selectedId,
+      multiSelectedIds,
+      onSelect,
+      onDeselect,
+      onShiftSelect,
+      onElementContextMenu,
+      onMultiContextMenu,
+    });
 
   // An armed workshop-note tile is a STAMP, not a draw-to-size (docs/specs/021-event-storming/event-storming.md
   // Phase 4): its ghost follows the pointer, and the draw gesture places by the
@@ -475,17 +468,18 @@ export function Canvas(props: CanvasProps) {
     viewportZoom,
     wrapperRef,
   });
-  const { drawDrag, penPoints, drawHover, beginPendingDrawGesture } = useCanvasDrawGesture({
-    pendingDraw,
-    elements,
-    wrapperRef,
-    viewportZoom,
-    isPinchingRef,
-    onCommitDraw,
-    onCommitFreehand,
-    stampAt,
-    showStamp,
-  });
+  const { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture } =
+    useCanvasDrawGesture({
+      pendingDraw,
+      elements,
+      wrapperRef,
+      viewportZoom,
+      isPinchingRef,
+      onCommitDraw,
+      onCommitFreehand,
+      stampAt,
+      showStamp,
+    });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
   // drag-based draw gesture: while the polygon intent is armed it
@@ -498,8 +492,29 @@ export function Canvas(props: CanvasProps) {
       viewportZoom,
       onCommitPolygon,
     });
+  // The Path tool (docs/specs/023-whiteboard/path-tool.md), in front of both: see usePathTool.
+  const pathTool = usePathTool({
+    pendingDraw,
+    canvasTool,
+    elements,
+    inertIds: props.layerInertIds,
+    wrapperRef,
+    viewportZoom,
+    activeTabId: props.activeTabId,
+    whiteboardInk: props.whiteboardDock ? props.whiteboardInk : undefined,
+    editingId,
+    selectedId,
+    multiSelectCount: multiSelectedIds.size,
+    onCommitPath: props.onCommitPath,
+    onCommitPathEdit: props.onCommitPathEdit,
+    onDressPath: props.onDressPath,
+    onLeaveEdit: props.onCancelEdit,
+    onDeselect,
+    onBeginEdit: props.onBeginEdit,
+    onCancelDraw: props.onCancelDraw,
+  });
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    beginPolygonPoint(e) || beginPendingDrawGesture(e);
+    pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
@@ -508,6 +523,7 @@ export function Canvas(props: CanvasProps) {
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
+    whiteboard: props.whiteboardDock !== undefined,
     viewportOffset,
     viewportZoom,
     mainRef,
@@ -520,10 +536,11 @@ export function Canvas(props: CanvasProps) {
     peerAvatars: props.remoteAvatars,
     onPushPeer: props.onAvatarPush,
     isoCamera,
-    canvasLongPress,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
+    interceptPress: pathTool.beginEditPress,
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
+    onDeselect,
     onCanvasDoubleClick,
   });
 
@@ -538,6 +555,12 @@ export function Canvas(props: CanvasProps) {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
   }, [mainRef]);
+  // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
+  const { onGrowMindNode, onAbandonMindNode } = props;
+  const mindGrow = useMemo(
+    () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
+    [onGrowMindNode, onAbandonMindNode],
+  );
   return (
     <main
       ref={mainRef}
@@ -548,7 +571,7 @@ export function Canvas(props: CanvasProps) {
       // the main landmark (not "application") because the floating
       // panels render inside it and must keep normal SR navigation.
       tabIndex={0}
-      aria-label="Diagram canvas"
+      aria-label="Canvas"
       data-canvas-a11y-root=""
       onPointerMove={handlePointerMoveCanvas}
       onPointerLeave={handlePointerLeaveCanvas}
@@ -588,14 +611,15 @@ export function Canvas(props: CanvasProps) {
         // surrounding "letterbox" gap falls through to <main>. Without
         // setting cursor here too, the user would see the OS default
         // arrow in that gap while a draw-to-size intent is pending.
-        ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+        ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+        ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
       }}
     >
       {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
       <CanvasLiveRegion />
       {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
-          diagram content; the static patterns ride the <main> background
+          canvas content; the static patterns ride the <main> background
           above. tabBackgroundStyle returns just the backdrop colour for
           these, so this layer is the only thing that draws their motion. */}
       {isAnimatedPattern(tabBackgroundPattern) ? (
@@ -613,11 +637,11 @@ export function Canvas(props: CanvasProps) {
         onDoubleClick={(e) => {
           // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
           // add-text double-click while the intent is armed.
-          if (handlePolygonDoubleClick()) return;
+          if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
           surface.onWrapperDoubleClick(e);
         }}
         // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
-        // diagram layer ignore pointer events so NO element kind can be
+        // canvas layer ignore pointer events so NO element kind can be
         // selected, dragged, or edited (a per-element capture guard can't
         // catch every select path — boxed elements, arrow hit-bands, labels,
         // click vs pointerdown). Clicks then fall through to <main>, where the
@@ -628,7 +652,7 @@ export function Canvas(props: CanvasProps) {
         // it's a read-only view tool. Clicks fall through to <main>, where a
         // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md): same treatment for the same reason — the mode
-        // is read-only, so the diagram layer goes inert and every click falls
+        // is read-only, so the canvas layer goes inert and every click falls
         // through to <main>, where the capture handler turns it into a walk.
         className={`absolute inset-0 origin-center touch-none ${
           canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar'
@@ -639,6 +663,17 @@ export function Canvas(props: CanvasProps) {
         // the base plane while the camera orbits so they can't z-fight
         // (flicker) with the coplanar contents above them.
         data-iso={canvasTool === 'isometric' ? '' : undefined}
+        // A whiteboard pen draws wherever it presses, so nothing under it swaps
+        // the pen cursor for its own (globals.css, docs/specs/023-whiteboard/whiteboard.md "Pens").
+        data-pen-in-hand={
+          (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
+          pendingDraw?.type === 'path'
+            ? ''
+            : undefined
+        }
+        data-path-cursor={pathTool.cursor ? '' : undefined}
+        // Fades in as the editor arrives (globals.css, "Editor fade-in").
+        data-canvas-world=""
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
@@ -647,7 +682,7 @@ export function Canvas(props: CanvasProps) {
           // in screen space, so a drag moves the scene the way the cursor
           // moves at any camera angle. The fragment (built above as
           // isoFragment) pivots the tilt around the content centre so the
-          // diagram tilts in place / stays centred while orbiting rather than
+          // canvas tilts in place / stays centred while orbiting rather than
           // swinging off-screen. preserve-3d lets the depth layer's
           // translateZ stack read as real extruded height.
           transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
@@ -658,53 +693,74 @@ export function Canvas(props: CanvasProps) {
           // intents inherited the default arrow cursor because the
           // wrapper drops its Tailwind cursor- class above when
           // pendingDraw is set, leaving no cursor specified at all.
-          ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
+          ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+          // A path in its edit mode says what a press would do (usePathTool).
+          ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
         }}
       >
         {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        <MindGrowProvider value={props.onGrowMindNode}>
-          <CanvasElementsLayer
-            {...props}
-            // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-            // so the prop from the host is overridden with the local resolver.
-            onEnterPortal={resolvePortal}
-            onFireReaction={props.onFireReaction}
-            reactionBursts={props.reactionBursts}
-            onReactionBurstDone={props.onReactionBurstDone}
-            // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-            // lives, rather than threaded from the page.
-            chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
-            // Pressing a Selection Mode button that hands out Avatar mode drops
-            // the character at THAT button (see avatarSpawn), not the viewport
-            // centre: you pressed a thing on the canvas, so the character should
-            // appear where you pressed it.
-            onPressModeButton={pressModeButton}
-            onPressFocusButton={props.onPressFocusButton}
-            hasArrows={hasArrows}
-            arrowLabels={arrowLabels}
-            showHandles={showHandles}
-            showAnchorsFor={showAnchorsFor}
-            badgeColor={badgeColor}
-            selectionBounds={selectionBounds}
-            showPlus={showPlus}
-            showUnionResize={showUnionResize}
-            unionResizeBounds={unionResizeBounds}
-            unionResizePrimaryId={unionResizePrimaryId}
-            isPaintMode={isPaintMode}
-            handleArrowSelect={handleArrowSelect}
-            handleElementContextSelect={handleElementContextSelect}
-            quickRingOpen={quickRingOpen}
-            setQuickRingOpen={setQuickRingOpen}
+        <CanvasStillProvider still={isWhiteboardTab({ kind: tabKind })}>
+          <MindGrowProvider value={mindGrow}>
+            <CanvasElementsLayer
+              {...props}
+              elements={pathTool.elements}
+              // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+              // so the prop from the host is overridden with the local resolver.
+              onEnterPortal={resolvePortal}
+              onFireReaction={props.onFireReaction}
+              reactionBursts={props.reactionBursts}
+              onReactionBurstDone={props.onReactionBurstDone}
+              // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+              // lives, rather than threaded from the page.
+              chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
+              // Pressing a Selection Mode button that hands out Avatar mode drops
+              // the character at THAT button (see avatarSpawn), not the viewport
+              // centre: you pressed a thing on the canvas, so the character should
+              // appear where you pressed it.
+              onPressModeButton={pressModeButton}
+              onPressFocusButton={props.onPressFocusButton}
+              hasArrows={hasArrows}
+              arrowLabels={arrowLabels}
+              showHandles={showHandles}
+              showAnchorsFor={showAnchorsFor}
+              badgeColor={badgeColor}
+              selectionBounds={selectionBounds}
+              showPlus={showPlus}
+              showUnionResize={showUnionResize}
+              unionResizeBounds={unionResizeBounds}
+              unionResizePrimaryId={unionResizePrimaryId}
+              isPaintMode={isPaintMode}
+              handleArrowSelect={handleArrowSelect}
+              handleElementClick={handleElementClick}
+              handleElementContextSelect={handleElementContextSelect}
+              quickRingOpen={quickRingOpen}
+              setQuickRingOpen={setQuickRingOpen}
+              drawDrag={drawDrag}
+            />
+          </MindGrowProvider>
+        </CanvasStillProvider>
+        {/* The whiteboard pen's stroke being drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"):
+            in this transformed layer, after the elements, laid out as the stroke it lands as, so
+            the same layer rasterises both and release changes no pixel. */}
+        {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
+          <WhiteboardPenPreview
+            stroke={penStroke}
+            pen={pendingDraw}
+            ink={props.whiteboardInk ?? 'currentColor'}
+            zoom={viewportZoom}
           />
-        </MindGrowProvider>
+        ) : null}
+        {/* The path being drawn (docs/specs/023-whiteboard/path-tool.md), in the same layer. */}
+        {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+        {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
-            transformed wrapper so they pan / zoom with the diagram, and after
+            transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
             over. Peers' characters render whether or not WE are in the mode —
-            someone else walking their diagram is worth seeing regardless. */}
+            someone else walking the canvas is worth seeing regardless. */}
         {props.remoteAvatars.map((peer) => (
           <AvatarWalker
             key={peer.id}
@@ -734,7 +790,7 @@ export function Canvas(props: CanvasProps) {
             than around a pad. Same engine, same particles: the pad and the
             avatar panel are two ways to set off one effect, not two effects.
             Positioned at the character's canvas point, inside the transformed
-            wrapper, so it pans and zooms with the board it is celebrating. */}
+            wrapper, so it pans and zooms with the canvas it is celebrating. */}
         {avatar.pos && avatarBurst ? (
           <div
             className="pointer-events-none absolute"
@@ -771,17 +827,25 @@ export function Canvas(props: CanvasProps) {
 
       {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
           transformed wrapper so the light stays fixed on screen while the
-          diagram pans / zooms underneath. Rendered before CanvasChrome so the
+          canvas pans / zooms underneath. Rendered before CanvasChrome so the
           palette + chrome paint ON TOP and stay reachable to switch tools
           back; pointer-events-none lets clicks fall through to <main>. */}
       {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): the same screen-space layer as
           the shroud, for the same reason — it must not pan or zoom with the
-          diagram, and it must never take a pointer event. */}
+          canvas, and it must never take a pointer event. */}
       {canvasTool === 'eraser' ? (
         <EraserBrushRing
           pos={eraserPos}
-          radius={eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)}
-          filtered={(props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'}
+          // A whiteboard's brush is fixed per mode (docs/specs/023-whiteboard/whiteboard.md "Eraser").
+          radius={
+            props.whiteboardDock
+              ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
+              : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
+          }
+          filtered={
+            !props.whiteboardDock &&
+            (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
+          }
         />
       ) : null}
       {canvasTool === 'spotlight' ? (
@@ -797,10 +861,28 @@ export function Canvas(props: CanvasProps) {
         selection={canvasSelection}
         quickRingOpen={quickRingOpen !== null}
       />
+      {pathTool.toolbar ? (
+        <PathEditToolbar
+          {...pathTool.toolbar}
+          viewportOffset={viewportOffset}
+          zoom={viewportZoom}
+        />
+      ) : null}
 
       <CanvasChrome
         {...props}
+        // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
+        // nodes, not the board (docs/specs/023-whiteboard/path-tool.md "Drawing").
+        {...(pathTool.history
+          ? {
+              canUndo: pathTool.history.canUndo,
+              canRedo: pathTool.history.canRedo,
+              onUndo: pathTool.history.undo,
+              onRedo: pathTool.history.redo,
+            }
+          : null)}
         isPaintMode={isPaintMode}
+        mainSize={mainSize}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
         laserConfig={props.laserConfig}
@@ -846,11 +928,8 @@ export function Canvas(props: CanvasProps) {
         wrapperRef={wrapperRef}
         paletteBottomY={paletteBottomY}
         setPaletteBottomY={setPaletteBottomY}
-        explorerBottomY={explorerBottomY}
-        setExplorerBottomY={setExplorerBottomY}
-        activeMobilePanel={activeMobilePanel}
-        setActiveMobilePanel={setActiveMobilePanel}
-        dockButtonRefs={dockButtonRefs}
+        activeDockPanel={activeDockPanel}
+        setActiveDockPanel={setActiveDockPanel}
         activeDockAnchor={activeDockAnchor}
         setActiveDockAnchor={setActiveDockAnchor}
         handleDockButtonClick={handleDockButtonClick}
@@ -860,7 +939,7 @@ export function Canvas(props: CanvasProps) {
         onIsoOrbit={isoCamera.startOrbit}
         onIsoReset={isoCamera.reset}
       />
-      {/* Lazy per-tab load (docs/specs/006-diagram/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
+      {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
       {tabLoadState && tabLoadState !== 'ready' ? (
@@ -876,12 +955,15 @@ export function Canvas(props: CanvasProps) {
           Portaled to escape the canvas's pan/zoom transform so its fixed
           position is viewport-relative. Reveals only after a deliberate hold
           and completes as the context menu opens. */}
-      {canvasLongPress.pressPoint ? (
+      {surface.canvasLongPress.pressPoint ? (
         <Portal>
           <div
             aria-hidden
             className="animate-longpress-hold pointer-events-none fixed z-[var(--z-toast)] h-9 w-9 rounded-full border-2 border-brand-500/70"
-            style={{ left: canvasLongPress.pressPoint.x, top: canvasLongPress.pressPoint.y }}
+            style={{
+              left: surface.canvasLongPress.pressPoint.x,
+              top: surface.canvasLongPress.pressPoint.y,
+            }}
           />
         </Portal>
       ) : null}

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { EMBED_PROVIDERS } from '@livediagram/diagram';
-import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mode';
+import { EMBED_PROVIDERS } from '@livediagram/document';
+import {
+  drawBannerMessage,
+  drawIntentCursor,
+  isHeldPenIntent,
+  isPathIntent,
+  opensForTyping,
+  type PendingDraw,
+} from './draw-mode';
 
 // Every pen variant, keyed so the compiler owns the list: `variant` is an
 // optional union on the freehand intent, and adding a member to it fails
@@ -9,9 +16,10 @@ import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mo
 // and 'component' both shipped with dedicated branches in BOTH exported
 // functions while the sweeps below walked straight past them.
 type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['variant']>;
-const FREEHAND_VARIANTS: Record<FreehandVariant, true> = {
-  highlighter: true,
-  'shape-pen': true,
+const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
+  highlighter: { type: 'freehand', variant: 'highlighter' },
+  'shape-pen': { type: 'freehand', variant: 'shape-pen' },
+  whiteboard: { type: 'freehand', variant: 'whiteboard', colour: null, width: 4, recognise: false },
 };
 
 // One sample per discriminant. Typing it as a Record over PendingDraw['type']
@@ -33,18 +41,13 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   ],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
+  path: [{ type: 'path' }],
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
   // sample is enough here.
   component: [{ type: 'component', kind: 'banner' }],
   // Plain pen plus every variant.
-  freehand: [
-    { type: 'freehand' },
-    ...(Object.keys(FREEHAND_VARIANTS) as FreehandVariant[]).map((variant): PendingDraw => ({
-      type: 'freehand',
-      variant,
-    })),
-  ],
+  freehand: [{ type: 'freehand' }, ...Object.values(FREEHAND_VARIANTS)],
 };
 
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
@@ -248,5 +251,33 @@ describe('drawIntentCursor', () => {
       expect(c).toBeTruthy();
       expect(c).not.toBe('auto');
     }
+  });
+});
+
+describe('opensForTyping', () => {
+  it('opens a drawn text box for typing everywhere', () => {
+    expect(opensForTyping({ type: 'text' }, false)).toBe(true);
+  });
+
+  it('opens a sticky for typing on a whiteboard only (docs/specs/023-whiteboard/whiteboard.md)', () => {
+    expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
+    expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
+  });
+
+  it('leaves shapes selected, not typing', () => {
+    expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
+  });
+});
+
+describe('the Path tool (docs/specs/023-whiteboard/path-tool.md)', () => {
+  it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
+    expect(isHeldPenIntent({ type: 'path' })).toBe(true);
+    expect(isPathIntent({ type: 'path' })).toBe(true);
+    expect(isPathIntent({ type: 'polygon' })).toBe(false);
+  });
+
+  it('has its own cursor and screen-reader copy', () => {
+    expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
+    expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
   });
 });

@@ -14,9 +14,9 @@ import {
   type MindFlow,
   type LineSeries,
   type PieSlice,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { hexish } from '@/components/palette/palette-controls';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuActionButton, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
@@ -443,9 +443,11 @@ const MIND_FLOW_ICON: Record<MindFlow, ReactNode> = {
 export function MindFlowTiles({
   current,
   onSet,
+  onTidy,
 }: {
   current: MindFlow;
   onSet: (flow: MindFlow) => void;
+  onTidy: () => void;
 }) {
   return (
     <>
@@ -465,6 +467,11 @@ export function MindFlowTiles({
           />
         ))}
       </MenuTileGrid>
+      {/* Tidy Map (docs/specs/009-elements/mind-node.md): the way back to a tidy map after dragging
+          nodes around, and from then on growth keeps it tidy. */}
+      <div className="px-2 pb-1.5 pt-1">
+        <MenuActionButton label="Tidy Map" onClick={onTidy} />
+      </div>
     </>
   );
 }

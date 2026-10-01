@@ -47,7 +47,7 @@ Turbo spins up all seven dev servers in parallel:
 | `apps/api`       | `http://localhost:8787/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
-The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/diagram/*` are the editor, plus `/telemetry`, `/help`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
+The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
 **Use port 3000 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3002` cannot reach the api worker until you tell it where the worker is:
 
@@ -58,11 +58,11 @@ NEXT_PUBLIC_API_BASE=http://localhost:8787/api
 
 A remote api works too, and there are now two of them: `https://staging.livediagram.app/api`
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
-the one to reach for; the production api reads and writes real people's diagrams.
+the one to reach for; the production api reads and writes real people's documents.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the diagram”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Diagrams persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Documents persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
 ## Scoping commands to one workspace
 
@@ -78,20 +78,26 @@ Workspace names follow the pattern `@livediagram/<app-or-package-folder-name>`.
 
 Run from the repo root:
 
-| Command                                    | What it does                                                                                                                                                                                                                                                  |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm install`                             | Install all workspace deps.                                                                                                                                                                                                                                   |
-| `pnpm dev`                                 | Start all dev servers in parallel (`turbo run dev`).                                                                                                                                                                                                          |
-| `pnpm build`                               | Production build across the repo (`turbo run build`).                                                                                                                                                                                                         |
-| `pnpm lint`                                | ESLint across the repo (`turbo run lint`).                                                                                                                                                                                                                    |
-| `pnpm typecheck`                           | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                |
-| `pnpm test`                                | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                              |
-| `pnpm --filter @livediagram/live test:e2e` | Playwright smoke suite ([End-to-end smoke tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit. |
-| `pnpm format`                              | Prettier write across the repo.                                                                                                                                                                                                                               |
-| `pnpm format:check`                        | Prettier check (this is what CI runs).                                                                                                                                                                                                                        |
-| `pnpm icons:vendor`                        | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                               |
-| `pnpm icons:sheet`                         | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                               |
-| `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                        |
+| Command                                                                 | What it does                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm install`                                                          | Install all workspace deps.                                                                                                                                                                                                                                  |
+| `pnpm dev`                                                              | Start all dev servers in parallel (`turbo run dev`).                                                                                                                                                                                                         |
+| `pnpm build`                                                            | Production build across the repo (`turbo run build`).                                                                                                                                                                                                        |
+| `pnpm lint`                                                             | ESLint across the repo (`turbo run lint`).                                                                                                                                                                                                                   |
+| `pnpm typecheck`                                                        | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                               |
+| `pnpm test`                                                             | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                             |
+| `pnpm --filter @livediagram/live test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit. |
+| `pnpm --filter @livediagram/live test:e2e:clerk-stub`                   | The signed-in specs (`apps/live/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @livediagram/live build:clerk-stub` first. Boots its own stack on `:3015` / `:8788` / `:3016`.                                                         |
+| `cd apps/live && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.     |
+| `pnpm format`                                                           | Prettier write across the repo.                                                                                                                                                                                                                              |
+| `pnpm format:check`                                                     | Prettier check (this is what CI runs).                                                                                                                                                                                                                       |
+| `pnpm staging:check`                                                    | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                   |
+| `pnpm licences`                                                         | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                         |
+| `pnpm icons:vendor`                                                     | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                              |
+| `pnpm icons:sheet`                                                      | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                              |
+| `pnpm demo:sticky-vision`                                               | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                       |
+| `pnpm bench:stroke-points`                                              | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-document/stroke-points.md)).                                                  |
+| `pnpm --filter @livediagram/document stroke-points <file.json>`         | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                    |
 
 Turbo caches results, so re-running with no changes is a no-op.
 
@@ -127,14 +133,16 @@ Without these set: the api worker silently treats every request as a guest (the 
 
 ## Enabling AI assistance locally (optional)
 
-The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has an OpenAI key. To turn it on locally:
+The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
 
 ```sh
-# apps/api/.dev.vars (gitignored)
-AI_API_KEY=...            # any OpenAI-compatible provider's key
-# AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai  # optional; defaults to OpenAI
-# AI_MODEL=gpt-4o              # optional; defaults to gpt-4o
-# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
+# apps/api/.dev.vars (gitignored). One key serves every AI feature.
+OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=..., or both:
+#                              # the assistant then runs on OpenAI, the reader on Google
+# AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
+# AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
+# AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
+# AI_VISION_MODEL=...          # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
 #                              # On Google this defaults to gemini-2.5-flash-lite,
 #                              # which reads handwriting better than the big model.
 ```
@@ -151,6 +159,27 @@ pnpm --filter @livediagram/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
+The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/live test:e2e:drive`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `CLERK_JWKS_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test serves the JWKS (port 8795) and the fake Google (8796) itself. Rebuild the live app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3002 first (or set `E2E_LIVE_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
+
+`pnpm --filter @livediagram/live test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
+
+## Enabling the Google Drive mirror locally (optional)
+
+The mirror needs a Google Cloud OAuth client (web application) with `http://localhost:3000/drive/connected` as an authorised redirect URI and `http://localhost:3000` as a JavaScript origin, and the Drive API enabled:
+
+```sh
+# apps/api/.dev.vars (gitignored)
+GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+DRIVE_TOKEN_KEY=...        # openssl rand -base64 32
+
+# apps/live/.env.local (gitignored)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
+NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
+```
+
+It is signed-in only, so Clerk must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
+
 ## Trying the photo import without an AI key
 
 The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
@@ -166,12 +195,16 @@ E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2
 on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
 
+`E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
+`.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
+verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
+
 To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every
 `/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
 to the in-browser model and says so ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9).
 
-## Three gotchas
+## Four gotchas
 
 - **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.
 
@@ -179,7 +212,9 @@ to the in-browser model and says so ([Event storming](../specs/021-event-stormin
 
   Next 16 also writes three files into whichever app you run it from, all of them gitignored on purpose: `next-env.d.ts` (it now names the active distDir inside itself, so dev and build would otherwise rewrite it over each other), and an `AGENTS.md` + `CLAUDE.md` pair of agent instructions. Don't un-ignore or hand-edit them; the repo's agent instructions live in the root `AGENTS.md`, and each app's tsconfig already picks up the Next types without `next-env.d.ts` being tracked.
 
-  The webpack escape hatch is still there — `pnpm --filter @livediagram/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit.
+  The webpack escape hatch is still there — `pnpm --filter @livediagram/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
+
+- **`/licences` needs its generated data.** `pnpm dev` does not run the generator (it takes about 20 seconds), so the marketing dev server fails that one page with `LicencesManifestMissing` until you run `pnpm licences` once. Don't run `pnpm licences` while a `next build` of the editor, help centre or telemetry dashboard is running: Next's analyzer shares an app's Turbopack build cache (`.next/cache`), and two processes on it corrupt it. `pnpm build` orders them for you.
 
 - **The api worker's local D1 file lives at `apps/api/.wrangler/state/v3/d1/`.** Delete the folder to start over with an empty database.
 

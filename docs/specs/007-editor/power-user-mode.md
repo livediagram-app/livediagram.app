@@ -36,8 +36,8 @@ Panel opacity is not part of the preset. Motion is not part of the mode: every t
   (`powerUserBaseline`). "Did the user change it?" is answered by comparing the current value with the value written,
   so it holds whichever surface made the change (Settings, the tour's layout picker, another device). A setting changed
   and then changed back to the preset's value counts as untouched.
-- **One setting can span several keys.** The panel layout writes `panelLayout` and its legacy mirror `minimalPanels`
-  together ([Toolbar layout](toolbar-layout.md)); they are compared and restored together, so the two never disagree.
+- **One setting can span several keys.** A preset setting names the keys it writes; they are compared and restored
+  together, so they never disagree. Every setting in today's preset writes one key.
 - **Switching on while already on does nothing**, and switching off while off does nothing. Switching on again after
   switching off records a fresh baseline.
 
@@ -91,6 +91,12 @@ Kept as they are:
 - Every control. Minimal chrome hides words, not abilities.
 - The empty-canvas banner ("Tab 1 is empty"): it holds actions (Help, Quick Start), so it is a control, not a hint.
 
+The mode also drops, whatever the Minimal chrome option says:
+
+- **The More button** (`⋯`) in the selection toolbars, on desktop: a power user opens the element menu with a
+  right-click ([Canvas and palette](../008-canvas/canvas-and-palette.md#selection-popover)). Touch devices keep it:
+  they cannot right-click.
+
 #### Accessibility of hidden labels
 
 Minimal chrome meets WCAG 2.2 AA:
@@ -120,13 +126,32 @@ Other consumers:
   and two rows of coloured squares are otherwise indistinguishable at a glance. Words that teach go; words that name
   what a control changes stay.
 
+### Quick appearance switch
+
+While the mode is on, the status bar's **Appearance** control ([Appearance](../004-interface-design/appearance.md#the-control))
+switches between Light and Dark instead of cycling through System, so the everyday flip is one click:
+
+- **Click** switches to the opposite of what the chrome is painted as: Light goes to Dark, Dark to Light, and System
+  goes to the opposite of what the device currently resolves to. Every click visibly changes the chrome.
+- **Right-click** (the context menu gesture: right-click, the Menu key or Shift+F10, a long press where the device
+  maps it to a context menu) sets **System** and opens no browser menu. On System already, it changes nothing.
+- **Its name says both.** The accessible name reads where you are, where a click goes, and that a right-click follows
+  the device ("Appearance: Dark. Switch to Light. Right-click to follow your device."). The hover card's description
+  says the same.
+- It applies wherever the control reads the mode: the editor's status bar and the Explorer's bottom bar. It is not a
+  Minimal chrome behaviour: it holds with Minimal chrome off.
+- The public sites (the home page, help centre and dashboard) have no power user mode, so their control keeps the
+  three-step cycle whatever the preference holds.
+- The Settings **Appearance** row is unchanged: it offers all three settings.
+- Telemetry is the control's existing `UI / Toggled / <setting>` event, whichever gesture made the pick.
+
 ## Discovery: the offer
 
 The mode is offered **once**, ever, to people whose use suggests they would want it.
 
 - **When.** After **20 editing sessions on separate days**, or after **50 keyboard shortcuts** used, whichever comes
-  first. An editing session is opening a diagram you can edit; a day is a local calendar day, and a day counts once
-  however many diagrams are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
+  first. An editing session is opening a document you can edit; a day is a local calendar day, and a day counts once
+  however many documents are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
   (Delete, V, Cmd-Z, ...).
 - **Where the counting lives.** The counts are device-local and never synced: they describe how this device is used,
   and syncing a keystroke counter would cost a write per shortcut. Whether the offer has been made is synced, so it is

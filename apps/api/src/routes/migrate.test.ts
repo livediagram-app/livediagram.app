@@ -34,7 +34,7 @@ async function flow2(
 
 beforeEach(() => {
   migrateOwnerId.mockReset();
-  migrateOwnerId.mockResolvedValue({ diagrams: 1, folders: 0, shared: 0, images: 0 });
+  migrateOwnerId.mockResolvedValue({ documents: 1, folders: 0, shared: 0, images: 0 });
 });
 
 describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {

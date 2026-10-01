@@ -3,12 +3,12 @@
 // The Timeline's own empty state (docs/specs/013-workspace/timeline.md §2.4).
 //
 // Separate from ExplorerEmptyState, which is built around "this folder
-// has no diagrams" and offers a New Diagram CTA per section. A feed
+// has no documents" and offers a New Document CTA per section. A feed
 // with nothing in it is a different sentence: nothing has HAPPENED
 // yet, which is a statement about time rather than about a container.
 //
 // Rare in practice. The backfill seeds an existing account's feed from
-// its diagrams and team memberships on first read (docs/specs/013-workspace/timeline.md §5), so
+// its documents and team memberships on first read (docs/specs/013-workspace/timeline.md §5), so
 // this is mostly what a genuinely new visitor sees.
 
 import Link from 'next/link';
@@ -27,7 +27,7 @@ export function TimelineEmptyState() {
         </Glyph>
       }
       title="Nothing has happened yet"
-      description="Create a diagram, comment on one, or join a team, and it will show up here."
+      description="Create a document, comment on one, or join a team, and it will show up here."
     >
       {/* Same CTA treatment as every other Explorer empty state
           (ExplorerEmptyState), so the two read as one surface. */}
@@ -35,7 +35,7 @@ export function TimelineEmptyState() {
         href="/new"
         className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
       >
-        New diagram
+        New document
       </Link>
     </EmptyState>
   );

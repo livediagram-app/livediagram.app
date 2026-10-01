@@ -7,8 +7,8 @@ import {
 } from '@livediagram/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): one card per template the
-// editor ships, each a link that creates that diagram straight away
-// (/new?template=<kind>, docs/specs/007-editor/new-diagram-route.md). The data half lives here so the list and
+// editor ships, each a link that creates that document straight away
+// (/new?template=<kind>, docs/specs/007-editor/new-document-route.md). The data half lives here so the list and
 // the filter can be tested without rendering the section.
 
 export type GalleryTemplate = TemplateDescriptor & {
@@ -16,7 +16,7 @@ export type GalleryTemplate = TemplateDescriptor & {
   categoryLabel: string;
 };
 
-// Every listed template but Blank: Blank is what the hero's "Just Draw"
+// Every listed template but Blank: Blank is what the header's "Start Blank"
 // already offers, and a "what will you draw first" card for an empty canvas
 // answers nothing. Hidden templates never appear in a listing (docs/specs/008-canvas/canvas-and-palette.md).
 export function galleryTemplates(): GalleryTemplate[] {

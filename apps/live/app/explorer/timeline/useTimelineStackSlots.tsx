@@ -2,7 +2,7 @@
 
 // The ⋯ menu on a collapsed stack (docs/specs/013-workspace/timeline.md §2.9): one verb, Remove
 // from Timeline, which takes every member of the run off the reader's
-// feed at once. A day's "Diagrams Renamed · 12 events" is one thing to
+// feed at once. A day's "Documents Renamed · 12 events" is one thing to
 // the reader, so it should be one click to be rid of.
 //
 // Same trigger and menu shape as a single card's one-verb menu, so the

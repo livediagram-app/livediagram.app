@@ -29,7 +29,7 @@ import {
   type Padding,
   type ShapeElement,
   type Tab,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useArrowStyleSetters } from './useArrowStyleSetters';
 import { useDataShapeSetters } from './useDataShapeSetters';
@@ -59,7 +59,7 @@ type EditorElementStyleDeps = {
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // History-aware ACTIVE-TAB mutator, for the layer-aware Bring to
-  // Front / Send to Back (docs/specs/006-diagram/layers.md): they restack `tab.layers` as well
+  // Front / Send to Back (docs/specs/006-document/layers.md): they restack `tab.layers` as well
   // as the elements array, which element-level `commit` can't reach.
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Non-history tab mutator + one-shot checkpoint for the high-
@@ -101,6 +101,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowheadShapeSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     applyArrowPresetSelected,
     resetArrowStyleSelected,
     setArrowFlowSelected,
@@ -120,6 +121,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    tidyMindMapSelected,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -163,7 +165,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, selectedId });
 
   const { setTextSizeSelected, setFontSelected, setTextAlignSelected, toggleTextStyleSelected } =
-    useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit });
+    useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit, activeTab });
 
   // The debounced colour / opacity policy + Reset-to-theme — see
   // useColorStyleSetters (the fifth setter sibling).
@@ -211,7 +213,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Toggled', 'AspectLock');
   };
 
-  // Bring to Front / Send to Back are LAYER moves (docs/specs/006-diagram/layers.md): the
+  // Bring to Front / Send to Back are LAYER moves (docs/specs/006-document/layers.md): the
   // selection lands on the top (resp. bottom) layer, minting a fresh
   // edge layer when the current one holds anything else and pruning any
   // layer the move emptied. These two buttons are how layers accrue for
@@ -373,6 +375,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     setShapeKindSelected,
     resetAspectRatioSelected,
     setSizeSelected,
@@ -391,6 +394,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    tidyMindMapSelected,
     setPageHeading,
     setWebRows,
     appendWebRowTo,

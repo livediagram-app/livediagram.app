@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
+vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -28,7 +28,7 @@ afterEach(cleanup);
 function renderHeader() {
   return render(
     <EditorHeader
-      diagramName="Untitled diagram"
+      documentName="Untitled document"
       showShare
       shareable={false}
       onMakeCopy={() => {}}
@@ -55,11 +55,15 @@ describe('EditorHeader stack row', () => {
     },
   );
 
-  it('draws the account initial as a glyph disc filling the slot', () => {
+  it('draws the account avatar, its initial as a glyph disc filling the slot', () => {
     renderHeader();
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    const disc = slot.firstElementChild as HTMLElement;
+    // The account avatar (docs/specs/014-identity/profile-picture.md) holds the slot at its size.
+    const avatar = slot.firstElementChild as HTMLElement;
+    expect(avatar.dataset.avatarState).toBe('initial');
+    expect(avatar.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
+    const disc = avatar.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
@@ -73,7 +77,7 @@ describe('EditorHeader account menu', () => {
     const onOpenAccount = vi.fn();
     render(
       <EditorHeader
-        diagramName="d"
+        documentName="d"
         showShare={false}
         shareable={false}
         onOpenShare={() => {}}
@@ -102,7 +106,7 @@ describe('EditorHeader account menu', () => {
 describe('EditorHeader rename requests', () => {
   const header = (renameNonce: number, hideTitle = false) => (
     <EditorHeader
-      diagramName="Untitled diagram"
+      documentName="Untitled document"
       showShare={false}
       shareable={false}
       onOpenShare={() => {}}
@@ -111,7 +115,7 @@ describe('EditorHeader rename requests', () => {
       hideTitle={hideTitle}
     />
   );
-  const editing = () => screen.queryByDisplayValue('Untitled diagram');
+  const editing = () => screen.queryByDisplayValue('Untitled document');
 
   it('opens the name editor for a request, never on mount', () => {
     const { rerender } = render(header(0));
@@ -126,7 +130,7 @@ describe('EditorHeader rename requests', () => {
     expect(editing()).toBeNull();
     rerender(header(1, false));
     expect(editing()).not.toBeNull();
-    fireEvent.blur(screen.getByDisplayValue('Untitled diagram'));
+    fireEvent.blur(screen.getByDisplayValue('Untitled document'));
     expect(editing()).toBeNull();
     rerender(header(1, true));
     rerender(header(1, false));

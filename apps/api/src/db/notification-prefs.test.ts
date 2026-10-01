@@ -19,56 +19,66 @@ function envWithPrefsRow(prefs: string | null): Env {
 describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
   it('defaults both flags to true when there is no row', async () => {
     expect(await getNotificationPrefs(envWithPrefsRow(null), 'user_x')).toEqual({
-      notifyDiagramJoin: true,
+      notifyDocumentJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
   it('defaults to true when the key is absent from the blob', async () => {
     const prefs = await getNotificationPrefs(envWithPrefsRow('{"telemetryEnabled":false}'), 'u');
     expect(prefs).toEqual({
-      notifyDiagramJoin: true,
+      notifyDocumentJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
   it('only an explicit false opts out', async () => {
     const prefs = await getNotificationPrefs(
-      envWithPrefsRow('{"notifyDiagramJoin":false,"notifyInviteResponse":true}'),
+      envWithPrefsRow('{"notifyDocumentJoin":false,"notifyInviteResponse":true}'),
       'u',
     );
     expect(prefs).toEqual({
-      notifyDiagramJoin: false,
+      notifyDocumentJoin: false,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
   it('falls back to defaults on a corrupt blob', async () => {
     const prefs = await getNotificationPrefs(envWithPrefsRow('not json'), 'u');
     expect(prefs).toEqual({
-      notifyDiagramJoin: true,
+      notifyDocumentJoin: true,
       notifyInviteResponse: true,
       notifyComments: true,
       notifyTips: true,
       notifyMilestones: true,
       notifyActionAssigned: true,
+      notifyMentions: true,
     });
   });
 
+  it('reads an explicit mention opt-out (docs/specs/012-collaboration/comment-mentions.md)', async () => {
+    const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyMentions":false}'), 'u');
+    expect(prefs.notifyMentions).toBe(false);
+    expect(prefs.notifyActionAssigned).toBe(true);
+  });
+
   it('treats a non-boolean value as notify (defends against a misbehaving client)', async () => {
-    const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyDiagramJoin":"no"}'), 'u');
-    expect(prefs.notifyDiagramJoin).toBe(true);
+    const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyDocumentJoin":"no"}'), 'u');
+    expect(prefs.notifyDocumentJoin).toBe(true);
   });
 });

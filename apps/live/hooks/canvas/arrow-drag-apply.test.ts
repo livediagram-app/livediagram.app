@@ -4,7 +4,7 @@ import {
   type ArrowDragMoveArgs,
   type ArrowDragState,
 } from './arrow-drag-apply';
-import { planArrowBend, type ArrowElement, type Element } from '@livediagram/diagram';
+import { planArrowBend, type ArrowElement, type Element } from '@livediagram/document';
 
 // A free-floating arrow: no pinned ends, so translate/endpoint maths stay
 // self-contained and don't need surrounding boxes to anchor against.
@@ -168,5 +168,77 @@ describe('applyArrowDragMove', () => {
     expect(a.from).toEqual({ kind: 'free', x: 0, y: 0 });
     expect(a.to.kind === 'free' && a.to.x).toBeCloseTo(110);
     expect(a.to.kind === 'free' && a.to.y).toBe(0);
+  });
+});
+
+// docs/specs/008-canvas/arrow-bending.md "Bends line up": a slid angled segment snaps to
+// another arrow's bend.
+describe('sliding an angled segment', () => {
+  // A runs (0,0) → (100,0) → (100,100) → (200,100): its middle segment is vertical at x = 100.
+  const a = {
+    id: 'a1',
+    type: 'arrow',
+    arrowStyle: 'angled',
+    from: { kind: 'free', x: 0, y: 0 },
+    to: { kind: 'free', x: 200, y: 100 },
+    curvePoints: [
+      { dx: 0, dy: -50 },
+      { dx: 0, dy: 50 },
+    ],
+  } as ArrowElement;
+  // B turns at x = 106.
+  const b = {
+    id: 'b1',
+    type: 'arrow',
+    arrowStyle: 'angled',
+    from: { kind: 'free', x: 0, y: 300 },
+    to: { kind: 'free', x: 200, y: 400 },
+    curvePoints: [
+      { dx: 6, dy: -50 },
+      { dx: 6, dy: 50 },
+    ],
+  } as ArrowElement;
+
+  const slide = (noSnap: boolean) => {
+    const els: Element[] = [a, b];
+    let out = els;
+    const scheduleGuides = vi.fn();
+    applyArrowDragMove({
+      drag: {
+        kind: 'arrow-bend',
+        arrowId: 'a1',
+        startClientX: 0,
+        startClientY: 0,
+        plan: planArrowBend(a, els, { x: 100, y: 50 }),
+      } as ArrowDragState,
+      dx: 3,
+      dy: 0,
+      noSnap,
+      shiftHeld: false,
+      elements: els,
+      guidesOn: true,
+      tick: (m) => {
+        out = m(out);
+      },
+      scheduleGuides,
+      scheduleSnapTargets: vi.fn(),
+      onArrowConnected: vi.fn(),
+    });
+    const moved = out[0] as ArrowElement;
+    return {
+      xs: moved.curvePoints!.map((p) => 100 + p.dx),
+      guides: scheduleGuides.mock.lastCall![0],
+    };
+  };
+
+  it('lines the segment up with the other arrow’s bend, with a guide', () => {
+    const { xs, guides } = slide(false);
+    expect(xs).toEqual([106, 106]);
+    expect(guides).toEqual([expect.objectContaining({ axis: 'x', position: 106 })]);
+  });
+
+  it('slides freely with snapping off', () => {
+    const { xs } = slide(true);
+    expect(xs).toEqual([103, 103]);
   });
 });

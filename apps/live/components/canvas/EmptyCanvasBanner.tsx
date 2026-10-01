@@ -3,9 +3,9 @@
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Glyph } from '@livediagram/ui';
 
-// Empty-canvas hint (docs/specs/007-editor/new-diagram-route.md). A subdued bottom banner shown while the active
+// Empty-canvas hint (docs/specs/007-editor/new-document-route.md). A subdued bottom banner shown while the active
 // tab has no elements — replacing the old centre-of-canvas card so the hint
-// stays unobtrusive (a truly blank diagram reads as blank, not as a
+// stays unobtrusive (a truly blank document reads as blank, not as a
 // half-finished modal). Not dismissible: it simply goes away once the canvas
 // has content (or a draw tool / Quick Start is engaged). Sits in the same
 // bottom slot as the sign-in / theme banners; the host (EditorView) decides
@@ -53,9 +53,12 @@ export function EmptyCanvasBanner({
             <button
               type="button"
               onClick={onQuickStart}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+              // The Help button's exact styling beside it (HelpArticleLink, variant "button"): the
+              // pair are peers. Its own brand hover had no dark text colour, so on a dark canvas
+              // hovering turned the label dark brand on dark slate.
+              className="optical-edges inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white"
             >
-              Quick Start
+              <span className="text-optical-line">Quick Start</span>
             </button>
           </div>
         )}

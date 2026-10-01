@@ -1,4 +1,9 @@
-import { elementHasText, elementKindLabel, elementSupportsText } from '@livediagram/diagram';
+import {
+  elementHasText,
+  elementKindLabel,
+  elementSupportsText,
+  isMindNode,
+} from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import type { deriveCanvasSelection } from '@/lib/canvas-selection';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -64,7 +69,7 @@ export function CanvasSelectionToolbars({
           dock on mobile. The previous mobile-only z-[var(--z-canvas)] was an
           older design choice that hid the toolbar behind chrome,
           which made multi-select edit ops awkward on a phone.
-          Diagram elements stay in the original wrapper at z-auto
+          Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
       {/* Hide the selection toolbar while a quick-connect ring is open — its
@@ -91,7 +96,7 @@ export function CanvasSelectionToolbars({
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
-            // post comments on a diagram they don't own, but no
+            // post comments on a document they don't own, but no
             // other edit affordances apply. Every other handler
             // becomes undefined and the matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
@@ -105,8 +110,26 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
+            // A path's points (docs/specs/023-whiteboard/path-tool.md "Editing"): its edit mode, the
+            // Path tool put down first when it is still in hand.
+            onEditPoints={
+              !readOnly && !selectedLocked && selected?.type === 'path'
+                ? () => {
+                    if (props.pendingDraw) props.onCancelDraw();
+                    props.onBeginEdit(selected.id);
+                  }
+                : undefined
+            }
+            // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
+            // for Tab / Enter. Not on a locked node: growing re-lays the map.
+            {...(!readOnly && !selectedLocked && selected && isMindNode(selected)
+              ? {
+                  onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
+                  onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
+                }
+              : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
-            // Intra-layer z-order (docs/specs/006-diagram/layers.md): stack within the element's own
+            // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}

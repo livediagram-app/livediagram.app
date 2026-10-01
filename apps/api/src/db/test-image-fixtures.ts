@@ -5,8 +5,9 @@
 
 import { vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/diagram';
+import type { Tab } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { insertDocumentRow } from './legacy-test-schema';
 import type { Env } from '../types';
 
 export const DAY = 86_400_000;
@@ -26,12 +27,8 @@ export function setup(opts: { before0050?: boolean } = {}): SqliteD1 & { bucket:
   return { ...db, bucket };
 }
 
-export function diagram(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
-  sql
-    .prepare(
-      'INSERT INTO diagrams (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
-    )
-    .run(id, ownerId, name);
+export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
+  insertDocumentRow(sql, id, ownerId, name);
 }
 
 export function images(sql: DatabaseSync, createdAt: number, ...ids: string[]) {

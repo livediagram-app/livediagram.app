@@ -14,10 +14,10 @@
 // their own page-level provider (StaticClerkProvider).
 
 import { createContext, useContext } from 'react';
-import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
+import { clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
 
 // The subset of the Clerk user the app actually renders (AuthControls
-// menu, ProfilePane identity card, the bootstrap's display name).
+// menu, the Settings identity card, the bootstrap's display name).
 type DeferredAuthUser = {
   id: string;
   firstName: string | null;
@@ -26,6 +26,9 @@ type DeferredAuthUser = {
   username: string | null;
   email: string | null;
   createdAt: Date | null;
+  // The resolved profile picture (docs/specs/014-identity/profile-picture.md), or null for the
+  // initials avatar.
+  pictureUrl: string | null;
 };
 
 export type DeferredAuthState = {
@@ -46,7 +49,7 @@ export type DeferredAuthState = {
   deleteAccount: (() => Promise<void>) | null;
 };
 
-const clerkConfigured = clerkEnabled && !!clerkPublishableKey;
+const clerkConfigured = (clerkEnabled && !!clerkPublishableKey) || e2eAuthEnabled;
 
 // With Clerk disabled the defaults ARE the final state (settled guest
 // mode); with Clerk enabled they are the "still loading" state.

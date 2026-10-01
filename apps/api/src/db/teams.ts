@@ -61,6 +61,7 @@ function rowToMember(row: MemberRow): TeamMember {
     // Filled in by listTeamMembers via the participants join; the bare
     // row mapping leaves it null.
     name: null,
+    pictureUrl: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -107,11 +108,19 @@ export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMem
   // Resolve each connected member's display name from their participant
   // profile (docs/specs/013-workspace/teams.md) so the list shows real names ("Anna Smith"), not
   // just the prettified invite email. Pending / profile-less rows stay
-  // null and the client falls back to the email.
+  // null and the client falls back to the email. A JOINED member's published
+  // profile picture rides along (docs/specs/014-identity/profile-picture.md §5): the list is
+  // read only by signed-in members, and a pending invitee has not joined anyone yet.
   return Promise.all(
-    members.map(async (m) =>
-      m.userId ? { ...m, name: (await getParticipant(env, m.userId))?.name ?? null } : m,
-    ),
+    members.map(async (m) => {
+      if (!m.userId) return m;
+      const p = await getParticipant(env, m.userId);
+      return {
+        ...m,
+        name: p?.name ?? null,
+        pictureUrl: m.status === 'joined' ? (p?.pictureUrl ?? null) : null,
+      };
+    }),
   );
 }
 
@@ -178,15 +187,15 @@ export async function updateTeam(
 }
 
 export async function deleteTeam(env: Env, id: string): Promise<void> {
-  // Re-home the team's diagrams to their owners' personal Unsorted FIRST
-  // (docs/specs/013-workspace/team-shared-diagrams.md): deleting a team must never destroy members' work. Each
-  // team diagram already carries an owner_id (its creator, or whoever a
+  // Re-home the team's documents to their owners' personal Unsorted FIRST
+  // (docs/specs/013-workspace/team-shared-documents.md): deleting a team must never destroy members' work. Each
+  // team document already carries an owner_id (its creator, or whoever a
   // move-out transferred it to), so clearing team_id + folder_id returns
   // it to that owner's personal library. The team's folders are dropped
   // (a team's folder tree doesn't map onto a personal one). Explicit
   // deletes (not FK CASCADE — SQLite enforcement is opt-in via PRAGMA),
   // mirroring deleteFolder's re-home-then-delete rationale.
-  await env.DB.prepare('UPDATE diagrams SET team_id = NULL, folder_id = NULL WHERE team_id = ?')
+  await env.DB.prepare('UPDATE documents SET team_id = NULL, folder_id = NULL WHERE team_id = ?')
     .bind(id)
     .run();
   await env.DB.prepare('DELETE FROM folders WHERE team_id = ?').bind(id).run();
@@ -241,25 +250,25 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 // ghost member — and when it was the only joined admin, the team
 // became permanently unmanageable (every admin-gated action counted
 // the dead row via countTeamAdmins), while the account wipe's
-// diagrams DELETE destroyed the team-library diagrams they created.
+// documents DELETE destroyed the team-library documents they created.
 //
 // Per team:
 //   - Last joined member → the team dies with the account
 //     (deleteTeam; nobody is left for its library to belong to).
-//   - Otherwise their team-library diagrams transfer to an HEIR (the
+//   - Otherwise their team-library documents transfer to an HEIR (the
 //     longest-standing remaining joined member, admins first) so the
 //     shared work survives — mirroring deleteTeam's "never destroy
 //     members' work" rule — their membership row is removed, and the
 //     heir is promoted when no joined admin remains.
-// Move a departing user's team diagrams + team folders onto another member.
+// Move a departing user's team documents + team folders onto another member.
 //
-// Ownership of a team diagram is more than an audit field: every access gate
+// Ownership of a team document is more than an audit field: every access gate
 // honours `owner_id` BEFORE it checks membership (and the owner-only routes,
 // share links and passwords among them, check nothing else), so work left
 // owned by somebody who has gone stays open to them. The folders go too, so
 // no team row is left owned by a departed (or deleted) account.
 async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
-  await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+  await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();
   await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
@@ -267,7 +276,7 @@ async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUser
     .run();
 }
 
-// A member leaving or being removed (docs/specs/013-workspace/teams.md + docs/specs/013-workspace/team-shared-diagrams.md): hand what they made
+// A member leaving or being removed (docs/specs/013-workspace/teams.md + docs/specs/013-workspace/team-shared-documents.md): hand what they made
 // in the team to the remaining joined member detachUserFromTeams would pick,
 // the earliest admin, else the earliest member. Call BEFORE the membership
 // row goes. A no-op when nobody else has joined.

@@ -66,7 +66,7 @@ export function ThemesPane() {
         <EmptyState
           icon={<PaletteIcon />}
           title="No custom themes yet"
-          description="Build your own colour palette and reuse it across every diagram, just like a built-in one."
+          description="Build your own colour palette and reuse it across every document, just like a built-in one."
         >
           <button
             type="button"

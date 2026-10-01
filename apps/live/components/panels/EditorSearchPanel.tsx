@@ -5,30 +5,34 @@ import dynamic from 'next/dynamic';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
-import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { tileHandler } from '@/components/palette/PaletteTileGrid';
+import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 
-const SearchPanel = dynamic(() =>
-  import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+const SearchPanel = dynamic(
+  () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+  { ssr: false },
 );
 
-// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches diagrams, folders, shared +
-// team diagrams, tabs/elements, and exposes palette adds, commands, and help.
+// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches documents, folders, shared +
+// team documents, tabs/elements, and exposes palette adds, commands, and help.
 // Reads everything from EditorContext (commands come from useEditorCommands,
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.
 export function EditorSearchPanel() {
   const {
     searchOpen,
-    diagramList,
+    documentList,
     folders,
-    sharedDiagrams,
+    sharedDocuments,
     teams,
     teamFolders,
-    teamDiagrams,
+    teamDocuments,
     tabs,
     activeId,
-    openDiagram,
+    openDocument,
     setActiveId,
     setSelectedId,
     isReadOnly,
@@ -36,10 +40,12 @@ export function EditorSearchPanel() {
     addIcon,
     addSticker,
     addTechIcon,
+    addImage,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands();
+  const tileActions = useEditorTileActions();
   // The icon catalogues load async (lib/icon-registry.ts); subscribing here
   // re-renders the panel — and rebuilds the palette items below — the moment
   // they land, so "Add to canvas" results go from shapes-only to the full
@@ -52,16 +58,16 @@ export function EditorSearchPanel() {
 
   return (
     <SearchPanel
-      diagrams={diagramList.map((d) => ({ id: d.id, name: d.name }))}
+      documents={documentList.map((d) => ({ id: d.id, name: d.name }))}
       folders={folders.map((f) => ({ id: f.id, name: f.name }))}
-      shared={sharedDiagrams.map((s) => ({
+      shared={sharedDocuments.map((s) => ({
         id: s.id,
         name: s.name,
         shareCode: s.shareCode,
       }))}
       teams={teams.map((t) => ({ id: t.id, name: t.name }))}
       teamFolders={teamFolders}
-      teamDiagrams={teamDiagrams.map((d) => ({
+      teamDocuments={teamDocuments.map((d) => ({
         id: d.id,
         name: d.name,
         teamId: d.team.id,
@@ -69,11 +75,11 @@ export function EditorSearchPanel() {
       }))}
       tabs={tabs}
       currentTabId={activeId}
-      onSelectDiagram={(id) => {
-        openDiagram(id);
+      onSelectDocument={(id) => {
+        openDocument(id);
       }}
       onSelectShared={(id, shareCode) => {
-        openDiagram(id, shareCode);
+        openDocument(id, shareCode);
       }}
       onSelectTeam={(id) => {
         window.location.assign(
@@ -93,7 +99,7 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems()}
+      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems({ hasImage: !!addImage })}
       onAddPaletteItem={
         isReadOnly
           ? undefined
@@ -107,7 +113,10 @@ export function EditorSearchPanel() {
                 });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
-              else addTechIcon(add.iconId);
+              else if (add.type === 'tile') {
+                const def = PALETTE_TILES.find((t) => t.id === add.tileId);
+                if (def) tileHandler(def, tileActions)();
+              } else addTechIcon(add.iconId);
             }
       }
       commandItems={commandItems}

@@ -1,24 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import type { ElementAction } from '@livediagram/diagram';
-import {
-  apiCheckAssigneeAccess,
-  apiGetTeam,
-  type TeamListItem,
-  type TeamMember,
-} from '@/lib/api-client';
-import { memberName } from '@/components/panels/team-pane-parts';
+import type { ElementAction } from '@livediagram/document';
+import { apiCheckAssigneeAccess, apiGetTeam, type TeamListItem } from '@/lib/api-client';
+import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), lifted
-// out of AssignActionDialog: the pinned Myself row, the diagram team's
+// out of AssignActionDialog: the pinned Myself row, the document team's
 // member list (joined AND invited), the preselect-on-edit resolution,
 // the per-pick server access check, and the by-team grouping the picker
 // renders. The dialog keeps the `assignee` selection state itself (and
 // seeds it on open, alongside the name / description fields)
 // and passes it through.
-// Whether the picked teammate can actually open this diagram
+// Whether the picked teammate can actually open this document
 // (docs/specs/012-collaboration/assigned-actions.md §4), asked of the server per selection. 'error'
 // falls back to the picked-team heuristic with hedged wording.
 type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
@@ -27,7 +22,7 @@ type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
 type CheckedAccess = {
   assignee: PickableMember;
   ownerId: string;
-  diagramId: string;
+  documentId: string;
   access: Access;
 };
 
@@ -39,7 +34,7 @@ const NO_MEMBERS: PickableMember[] = [];
 // The answer knowable without the server, or null when it must be asked.
 function localAccess(
   assignee: PickableMember,
-  ids: { ownerId: string | null; selfUserId: string | null; diagramId: string | null },
+  ids: { ownerId: string | null; selfUserId: string | null; documentId: string | null },
 ): Access | null {
   // Self-assignment is a yes: the assigner is right here, editing it.
   if (assignee.userId !== null && assignee.userId === ids.selfUserId) return 'yes';
@@ -47,7 +42,7 @@ function localAccess(
   // answer is knowable without the server — they get access when they
   // accept the invite. The hint says exactly that.
   if (assignee.pending) return 'invited';
-  if (!ids.ownerId || !ids.diagramId || !assignee.teamId || !assignee.userId) return 'error';
+  if (!ids.ownerId || !ids.documentId || !assignee.teamId || !assignee.userId) return 'error';
   return null;
 }
 
@@ -58,8 +53,8 @@ export function useAssigneeOptions({
   ownerId,
   selfUserId,
   selfName,
-  diagramId,
-  diagramTeamId,
+  documentId,
+  documentTeamId,
   assignee,
   setAssignee,
 }: {
@@ -69,8 +64,8 @@ export function useAssigneeOptions({
   ownerId: string | null;
   selfUserId: string | null;
   selfName: string | null;
-  diagramId: string | null;
-  diagramTeamId: string | null;
+  documentId: string | null;
+  documentTeamId: string | null;
   assignee: PickableMember | null;
   setAssignee: Dispatch<SetStateAction<PickableMember | null>>;
 }) {
@@ -102,16 +97,16 @@ export function useAssigneeOptions({
     [selfUserId, selfName],
   );
 
-  // Only the team whose shared library holds this diagram is pickable
+  // Only the team whose shared library holds this document is pickable
   // (docs/specs/012-collaboration/assigned-actions.md §2): members of the user's other teams almost certainly
-  // can't open the diagram to complete the action, so offering them
-  // just manufactures the access warning. Empty for a personal diagram
+  // can't open the document to complete the action, so offering them
+  // just manufactures the access warning. Empty for a personal document
   // and for a share-link editor who isn't a member of the team.
   const pickableTeams = useMemo(
-    () => teams.filter((t) => t.id === diagramTeamId),
-    [teams, diagramTeamId],
+    () => teams.filter((t) => t.id === documentTeamId),
+    [teams, documentTeamId],
   );
-  const memberOfDiagramTeam = pickableTeams.length > 0;
+  const memberOfDocumentTeam = pickableTeams.length > 0;
   // Null while loading. A guest picker is Myself alone.
   const members = !ownerId
     ? NO_MEMBERS
@@ -119,7 +114,7 @@ export function useAssigneeOptions({
       ? loaded.members
       : null;
 
-  // Load the diagram team's joined members once per open (signed-in
+  // Load the document team's joined members once per open (signed-in
   // only; a guest picker is Myself alone). One GET per pickable team
   // (zero or one); a failure just leaves its members out.
   useEffect(() => {
@@ -129,24 +124,10 @@ export function useAssigneeOptions({
       pickableTeams.map(async (team) => {
         try {
           const detail = await apiGetTeam(ownerId, team.id);
-          return detail.members
-            .filter(
-              // Everyone on the team — joined AND invited (docs/specs/012-collaboration/assigned-actions.md: work
-              // gets divided while invites are in flight) — except the
-              // assigner themselves, whom the pinned Myself row covers.
-              (m: TeamMember) => m.userId !== ownerId,
-            )
-            .map((m: TeamMember): PickableMember => ({
-              // Null for an invited member the lazy claim hasn't
-              // identified yet; memberId is their key then.
-              userId: m.userId,
-              memberId: m.id,
-              pending: m.status === 'invited',
-              name: memberName(m, false, null),
-              email: m.email,
-              teamId: team.id,
-              teamName: team.name,
-            }));
+          // Everyone on the team — joined AND invited (docs/specs/012-collaboration/assigned-actions.md: work
+          // gets divided while invites are in flight) — except the assigner
+          // themselves, whom the pinned Myself row covers.
+          return teamMemberRows(detail.members, team, ownerId);
         } catch {
           return [];
         }
@@ -186,36 +167,37 @@ export function useAssigneeOptions({
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  // Ask the server whether the picked teammate can open this diagram,
+  // Ask the server whether the picked teammate can open this document,
   // unless the answer is knowable without it (localAccess). Stale responses
   // are ignored via the cancelled flag.
-  const local = open && assignee ? localAccess(assignee, { ownerId, selfUserId, diagramId }) : null;
+  const local =
+    open && assignee ? localAccess(assignee, { ownerId, selfUserId, documentId }) : null;
   const askServer = open && assignee !== null && local === null;
   useEffect(() => {
-    if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !diagramId) return;
+    if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !documentId) return;
     let cancelled = false;
     void apiCheckAssigneeAccess(ownerId, assignee.teamId, {
       assigneeUserId: assignee.userId,
-      diagramId,
+      documentId,
     }).then((canAccess) => {
       if (cancelled) return;
       setChecked({
         assignee,
         ownerId,
-        diagramId,
+        documentId,
         access: canAccess === null ? 'error' : canAccess ? 'yes' : 'no',
       });
     });
     return () => {
       cancelled = true;
     };
-  }, [askServer, assignee, ownerId, diagramId]);
+  }, [askServer, assignee, ownerId, documentId]);
   // 'unknown' while in flight (show nothing).
   const assigneeAccess: Access =
     local ??
     (checked?.assignee === assignee &&
     checked.ownerId === ownerId &&
-    checked.diagramId === diagramId
+    checked.documentId === documentId
       ? checked.access
       : 'unknown');
 
@@ -230,5 +212,5 @@ export function useAssigneeOptions({
     return [...byTeam.entries()];
   }, [members]);
 
-  return { selfRow, members, grouped, memberOfDiagramTeam, assigneeAccess };
+  return { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess };
 }

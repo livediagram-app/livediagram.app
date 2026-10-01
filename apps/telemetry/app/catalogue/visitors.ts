@@ -9,6 +9,7 @@ import {
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
   POWER_USER_OFFERED,
+  NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from './helpers';
 
@@ -87,7 +88,7 @@ export const MARKETING_PAGES = pagesOf(
 
 export const LIVE_PAGES = pagesOf(
   'Live',
-  'The Explorer, the New Diagram wizard, sign-in, and every diagram.',
+  'The Explorer, the New Document wizard, sign-in, and every document.',
 );
 
 export const HELP_PAGES = pagesOf(
@@ -202,6 +203,24 @@ export const POWER_USER_OFFER: MetricStack = {
   headline: POWER_USER_OFFER_ACCEPTED,
 };
 
+// The new version prompt (docs/specs/016-platform/new-version-prompt.md): offered, then reloaded.
+export const NEW_VERSION_RELOADED = chart(
+  'UI',
+  'Used',
+  'New Version Reloaded',
+  'Reload, pressed on the new version prompt.',
+  { types: ['NewVersionPrompt'] },
+);
+
+export const NEW_VERSION_PROMPT: MetricStack = {
+  stack: true,
+  title: 'New Version Prompt',
+  blurb:
+    'Editors left open across a deploy that changed the document format: offered a reload, then reloaded.',
+  members: [NEW_VERSION_OFFERED, NEW_VERSION_RELOADED],
+  headline: NEW_VERSION_RELOADED,
+};
+
 // Sign-in prompts, by where each one happens (docs/specs/014-identity/sign-in-encouragement.md). The same bottom
 // banner runs in the Explorer and the editor, so every banner event names its
 // surface; the Assign Action dialog has its own nudge.
@@ -276,28 +295,28 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
 };
 
 // The landing funnel (docs/specs/019-marketing/landing-funnel.md): arrivals at /new from a public page's call
-// to action, and the diagrams those visits created. The Pages tab splits them
+// to action, and the documents those visits created. The Pages tab splits them
 // by page and button against the page views before them.
 export const CTA_ARRIVALS = chart(
   'Cta',
   'Opened',
   'CTA Arrivals',
-  'Somebody followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Diagram page.',
+  'Somebody followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
 );
 
-export const CTA_DIAGRAMS = chart(
+export const CTA_DOCUMENTS = chart(
   'Cta',
   'Created',
-  'Diagrams from CTAs',
-  'Of those arrivals, the visits that went on to create a diagram. Counted once per arrival.',
+  'Documents from CTAs',
+  'Of those arrivals, the visits that went on to create a document. Counted once per arrival.',
 );
 
 export const CALLS_TO_ACTION: MetricStack = {
   stack: true,
   title: 'Calls to Action',
   blurb:
-    'How the public pages turn visitors into diagrams: arrivals from a call to action, and the diagrams they created.',
-  members: [CTA_ARRIVALS, CTA_DIAGRAMS],
-  headline: CTA_DIAGRAMS,
+    'How the public pages turn visitors into documents: arrivals from a call to action, and the documents they created.',
+  members: [CTA_ARRIVALS, CTA_DOCUMENTS],
+  headline: CTA_DOCUMENTS,
   seeAlso: { view: 'pages', label: 'See the Landing Funnel on the Pages Tab' },
 };

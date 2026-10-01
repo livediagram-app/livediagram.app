@@ -1,13 +1,13 @@
-import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDiagram } from './fixtures';
+import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument } from './fixtures';
 
-// A failed autosave names its real cause (docs/specs/006-diagram/per-tab-storage.md). Production showed
+// A failed autosave names its real cause (docs/specs/006-document/per-tab-storage.md). Production showed
 // `Http401.SaveTab` reading as "Check your connection" on a wired fibre line.
 // The worker's exact 401 is replayed on the tab PUT, since no Clerk session
 // exists in the e2e stack; lifting it proves the next edit saves again.
 test('a save refused as unauthenticated says so, then recovers', async ({ page, pageErrors }) => {
-  await startBlankDiagram(page);
+  await startBlankDocument(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const tabWrites = '**/api/diagrams/*/tabs/*';
+  const tabWrites = '**/api/documents/*/tabs/*';
 
   await page.route(tabWrites, (route) =>
     route.request().method() === 'PUT'
@@ -29,7 +29,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
   await page.unroute(tabWrites);
   await dismissQuickTour(page);
   const saved = page.waitForResponse(
-    (r) => r.request().method() === 'PUT' && /\/api\/diagrams\/[^/]+\/tabs\//.test(r.url()),
+    (r) => r.request().method() === 'PUT' && /\/api\/documents\/[^/]+\/tabs\//.test(r.url()),
   );
   await page.getByRole('button', { name: 'Add square', exact: true }).click();
   await canvas.click({ position: { x: 560, y: 300 } });

@@ -4,7 +4,11 @@
 // error-body envelope, CORS preflight header set) have a single
 // canonical home that the next route can grep for.
 
-import { DIAGRAM_CONVERSION_HEADER, DIAGRAM_TRASHED_ERROR } from '@livediagram/api-schema';
+import {
+  DOCUMENT_CONVERSION_HEADER,
+  DOCUMENT_FORMAT_HEADER,
+  DOCUMENT_TRASHED_ERROR,
+} from '@livediagram/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
@@ -23,9 +27,12 @@ export const CORS_HEADERS = {
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
-  // Diagram declare themselves with DIAGRAM_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DIAGRAM_CONVERSION_HEADER}`,
+  // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}`,
   'Access-Control-Max-Age': '86400',
+  // The document format number (docs/specs/016-platform/new-version-prompt.md), readable by an editor
+  // on another origin (local dev, a self-host with a separate api host).
+  'Access-Control-Expose-Headers': DOCUMENT_FORMAT_HEADER,
 };
 
 export function json(body: unknown, init: ResponseInit = {}): Response {
@@ -39,7 +46,7 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (docs/specs/006-diagram/diagram-snapshots.md diagram snapshots). Same CORS treatment as
+// An SVG image body (docs/specs/006-document/document-snapshots.md document snapshots). Same CORS treatment as
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
@@ -80,7 +87,7 @@ export function methodNotAllowed(): Response {
 
 // 413 for a body over a route's size cap. Canonical home for the
 // `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
-// per-field / per-tab caps in the diagram, tab, and custom-theme routes share.
+// per-field / per-tab caps in the document, tab, and custom-theme routes share.
 // Image uploads answer with their own `file_too_large` + `limitBytes` instead.
 export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });
@@ -111,10 +118,10 @@ export function signInRequired(): Response {
   return json({ error: 'sign_in_required' }, { status: 401 });
 }
 
-// A diagram in the Trash (docs/specs/013-workspace/trash.md), answered only to a
+// A document in the Trash (docs/specs/013-workspace/trash.md), answered only to a
 // caller who could have opened it: the deleted state, not a not-found.
-export function diagramTrashed(): Response {
-  return json({ error: DIAGRAM_TRASHED_ERROR }, { status: 410 });
+export function documentTrashed(): Response {
+  return json({ error: DOCUMENT_TRASHED_ERROR }, { status: 410 });
 }
 
 // A write that collides with existing state (duplicate invite email,

@@ -18,7 +18,7 @@ import {
   type Element,
   type ElementId,
   type Rect,
-} from '@livediagram/diagram';
+} from '@livediagram/document';
 
 export type ArrowLabelRender = { layout: ArrowLabelLayout | null; knockouts: Rect[] };
 
