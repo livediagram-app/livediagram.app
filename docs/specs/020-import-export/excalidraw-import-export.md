@@ -187,7 +187,7 @@ Properties, applied wherever present:
   `triangle`, `triangle_outline` to `triangle-hollow`, `dot` and `circle` to
   `circle`, `circle_outline` to `circle-hollow`, `diamond` to `diamond`,
   `diamond_outline` to `diamond-hollow`; `crowfoot_one`, `crowfoot_many` and
-  `crowfoot_one_or_many` to `arrow` with a note. On an `arrow`, a missing
+  `crowfoot_one_or_many` (and any unknown head) to `arrow` with a note. On an `arrow`, a missing
   `endArrowhead` field reads as Excalidraw's default `arrow`; `null` is no head.
 - **Bindings**: only the bound element's id is read. Excalidraw's `fixedPoint`
   and `mode` (`orbit`, `inside`) are not: the landing pins each bound end to the
@@ -211,7 +211,7 @@ dashed pen strokes, bar heads, sharp bends, filled pen strokes, links).
 | -------------------------------------------------- | -------- | ------------------------------------------------------------------ |
 | "Groups were dropped"                              | degraded | per distinct group id among the items                              |
 | "Tapered strokes drawn at an even width"           | degraded | per freedraw with `variability: 'variable'` and simulated pressure |
-| "Crow's-foot arrowheads drawn as plain arrowheads" | degraded | per crow's-foot head                                               |
+| "Arrowheads with no match here drawn as plain arrowheads" | degraded | per crow's-foot or unknown head |
 | "Arrow labels moved to the middle of their arrow"  | degraded | per arrow label whose `labelPosition` is set and not 0.5           |
 | "Colours that couldn't be read use the ink"        | degraded | per unreadable colour value                                        |
 | "<Type> elements were skipped"                     | skipped  | per skipped element, by its type (e.g. "Embeddable elements…")     |
