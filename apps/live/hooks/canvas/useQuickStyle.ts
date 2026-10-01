@@ -17,8 +17,8 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
-import { onWhiteboard } from '@/lib/quick-style-whiteboard';
+import { isPenColourName, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { applyBoardStroke, applyBoardTextColour, onWhiteboard } from '@/lib/quick-style-whiteboard';
 import { quickStyleApplicability, quickStyleCaption } from '@/lib/quick-style-applicability';
 import {
   applyPenStyle,
@@ -62,6 +62,9 @@ export type QuickStyleApi = {
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
   setIconAlign: (align: QuickIconAlign) => void;
+  // A whiteboard's Stroke and Text colour rows: the whiteboard's colours.
+  setBoardStroke: (colour: PenColourChoice) => void;
+  setBoardTextColour: (colour: PenColourChoice) => void;
   // A whiteboard's pen rows: the selected strokes, else the pen in hand.
   setPenColour: (colour: PenColourChoice) => void;
   setPenWidth: (width: PenWidthId) => void;
@@ -129,12 +132,12 @@ export function useQuickStyle(deps: {
   const view = useMemo(() => {
     if (editsBlocked) return null;
     if (phantom && intent) {
-      const tool = onWhiteboard(quickStyleView([phantom], theme, overrides), [phantom], ink);
+      const tool = onWhiteboard(quickStyleView([phantom], theme, overrides), [phantom], palette);
       return tool && { ...tool, caption: toolCaption(intent) };
     }
     const plain = quickStyleView(selected, theme, overrides);
     if (!whiteboard) return plain;
-    const board = onWhiteboard(plain, selected, ink);
+    const board = onWhiteboard(plain, selected, palette);
     // Selected strokes first; with nothing selected, the pen in hand.
     const pen =
       strokesPenStyle(selected, palette) ??
@@ -145,7 +148,12 @@ export function useQuickStyle(deps: {
     return pen
       ? { ...(board ?? { targetIds: [], sections: {} }), pen, ...(caption ? { caption } : {}) }
       : board;
-  }, [editsBlocked, selected, theme, overrides, whiteboard, ink, held, phantom, intent, palette]);
+  }, [editsBlocked, selected, theme, overrides, whiteboard, held, phantom, intent, palette]);
+
+  // A custom colour used from the panel moves to the front of Your colours, as a marker's does.
+  const rememberCustom = (colour: PenColourChoice) => {
+    if (colour !== INK_CHOICE && !isPenColourName(colour)) deps.pen?.colours?.remember(colour);
+  };
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
@@ -208,6 +216,14 @@ export function useQuickStyle(deps: {
     setStrokeStyle: (style) => run((el) => applyQuickStrokeStyle(el, style), 'QuickStrokeStyle'),
     setTextAlign: (align) => run((el) => applyQuickTextAlign(el, align), 'QuickTextAlign'),
     setIconAlign: (align) => run((el) => applyQuickIconAlign(el, align), 'QuickIconAlign'),
+    setBoardStroke: (colour) => {
+      run((el) => applyBoardStroke(el, colour), 'QuickStroke');
+      rememberCustom(colour);
+    },
+    setBoardTextColour: (colour) => {
+      run((el) => applyBoardTextColour(el, colour), 'QuickTextColour');
+      rememberCustom(colour);
+    },
     clearStyles: () => {
       if (!view) return;
       if (phantom) {

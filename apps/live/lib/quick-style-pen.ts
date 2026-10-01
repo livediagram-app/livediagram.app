@@ -98,11 +98,14 @@ const inkOption = (palette: PenPalette): PenColourOption => ({
   name: 'Ink',
   swatch: palette.ink,
 });
-const stockOptions = (palette: PenPalette) => [
+/** The whiteboard's colours as choices: Ink, the seven stock colours, adaptive per board. */
+export const stockOptions = (palette: PenPalette): PenColourOption[] => [
   inkOption(palette),
   ...PEN_COLOUR_NAMES.map((c) => optionOf(c, palette)),
 ];
-const customOptions = (palette: PenPalette) => palette.custom.map((c) => optionOf(c, palette));
+/** The tab's custom colours as choices, most recently drawn first. */
+export const customOptions = (palette: PenPalette): PenColourOption[] =>
+  palette.custom.map((c) => optionOf(c, palette));
 
 const widthIdOf = (px: number | undefined): PenWidthId | null =>
   (WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.id as PenWidthId | undefined) ?? null;

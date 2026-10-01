@@ -24,7 +24,14 @@ import {
   type ThemeDefinition,
 } from '@livediagram/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
-import type { QuickPenStyle } from './quick-style-pen';
+import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
+
+// The whiteboard's colours as a row: the choice the targets share, the stock options, the tab's own.
+export type BoardColourSection = {
+  value: PenColourChoice | null;
+  options: PenColourOption[];
+  custom: PenColourOption[];
+};
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
 export type QuickSectionId =
@@ -51,6 +58,10 @@ export type QuickStyleView = {
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
+    // A whiteboard's Stroke and Text colour rows (lib/quick-style-whiteboard): the whiteboard's
+    // colours in place of `stroke` and `textColour`.
+    boardStroke?: BoardColourSection;
+    boardText?: BoardColourSection;
   };
   // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
   pen?: QuickPenStyle;

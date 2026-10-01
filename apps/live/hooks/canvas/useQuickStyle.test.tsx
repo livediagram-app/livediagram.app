@@ -108,9 +108,9 @@ describe('useQuickStyle on a mixed whiteboard selection', () => {
     const { result } = setup(['s1', 'q1', 'n1'], null, null, memory, [stroke, square, sticky]);
     const view = result.current.view!;
     expect(view.pen?.subject).toMatchObject({ kind: 'strokes', ids: ['s1'] });
-    expect(view.sections.stroke).toBeDefined();
-    // The shape's named blue marks no theme swatch.
-    expect(view.sections.stroke!.value).toBeNull();
+    // The Stroke row offers the whiteboard's colours, and marks the shape's named blue.
+    expect(view.sections.stroke).toBeUndefined();
+    expect(view.sections.boardStroke!.value).toBe('blue');
     expect(view.targetIds).toEqual(['q1']);
     expect(view.caption).toBe('2 elements');
   });
@@ -121,12 +121,22 @@ describe('useQuickStyle on a mixed whiteboard selection', () => {
       square,
       sticky,
     ]);
-    act(() => result.current.setStroke(0));
+    act(() => result.current.setBoardStroke('ink'));
     expect(commit).toHaveBeenCalledTimes(1);
     const [s, q, n] = elements();
     expect(s).toBe(stroke);
     expect(n).toBe(sticky);
     expect((q as { penColour?: string }).penColour).toBeUndefined();
+  });
+
+  it('stores a stock colour by name and moves a custom one to the front of Your colours', () => {
+    const { result, elements, colours } = setup(['q1'], null, null, memory, [square]);
+    act(() => result.current.setBoardStroke('teal'));
+    expect(elements()[0]).toMatchObject({ penColour: 'teal' });
+    expect(colours.remember).not.toHaveBeenCalled();
+    act(() => result.current.setBoardStroke('#ff6b00'));
+    expect(elements()[0]).toMatchObject({ strokeColor: '#ff6b00' });
+    expect(colours.remember).toHaveBeenCalledWith('#ff6b00');
   });
 });
 
@@ -134,7 +144,8 @@ describe('useQuickStyle for a tool in hand', () => {
   it('styles the next rectangle: remembered, nothing on the board changes', () => {
     const { result, commit, memory } = setup([], null, whiteboardShapeIntent('rectangle'));
     expect(result.current.view?.caption).toBe('Next rectangle');
-    expect(result.current.view?.sections.stroke).toBeTruthy();
+    // A whiteboard's Stroke row is the whiteboard's colours.
+    expect(result.current.view?.sections.boardStroke).toBeTruthy();
     act(() => result.current.setWidth('thick'));
     expect(commit).not.toHaveBeenCalled();
     const [before, after] = memory.recordEdit.mock.calls[0]!;

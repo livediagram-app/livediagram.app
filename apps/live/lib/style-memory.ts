@@ -4,6 +4,7 @@
 // owns the state and the storage.
 import {
   SHAPE_KINDS,
+  isPenColourName,
   isQuickSwatchSlot,
   rederiveColorPresetForTheme,
   rederiveQuickSwatches,
@@ -27,8 +28,11 @@ export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 // The fields memory records and applies. The label colour and a preset's
 // binding ride with the colours, so a remembered background never lands under
 // unreadable text and a remembered preset look follows the theme.
+// `penColour` / `penTextColour`: a whiteboard stock colour stored by name (docs/specs/023-whiteboard/
+// whiteboard.md "The quick style panel stays"), checked against the names when read.
 const SHAPE_MEMORY_FIELDS = {
   strokeColor: 'string',
+  penColour: 'string',
   strokeSwatch: 'number',
   fillColor: 'string',
   fillSwatch: 'number',
@@ -41,6 +45,7 @@ const SHAPE_MEMORY_FIELDS = {
 } as const;
 const ARROW_MEMORY_FIELDS = {
   strokeColor: 'string',
+  penColour: 'string',
   strokeSwatch: 'number',
   strokeWidth: 'number',
   strokeStyle: 'string',
@@ -49,6 +54,7 @@ const ARROW_MEMORY_FIELDS = {
 // A path (docs/specs/023-whiteboard/path-tool.md "Style"): its line and its fill.
 const PATH_MEMORY_FIELDS = {
   strokeColor: 'string',
+  penColour: 'string',
   strokeSwatch: 'number',
   fillColor: 'string',
   fillSwatch: 'number',
@@ -57,6 +63,7 @@ const PATH_MEMORY_FIELDS = {
 } as const;
 const TEXT_MEMORY_FIELDS = {
   textColor: 'string',
+  penTextColour: 'string',
   textSwatch: 'number',
 } as const;
 type FieldTypes = Readonly<Record<string, 'string' | 'number'>>;
@@ -172,6 +179,7 @@ export function parseStyleMemory(raw: string | null): StyleMemory {
     for (const [field, value] of Object.entries(fields as Record<string, unknown>)) {
       if (types[field] !== typeof value) continue;
       if (field.endsWith('Swatch') && !isQuickSwatchSlot(value)) continue;
+      if (field.startsWith('pen') && !isPenColourName(value)) continue;
       entry[field] = value as string | number;
     }
     if (Object.keys(entry).length > 0) out[kind] = entry;
