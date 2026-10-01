@@ -787,6 +787,46 @@ describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document
   });
 });
 
+// docs/specs/015-api/api.md "Document dates": an imported board keeps its own dates.
+describe('POST /documents carrying its own dates', () => {
+  const create = (body: Record<string, unknown>) =>
+    handleDocuments(
+      makeCtx('POST', '/api/documents', { body: { id: 'd1', name: 'Doc', ...body } }),
+    );
+  const stored = () => db.upsertDocumentMeta.mock.calls[0]![1] as Record<string, unknown>;
+  const createdAt = Date.UTC(2020, 7, 14);
+  const savedAt = Date.UTC(2021, 1, 3);
+
+  it('stores the board’s created and modified dates', async () => {
+    db.getDocument.mockResolvedValue(null);
+    const res = await create({ createdAt, savedAt });
+    expect(res.status).toBe(201);
+    expect(stored()).toMatchObject({ createdAt, savedAt });
+  });
+
+  it('refuses invalid dates whole, writing nothing', async () => {
+    db.getDocument.mockResolvedValue(null);
+    for (const body of [
+      { createdAt: '2020-08-14' },
+      { createdAt: Date.UTC(1999, 11, 31) },
+      { createdAt: Date.now() + 3 * 86_400_000 },
+      { createdAt: savedAt, savedAt: createdAt },
+      { savedAt },
+    ]) {
+      const res = await create(body);
+      expect(res.status).toBe(400);
+    }
+    expect(db.upsertDocumentMeta).not.toHaveBeenCalled();
+  });
+
+  it('modifies a re-committed document now, whatever dates it sends', async () => {
+    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
+    const before = Date.now();
+    await create({ createdAt, savedAt });
+    expect(stored().savedAt as number).toBeGreaterThanOrEqual(before);
+  });
+});
+
 // docs/specs/013-workspace/tab-scoped-share-links.md. A visitor on a link scoped to tab t2: every door either
 // narrows to t2 or refuses.
 describe('a tab-scoped visitor', () => {

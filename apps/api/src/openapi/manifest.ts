@@ -129,6 +129,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabs: { type: 'array', items: ref('Tab') },
         folderId: { type: ['string', 'null'] },
         teamId: { type: ['string', 'null'] },
+        // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
+        createdAt: { type: 'integer' },
+        savedAt: { type: 'integer' },
       },
       required: ['id', 'name'],
     },

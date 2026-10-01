@@ -52,6 +52,7 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
+import { documentDates } from '../document-dates';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { emailEnabled } from '../email/client';
@@ -99,6 +100,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!body.id || typeof body.name !== 'string') {
         return badRequest('missing id/name');
       }
+      // The document's own dates (docs/specs/015-api/api.md "Document dates"), refused whole when
+      // invalid, before anything is written.
+      const dates = documentDates(body, Date.now());
+      if (!dates.ok) return badRequest('invalid document dates');
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
       if (Array.isArray(body.tabs)) {
@@ -168,7 +173,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
             ),
           )
         : null;
-      const now = Date.now();
+      // Only a genuine create takes the body's dates: a re-commit keeps the stored created date
+      // (the upsert never rewrites it) and is modified now.
+      const savedAt = clash ? Date.now() : dates.savedAt;
       // Document meta first so the FK in tabs can resolve.
       await upsertDocumentMeta(env, {
         id: body.id,
@@ -188,15 +195,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
-        savedAt: now,
-        createdAt: body.createdAt ?? now,
+        savedAt,
+        createdAt: dates.createdAt,
       });
       // Seed tabs if the caller provided them. The live app's
       // welcome flow uses this when it commits a fresh document
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
       if (seeded) {
-        await seedTabs(env, body.id, seeded.tabs);
+        await seedTabs(env, body.id, seeded.tabs, savedAt);
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

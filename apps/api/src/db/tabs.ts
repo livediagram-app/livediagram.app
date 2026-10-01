@@ -127,7 +127,14 @@ export async function upsertTab(
 // way costs ~3K serial round trips. Here we collect every insert and
 // submit one batch, then bump saved_at exactly once. Same ON CONFLICT
 // semantics as upsertTab so a retried create stays idempotent.
-export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promise<void> {
+// `savedAt`: the document's last-modified date after seeding, its own when a create carried one
+// (docs/specs/015-api/api.md "Document dates"); absent, now.
+export async function seedTabs(
+  env: Env,
+  documentId: string,
+  tabs: Tab[],
+  savedAt?: number,
+): Promise<void> {
   if (tabs.length === 0) return;
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
@@ -151,7 +158,10 @@ export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promi
     ];
   });
   stmts.push(
-    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
+    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(
+      savedAt ?? now,
+      documentId,
+    ),
   );
   // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
