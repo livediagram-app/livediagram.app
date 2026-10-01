@@ -244,6 +244,27 @@ zoom)`, `onDropFile(file, at)`.
 - The scenes go to `importBoardsAsDocuments` (whiteboard profile, new documents); on a landed
   board, `track('Tab', 'Imported', <container type>)`.
 
+### Explorer entry and dialog
+
+- `IMPORT_SOURCES` (`app/explorer/import-sources.tsx`) gains `{ id: 'excalidraw', name: 'Excalidraw',
+icon: <ExcalidrawSourceIcon /> }` after Microsoft Whiteboard; `useExplorerImport` maps it to
+  `useExcalidrawImportLauncher(importScenes).openExcalidrawImport` and renders its dialog.
+- `ExcalidrawSourceIcon` (`components/dialogs/import-source-icons.tsx`): 20 px, an original glyph
+  (a hand-drawn box and a pencil, white on a `#6965db` tile); `aria-hidden`.
+- `useExcalidrawFileImport({ importScenes, onDone })`: steps `pick { error? }` → `reading` →
+  `importing { board, boards, images? }` → `onDone(outcome)`. `open(files)`: no files → stay;
+  lazy `readExcalidrawBoardFiles`; no scenes → `pick` with the first failure's message (else
+  `UNEXPECTED`); else `importScenes(scenes, onProgress)`; an `error` outcome → `pick` with its
+  error; `done` → its `failures` gain the read failures (first), one `track('Tab', 'Imported',
+<container type>)` per landed document (documents matched to scenes in order by name), then
+  `onDone`. A throw anywhere → `pick` with `UNEXPECTED` and `console.warn('[excalidraw-import]
+failed', error)`.
+- `ExcalidrawImportPanel({ importScenes, onClose })`: the pick step (intro, drop zone button opening
+  the file input, "Choose files"; `<input type="file" multiple accept=".excalidraw,.json,.png,.svg">`
+  hidden), the progress line (`role="status"`), the shared `ImportImageReport` on done.
+- `ExcalidrawImportDialog` hosts it in the house `Dialog` (title, subtitle, help link to
+  `importTabs`, close); `useExcalidrawImportLauncher` loads it on first open (`next/dynamic`).
+
 ### Dialog
 
 - `ImportOutcome` `done` gains `images?: ImportImageReport`.

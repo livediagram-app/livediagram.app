@@ -298,10 +298,18 @@ saved in Excalidraw comes in as its own document, with no editor open.
   reported ("Board dates that couldn't be read were set to today").
 - **Refusals**, listed per file: a file with no Excalidraw scene ("This file
   isn't an Excalidraw scene."), and the envelope's and embedded-scene messages.
-- **Flow**: the button opens a small dialog, "Import from Excalidraw": a drop
-  zone that is also a button ("Drop .excalidraw files here, or choose files"),
-  then "Importing board 3 of 5…" and the shared report, as the Microsoft
-  Whiteboard dialog does.
+- **Entry**: the header button "Import from Excalidraw" (tooltip "Excalidraw"),
+  its icon an original glyph (a hand-drawn box and pencil on a violet tile), not
+  Excalidraw's logo: the repo ships no vendor marks
+  ([Iconography](../004-interface-design/iconography.md)).
+- **Flow**: the button opens the dialog "Import from Excalidraw" (subtitle "Each
+  file becomes its own document, named and dated after the file."): the intro,
+  a drop zone that is also a button ("Drop .excalidraw files here, or choose
+  files") and a "Choose files" button; then "Reading files…", "Importing board 3
+  of 5…" ("Importing board…" for one) and "Importing images 3 of 12…"; then the
+  shared report (what landed, every rule, the files left out with their
+  reasons). When no picked file holds a scene, nothing is imported and the pick
+  step shows the first file's reason (`role="alert"`).
 - Telemetry: one `track('Tab', 'Imported', 'Excalidraw' | 'ExcalidrawPng' |
 'ExcalidrawSvg')` per board that lands (by its container), as the Import
   dialog's card and Microsoft Whiteboard's import count; the shared target adds
