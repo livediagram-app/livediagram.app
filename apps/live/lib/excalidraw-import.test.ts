@@ -117,9 +117,16 @@ describe('boxed element mapping', () => {
       width: 120,
       height: 60,
       fillColor: '#ffec99',
-      strokeColor: '#1e1e1e',
       strokeWidth: 'medium',
     });
+    // Excalidraw's near-black ink takes the theme's ink; other colours stay exact.
+    expect(shapes[0]!.strokeColor).toBeUndefined();
+  });
+
+  it('keeps a colour that is not ink exactly', () => {
+    const r = importOnDiagram(scene([rect({ strokeColor: '#1971c2' })]));
+    if (!r.ok) throw new Error(r.error);
+    expect((r.elements[0] as ShapeElement).strokeColor).toBe('#1971c2');
   });
 
   it('re-mints ids to fresh UUIDs', () => {
