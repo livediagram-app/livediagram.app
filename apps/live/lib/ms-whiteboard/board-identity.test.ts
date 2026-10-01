@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
-import { BOARD_DATES_FLOOR, boardDates, boardDocumentName } from './board-identity';
+import { BOARD_DATES_FLOOR, boardDates, boardTitle } from './board-identity';
 
 const NOW = Date.parse('2026-10-01T12:00:00Z');
 
@@ -39,26 +39,18 @@ describe('boardDates', () => {
   });
 });
 
-describe('boardDocumentName', () => {
-  it('names the document after the board, trimmed and single-spaced', () => {
-    expect(boardDocumentName('  Sprint\n board  ', {})).toBe('Sprint board');
+describe('boardTitle', () => {
+  it('collapses whitespace and trims', () => {
+    expect(boardTitle('  Sprint\n board  ')).toBe('Sprint board');
   });
 
   it('caps a long title at the name limit', () => {
-    const name = boardDocumentName('x'.repeat(200), {});
-    expect([...name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
+    expect([...boardTitle('x'.repeat(200))!].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
   });
 
-  it('gives an untitled board a dated name from when it was made', () => {
-    expect(boardDocumentName(null, { createdAt: '2020-08-14T09:30:00.000Z' })).toBe(
-      'Whiteboard, 14 Aug 2020',
-    );
-    expect(boardDocumentName('   ', { modifiedAt: '2026-03-09T00:00:00.000Z' })).toBe(
-      'Whiteboard, 9 Mar 2026',
-    );
-  });
-
-  it('falls back to "Whiteboard" with neither title nor date', () => {
-    expect(boardDocumentName(undefined, {})).toBe('Whiteboard');
+  it('leaves a null, blank or non-text title out', () => {
+    expect(boardTitle(null)).toBeUndefined();
+    expect(boardTitle('   ')).toBeUndefined();
+    expect(boardTitle(7)).toBeUndefined();
   });
 });

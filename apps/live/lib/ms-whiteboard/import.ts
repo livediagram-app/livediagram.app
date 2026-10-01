@@ -10,12 +10,15 @@ import {
 } from './board-export';
 import { readBoard, type WbBoard } from './elements';
 import { replayBoard, type ReplayedBoard } from './replay';
-import { boardDates, boardDocumentName, type BoardDates } from './board-identity';
+import { boardDates, boardTitle, type BoardDates } from './board-identity';
+import { boardDocumentName } from '@/lib/board-scene/board-document';
 import { boardToScene, type BoardImage } from './to-scene';
 
 export type BoardSummary = {
   dir: string;
-  /** The document's name: the board's title, or "Whiteboard, 14 Aug 2020" for an untitled one. */
+  /** The board's own title, cleaned; absent for an untitled board. */
+  title?: string;
+  /** The document's name, as the import will give it (board-document.ts). */
   name: string;
   /** The document's dates, from the board record. */
   dates: BoardDates;
@@ -66,9 +69,14 @@ export async function listBoards(
     console.info('[ms-whiteboard] replayed', replayed.stats);
     const board = readBoard(replayed);
     const dates = boardDates(read.board.created, read.board.modified);
+    const title = boardTitle(read.board.title);
     boards.push({
       dir: ref.dir,
-      name: boardDocumentName(read.board.title, dates),
+      ...(title ? { title } : {}),
+      name: boardDocumentName(
+        { title } as BoardScene,
+        dates.createdAt === undefined ? undefined : Date.parse(dates.createdAt),
+      ),
       dates,
       elementCount: board.elements.length,
       prepared: { files: read.board, replayed, board },
@@ -95,7 +103,8 @@ export async function boardSceneOf(
   }
   const scene = boardToScene({
     board: decoded,
-    title: summary.name,
+    ...(summary.title ? { title: summary.title } : {}),
+    ...summary.dates,
     ...(board.id ? { sourceId: `microsoft-whiteboard:${board.id}` } : {}),
     imageObjects: replayed.imageObjects,
     images,

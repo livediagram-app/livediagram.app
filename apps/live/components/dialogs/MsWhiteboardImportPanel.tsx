@@ -40,6 +40,7 @@ export function MsWhiteboardImportPanel({
         report={done.images}
         scene={done.scene}
         failures={done.failures}
+        documents={done.documents}
         onDone={onClose}
       />
     );
@@ -103,7 +104,8 @@ function PickStep({
     <>
       <p className="mb-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
         Pick a Microsoft Whiteboard board export: a board folder, a folder of boards, or their .zip.
-        Each board becomes a new whiteboard tab; nothing on this tab changes.
+        Each board becomes its own document with one whiteboard tab, named and dated as the board;
+        nothing here changes.
       </p>
       <button
         type="button"

@@ -31,6 +31,9 @@ export type SceneInput = {
   board: WbBoard;
   title?: string;
   sourceId?: string;
+  /** The board's own dates, ISO (board-identity.ts): its document is dated as the board. */
+  createdAt?: string;
+  modifiedAt?: string;
   /** Image object ids by the image node they fill (the replay's `imageObjects`). */
   imageObjects: ReadonlyMap<string, string>;
   /** The export's image files, by object id. */
@@ -233,6 +236,8 @@ export function boardToScene(input: SceneInput): BoardScene {
     source: 'microsoft-whiteboard',
     ...(input.title ? { title: input.title } : {}),
     ...(input.sourceId ? { sourceId: input.sourceId } : {}),
+    ...(input.createdAt ? { createdAt: input.createdAt } : {}),
+    ...(input.modifiedAt ? { modifiedAt: input.modifiedAt } : {}),
     authoredOn: appearance,
     background: {
       appearance,

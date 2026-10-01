@@ -3,7 +3,7 @@
 import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument } from './fixtures';
 import { syntheticExportZip } from './ms-whiteboard-board';
 
-test('Microsoft Whiteboard boards open as new whiteboard tabs with a report', async ({
+test('Microsoft Whiteboard boards open as their own documents with a report', async ({
   page,
   pageErrors,
 }) => {
@@ -29,13 +29,15 @@ test('Microsoft Whiteboard boards open as new whiteboard tabs with a report', as
   const report = page.getByTestId('import-image-report');
   await expect(report).toContainText('Rainbow ink drawn in pink');
   await page.screenshot({ path: test.info().outputPath('ms-whiteboard-report.png') });
-  await page.getByRole('button', { name: 'Done' }).click();
-
-  // The first new tab is active and named after its board.
-  await expect(page.locator('[aria-current="page"]', { hasText: 'Sprint board' })).toBeVisible();
+  // One new document per board, named after the board (an untitled one by its date).
+  const documents = page.getByTestId('import-documents');
+  await expect(documents).toContainText('Sprint board');
+  await expect(documents).toContainText('Whiteboard, 1 Jan 2026');
+  await documents.getByRole('link', { name: 'Sprint board' }).click();
+  await expect(page.getByText('Sprint board').first()).toBeVisible();
   await expect(
     page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ }),
   ).toHaveCount(1);
-  await page.screenshot({ path: test.info().outputPath('ms-whiteboard-tab.png') });
+  await page.screenshot({ path: test.info().outputPath('ms-whiteboard-document.png') });
   expectNoPageErrors(pageErrors);
 });

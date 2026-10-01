@@ -14,11 +14,11 @@ import { DialogHeader } from './DialogHeader';
 import { Glyph } from '@livediagram/ui';
 
 type Format = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
-// The Microsoft Whiteboard card opens boards as new whiteboard tabs instead of replacing this one.
+// The Microsoft Whiteboard card opens each board as its own document instead of replacing this tab.
 const BOARDS_CARD = {
   title: 'Microsoft Whiteboard',
   description:
-    'Board exports from Microsoft Whiteboard: a board folder, a folder of boards, or their .zip. Each board becomes a whiteboard tab.',
+    'Board exports from Microsoft Whiteboard: a board folder, a folder of boards, or their .zip. Each board becomes its own document.',
 } as const;
 type Choice = Format | 'microsoft-whiteboard';
 
@@ -40,7 +40,7 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
-  // Opens Microsoft Whiteboard boards as new whiteboard tabs (docs/specs/020-import-export/whiteboard-import.md).
+  // Opens each Microsoft Whiteboard board as its own document (docs/specs/020-import-export/whiteboard-import.md).
   onImportBoards: ImportScenes;
   onClose: () => void;
 };
@@ -129,7 +129,7 @@ export function ImportTabDialog({
               ? "Here's how your board came across."
               : "Here's how your images came across."
             : active === 'microsoft-whiteboard'
-              ? 'Each board opens as a new whiteboard tab.'
+              ? 'Each board opens as its own document.'
               : activeFormat
                 ? `Paste your ${activeFormat.title}, or import a file.`
                 : 'Pick a format to import into the current tab.'

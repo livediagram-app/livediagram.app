@@ -106,7 +106,7 @@ describe('boardSceneOf', () => {
     ]);
   });
 
-  it('names an untitled board by its date, and notes an image whose file is not an image', async () => {
+  it('leaves an untitled board untitled but dated (the document names it), and notes an image whose file is not an image', async () => {
     const image = {
       objectId: 'o',
       dataId: 'd',
@@ -118,7 +118,12 @@ describe('boardSceneOf', () => {
     const listed = await listBoards(files);
     if (!listed.ok) throw new Error(listed.error);
     const scene = await boardSceneOf(files, listed.boards[0]!);
-    expect(scene.title).toBe('Whiteboard, 1 Jan 2026');
+    expect(listed.boards[0]!.name).toBe('Whiteboard, 1 Jan 2026');
+    expect(scene.title).toBeUndefined();
+    expect(scene).toMatchObject({
+      createdAt: '2026-01-01T00:00:00.000Z',
+      modifiedAt: '2026-01-02T00:00:00.000Z',
+    });
     expect(scene.items).toEqual([]);
     expect(scene.notes.map((n) => n.count)).toEqual([1]);
   });
