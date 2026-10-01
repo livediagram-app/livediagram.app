@@ -22,6 +22,7 @@ import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
+import type { ImageCredit } from './image-credit';
 import type {
   AgendaItem,
   ChairFacing,
@@ -782,6 +783,9 @@ export type ImageElement = {
   // `textColor` (white by default). Present = shown; the palette's Hero is an
   // image created with one, and any image can gain or lose it from the menu.
   heroCaption?: HeroCaption;
+  // Creator + licence credit of a picture picked from Image search
+  // (docs/specs/009-elements/image-search.md). Absent for uploads.
+  credit?: ImageCredit;
   // Optional alt text (accessibility + future export-to-markdown).
   // Aliases as the element's `label` so the surrounding "boxed
   // element has a label" code paths (change log, Markdown export,

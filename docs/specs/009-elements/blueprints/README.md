@@ -10,6 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./embeds.md - when implementing or changing the embed element, `embedTargetFor`, its providers or the no-load notice
 - ./entity.md - when implementing or changing the entity, its title band or its fields
 - ./image-reference-index.md - when implementing or changing `image_refs`, its writers, backfill, or the image sweep, usage map and share read
+- ./image-search.md - when implementing or changing the picker's Search tab, the Openverse client, the pick download or `ImageElement.credit`
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
 - ./lane.md - when implementing or changing the lane, its gutter, the seam drag or lane stacking
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard

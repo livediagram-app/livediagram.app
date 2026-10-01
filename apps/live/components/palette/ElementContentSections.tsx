@@ -30,6 +30,7 @@ import {
   TextSizeTiles,
   TextToggle,
 } from '@/components/palette/context-menu-rows';
+import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 
@@ -180,6 +181,12 @@ export function ElementContentSections({
               />
             </div>
           )}
+          {target.credit ? (
+            <>
+              <ContextMenuDivider />
+              <ImageCreditRow credit={target.credit} />
+            </>
+          ) : null}
           {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
           <ContextMenuDivider />
           <MenuToggleRow

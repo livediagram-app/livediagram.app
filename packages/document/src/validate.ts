@@ -56,6 +56,7 @@ import { isCodeThemeId } from './code-themes';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow } from './mind-flow';
 import { isQuickSwatchSlot } from './quick-swatches';
+import { isImageCredit } from './image-credit';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -505,6 +506,8 @@ export function isValidElement(el: unknown): el is Element {
       const c = el.heroCaption;
       if (!isObj(c) || !isHeadingStr(c.title) || !isHeadingStr(c.subtitle)) return false;
     }
+    // Image search credit (docs/specs/009-elements/image-search.md).
+    if (el.credit !== undefined && !isImageCredit(el.credit)) return false;
     return true;
   }
   if (t === 'freehand') {

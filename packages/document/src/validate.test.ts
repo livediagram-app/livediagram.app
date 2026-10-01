@@ -11,6 +11,7 @@ import {
   TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
+import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };
 
@@ -172,6 +173,39 @@ describe('isValidElement', () => {
     expect(isValidElement({ id: 'f', type: 'freehand', closed: false, points, ...box })).toBe(
       false,
     );
+  });
+});
+
+describe('image credit (docs/specs/009-elements/image-search.md)', () => {
+  const image = (credit: unknown) => ({ id: 'i', type: 'image', imageId: 'abc', ...box, credit });
+  const good = {
+    text: '"Cat" by admiller, CC BY 2.0',
+    sourceUrl: 'https://www.flickr.com/photos/1/2',
+    licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+  };
+
+  it('accepts a credit, with or without a licence link', () => {
+    expect(isValidElement(image(good))).toBe(true);
+    expect(isValidElement(image({ text: good.text, sourceUrl: 'http://example.org/' }))).toBe(true);
+  });
+
+  it('rejects empty or over-long text', () => {
+    expect(isValidElement(image({ ...good, text: '' }))).toBe(false);
+    expect(isValidElement(image({ ...good, text: 'x'.repeat(IMAGE_CREDIT_TEXT_MAX + 1) }))).toBe(
+      false,
+    );
+  });
+
+  it('rejects non-http links and over-long links', () => {
+    expect(isValidElement(image({ ...good, sourceUrl: 'javascript:alert(1)' }))).toBe(false);
+    expect(isValidElement(image({ ...good, licenseUrl: 'data:text/html,x' }))).toBe(false);
+    const long = `https://e.org/${'a'.repeat(IMAGE_CREDIT_URL_MAX)}`;
+    expect(isValidElement(image({ ...good, sourceUrl: long }))).toBe(false);
+  });
+
+  it('rejects a credit that is not an object', () => {
+    expect(isValidElement(image('by admiller'))).toBe(false);
+    expect(isValidElement(image(null))).toBe(false);
   });
 });
 

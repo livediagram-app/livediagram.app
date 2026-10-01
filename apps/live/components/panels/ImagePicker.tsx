@@ -11,18 +11,21 @@ import {
   apiListImages,
   type ImageSummary,
 } from '@/lib/api-client';
-import { addImageFileForDocument, ImageUploadError } from '@/lib/upload-image';
+import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
+import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 
-// Two-tab modal launched from the Image element's placeholder + the
+// Three-tab modal launched from the Image element's placeholder + the
 // "Upload image" palette button. Tab 1 (Upload) accepts a file via
 // drag-drop or file input, runs client-side validation (MIME + size +
 // dimensions) and SHA-256 hashing for dedupe, then POSTs to
 // /api/images. Tab 2 (Gallery) lists every image the owner has
 // uploaded so they can reuse one without re-uploading. docs/specs/009-elements/images.md.
+// Tab 3 (Search) finds openly licensed pictures on Openverse and stores the
+// pick in the gallery with a credit. docs/specs/009-elements/image-search.md.
 //
 // Upload validation + hashing + the apiUploadImage call live in
 // lib/upload-image.ts so the Explorer Image Gallery can reuse the
@@ -43,7 +46,7 @@ type ImagePickerProps = {
   // the element without touching the gallery copy.
   currentImageId?: string | null;
   onRemove?: () => void;
-  onSelect: (image: ImageSummary) => void;
+  onSelect: (image: PickedImage) => void;
   onClose: () => void;
 };
 
@@ -56,7 +59,7 @@ export function ImagePicker({
   onSelect,
   onClose,
 }: ImagePickerProps) {
-  const [tab, setTab] = useState<'upload' | 'gallery'>('upload');
+  const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
   const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -177,6 +180,9 @@ export function ImagePicker({
           Gallery
           {gallery ? <CountBadge count={gallery.length} className="ml-1.5 align-middle" /> : null}
         </TabButton>
+        <TabButton active={tab === 'search'} onClick={() => setTab('search')}>
+          Search
+        </TabButton>
       </nav>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {tab === 'upload' ? (
@@ -188,6 +194,8 @@ export function ImagePicker({
             heightClass="h-48"
             gapClass="gap-2"
           />
+        ) : tab === 'search' ? (
+          <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
         ) : (
           <GalleryGrid
             ownerId={ownerId}

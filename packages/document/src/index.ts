@@ -41,6 +41,13 @@ import type {
   LinkCardElement,
   VideoElement,
 } from './element-types';
+export {
+  IMAGE_CREDIT_TEXT_MAX,
+  IMAGE_CREDIT_URL_MAX,
+  isCreditUrl,
+  isImageCredit,
+  type ImageCredit,
+} from './image-credit';
 export type {
   ChartLegendPosition,
   ShapeElement,

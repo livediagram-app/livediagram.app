@@ -87,6 +87,16 @@ const PHOTO_DETECTORS = (() => {
   ];
 })();
 
+// The image picker's search failures (apps/live image-search/telemetry.ts):
+// every `ImageSearch.<Reason>` token in its fixed tables.
+const IMAGE_SEARCH_WARNINGS = [
+  ...new Set(
+    [...read('live/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
+      (m) => m[1]!,
+    ),
+  ),
+];
+
 // The welcome tour's steps, in order, as tourStepTelemetryType makes them
 // (apps/live tour-steps.ts). The welcome card sends no step view.
 export const TOUR_STEP_SOURCE: string[] = [
@@ -220,6 +230,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
+  },
+  'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
+    values: IMAGE_SEARCH_WARNINGS,
   },
   'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
