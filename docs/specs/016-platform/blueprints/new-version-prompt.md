@@ -15,21 +15,21 @@ Derived from [New version prompt](../new-version-prompt.md).
 
 ## Modules
 
-| File                                               | Responsibility                                                         |
-| -------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/api-schema/src/document-format.ts`       | `DOCUMENT_FORMAT`, `DOCUMENT_FORMAT_HEADER`, `parseDocumentFormat`     |
-| `apps/api/src/document-format-header.ts`           | `withDocumentFormat(response)`: the header on every response but a 101 |
-| `apps/api/src/index.ts`                            | The worker's `fetch` returns `withDocumentFormat(...)`                 |
-| `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                      |
-| `apps/api/src/document-room.ts`                    | Sends the room format message on `hello`                               |
-| `packages/api-schema/src/room-messages.ts`         | The `format` kind on `ServerMessage` and `RoomIncoming`                |
-| `apps/live/lib/document-format.ts`                 | The page's server-format store                                         |
-| `apps/live/lib/api/core.ts`                        | `apiFetch` notes the header                                            |
-| `apps/live/lib/api/room.ts`                        | The room client notes the message                                      |
-| `apps/live/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up    |
-| `apps/live/components/chrome/NewVersionPrompt.tsx` | The prompt                                                             |
-| `apps/live/app/document/[id]/useAutosave.ts`       | Returns `hasUnsavedChanges()`                                          |
-| `apps/live/app/document/[id]/EditorView.tsx`       | Mounts the prompt with `hasUnsavedChanges`                             |
+| File                                               | Responsibility                                                                                        |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/document-format.ts`       | `DOCUMENT_FORMAT`, `DOCUMENT_FORMAT_HEADER`, `parseDocumentFormat`                                    |
+| `apps/api/src/server-release-header.ts`            | `withDocumentFormat(response)`: the header on every response but a 101                                |
+| `apps/api/src/index.ts`                            | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
+| `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                                                     |
+| `apps/api/src/document-room.ts`                    | Sends the room format message on `hello`                                                              |
+| `packages/api-schema/src/room-messages.ts`         | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
+| `apps/live/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
+| `apps/live/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
+| `apps/live/lib/api/room.ts`                        | The room client notes the message                                                                     |
+| `apps/live/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
+| `apps/live/components/chrome/NewVersionPrompt.tsx` | The prompt                                                                                            |
+| `apps/live/app/document/[id]/useAutosave.ts`       | Returns `hasUnsavedChanges()`                                                                         |
+| `apps/live/app/document/[id]/EditorView.tsx`       | Mounts the prompt with `hasUnsavedChanges`                                                            |
 
 ## Interfaces and contracts
 
@@ -39,15 +39,15 @@ export const DOCUMENT_FORMAT = 2;
 export const DOCUMENT_FORMAT_HEADER = 'X-Livediagram-Format';
 export function parseDocumentFormat(value: unknown): number | null; // a positive integer or null
 
-// apps/api/src/document-format-header.ts
-export function withDocumentFormat(response: Response): Response;
+// apps/api/src/server-release-header.ts
+export function withServerRelease(response: Response, buildId: string | null | undefined): Response;
 
-// apps/live/lib/document-format.ts
+// apps/live/lib/server-release.ts
 export function noteServerDocumentFormat(value: unknown): void; // ignores anything unparsable
 export function serverDocumentFormat(): number | null;
 export function newVersionAvailable(): boolean;
-export function subscribeDocumentFormat(listener: () => void): () => void;
-export function resetDocumentFormatForTests(): void;
+export function subscribeServerRelease(listener: () => void): () => void;
+export function resetServerReleaseForTests(): void;
 
 // apps/live/lib/reload-when-saved.ts
 export const RELOAD_SAVE_WAIT_MS = 10_000;
@@ -68,7 +68,7 @@ export function NewVersionPrompt(props: {
 
 - `parseDocumentFormat`: a number or numeric string that is a safe positive integer; anything
   else null.
-- `withDocumentFormat`: returns the response itself for status 101 (a WebSocket upgrade carries
+- `withServerRelease`: returns the response itself for status 101 (a WebSocket upgrade carries
   its socket and must not be rebuilt); otherwise a response with the header set, rebuilt from
   body, status and headers when the original's headers are immutable.
 - `noteServerDocumentFormat` keeps the maximum seen and notifies listeners only when it rises.
@@ -138,9 +138,9 @@ The number is not a secret and grants nothing; a forged value can only show a re
 | Rule                                                     | Test                                                               |
 | -------------------------------------------------------- | ------------------------------------------------------------------ |
 | Format parsing                                           | `packages/api-schema/src/document-format.test.ts`                  |
-| Header on responses, not on a 101; CORS exposes it       | `apps/api/src/document-format-header.test.ts`                      |
+| Header on responses, not on a 101; CORS exposes it       | `apps/api/src/server-release-header.test.ts`                       |
 | Room sends its format on hello                           | `apps/api/src/document-room.test.ts`                               |
-| Store keeps the maximum, notifies on rise, ignores junk  | `apps/live/lib/document-format.test.ts`                            |
+| Store keeps the maximum, notifies on rise, ignores junk  | `apps/live/lib/server-release.test.ts`                             |
 | `apiFetch` and the room client note the number           | `apps/live/lib/api/core.test.ts`, `apps/live/lib/api/room.test.ts` |
 | Reload waits for a settled save, gives up after the wait | `apps/live/lib/reload-when-saved.test.ts`                          |
 | Prompt states, copy, role, keyboard, telemetry           | `apps/live/components/chrome/NewVersionPrompt.test.tsx`            |
