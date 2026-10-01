@@ -113,10 +113,12 @@ An ink stroke's payload is a header then the points:
   **pressure** as an absolute value out of the maximum (flag `0x10`), a width channel (flag `0x20`, ignored), and one
   channel per extension bit `0x08` and `0x10` (ignored).
 - On import, a stroke keeps only the points its line needs: points whose removal
-  would move the line, or its pressure-drawn edge, by more than 0.2 px go, and
-  coordinates round to 1/100 px and pressure to 1/1000. Whiteboard samples the
-  pen far denser than that; the largest real board's document shrinks from 15 MB
-  to 6 MB, within what one save carries (8 MB), with no visible change.
+  would move the line, or its pressure-drawn edge, by more than 0.5 px go
+  (invisible at 100% zoom, at most 2.5 screen px at the editor's 500% maximum),
+  and coordinates round to 1/100 px and pressure to 1/1000. Whiteboard samples
+  the pen far denser than that. Together with the landing's rounding of stored
+  points this keeps every real board's tab within the 4 MB a tab holds; a board
+  still too big fails by name, never split into tabs.
 - An **arrowhead** is a small stroke of its own in the same encoding (with an origin and a width
   channel), drawn in its stroke's colour.
 - A stroke may carry a **width factor** (older boards: the width multiplies by

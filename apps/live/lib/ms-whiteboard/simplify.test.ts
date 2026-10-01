@@ -41,6 +41,22 @@ describe('simplifyStroke', () => {
     }
   });
 
+  it('drops a point within half a px of the line and keeps one further off', () => {
+    expect(SIMPLIFY_TOLERANCE_PX).toBe(0.5);
+    const near = [
+      { x: 0, y: 0 },
+      { x: 5, y: 0.45 },
+      { x: 10, y: 0 },
+    ];
+    const far = [
+      { x: 0, y: 0 },
+      { x: 5, y: 0.55 },
+      { x: 10, y: 0 },
+    ];
+    expect(simplifyStroke(near, 4)).toEqual([near[0], near[2]]);
+    expect(simplifyStroke(far, 4)).toEqual(far);
+  });
+
   it('keeps a pressure swing on a straight line', () => {
     const swing = [
       { x: 0, y: 0, p: 0.2 },

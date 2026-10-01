@@ -276,23 +276,23 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 
 ## Constants and configuration
 
-| Constant                        | Value                                     | Provenance                                                     | Safe range    |
-| ------------------------------- | ----------------------------------------- | -------------------------------------------------------------- | ------------- |
-| `DARK_BACKGROUND_MAX_LIGHTNESS` | 0.5                                       | Real backgrounds: `#1f1f1f` 0.24, `#e1e1e1` 0.91               | 0.3 to 0.7    |
-| `INK_MIN_LIGHTNESS_ON_DARK`     | 0.8                                       | Whiteboard's dark-board ink `#ebebeb` is 0.94                  | 0.7 to 0.95   |
-| `INK_MAX_CHROMA`                | 0.04                                      | Same as the landing's                                          | 0.02 to 0.06  |
-| `INVISIBLE_DISTANCE`            | 0.03                                      | OKLab; `#1f1f1f` and `#000000` on `#1f1f1f`                    | 0.01 to 0.06  |
-| `RAINBOW_STOPS`                 | e71224 f6630c ffc114 02a556 0069bf 8a2be2 | Measured on screenshots                                        | n/a           |
-| `GALAXY_STOPS`                  | 881f7c 3a9fb4                             | Measured on screenshots                                        | n/a           |
-| `MSWB_STICKY_YELLOW`            | `#f6dc67`                                 | Measured                                                       | n/a           |
-| `SIMPLIFY_TOLERANCE_PX`         | 0.2                                       | Under half a device pixel at 2x; largest real board 15 to 6 MB | 0.1 to 0.5    |
-| `POINT_DECIMALS`                | 2                                         | 1/100 px, finer than Whiteboard's 1/128 px                     | 2 to 3        |
-| `PRESSURE_DECIMALS`             | 3                                         | 1/1000 of full pressure                                        | 2 to 4        |
-| `BOARD_DATES_FLOOR`             | `2016-01-01T00:00:00.000Z`                | Whiteboard's first preview was 2017                            | 2010 to 2017  |
-| `UNTITLED_DOCUMENT`             | "Whiteboard"                              | The tab kind's own name                                        | n/a           |
-| `POLYGON_WIDTH_PX`              | 4                                         | Whiteboard's default pen                                       | 1 to 8        |
-| `MAX_IMPORT_BYTES`              | 512 MB                                    | The real 83-board export is 245 MB                             | 64 MB to 1 GB |
-| `MAX_BOARD_JSON_BYTES`          | 64 MB                                     | Largest real `changes.json` about 2 MB; frames larger          | 8 to 256 MB   |
+| Constant                        | Value                                     | Provenance                                                                                                  | Safe range    |
+| ------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------- |
+| `DARK_BACKGROUND_MAX_LIGHTNESS` | 0.5                                       | Real backgrounds: `#1f1f1f` 0.24, `#e1e1e1` 0.91                                                            | 0.3 to 0.7    |
+| `INK_MIN_LIGHTNESS_ON_DARK`     | 0.8                                       | Whiteboard's dark-board ink `#ebebeb` is 0.94                                                               | 0.7 to 0.95   |
+| `INK_MAX_CHROMA`                | 0.04                                      | Same as the landing's                                                                                       | 0.02 to 0.06  |
+| `INVISIBLE_DISTANCE`            | 0.03                                      | OKLab; `#1f1f1f` and `#000000` on `#1f1f1f`                                                                 | 0.01 to 0.06  |
+| `RAINBOW_STOPS`                 | e71224 f6630c ffc114 02a556 0069bf 8a2be2 | Measured on screenshots                                                                                     | n/a           |
+| `GALAXY_STOPS`                  | 881f7c 3a9fb4                             | Measured on screenshots                                                                                     | n/a           |
+| `MSWB_STICKY_YELLOW`            | `#f6dc67`                                 | Measured                                                                                                    | n/a           |
+| `SIMPLIFY_TOLERANCE_PX`         | 0.5                                       | Operator decision: invisible at 100%, ≤ 2.5 screen px at 500%; keeps the largest real board in one 4 MB tab | 0.2 to 0.5    |
+| `POINT_DECIMALS`                | 2                                         | 1/100 px, finer than Whiteboard's 1/128 px                                                                  | 2 to 3        |
+| `PRESSURE_DECIMALS`             | 3                                         | 1/1000 of full pressure                                                                                     | 2 to 4        |
+| `BOARD_DATES_FLOOR`             | `2016-01-01T00:00:00.000Z`                | Whiteboard's first preview was 2017                                                                         | 2010 to 2017  |
+| `UNTITLED_DOCUMENT`             | "Whiteboard"                              | The tab kind's own name                                                                                     | n/a           |
+| `POLYGON_WIDTH_PX`              | 4                                         | Whiteboard's default pen                                                                                    | 1 to 8        |
+| `MAX_IMPORT_BYTES`              | 512 MB                                    | The real 83-board export is 245 MB                                                                          | 64 MB to 1 GB |
+| `MAX_BOARD_JSON_BYTES`          | 64 MB                                     | Largest real `changes.json` about 2 MB; frames larger                                                       | 8 to 256 MB   |
 
 ## Presentation and UX
 

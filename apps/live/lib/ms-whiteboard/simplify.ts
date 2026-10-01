@@ -5,8 +5,10 @@
 // its thickness by more than the tolerance.
 import type { ScenePoint } from '@/lib/board-scene/scene';
 
-// Under half a device pixel at 2x: invisible on any screen.
-export const SIMPLIFY_TOLERANCE_PX = 0.2;
+// Half a canvas px: invisible at 100% zoom, at most 2.5 screen px at the editor's 500% maximum.
+// Accepted by the operator to keep large boards within one save (the largest real board's tab
+// comes to about 4 MB at 0.5 px before the landing's rounding, 2.6 MB after).
+export const SIMPLIFY_TOLERANCE_PX = 0.5;
 
 type P3 = [number, number, number];
 
