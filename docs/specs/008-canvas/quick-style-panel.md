@@ -90,17 +90,17 @@ working from the context menu.
 
 Top to bottom, each a small title over one row of option buttons:
 
-| Section        | Applies to                                        | Options                            |
-| -------------- | ------------------------------------------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows                                   | 7 colours                          |
-| Background     | Shapes                                            | 7 colours                          |
-| Text colour    | Text elements                                     | 7 colours                          |
-| Stroke width   | Shapes + arrows                                   | Thin / Medium / Thick              |
-| Stroke style   | Shapes                                            | Solid / Dashed / Dotted            |
-|                | Arrows                                            | Solid / Dashed / Flowing           |
-| Text alignment | Shapes whose label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
-| Icon alignment | Shapes with icon                                  | Before / Above / After the label   |
-| Actions        | Shapes + arrows + text elements                   | Clear styles                       |
+| Section        | Applies to                                         | Options                            |
+| -------------- | -------------------------------------------------- | ---------------------------------- |
+| Stroke         | Shapes + arrows                                    | 7 colours                          |
+| Background     | Shapes                                             | 7 colours                          |
+| Text colour    | Text elements                                      | 7 colours                          |
+| Stroke width   | Shapes + arrows                                    | Thin / Medium / Thick              |
+| Stroke style   | Shapes                                             | Solid / Dashed / Dotted            |
+|                | Arrows                                             | Solid / Dashed / Flowing           |
+| Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
+| Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
+| Actions        | Shapes + arrows + text elements                    | Clear styles                       |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
@@ -113,7 +113,9 @@ Top to bottom, each a small title over one row of option buttons:
   label) and not on kinds with their own face (the collab panels such as the Q&A board and agenda,
   the session tools, the chair, the comment and action panels, the portal), whose label is a fixed
   title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livediagram/document`, gates both this panel and the
-  context menu's Text Alignment section, so the two can't disagree.
+  context menu's Text Alignment section, so the two can't disagree. The panel also waits for words:
+  a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is
+  nothing to align yet, and the row appears as soon as the shape is given text.
 - **Text colour** is the colour row a text element gets. A text element is its words, with no
   border or fill, so its colour is the one choice it has in common with the other rows, and without
   it a text element was the one kind the panel could not dress. The row is for text elements only:

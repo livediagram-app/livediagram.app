@@ -34,6 +34,7 @@ const shape = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement => (
   y: 0,
   width: 100,
   height: 100,
+  label: 'Box',
   ...extra,
 });
 const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
@@ -55,6 +56,14 @@ describe('quickStyleView: which sections show', () => {
 
   it('gives a plain shape every section but icon alignment', () => {
     expect(sections([shape('a')])).toEqual(['stroke', 'background', 'width', 'style', 'textAlign']);
+  });
+
+  it('offers text alignment only once the shape has text', () => {
+    expect(sections([shape('a', { label: undefined })])).not.toContain('textAlign');
+    expect(sections([shape('a', { label: '' })])).not.toContain('textAlign');
+    expect(sections([shape('a', { label: '  \n ' })])).not.toContain('textAlign');
+    expect(sections([shape('a', { label: 'Hi' })])).toContain('textAlign');
+    expect(sections([shape('a', { label: '' }), shape('b')])).toContain('textAlign');
   });
 
   it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
