@@ -19,7 +19,9 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   EllipsisIcon,
+  MaximizeIcon,
   MenuIcon,
+  MinimizeIcon,
   SearchIcon,
 } from './navigation';
 export { CircleXIcon, PrivateDotIcon, SharedDotIcon, SparkleIcon, TabsLabelIcon } from './status';

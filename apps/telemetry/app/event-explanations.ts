@@ -837,6 +837,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|SlideShown':
     'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
+  'UI|Toggled|TemplateShelfCollapsed':
+    'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
+  'UI|Toggled|TemplateShelfExpanded':
+    'Someone expanded the New Document template shelf to show every template in the category, with the other categories as a carousel.',
   'UI|Toggled|TelemetryOff':
     'Someone opted out of sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TelemetryOn':

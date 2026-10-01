@@ -197,6 +197,9 @@ export function TemplatePicker({
   // useState seed, because the URL only arrives after hydration.
   const [chosenCategory, setOpenCategory] = useState<ShelfCategory | null | undefined>(undefined);
   const openCategory = chosenCategory === undefined ? initialShelf : chosenCategory;
+  // The shelf's inverted flow (desktop only): the open shelf shows every card,
+  // the other categories become the carousel. Held here for the same reason.
+  const [shelfExpanded, setShelfExpanded] = useState(false);
   // The theme is whatever the caller hands us, unchanged: the /new flow
   // passes 'brand' (Default), a new tab its source tab's theme.
   const themeId = currentThemeId;
@@ -434,6 +437,8 @@ export function TemplatePicker({
                 filteredTemplates={filteredTemplates}
                 openCategory={openCategory}
                 setOpenCategory={setOpenCategory}
+                shelfExpanded={shelfExpanded}
+                setShelfExpanded={setShelfExpanded}
                 popularTemplates={popularTemplates}
                 categoryTemplates={categoryTemplates}
                 whiteboardTemplate={whiteboardTemplate}

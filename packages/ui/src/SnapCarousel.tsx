@@ -17,6 +17,8 @@ import { Glyph } from './icons/Glyph';
 export function SnapCarousel({
   heading,
   label,
+  itemNoun = 'templates',
+  actions,
   itemsKey,
   className,
   trackClassName = 'mt-3',
@@ -27,6 +29,12 @@ export function SnapCarousel({
   heading: ReactNode;
   // Plain-text name for the arrows' accessible labels ("Next Agile templates").
   label: string;
+  // What the cards are, closing the arrows' labels ("Next Agile templates",
+  // "Next more categories").
+  itemNoun?: string;
+  // Controls set to the left of the arrows, spaced off them (the template
+  // picker's expand toggle). They stay visible when every card fits.
+  actions?: ReactNode;
   // Changes when the row's cards change (a filter, another category), so the
   // track rewinds rather than staying scrolled past cards no longer there.
   itemsKey: string;
@@ -77,27 +85,30 @@ export function SnapCarousel({
     <div className={className}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">{heading}</div>
-        {/* Always rendered, only hidden when every card fits: the track is
-            measured after mount, and arrows that appeared then made the heading
-            row taller and nudged everything below it on load. `invisible`
-            keeps their space and takes them out of the tab order and the
-            accessibility tree. */}
-        <div
-          className={`flex shrink-0 items-center gap-1.5 ${paged ? '' : 'invisible'}`}
-          aria-hidden={paged ? undefined : true}
-        >
-          <CarouselArrow
-            direction="prev"
-            label={label}
-            disabled={!canPrev}
-            onClick={() => page(-1)}
-          />
-          <CarouselArrow
-            direction="next"
-            label={label}
-            disabled={!canNext}
-            onClick={() => page(1)}
-          />
+        <div className="flex shrink-0 items-center gap-4">
+          {actions}
+          {/* Always rendered, only hidden when every card fits: the track is
+              measured after mount, and arrows that appeared then made the heading
+              row taller and nudged everything below it on load. `invisible`
+              keeps their space and takes them out of the tab order and the
+              accessibility tree. */}
+          <div
+            className={`flex items-center gap-1.5 ${paged ? '' : 'invisible'}`}
+            aria-hidden={paged ? undefined : true}
+          >
+            <CarouselArrow
+              direction="prev"
+              label={`${label} ${itemNoun}`}
+              disabled={!canPrev}
+              onClick={() => page(-1)}
+            />
+            <CarouselArrow
+              direction="next"
+              label={`${label} ${itemNoun}`}
+              disabled={!canNext}
+              onClick={() => page(1)}
+            />
+          </div>
         </div>
       </div>
       {/* The scrollbar is hidden: the arrows and swipe are the controls. */}
@@ -129,7 +140,7 @@ function CarouselArrow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={`${prev ? 'Previous' : 'Next'} ${label} templates`}
+      aria-label={`${prev ? 'Previous' : 'Next'} ${label}`}
       className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-1.5 text-slate-600 transition enabled:hover:border-brand-300 enabled:hover:text-brand-700 disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:text-white"
     >
       <Glyph size={18} units={24}>
