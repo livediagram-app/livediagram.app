@@ -60,6 +60,7 @@ async function main() {
     ignoredCommands: 0,
   };
   let slowest = 0;
+  let largestTabBytes = 0;
   let rejected = 0;
   let crashed = 0;
   for (const board of listed.boards) {
@@ -76,6 +77,7 @@ async function main() {
       });
       if (!result.ok) rejected++;
       else {
+        largestTabBytes = Math.max(largestTabBytes, JSON.stringify(result.elements).length);
         for (const [k, v] of Object.entries(result.report.landed)) add(landed, k, v);
         for (const n of [...result.report.degraded, ...result.report.skipped])
           add(notes, n.rule, n.count);
@@ -94,6 +96,7 @@ async function main() {
     crashed,
     totalMs: Math.round(performance.now() - t0),
     slowestBoardMs: Math.round(slowest),
+    largestTabMB: +(largestTabBytes / 1024 / 1024).toFixed(2),
     replay,
     sceneItems: items,
     landed,

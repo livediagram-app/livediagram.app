@@ -233,14 +233,15 @@ parser normalises:
 
 ## Errors
 
-| Rejection          | When                                                                      | Copy                                                                     |
-| ------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `no-boards`        | The pick holds no board folder                                            | "No Microsoft Whiteboard boards found. Pick a board folder or its .zip." |
-| `zip-damaged`      | The Zip cannot be read                                                    | "This .zip couldn't be read."                                            |
-| `zip-encrypted`    | An entry is encrypted                                                     | "This .zip is password-protected."                                       |
-| `too-large`        | The pick passes `MAX_IMPORT_BYTES`                                        | "This export is too large to import at once. Import fewer boards."       |
-| `board-unreadable` | A board's JSON does not parse or lacks its tree (per board, others go on) | "This board's files couldn't be read."                                   |
-| `board-too-large`  | A board lands more than a tab holds (per board)                           | The landing's `too-many-elements` copy                                   |
+| Rejection          | When                                                                        | Copy                                                                     |
+| ------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `no-boards`        | The pick holds no board folder                                              | "No Microsoft Whiteboard boards found. Pick a board folder or its .zip." |
+| `zip-damaged`      | The Zip cannot be read                                                      | "This .zip couldn't be read."                                            |
+| `zip-encrypted`    | An entry is encrypted                                                       | "This .zip is password-protected."                                       |
+| `too-large`        | The pick passes `MAX_IMPORT_BYTES`                                          | "This export is too large to import at once. Import fewer boards."       |
+| `board-unreadable` | A board's JSON does not parse or lacks its tree (per board, others go on)   | "This board's files couldn't be read."                                   |
+| `board-too-large`  | A board lands more elements than a tab holds (per board)                    | The landing's `too-many-elements` copy                                   |
+| `board-too-big`    | A board's document is over what one save carries (the api's 413, per board) | "This board is too big for one document"                                 |
 
 - A board that fails never stops the others; the result lists it.
 - A change that cannot be read (an unknown command, a damaged payload) is
@@ -250,7 +251,9 @@ parser normalises:
 ## Limits
 
 - Real boards reach 4,330 changes (2 MB of changes) and 900 ink groups; a board
-  decodes in well under a second.
+  decodes in well under a second. After thinning and the landing's rounding the
+  largest real board's tab is 2.4 MB, within the 4 MB a tab holds; all 83 real
+  boards import and save through the Explorer in under 8 s.
 - `MAX_IMPORT_BYTES` caps one pick (the Zip, or the folder's board files).
 - Images follow the [Import image pipeline](import-image-pipeline.md) (the
   hosted gallery cap included); an image over the cap stays a placeholder and
