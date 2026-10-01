@@ -113,12 +113,12 @@ An ink stroke's payload is a header then the points:
   **pressure** as an absolute value out of the maximum (flag `0x10`), a width channel (flag `0x20`, ignored), and one
   channel per extension bit `0x08` and `0x10` (ignored).
 - On import, a stroke keeps only the points its line needs: points whose removal
-  would move the line, or its pressure-drawn edge, by more than 0.5 px go
-  (invisible at 100% zoom, at most 2.5 screen px at the editor's 500% maximum),
-  and coordinates round to 1/100 px and pressure to 1/1000. Whiteboard samples
-  the pen far denser than that. Together with the landing's rounding of stored
-  points this keeps every real board's tab within the 4 MB a tab holds; a board
-  still too big fails by name, never split into tabs.
+  would move the line, or its pressure-drawn edge, by more than 0.2 px go
+  (invisible even at the editor's 500% maximum zoom). Whiteboard samples the pen
+  far denser than that. The points are then stored through the stroke points
+  codec ([Board scene](board-scene.md)), which owns their precision; the parser
+  rounds nothing itself. Every real board's tab fits the tab cap; a board still
+  too big fails by name, never split into tabs.
 - An **arrowhead** is a small stroke of its own in the same encoding (with an origin and a width
   channel), drawn in its stroke's colour.
 - A stroke may carry a **width factor** (older boards: the width multiplies by
@@ -251,9 +251,9 @@ parser normalises:
 ## Limits
 
 - Real boards reach 4,330 changes (2 MB of changes) and 900 ink groups; a board
-  decodes in well under a second. After thinning and the landing's rounding the
-  largest real board's tab is 2.4 MB, within the 4 MB a tab holds; all 83 real
-  boards import and save through the Explorer in under 8 s.
+  decodes in well under a second. After thinning and packed points the
+  largest real board's tab is 1.22 MB, within the 1.99 MB tab cap; all 83 real
+  boards decode and land in about 1 s.
 - `MAX_IMPORT_BYTES` caps one pick (the Zip, or the folder's board files).
 - Images follow the [Import image pipeline](import-image-pipeline.md) (the
   hosted gallery cap included); an image over the cap stays a placeholder and

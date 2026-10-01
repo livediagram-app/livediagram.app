@@ -71,13 +71,13 @@ describe('inkToScene', () => {
     });
   });
 
-  it('rounds points to 1/100 px and pressure to 1/1000, and thins a dense straight stroke', () => {
+  it('thins a dense straight stroke to its ends, points and pressure exact', () => {
     const s = stroke();
     s.stroke.points = Array.from({ length: 30 }, (_, i) => ({ x: i * 13, y: 0, p: 0.123456 }));
     const [ink] = inkToScene(group({ strokes: [s] }), 'k', ctx());
     expect(ink!.points).toEqual([
-      { x: 100, y: 50, p: 0.123 },
-      { x: 100 + Math.round(29 * 13 * unit * 100) / 100, y: 50, p: 0.123 },
+      { x: 100, y: 50, p: 0.123456 },
+      { x: 100 + 29 * 13 * unit, y: 50, p: 0.123456 },
     ]);
   });
 
@@ -89,7 +89,7 @@ describe('inkToScene', () => {
     ];
     expect(inkToScene(group({ strokes: [s] }), 'k', ctx())[0]!.points).toEqual([
       { x: 100, y: 50 },
-      { x: 100.08, y: 50 },
+      { x: 100 + 10 * unit, y: 50 },
     ]);
   });
 

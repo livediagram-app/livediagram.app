@@ -193,8 +193,8 @@ decode is dropped and counted (the group's `unreadable` count).
 - Ink group: each stroke's points `x = gx + s·(px·u + dx)`, `y = gy + s·(py·u + dy)` where `g` is
   the group's position, `s` its scale, `u` the stroke's unit scale; then the group's rotation turns
   every point clockwise about the group's position. `widthPx = width · u · s · factor`.
-  Pressure kept when every point has one. Then `simplifyStroke(points, widthPx)` and rounding
-  (`POINT_DECIMALS`, `PRESSURE_DECIMALS`).
+  Pressure kept when every point has one. Then `simplifyStroke(points, widthPx)`; no rounding (the
+  landing's points codec quantises).
 - Presets: highlighter → `highlighter: true`, opacity from alpha; rainbow → colour `RAINBOW_COLOUR`
   (stock pink's light-board version), `stops` `RAINBOW_STOPS`, counted in `notes.rainbow`; galaxy →
   `GALAXY_COLOUR` (stock violet's), `GALAXY_STOPS`, `notes.galaxy`. The landing resolves both
@@ -264,8 +264,8 @@ Rules (`RULES`, user-facing):
 
 - The largest real board (4,330 changes, about 2 MB) replays and decodes in about 100 ms in Node;
   all 83 real boards list and land in about 1 s (the verification script prints timings and the
-  largest landed tab, 2.38 MB against `MAX_TAB_BYTES` 4 MB), and import and save through the
-  Explorer in 7.5 s.
+  five largest landed tabs by `tabDataBytes`: 1.22, 0.25, 0.18, 0.17, 0.15 MB against `MAX_TAB_BYTES`
+  1.99 MB).
 - Replay is linear in edits; sibling lookups are linear in the trait's length.
 
 ## Observability
@@ -277,22 +277,20 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 
 ## Constants and configuration
 
-| Constant                        | Value                                     | Provenance                                                                                                  | Safe range    |
-| ------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------- |
-| `DARK_BACKGROUND_MAX_LIGHTNESS` | 0.5                                       | Real backgrounds: `#1f1f1f` 0.24, `#e1e1e1` 0.91                                                            | 0.3 to 0.7    |
-| `INK_MIN_LIGHTNESS_ON_DARK`     | 0.8                                       | Whiteboard's dark-board ink `#ebebeb` is 0.94                                                               | 0.7 to 0.95   |
-| `INK_MAX_CHROMA`                | 0.04                                      | Same as the landing's                                                                                       | 0.02 to 0.06  |
-| `INVISIBLE_DISTANCE`            | 0.03                                      | OKLab; `#1f1f1f` and `#000000` on `#1f1f1f`                                                                 | 0.01 to 0.06  |
-| `RAINBOW_STOPS`                 | e71224 f6630c ffc114 02a556 0069bf 8a2be2 | Measured on screenshots                                                                                     | n/a           |
-| `GALAXY_STOPS`                  | 881f7c 3a9fb4                             | Measured on screenshots                                                                                     | n/a           |
-| `MSWB_STICKY_YELLOW`            | `#f6dc67`                                 | Measured                                                                                                    | n/a           |
-| `SIMPLIFY_TOLERANCE_PX`         | 0.5                                       | Operator decision: invisible at 100%, ≤ 2.5 screen px at 500%; keeps the largest real board in one 4 MB tab | 0.2 to 0.5    |
-| `POINT_DECIMALS`                | 2                                         | 1/100 px, finer than Whiteboard's 1/128 px                                                                  | 2 to 3        |
-| `PRESSURE_DECIMALS`             | 3                                         | 1/1000 of full pressure                                                                                     | 2 to 4        |
-| `BOARD_DATES_FLOOR`             | `2016-01-01T00:00:00.000Z`                | Whiteboard's first preview was 2017                                                                         | 2010 to 2017  |
-| `POLYGON_WIDTH_PX`              | 4                                         | Whiteboard's default pen                                                                                    | 1 to 8        |
-| `MAX_IMPORT_BYTES`              | 512 MB                                    | The real 83-board export is 245 MB                                                                          | 64 MB to 1 GB |
-| `MAX_BOARD_JSON_BYTES`          | 64 MB                                     | Largest real `changes.json` about 2 MB; frames larger                                                       | 8 to 256 MB   |
+| Constant                        | Value                                     | Provenance                                                                                                                     | Safe range    |
+| ------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| `DARK_BACKGROUND_MAX_LIGHTNESS` | 0.5                                       | Real backgrounds: `#1f1f1f` 0.24, `#e1e1e1` 0.91                                                                               | 0.3 to 0.7    |
+| `INK_MIN_LIGHTNESS_ON_DARK`     | 0.8                                       | Whiteboard's dark-board ink `#ebebeb` is 0.94                                                                                  | 0.7 to 0.95   |
+| `INK_MAX_CHROMA`                | 0.04                                      | Same as the landing's                                                                                                          | 0.02 to 0.06  |
+| `INVISIBLE_DISTANCE`            | 0.03                                      | OKLab; `#1f1f1f` and `#000000` on `#1f1f1f`                                                                                    | 0.01 to 0.06  |
+| `RAINBOW_STOPS`                 | e71224 f6630c ffc114 02a556 0069bf 8a2be2 | Measured on screenshots                                                                                                        | n/a           |
+| `GALAXY_STOPS`                  | 881f7c 3a9fb4                             | Measured on screenshots                                                                                                        | n/a           |
+| `MSWB_STICKY_YELLOW`            | `#f6dc67`                                 | Measured                                                                                                                       | n/a           |
+| `SIMPLIFY_TOLERANCE_PX`         | 0.2                                       | Invisible even at the 500% maximum zoom (one screen px); with packed points the largest real board's tab is 1.22 MB of 1.99 MB | 0.1 to 0.5    |
+| `BOARD_DATES_FLOOR`             | `2016-01-01T00:00:00.000Z`                | Whiteboard's first preview was 2017                                                                                            | 2010 to 2017  |
+| `POLYGON_WIDTH_PX`              | 4                                         | Whiteboard's default pen                                                                                                       | 1 to 8        |
+| `MAX_IMPORT_BYTES`              | 512 MB                                    | The real 83-board export is 245 MB                                                                                             | 64 MB to 1 GB |
+| `MAX_BOARD_JSON_BYTES`          | 64 MB                                     | Largest real `changes.json` about 2 MB; frames larger                                                                          | 8 to 256 MB   |
 
 ## Presentation and UX
 

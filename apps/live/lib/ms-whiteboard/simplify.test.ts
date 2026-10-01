@@ -41,16 +41,16 @@ describe('simplifyStroke', () => {
     }
   });
 
-  it('drops a point within half a px of the line and keeps one further off', () => {
-    expect(SIMPLIFY_TOLERANCE_PX).toBe(0.5);
+  it('drops a point within a fifth of a px of the line and keeps one further off', () => {
+    expect(SIMPLIFY_TOLERANCE_PX).toBe(0.2);
     const near = [
       { x: 0, y: 0 },
-      { x: 5, y: 0.45 },
+      { x: 5, y: 0.18 },
       { x: 10, y: 0 },
     ];
     const far = [
       { x: 0, y: 0 },
-      { x: 5, y: 0.55 },
+      { x: 5, y: 0.22 },
       { x: 10, y: 0 },
     ];
     expect(simplifyStroke(near, 4)).toEqual([near[0], near[2]]);

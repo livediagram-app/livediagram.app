@@ -9,6 +9,7 @@ import type { ExportFileSet } from '@/lib/ms-whiteboard/board-export';
 import { fileSetFromZip } from '@/lib/ms-whiteboard/file-sets';
 import { boardSceneOf, listBoards } from '@/lib/ms-whiteboard/import';
 import { landBoardScene } from '@/lib/board-scene/land';
+import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
 
 const path = process.argv[2];
 if (!path) {
@@ -60,7 +61,7 @@ async function main() {
     ignoredCommands: 0,
   };
   let slowest = 0;
-  let largestTabBytes = 0;
+  const tabSizes: number[] = [];
   let rejected = 0;
   let crashed = 0;
   for (const board of listed.boards) {
@@ -77,7 +78,7 @@ async function main() {
       });
       if (!result.ok) rejected++;
       else {
-        largestTabBytes = Math.max(largestTabBytes, JSON.stringify(result.elements).length);
+        tabSizes.push(tabDataBytes({ elements: result.elements }));
         for (const [k, v] of Object.entries(result.report.landed)) add(landed, k, v);
         for (const n of [...result.report.degraded, ...result.report.skipped])
           add(notes, n.rule, n.count);
@@ -96,7 +97,12 @@ async function main() {
     crashed,
     totalMs: Math.round(performance.now() - t0),
     slowestBoardMs: Math.round(slowest),
-    largestTabMB: +(largestTabBytes / 1024 / 1024).toFixed(2),
+    largestTabsMB: tabSizes
+      .sort((a, b) => b - a)
+      .slice(0, 5)
+      .map((n) => +(n / 1e6).toFixed(2)),
+    tabsOverLimit: tabSizes.filter((n) => n > MAX_TAB_BYTES).length,
+    tabLimitMB: +(MAX_TAB_BYTES / 1e6).toFixed(2),
     replay,
     sceneItems: items,
     landed,
