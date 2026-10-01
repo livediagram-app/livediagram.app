@@ -170,5 +170,22 @@ describe('panel-layout', () => {
       };
       expect(nearestSnapCorner(raised)).toBe('bottom-right');
     });
+
+    it('clears zoom controls drawn at a UI scale (docs/specs/007-editor/ui-scale.md)', () => {
+      // The 44px cluster grows with the scale; the corner inset and the 12px
+      // gap above it do not.
+      expect(cornerBottomInset('bottom-right', 1)).toBe(72);
+      expect(cornerBottomInset('bottom-right', 1.5)).toBe(94);
+      expect(cornerBottomInset('bottom-left', 1.5)).toBe(CORNER_INSET_PX);
+      // The snap anchor moves with it, so a panel landing at the raised
+      // inset still snaps there.
+      const tall: PanelDragGeometry = {
+        x: container.parentWidth - CORNER_INSET_PX - size.width,
+        y: container.parentHeight - cornerBottomInset('bottom-right', 1.5) - size.height,
+        ...size,
+        ...container,
+      };
+      expect(nearestSnapCorner(tall, {}, 1.5)).toBe('bottom-right');
+    });
   });
 });

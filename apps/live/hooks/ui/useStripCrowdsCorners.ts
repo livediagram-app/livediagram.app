@@ -16,6 +16,10 @@ export function useStripCrowdsCorners(
   // Changes whenever a top corner gains or loses panels: an empty corner
   // doesn't render, so there was nothing to observe until then.
   occupancy: string,
+  // Changes whenever the UI scale of the strip or the panels does
+  // (docs/specs/007-editor/ui-scale.md): a zoom change resizes no observed
+  // box, so it re-measures here.
+  scaleKey: string,
 ): boolean {
   const [crowded, setCrowded] = useState(false);
 
@@ -46,7 +50,7 @@ export function useStripCrowdsCorners(
       observer.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [corners, enabled, occupancy]);
+  }, [corners, enabled, occupancy, scaleKey]);
 
   // Off (no strip, or a phone, where it always spans): never crowded, whatever
   // the last measurement said.

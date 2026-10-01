@@ -17,6 +17,9 @@ import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { cornerInsetStyle } from './movable-panel-scale';
 
 export type { MovablePanelDockProps };
 
@@ -63,6 +66,10 @@ export function MovablePanel({
   children,
 }: MovablePanelProps) {
   const minimalChrome = useMinimalChrome();
+  // UI scale (docs/specs/007-editor/ui-scale.md): the panel is zoomed at its
+  // root, so every screen-px offset written on it goes through toSurfacePx.
+  const scale = useUiScale('panels');
+  const px = (v: number) => toSurfacePx(v, scale);
   const ref = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   // Banner-collapse state. Only meaningful when `collapsible` is
@@ -91,6 +98,7 @@ export function MovablePanel({
     collapsed,
     setCollapsed,
     mobileOpenOverride,
+    scale,
     getDockBounds,
     onDockDragStart,
     onDockDrag,
@@ -187,13 +195,13 @@ export function MovablePanel({
     : position
       ? (() => {
           const clamped = clampFree(position);
-          return { left: clamped.x, top: clamped.y };
+          return { left: px(clamped.x), top: px(clamped.y) };
         })()
       : useDynamicStack
         ? { top: stackBelowY + stackGapPx }
         : isMobile && mobileTopOverridePx !== undefined && defaultCorner === 'top-right'
           ? { top: mobileTopOverridePx }
-          : {};
+          : cornerInsetStyle(defaultCorner, scale);
   const cornerClass = dockControlledOpen
     ? ''
     : position
@@ -229,7 +237,11 @@ export function MovablePanel({
     : isDockDragging
       ? // Lift just above the resting panels so a dragged panel passes
         // over the others (but stays below toolbars / modals).
-        { left: dockDragPos?.x ?? 0, top: dockDragPos?.y ?? 0, zIndex: 'calc(var(--z-panel) + 1)' }
+        {
+          left: px(dockDragPos?.x ?? 0),
+          top: px(dockDragPos?.y ?? 0),
+          zIndex: 'calc(var(--z-panel) + 1)',
+        }
       : style;
   const positionClass = isDockedRest ? 'relative' : isDockDragging ? 'fixed' : 'absolute';
   const finalCornerClass = isDockedRest || isDockDragging ? '' : cornerClass;
@@ -254,22 +266,23 @@ export function MovablePanel({
           e.preventDefault();
           e.stopPropagation();
         }}
-        style={
-          anchor?.bottom !== undefined
+        style={{
+          ...uiScaleStyle(scale),
+          ...(anchor?.bottom !== undefined
             ? {
-                bottom: anchor.bottom + 12,
-                left: anchor.left,
-                maxHeight: `calc(100% - ${anchor.bottom + 24}px)`,
+                bottom: px(anchor.bottom + 12),
+                left: px(anchor.left),
+                maxHeight: `calc(100% - ${px(anchor.bottom + 24)}px)`,
               }
             : anchor
-              ? { top: anchor.top + 12, left: anchor.left }
-              : { top: 56, right: 12 }
-        }
+              ? { top: px(anchor.top + 12), left: px(anchor.left) }
+              : { top: px(56), right: px(12) }),
+        }}
         className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {anchor ? (
           <div
-            style={{ left: anchor.arrowOffset - 7 }}
+            style={{ left: px(anchor.arrowOffset) - 7 }}
             className={`absolute h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
               anchor.bottom !== undefined
                 ? '-bottom-[7px] rounded-br-sm border-b border-r'
@@ -331,7 +344,7 @@ export function MovablePanel({
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={finalStyle}
+      style={{ ...uiScaleStyle(scale), ...finalStyle }}
       // cursor-default so the panel body doesn't inherit the canvas's
       // grab cursor (the panel is a DOM descendant of the pannable
       // canvas surface); the header re-asserts cursor-grab since that's
@@ -374,7 +387,7 @@ export function MovablePanel({
         aria-hidden={collapsible && effectiveCollapsed ? true : undefined}
       >
         <div
-          style={!growBody && bodyMaxH !== null ? { maxHeight: bodyMaxH } : undefined}
+          style={!growBody && bodyMaxH !== null ? { maxHeight: px(bodyMaxH) } : undefined}
           // Horizontal overflow is always CLIPPED: panels are fixed-width by
           // design, so any x-overflow is a row failing to truncate (e.g. a
           // long document name), and a horizontal scrollbar would surface the

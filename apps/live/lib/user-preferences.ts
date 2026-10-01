@@ -106,6 +106,16 @@ export type UserPreferences = {
   // not panels: the minimal dock bar and the cluster buttons stay opaque.
   // Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
+  // UI scale (docs/specs/007-editor/ui-scale.md). The factor (0.8..1.2 in 0.05
+  // steps) the panels, the toolbar and the bottom-right corner buttons are
+  // drawn at, via CSS `zoom` on each surface; nothing else scales. Desktop
+  // only: a phone always draws at 1. `uiScale` is the master; each part's own
+  // key overrides it for that part, and setting the master clears them. Read
+  // through `resolveUiScales`, never directly. Missing === 1, the default.
+  uiScale?: number;
+  uiScalePanels?: number;
+  uiScaleToolbar?: number;
+  uiScaleCornerButtons?: number;
   // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
   // buttons open their menu on hover instead of requiring a click; moving
   // the pointer away closes it. The "+" buttons still only appear on the

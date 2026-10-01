@@ -21,7 +21,18 @@ const MENU_GAP_PX = 8;
 
 export function useStripTileLimit(
   cardRef: RefObject<HTMLElement | null>,
-  { fallback, isMobile }: { fallback: number; isMobile: boolean },
+  {
+    fallback,
+    isMobile,
+    scale,
+  }: {
+    fallback: number;
+    isMobile: boolean;
+    // The UI scale (docs/specs/007-editor/ui-scale.md). Everything here is
+    // measured in screen px, so a scaled strip fits itself; the scale is only
+    // a dependency, because a zoom change resizes no observed box.
+    scale: number;
+  },
 ): number {
   const [measured, setMeasured] = useState<number | null>(null);
 
@@ -58,7 +69,7 @@ export function useStripTileLimit(
       observer.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [cardRef, isMobile]);
+  }, [cardRef, isMobile, scale]);
 
   return measured ?? fallback;
 }

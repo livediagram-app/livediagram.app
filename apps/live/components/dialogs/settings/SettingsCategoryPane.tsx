@@ -173,6 +173,8 @@ export function SettingsCategoryPane({
         return (
           <SettingsSliderRow
             row={row}
+            disabled={inert}
+            notice={inert ? row.desktopOnly : undefined}
             value={row.read(settings)}
             onCommit={(next) => {
               track(row.event.category, 'Changed', row.event.changed);

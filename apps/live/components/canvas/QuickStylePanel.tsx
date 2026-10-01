@@ -12,6 +12,8 @@ import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { PanelTitle } from '@/components/primitives/MovablePanelHeader';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import type { QuickStyleLayout } from '@/lib/quick-style-placement';
 import {
   QUICK_ICON_ALIGNS,
@@ -139,6 +141,10 @@ export function QuickStylePanel({
 }) {
   const isMobile = useIsMobileViewport();
   const minimalChrome = useMinimalChrome();
+  // UI scale (docs/specs/007-editor/ui-scale.md): zoomed at the root, so the
+  // placement's screen-px spot is converted to the panel's own px.
+  const scale = useUiScale('panels');
+  const px = (v: number) => toSurfacePx(v, scale);
   // Section titles stay under Minimal chrome: they are what tells two rows of
   // coloured squares (Stroke, Background) apart at a glance.
   const titles = showTitles ?? true;
@@ -177,10 +183,15 @@ export function QuickStylePanel({
         e.stopPropagation();
       }}
       style={{
+        ...uiScaleStyle(scale),
         width: frame.width,
         padding: frame.padding,
         ...(spot
-          ? { left: spot.left, top: spot.top, ...(spot.width ? { width: spot.width } : {}) }
+          ? {
+              left: px(spot.left),
+              top: px(spot.top),
+              ...(spot.width ? { width: px(spot.width) } : {}),
+            }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' as const }),

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type Ref } from 'react';
 import { computeDockAnchor, type DockAnchor } from '@/lib/canvas-chrome';
 import { track } from '@/lib/telemetry';
+import { useUiScale } from '@/components/providers/ui-scale';
 
 // Mobile dock: a compact button row that replaces the four full-width
 // collapse banners on small screens. This hook owns its state — which
@@ -9,6 +10,9 @@ import { track } from '@/lib/telemetry';
 // The anchor math is the pure computeDockAnchor (tested in
 // lib/canvas-chrome.test.ts); the DOM-rect reads stay here.
 
+// The popover's width at 100%; it is drawn at the UI scale
+// (docs/specs/007-editor/ui-scale.md), so the anchor clamps against the
+// scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 
 // 'poll' and 'vote' only ever appear while a poll / dot-vote is running on the
@@ -64,6 +68,7 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   const [activeMobilePanel, setActiveMobilePanel] = useState<MobilePanel | null>(null);
   const dockButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [activeDockAnchor, setActiveDockAnchor] = useState<DockAnchor | null>(null);
+  const scale = useUiScale('panels');
 
   // Open a panel under its dock button (never toggles it shut).
   //
@@ -86,7 +91,7 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
         computeDockAnchor(
           btn.getBoundingClientRect(),
           canvas.getBoundingClientRect(),
-          POPOVER_WIDTH,
+          POPOVER_WIDTH * scale,
           ownButton ? (above ? 'above' : 'button') : 'dock',
         ),
       );
