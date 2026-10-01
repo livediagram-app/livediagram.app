@@ -18,8 +18,8 @@ import {
 
 export type { ShelfCategory };
 
-// Whiteboard is a different activity from the diagram templates: never on a shelf, its own tile
-// closes the category grid (docs/specs/023-whiteboard/whiteboard.md "Creating one").
+// Whiteboard is a different activity from the diagram templates: never on a category shelf (it
+// leads Popular's starters, third), its own tile closes the category grid (docs/specs/023-whiteboard/whiteboard.md "Creating one").
 const onShelf = (t: TemplateDescriptor) => t.kind !== 'whiteboard';
 
 // The template step's browse surface, lifted out of TemplatePicker: the
@@ -88,7 +88,10 @@ export function TemplatePickerBrowse({
       items: categoryTemplates(c.id).filter(onShelf),
     })),
   ]
-    .map((shelf) => ({ ...shelf, items: shelf.items.filter(onShelf) }))
+    // Popular is a curated list, so the Whiteboard it names stays on it; a category never shows it.
+    .map((shelf) =>
+      shelf.id === 'popular' ? shelf : { ...shelf, items: shelf.items.filter(onShelf) },
+    )
     .filter((shelf) => shelf.items.length > 0);
   const openId = openCategory ?? 'popular';
   const open = shelves.find((shelf) => shelf.id === openId) ?? shelves[0];

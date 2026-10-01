@@ -817,9 +817,9 @@ export function templateShelfTemplates(
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'blank',
   'mindmap',
+  'whiteboard',
   'sailboat',
   'flowchart',
-  'kanban',
   'orgchart',
 ];
 
