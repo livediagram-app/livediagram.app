@@ -22,7 +22,7 @@ import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 const HERO_WORDS = ['Diagram', 'Document', 'Whiteboard', 'Brainstorm'] as const;
 
 // How long each word holds before the next.
-const WORD_MS = 1500;
+const WORD_MS = 2500;
 
 // Half the gap between "Whiteboard" and "Diagram", in em: the first word's glide before anything
 // is measured (0.694em at 72px, 0.710em at 24px).
