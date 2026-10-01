@@ -1761,8 +1761,9 @@ export const articles: Article[] = [
   {
     slug: 'images',
     title: 'Images',
-    description: 'Add images to the canvas from your per-owner gallery.',
-    keywords: 'picture photo upload png jpg insert logo screenshot',
+    description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
+    keywords:
+      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

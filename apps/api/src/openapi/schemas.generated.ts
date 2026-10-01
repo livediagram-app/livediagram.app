@@ -3081,6 +3081,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ImageCredit": {
+    "additionalProperties": false,
+    "properties": {
+      "licenseUrl": {
+        "type": "string"
+      },
+      "sourceUrl": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text",
+      "sourceUrl"
+    ],
+    "type": "object"
+  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -3107,6 +3126,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
       },
       "fillColor": {
         "type": "string"

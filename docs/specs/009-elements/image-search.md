@@ -109,7 +109,7 @@ type ImageElement = {
 Following [Telemetry](../017-telemetry/telemetry.md):
 
 - `Element / Searched / Image` once per submitted search (not per page).
-- `Element / Added / ImageSearch` when a picked result is attached.
+- `Element / Used / ImageSearch` when a picked result is attached. Not `Added`: the element already exists (it was counted as `Added / Image` when drawn), and `Added` is the element census.
 
 Never the query, a title or a creator.
 

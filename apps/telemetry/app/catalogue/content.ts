@@ -466,6 +466,26 @@ export const ELEMENT_ACTIONS_USED = chart(
   'Used',
   'Element Actions Used',
   'Using an element in place: a reaction pad, Bring into Focus, playing a video.',
+  // Image search picks have their own chart below.
+  { typeIn: (type) => type !== 'ImageSearch' },
+);
+
+// Image search (docs/specs/009-elements/image-search.md): searches run in the
+// image picker, and the results attached to an image.
+export const IMAGE_SEARCHES = chart(
+  'Element',
+  'Searched',
+  'Image Searches',
+  "Searches run in the image picker's Search tab, for openly licensed pictures.",
+  { types: ['Image'] },
+);
+
+export const IMAGE_SEARCH_PICKS = chart(
+  'Element',
+  'Used',
+  'Image Search Picks',
+  'A searched picture attached to an image element.',
+  { types: ['ImageSearch'] },
 );
 
 export const KEYBOARD_SELECTIONS = chart(
@@ -522,6 +542,8 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENT_OPTIONS_TOGGLED,
     ELEMENTS_LOCKED,
     ELEMENT_ACTIONS_USED,
+    IMAGE_SEARCHES,
+    IMAGE_SEARCH_PICKS,
     KEYBOARD_SELECTIONS,
     INSERTED_BETWEEN,
     NEXT_NOTES_ADDED,

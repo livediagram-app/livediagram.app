@@ -7,30 +7,36 @@ storage path is the [Import image pipeline](../../020-import-export/import-image
 
 Scope, by file:
 
-| File                                                  | Role                                                                   |
-| ----------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`              | `ImageCredit`, `ImageElement.credit`                                   |
-| `packages/document/src/validate.ts`                   | `isImageCredit`: structural check of `credit`                          |
-| `apps/live/lib/image-search/openverse.ts`             | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`        |
-| `apps/live/lib/image-search/search.ts`                | `searchOpenverse`: one page over an injected `fetch`, typed errors     |
-| `apps/live/lib/image-search/pick.ts`                  | `storeSearchResult`: download (full, else thumbnail) and store         |
-| `apps/live/hooks/ui/useImageSearch.ts`                | Search tab state: query, pages, status, picking                        |
-| `apps/live/components/panels/ImageSearchPane.tsx`     | The Search tab's form, grid, states and footer credit                  |
-| `apps/live/components/panels/ImagePicker.tsx`         | Third tab; `onSelect(image: PickedImage)` carries the credit           |
-| `apps/live/hooks/canvas/useEditorImages.ts`           | `applyImageToElement` sets / drops `credit`; detach drops it           |
-| `apps/live/components/palette/ElementContentSections` | Credit line in the Image section                                       |
-| `apps/help/app/policies/privacy-policy/page.mdx`      | Openverse named under Service providers                                |
+| File                                              | Role                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| `packages/document/src/image-credit.ts`           | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`      |
+| `packages/document/src/element-types.ts`          | `ImageElement.credit`                                              |
+| `packages/document/src/validate.ts`               | Image branch calls `isImageCredit` on `credit`                     |
+| `apps/live/lib/upload-image.ts`                   | `PickedImage`: what every picker tab hands back                    |
+| `apps/live/lib/image-search/openverse.ts`         | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`    |
+| `apps/live/lib/image-search/search.ts`            | `searchOpenverse`: one page over an injected `fetch`, typed errors |
+| `apps/live/lib/image-search/pick.ts`              | `storeSearchResult`: download (full, else thumbnail) and store     |
+| `apps/live/hooks/ui/useImageSearch.ts`            | Search tab state: query, pages, status, picking                    |
+| `apps/live/components/panels/ImageSearchPane.tsx` | The Search tab's form, grid, states and footer credit              |
+| `apps/live/components/panels/ImagePicker.tsx`     | Third tab; `onSelect(image: PickedImage)` carries the credit       |
+| `apps/live/hooks/canvas/useEditorImages.ts`       | `applyImageToElement` sets / drops `credit`; detach drops it       |
+| `apps/live/components/palette/ImageCreditRow.tsx` | Credit line, mounted in `ElementContentSections`' Image section    |
+| `apps/live/lib/telemetry-manifest.ts`             | `Element·Searched` in the emitted-pairs manifest                   |
+| `apps/telemetry/app/catalogue/content.ts`         | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing          |
+| `apps/telemetry/app/event-explanations.ts`        | Sentences for the two events                                       |
+| `apps/help/app/palette/tools/images/page.mdx`     | "Searching for an image" section                                   |
+| `apps/help/app/policies/privacy-policy/page.mdx`  | Openverse named under Service providers                            |
 
 ## Domain and naming
 
-| Term          | Identifier                     | Meaning                                                           |
-| ------------- | ------------------------------ | ----------------------------------------------------------------- |
-| Search result | `OpenverseImage`               | One parsed Openverse result: id, title, urls, size, creator, licence |
-| Results page  | `OpenverseSearchPage`          | `{ results, page, pageCount }`                                    |
-| Search error  | `OpenverseSearchError`         | Thrown by `searchOpenverse`; `.kind` is `'rate-limited' \| 'failed'` |
-| Credit        | `ImageCredit`                  | `{ text, sourceUrl, licenseUrl? }` on `ImageElement.credit`       |
-| Licence label | `licenceLabel(code, version)`  | `cc0` → `CC0 1.0`, `pdm` → `Public Domain Mark 1.0`, else `CC BY-SA 4.0` |
-| Picked image  | `PickedImage`                  | What the picker hands back: id, width, height, `originalName?`, `credit?` |
+| Term          | Identifier                    | Meaning                                                                   |
+| ------------- | ----------------------------- | ------------------------------------------------------------------------- |
+| Search result | `OpenverseImage`              | One parsed Openverse result: id, title, urls, size, creator, licence      |
+| Results page  | `OpenverseSearchPage`         | `{ results, page, pageCount }`                                            |
+| Search error  | `OpenverseSearchError`        | Thrown by `searchOpenverse`; `.kind` is `'rate-limited' \| 'failed'`      |
+| Credit        | `ImageCredit`                 | `{ text, sourceUrl, licenseUrl? }` on `ImageElement.credit`               |
+| Licence label | `licenceLabel(code, version)` | `cc0` → `CC0 1.0`, `pdm` → `Public Domain Mark 1.0`, else `CC BY-SA 4.0`  |
+| Picked image  | `PickedImage`                 | What the picker hands back: id, width, height, `originalName?`, `credit?` |
 
 Banned synonyms: "stock photo", "attribution" in code (say credit), "license" in UI copy (say
 licence), "Unsplash".
@@ -39,16 +45,16 @@ licence), "Unsplash".
 
 `useImageSearch` holds one state:
 
-| Field     | Type                                        | Initial  |
-| --------- | ------------------------------------------- | -------- |
-| `query`   | `string` (the submitted query, trimmed)     | `''`     |
-| `results` | `OpenverseImage[]`                          | `[]`     |
-| `page`    | `number` (last page loaded)                 | `0`      |
-| `pageCount` | `number`                                  | `0`      |
-| `status`  | `'idle' \| 'loading' \| 'ready' \| 'error'` | `'idle'` |
-| `error`   | `'rate-limited' \| 'failed' \| null`        | `null`   |
-| `pickingId` | `string \| null`                          | `null`   |
-| `pickError` | `string \| null`                          | `null`   |
+| Field       | Type                                        | Initial  |
+| ----------- | ------------------------------------------- | -------- |
+| `query`     | `string` (the submitted query, trimmed)     | `''`     |
+| `results`   | `OpenverseImage[]`                          | `[]`     |
+| `page`      | `number` (last page loaded)                 | `0`      |
+| `pageCount` | `number`                                    | `0`      |
+| `status`    | `'idle' \| 'loading' \| 'ready' \| 'error'` | `'idle'` |
+| `error`     | `'rate-limited' \| 'failed' \| null`        | `null`   |
+| `pickingId` | `string \| null`                            | `null`   |
+| `pickError` | `string \| null`                            | `null`   |
 
 Transitions:
 
@@ -62,7 +68,7 @@ Transitions:
    is dropped, so a slow first search can't overwrite a second.
 4. **Pick(result).** Guard: `pickingId === null`. Sets `pickingId`, clears `pickError`, runs
    `storeSearchResult`. Success: calls `onPicked({ id, width, height, originalName: title, credit })`
-   and tracks `Element / Added / ImageSearch` in the editor's apply step. Failure: `pickError` = the
+   and tracks `Element / Used / ImageSearch` in the editor's apply step. Failure: `pickError` = the
    copy for the failure; `pickingId = null`.
 
 `storeSearchResult(result, session, fetch)`:
@@ -109,7 +115,7 @@ non-2xx, a network error or a parse failure → `OpenverseSearchError('failed')`
   trimmed, then cut to 300 characters.
 - `licenseUrl` = `license_url` when it is an `http(s):` URL.
 
-`ImageCredit` validation (`isImageCredit` in `validate.ts`): object; `text` a string of 1 to 300
+`ImageCredit` validation (`isImageCredit` in `image-credit.ts`, called from `validate.ts`): object; `text` a string of 1 to 300
 characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 characters starting with
 `https://` or `http://`. Otherwise the element is invalid.
 
@@ -124,29 +130,29 @@ characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 charac
 
 ## Errors and edge cases
 
-| Case                                           | Handling                                                          |
-| ---------------------------------------------- | ----------------------------------------------------------------- |
-| Empty / whitespace query                       | Submit no-op; no request, no telemetry                           |
-| 429 from Openverse                             | `error = 'rate-limited'`, copy "Too many searches for now…"       |
-| Network / 5xx / malformed JSON                 | `error = 'failed'`, copy "Couldn't reach Openverse…"              |
-| Zero results                                   | `status = 'ready'`, empty copy with the query                     |
-| Load more past the last page                   | Button hidden when `page >= pageCount`                            |
-| Full image blocked by CORS / not an image      | Thumbnail fallback                                                |
-| Full image is SVG or > 50 MB source            | Pipeline rasterises SVG; > 50 MB is `too-large`, final (spec limit) |
-| Both downloads fail                            | "Couldn't download that image. Try another one."                  |
-| Gallery full / images unavailable / too large  | The pipeline failure's upload copy (table below)                  |
-| Offline Mode document                          | Session embeds as data URI; over budget → "too large" copy        |
-| Picker closed mid-pick                         | The store finishes; `onPicked` is ignored after unmount (D153)    |
-| Result with no landing URL                     | Stored without `credit`                                           |
+| Case                                          | Handling                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| Empty / whitespace query                      | Submit no-op; no request, no telemetry                              |
+| 429 from Openverse                            | `error = 'rate-limited'`, copy "Too many searches for now…"         |
+| Network / 5xx / malformed JSON                | `error = 'failed'`, copy "Couldn't reach Openverse…"                |
+| Zero results                                  | `status = 'ready'`, empty copy with the query                       |
+| Load more past the last page                  | Button hidden when `page >= pageCount`                              |
+| Full image blocked by CORS / not an image     | Thumbnail fallback                                                  |
+| Full image is SVG or > 50 MB source           | Pipeline rasterises SVG; > 50 MB is `too-large`, final (spec limit) |
+| Both downloads fail                           | "Couldn't download that image. Try another one."                    |
+| Gallery full / images unavailable / too large | The pipeline failure's upload copy (table below)                    |
+| Offline Mode document                         | Session embeds as data URI; over budget → "too large" copy          |
+| Picker closed mid-pick                        | The store finishes; `onPicked` is ignored after unmount (D153)      |
+| Result with no landing URL                    | Stored without `credit`                                             |
 
 Pick failure copy (`pickFailureMessage`):
 
-| Failure                         | Copy                                                              |
-| ------------------------------- | ----------------------------------------------------------------- |
-| `gallery-full`                  | Your image gallery is full. Delete some images and try again.     |
-| `images-unavailable`            | Image uploads are not available on this server.                   |
-| `too-large`, `offline-budget`   | That image is too large to add.                                   |
-| everything else                 | Couldn't download that image. Try another one.                    |
+| Failure                       | Copy                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| `gallery-full`                | Your image gallery is full. Delete some images and try again. |
+| `images-unavailable`          | Image uploads are not available on this server.               |
+| `too-large`, `offline-budget` | That image is too large to add.                               |
+| everything else               | Couldn't download that image. Try another one.                |
 
 ## Security and trust
 
@@ -203,32 +209,32 @@ Pick failure copy (`pickFailureMessage`):
 
 ## Observability
 
-| #   | Where                     | Level          | Fingerprint                                           |
-| --- | ------------------------- | -------------- | ----------------------------------------------------- |
-| O1  | Search failed             | `console.warn` | `[image-search] search failed kind=<kind> status=<n>` |
-| O2  | Full image fell back      | `console.info` | `[image-search] thumbnail fallback reason=<reason>`   |
-| O3  | Pick failed               | `console.warn` | `[image-search] pick failed failure=<failure>`        |
-| O4  | Pipeline outcome          | (pipeline)     | `[import-images] <outcome>`                           |
+| #   | Where                | Level          | Fingerprint                                           |
+| --- | -------------------- | -------------- | ----------------------------------------------------- |
+| O1  | Search failed        | `console.warn` | `[image-search] search failed kind=<kind> status=<n>` |
+| O2  | Full image fell back | `console.info` | `[image-search] thumbnail fallback reason=<reason>`   |
+| O3  | Pick failed          | `console.warn` | `[image-search] pick failed failure=<failure>`        |
+| O4  | Pipeline outcome     | (pipeline)     | `[import-images] <outcome>`                           |
 
 ## Testing
 
-| Rule                                                        | Test file                                           |
-| ----------------------------------------------------------- | --------------------------------------------------- |
-| URL carries q, page, page_size 20, licence filter, mature   | `apps/live/lib/image-search/openverse.test.ts`      |
-| Parse keeps valid results, drops broken ones, rejects junk  | `apps/live/lib/image-search/openverse.test.ts`      |
-| Credit text, licence labels, no landing URL → no credit     | `apps/live/lib/image-search/openverse.test.ts`      |
-| 429 → rate-limited; 500, network, bad JSON → failed         | `apps/live/lib/image-search/search.test.ts`         |
-| Full image stored; CORS / non-image / unsupported → thumb   | `apps/live/lib/image-search/pick.test.ts`           |
-| Gallery-full is final; both downloads fail → download-failed | `apps/live/lib/image-search/pick.test.ts`          |
-| `credit` validation accepts good, rejects bad text / URLs   | `packages/document/src/validate.test.ts`            |
-| Search tab end to end                                       | Browser verification (no e2e: external network)     |
+| Rule                                                         | Test file                                       |
+| ------------------------------------------------------------ | ----------------------------------------------- |
+| URL carries q, page, page_size 20, licence filter, mature    | `apps/live/lib/image-search/openverse.test.ts`  |
+| Parse keeps valid results, drops broken ones, rejects junk   | `apps/live/lib/image-search/openverse.test.ts`  |
+| Credit text, licence labels, no landing URL → no credit      | `apps/live/lib/image-search/openverse.test.ts`  |
+| 429 → rate-limited; 500, network, bad JSON → failed          | `apps/live/lib/image-search/search.test.ts`     |
+| Full image stored; CORS / non-image / unsupported → thumb    | `apps/live/lib/image-search/pick.test.ts`       |
+| Gallery-full is final; both downloads fail → download-failed | `apps/live/lib/image-search/pick.test.ts`       |
+| `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`        |
+| Search tab end to end                                        | Browser verification (no e2e: external network) |
 
 ## Constants and configuration
 
-| Name                         | Value                              | Provenance / safe range                               |
-| ---------------------------- | ---------------------------------- | ----------------------------------------------------- |
-| `OPENVERSE_API_BASE`         | `https://api.openverse.org/v1`     | Openverse public API                                  |
-| `OPENVERSE_PAGE_SIZE`        | `20`                               | Openverse's anonymous maximum; 1 to 20                |
-| `OPENVERSE_LICENSE_TYPE`     | `commercial,modification`          | Spec "Which pictures"                                 |
-| `IMAGE_CREDIT_TEXT_MAX`      | `300`                              | Spec validation; a credit line, not prose             |
-| `IMAGE_CREDIT_URL_MAX`       | `2048`                             | Spec validation; common URL ceiling                   |
+| Name                     | Value                          | Provenance / safe range                   |
+| ------------------------ | ------------------------------ | ----------------------------------------- |
+| `OPENVERSE_API_BASE`     | `https://api.openverse.org/v1` | Openverse public API                      |
+| `OPENVERSE_PAGE_SIZE`    | `20`                           | Openverse's anonymous maximum; 1 to 20    |
+| `OPENVERSE_LICENSE_TYPE` | `commercial,modification`      | Spec "Which pictures"                     |
+| `IMAGE_CREDIT_TEXT_MAX`  | `300`                          | Spec validation; a credit line, not prose |
+| `IMAGE_CREDIT_URL_MAX`   | `2048`                         | Spec validation; common URL ceiling       |

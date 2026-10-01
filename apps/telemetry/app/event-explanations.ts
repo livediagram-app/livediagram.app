@@ -355,6 +355,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone asked everyone else in the room to jump to this element's spot on the canvas.",
   'Element|Used|ReactionPad':
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
+  'Element|Searched|Image':
+    "Someone searched for openly licensed pictures in the image picker's Search tab.",
+  'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
   'Email|Sent|DocumentJoined':
@@ -938,6 +941,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'A group was disbanded back into individual elements (before groups were removed).',
   'Element|Unlinked': 'Someone cleared the link off an element.',
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
+  'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
   'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
   'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
