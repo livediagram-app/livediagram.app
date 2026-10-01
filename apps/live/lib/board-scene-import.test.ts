@@ -134,7 +134,8 @@ describe('importBoardsAsDocuments', () => {
     // Find the label length that lands the tab exactly at the cap.
     await run('', true);
     const base = tabDataBytes(made.pop()!.tabs[0]!);
-    const atCap = 'x'.repeat(MAX_TAB_BYTES - base);
+    // The probe's label is ' x' (two characters).
+    const atCap = 'x'.repeat(MAX_TAB_BYTES - base + 2);
     expect((await run(atCap, false)).status).toBe('done');
     expect(tabDataBytes(made.pop()!.tabs[0]!)).toBe(MAX_TAB_BYTES);
     const over = await run(atCap + 'x', false);

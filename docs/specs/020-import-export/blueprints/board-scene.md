@@ -393,7 +393,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
   than `MAX_TAB_BYTES` (`@livediagram/api-schema`, the worker's own cap, [Tab size](../../015-api/api.md#tab-size))
   fails before any request, and an `ApiError` with status 413 from the create fails the same way: the
   failure `BOARD_TOO_BIG` "This board is too big for one document", logged
-  `console.warn('[board-scene] board too big', { board, bytes })` (the serialised tab's size).
+  `console.warn('[board-scene] board too big', { board, bytes, cap })` (the tab's stored bytes, `tabDataBytes`, and `MAX_TAB_BYTES`).
 - Measured on `syntheticInkBoard(3000, 120)` (`test-scenes.ts`: 360,000 pressure points): 25.6 MB of
   landed JSON before, 11.7 MB after; points dominate (about three quarters), then pressures.
 

@@ -21,6 +21,7 @@ import {
   type ImportImageReport,
 } from '@/lib/import-images';
 import type { ImportOutcome } from '@/lib/import-tab';
+import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { ApiError, apiCreateDocument } from '@/lib/api-client';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
@@ -180,6 +181,14 @@ export async function importBoardsAsDocuments(
       elements: done.elements,
       templateChosen: true,
     };
+    // The worker's own cap (D1's row, docs/specs/015-api/api.md "Tab size"), checked here first so a
+    // board that cannot fit is named at once. This browser's store has no row cap: offline, it lands.
+    const bytes = tabDataBytes(tab);
+    if (!o.offline && bytes > MAX_TAB_BYTES) {
+      console.warn('[board-scene] board too big', { board: i + 1, bytes, cap: MAX_TAB_BYTES });
+      failures.push({ title: name, message: BOARD_TOO_BIG });
+      continue;
+    }
     try {
       await createDocument({
         id,
@@ -191,11 +200,8 @@ export async function importBoardsAsDocuments(
       });
     } catch (error) {
       if (error instanceof ApiError && error.status === 413) {
-        // Over the api's tab cap (MAX_TAB_BYTES): no retry will help, so say what it is.
-        console.warn('[board-scene] board too big', {
-          board: i + 1,
-          bytes: JSON.stringify(tab).length,
-        });
+        // The server refused it as too large after all: no retry will help, so say what it is.
+        console.warn('[board-scene] board too big', { board: i + 1, bytes, cap: MAX_TAB_BYTES });
         failures.push({ title: name, message: BOARD_TOO_BIG });
         continue;
       }
