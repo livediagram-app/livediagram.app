@@ -91,6 +91,8 @@ describe('stroke points on the way in', () => {
   it('refuses a body that is not a tab without throwing', async () => {
     const db = sqliteD1();
     await call(db, 'POST', '/api/documents', { id: 'D', name: 'Board' });
+    const withNull = { id: 't1', name: 'B', elements: [legacyStroke, null] };
+    expect((await call(db, 'PUT', '/api/documents/D/tabs/t1', withNull)).status).toBe(400);
     expect((await call(db, 'PUT', '/api/documents/D/tabs/t1', null)).status).toBe(400);
     expect((await call(db, 'PUT', '/api/documents/D/tabs/t1', 'tab')).status).toBe(400);
     const created = await call(db, 'POST', '/api/documents', { id: 'E', name: 'B', tabs: [null] });

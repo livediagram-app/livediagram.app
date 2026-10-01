@@ -1,5 +1,6 @@
 // Change log (per-document audit) — see docs/specs/012-collaboration/activity-and-audit.md
 import { CHANGE_LOG_TAB_NOT_SAVED, type ChangeLogEntry } from '@livediagram/api-schema';
+import { migrateChangeLogEntry } from '../change-log-migrate';
 import { dedupeInFlight } from '../dedupe';
 import {
   offlineAppendChangeLogEntry,
@@ -30,12 +31,14 @@ async function _apiListChangeLog(
   shareCode?: string | null,
 ): Promise<ChangeLogEntry[]> {
   // Offline Mode (docs/specs/006-document/offline-mode.md): the log lives in the document's IndexedDB record.
-  if (await isOfflineId(id)) return offlineListChangeLog(id);
+  // Entries hold elements as they were written; Revert applies them, so each is migrated to the
+  // current stored shapes first (docs/specs/006-document/stroke-points.md).
+  if (await isOfflineId(id)) return (await offlineListChangeLog(id)).map(migrateChangeLogEntry);
   const res = await apiFetch(`${API_BASE}/documents/${id}/log`, {
     headers: await apiHeaders(ownerId, { share: shareCode ?? null }),
   });
   const { entries } = await expectOk<ChangeLogListResponse>(res, 'list change log');
-  return entries;
+  return entries.map(migrateChangeLogEntry);
 }
 export const apiListChangeLog = dedupeInFlight(
   _apiListChangeLog,

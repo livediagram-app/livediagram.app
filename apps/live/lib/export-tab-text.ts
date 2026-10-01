@@ -19,7 +19,9 @@ import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from '@livedi
 // `schemaVersion` is intentionally numeric + monotonic — when the
 // Tab shape changes incompatibly we bump it; the import path checks
 // `<= CURRENT` and either accepts or refuses with a clear error.
-export const TAB_SCHEMA_VERSION = 1;
+// 2: freehand points are packed (docs/specs/006-document/stroke-points.md); a version 1 file
+// imports through the stored-tab migration, and an older editor refuses a version 2 file.
+export const TAB_SCHEMA_VERSION = 2;
 
 export type ExportedTabEnvelope = {
   schemaVersion: number;

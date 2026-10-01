@@ -32,6 +32,7 @@ import {
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
+import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { shareLinkOpEffect } from './share-link-ops';
 import { joinRefusedBecauseTrashed } from './room-refusal';
@@ -498,7 +499,9 @@ export function useRoomConnection(opts: {
 
     const handlers: RoomHandlers = {
       onPresence: (participants) => roomPresence(participants),
-      onOp: (from, op) => roomOp(from, op, presence),
+      // Elements in a former stored shape from a peer loaded before a deploy are migrated
+      // before anything applies them (docs/specs/006-document/stroke-points.md).
+      onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       onDocumentTrashed: () => roomDocumentTrashed(),

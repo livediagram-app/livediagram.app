@@ -80,9 +80,13 @@ pen's pressure at each point when it reported one. It replaces the former `point
   tab file imports, and change-log entries applied by Revert. Each runs the same migration
   before validation, so nothing downstream ever sees the former shape.
 - The migration is idempotent: a stroke already carrying `packedPoints` is returned unchanged.
-- The tab export file's `schemaVersion` becomes `2`. A version 1 file imports through the
-  migration; an older editor refuses a version 2 file with its existing "update the editor"
-  message.
+- The tab export file's `schemaVersion` and the clipboard payload's become `2`, because the
+  browser reads both directly: a version 1 file or payload imports through the migration, and an
+  older editor refuses a version 2 one (a file with its existing "update the editor" message)
+  rather than pasting strokes it cannot draw.
+- The document file (the Google Drive mirror's format) stays at version 1: it is only ever read
+  into the api's document create, which migrates, so bumping it would only make the mirror
+  rewrite every file once.
 
 ## The wire
 

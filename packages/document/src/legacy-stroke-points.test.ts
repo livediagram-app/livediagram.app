@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { migrateLegacyStrokePoints } from './legacy-stroke-points';
-import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
+import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import {
   STROKE_POINT_MAX_ERROR,
   STROKE_PRESSURE_MAX_ERROR,
@@ -154,8 +154,24 @@ describe('migrateIncomingTab', () => {
       elements: FreehandElement[];
     };
     expect(typeof tab.elements[0]!.packedPoints).toBe('string');
-    for (const junk of [null, 'tab', 3, [], { elements: 'none' }]) {
+    for (const junk of [
+      null,
+      'tab',
+      3,
+      [],
+      { elements: 'none' },
+      { elements: [legacyStroke(), null] },
+    ]) {
       expect(migrateIncomingTab(junk)).toBe(junk);
     }
+  });
+});
+
+describe('migrateIncomingElements', () => {
+  it('migrates untrusted elements and drops anything that is not an object', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const out = migrateIncomingElements([legacyStroke(), null, 'x', 4]);
+    expect(out).toHaveLength(1);
+    expect(typeof (out[0] as FreehandElement).packedPoints).toBe('string');
   });
 });

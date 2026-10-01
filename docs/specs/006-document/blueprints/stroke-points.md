@@ -160,10 +160,17 @@ export function migrateLegacyStrokePoints(elements: Element[]): Element[]; // id
   (`freehandPenStroke`, `penStrokeSvg`), the eraser (`freehandAbsolutePoints`,
   `strokeTouchesBrush`, `inkHalfWidth`), the Excalidraw exporter.
 - **Migration entry points:** `migrateStoredTab` (api tab read, thumbnail, offline store, import
-  merge) gains `migrateLegacyStrokePoints` through `migrateStoredElements`; plus the api's create
-  and tab save (before `isValidTab`), `migrateRoomOp` on every received room op (`tab`, `el`),
-  `parseClipboardPayload`, `parseImportedTab` (tab file import), and change-log entries as the
-  editor receives them (`apiListChangeLog` and the room's `log` op) before Revert can apply them.
+  merge) gains `migrateLegacyStrokePoints` through `migrateStoredElements`. Untrusted input goes
+  through two guards in `stored-tab.ts`: `migrateIncomingTab(tab: unknown): unknown` (an object
+  whose elements are all objects is migrated, anything else passes through for validation to
+  refuse) and `migrateIncomingElements(elements: readonly unknown[]): Element[]` (non-objects
+  dropped). Callers: the api's create and tab save (`migrateIncomingTab` before `isValidTab`),
+  `migrateRoomOp` on every received room op (`tab`, `el` add and update, `log`),
+  `parseElementsPayload` (clipboard) and `parseImportedTab` (tab file) via
+  `migrateIncomingElements` before `isValidElement`, and `migrateChangeLogEntry` on entries from
+  `apiListChangeLog` (online and offline) and the room's `log` op, before Revert can apply them.
+- **Versions:** `TAB_SCHEMA_VERSION` and `CLIPBOARD_SCHEMA_VERSION` become 2;
+  `DOCUMENT_SCHEMA_VERSION` stays 1 (read only into the api's create).
 
 ## Inventory of readers and writers
 
@@ -188,10 +195,10 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Style presets       | `apps/live/lib/style-presets.ts`                                                     | re-pack without pressures                                     |
 | Excalidraw export   | `apps/live/lib/excalidraw-export.ts`                                                 | decode                                                        |
 | Excalidraw import   | `apps/live/lib/excalidraw-import.ts`                                                 | `packFreehandPoints`                                          |
-| Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`                                   | `migrateRoomOp` on receipt                                    |
-| Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`                               |
-| Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab.ts`                                       | migrate; `TAB_SCHEMA_VERSION` 2                               |
-| Change log          | `apps/live/lib/api/change-log.ts`, room `log` op                                     | migrate entry states                                          |
+| Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                    |
+| Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2 |
+| Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                               |
+| Change log          | `apps/live/lib/api/change-log.ts`, `change-log-migrate.ts`, room `log` op            | `migrateChangeLogEntry`                                       |
 | Api writes          | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`                 | `migrateStoredTab` before `isValidTab`                        |
 | Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                   |
 | Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                  |
@@ -289,7 +296,9 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | SVG export within the bound                                            | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
 | Api migrates former shape on create and save                           | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
 | Clipboard and tab import migrate                                       | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Change-log entries migrate                                             | `apps/live/lib/api/change-log.test.ts`                                              |
+| Room ops migrated on receipt                                           | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
+| Untrusted tabs and elements: migrated or passed through                | `packages/document/src/legacy-stroke-points.test.ts`                                |
+| Change-log entries migrate                                             | `apps/live/lib/change-log-migrate.test.ts`                                          |
 | Live ink matches landed ink within the bound                           | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
 
 ## Constants and configuration
