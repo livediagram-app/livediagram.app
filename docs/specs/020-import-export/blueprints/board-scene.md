@@ -25,9 +25,10 @@ Scope, by file:
 | `apps/live/lib/board-scene/land.ts`                                       | `landBoardScene`: validation, limits, ordering, ids, tab patch, logging                           |
 | `apps/live/lib/board-scene/attach.ts`                                     | `sceneImageSource`: a `SceneAsset` as an `ImportImageSource`                                      |
 | `apps/live/hooks/canvas/useBoardSceneInsert.ts`                           | Paste / drop: land at a point, images, one commit, select, notice state                           |
+| `apps/live/lib/board-scene-import.ts`                                     | `importBoardsAsDocuments`, `finishLanding`: the new-document target, editor-free                  |
 | `apps/live/hooks/persistence/useBoardSceneImport.ts`                      | Import commit paths: replace-tab, new-document                                                    |
 | `apps/live/lib/board-scene-hug.ts`                                        | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
-| `apps/live/hooks/canvas/board-scene-browser.ts`                           | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
+| `apps/live/lib/board-scene-browser.ts`                                    | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
 | `apps/live/components/dialogs/ImportImageReport.tsx`                      | The dialog's result view: scene report, board failures, images                                    |
 | `apps/live/lib/quick-style-applicability.ts`                              | `quickStyleApplicability`, `quickStyleCaption`                                                    |
 | `apps/live/lib/reset-colours.ts`                                          | "Reset to theme" per element, named colours included                                              |
@@ -321,19 +322,24 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
   Composed in `useTabActions` (with `useTabImport`'s `replaceActiveTabContent`) and returned through
   `useEditorState`.
 
-- `importScenesAsNewDocuments(scenes, onProgress)`: per scene, `boardDocumentDates(scene, now)`
-  and `boardDocumentName(scene, createdAt)` (`lib/board-scene/board-document.ts`), the landing
-  (`whiteboard` / `origin`), its images (progress per board: `BoardImportProgress` `{ board, boards,
-done, total }`) and text hug, then `createDocument({ id, name, tabs: [tab], createdAt?, savedAt? })`
-  with one tab `{ name: 'Whiteboard', kind, backgroundPattern, elements, templateChosen: true }`.
-  `createDocument` defaults to `apiCreateDocument` (cloud), or `offlineCreateDocument(.., dates)`
-  when the open document is an Offline Mode one (`isOfflineId`); the image session takes the open
-  document's id, so an offline import embeds. Per document: `track('Document', 'Created',
-'Cloud' | 'Offline')` and `track('Whiteboard', 'Created', 'Import')`. A rejected landing or a failed
-  create is listed in `failures` (`{ title: name, message }`; a failed create "The document couldn't
-  be created. Try again."), the rest still land; none landing is an `error` outcome. Reports and
-  image reports add up; unreadable dates add the degraded rule `UNREADABLE_DATES_RULE`. Afterwards
-  `onDocumentsCreated` (the Explorer list refresh). The open document is not touched.
+- `importScenesAsNewDocuments(scenes, onProgress)`: `importBoardsAsDocuments` with the open
+  document deciding `offline` (`isOfflineId`).
+- `importBoardsAsDocuments(scenes, { ownerId, offline, folderId?, onProgress?, onDocumentsCreated?,
+createDocument?, createImageSession?, hugText? })` (`apps/live/lib/board-scene-import.ts`, no editor
+  state, so the Explorer page calls it directly): per scene, `boardDocumentDates(scene, now)` and
+  `boardDocumentName(scene, createdAt)` (`lib/board-scene/board-document.ts`), the landing
+  (`whiteboard` / `origin`), `finishLanding` (images through a session made with `{ ownerId,
+documentId: null, offline }`, progress per board: `BoardImportProgress` `{ board, boards, done,
+total }`; the text hug), then `createDocument({ id, name, tabs: [tab], folderId?, createdAt?,
+savedAt? })` with one tab `{ name: 'Whiteboard', kind, backgroundPattern, elements,
+templateChosen: true }`. `createDocument` defaults to `apiCreateDocument` (cloud) or
+  `offlineCreateDocument(.., { createdAt, savedAt, folderId })` (offline). Per document:
+  `track('Document', 'Created', 'Cloud' | 'Offline')` and `track('Whiteboard', 'Created', 'Import')`.
+  A rejected landing or a failed create is listed in `failures` (`{ title: name, message }`; a failed
+  create "The document couldn't be created. Try again."), the rest still land; none landing is an
+  `error` outcome. Reports and image reports add up (`addReports`, `addImageReports`); unreadable
+  dates add the degraded rule `UNREADABLE_DATES_RULE`. Afterwards `onDocumentsCreated`.
+- `createBrowserImportImageSession` takes an optional `offline` that overrides the document-id check.
 - `boardDocumentDates`: ISO `createdAt` / `modifiedAt` parsed with `Date.parse`, then the api's own
   rule (`documentDates`, `@livediagram/api-schema`): both when both hold; `createdAt` alone when only
   it does (`unreadable` when a modified date was given); none, `unreadable` when any date was given.

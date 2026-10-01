@@ -46,10 +46,12 @@ throws. Only the parse stage has to be pure.
      whiteboard tab, **named after the board** (an untitled board: "Whiteboard,
      14 Aug 2020", its created date) and **dated as the board** (its created
      and last-modified dates, see [Document dates](../015-api/api.md#document-dates)),
-     filed in Unsorted (the Microsoft Whiteboard card). A board that cannot land
-     is named in the report and the rest still do; the open document is left
-     as it was. A new document made from an Offline Mode document is an
-     Offline Mode document too, as a copy is;
+     filed in the folder the import was started from (the Explorer's), else
+     Unsorted (the Microsoft Whiteboard import). A board that cannot land is
+     named in the report and the rest still do; an open document is left as it
+     was. It needs no open document: from the editor, an Offline Mode document
+     makes Offline Mode documents too, as a copy does; from the Explorer, the
+     caller says which;
    - **insert-at-point**: the elements join the active tab at a point and are
      selected (a paste or a drop).
 

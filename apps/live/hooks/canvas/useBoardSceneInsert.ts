@@ -26,7 +26,7 @@ import {
   browserImageSession,
   type CreateImageSession,
   type HugText,
-} from './board-scene-browser';
+} from '@/lib/board-scene-browser';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 export type BoardSceneSource = BoardScene['source'];

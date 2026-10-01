@@ -9,6 +9,7 @@ import type { MeasureTextBlock } from '@/lib/text-hug';
 export type CreateImageSession = (o: {
   ownerId: string;
   documentId: string | null;
+  offline?: boolean;
 }) => Promise<ImportImageSession>;
 export type HugText = (elements: Element[], tabFont: string | undefined) => Promise<Element[]>;
 
