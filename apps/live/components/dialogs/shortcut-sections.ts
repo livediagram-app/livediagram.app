@@ -82,6 +82,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },
+      { keys: ['Shift', 'draw'], label: 'Keep a marker for another stroke' },
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },

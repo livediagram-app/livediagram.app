@@ -139,8 +139,9 @@ export function makeCommitFreehand({
     if (whiteboardPen) {
       const stroke = whiteboardStroke(simplified, whiteboardPen, ink);
       commit((els) => [...els, stroke]);
-      // One-shot (a diagram tab's marker): put down and select the stroke, as Freehand does.
-      if (whiteboardPen.oneShot) {
+      // One-shot (a diagram tab's marker): put down and select the stroke, as Freehand does,
+      // unless Shift was held at the lift to keep it for another stroke.
+      if (whiteboardPen.oneShot && !ink?.keepArmed) {
         setSelectedId(stroke.id);
         setPendingDraw(null);
       }
@@ -249,6 +250,8 @@ type WhiteboardPenIntent = Extract<PendingDraw, { variant: 'whiteboard' }>;
 export type PenInk = Pick<FreehandElement, 'pressures' | 'streamline'> & {
   snapped?: RecognisedShape;
   keepInk?: true;
+  // Shift was held as the pen lifted: a one-shot marker stays armed.
+  keepArmed?: true;
 };
 
 // What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape

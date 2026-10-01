@@ -71,6 +71,14 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setSelectedId).toHaveBeenCalledWith(s.elements[0]!.id);
   });
 
+  it('keeps a one-shot marker armed when Shift is held at the lift', () => {
+    const s = setup(pen({ oneShot: true }));
+    s.commit(scribble, false, { streamline: 0, keepArmed: true });
+    expect(s.elements).toHaveLength(1);
+    expect(s.setPendingDraw).not.toHaveBeenCalled();
+    expect(s.setSelectedId).not.toHaveBeenCalled();
+  });
+
   it('puts a one-shot marker down on a stray tap too', () => {
     const s = setup(pen({ oneShot: true }));
     s.commit([{ x: 0, y: 0 }], false);

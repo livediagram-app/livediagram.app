@@ -54,7 +54,7 @@ export function useWhiteboardPenGesture({
     return rect ? pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom) : null;
   });
   const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
-  const commitStroke = useEffectEvent((stroke: LiveStroke) => {
+  const commitStroke = useEffectEvent((stroke: LiveStroke, shiftAtLift: boolean) => {
     if (stroke.points.length < 2) return;
     console.debug(
       `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
@@ -65,6 +65,9 @@ export function useWhiteboardPenGesture({
       streamline: stroke.streamline,
       // Lifting lands what shows: the shape, or ink broken out of one, never re-read as a shape.
       ...(snapped ? { snapped } : stroke.keepsInk() ? { keepInk: true as const } : {}),
+      // Shift held at the lift keeps a one-shot marker armed for another stroke
+      // (docs/specs/023-whiteboard/whiteboard.md "The markers on diagram tabs").
+      ...(shiftAtLift ? { keepArmed: true as const } : {}),
     });
   });
 
@@ -117,7 +120,7 @@ export function useWhiteboardPenGesture({
       // shape lands as it showed.
       const p = canvasPoint(e);
       if (p) stroke.push(p.x, p.y);
-      commitStroke(stroke);
+      commitStroke(stroke, e.shiftKey);
     };
     const onCancel = (e: PointerEvent) => {
       if (!mine(e)) return;

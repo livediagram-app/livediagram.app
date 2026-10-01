@@ -255,7 +255,9 @@ The shapes group learns and keeps the shapes a user reaches for.
   way round. A tile arms its marker for **one stroke**, as Freehand is armed: the
   stroke commits selected and the marker goes down, so the next press selects rather than inks
   (held, as on a board, made every press on a diagram a new stroke). It wears the one-shot "Drag
-  to draw" banner with Cancel, and the tile shows pressed while it is armed, wearing the marker's own glyph in its colour; with a marker in hand and nothing selected,
+  to draw" banner with Cancel. **Holding Shift as the pen lifts** keeps the marker armed for
+  another stroke (nothing selected), so a few strokes in a row need no re-pick; Shift has no other
+  job for a diagram tab's marker, which never recognises shapes. The tile shows pressed while it is armed, wearing the marker's own glyph in its colour; with a marker in hand and nothing selected,
   the quick style panel offers its colour and width as it does on a board. Two more differences
   from a board: a diagram tab's markers **never recognise shapes**, whatever the dock's Drawing setting
   (on a diagram the Shape Pen is the recognising pen, a tile you choose rather than a remembered
