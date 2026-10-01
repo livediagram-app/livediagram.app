@@ -398,6 +398,8 @@ The shapes group learns and keeps the shapes a user reaches for.
 
 ## Selecting
 
+Picking by the drawn line holds **on every tab** ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Picking by the drawn line"); the Shift rule below is the whiteboard's own.
+
 - **A pen stroke is picked by its drawn line**, not its box: a click within
   6 screen px of the line (either side, at any zoom) selects it, and a click
   elsewhere in its box passes through to whatever is beneath, or the board.

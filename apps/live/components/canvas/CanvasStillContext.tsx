@@ -16,9 +16,3 @@ export function CanvasStillProvider({ still, children }: { still: boolean; child
 export function useCanvasStill(): boolean {
   return useContext(CanvasStillContext);
 }
-
-// The still canvas is the whiteboard's, which also picks a shape by its drawn
-// outline rather than its box (docs/specs/023-whiteboard/whiteboard.md "Selecting").
-export function useCanvasPicksByOutline(): boolean {
-  return useContext(CanvasStillContext);
-}

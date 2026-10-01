@@ -10,17 +10,17 @@ import { strokeHitWidth } from '@/lib/whiteboard-tool';
 
 /**
  * Whether the element is picked by its drawn outline right now: a shape of an
- * outline kind, on a whiteboard, not selected (a selected shape drags by its box).
+ * outline kind, on any tab, not selected (a selected shape drags by its box).
  */
-export function outlineHit(
-  element: Element,
-  at: { onWhiteboard: boolean; selected: boolean },
-): element is ShapeElement {
-  return at.onWhiteboard && !at.selected && pickedByOutline(element);
+export function outlineHit(element: Element, at: { selected: boolean }): element is ShapeElement {
+  return !at.selected && pickedByOutline(element);
 }
 
-// A whiteboard shape not yet selected is picked by its drawn outline, not its box
-// (docs/specs/023-whiteboard/whiteboard.md "Selecting"): its wrapper lets pointers
+// A shape not yet selected is picked by its drawn outline, not its box, on every tab
+// (docs/specs/023-whiteboard/whiteboard.md "Selecting"; docs/specs/008-canvas/canvas-and-palette.md
+// "Picking by the drawn line"). A shape with a visible fill is still picked anywhere on it, so a
+// diagram's default filled shapes pick as before; an unfilled one passes its empty inside through
+// to what is beneath. Its wrapper lets pointers
 // through, and this invisible copy of the outline (shape-hit.ts, the eraser's same
 // geometry) catches them 6 screen px either side of the line, plus anywhere on a
 // visible fill. It rides inside the wrapper, so it turns with the shape.

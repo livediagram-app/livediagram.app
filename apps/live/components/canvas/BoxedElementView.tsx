@@ -28,7 +28,6 @@ import { captionBandAlignY, captionBandClass } from '@/components/primitives/ico
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
-import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
@@ -262,9 +261,8 @@ function BoxedElementViewImpl({
       element.type === 'path') &&
     !isSelected &&
     !isMultiSelected;
-  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
-  const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
+  // A shape likewise, by its drawn outline (ShapeHitOutline, below).
+  const shapeHit = outlineHit(element, { selected: isSelected || isMultiSelected });
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px

@@ -72,19 +72,15 @@ describe('ShapeHitOutline', () => {
 });
 
 describe('outlineHit', () => {
-  const free = { onWhiteboard: true, selected: false };
+  const free = { selected: false };
 
-  it('picks an unselected whiteboard shape by its outline', () => {
+  it('picks an unselected shape by its outline, on every tab', () => {
     expect(outlineHit(shape(), free)).toBe(true);
     expect(outlineHit(shape({ shape: 'square' }), free)).toBe(true);
   });
 
   it('gives a selected shape its box back, for dragging', () => {
     expect(outlineHit(shape(), { ...free, selected: true })).toBe(false);
-  });
-
-  it('keeps whole-box picking on a diagram tab', () => {
-    expect(outlineHit(shape(), { ...free, onWhiteboard: false })).toBe(false);
   });
 
   it('keeps the box of a note, a text box and a kind that paints its own face', () => {
