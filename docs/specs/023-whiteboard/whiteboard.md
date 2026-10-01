@@ -139,7 +139,9 @@ centred across the **top** of the canvas by default (see
   flyout with no title of its own and three sections, each headed in the
   flyouts' small capitals and a row of the same switch buttons, top to
   bottom: **Background** (Plain / Dots / Grid), **Cursor** (Crosshair + nib,
-  the default / Dot) and **Drawing** (Basic / Shape recognition). Text and
+  the default / Dot) and **Drawing** (Basic / Shape recognition). A fourth,
+  **Colours**, follows only while the board has custom colours to snap (see
+  [Snap colours](#snap-colours)). Text and
   the Path tool are always in the drawing tools bar; nothing hides them.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
@@ -607,6 +609,44 @@ which already follows the reader's light or dark appearance
 - A document's theme applies to its diagram tabs only; a whiteboard tab in a
   themed document still shows the whiteboard look.
 
+## Snap colours
+
+A board keeps every custom colour exactly as it was drawn, pasted or
+imported. One option converts them all at once into the board's stock
+colours, so a board brought in from elsewhere (or coloured by hand) adapts to
+light and dark boards like everything drawn with the stock colours.
+
+- **Where:** a **Colours** section, the last of the dock's Settings
+  flyout, after Drawing (the flyout opens on the board side of the dock,
+  wherever [the dock sits](#where-the-dock-sits)), shown **only while the board has custom colours it
+  can snap**. It names how many ("3 custom colours"), shows them as small
+  swatches (at most eight, most recently drawn first, as the quick style
+  panel's custom section does), and offers one button: **Snap to stock
+  colours**.
+- **What it converts:** every custom (`#rrggbb`) colour held in a field that
+  has a stock counterpart: a marker stroke's colour, a shape's outline, a
+  line's or arrow's colour. These are the custom colours the quick style
+  panel's custom section offers. Further kinds join as they gain a stock
+  colour field.
+- **The rule:** each colour is read in OKLCH.
+  - A **neutral** colour (chroma under 0.05: black, grey, white, slate)
+    becomes **Ink**, the board's own.
+  - Any other colour becomes the stock colour **nearest in hue** (Blue, Red,
+    Orange, Green, Teal, Violet, Pink); a tie goes to the earlier in the
+    picker's order. Lightness and chroma are not compared: each stock colour
+    takes its lightness from the board it is shown on. So a magenta lands on
+    Pink, a brown on Orange, a yellow on whichever of Orange and Green is
+    nearer in hue.
+- **Never touched:** elements already in a stock colour or the ink,
+  highlighter strokes (their recipe owns their colour), fills (a whiteboard
+  has no stock fills), text colours and shape labels, an arrow's separate head
+  colour, images, locked elements and elements on locked or hidden layers.
+- **One undo step**; collaborators receive it as any edit. Snapping is
+  unavailable (the button disabled) while the board cannot be edited.
+- **Confirmation:** the section then says "3 custom colours snapped to stock
+  colours" as a polite status, in place of the button, until the flyout
+  closes. Undo brings the colours back, and with them the section.
+
 ## Keyboard shortcuts
 
 On a whiteboard the plain-key shortcuts are the dock's, and only these
@@ -677,6 +717,7 @@ Preset-enum events only, never content, under a `Whiteboard` category:
 | Eraser mode switched      | `Changed`  | `EraserStroke`, `EraserPartial`                          |
 | Shape recognition toggled | `Toggled`  | `RecognitionOn`, `RecognitionOff`                        |
 | Background changed        | `Changed`  | `BackgroundPlain`, `BackgroundDots`, `BackgroundGrid`    |
+| Custom colours snapped    | `Changed`  | `SnapColours` (never a colour or a count)                |
 
 A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.
@@ -684,7 +725,7 @@ through the ordinary `Element` / `Added` events.
 ## Help centre ([Help app](../018-help/help-app.md))
 
 One article, **Whiteboards**: creating one, the dock, pens, pen versus touch,
-the two erasers, shape recognition and backgrounds. Registered per
+the two erasers, shape recognition, backgrounds and snapping custom colours. Registered per
 [Register a help article](../../instructions/register-a-help-article.md).
 
 ## Rounds

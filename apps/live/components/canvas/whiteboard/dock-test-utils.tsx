@@ -44,6 +44,7 @@ export function dockModel(
     setRecognition: vi.fn(),
     setCursor: vi.fn(),
     setBackground: vi.fn(),
+    snapColours: { colours: [], blocked: false, snap: vi.fn(() => 0) },
     ...over,
   };
 }

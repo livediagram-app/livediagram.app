@@ -4,9 +4,13 @@ import {
   PEN_COLOUR_NAMES,
   WHITEBOARD_BOARD,
   WHITEBOARD_INK,
+  PEN_NEUTRAL_CHROMA,
   contrastRatio,
+  hexOklch,
   isCustomPenColour,
   isPenColourName,
+  nearestPenColour,
+  penColourAtHue,
   penColourCss,
   penColourHardToSee,
   penColourHex,
@@ -76,5 +80,89 @@ describe('pen stock colours', () => {
       expect(penColourHardToSee(fixed), `${hex} -> ${fixed}`).toEqual([]);
     }
     expect(readablePenColour('#D9480F')).toBe('#d9480f');
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Snap colours": a neutral custom colour becomes the ink,
+// any other the stock colour nearest in hue.
+describe('nearestPenColour', () => {
+  it('reads a colour in OKLCH', () => {
+    const blue = hexOklch('#1971c2')!;
+    expect(blue.l).toBeCloseTo(0.543, 3);
+    expect(blue.c).toBeCloseTo(0.149, 3);
+    expect(blue.h).toBeCloseTo(251.7, 1);
+    expect(hexOklch('#FFFFFF')!.c).toBeLessThan(0.001);
+    expect(hexOklch('blue')).toBeNull();
+  });
+
+  it.each([
+    ['#1e1e1e', 'black'],
+    ['#ffffff', 'white'],
+    ['#868e96', 'grey'],
+    ['#9ca3af', 'cool grey'],
+    ['#78716c', 'warm grey'],
+    ['#64748b', 'slate'],
+    ['#997770', 'chroma just under the threshold'],
+  ])('snaps %s (%s) to the ink', (hex) => {
+    expect(nearestPenColour(hex)).toBe('ink');
+  });
+
+  it.each([
+    ['#1971c2', 'blue'],
+    ['#0000ff', 'blue'],
+    ['#e03131', 'red'],
+    ['#9f746d', 'red'],
+    ['#f08c00', 'orange'],
+    ['#8b4513', 'orange'],
+    ['#ffd43b', 'orange'],
+    ['#2f9e44', 'green'],
+    ['#ffff00', 'green'],
+    ['#008080', 'teal'],
+    ['#00ffff', 'teal'],
+    ['#c0c0ff', 'violet'],
+    ['#800080', 'pink'],
+    ['#ff00ff', 'pink'],
+    ['#d8a7b1', 'pink'],
+  ])('snaps %s to %s', (hex, name) => {
+    expect(nearestPenColour(hex)).toBe(name);
+  });
+
+  it.each([
+    ['#d06a84', 'pink'],
+    ['#d16a7e', 'red'],
+    ['#d26f56', 'red'],
+    ['#d17150', 'orange'],
+    ['#a88e10', 'orange'],
+    ['#a39014', 'green'],
+    ['#1ba87c', 'green'],
+    ['#00a882', 'teal'],
+    ['#209fbc', 'teal'],
+    ['#009fca', 'blue'],
+    ['#7588de', 'blue'],
+    ['#7c86dd', 'violet'],
+    ['#b273c0', 'violet'],
+    ['#b672bb', 'pink'],
+  ])('takes the nearer hue just either side of a boundary: %s to %s', (hex, name) => {
+    expect(nearestPenColour(hex)).toBe(name);
+  });
+
+  it('measures hue round the circle, and gives a tie to the earlier in the picker', () => {
+    expect(penColourAtHue(359)).toBe('pink');
+    expect(penColourAtHue(10)).toBe('red');
+    expect(penColourAtHue(7.5)).toBe('red');
+    expect(penColourAtHue(97.5)).toBe('orange');
+    expect(penColourAtHue(275)).toBe('blue');
+  });
+
+  it('is case-insensitive and refuses anything but #rrggbb', () => {
+    expect(nearestPenColour('#E03131')).toBe('red');
+    for (const bad of ['', 'red', '#fff', 'transparent', 'rgb(0,0,0)', '#12345g']) {
+      expect(nearestPenColour(bad)).toBeNull();
+    }
+  });
+
+  it('keeps the neutral threshold in its safe range', () => {
+    expect(PEN_NEUTRAL_CHROMA).toBeGreaterThanOrEqual(0.03);
+    expect(PEN_NEUTRAL_CHROMA).toBeLessThanOrEqual(0.08);
   });
 });

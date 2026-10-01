@@ -27,6 +27,7 @@ import {
 } from '@livediagram/document';
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
+import { useSnapColours } from '@/hooks/canvas/useSnapColours';
 import { isPathEditing } from '@/lib/path-edit';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
@@ -2420,6 +2421,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   });
 
+  // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): one commit, one undo step.
+  const snapColours = useSnapColours({
+    elements: activeTab.elements,
+    inertIds: layerInertIds,
+    editsBlocked,
+    commit,
+  });
+
   // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md): device-local pens, recognition and
   // eraser mode, and the dock presses turned into ordinary editor calls.
   const whiteboardDock = useWhiteboard({
@@ -2434,6 +2443,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setBackgroundPattern,
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
+    snapColours,
     userPreferences,
     setUserPreferences,
     writeUserPreferences,

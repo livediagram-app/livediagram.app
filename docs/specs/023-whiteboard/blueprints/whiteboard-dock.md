@@ -116,6 +116,8 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 
 - Sections, top to bottom: **Background**, **Cursor** (Crosshair + nib first, the default),
   **Drawing**, each a row of switch buttons (one of several).
+- Then **Colours**, only while the board has custom colours to snap: `SnapColoursSection`, owned by
+  [snap-colours](snap-colours.md).
 
 ### The Shapes flyout
 

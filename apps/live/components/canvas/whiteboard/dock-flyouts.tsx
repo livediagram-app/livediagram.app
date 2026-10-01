@@ -27,6 +27,7 @@ import {
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
 import { ColourPicker } from './ColourPicker';
+import { SnapColoursSection } from './SnapColoursSection';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 
@@ -97,7 +98,7 @@ export function EraserFlyoutBody({ model }: { model: WhiteboardDockModel }) {
 }
 
 // Settings (the cog), top to bottom: Background, Cursor and Drawing, each a section of switch
-// buttons (one of several).
+// buttons (one of several), then Colours while the board has custom colours to snap.
 export function SettingsFlyoutBody({
   model,
   ink,
@@ -163,6 +164,7 @@ export function SettingsFlyoutBody({
           </FlyoutOption>
         ))}
       </FlyoutRow>
+      <SnapColoursSection snap={model.snapColours} />
     </FlyoutRows>
   );
 }

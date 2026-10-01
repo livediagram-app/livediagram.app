@@ -40,6 +40,7 @@ import {
 } from '@/lib/whiteboard-shape-catalogue';
 import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
 import { usePenColourMemory } from './usePenColourMemory';
+import type { SnapColoursApi } from './useSnapColours';
 
 type Deps = {
   activeTab: Tab;
@@ -58,6 +59,8 @@ type Deps = {
   // leave it: the dock presses Select with a path glyph meanwhile.
   pathEditing: boolean;
   leavePathEdit: () => void;
+  // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"), for the Settings flyout.
+  snapColours: SnapColoursApi;
 } & WhiteboardDockPrefsDeps;
 
 export type WhiteboardDockModel = ReturnType<typeof useWhiteboard>;
@@ -266,5 +269,6 @@ export function useWhiteboard(deps: Deps) {
     setRecognition,
     setCursor,
     setBackground,
+    snapColours: deps.snapColours,
   };
 }

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, settledBox, test } from './fixtures';
 
 // Where the whiteboard dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits"):
 // the top by default, the bottom by choice in Settings, Editor, Whiteboard; flyouts open on the
@@ -29,7 +29,7 @@ test.describe('whiteboard dock position', () => {
     await dock(page).getByRole('button', { name: 'Settings' }).click();
     const flyout = page.locator('#whiteboard-flyout-settings');
     await expect(flyout).toHaveAttribute('data-side', 'below');
-    expect((await flyout.boundingBox())!.y).toBeGreaterThan(top.y + top.height);
+    expect((await settledBox(flyout)).y).toBeGreaterThan(top.y + top.height);
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: 'Settings' }).last().click();
@@ -48,9 +48,8 @@ test.describe('whiteboard dock position', () => {
     expect(bottom.y).toBeGreaterThan(600);
     await dock(page).getByRole('button', { name: 'Settings' }).click();
     await expect(flyout).toHaveAttribute('data-side', 'above');
-    expect((await flyout.boundingBox())!.y + (await flyout.boundingBox())!.height).toBeLessThan(
-      bottom.y,
-    );
+    const above = await settledBox(flyout);
+    expect(above.y + above.height).toBeLessThan(bottom.y);
 
     // Synced like every preference: a reload keeps the choice.
     await page.reload();
