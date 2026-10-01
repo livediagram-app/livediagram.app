@@ -12,7 +12,7 @@ None of that is worth a settings dialog, and none of it should be a permanent pr
 
 ## Where it lives
 
-A normal floating panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, **the same width as the Palette**, homed **top-right under the Palette** where the tool picker that opened it lives. Like the Poll / Vote / Avatar panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. In the **minimal panel layout and on mobile** it is one of the dock buttons, opening as a popover under its own button. View-role visitors get it — the laser is theirs too.
+A normal floating panel ([Panel corner docking](../007-editor/panel-docking.md)): draggable, dockable to any corner, **the same width as the Palette**, homed **top-right under the Palette** where the tool picker that opened it lives. Like the Poll / Vote / Avatar panels it exists only while its mode does, so it joins and leaves the corner stack rather than sitting there. It docks in its corner in both panel layouts, on a phone too. View-role visitors get it — the laser is theirs too.
 
 ## The settings
 

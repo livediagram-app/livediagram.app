@@ -5,7 +5,6 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import type { DockAnchor } from '@/lib/canvas-chrome';
 
 export type CanvasTool =
   | 'pan'
@@ -41,12 +40,6 @@ export type CommandPaletteProps = {
   onToggleZen?: () => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
-  // Desktop panel-layout toggle (normal floating panels <-> minimal compact
-  // dock), rendered in the palette header left of the reset button. Omit to
-  // hide it (e.g. view-role). The Settings dialog carries the same switch as
-  // the always-available way back out of minimal mode.
-  minimalPanels?: boolean;
-  onToggleMinimalPanels?: () => void;
   // User preferences + a write-through setter, for the Palette settings
   // popover (gear in the header, left of reset). Holds the canvas-behaviour
   // toggles (auto-attach arrows, alignment guides) that used to live in the
@@ -137,19 +130,9 @@ export type CommandPaletteProps = {
   // wires this up so the Comments + AI panels can stack below the
   // palette as it changes height.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
-  // Mobile-only top override (the palette banner sits below the
-  // Explorer banner so signed-out users can switch documents without
-  // leaving the canvas). See MovablePanel for semantics.
-  mobileTopOverridePx?: number;
-  // Mobile dock control — forwarded to the inner MovablePanel.
-  mobileOpenOverride?: boolean;
-  onMobileClose?: () => void;
-  // Fired when a draw-to-place tool (shape / text / sticky / arrow /
-  // freehand) is armed FROM the palette in dock mode, so the parent can
-  // reopen the palette once the draw finishes.
-  onDrawArmed?: () => void;
-  mobileDockAnchor?: DockAnchor;
-  forceDockMode?: boolean;
+  // Fired after a tile is used, so a surface that hangs the palette in a
+  // popover (the Toolbar strip's More) can put it away.
+  onTileUsed?: () => void;
   // Active tab theme's element colours, so the palette tiles preview the
   // theme: shape / device / annotation tiles render filled in the theme's
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the

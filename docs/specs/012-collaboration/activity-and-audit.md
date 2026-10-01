@@ -242,8 +242,8 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   `MovablePanel`, default bottom-left, minimisable to a dock button.
 - **Its button lives in the bottom-right cluster**, with inline Undo /
   Redo, in every layout (`ActivityClusterStrip`). In desktop Floating the
-  panel minimises into it and the button expands it. In every other
-  layout (Minimal, Toolbar, any phone) the button opens the panel as a
+  panel minimises into it and the button expands it. In the Toolbar
+  layout (and so on any phone) the button opens the panel as a
   popover hanging above it, like Layers ([Layers](../006-document/layers.md), [Live app](../007-editor/live-app.md)).
 - **Scoped to the active tab.** The panel only renders entries whose
   `tab_id` matches the currently visible tab; switching tabs swaps

@@ -429,10 +429,8 @@ export function EditorCanvasHost() {
     setContextMenu,
   });
 
-  // Preference writes (Settings save + the two quick toggles) — see
-  // usePreferenceHandlers.
-  const { onChangeSettings, onToggleMinimalPanels } = usePreferenceHandlers({
-    userPreferences,
+  // Preference writes (the Settings save): see usePreferenceHandlers.
+  const { onChangeSettings } = usePreferenceHandlers({
     setUserPreferences,
     selfParticipantId: selfParticipant?.id ?? null,
   });
@@ -711,12 +709,9 @@ export function EditorCanvasHost() {
         onDressPath={styleNewElement}
         settings={userPreferences}
         onChangeSettings={onChangeSettings}
-        // Only Minimal docks the panels. Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's
-        // panels and swaps the Palette + Explorer for the strip and menu button.
-        // A phone resolves Floating to Toolbar, its default.
-        minimalPanels={panelLayout === 'minimal'}
+        // Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's panels and swaps the
+        // Palette + Explorer for the strip and menu button. A phone always shows it.
         toolbarLayout={panelLayout === 'toolbar'}
-        onToggleMinimalPanels={onToggleMinimalPanels}
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
         onRedo={redo}
@@ -749,7 +744,7 @@ export function EditorCanvasHost() {
           // closing isn't a feature-reach signal. The closure read is
           // safe because this is a single user click, not a rapid
           // race, so no stale-state risk. The dock / popover layouts
-          // open Activity through useCanvasMobileDock, which counts there.
+          // open Activity through useDockPopovers, which counts there.
           if (activityMinimized) track('UI', 'Opened', 'Activity');
           setActivityMinimized((v) => !v);
         }}
@@ -839,7 +834,7 @@ export function EditorCanvasHost() {
         participantCount={livePresence.length + 1}
         onToggleLayersMinimized={() => {
           // Emit only the open transition, matching the Activity dock
-          // (the dock / popover layouts count in useCanvasMobileDock).
+          // (the dock / popover layouts count in useDockPopovers).
           if (layersMinimized) track('Layer', 'Opened', 'Panel');
           setLayersMinimized((v) => !v);
         }}

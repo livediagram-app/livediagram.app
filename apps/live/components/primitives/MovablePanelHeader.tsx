@@ -36,8 +36,6 @@ export function MovablePanelHeader({
   onReset,
   collapsible,
   effectiveCollapsed,
-  dockControlledOpen,
-  onMobileClose,
   onToggleCollapsed,
   onMinimize,
 }: {
@@ -52,8 +50,6 @@ export function MovablePanelHeader({
   onReset?: () => void;
   collapsible: boolean;
   effectiveCollapsed: boolean;
-  dockControlledOpen: boolean;
-  onMobileClose?: () => void;
   onToggleCollapsed: () => void;
   onMinimize?: () => void;
 }) {
@@ -130,10 +126,6 @@ export function MovablePanelHeader({
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => {
-              if (dockControlledOpen) {
-                onMobileClose?.();
-                return;
-              }
               if (collapsible) {
                 onToggleCollapsed();
                 return;

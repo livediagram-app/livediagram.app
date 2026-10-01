@@ -48,7 +48,7 @@ right.
 Each layout keeps its dress. In the Floating layout the panel wears the Palette's panel dress: the
 same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
 header with its title ("Quick style") and a help link. It is not draggable and has no collapse
-button of its own; it leaves when the selection does. In the Toolbar and Minimal layouts it is
+button of its own; it leaves when the selection does. In the Toolbar layout it is
 **compact** (no header, 186 px wide): the colour swatches draw a little smaller (20 px) but each
 still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), seven to a row with the
 targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
@@ -61,7 +61,7 @@ Floating, and a 1 px border a side.) The panel-opacity preference
 
 ### Collisions
 
-Never over the Palette or the other floating chrome (panels, dock popovers, the Toolbar strip and
+Never over the Palette or the other floating chrome (panels, popovers, the Toolbar strip and
 its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
 takes the first that overlaps none of them:
 

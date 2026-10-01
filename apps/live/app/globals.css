@@ -373,7 +373,7 @@
  * opacity so the canvas shows through, then snaps back to fully opaque while
  * hovered or focused so it stays readable in use. Panels carry
  * `data-panel-translucent` (MovablePanel in both branches, the Quick style
- * panel, the Toolbar strip); button bars and buttons do not. The var
+ * panel, the Toolbar strip); buttons do not. The var
  * defaults to 1 (fully opaque) when the preference is unset.
  */
 [data-panel-translucent] {

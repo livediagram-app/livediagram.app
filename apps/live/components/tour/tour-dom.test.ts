@@ -46,10 +46,10 @@ describe('tour DOM anchors', () => {
   });
 
   it('clicks a visible anchor', () => {
-    const el = anchor('dock-palette', true);
+    const el = anchor('canvas-tool', true);
     let clicks = 0;
     el.addEventListener('click', () => clicks++);
-    expect(clickTour('dock-palette')).toBe(true);
+    expect(clickTour('canvas-tool')).toBe(true);
     expect(clicks).toBe(1);
   });
 

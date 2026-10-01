@@ -28,7 +28,7 @@ function show(onChange = vi.fn(), category = PANELS) {
   render(
     <SettingsCategoryPane
       category={category}
-      settings={{ panelLayout: 'minimal' }}
+      settings={{ panelLayout: 'floating' }}
       onChange={onChange}
     />,
   );
@@ -39,13 +39,12 @@ const layoutOption = (label: string) =>
   screen
     .getByRole('radiogroup', { name: 'Panel Layout' })
     .querySelector(
-      `[role="radio"]:nth-child(${['Floating', 'Minimal', 'Toolbar'].indexOf(label) + 1})`,
+      `[role="radio"]:nth-child(${['Floating', 'Toolbar'].indexOf(label) + 1})`,
     ) as HTMLButtonElement;
 
-// The Panel Layout drawing's states, in option order (Floating, Minimal,
-// Toolbar).
+// The Panel Layout drawing's states, in option order (Floating, Toolbar).
 const layoutDrawing = (index: number) =>
-  screen.getByRole('img', { name: /three panel layouts/ }).querySelectorAll(':scope > g')[
+  screen.getByRole('img', { name: /two panel layouts/ }).querySelectorAll(':scope > g')[
     index
   ] as SVGGElement;
 
@@ -55,7 +54,6 @@ describe('SettingsCategoryPane on a phone', () => {
     const onChange = show();
     expect(layoutOption('Floating').disabled).toBe(true);
     expect(layoutOption('Toolbar').disabled).toBe(false);
-    expect(layoutOption('Minimal').disabled).toBe(false);
     expect(screen.getAllByRole('note').map((n) => n.textContent)).toContain(
       'Floating is desktop only. On a phone it uses the Toolbar layout instead.',
     );
@@ -68,13 +66,11 @@ describe('SettingsCategoryPane on a phone', () => {
     const onChange = show();
     fireEvent.click(layoutDrawing(0));
     expect(onChange).not.toHaveBeenCalled();
-    fireEvent.click(layoutDrawing(2));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ panelLayout: 'toolbar' }));
   });
 
   it('offers every layout on desktop, with no note', () => {
     const onChange = show();
-    for (const label of ['Floating', 'Minimal', 'Toolbar']) {
+    for (const label of ['Floating', 'Toolbar']) {
       expect(layoutOption(label).disabled, label).toBe(false);
     }
     expect(screen.queryByRole('note')).toBeNull();
@@ -84,10 +80,10 @@ describe('SettingsCategoryPane on a phone', () => {
 
   it('picks an option by clicking its drawing, and ignores the one in force', () => {
     const onChange = show();
-    fireEvent.click(layoutDrawing(1));
-    expect(onChange).not.toHaveBeenCalled();
     fireEvent.click(layoutDrawing(0));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ panelLayout: 'floating' }));
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(layoutDrawing(1));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ panelLayout: 'toolbar' }));
   });
 });
 
@@ -138,8 +134,8 @@ describe('SettingsCategoryPane telemetry', () => {
 
   it('tracks a pick made from the drawing the same way', () => {
     show();
-    fireEvent.click(layoutDrawing(0));
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'PanelLayoutFloating');
+    fireEvent.click(layoutDrawing(1));
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'PanelLayoutToolbar');
   });
 
   it("doesn't track a pick that can't happen", () => {

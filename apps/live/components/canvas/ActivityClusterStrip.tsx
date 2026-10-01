@@ -9,11 +9,10 @@ import { HoverCard } from '@livediagram/ui';
 // Edit sessions only: undo / redo and the audit trail aren't actionable for a
 // view-role visitor, so the caller renders nothing for them.
 //
-// Like the Layers button (LayersClusterButton): in the desktop docking layout
-// the panel ships minimised into it and the Activity button un-minimises it
-// (`onExpand`). In the dock layouts (minimal, or a phone outside Toolbar) the
-// button opens the panel as a popover hanging ABOVE it instead
-// (`onTogglePopover`), pressed while it's open. `data-mobile-dock` makes a
+// Like the Layers button (LayersClusterButton): in the Floating layout the
+// panel ships minimised into it and the Activity button un-minimises it
+// (`onExpand`). In the Toolbar layout (docs/specs/007-editor/toolbar-layout.md) the button opens the panel as a popover hanging ABOVE it instead
+// (`onTogglePopover`), pressed while it's open. `data-dock-button` makes a
 // second press close it through the toggle, and keeps Undo / Redo presses
 // from closing it.
 //
@@ -56,7 +55,7 @@ export function ActivityClusterStrip({
   );
   return (
     <div
-      data-mobile-dock=""
+      data-dock-button=""
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();

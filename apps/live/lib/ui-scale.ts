@@ -17,7 +17,7 @@ export const UI_SCALE_DEFAULT = 1;
 export const UI_SCALE_PARTS = [
   // Every panel (floating, docked, popover), the Quick Style panel.
   { id: 'panels', key: 'uiScalePanels' },
-  // The Toolbar layout's strip and menu button, the Minimal layout's button bar.
+  // The Toolbar layout's strip and menu button.
   { id: 'toolbar', key: 'uiScaleToolbar' },
   // The bottom-right row: Activity, undo / redo, Layers, theme, zoom.
   { id: 'cornerButtons', key: 'uiScaleCornerButtons' },

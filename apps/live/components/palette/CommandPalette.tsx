@@ -10,23 +10,11 @@ import { usePaletteCatalogue } from './usePaletteCatalogue';
 export type { CanvasTool };
 
 export function CommandPalette(props: CommandPaletteProps) {
-  const {
-    position,
-    onMoveTo,
-    onReset,
-    esBoard,
-    onSize,
-    mobileTopOverridePx,
-    mobileOpenOverride,
-    mobileDockAnchor,
-    forceDockMode,
-    themeTint,
-    dock,
-  } = props;
+  const { position, onMoveTo, onReset, esBoard, onSize, themeTint, dock } = props;
   // Handlers, categories and the canvas-tool options are shared with the
   // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) — see usePaletteCatalogue.
   const { tabs, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue(props);
-  const { canvasTool, onMobileClose } = props;
+  const { canvasTool } = props;
   return (
     <MovablePanel
       helpArticle="palette"
@@ -39,11 +27,6 @@ export function CommandPalette(props: CommandPaletteProps) {
       defaultCorner="top-right"
       width="w-auto sm:w-64"
       onSize={onSize}
-      mobileTopOverridePx={mobileTopOverridePx}
-      mobileOpenOverride={mobileOpenOverride}
-      onMobileClose={onMobileClose}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
       flushTop
       growBody
       onMoveTo={onMoveTo}
@@ -54,11 +37,6 @@ export function CommandPalette(props: CommandPaletteProps) {
       // to the Settings dialog (docs/specs/007-editor/user-preferences.md).
       onReset={onReset}
       collapsible
-      // The category / canvas-tool dropdowns portal their menus to
-      // <body>, so a mobile tap on a menu option lands outside the panel
-      // DOM; without this it would trip the outside-tap auto-collapse and
-      // shut the palette mid-selection.
-      outsideExceptSelector="[data-palette-dropdown-menu]"
     >
       {/* Header band: canvas-tool picker (Select / Hand / Laser) on the
           left, category picker on the right. The tool dropdown is a mode

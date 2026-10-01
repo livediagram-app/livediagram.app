@@ -15,11 +15,6 @@
 // the canvas; the poll keeps running) and End Poll. Everyone else gets a
 // local Dismiss, which hides their own panel without ending anything —
 // the escape hatch if the host disconnects mid-poll.
-//
-// In the dock layout (a phone, or the minimal panel preference on desktop)
-// it lives under the dock's Poll button like every other panel, closable
-// with it, and opens by itself when a poll starts or when you answer one
-// (useOpenDockPanelOnChange), since that is exactly when you want it.
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -37,10 +32,6 @@ export function PollPanel({
   onMoveTo,
   onReset,
   dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
   stackBelowY,
 }: {
   poll: LivePoll;
@@ -61,10 +52,6 @@ export function PollPanel({
   return (
     <MovablePanel
       helpArticle="sessionPolls"
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
       title="Poll"
       position={position}
       defaultCorner="top-right-stacked"

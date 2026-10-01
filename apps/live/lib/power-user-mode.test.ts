@@ -19,7 +19,6 @@ describe('setPowerUserMode on', () => {
     expect(next).toMatchObject({
       powerUserMode: true,
       panelLayout: 'toolbar',
-      minimalPanels: false,
       alignmentGuides: true,
       autoRebindArrows: true,
       tourSeen: true,
@@ -36,10 +35,10 @@ describe('setPowerUserMode on', () => {
   });
 
   it('records the values before and after, per preset setting', () => {
-    const next = on({ panelLayout: 'minimal', minimalPanels: true, alignmentGuides: false });
+    const next = on({ panelLayout: 'floating', alignmentGuides: false });
     expect(next.powerUserBaseline?.panelLayout).toEqual({
-      before: { panelLayout: 'minimal', minimalPanels: true },
-      applied: { panelLayout: 'toolbar', minimalPanels: false },
+      before: { panelLayout: 'floating' },
+      applied: { panelLayout: 'toolbar' },
     });
     expect(next.powerUserBaseline?.alignmentGuides).toEqual({
       before: { alignmentGuides: false },
@@ -62,8 +61,7 @@ describe('setPowerUserMode on', () => {
 describe('setPowerUserMode off', () => {
   it('restores every setting the user did not touch', () => {
     const before: UserPreferences = {
-      panelLayout: 'minimal',
-      minimalPanels: true,
+      panelLayout: 'floating',
       alignmentGuides: false,
       aiSuggestedPrompts: true,
       tourSeen: false,
@@ -92,17 +90,11 @@ describe('setPowerUserMode off', () => {
     expect(restored).toContain('alignmentGuides');
   });
 
-  it('compares and restores a multi-key setting as one', () => {
-    // The layout written through the row's own writer (as Settings and the
-    // tour picker do) changes both keys; switching off must keep BOTH.
-    const floating = withPanelLayout(
-      on({ panelLayout: 'minimal', minimalPanels: true }),
-      'floating',
-    );
+  it('keeps a layout the user picked while the mode was on', () => {
+    const floating = withPanelLayout(on({ panelLayout: 'floating' }), 'floating');
     const { prefs, kept } = off(floating);
     expect(kept).toContain('panelLayout');
     expect(prefs.panelLayout).toBe('floating');
-    expect(prefs.minimalPanels).toBe(false);
   });
 
   it('treats a setting changed and changed back as untouched', () => {

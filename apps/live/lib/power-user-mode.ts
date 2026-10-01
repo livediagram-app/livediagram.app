@@ -3,11 +3,8 @@ import type { UserPreferences } from './user-preferences';
 // Power user mode (docs/specs/007-editor/power-user-mode.md): a preset of recommended settings,
 // written once when the mode switches on. Switching off puts back the values
 // the preset replaced, for every setting still holding what the preset wrote.
-//
-// A setting may span several keys: the panel layout keeps its legacy
-// `minimalPanels` mirror in step, so the two are compared and restored as one.
 export const POWER_USER_PRESET = {
-  panelLayout: { panelLayout: 'toolbar', minimalPanels: false },
+  panelLayout: { panelLayout: 'toolbar' },
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },

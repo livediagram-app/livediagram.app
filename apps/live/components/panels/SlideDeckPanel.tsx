@@ -2,8 +2,7 @@
 
 // The Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
 // started. The seventh tool panel, on the same contract as the other six —
-// mounted only while its tool is active, docks in the corner stack, gets a
-// mobile dock button.
+// mounted only while its tool is active, docks in the corner stack.
 //
 // It is the SINGLE home for everything about the deck, so there is never a
 // second place to look. What it deliberately does not do is reorder tabs: slide

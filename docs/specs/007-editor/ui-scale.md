@@ -16,8 +16,8 @@ each be sized on their own (see "The setting"):
 **Panels** (`panels`):
 
 - **Every panel**: each `MovablePanel`, floating, docked into a corner,
-  dragged, or open as a popover (the Minimal layout's popovers, the Toolbar
-  layout's Explorer, the Layers / Activity / Collaborate cluster popovers).
+  dragged, or open as a popover (the Toolbar layout's Explorer, the Layers /
+  Activity / Collaborate cluster popovers).
   That covers the Explorer, Palette, AI, Layers, Activity, Map, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
@@ -27,7 +27,6 @@ each be sized on their own (see "The setting"):
 - **The Toolbar layout's strip** ([Toolbar layout](toolbar-layout.md)) and that layout's
   top-left Explorer menu button. The strip's More popover does not scale: it is a menu opened
   from the strip, so it stays at its design size like every other menu (see below).
-- **The Minimal layout's button bar** in the top right.
 
 **Corner buttons** (`cornerButtons`):
 
@@ -76,7 +75,7 @@ value as a percentage ("110%"):
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
 | UI Scale             | "Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below." | `UiScale`              |
 | Panel Scale          | "Every panel, floating or opened from a button, and the Quick Style panel."                                                                                                                | `UiScalePanels`        |
-| Toolbar Scale        | "The Toolbar layout's strip and its menu button, and the Minimal layout's button bar."                                                                                                     | `UiScaleToolbar`       |
+| Toolbar Scale        | "The Toolbar layout's strip and its menu button."                                                                                                                                          | `UiScaleToolbar`       |
 | Corner Buttons Scale | "The buttons in the bottom-right corner: Activity, Undo and Redo, Layers, theme and zoom."                                                                                                 | `UiScaleCornerButtons` |
 
 - A part's slider shows its own value, or the master's while it has none.

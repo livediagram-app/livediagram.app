@@ -113,8 +113,7 @@ export function ToolbarPalette(props: Props) {
       props.onAddTechIcon(id);
     },
     // A tile used from the More popover closes it, so the canvas is clear to
-    // draw on. There is no dock to reopen after a draw, so no onDrawArmed.
-    onMobileClose: () => setMoreOpen(false),
+    onTileUsed: () => setMoreOpen(false),
   });
   // Same landing rule as the floating Palette (docs/specs/010-palette/palette-favourites.md, docs/specs/021-event-storming/event-storming.md): the user's
   // Favourites, or the notation on an event-storming board.

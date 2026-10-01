@@ -562,14 +562,6 @@ export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on
   rising: 'neutral',
 });
 
-export const MINIMAL_PANELS = chart(
-  'UI',
-  'Toggled',
-  'Minimal Panels',
-  'The panels collapsed to their minimal form, or back.',
-  { types: ['MinimalPanelsOn', 'MinimalPanelsOff'], rising: 'neutral' },
-);
-
 export const PANELS_DOCKED = chart(
   'UI',
   'Moved',
@@ -591,7 +583,7 @@ export const EDITOR_CHROME: MetricStack = {
   title: 'Editor Chrome',
   blurb:
     'Getting around and arranging the workspace: zoom, zen mode, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, MINIMAL_PANELS, PANELS_DOCKED, EXPLORER_VIEW],
+  members: [CANVAS_ZOOMS, ZEN_MODE, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.
@@ -640,7 +632,7 @@ export const SHORTCUTS_OPENED = opened(
 
 export const ACTIVITY_PANEL_OPENED = opened(
   'Activity Panel Opened',
-  'The Activity panel expanded from minimised, or opened from the mobile dock. Its mounting also counts in Timeline & Activity.',
+  'The Activity panel expanded from minimised, or opened as a popover from its bottom-row button. Its mounting also counts in Timeline & Activity.',
   (t) => t === 'Activity',
 );
 

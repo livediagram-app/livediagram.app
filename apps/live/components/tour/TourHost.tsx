@@ -67,9 +67,8 @@ export function TourHost() {
   // dropdowns it doesn't render (docs/specs/021-event-storming/event-storming.md).
   const esBoard = ctx.esBoard === true;
   // The Toolbar layout (docs/specs/007-editor/toolbar-layout.md) moves the Explorer behind a menu button,
-  // honoured on a phone too; the minimal layout docks panels like a phone.
-  const panelLayout = resolvePanelLayout(ctx.userPreferences ?? {}, { mobile: isMobile });
-  const toolbar = panelLayout === 'toolbar';
+  // and is the only layout on a phone.
+  const toolbar = resolvePanelLayout(ctx.userPreferences ?? {}, { mobile: isMobile }) === 'toolbar';
   const steps = useMemo(
     () => tourStepsFor({ mobile: isMobile, esBoard, toolbar }),
     [isMobile, esBoard, toolbar],
@@ -98,7 +97,6 @@ export function TourHost() {
   );
 
   const apiRef = useLatest<TourApi>({
-    compact: isMobile || panelLayout === 'minimal',
     toolbar,
     openElementContextMenu: async () => {
       // Reuse the first boxed element (template diagrams come populated);

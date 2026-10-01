@@ -285,9 +285,7 @@ which crowded the same corner:
   one comment thread OR one action**, open or resolved. Nothing to
   collaborate on, no button and no panel. Unlike Layers it is there for a
   **view-role** visitor too (they read threads and answer them); it hides in
-  zen and during the welcome flow like the rest of the cluster. It is no
-  longer a button in the mobile / minimal dock row ([Live app](../007-editor/live-app.md) "Mobile chrome"):
-  the cluster button replaces it.
+  zen and during the welcome flow like the rest of the cluster ([Live app](../007-editor/live-app.md) "Mobile chrome").
 
 **Settings › Panels › Collaborate › Enable Collaborate Panel** (`collaboratePanelEnabled`,
 [User preferences](../007-editor/user-preferences.md)) turns the panel and its cluster button off, even while

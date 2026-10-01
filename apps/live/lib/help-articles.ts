@@ -85,7 +85,6 @@ export const HELP_ARTICLES = {
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings
-  minimalPanels: 'palette/minimal-panels',
   toolbarLayout: 'palette/toolbar-layout',
   powerUserMode: 'user-interface/power-user-mode',
   welcomeTour: 'getting-started/welcome-tour',
@@ -304,10 +303,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  minimalPanels: {
-    title: 'Learn about minimal panels',
-    description: 'The compact button bar that replaces the floating panels.',
   },
   toolbarLayout: {
     title: 'Learn about the toolbar layout',

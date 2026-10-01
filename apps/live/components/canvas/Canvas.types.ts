@@ -417,16 +417,9 @@ export type CanvasProps = {
     endX: number,
     endY: number,
   ) => import('@livediagram/document').ArrowElement;
-  // Minimal panel layout preference (docs/specs/007-editor/user-preferences.md). When true, the floating
-  // panels render as dock popovers on desktop too (always on mobile).
-  minimalPanels?: boolean;
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Palette as a top strip and a menu button
-  // in place of the Explorer. Implies `minimalPanels` for every other panel.
-  // Desktop only; the chrome falls back to the mobile dock below `sm`.
+  // in place of the Explorer. Always on below `sm`, where Floating is not offered.
   toolbarLayout?: boolean;
-  // Toggle the minimal-panel layout. Surfaced in the Palette header
-  // (desktop) as the one-click normal <-> minimal switch.
-  onToggleMinimalPanels?: () => void;
   // Lifted user preferences + a write-through setter, forwarded to the
   // Palette settings popover (docs/specs/007-editor/user-preferences.md). Holds the canvas-behaviour
   // toggles (auto-attach arrows, alignment guides) that the popover edits.
