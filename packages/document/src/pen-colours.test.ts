@@ -166,3 +166,22 @@ describe('nearestPenColour', () => {
     expect(PEN_NEUTRAL_CHROMA).toBeLessThanOrEqual(0.08);
   });
 });
+
+describe('hexOklch', () => {
+  it('reads a #rrggbb colour as OKLCH', () => {
+    const black = hexOklch('#000000');
+    expect(black!.l).toBeCloseTo(0, 5);
+    const white = hexOklch('#ffffff');
+    expect(white!.l).toBeCloseTo(1, 3);
+    expect(white!.c).toBeLessThan(0.001);
+    const blue = hexOklch('#1971c2')!;
+    expect(blue.h).toBeGreaterThan(245);
+    expect(blue.h).toBeLessThan(260);
+  });
+
+  it('is null for anything that is not a hex colour', () => {
+    expect(hexOklch('blue')).toBeNull();
+    expect(hexOklch('#12345')).toBeNull();
+    expect(hexOklch('#fff')).toBeNull();
+  });
+});
