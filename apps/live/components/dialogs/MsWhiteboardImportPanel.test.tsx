@@ -32,9 +32,9 @@ describe('MsWhiteboardImportPanel', () => {
     const group = await screen.findByRole('group', { name: 'Boards to import' });
     expect(group).toBeTruthy();
     expect(screen.getByText('Roadmap')).toBeTruthy();
-    expect(screen.getByText('Untitled board')).toBeTruthy();
+    expect(screen.getByText('Whiteboard, 1 Jan 2026')).toBeTruthy();
     expect(screen.getByText('Edited 12 Mar 2026 · 0 items')).toBeTruthy();
-    fireEvent.click(screen.getByRole('checkbox', { name: /Untitled board/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Whiteboard, 1 Jan 2026/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Import 1 board' }));
     await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(importScenes).toHaveBeenCalledTimes(1);

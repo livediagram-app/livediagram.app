@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MESSAGES, UNTITLED_BOARD, boardSceneOf, listBoards } from './import';
+import { MESSAGES, boardSceneOf, listBoards } from './import';
 import {
   PNG_BYTES,
   boardFiles,
@@ -39,6 +39,7 @@ describe('listBoards', () => {
         boardFiles(
           {
             title: null,
+            created: '2020-08-14T09:30:00Z',
             modified: '2026-03-01T00:00:00Z',
             elements: [ink(), shapeNode({ x: 0, y: 0, w: 10, h: 10 })],
           },
@@ -47,9 +48,17 @@ describe('listBoards', () => {
       ),
     );
     if (!listed.ok) throw new Error(listed.error);
-    expect(listed.boards.map((b) => [b.title, b.modified, b.elementCount])).toEqual([
-      [UNTITLED_BOARD, '2026-03-01T00:00:00Z', 2],
-      ['Older', '2026-01-01T00:00:00Z', 1],
+    expect(listed.boards.map((b) => [b.name, b.dates, b.elementCount])).toEqual([
+      [
+        'Whiteboard, 14 Aug 2020',
+        { createdAt: '2020-08-14T09:30:00.000Z', modifiedAt: '2026-03-01T00:00:00.000Z' },
+        2,
+      ],
+      [
+        'Older',
+        { createdAt: '2026-01-01T00:00:00.000Z', modifiedAt: '2026-01-01T00:00:00.000Z' },
+        1,
+      ],
     ]);
     expect(listed.failures).toEqual([]);
   });
@@ -66,7 +75,7 @@ describe('listBoards', () => {
     broken.set('broken/changes.json', new TextEncoder().encode('{'));
     const listed = await listBoards(fileSet(broken, boardFiles({ title: 'Fine' }, 'fine')));
     if (!listed.ok) throw new Error(listed.error);
-    expect(listed.boards.map((b) => b.title)).toEqual(['Fine']);
+    expect(listed.boards.map((b) => b.name)).toEqual(['Fine']);
     expect(listed.failures).toEqual([{ title: 'broken', message: MESSAGES.unreadable }]);
   });
 });
@@ -97,7 +106,7 @@ describe('boardSceneOf', () => {
     ]);
   });
 
-  it('leaves an untitled board untitled, and notes an image whose file is not an image', async () => {
+  it('names an untitled board by its date, and notes an image whose file is not an image', async () => {
     const image = {
       objectId: 'o',
       dataId: 'd',
@@ -109,7 +118,7 @@ describe('boardSceneOf', () => {
     const listed = await listBoards(files);
     if (!listed.ok) throw new Error(listed.error);
     const scene = await boardSceneOf(files, listed.boards[0]!);
-    expect(scene.title).toBeUndefined();
+    expect(scene.title).toBe('Whiteboard, 1 Jan 2026');
     expect(scene.items).toEqual([]);
     expect(scene.notes.map((n) => n.count)).toEqual([1]);
   });

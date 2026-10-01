@@ -54,7 +54,7 @@ export function useMsWhiteboardImport(deps: {
           rejection: 'board-unreadable',
           error: String(error),
         });
-        failures.push({ title: board.title, message: "This board's files couldn't be read." });
+        failures.push({ title: board.name, message: "This board's files couldn't be read." });
       }
     }
     const outcome: ImportOutcome = scenes.length

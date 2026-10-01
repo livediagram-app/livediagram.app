@@ -74,7 +74,7 @@ describe('useMsWhiteboardImport', () => {
     );
     const state = hook.result.current.state;
     if (state.step !== 'list') throw new Error(state.step);
-    expect(state.boards.map((b) => b.title)).toEqual(['B', 'A']);
+    expect(state.boards.map((b) => b.name)).toEqual(['B', 'A']);
     expect(state.checked.size).toBe(2);
     act(() => hook.result.current.toggle('x/b'));
     await act(() => hook.result.current.importChecked());

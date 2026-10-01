@@ -16,6 +16,8 @@ import { inkToScene, type InkNotes } from './ink-scene';
 export const POLYGON_WIDTH_PX = 4;
 
 export const RULES = {
+  rainbow: 'Rainbow ink drawn in pink',
+  galaxy: 'Galaxy ink drawn in violet',
   tables: 'Tables became rectangles',
   invisible: "Strokes drawn in the board's own colour were left out",
   unreadable: "Pen strokes that couldn't be read were skipped",
@@ -39,7 +41,7 @@ export type SceneInput = {
 export function boardToScene(input: SceneInput): BoardScene {
   const { board } = input;
   const appearance = appearanceOf(board.background);
-  const inkNotes: InkNotes = { invisible: 0, unreadable: 0 };
+  const inkNotes: InkNotes = { invisible: 0, unreadable: 0, rainbow: 0, galaxy: 0 };
   const ctx = {
     appearance,
     ...(board.background ? { background: board.background } : {}),
@@ -219,6 +221,8 @@ export function boardToScene(input: SceneInput): BoardScene {
   const note = (rule: string, count: number, kind: 'degraded' | 'skipped') => {
     if (count > 0) notes.push({ rule, count, kind });
   };
+  note(RULES.rainbow, inkNotes.rainbow, 'degraded');
+  note(RULES.galaxy, inkNotes.galaxy, 'degraded');
   note(RULES.tables, counts.tables, 'degraded');
   note(RULES.invisible, inkNotes.invisible, 'skipped');
   note(RULES.unreadable, inkNotes.unreadable, 'skipped');

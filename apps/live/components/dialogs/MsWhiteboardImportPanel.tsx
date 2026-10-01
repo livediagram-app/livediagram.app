@@ -174,11 +174,13 @@ function ListStep({
                 />
                 <span className="min-w-0">
                   <span className="block truncate text-sm text-slate-800 dark:text-slate-100">
-                    {b.title}
+                    {b.name}
                   </span>
                   <span className="block text-xs text-slate-500 dark:text-slate-400">
                     {[
-                      b.modified ? `Edited ${DATE.format(new Date(b.modified))}` : null,
+                      b.dates.modifiedAt
+                        ? `Edited ${DATE.format(new Date(b.dates.modifiedAt))}`
+                        : null,
                       plural(b.elementCount, 'item', 'items'),
                     ]
                       .filter(Boolean)

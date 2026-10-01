@@ -10,15 +10,15 @@ import {
 } from './board-export';
 import { readBoard, type WbBoard } from './elements';
 import { replayBoard, type ReplayedBoard } from './replay';
+import { boardDates, boardDocumentName, type BoardDates } from './board-identity';
 import { boardToScene, type BoardImage } from './to-scene';
-
-export const UNTITLED_BOARD = 'Untitled board';
 
 export type BoardSummary = {
   dir: string;
-  title: string;
-  /** ISO date of the last edit, when the board record has one. */
-  modified?: string;
+  /** The document's name: the board's title, or "Whiteboard, 14 Aug 2020" for an untitled one. */
+  name: string;
+  /** The document's dates, from the board record. */
+  dates: BoardDates;
   elementCount: number;
   /** Decoded once while listing, reused by the import. */
   prepared: { files: BoardFiles; replayed: ReplayedBoard; board: WbBoard };
@@ -35,10 +35,10 @@ const label = (dir: string) => dir.split('/').pop() || dir;
 
 /** Newest first, then by title (blueprint default M4). */
 function byRecency(a: BoardSummary, b: BoardSummary): number {
-  const ma = a.modified ?? '';
-  const mb = b.modified ?? '';
+  const ma = a.dates.modifiedAt ?? '';
+  const mb = b.dates.modifiedAt ?? '';
   if (ma !== mb) return ma < mb ? 1 : -1;
-  return a.title.localeCompare(b.title);
+  return a.name.localeCompare(b.name);
 }
 
 /** Every board in the pick, decoded; boards that can't be read are listed as failures. */
@@ -65,10 +65,11 @@ export async function listBoards(
     }
     console.info('[ms-whiteboard] replayed', replayed.stats);
     const board = readBoard(replayed);
+    const dates = boardDates(read.board.created, read.board.modified);
     boards.push({
       dir: ref.dir,
-      title: read.board.title ?? UNTITLED_BOARD,
-      ...(read.board.modified ? { modified: read.board.modified } : {}),
+      name: boardDocumentName(read.board.title, dates),
+      dates,
       elementCount: board.elements.length,
       prepared: { files: read.board, replayed, board },
     });
@@ -94,7 +95,7 @@ export async function boardSceneOf(
   }
   const scene = boardToScene({
     board: decoded,
-    ...(summary.title !== UNTITLED_BOARD ? { title: summary.title } : {}),
+    title: summary.name,
     ...(board.id ? { sourceId: `microsoft-whiteboard:${board.id}` } : {}),
     imageObjects: replayed.imageObjects,
     images,

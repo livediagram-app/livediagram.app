@@ -3,6 +3,7 @@
 // colour normalised; preset inks carry their colour stops; an arrowhead is its own small stroke.
 import type { SceneAppearance, SceneColour, SceneInk, ScenePoint } from '@/lib/board-scene/scene';
 import { lineColour } from './colours';
+import { penColourHex } from '@livediagram/document';
 import type { WbInk, WbStroke } from './elements';
 import type { PenStroke } from './pen-stroke';
 
@@ -18,7 +19,12 @@ export const RAINBOW_STOPS: readonly SceneColour[] = [
 ].map((hex) => ({ hex }));
 export const GALAXY_STOPS: readonly SceneColour[] = ['#881f7c', '#3a9fb4'].map((hex) => ({ hex }));
 
-export type InkNotes = { invisible: number; unreadable: number };
+// The preset inks land in one representative stock colour each (operator answer): rainbow as the
+// board's pink, galaxy as its violet. Their light-board versions resolve to those stock names.
+export const RAINBOW_COLOUR: SceneColour = { hex: penColourHex('pink', 'light') };
+export const GALAXY_COLOUR: SceneColour = { hex: penColourHex('violet', 'light') };
+
+export type InkNotes = { invisible: number; unreadable: number; rainbow: number; galaxy: number };
 
 type Context = { appearance: SceneAppearance; background?: SceneColour; notes: InkNotes };
 
@@ -35,8 +41,8 @@ function rotateAbout(points: ScenePoint[], deg: number, cx: number, cy: number):
 }
 
 function strokeColour(stroke: WbStroke, ctx: Context): SceneColour | 'ink' | 'skip' {
-  if (stroke.preset === 'rainbow') return RAINBOW_STOPS[0]!;
-  if (stroke.preset === 'galaxy') return GALAXY_STOPS[0]!;
+  if (stroke.preset === 'rainbow') return RAINBOW_COLOUR;
+  if (stroke.preset === 'galaxy') return GALAXY_COLOUR;
   return lineColour(stroke.colour ?? { hex: '#000000' }, ctx.appearance, ctx.background);
 }
 
@@ -87,6 +93,8 @@ export function inkToScene(group: WbInk, key: string, ctx: Context): SceneInk[] 
       ...(stroke.preset === 'highlighter' ? { highlighter: true } : {}),
     };
     items.push(ink);
+    if (!head && (stroke.preset === 'rainbow' || stroke.preset === 'galaxy'))
+      ctx.notes[stroke.preset]++;
   });
   return items;
 }

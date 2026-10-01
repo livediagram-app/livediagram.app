@@ -533,6 +533,7 @@ export function treeInit(): RawNode {
 export type BoardDescription = {
   id?: string;
   title?: string | null;
+  created?: string;
   modified?: string;
   background?: string;
   pattern?: string;
@@ -591,7 +592,7 @@ export function boardFiles(d: BoardDescription, dir = 'board'): Map<string, Uint
       json({
         id,
         title: d.title ?? null,
-        createdTime: '2026-01-01T00:00:00Z',
+        createdTime: d.created ?? '2026-01-01T00:00:00Z',
         lastModifiedTime: d.modified ?? '2026-01-02T00:00:00Z',
       }),
     ],

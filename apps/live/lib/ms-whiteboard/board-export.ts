@@ -12,6 +12,8 @@ export type BoardFiles = {
   dir: string;
   id?: string;
   title?: string;
+  /** The board record's dates, as written (validated by board-identity.ts). */
+  created?: string;
   modified?: string;
   treeInit: unknown;
   changes: unknown[];
@@ -86,6 +88,7 @@ export async function readBoardFiles(
         objects.set(o.id, join(ref.dir, `objects/${o.file}`));
   const id = text(manifest.id) ?? text(session.id);
   const title = text(meta.title) ?? text(manifest.title);
+  const created = text(meta.createdTime);
   const modified = text(meta.lastModifiedTime);
   return {
     ok: true,
@@ -93,6 +96,7 @@ export async function readBoardFiles(
       dir: ref.dir,
       ...(id ? { id } : {}),
       ...(title ? { title } : {}),
+      ...(created ? { created } : {}),
       ...(modified ? { modified } : {}),
       treeInit: session.treeInit,
       changes,

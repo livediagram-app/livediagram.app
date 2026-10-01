@@ -21,7 +21,7 @@ test('Microsoft Whiteboard boards open as new whiteboard tabs with a report', as
 
   const list = page.getByRole('group', { name: 'Boards to import' });
   await expect(list).toContainText('Sprint board');
-  await expect(list).toContainText('Untitled board');
+  await expect(list).toContainText('Whiteboard, 1 Jan 2026');
   await expect(page.getByRole('button', { name: 'Import 2 boards' })).toBeEnabled();
   await page.screenshot({ path: test.info().outputPath('ms-whiteboard-list.png') });
 

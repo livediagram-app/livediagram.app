@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { WbBoard, WbElement, WbInk } from './elements';
-import { GALAXY_STOPS, RAINBOW_STOPS, inkToScene } from './ink-scene';
+import { createColourResolver } from '@/lib/board-scene/colour';
+import {
+  GALAXY_COLOUR,
+  GALAXY_STOPS,
+  RAINBOW_COLOUR,
+  RAINBOW_STOPS,
+  inkToScene,
+} from './ink-scene';
 import { POLYGON_WIDTH_PX, RULES, boardToScene } from './to-scene';
 
 const unit = 1 / 128;
@@ -42,7 +49,7 @@ const scene = (elements: WbElement[], over: Partial<WbBoard> = {}) =>
   });
 const ctx = () => ({
   appearance: 'light' as const,
-  notes: { invisible: 0, unreadable: 0 },
+  notes: { invisible: 0, unreadable: 0, rainbow: 0, galaxy: 0 },
 });
 
 // docs/specs/020-import-export/whiteboard-import.md "Mapping".
@@ -84,7 +91,8 @@ describe('inkToScene', () => {
     ]);
   });
 
-  it('lands highlighters as highlighter ink and preset inks with their stops', () => {
+  it('lands highlighters, and preset inks in their stock colour with their stops, counted', () => {
+    const c = ctx();
     const items = inkToScene(
       group({
         strokes: [
@@ -94,18 +102,22 @@ describe('inkToScene', () => {
         ],
       }),
       'k',
-      ctx(),
+      c,
     );
     expect(items[0]).toMatchObject({
       highlighter: true,
       stroke: { colour: { hex: '#fcfc00', alpha: 0.4 } },
     });
     expect(items[1]!.stroke).toEqual({
-      colour: RAINBOW_STOPS[0],
+      colour: RAINBOW_COLOUR,
       widthPx: 4,
       stops: [...RAINBOW_STOPS],
     });
-    expect(items[2]!.stroke.stops).toEqual([...GALAXY_STOPS]);
+    expect(items[2]!.stroke).toMatchObject({ colour: GALAXY_COLOUR, stops: [...GALAXY_STOPS] });
+    expect(c.notes).toMatchObject({ rainbow: 1, galaxy: 1 });
+    // Their light-board versions resolve to the stock names on landing.
+    expect(createColourResolver()(RAINBOW_COLOUR)).toEqual({ kind: 'stock', name: 'pink' });
+    expect(createColourResolver()(GALAXY_COLOUR)).toEqual({ kind: 'stock', name: 'violet' });
   });
 
   it('draws an arrowhead as its own stroke from its origin, in the stroke colour', () => {
@@ -141,7 +153,7 @@ describe('inkToScene', () => {
     const c = {
       appearance: 'dark' as const,
       background: { hex: '#1f1f1f' },
-      notes: { invisible: 0, unreadable: 2 },
+      notes: { invisible: 0, unreadable: 2, rainbow: 0, galaxy: 0 },
     };
     const items = inkToScene(
       group({
@@ -373,12 +385,20 @@ describe('boardToScene', () => {
         { kind: 'polygon', cx: 0, cy: 0, corners: [] },
         group({
           unreadable: 2,
-          strokes: [stroke(), stroke({ colour: { hex: '#000000' } })],
+          strokes: [
+            stroke(),
+            stroke({ colour: { hex: '#000000' } }),
+            stroke({ preset: 'rainbow' }),
+            stroke({ preset: 'galaxy' }),
+            stroke({ preset: 'galaxy' }),
+          ],
         }),
       ],
       { background: { hex: '#1f1f1f' } },
     );
     expect(s.notes).toEqual([
+      { rule: RULES.rainbow, count: 1, kind: 'degraded' },
+      { rule: RULES.galaxy, count: 2, kind: 'degraded' },
       { rule: RULES.invisible, count: 1, kind: 'skipped' },
       { rule: RULES.unreadable, count: 2, kind: 'skipped' },
       { rule: RULES.unsupported, count: 2, kind: 'skipped' },
