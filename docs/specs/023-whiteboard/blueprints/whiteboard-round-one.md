@@ -64,9 +64,9 @@ Scope, by file:
 | Pen              | `WhiteboardPen`                                | Main, second or third: id, colour (`null` = ink), width in px |
 | Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)      | 1, 1.5, 2.5 px, recorded as `penWidth`; stored by name        |
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'` | The held pen, with its colour, width and recognition          |
-| Dock             | `WhiteboardDock`                               | Bottom-centre tool groups (whiteboard-dock.md)                |
+| Dock             | `WhiteboardDock`                               | Top- or bottom-centre tool groups (whiteboard-dock.md)        |
 | Dock tool        | `WhiteboardTool`                               | `select/pen/eraser/sticky/text/shape`                         |
-| Flyout           | `WhiteboardFlyout`                             | A dock button's settings, opened above the dock               |
+| Flyout           | `WhiteboardFlyout`                             | A dock button's settings, opened on the dock's board side     |
 | Eraser mode      | `WhiteboardEraserMode` (`stroke/partial`)      | Whole-stroke or part-of-stroke erase                          |
 | Ink projection   | `inkWhiteboardElement(el, ink)`                | Display-only colours for unpainted elements                   |
 | Pen seen         | `markPenSeen()`, `penSeen()`                   | A `pen` pointer has been used in this page session            |
@@ -865,7 +865,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Presentation and UX
 
-- Dock: bottom centre, four groups; placement, separators and copy in
+- Dock: top centre (or bottom, by choice), four groups; placement, separators and copy in
   [whiteboard-dock](whiteboard-dock.md). Buttons 44 × 44 px on the editor's panel surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
@@ -898,7 +898,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Web Experience
 
 - Zero layout shift: the dock is `position: absolute` over the canvas, fixed button sizes, flyouts
-  absolutely positioned above it; nothing in the page flow changes when a tool or flyout toggles.
+  absolutely positioned on its board side; nothing in the page flow changes when a tool or flyout toggles.
 - INP: dock handlers set state only; erase work is per sample and bbox-filtered.
 - LCP: no new asset on first paint; the dock renders with the canvas.
 

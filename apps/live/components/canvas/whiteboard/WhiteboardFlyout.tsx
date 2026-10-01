@@ -5,8 +5,9 @@ import { Tooltip } from '@livediagram/ui';
 
 const VIEWPORT_MARGIN_PX = 12;
 
-// A dock button's settings, opened ABOVE the dock so the dock itself never
-// moves (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"). Focus moves into it on
+// A dock button's settings, opened on the board side of the dock (below a dock at the top, above
+// one at the bottom) so the dock itself never moves (docs/specs/023-whiteboard/whiteboard.md "What a
+// whiteboard shows", "Where the dock sits"). Focus moves into it on
 // open; Escape closes it and hands focus back to its opener; a press outside
 // closes it without stealing focus.
 export function WhiteboardFlyout({
@@ -19,6 +20,7 @@ export function WhiteboardFlyout({
   takeFocus = true,
   restoreFocus = false,
   hideTitle = false,
+  below = false,
   children,
 }: {
   id: string;
@@ -38,6 +40,8 @@ export function WhiteboardFlyout({
   // A flyout whose sections carry their own headings shows no title (it keeps
   // `label` as its accessible name).
   hideTitle?: boolean;
+  // Opens below the dock (a dock at the top) rather than above it.
+  below?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -105,6 +109,7 @@ export function WhiteboardFlyout({
       role="group"
       aria-label={label}
       data-floating-panel=""
+      data-side={below ? 'below' : 'above'}
       onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.stopPropagation();
@@ -115,7 +120,7 @@ export function WhiteboardFlyout({
       onPointerLeave={(e) => (e.pointerType !== 'touch' ? onPointerLeave?.() : undefined)}
       // `translate`, not `transform`: the pop-in animation owns `transform`.
       style={{ left, translate: `calc(-50% + ${nudge}px) 0` }}
-      className="pointer-events-auto absolute bottom-full mb-2 w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={`pointer-events-auto absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'} w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
     >
       {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
       {children}

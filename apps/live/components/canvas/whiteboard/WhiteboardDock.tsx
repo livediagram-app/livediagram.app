@@ -1,15 +1,16 @@
 'use client';
 
 // The whiteboard's floating dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
-// four groups side by side at the bottom centre, in place of the palette: Drawing tools, Shapes,
-// History and Settings. Each group is its own
-// toolbar with one Tab stop.
-// Flyouts open ABOVE the dock, one at a time, so nothing moves under the pointer when a tool is
-// picked; on a narrow screen the groups scroll sideways together.
+// four groups side by side, in place of the palette: Drawing tools, Shapes, History and Settings.
+// Each group is its own toolbar with one Tab stop. It sits at the top centre, or the bottom centre
+// by choice ("Where the dock sits"). Flyouts open on the board side of it, one at a time, so nothing
+// moves under the pointer when a tool is picked; on a narrow screen the groups scroll sideways
+// together.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
+import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
 import {
   pinFromMenu,
@@ -37,6 +38,17 @@ import { WhiteboardFlyout } from './WhiteboardFlyout';
 
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
+
+// Where the wrapper sits. At the top it keeps clear of the Explorer menu button (top-left, 12 + 46
+// px): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
+// (D33), so a tablet in portrait still shows the whole dock. At the
+// bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
+// wide enough for the two side by side (D9).
+const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
+  top: 'top-3 left-[4.25rem] max-w-[calc(100%-5rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-8.5rem)]',
+  bottom:
+    'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
+};
 
 export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
@@ -90,7 +102,8 @@ export function WhiteboardDock({
     pick();
   };
 
-  // "Seven shapes are pinned": above the Shapes group, where the refused shape settles back.
+  // "Seven shapes are pinned": beside the Shapes group (board side), where the refused shape
+  // settles back.
   const showPinsFull = (group: HTMLElement | null) => {
     const wrap = group?.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
     const box = group?.getBoundingClientRect();
@@ -195,19 +208,20 @@ export function WhiteboardDock({
   };
 
   const open = fly.flyout ? flyoutContent(fly.flyout) : null;
+  // Flyouts and the hint open on the board side: below a dock at the top.
+  const below = model.position === 'top';
 
   return (
     <div
       data-floating-panel=""
       data-whiteboard-dock=""
+      data-dock-position={model.position}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
       }}
-      // Centred, and lifted above the bottom-right cluster (history, layers, zoom) until the
-      // viewport is wide enough for the two side by side (D9).
-      className="pointer-events-none absolute bottom-[4.25rem] left-1/2 z-[var(--z-toolbar)] w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 min-[1760px]:bottom-4"
+      className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`}
     >
       {fly.flyout && open ? (
         <WhiteboardFlyout
@@ -222,6 +236,7 @@ export function WhiteboardDock({
           takeFocus={!fly.flyout.hover || fly.flyout.kind === 'shapes'}
           restoreFocus={fly.flyout.viaHover}
           hideTitle={open.hideTitle}
+          below={below}
         >
           {open.body}
         </WhiteboardFlyout>
@@ -230,8 +245,9 @@ export function WhiteboardDock({
         <p
           aria-hidden
           data-dock-hint=""
+          data-side={below ? 'below' : 'above'}
           style={{ left: hint.left, translate: '-50% 0' }}
-          className="pointer-events-none absolute bottom-full mb-2 w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg dark:bg-slate-100 dark:text-slate-900"
+          className={`pointer-events-none absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'} w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg dark:bg-slate-100 dark:text-slate-900`}
         >
           {PINS_FULL_HINT}
         </p>

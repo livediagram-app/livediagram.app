@@ -625,6 +625,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
     "Someone switched category in the Toolbar layout's palette strip across the top of the canvas.",
+  'UI|Changed|WhiteboardDockPositionBottom':
+    'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
+  'UI|Changed|WhiteboardDockPositionTop':
+    'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',

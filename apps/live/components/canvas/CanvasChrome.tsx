@@ -40,7 +40,11 @@ import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
-import { useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import {
+  WHITEBOARD_DOCK_SELECTOR,
+  WHITEBOARD_DOCK_TOP_CLEARANCE_PX,
+} from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -318,6 +322,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The strip only renders for an editor (not read-only) with the chrome up,
   // and never on a whiteboard.
   const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
+  // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
+  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-whiteboard/whiteboard.md
+  // "Where the dock sits").
+  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
+  const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
@@ -359,13 +368,22 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
-  const stripCrowds = useStripCrowdsCorners(
+  // The bar across the top that the top corners give way to: the strip, or a dock at the top.
+  const topBar = isMobile
+    ? null
+    : stripShown
+      ? STRIP_SELECTOR
+      : dockOnTop
+        ? WHITEBOARD_DOCK_SELECTOR
+        : null;
+  const topBarCrowds = useStripCrowdsCorners(
     cornerRefs,
-    stripShown && !isMobile,
+    topBar,
     topCornersKey,
     `${toolbarScale}/${panelScale}`,
   );
-  const stripSpansTop = stripShown && (isMobile || stripCrowds);
+  const stripSpansTop = stripShown && (isMobile || topBarCrowds);
+  const dockSpansTop = dockOnTop && topBarCrowds;
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -396,7 +414,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
                 : stripSpansTop && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : undefined
+                  : dockSpansTop && corner.startsWith('top')
+                    ? { top: WHITEBOARD_DOCK_TOP_CLEARANCE_PX }
+                    : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
@@ -471,7 +491,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} toolbarLayout={toolbarActive} />
+      <TopCenterChrome {...props} toolbarLayout={toolbarActive} dockOnTop={dockOnTop} />
 
       {/* Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the menu button stands where the
           Explorer would float and opens it as a popover (zen hides it, the
@@ -508,9 +528,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      {/* The whiteboard's dock (docs/specs/023-whiteboard/whiteboard.md): bottom centre, in place of the
-          palette. Absent for a view-role visitor, who has nothing to draw with. */}
-      {whiteboard && props.whiteboardDock && !readOnly && !chromeHidden ? (
+      {/* The whiteboard's dock (docs/specs/023-whiteboard/whiteboard.md): top or bottom centre, in place
+          of the palette. */}
+      {dockShown && props.whiteboardDock ? (
         <WhiteboardDock
           model={props.whiteboardDock}
           ink={props.whiteboardInk ?? '#1c1917'}

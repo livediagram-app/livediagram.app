@@ -280,6 +280,10 @@ type UserPreferences = {
   // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
   // takes one out. Junk is dropped on read (lib/pen-colour-memory).
   whiteboardYourColours?: string[];
+  // Where a whiteboard's dock sits (../023-whiteboard/whiteboard.md "Where the
+  // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
+  // top (lib/whiteboard-dock-prefs).
+  whiteboardDockPosition?: 'top' | 'bottom';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -335,6 +339,8 @@ Missing key === undefined === default behaviour. Concretely:
   only while the active tab has at least one comment thread or action,
   the same gate as the floating panel ([Assigned actions](../012-collaboration/assigned-actions.md) §5) — and opens as a
   popover like the other panels.
+- `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
+  default). Only `'bottom'` moves it to the bottom.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -514,7 +520,8 @@ and the dialog stays as the one complete, browsable index of them.
 
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
-  middle-mouse pan, then a **Power User** section: power user mode, and
+  middle-mouse pan, then a **Whiteboard** section: dock position, Top or
+  Bottom, then a **Power User** section: power user mode, and
   Minimal chrome while the mode is on), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel layout, panel opacity; with the

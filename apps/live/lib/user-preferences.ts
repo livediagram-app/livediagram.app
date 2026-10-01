@@ -241,6 +241,9 @@ export type UserPreferences = {
   // eight custom #rrggbb, newest first. Read and written through lib/pen-colour-memory, which parses
   // them. Missing === none yet.
   whiteboardYourColours?: string[];
+  // Where a whiteboard's dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits").
+  // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
+  whiteboardDockPosition?: 'top' | 'bottom';
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

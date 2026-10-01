@@ -35,6 +35,25 @@ describe('settings catalogue', () => {
     }
   });
 
+  it('offers the whiteboard dock position under Editor, in its own Whiteboard section', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": top by default, bottom by choice.
+    const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
+    const row = editor.rows.find((r) => r.key === 'whiteboardDockPosition');
+    if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
+    expect(row.section).toBe('Whiteboard');
+    expect(row.label).toBe('Dock Position');
+    expect(row.options.map((o) => [o.id, o.label])).toEqual([
+      ['top', 'Top'],
+      ['bottom', 'Bottom'],
+    ]);
+    expect(row.read({})).toBe('top');
+    expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
+    expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
+    // Before the Power User section, which closes the category.
+    const at = editor.rows.indexOf(row);
+    expect(editor.rows.findIndex((r) => r.section === 'Power User')).toBeGreaterThan(at);
+  });
+
   it('round-trips every toggle through read/write in both directions', () => {
     // The catalogue is the only place that knows how a setting maps onto
     // UserPreferences, so a row whose write does not land where its read
