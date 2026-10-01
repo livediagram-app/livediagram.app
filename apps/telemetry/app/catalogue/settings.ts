@@ -69,6 +69,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Auto-Attach Arrows',
       'Arrows re-attaching to the nearest shape.',
     ),
+    changed(
+      'WhiteboardDockPosition',
+      'Whiteboard Dock Position',
+      'A whiteboard dock moved to the top or the bottom.',
+    ),
     toggle(
       'UI',
       'PowerUserModeOn',

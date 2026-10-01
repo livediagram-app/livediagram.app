@@ -3,6 +3,7 @@ import { act, fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
+import { WhiteboardDock } from './WhiteboardDock';
 
 const itemsOf = (group: string) =>
   [
@@ -319,5 +320,74 @@ describe('WhiteboardDock settings', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Where the dock sits".
+describe('WhiteboardDock position', () => {
+  const dock = () => document.querySelector<HTMLElement>('[data-whiteboard-dock]')!;
+  const SEVEN = ['arrow', 'rectangle', 'ellipse', 'diamond', 'cylinder', 'line', 'star'] as const;
+
+  // Seven pinned and one more pinned from the Shapes flyout's menu: refused, so the hint shows.
+  function refusePin() {
+    fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
+    fireEvent.contextMenu(screen.getAllByRole('option')[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Pin to dock' }));
+    return document.querySelector<HTMLElement>('[data-dock-hint]')!;
+  }
+
+  it('sits at the top by default, its flyouts and hint opening below it', () => {
+    renderDock(model('select', { pinnedShapes: [...SEVEN] }));
+    expect(dock().dataset.dockPosition).toBe('top');
+    expect(dock().className).toContain('top-3');
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const flyout = screen.getByRole('group', { name: 'Settings' });
+    expect(flyout.dataset.side).toBe('below');
+    expect(flyout.className).toContain('top-full');
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(refusePin().dataset.side).toBe('below');
+  });
+
+  it('sits at the bottom when chosen, its flyouts and hint opening above it', () => {
+    renderDock(model('select', { position: 'bottom', pinnedShapes: [...SEVEN] }));
+    expect(dock().dataset.dockPosition).toBe('bottom');
+    expect(dock().className).toContain('bottom-[4.25rem]');
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const flyout = screen.getByRole('group', { name: 'Settings' });
+    expect(flyout.dataset.side).toBe('above');
+    expect(flyout.className).toContain('bottom-full');
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(refusePin().dataset.side).toBe('above');
+  });
+
+  it('keeps clear of the Explorer menu button at the top: beside it below lg, centred from lg', () => {
+    renderDock();
+    const cls = dock().className.split(' ');
+    expect(cls).toEqual(
+      expect.arrayContaining([
+        'left-[4.25rem]',
+        'max-w-[calc(100%-5rem)]',
+        'lg:left-1/2',
+        'lg:-translate-x-1/2',
+        'lg:max-w-[calc(100%-8.5rem)]',
+      ]),
+    );
+  });
+
+  it('moves between top and bottom in place, keeping its groups', () => {
+    const { view } = renderDock();
+    const before = screen.getByRole('button', { name: 'Select' });
+    view.rerender(
+      <WhiteboardDock
+        model={model('pen', { position: 'bottom' })}
+        ink="#1c1917"
+        canUndo
+        canRedo={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+      />,
+    );
+    expect(dock().dataset.dockPosition).toBe('bottom');
+    expect(screen.getByRole('button', { name: 'Select' })).toBe(before);
   });
 });

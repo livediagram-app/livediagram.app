@@ -236,7 +236,9 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
   a docked panel (the Laser panel, say) sat under the strip's right end and
-  could not be reached.
+  could not be reached. A whiteboard's dock at the top gets the same
+  treatment ([Where the dock sits](../023-whiteboard/whiteboard.md#where-the-dock-sits)),
+  in every layout, its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried

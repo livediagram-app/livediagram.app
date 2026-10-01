@@ -1,5 +1,6 @@
-// The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "Shape slots"):
-// the pinned shape kinds and the pick counts behind the Shapes flyout's slots. They live in the
+// The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "Shape slots",
+// "Where the dock sits"): the pinned shape kinds and the pick counts behind the Shapes flyout's
+// slots, and where the dock sits. They live in the
 // user's preferences blob (lib/user-preferences.ts), so they follow a signed-in user across devices
 // and stay in this browser for a guest. Read through here, never directly: a stored value is only
 // trusted once parsed.
@@ -62,3 +63,24 @@ export function withWhiteboardDockPrefs(
   }
   return next;
 }
+
+// Where the dock sits: the top unless the user chose the bottom.
+export const WHITEBOARD_DOCK_POSITIONS = ['top', 'bottom'] as const;
+export type WhiteboardDockPosition = (typeof WHITEBOARD_DOCK_POSITIONS)[number];
+
+export function readWhiteboardDockPosition(prefs: UserPreferences): WhiteboardDockPosition {
+  return prefs.whiteboardDockPosition === 'bottom' ? 'bottom' : 'top';
+}
+
+export function withWhiteboardDockPosition(
+  prefs: UserPreferences,
+  position: WhiteboardDockPosition,
+): UserPreferences {
+  return { ...prefs, whiteboardDockPosition: position };
+}
+
+// The dock's wrapper, as wide as its groups: what the top corners are measured against.
+export const WHITEBOARD_DOCK_SELECTOR = '[data-whiteboard-dock]';
+// Where the top corner panel stacks start when a dock at the top reaches into them: its 12 px inset,
+// its 54 px height (44 px buttons, 4 px padding, 1 px border), and a 10 px gap (D34).
+export const WHITEBOARD_DOCK_TOP_CLEARANCE_PX = 12 + 54 + 10;

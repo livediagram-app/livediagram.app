@@ -258,6 +258,8 @@ export function useWhiteboard(deps: Deps) {
     pinnedShapes: dockPrefs.pinned,
     slotShapes: dockPrefs.slots,
     applySlotOutcome: dockPrefs.applySlotOutcome,
+    // Where the dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits").
+    position: dockPrefs.position,
     pickPath,
     pathEditing,
     leavePathEdit,

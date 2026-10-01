@@ -94,6 +94,7 @@ export const HELP_ARTICLES = {
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
+  whiteboards: 'canvas/whiteboards',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
 } as const;
@@ -335,6 +336,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
+  },
+  whiteboards: {
+    title: 'Learn about whiteboards',
+    description: 'The dock, its pens and shapes, and where it sits.',
   },
   livePresence: {
     title: 'Learn about live presence',

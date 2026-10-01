@@ -39,6 +39,9 @@ type TopCenterChromeProps = Pick<
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
+  // A whiteboard's dock at the top (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits"):
+  // the stack starts beneath it.
+  dockOnTop?: boolean;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -57,6 +60,7 @@ export function TopCenterChrome({
   canvasTool,
   formatSourceId,
   isPaintMode,
+  dockOnTop = false,
   tabTimer,
   tabVote,
   onPauseTimer,
@@ -71,7 +75,9 @@ export function TopCenterChrome({
   onStopFollowing,
 }: TopCenterChromeProps) {
   return (
-    <TopCenterStack belowToolbar={toolbarLayout === true && !readOnly}>
+    <TopCenterStack
+      below={dockOnTop ? 'dock' : toolbarLayout === true && !readOnly ? 'toolbar' : undefined}
+    >
       {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}

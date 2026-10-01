@@ -41,14 +41,22 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
 // gaps between pills stay click-through; each pill re-enables pointer
 // events for itself.
+const STACK_TOP: Record<'toolbar' | 'dock' | 'none', string> = {
+  toolbar: 'top-[4.25rem]',
+  dock: 'top-[4.75rem]',
+  none: 'top-[4.75rem] sm:top-3',
+};
+
 export function TopCenterStack({
   children,
-  belowToolbar = false,
+  below,
 }: {
   children: ReactNode;
-  // The Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) owns top-3 on desktop, so the
-  // stack starts under it instead of on top of it.
-  belowToolbar?: boolean;
+  // A bar across the top of the canvas owns top-3, so the stack starts under it instead of on top
+  // of it: the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md, 46 px), or a
+  // whiteboard's dock at the top (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits",
+  // 54 px).
+  below?: 'toolbar' | 'dock';
 }) {
   return (
     // On mobile this stack starts BELOW the dock rather than beside it. Both
@@ -73,7 +81,7 @@ export function TopCenterStack({
     // instead of them punching through it. Desktop keeps z-chrome, where the
     // stack is centred and nothing overlaps it.
     <div
-      className={`pointer-events-none absolute right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${belowToolbar ? 'top-[4.25rem]' : 'top-[4.75rem] sm:top-3'} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
+      className={`pointer-events-none absolute right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${STACK_TOP[below ?? 'none']} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
     >
       {children}
     </div>

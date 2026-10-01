@@ -53,8 +53,9 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## What a whiteboard shows
 
-A whiteboard trades the editor's full chrome for one **floating dock** at the
-bottom centre of the canvas, like Microsoft Whiteboard's.
+A whiteboard trades the editor's full chrome for one **floating dock**,
+centred across the **top** of the canvas by default (see
+[Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
 
 - **Hidden on a whiteboard tab:** the palette (floating and the Toolbar
   layout's strip), the format painter, the highlighter (a whiteboard's pens are its markers), the Theme &
@@ -87,8 +88,8 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **One dock, no modes.** Every user sees the same four groups; the shapes
   bar stays small by starting with just two pinned shapes, so there is no
   simpler mode to switch to.
-- **The dock is four groups side by side**, centred together at the bottom
-  of the canvas with a clear gap between them, left to right: **drawing
+- **The dock is four groups side by side**, centred together at the top
+  (or bottom) of the canvas with a clear gap between them, left to right: **drawing
   tools**, **shapes**, **history** (Undo, Redo) and **settings** (the cog on
   its own). Each group is its own pill, and its own toolbar for assistive
   technology ("Drawing tools", "Shapes", "History", "Settings"), each one Tab
@@ -145,8 +146,9 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none, search does not offer it (nor the format painter), and one held on a
   diagram tab is put down on arriving at a whiteboard.
-- The dock never moves when a tool is picked: flyouts open **above** it, and
-  each group's own width is fixed per breakpoint, so nothing shifts under the
+- The dock never moves when a tool is picked: flyouts open on the board side
+  of it (**below** a dock at the top, **above** one at the bottom), and each
+  group's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
 - On narrow screens the dock scrolls horizontally rather than wrapping.
 - A sticky or a text box placed from the dock opens for typing at once.
@@ -154,6 +156,38 @@ bottom centre of the canvas, like Microsoft Whiteboard's.
   styling is reached through right-click, as on any tab, but the menu offers
   only what a whiteboard element uses (colour, width, delete, bring forward /
   send back, duplicate, comment).
+
+## Where the dock sits
+
+- **Top by default**, centred across the top of the canvas, where the
+  Toolbar layout's strip sits on a diagram tab
+  ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
+  are where the rest of the product keeps them.
+- **Bottom by choice**: Settings, **Editor**, a **Whiteboard** section with
+  one row, **Dock Position** (**Top** / **Bottom**). The bottom is closer to
+  hand when drawing on a tablet and leaves the top of the board free. Only a
+  whiteboard has a dock, so no other tab has this setting and nothing else
+  moves with it.
+- **Stored per user** in the synced preferences
+  ([User preferences](../007-editor/user-preferences.md)) as
+  `whiteboardDockPosition`; unset, or any value but `bottom`, is the top. A
+  change applies at once, on every whiteboard tab.
+- **At the top:**
+  - it keeps clear of the Explorer's menu button in the top-left corner: on
+    a phone or a tablet it starts to the button's right, so a tablet in
+    portrait still shows the whole dock; from 1024 px wide it is centred with
+    the same clearance on both sides;
+  - its flyouts and the "Seven shapes are pinned" hint open **below** it;
+  - the top-centre banners (follow-me, mode banners, timer, vote) sit
+    **beneath** it, as they sit beneath the Toolbar layout's strip;
+  - panels docked in a top corner move **below** it when it would reach
+    into them, as they do for the Toolbar layout's strip.
+- **At the bottom:** its flyouts and hint open **above** it, and it is lifted
+  above the bottom-right controls (history, layers, zoom) until the window is
+  wide enough for both on one line.
+- **Telemetry:** `UI` · `Changed` · `WhiteboardDockPositionTop` /
+  `WhiteboardDockPositionBottom`, fired by the Settings row like every choice
+  row, and charted with the Editor settings.
 
 ## Shape slots
 
@@ -253,7 +287,7 @@ The shapes group learns and keeps the shapes a user reaches for.
   alone. The context-menu key and Shift+F10 on the focused button do the same.
 - **Picking a marker, and its colour:** a press on a marker picks it up; a
   press on the marker already in hand opens its **colour picker** (a flyout
-  above it, like the others). For Marker 1 it holds the width only.
+  on the board side of it, like the others). For Marker 1 it holds the width only.
 - **The colour picker** (Markers 2 and 3), top to bottom:
   - **Eight stock colours** in one row: **Ink, Blue, Red, Orange, Green,
     Teal, Violet, Pink**, the same eight as the quick style panel's.
@@ -663,8 +697,8 @@ The whiteboard is built in rounds and tuned with the operator between them.
   entry, the dock with every tool above, pen versus touch, the light and dark
   board looks, the backgrounds, telemetry and the help article. Opening a
   whiteboard, or turning a fresh tab into one, puts the active pen in hand.
-  The dock sits above the bottom-right controls until the window is wide
-  enough for both on one line.
+  The dock sits at the top, or at the bottom by choice
+  ([Where the dock sits](#where-the-dock-sits)).
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,
   duplicate, comment); until then a whiteboard element opens the ordinary
   menu. The Microsoft Whiteboard import lands with its own spec.

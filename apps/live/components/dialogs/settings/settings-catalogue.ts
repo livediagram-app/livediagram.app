@@ -25,6 +25,11 @@ import {
   type UiScalePart,
 } from '@/lib/ui-scale';
 import { setUiScalePreview } from '@/lib/ui-scale-preview';
+import {
+  readWhiteboardDockPosition,
+  withWhiteboardDockPosition,
+  type WhiteboardDockPosition,
+} from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
 import {
   CLOUD_SYNC_PROVIDERS,
@@ -353,6 +358,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.middleMousePan !== false,
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
+      },
+      {
+        // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": only a whiteboard has a
+        // dock, so only a whiteboard moves with this.
+        kind: 'choice',
+        key: 'whiteboardDockPosition',
+        keywords: 'whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
+        section: 'Whiteboard',
+        label: 'Dock Position',
+        description:
+          "Where a whiteboard's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only whiteboards have a dock, so other tabs are unchanged.",
+        helpArticle: 'whiteboards',
+        options: [
+          { id: 'top', label: 'Top' },
+          { id: 'bottom', label: 'Bottom' },
+        ],
+        read: readWhiteboardDockPosition,
+        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
+        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
       },
       {
         // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
