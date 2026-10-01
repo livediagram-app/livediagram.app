@@ -9,6 +9,7 @@ import {
   uiScalePartPatch,
   uiScalePatch,
   uiScaleStyle,
+  uiUnscaleStyle,
   withUiScalePatch,
 } from './ui-scale';
 import type { UserPreferences } from './user-preferences';
@@ -100,6 +101,19 @@ describe('uiScaleStyle', () => {
 
   it('zooms a scaled one', () => {
     expect(uiScaleStyle(1.15)).toEqual({ zoom: 1.15 });
+  });
+});
+
+describe('uiUnscaleStyle', () => {
+  it('leaves a menu in an unscaled surface untouched', () => {
+    expect(uiUnscaleStyle(1)).toBeUndefined();
+  });
+
+  it('cancels the surface zoom, so the menu draws at design size', () => {
+    for (const scale of [0.8, 1.2]) {
+      const zoom = uiUnscaleStyle(scale)?.zoom as number;
+      expect(zoom * scale).toBeCloseTo(1);
+    }
   });
 });
 

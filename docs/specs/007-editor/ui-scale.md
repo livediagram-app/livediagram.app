@@ -24,8 +24,9 @@ each be sized on their own (see "The setting"):
 
 **Toolbar** (`toolbar`):
 
-- **The Toolbar layout's strip** and its More popover ([Toolbar layout](toolbar-layout.md)),
-  and that layout's top-left Explorer menu button.
+- **The Toolbar layout's strip** ([Toolbar layout](toolbar-layout.md)) and that layout's
+  top-left Explorer menu button. The strip's More popover does not scale: it is a menu opened
+  from the strip, so it stays at its design size like every other menu (see below).
 
 **Corner buttons** (`cornerButtons`):
 

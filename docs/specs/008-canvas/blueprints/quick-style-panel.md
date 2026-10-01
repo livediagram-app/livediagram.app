@@ -169,15 +169,15 @@ ownerId })` → `{ overrides, setOverride(role, slot, hex), clearOverride(role, 
 1. `targets = elements.filter(isQuickStyleTarget)`. Empty → `null` (no panel).
 2. Per section, its supporting targets:
 
-| Section      | Supports                                        |
-| ------------ | ----------------------------------------------- |
-| `stroke`     | arrows; shapes with `supportsColours`           |
-| `background` | shapes with `supportsFillColor`                 |
-| `textColour` | text elements                                   |
-| `width`      | arrows; shapes with `supportsBorderControls`    |
-| `style`      | arrows; shapes with `supportsBorderControls`    |
-| `textAlign`  | shapes that are not `isSelfDrawingShape`        |
-| `iconAlign`  | shapes with `acceptsInlineIcon` and an `iconId` |
+| Section      | Supports                                                |
+| ------------ | ------------------------------------------------------- |
+| `stroke`     | arrows; shapes with `supportsColours`                   |
+| `background` | shapes with `supportsFillColor`                         |
+| `textColour` | text elements                                           |
+| `width`      | arrows; shapes with `supportsBorderControls`            |
+| `style`      | arrows; shapes with `supportsBorderControls`            |
+| `textAlign`  | shapes with `supportsTextAlign` and a non-blank `label` |
+| `iconAlign`  | shapes with `acceptsInlineIcon` and an `iconId`         |
 
 A section with no supporting target is omitted. Every target supports nothing → `null`. 3. Style options: `['solid', 'dashed', 'flowing']` when every `style` target is an arrow, else
 `['solid', 'dashed', 'dotted']`. 4. Value per target:

@@ -26,7 +26,7 @@ import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { toSurfacePx, uiScaleStyle, uiUnscaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import type { CommandPaletteProps } from './CommandPalette.types';
@@ -418,16 +418,11 @@ export function ToolbarPalette(props: Props) {
                 // rather than tall, so a category body rarely has to scroll.
                 // A phone has no room to hang it from the button: it spans the
                 // screen between the side gutters instead.
-                // moreRight is measured in screen px; dvh scales with the zoom,
-                // so the cap is restated to keep 14rem (scaled) below it.
-                style={
-                  isMobile
-                    ? undefined
-                    : {
-                        right: toSurfacePx(moreRight, scale),
-                        maxHeight: `calc(100dvh / ${scale} - 14rem)`,
-                      }
-                }
+                // A menu, so it stays at design size while the strip is scaled
+                // (docs/specs/007-editor/ui-scale.md): the counter-zoom brings it
+                // back to 1, so moreRight (screen px) and the classes' width and
+                // height cap apply as written.
+                style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right: moreRight }}
                 className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
               >
                 <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">

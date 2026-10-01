@@ -87,7 +87,8 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
         (el.type === 'shape' && supportsBorderControls(el))
       );
     case 'textAlign':
-      return el.type === 'shape' && supportsTextAlign(el.shape);
+      // Only once the shape has words to align: an empty label has nothing to move.
+      return el.type === 'shape' && supportsTextAlign(el.shape) && !!el.label?.trim();
     case 'iconAlign':
       return el.type === 'shape' && acceptsInlineIcon(el) && !!el.iconId;
   }
