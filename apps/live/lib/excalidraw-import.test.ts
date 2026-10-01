@@ -10,11 +10,7 @@ import {
   type ShapeElement,
   type TextElement,
 } from '@livediagram/document';
-import {
-  encodeStrokePoints,
-  freehandNormalisedPoints,
-  strokePointCount,
-} from '@livediagram/document';
+import { encodeStrokePoints, freehandCanvasPoints, strokePointCount } from '@livediagram/document';
 
 // Excalidraw text through the one parser and the shared landing, as the Import dialog runs it
 // (useTabImport, useBoardSceneImport), at the tab's own coordinates.
@@ -446,11 +442,18 @@ describe('arrow + line mapping', () => {
     expect(fh.type).toBe('freehand');
     expect(fh.closed).toBe(false);
     expect(fh.straightEdges).toBeUndefined();
-    expect(fh).toMatchObject({ x: 10, y: 10, width: 80, height: 20 });
-    const [first, second] = freehandNormalisedPoints(fh);
-    expect(first).toEqual({ nx: 0, ny: 0 });
-    expect(second!.nx).toBeCloseTo(0.5, 4);
-    expect(second!.ny).toBe(1);
+    // The points land where Excalidraw had them; the box is the points codec's (a 1 px margin on
+    // whole pixels, as a drawn stroke's).
+    const onCanvas = freehandCanvasPoints(fh);
+    expect(onCanvas).toHaveLength(3);
+    for (const [i, [x, y]] of [
+      [10, 10],
+      [50, 30],
+      [90, 10],
+    ].entries()) {
+      expect(onCanvas[i]!.x).toBeCloseTo(x!, 2);
+      expect(onCanvas[i]!.y).toBeCloseTo(y!, 2);
+    }
   });
 
   it('closes a freedraw stroke whose ends coincide', () => {
