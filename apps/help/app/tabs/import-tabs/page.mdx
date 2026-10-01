@@ -5,7 +5,7 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene (including a PNG or SVG exported with the scene) into the active tab, either by pasting the text or picking a file. Images in the file come across into your gallery. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene (including a PNG or SVG exported with the scene) into the active tab, either by pasting the text or picking a file, or paste a drawing copied in Excalidraw straight onto the canvas. Images in the file come across into your gallery. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
@@ -25,7 +25,17 @@ From the tab ellipsis menu, expand the **Content** section and choose **Import**
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie, …) aren't supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
-- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, groups, freehand drawings, and images. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes.
+- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. On a [whiteboard](/help/canvas/whiteboards/) it comes in as whiteboard marks; on any other tab as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
+
+## Paste from Excalidraw
+
+You don't need a file to bring a drawing across. In Excalidraw, select what you want and copy it (Ctrl+C, or Cmd+C on a Mac), then click into a livediagram tab and paste (Ctrl+V or Cmd+V). The drawing lands where your pointer is, or in the middle of the view, and stays selected so you can move or restyle it at once. One undo takes the whole paste back.
+
+- On a **whiteboard**, strokes become pen strokes, text becomes text boxes that fit their words, and Excalidraw's black ink follows the board: dark on a light board, light on a dark one. Its blue, green, red and orange become the matching pen colours.
+- On a **diagram tab**, the drawing comes in as diagram elements, just as importing the file would.
+- You can also **drag** a `.excalidraw` file, or a PNG or SVG exported from Excalidraw with **Embed scene** on, straight onto the canvas.
+
+When something couldn't come across exactly (Excalidraw groups, for example), a small note at the bottom of the canvas lists what changed. Pasting adds to the tab; it never replaces what is already there.
 
 Each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 

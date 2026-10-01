@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/live/components/palette/ElementContentSections.tsx`    | The image menu's "Caption Card" toggle                                           |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`        | `WEB_ROW_ACTION`: the ring's add-row action                                      |
 | `apps/live/lib/element-telemetry.ts`                         | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
-| `apps/live/lib/excalidraw-import.ts`, `excalidraw-export.ts` | No group mapping                                                                 |
+| `apps/live/lib/excalidraw-scene.ts`, `excalidraw-export.ts`  | No group mapping                                                                 |
 
 ## Domain and naming
 

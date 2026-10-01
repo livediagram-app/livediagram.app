@@ -26,16 +26,20 @@ degradation table below; nothing degrades silently outside that table.
 - `apps/live/lib/excalidraw-scene.ts`: `excalidrawToBoardScene(envelope)`, the
   pure mapping from Excalidraw elements to a `BoardScene`. Helpers for colours,
   text and linear geometry sit beside it (`excalidraw-scene-*.ts`).
-- `apps/live/lib/excalidraw-import.ts`: `buildElementsFromExcalidraw(text, profile)`,
-  the Import dialog's converter: envelope, scene, then `landBoardScene`.
-  Lazy-loaded by `useTabImport`. It never throws on bad input: it returns
-  `{ ok: false, error }` with a human-readable message. It stays pure and
-  synchronous: image elements come back as placeholders plus one image request
-  each, which `useTabImport` runs through the
+- `apps/live/lib/excalidraw-read.ts`: `sceneFromExcalidrawText(text)` (envelope,
+  then scene, or the rejection's message) and `readExcalidrawFile(file)` (a
+  dropped or pasted file: its scene, `not-excalidraw`, or an error). Never
+  throws. Lazy-loaded by its callers, so the parser stays out of the editor's
+  first bundle.
+- `apps/live/lib/excalidraw-paste.ts`: the cheap, synchronous recognisers a paste
+  or drop runs first: `excalidrawTextFromPaste(data)` and
+  `isExcalidrawFileCandidate(file)`, plus the drop refusal copy.
+- The Import dialog (`useTabImport`) reads the scene and hands it to the shared
+  replace-the-tab commit (`useBoardSceneImport`, [Board scene](board-scene.md)),
+  which lands it for the tab's profile and runs its images through the
   [Import image pipeline](import-image-pipeline.md) before the tab changes.
-- `apps/live/lib/excalidraw-paste.ts`: `readExcalidrawPaste(data)`, which picks
-  the Excalidraw scene out of a paste event's data (see "Paste") for
-  `useClipboard`, which hands the scene to the shared board-scene insert.
+  `useClipboard` hands a pasted or dropped scene to the board-scene insert
+  (`useBoardSceneInsert`); `usePaletteDrop` passes dropped files to it.
 - `apps/live/lib/excalidraw-embedded.ts`: `extractExcalidrawScene(input)`,
   which finds the scene JSON inside an Excalidraw PNG or SVG export (see
   "Embedded-scene PNG and SVG") and hands plain JSON text through untouched.
@@ -156,7 +160,7 @@ neither envelope records a theme. Items keep the scene's z-order (below).
 | `text` standalone                                  | `text` with the element's box; `autoWidth` from `autoResize` (absent reads `true`); the unwrapped `originalText` (else `text`)                                                                                                                                                                                                                                     |
 | `freedraw`                                         | `ink`: absolute points; `p` from `pressures` when `simulatePressure` is `false` and there is one pressure per point; `closed` when the ends coincide (within `EXCALIDRAW_CLOSE_EPSILON_PX`), the repeated end point dropped; `streamline` from `strokeOptions.streamline` (Excalidraw's default 0.5 when absent); a non-transparent background is the ink's `fill` |
 | `line`                                             | `polyline`: absolute points; `closed` when `polygon` is `true` or the ends coincide (3+ points); `curved` when `roundness` is set and there are 3+ points; a non-transparent background on a closed line is its `fill`; arrowheads as `heads`                                                                                                                      |
-| `arrow`                                            | `connector`: absolute points; `from` / `to` the keys of the bound elements when they are in the scene; `curved` when `roundness` is set and it is not `elbowed` (an elbow or sharp arrow is not curved; the landing draws its bends as a curve and says so); `heads` per the table below; bound text as `label`                                                    |
+| `arrow`                                            | `connector`: absolute points; `from` / `to` the keys of the bound elements when they are in the scene; `curved` when `roundness` is set, it bends (3+ points) and it is not `elbowed` (an elbow or sharp arrow is not curved; the landing draws its bends as a curve and says so); `heads` per the table below; bound text as `label`                              |
 | `stickynote`                                       | `sticky` with the element's box and `backgroundColor` as `fill`; its bound text as `text`                                                                                                                                                                                                                                                                          |
 | `frame` / `magicframe`                             | `frame` with its `name`; the elements inside it (`frameId`) stay ordinary items                                                                                                                                                                                                                                                                                    |
 | `image`                                            | `image` with `asset` = `fileId` (the element id when absent); a `crop` sets `crop`. Its `files` entry with a `dataURL` becomes a `data-url` asset, once per `fileId`                                                                                                                                                                                               |
@@ -252,10 +256,10 @@ The landing is [Board scene](board-scene.md)'s, one for every source:
 Every `image` element becomes one image request keyed by its `fileId`, so an
 image used twice in the scene is stored once. The request's source is the
 `dataURL` from `files`; a `fileId` that `files` lacks is `missing-bytes`.
-`useTabImport` opens one import session for the document, resolves every request,
-fills `imageId` / `naturalWidth` / `naturalHeight` on the elements that stored,
-and only then replaces the tab; a paste inserts first and fills the
-placeholders as they store. Limits, offline handling, failures and the
+The shared commit (an import's replace or a paste's insert, [Board scene](board-scene.md))
+opens one import session for the document, resolves every request, fills
+`imageId` / `naturalWidth` / `naturalHeight` on the elements that stored, and
+only then changes the tab, so either stays one undo step. Limits, offline handling, failures and the
 report are the pipeline's ([Import image pipeline](import-image-pipeline.md)).
 
 ## Export degradation table (Tab → `.excalidraw`)
