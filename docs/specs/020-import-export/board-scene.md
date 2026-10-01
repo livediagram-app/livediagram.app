@@ -82,6 +82,13 @@ Each scene colour resolves to one of three things, in this order:
 3. **Its hex**: anything else keeps its exact `#rrggbb`, a custom colour, the
    same on both boards (Excalidraw's grey `#868e96`, pastels, browns).
 
+"Nearest stock colour" means the whiteboard's one definition, the one
+[Snap colours](../023-whiteboard/whiteboard.md) uses. The two rules differ on
+purpose: the snap is **always nearest** (a grey becomes Ink, a pastel its
+hue's stock colour), the import **keeps the exact hex unless the colour is
+clearly a stock colour**, so a board arrives as it was drawn and its custom
+colours can be snapped afterwards, in one press, if wanted.
+
 - A colour's `alpha` multiplies into the element's opacity; a colour with no
   alpha is opaque.
 - **Fills**: no fill, or a fill with alpha 0, lands unfilled. A **sticky's**

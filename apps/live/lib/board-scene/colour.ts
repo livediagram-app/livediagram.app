@@ -2,14 +2,27 @@
 // "Colours"): a light-reference scene colour becomes the board's ink (unset), a stock colour by
 // name (adaptive per board), or its exact hex (a custom colour). Fills stay hex; a sticky's fill
 // takes the nearest sticky preset's paper.
-import { PEN_COLOURS, STICKY_PRESETS, hexOklch, type PenColourName } from '@livediagram/document';
+import {
+  PEN_NEUTRAL_CHROMA,
+  STICKY_PRESETS,
+  hexOklch,
+  penColourAtHue,
+  penColourHueDistance,
+  type PenColourName,
+} from '@livediagram/document';
 import type { SceneColour } from './scene';
 
+// The nearest stock colour is the whiteboard's one definition (penColourAtHue, the snap's too:
+// docs/specs/023-whiteboard/blueprints/snap-colours.md). The import asks more of a colour before
+// it becomes one: the snap is "always nearest" (any colour at PEN_NEUTRAL_CHROMA or over), the import
+// "keep the exact hex unless clearly a stock colour" (docs/specs/020-import-export/board-scene.md).
+
 // Near-black and near-neutral: the board's own ink. Excalidraw's ink #1e1e1e is L 0.235, C 0.
+// Stricter than the snap's neutral (PEN_NEUTRAL_CHROMA, any lightness): a grey keeps its hex.
 export const INK_MAX_LIGHTNESS = 0.35;
 export const INK_MAX_CHROMA = 0.04;
-// A clearly coloured line colour: chroma at least this (stock teal's light version is 0.080;
-// Excalidraw's bronze, 0.046, stays custom) ...
+// A clearly coloured line colour: chroma at least this, over the snap's PEN_NEUTRAL_CHROMA (stock
+// teal's light version is 0.080; Excalidraw's bronze, 0.046, stays custom) ...
 export const STOCK_MIN_CHROMA = 0.07;
 // ... at a line's lightness (stock versions sit at 0.47 to 0.68; pastels from 0.86 are fills) ...
 export const STOCK_LIGHTNESS_RANGE: readonly [number, number] = [0.3, 0.8];
@@ -23,33 +36,29 @@ export type ResolvedColour =
   | { kind: 'hex'; hex: string }
   | { kind: 'unreadable' };
 
-// '#rgb' or '#rrggbb' as lower-case '#rrggbb' (only called on a readable hex).
+// '#rgb' as '#rrggbb', lower-cased: sources write both, the colour maths reads the long form.
 export function normaliseHex(hex: string): string {
-  const full = hex.length === 4 ? '#' + [...hex.slice(1)].map((d) => d + d).join('') : hex;
+  const full = /^#[0-9a-f]{3}$/i.test(hex)
+    ? '#' + [...hex.slice(1)].map((d) => d + d).join('')
+    : hex;
   return full.toLowerCase();
 }
 
-const hueDistance = (a: number, b: number) => {
-  const d = Math.abs(a - b) % 360;
-  return d > 180 ? 360 - d : d;
-};
+/** An exact OKLCH of a scene hex, short form included; null when it is no colour. */
+export function sceneOklch(hex: string): { l: number; c: number; h: number } | null {
+  return hexOklch(normaliseHex(hex));
+}
 
 function resolveHex(hex: string): ResolvedColour {
-  const ok = hexOklch(hex);
+  const ok = sceneOklch(hex);
   if (!ok) return { kind: 'unreadable' };
   if (ok.l <= INK_MAX_LIGHTNESS && ok.c <= INK_MAX_CHROMA) return { kind: 'ink' };
   const [minL, maxL] = STOCK_LIGHTNESS_RANGE;
-  if (ok.c >= STOCK_MIN_CHROMA && ok.l >= minL && ok.l <= maxL) {
-    let best: PenColourName | null = null;
-    let bestDistance = Infinity;
-    for (const stock of PEN_COLOURS) {
-      const d = hueDistance(ok.h, stock.hue);
-      if (d < bestDistance) {
-        best = stock.id;
-        bestDistance = d;
-      }
+  if (ok.c >= Math.max(STOCK_MIN_CHROMA, PEN_NEUTRAL_CHROMA) && ok.l >= minL && ok.l <= maxL) {
+    const nearest = penColourAtHue(ok.h);
+    if (penColourHueDistance(ok.h, nearest) <= STOCK_HUE_TOLERANCE_DEG) {
+      return { kind: 'stock', name: nearest };
     }
-    if (best && bestDistance <= STOCK_HUE_TOLERANCE_DEG) return { kind: 'stock', name: best };
   }
   return { kind: 'hex', hex: normaliseHex(hex) };
 }
@@ -103,11 +112,11 @@ export function textColourFields(c: ResolvedColour | null): {
 /** A fill as stored: its hex, or undefined (unfilled) for none, a clear one or an unreadable one. */
 export function resolveFill(fill: SceneColour | undefined): string | undefined {
   if (!fill || colourAlpha(fill) === 0) return undefined;
-  return hexOklch(fill.hex) ? normaliseHex(fill.hex) : undefined;
+  return sceneOklch(fill.hex) ? normaliseHex(fill.hex) : undefined;
 }
 
 function oklab(hex: string): [number, number, number] | null {
-  const ok = hexOklch(hex);
+  const ok = sceneOklch(hex);
   if (!ok) return null;
   const r = (ok.h * Math.PI) / 180;
   return [ok.l, ok.c * Math.cos(r), ok.c * Math.sin(r)];

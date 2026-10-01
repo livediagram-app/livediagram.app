@@ -11,6 +11,7 @@ import {
   isPenColourName,
   nearestPenColour,
   penColourAtHue,
+  penColourHueDistance,
   penColourCss,
   penColourHardToSee,
   penColourHex,
@@ -159,6 +160,12 @@ describe('nearestPenColour', () => {
     for (const bad of ['', 'red', '#fff', 'transparent', 'rgb(0,0,0)', '#12345g']) {
       expect(nearestPenColour(bad)).toBeNull();
     }
+  });
+
+  it('measures hue distance round the circle', () => {
+    expect(penColourHueDistance(255, 'blue')).toBe(0);
+    expect(penColourHueDistance(5, 'pink')).toBe(15);
+    expect(penColourHueDistance(185, 'red')).toBe(160);
   });
 
   it('keeps the neutral threshold in its safe range', () => {

@@ -143,9 +143,11 @@ medium, else thick; text `<= 16` sm, `<= 22` md, else lg.
    `LandContext.colour` counts it under "Colours that couldn't be read were drawn in ink" (degraded)
    and lands it as ink.
 3. OKLCH of the hex. `L <= INK_MAX_LIGHTNESS && C <= INK_MAX_CHROMA` → ink.
-4. `C >= STOCK_MIN_CHROMA` and `L` inside `STOCK_LIGHTNESS_RANGE`: the stock colour (in
-   `PEN_COLOURS` order) with the smallest circular hue distance; within
-   `STOCK_HUE_TOLERANCE_DEG` → `{ kind: 'stock', name }`. Ties go to the earlier stock colour.
+4. `C >= max(STOCK_MIN_CHROMA, PEN_NEUTRAL_CHROMA)` and `L` inside `STOCK_LIGHTNESS_RANGE`: the
+   nearest stock colour `penColourAtHue(h)` (the snap's own, `packages/document/src/pen-colours.ts`;
+   ties to the earlier); when `penColourHueDistance(h, it) <= STOCK_HUE_TOLERANCE_DEG` →
+   `{ kind: 'stock', name }`. No colour maths of its own: `hexOklch` (via `sceneOklch`, which first
+   expands `#rgb`), `penColourAtHue` and `penColourHueDistance` are the document package's.
 5. Else `{ kind: 'hex', hex: lower-case }`.
 
 Results are memoised per hex within one landing (a `Map`), so a 10,000-item scene computes each
@@ -430,6 +432,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 
 | Rule                                                                   | Test                                                                                                                                           |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Import rule beside the snap rule over the whole Excalidraw palette     | `colour.test.ts` "the import rule beside the snap rule"                                                                                        |
 | Ink threshold, stock match, hex fallback, every real Excalidraw colour | `colour.test.ts` (table-driven)                                                                                                                |
 | Alpha to opacity; fills; sticky fill to nearest preset                 | `colour.test.ts`                                                                                                                               |
 | Marker, border and arrow widths                                        | `width.test.ts`                                                                                                                                |

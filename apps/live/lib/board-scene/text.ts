@@ -5,13 +5,12 @@ import {
   LABEL_FONT_PX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
-  hexOklch,
   type PenColourName,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
 } from '@livediagram/document';
-import { normaliseHex, textColourFields } from './colour';
+import { normaliseHex, sceneOklch, textColourFields } from './colour';
 import type { LandContext } from './context';
 import type { SceneText } from './scene';
 
@@ -95,7 +94,7 @@ export function labelFields(
 // The text colour as its exact hex (an unreadable one is counted and left as ink).
 function exactColour(t: SceneText, ctx: LandContext): { textColor?: string } {
   if (t.colour === 'ink') return {};
-  if (!hexOklch(t.colour.hex)) {
+  if (!sceneOklch(t.colour.hex)) {
     ctx.colour(t.colour); // counts it as unreadable, drawn in ink
     return {};
   }

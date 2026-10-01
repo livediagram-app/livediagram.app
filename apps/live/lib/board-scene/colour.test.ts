@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { PEN_COLOUR_NAMES, STICKY_PRESETS, penColourHex } from '@livediagram/document';
 import {
+  PEN_COLOUR_NAMES,
+  PEN_NEUTRAL_CHROMA,
+  STICKY_PRESETS,
+  nearestPenColour,
+  penColourHex,
+} from '@livediagram/document';
+import {
+  INK_MAX_CHROMA,
+  STOCK_MIN_CHROMA,
   colourAlpha,
   createColourResolver,
   lineColourFields,
@@ -59,6 +67,51 @@ describe('resolveSceneColour', () => {
   it('reads an unreadable colour as unreadable', () => {
     expect(resolve({ hex: 'blue' })).toEqual({ kind: 'unreadable' });
     expect(resolve({ hex: '#12345' })).toEqual({ kind: 'unreadable' });
+  });
+});
+
+// One nearest stock colour (penColourAtHue), two rules over it: the snap is "always nearest", the
+// import "keep the exact hex unless clearly a stock colour". Every colour of the real Excalidraw
+// palette, side by side (docs/specs/020-import-export/board-scene.md "Colours",
+// docs/specs/023-whiteboard/blueprints/snap-colours.md).
+describe('the import rule beside the snap rule', () => {
+  const resolve = createColourResolver();
+  const importOf = (hex: string) => {
+    const r = resolve({ hex })!;
+    return r.kind === 'stock' ? r.name : r.kind === 'ink' ? 'ink' : 'hex';
+  };
+  it.each([
+    // [hex, import, snap]
+    ['#1e1e1e', 'ink', 'ink'],
+    ['#868e96', 'hex', 'ink'],
+    ['#495057', 'hex', 'ink'],
+    ['#ffffff', 'hex', 'ink'],
+    ['#846358', 'hex', 'ink'],
+    ['#1971c2', 'blue', 'blue'],
+    ['#2f9e44', 'green', 'green'],
+    ['#e03131', 'red', 'red'],
+    ['#f08c00', 'orange', 'orange'],
+    ['#c2255c', 'pink', 'pink'],
+    ['#6741d9', 'violet', 'violet'],
+    ['#9c36b5', 'hex', 'violet'],
+    ['#0c8599', 'hex', 'teal'],
+    ['#099268', 'hex', 'green'],
+    ['#a5d8ff', 'hex', 'blue'],
+    ['#ffdf6b', 'hex', 'orange'],
+  ])('%s: import %s, snap %s', (hex, imported, snapped) => {
+    expect(importOf(hex)).toBe(imported);
+    expect(nearestPenColour(hex)).toBe(snapped);
+  });
+
+  it('agrees with the snap on every colour it calls stock', () => {
+    for (const hex of ['#1971c2', '#2f9e44', '#e03131', '#f08c00', '#c2255c', '#6741d9']) {
+      expect(importOf(hex)).toBe(nearestPenColour(hex));
+    }
+  });
+
+  it('asks more of a colour than the snap does', () => {
+    expect(STOCK_MIN_CHROMA).toBeGreaterThanOrEqual(PEN_NEUTRAL_CHROMA);
+    expect(INK_MAX_CHROMA).toBeLessThanOrEqual(PEN_NEUTRAL_CHROMA);
   });
 });
 

@@ -194,13 +194,18 @@ export const PEN_NEUTRAL_CHROMA = 0.05;
 /** What a custom colour snaps to: a stock colour, or the board's own ink. */
 export type SnapTarget = PenColourName | 'ink';
 
+/** How far a hue (degrees) is from a stock colour's, round the circle: 0 to 180. */
+export function penColourHueDistance(hue: number, name: PenColourName): number {
+  const d = Math.abs((((hue - PEN_COLOURS.find((c) => c.id === name)!.hue) % 360) + 360) % 360);
+  return Math.min(d, 360 - d);
+}
+
 /** The stock colour nearest a hue (degrees, round the circle); a tie goes to the earlier one. */
 export function penColourAtHue(hue: number): PenColourName {
   let best: PenColourName = PEN_COLOURS[0].id;
   let bestDist = Infinity;
   for (const c of PEN_COLOURS) {
-    const d = Math.abs((((hue - c.hue) % 360) + 360) % 360);
-    const dist = Math.min(d, 360 - d);
+    const dist = penColourHueDistance(hue, c.id);
     if (dist < bestDist) {
       best = c.id;
       bestDist = dist;
