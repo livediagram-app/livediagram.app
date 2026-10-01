@@ -1,17 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { buildElementsFromExcalidraw } from './excalidraw-import';
+import { buildElementsFromExcalidraw as build } from './excalidraw-import';
 import { tabToExcalidrawText } from './excalidraw-export';
-import type {
-  ArrowElement,
-  FreehandElement,
-  ShapeElement,
-  TextElement,
+import { excalidrawBuilder, excalidrawText } from './excalidraw-fixtures';
+import {
+  isValidElement,
+  type ArrowElement,
+  type FreehandElement,
+  type ShapeElement,
+  type TextElement,
 } from '@livediagram/document';
 import {
   encodeStrokePoints,
   freehandNormalisedPoints,
   strokePointCount,
 } from '@livediagram/document';
+
+// The diagram profile: the mapping this importer has always had (docs/specs/020-import-export/excalidraw-import-export.md).
+const buildElementsFromExcalidraw = (text: string) => build(text, 'diagram');
 
 // Minimal scene wrapper — only the fields the importer reads.
 const scene = (elements: unknown[], appState?: Record<string, unknown>) =>
@@ -59,7 +64,7 @@ describe('buildElementsFromExcalidraw envelope', () => {
     );
     if (!r.ok) throw new Error(r.error);
     expect(r.elements).toHaveLength(0);
-    expect(r.skipped).toBe(1);
+    expect(r.report.skipped).toEqual([{ rule: 'Embeddable elements were skipped', count: 1 }]);
   });
 
   it('carries the scene background colour', () => {
@@ -260,7 +265,7 @@ describe('image migration requests', () => {
   it('keys an image without a fileId by its own element', () => {
     const r = buildElementsFromExcalidraw(withFiles([image({ fileId: null })], {}));
     if (!r.ok) throw new Error(r.error);
-    expect(r.images[0]).toMatchObject({ key: r.elements[0]!.id, source: null });
+    expect(r.images[0]).toMatchObject({ elementId: r.elements[0]!.id, key: 'i1', source: null });
   });
 
   it('fills the box when Excalidraw had cropped the image', () => {
@@ -504,5 +509,102 @@ describe('arrow + line mapping', () => {
     if (!r.ok) throw new Error(r.error);
     expect(r.elements).toHaveLength(1);
     expect((r.elements[0] as ArrowElement).label).toBe('yes');
+  });
+});
+
+describe('buildElementsFromExcalidraw on a whiteboard', () => {
+  // A clipboard copy shaped like a real one: a labelled box, an arrow bound to it, a stroke, a
+  // sticky note and standalone text, two of them grouped.
+  const copy = () => {
+    const b = excalidrawBuilder();
+    const box = b.rectangle({ x: 0, y: 0, width: 120, height: 60, groupIds: ['g'] });
+    const label = b.label(box, 'Read file', { fontSize: 16 });
+    const target = b.diamond({ x: 300, y: 0, width: 80, height: 80, strokeColor: '#f08c00' });
+    const arrow = b.arrow(
+      [
+        [0, 0],
+        [175, 0],
+      ],
+      { x: 122, y: 30, strokeColor: '#1971c2' },
+      { from: box, to: target },
+    );
+    const ink = b.freedraw(
+      [
+        [0, 0],
+        [10, 5],
+        [20, 0],
+      ],
+      { x: 0, y: 200 },
+    );
+    const sticky = b.stickynote({ x: 400, y: 200 });
+    const text = b.text('Tools', { x: 0, y: 300, fontSize: 40, groupIds: ['g'] });
+    return excalidrawText([box, label, target, arrow, ink, sticky, text]);
+  };
+
+  it('lands whiteboard-native elements with fresh ids, arrows pinned to their shapes', () => {
+    const r = build(copy(), 'whiteboard');
+    if (!r.ok) throw new Error(r.error);
+    expect(r.elements.every(isValidElement)).toBe(true);
+    expect(r.elements.map((e) => e.type)).toEqual([
+      'shape',
+      'shape',
+      'arrow',
+      'freehand',
+      'sticky',
+      'text',
+    ]);
+    const [box, diamond, arrow] = r.elements as [ShapeElement, ShapeElement, ArrowElement];
+    expect(arrow.from).toMatchObject({ kind: 'pinned', elementId: box.id });
+    expect(arrow.to).toMatchObject({ kind: 'pinned', elementId: diamond.id });
+    expect(box.label).toBe('Read file');
+    expect(r.elements.every((e) => !e.id.startsWith('el-'))).toBe(true);
+  });
+
+  it('makes Excalidraw ink adaptive and its stock colours named', () => {
+    const r = build(copy(), 'whiteboard');
+    if (!r.ok) throw new Error(r.error);
+    const [box, diamond, arrow, ink] = r.elements as [
+      ShapeElement,
+      ShapeElement,
+      ArrowElement,
+      FreehandElement,
+    ];
+    expect(box.strokeColor).toBeUndefined();
+    expect(box.penColour).toBeUndefined();
+    expect(diamond.penColour).toBe('orange');
+    expect(arrow.penColour).toBe('blue');
+    expect(ink.penColour).toBeUndefined();
+    expect(ink.strokeColor).toBeUndefined();
+  });
+
+  it('lands the text in the hand-drawn font, reports the dropped group, sets the board pattern', () => {
+    const r = build(copy(), 'whiteboard');
+    if (!r.ok) throw new Error(r.error);
+    const text = r.elements[5] as TextElement;
+    expect(text).toMatchObject({ type: 'text', label: 'Tools', font: 'caveat', autoWidth: true });
+    expect(r.report.degraded).toContainEqual({ rule: 'Groups were dropped', count: 1 });
+    expect(r.report.landed).toEqual({ shape: 2, connector: 1, ink: 1, sticky: 1, text: 1 });
+    expect(r.backgroundPattern).toBeUndefined();
+    expect(r.backgroundColor).toBeUndefined();
+  });
+
+  it('refuses what it cannot read with the envelope message', () => {
+    expect(build('{"type":"excalidraw/clipboard"}', 'whiteboard')).toEqual({
+      ok: false,
+      error: 'Scene is missing its elements array.',
+    });
+  });
+});
+
+describe('buildElementsFromExcalidraw background', () => {
+  it('takes a saved scene grid as the whiteboard pattern', () => {
+    const b = excalidrawBuilder();
+    const text = excalidrawText([b.rectangle()], {
+      type: 'excalidraw',
+      appState: { viewBackgroundColor: '#ffffff', gridModeEnabled: true },
+    });
+    const r = build(text, 'whiteboard');
+    expect(r.ok && r.backgroundPattern).toBe('graph');
+    expect(r.ok && r.backgroundColor).toBeUndefined();
   });
 });

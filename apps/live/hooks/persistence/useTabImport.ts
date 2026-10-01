@@ -4,7 +4,7 @@
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
 // Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md).
 
-import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
+import { remapElementRefs, tabKindOf, type Element, type Tab } from '@livediagram/document';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -103,7 +103,9 @@ export function useTabImport({
     ]);
     const scene = await extractExcalidrawScene(input);
     if (!scene.ok) return { status: 'error', error: scene.error };
-    const result = buildElementsFromExcalidraw(scene.text);
+    // A whiteboard gets whiteboard-native marks; every other tab the diagram mapping.
+    const profile = tabKindOf(active) === 'whiteboard' ? 'whiteboard' : 'diagram';
+    const result = buildElementsFromExcalidraw(scene.text, profile);
     if (!result.ok) return { status: 'error', error: result.error };
     let elements = result.elements;
     let images;
@@ -124,7 +126,9 @@ export function useTabImport({
       container: scene.container,
       elements: elements.length,
       images: result.images.length,
-      skipped: result.skipped,
+      profile,
+      degraded: result.report.degraded,
+      skipped: result.report.skipped,
     });
     // Ids are already re-minted inside the converter (docs/specs/020-import-export/excalidraw-import-export.md), so this
     // skips the JSON path's remintElementIds step.
@@ -134,6 +138,7 @@ export function useTabImport({
       elements,
       theme: active?.theme,
       backgroundColor: result.backgroundColor,
+      backgroundPattern: result.backgroundPattern,
     });
     track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[scene.container]);
     return images ? { status: 'done', images } : { status: 'done' };
