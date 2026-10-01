@@ -54,6 +54,8 @@ describe('SnapColoursSection', () => {
       '3 custom colours snapped to stock colours',
     );
     expect(screen.queryByRole('button', { name: 'Snap to stock colours' })).toBeNull();
+    // The button is gone: the focus is on the confirmation, not lost.
+    expect(document.activeElement).toBe(screen.getByRole('status'));
   });
 
   it('confirms one colour in the singular', () => {
