@@ -9,6 +9,7 @@ import type { PickedExport } from '@/lib/pick-folder';
 import type { BoardFailure, BoardSummary } from '@/lib/ms-whiteboard/import';
 import type { ExportFileSet } from '@/lib/ms-whiteboard/board-export';
 import { track } from '@/lib/telemetry';
+import { toggled, toggledAll } from '@/lib/import-selection';
 
 export type ImportScenes = (
   scenes: BoardScene[],
@@ -117,13 +118,7 @@ export function useMsWhiteboardImport(deps: {
   };
 
   const toggle = (dir: string) =>
-    setState((s) => {
-      if (s.step !== 'list') return s;
-      const checked = new Set(s.checked);
-      if (checked.has(dir)) checked.delete(dir);
-      else checked.add(dir);
-      return { ...s, checked };
-    });
+    setState((s) => (s.step !== 'list' ? s : { ...s, checked: toggled(s.checked, dir) }));
 
   const toggleAll = () =>
     setState((s) =>
@@ -131,7 +126,10 @@ export function useMsWhiteboardImport(deps: {
         ? s
         : {
             ...s,
-            checked: new Set(s.checked.size === s.boards.length ? [] : s.boards.map((b) => b.dir)),
+            checked: toggledAll(
+              s.checked,
+              s.boards.map((b) => b.dir),
+            ),
           },
     );
 
