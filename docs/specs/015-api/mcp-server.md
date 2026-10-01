@@ -115,7 +115,9 @@ This implements the OAuth flow Manager Toolkit uses:
    the host is the fact to check, which is why it must come from the server. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
-   `apps/live/lib/mcp-consent-session.ts`.
+   `apps/live/lib/mcp-consent-session.ts`. The screen is never frameable
+   (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
+   Connect click can't be clickjacked from an attacker's page.
 4. **Consent + mint** — on approve, `apps/live` calls a **new
    `POST /api/oauth/exchange`** on the api worker. This is the one api change: an
    endpoint that requires a verified Clerk identity (gated exactly like

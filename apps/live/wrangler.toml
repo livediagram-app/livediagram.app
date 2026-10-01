@@ -11,6 +11,12 @@ compatibility_date = "2026-05-29"
 directory = "./out"
 binding = "ASSETS"
 not_found_handling = "404-page"
+# Assets are served BEFORE the worker by default, so without this the
+# security headers in src/worker.ts (X-Frame-Options DENY et al.) only
+# reached paths that matched no file: every real page, including the
+# MCP OAuth consent screen, shipped frameable. Run the worker first for
+# everything but the hashed /_next/ bundles, which need no page headers.
+run_worker_first = ["/*", "!/_next/*"]
 
 # Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
 # as `livediagram-live-staging`. `main` is inheritable; the assets binding is
@@ -25,3 +31,4 @@ name = "livediagram-live-staging"
 directory = "./out"
 binding = "ASSETS"
 not_found_handling = "404-page"
+run_worker_first = ["/*", "!/_next/*"]
