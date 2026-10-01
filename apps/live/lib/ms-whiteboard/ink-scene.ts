@@ -6,6 +6,7 @@ import { lineColour } from './colours';
 import { penColourHex } from '@livediagram/document';
 import type { WbInk, WbStroke } from './elements';
 import type { PenStroke } from './pen-stroke';
+import { simplifyStroke } from './simplify';
 
 // The preset inks' colours, measured on real boards' screenshots: rainbow spreads its spectrum
 // left to right, galaxy blends purple into teal.
@@ -46,6 +47,17 @@ function strokeColour(stroke: WbStroke, ctx: Context): SceneColour | 'ink' | 'sk
   return lineColour(stroke.colour ?? { hex: '#000000' }, ctx.appearance, ctx.background);
 }
 
+// Canvas px to 1/100 and pressure to 1/1000: finer than any screen shows (and than Whiteboard's own
+// 1/128 px), and a large board's document stays within what one save carries.
+export const POINT_DECIMALS = 2;
+export const PRESSURE_DECIMALS = 3;
+const round = (v: number, decimals: number) => Math.round(v * 10 ** decimals) / 10 ** decimals;
+const roundPoint = (p: ScenePoint): ScenePoint => ({
+  x: round(p.x, POINT_DECIMALS),
+  y: round(p.y, POINT_DECIMALS),
+  ...(p.p !== undefined ? { p: round(p.p, PRESSURE_DECIMALS) } : {}),
+});
+
 /** An ink group's strokes as scene ink, back to front; `key` prefixes each item's key. */
 export function inkToScene(group: WbInk, key: string, ctx: Context): SceneInk[] {
   ctx.notes.unreadable += group.unreadable;
@@ -76,7 +88,10 @@ export function inkToScene(group: WbInk, key: string, ctx: Context): SceneInk[] 
       return;
     }
     // A group turns about its position (checked against real boards' screenshots).
-    const points = rotateAbout(raw, group.rotationDeg, group.x, group.y);
+    const points = simplifyStroke(
+      rotateAbout(raw, group.rotationDeg, group.x, group.y),
+      widthPx,
+    ).map(roundPoint);
     const multicolour =
       stroke.preset === 'rainbow'
         ? RAINBOW_STOPS
