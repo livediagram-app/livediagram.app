@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ArrowElement, Element, FreehandElement, ShapeElement, TextElement } from './index';
 import { SNAP_COLOUR_FIELDS, snapTabColours, snappableCustomColours } from './snap-colours';
+import { encodeStrokePoints } from './stroke-points';
 
 const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
   id: 'f',
@@ -9,10 +10,10 @@ const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
   y: 0,
   width: 10,
   height: 10,
-  points: [
+  packedPoints: encodeStrokePoints([
     { nx: 0, ny: 0 },
     { nx: 1, ny: 1 },
-  ],
+  ]),
   closed: false,
   penWidth: 1.5,
   ...over,
