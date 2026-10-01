@@ -1,7 +1,9 @@
 # draw.io import
 
-The Import dialog gains a **draw.io** format: a diagram made in draw.io (diagrams.net, the desktop app,
-the VS Code and Confluence plugins) comes into livediagram near-losslessly. It is a migration path: a
+A diagram made in draw.io (diagrams.net, the desktop app, the VS Code and Confluence plugins) comes
+into livediagram near-losslessly, two ways: the Import dialog's **draw.io** format fills the active tab
+(and adds a tab per further page), and the Explorer's **Import from draw.io** turns any number of files,
+or a whole folder, into documents of their own. It is a migration path: a
 person with a hundred boards in draw.io should be able to bring each one across in one step and trust
 what arrives. Everything is parsed in the browser; nothing touches a server except, later, the image
 upload the image pipeline already owns.
@@ -21,19 +23,23 @@ Two promises shape the design:
   labels, edges, convert), entry point `importDrawio(input, options)`. Sibling of
   `excalidraw-import.ts`; lazy-loaded by `useTabImport` so none of it lands in the editor's first
   load. It never throws on bad input: it returns `{ ok: false, error }` with a human-readable message.
-- `apps/live/lib/import-report.ts`: the import report every importer can return (kinds, counts,
-  copy). draw.io is its first user; later importers (Miro, Microsoft Whiteboard) reuse it.
+- `apps/live/lib/drawio/report.ts`: draw.io's notes turned into the one import report every
+  importer shares ([Board scene](board-scene.md) "The report"): what landed, counted by kind, and
+  each change as a rule with its count.
+- `apps/live/lib/drawio/json-export.ts` (the JSON export, below), `library.ts` (shape libraries,
+  below) and `files.ts` (many files to documents, "Import as new documents" below).
 - Nothing lives in `packages/`: only the editor imports draw.io files, and the importer leans on the
   browser's `DOMParser` and `DecompressionStream`, which the Workers runtime lacks.
 
 The importer is **pure with respect to the editor**: bytes or text in, pages of elements plus a report
 and the embedded images' requests for the [import image pipeline](import-image-pipeline.md) out.
-Storing the images and applying the result to tabs is the hook's job. That split is what lets
-bulk import (many files at once, not built) reuse the importer unchanged later.
+Storing the images and applying the result to tabs is the hook's job, and the same importer feeds
+both the tab import and the Explorer's many-file import.
 
 ## Inputs
 
-One file or one pasted text. The importer sniffs the content, never the file name:
+One file or one pasted text. The importer sniffs the content, never the file name, so a file
+**without an extension** (as Google Drive stores a draw.io file) reads like any other:
 
 | Input                            | How it is recognised                                    | How the diagram XML is reached                                                                  |
 | -------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -43,6 +49,8 @@ One file or one pasted text. The importer sniffs the content, never the file nam
 | `.drawio.svg`                    | root element `svg` with a `content` attribute           | the attribute holds an `mxfile` (compressed or not); a base64 value is decoded first            |
 | `.drawio.png`                    | the PNG signature                                       | a `tEXt` or `zTXt` chunk keyed `mxfile` or `mxGraphModel`, URI-decoded; `zTXt` is zlib inflated |
 | pasted XML                       | as for the file forms above                             | as above                                                                                        |
+| JSON export                      | a JSON object with `version` and a `pages` array        | see "The JSON export" below                                                                     |
+| shape library (`mxlibrary`)      | root element `mxlibrary` holding a JSON array           | not a diagram: it becomes a shape library (see "Shape libraries" below)                         |
 
 A PNG or SVG without an embedded diagram is refused with a message saying so ("This PNG has no draw.io
 diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked."). Refusals are
@@ -53,6 +61,37 @@ over the size limit, a file with no pages.
 whole file (a zip-bomb guard), refusing the file. A file with more than 100 pages imports the first 100
 and counts the rest. A page with more than `MAX_ELEMENTS_PER_TAB` (10 000) elements imports the first
 10 000 in document order and counts the rest.
+
+## The JSON export
+
+draw.io's "Export as JSON" writes `{ version, pages: [{ id, name, cells }], data? }`. The cells carry
+the graph (`layer`, `node` with `label`, `html` and `metadata.link`, `edge` with `source` and
+`target`) but **no geometry and no style**.
+
+- When `data` holds an `mxfile` (draw.io writes it when asked to include the diagram), that file is
+  imported instead, exactly, like any `.drawio` file.
+- Otherwise each page's nodes and edges become a graph that is **laid out automatically** by the same
+  layered layout Mermaid import uses (`graphToElements`, `packages/document`): nodes as rounded
+  boxes, edges as connections between them, layers in document order. Labels convert from draw.io's
+  HTML to plain text (`<br>`, `<p>`, `<div>` and headings become line breaks, entities decode,
+  every other tag is dropped); an empty label stays empty. A node's `metadata.link` becomes its
+  link when it is a web or email address. The report says once per import that positions and
+  styles were not in the file ("Positions and styles weren't in the file; the layout is
+  automatic"), counting the pages laid out.
+- A page with no cells imports as an empty tab.
+
+## Shape libraries
+
+A draw.io **library** (`<mxlibrary>`, the "preset" draw.io keeps in a scratchpad or a Drive file) is
+not a diagram: it is a list of reusable shapes, each `{ xml, w, h, aspect, title }` (or `{ data }`
+for an image), its `xml` a compressed `mxGraphModel` snippet. Each item decodes like a page and
+converts through the same mapping, so a library shape arrives as the elements draw.io would draw.
+
+Each imported library becomes **its own named shape library** of the person importing it, as
+[Shape libraries](../013-workspace/shape-libraries.md) defines (palette **My shapes**, the Explorer's
+**Shape libraries** page): named after the file, never merged with another library. The tab Import
+dialog does not take libraries; pasted or picked there, one is refused with "This is a draw.io shape
+library. Import it from the Explorer's Import from draw.io to add it to My shapes."
 
 ## Pages become tabs
 
@@ -309,34 +348,68 @@ image.
   default page) leave it unset.
 - The tab keeps its own theme, pattern and font.
 
+## Import as new documents (Explorer)
+
+The Explorer page header's **Import from** group ([Folders](../013-workspace/folders.md)) has a
+**draw.io** source beside Microsoft Whiteboard and Excalidraw. It takes **files or a whole folder**
+(a folder picker and drop), reads every file by content, and lists what it found:
+
+- **Diagrams**: each draw.io file becomes **its own new document**, its pages as **diagram tabs** in
+  page order (named after the pages), through the shared new-document target ([Board import](board-import.md)
+  "new-document"), filed where New document files.
+- **Libraries**: each library file becomes its own shape library (above).
+- **Everything else** (an image without a diagram, a text file, a folder's stray files) is listed as
+  skipped with its reason, never fatal.
+- **The list**: one row per diagram or library with a checkbox, all ticked, under the name it will
+  get, with its date and size ("Edited 12 Mar 2026 · 3 pages", "Shape library · 14 shapes"). A single
+  readable file imports straight away. Then "Importing 3 of 12…", then the shared report: what
+  landed, every rule, the new documents and libraries as links, the files left out with their reasons.
+
+**Names.** The file name without its extension (`.drawio`, `.xml`, `.json`, `.drawio.svg`,
+`.drawio.png`, `.svg`, `.png`). When that name is generic (empty, or draw.io's `Untitled Diagram`,
+`untitled`, `diagram`, `drawing`, any case, with an optional copy number such as ` (2)` or `-2`),
+the `mxfile`'s `name` attribute when it is not generic either, else the first page's name, else
+"draw.io diagram, 12 Apr 2026" by its date.
+
+**Dates.** Last modified is the `mxfile`'s `modified` attribute (an ISO timestamp draw.io writes on
+every save), else the file's own last-modified time; created is the same moment, as nothing in the
+file records when it was made. Both are checked by the same rule as Microsoft Whiteboard's board
+dates; a date that cannot be used is reported, and the document is dated today.
+
+**Tab size.** A page is one tab, and a tab must fit one database row (`MAX_TAB_BYTES`, just under
+2 MB: [Tab size](../015-api/api.md#tab-size)). A page too large to store is left out of its document
+and named in the report ("Page 'Network' is too large to store"); the file's other pages still land.
+A file none of whose pages fit fails on its own. An Offline Mode import has no such limit.
+
 ## The import report
 
-Every import returns a report: pages imported, elements created, how its images came across (the
-[import image pipeline](import-image-pipeline.md)'s report, when it met any), and one line per kind
-of degradation that occurred, with its count. The kinds are a closed set shared by every importer
-(`ImportNoteKind`):
+draw.io reports through the **one import report every importer shares** ([Board scene](board-scene.md)
+"The report", one view in the Import dialog and the Explorer's import): what landed, counted by kind
+(shapes, arrows, text boxes, sticky notes, images, frames, lines), then every change on the way in as
+a rule with its count, changes first and things left out after, then how the images came across (the
+[import image pipeline](import-image-pipeline.md)'s report). The importer tallies closed note kinds
+(`ImportNoteKind`) and `lib/drawio/report.ts` gives each its rule, in this order:
 
-| Kind                     | Meaning                                                                                                     |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `shape-unmatched`        | a shape with no livediagram match, imported as a labelled box (names listed)                                |
-| `shape-approximated`     | a shape imported as the nearest livediagram shape                                                           |
-| `icon-substituted`       | a vendor stencil imported as the matching livediagram icon                                                  |
-| `image-unavailable`      | an image the importer cannot bring (a web or library URL, a page background, an image on a non-image shape) |
-| `arrowhead-approximated` | an arrowhead livediagram does not draw, imported as the nearest one                                         |
-| `connection-loosened`    | a connection whose end could not stay attached                                                              |
-| `label-moved`            | a label moved inside its shape, or several edge labels merged                                               |
-| `lane-title-turned`      | a vertical lane title that now reads across, its lane grown left where the title needed room                |
-| `group-flattened`        | a group dropped, its members kept in place                                                                  |
-| `hidden-skipped`         | a hidden shape or connection not imported                                                                   |
-| `collapsed-skipped`      | a shape inside a collapsed container not imported                                                           |
-| `link-dropped`           | a link with a scheme livediagram does not follow                                                            |
-| `text-truncated`         | text or rows cut to fit an element's limits                                                                 |
-| `content-truncated`      | pages or elements beyond the import limits not imported                                                     |
+| Kind                     | Rule (the report shows "count · rule")                                          | Shown as |
+| ------------------------ | ------------------------------------------------------------------------------- | -------- |
+| `shape-unmatched`        | Shapes with no livediagram match came in as labelled boxes (the top 5 stencils) | changed  |
+| `shape-approximated`     | Shapes came in as the nearest livediagram shape                                 | changed  |
+| `icon-substituted`       | Vendor icons came in as the matching livediagram icon                           | changed  |
+| `image-unavailable`      | Images linked outside the diagram came in as placeholders or were left out      | changed  |
+| `arrowhead-approximated` | Arrowheads livediagram doesn't draw took the nearest one                        | changed  |
+| `connection-loosened`    | Connection ends that couldn't stay attached were left where they were           | changed  |
+| `label-moved`            | Labels were moved inside their shapes or merged onto one line                   | changed  |
+| `lane-title-turned`      | Upright lane titles now read across                                             | changed  |
+| `group-flattened`        | Groups were dropped                                                             | changed  |
+| `link-dropped`           | Links of a kind livediagram can't follow were dropped                           | changed  |
+| `text-truncated`         | Texts were shortened to fit                                                     | changed  |
+| `auto-layout`            | Positions and styles weren't in the file; the layout is automatic (pages)       | changed  |
+| `hidden-skipped`         | Hidden items were left out                                                      | left out |
+| `collapsed-skipped`      | Items inside collapsed containers were left out                                 | left out |
+| `content-truncated`      | Pages or items beyond the import limits were left out                           | left out |
 
-When the report has any note, or met any image, the Import dialog does not close: it shows the
-summary (below), so the person sees what changed before they carry on. A clean import closes the
-dialog as before. The report's shape (`ImportReport`) is shared by every importer: Excalidraw's
-import returns one carrying its images, and later importers add their own notes to the same set.
+When the report has a rule, or met any image, the Import dialog does not close: it shows the report,
+so the person sees what changed before they carry on. A clean import closes the dialog as before.
 
 ## Accepted losses (documented, not counted)
 
@@ -365,26 +438,28 @@ These differ from draw.io for every file and are not worth a line each time:
   inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further
   page." Its panel is the shared paste-or-file panel: paste XML, or pick a file; the picker accepts
   `.drawio`, `.xml`, `.svg`, `.png` and `.drawio.*`.
-- **The summary.** Every importer ends in the same view. After an import whose report has news (a
-  note, or images it met) the dialog replaces its warning and panel with it: the heading "Import
-  complete", a line of what arrived ("3 pages became 3 tabs, 128 elements."), then how the images
-  came across (imported, already in the gallery, left as placeholders and why, and the hint to fill a
-  placeholder), then the report's notes in the table's order, each with its count and, for unmatched
-  shapes, the top stencil names, then a **Done** button that takes focus and closes it. The subtitle
-  reads "Here is what changed on the way in." when there are notes, else "Here's how your images
-  came across.". It is announced as a status; nothing is toasted and nothing shifts the canvas.
-  While images store, the panel counts them ("Importing images 3 of 12…").
+- **The report.** Every importer ends in the same view ("The import report" above): after an
+  import with a rule or images, the dialog replaces its warning and panel with it, its **Done** button
+  taking focus; the subtitle reads "Here's how your board came across." ("Here's how your images came
+  across." when only images had news). It is announced as a status; nothing is toasted and nothing
+  shifts the canvas. While images store, the panel counts them ("Importing images 3 of 12…").
+- **Explorer.** The **draw.io** button of the page header's **Import from** group (an original
+  glyph, not draw.io's logo: the repo ships no vendor marks, [Iconography](../004-interface-design/iconography.md));
+  its tooltip "draw.io" and its accessible name "Import from draw.io" ("Import as new documents" above).
 - **Telemetry** ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
-  `track('Tab', 'Imported', 'Drawio')`, once per import, the existing pair and no schema change.
-- **Help centre.** The Importing a Tab article lists draw.io, what maps and what the summary means;
-  its registry keywords gain `drawio draw.io diagrams.net`.
+  `track('Tab', 'Imported', 'Drawio')`, once per tab import and once per document the Explorer
+  import makes (as Microsoft Whiteboard counts once per board), the existing pair and no schema
+  change; the shared new-document target adds `Document · Created`. A library's telemetry is
+  [Shape libraries](../013-workspace/shape-libraries.md)'.
+- **Help centre.** The Importing a Tab article lists draw.io, what maps and what the report means, and
+  a draw.io import article in the Explorer category covers files, folders, Drive saves, JSON
+  exports and libraries; registry keywords gain `drawio draw.io diagrams.net`.
 
 ## Non-goals
 
 - Exporting to draw.io.
 - Fetching library or web images from draw.io's or anyone's servers.
 - Rendering draw.io's stencil artwork (the vendor icon catalogues are theirs to ship, not ours).
-- Bulk import of many files at once (the importer is ready for it; the UI is undecided).
 - `.vsdx`, Lucidchart and Gliffy files, which draw.io itself imports: bring them through draw.io first.
 - Re-creating draw.io's automatic layouts (`childLayout` other than the stacks above, tree layouts):
   the laid-out positions in the file are imported as they are.
