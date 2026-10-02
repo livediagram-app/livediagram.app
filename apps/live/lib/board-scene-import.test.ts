@@ -221,6 +221,17 @@ describe('importDocuments', () => {
     });
   });
 
+  it("sends the creation intent of each document's first tab (docs/specs/013-workspace/default-folders.md)", async () => {
+    const made: NewBoardDocument[] = [];
+    const board = { ...tab('Board'), kind: 'whiteboard' as const };
+    await importDocuments([source('Sketch', [board]), source('Plan', [tab('Overview')])], {
+      ownerId: 'o',
+      offline: false,
+      createDocument: async (doc) => void made.push(doc),
+    });
+    expect(made.map((d) => d.intent)).toEqual([{ mode: 'draw' }, { mode: 'diagram' }]);
+  });
+
   it('leaves out a page too large to store, names it, and lands the rest', async () => {
     const huge = tab('Network', 'x'.repeat(MAX_TAB_BYTES));
     const made: NewBoardDocument[] = [];

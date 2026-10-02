@@ -58,6 +58,7 @@ export * from './api/self';
 export * from './api/room';
 export * from './api/images';
 export * from './api/favourites';
+export * from './api/placement-defaults';
 export * from './api/timeline';
 export * from './api/activity';
 export * from './api/preferences';

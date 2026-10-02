@@ -5,11 +5,12 @@
 // the user had done it here), and the mirror's own rows. The engine only ever
 // sees this interface; tests give it an in-memory livediagram.
 
-import type {
-  DriveConnection,
-  DriveItem,
-  DriveItemKind,
-  DriveLease,
+import {
+  creationIntentOf,
+  type DriveConnection,
+  type DriveItem,
+  type DriveItemKind,
+  type DriveLease,
 } from '@livediagram/api-schema';
 import { remapTabLinks, type StoredPresentation, type Tab } from '@livediagram/document';
 import {
@@ -213,6 +214,9 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
         tabs,
         presentation,
         folderId: target?.folderId ?? null,
+        // Import a copy is an import (docs/specs/013-workspace/default-folders.md): it lands in the
+        // person's default folder. A copy the mirror placed keeps the mirror's place.
+        ...(target ? {} : { intent: creationIntentOf(tabs[0]) }),
       });
       // Per-document tab folders ride the meta write, not the tab bodies.
       if (tabs.some((t) => t.folder)) {

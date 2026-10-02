@@ -21,7 +21,12 @@ import {
   type ImportImageReport,
 } from '@/lib/import-images';
 import type { ImportOutcome } from '@/lib/import-tab';
-import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
+import {
+  MAX_TAB_BYTES,
+  creationIntentOf,
+  tabDataBytes,
+  type CreationIntent,
+} from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { ApiError, apiCreateDocument } from '@/lib/api-client';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
@@ -45,6 +50,9 @@ export type NewBoardDocument = {
   name: string;
   tabs: Tab[];
   folderId?: string | null;
+  // What the document opens as, from its first tab (docs/specs/013-workspace/default-folders.md):
+  // imported at the root of My documents, it lands in the person's default folder for it.
+  intent: CreationIntent;
   createdAt?: number;
   savedAt?: number;
 };
@@ -207,6 +215,7 @@ export async function importDocuments(
         id,
         name,
         tabs,
+        intent: creationIntentOf(tabs[0]),
         ...(o.folderId ? { folderId: o.folderId } : {}),
         ...(dates.createdAt !== undefined ? { createdAt: dates.createdAt } : {}),
         ...(dates.savedAt !== undefined ? { savedAt: dates.savedAt } : {}),

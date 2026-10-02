@@ -37,7 +37,12 @@ import {
   markNameConfirmed,
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
-import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
+import {
+  boardTypeOfTemplate,
+  untitledNameForTemplate,
+  type TemplateKind,
+} from '@livediagram/templates';
+import { creationIntentOf } from '@livediagram/api-schema';
 import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
@@ -364,6 +369,10 @@ export default function NewDocumentPage() {
           tabs: [tab],
           teamId: settings.teamId ?? null,
           folderId: settings.folderId ?? null,
+          // What it opens as, captured now and never re-derived
+          // (docs/specs/013-workspace/default-folders.md): with no place chosen, the server files it
+          // in the person's default folder for it.
+          intent: creationIntentOf(tab, boardTypeOfTemplate(templateKind)),
         });
       }
     } catch (err) {

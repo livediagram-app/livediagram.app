@@ -2,6 +2,7 @@
 // copy-into-my-files flow, and the "Shared with you" list.
 import {
   DOCUMENT_CONVERSION_HEADER,
+  type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
 } from '@livediagram/api-schema';
@@ -146,6 +147,10 @@ export async function apiCreateDocument(
     tabs?: Tab[];
     teamId?: string | null;
     folderId?: string | null;
+    // What the new document opens as (docs/specs/013-workspace/default-folders.md): with no place
+    // chosen, the server files it in the person's default folder for it. Left out by a create that
+    // keeps a place the document already has (duplicate, an Offline Mode sync, a Drive mirror copy).
+    intent?: CreationIntent;
     createdAt?: number;
     savedAt?: number;
     presentation?: string | null;
@@ -166,6 +171,7 @@ export async function apiCreateDocument(
       tabs: (d.tabs ?? []).map(tabForWire),
       ...(d.teamId ? { teamId: d.teamId } : {}),
       ...(d.folderId ? { folderId: d.folderId } : {}),
+      ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),

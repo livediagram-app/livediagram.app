@@ -512,6 +512,17 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(body).not.toHaveProperty('folderId');
   });
 
+  it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
+    const intent = { mode: 'diagram', boardType: 'kanban' } as const;
+    const body = await sentBody({ id: 'd1', name: 'N', intent });
+    expect(body.intent).toEqual(intent);
+  });
+
+  it('leaves the intent out when the create keeps a place', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N' });
+    expect(body).not.toHaveProperty('intent');
+  });
+
   it('throws the refusal token for a refused placement', async () => {
     vi.stubGlobal(
       'fetch',
