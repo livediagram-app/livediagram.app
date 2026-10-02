@@ -190,7 +190,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / Personal Space / folders / Unsorted / Generated)
+The browse views (Recent / Personal Space / folders / Unsorted)
 have a **List ↔ Card** toggle at the far right of the header (device-
 local preference, `livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read

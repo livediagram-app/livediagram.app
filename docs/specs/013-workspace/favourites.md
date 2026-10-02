@@ -81,7 +81,7 @@ across; it is dropped with the copy that held it.
 
 ## The view
 
-Under **Personal Space → Dynamic**, beside Unsorted / Generated / Offline — the issue
+Under **Personal Space → Dynamic**, beside Unsorted / Offline — the issue
 asked for it "within Personal Space", and it behaves like the other synthetic folders
 (a computed list, not a real folder you can move things into).
 
