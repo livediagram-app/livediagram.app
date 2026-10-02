@@ -8,8 +8,13 @@ import {
   curveAnchorPoints,
   curveControlPoint,
   endpointPosition,
+  queryElementGrid,
+  routeBehindHoles,
+  routeBehindQueryRect,
   type ArrowElement,
+  type ElementGrid,
   type ElementIndex,
+  type Rect,
 } from '@livediagram/document';
 
 // The pure per-render frame of an arrow view, lifted out of ArrowView
@@ -82,4 +87,49 @@ export function deriveArrowViewFrame(arrow: ArrowElement, elementIndex: ElementI
     curveControl,
     elbowPoint,
   };
+}
+
+export type ArrowViewFrame = ReturnType<typeof deriveArrowViewFrame>;
+
+type XY = { x: number; y: number } | null;
+const samePoint = (a: XY, b: XY) => a === b || (!!a && !!b && a.x === b.x && a.y === b.y);
+const samePoints = (a: readonly XY[] | null, b: readonly XY[] | null) =>
+  a === b || (!!a && !!b && a.length === b.length && a.every((p, i) => samePoint(p, b[i]!)));
+
+// By value: an arrow view re-renders only when its own frame changes
+// (docs/specs/008-canvas/canvas-performance.md), however often the layer derives it afresh.
+export function sameArrowViewFrame(a: ArrowViewFrame, b: ArrowViewFrame): boolean {
+  return (
+    a.style === b.style &&
+    a.pathD === b.pathD &&
+    samePoint(a.from, b.from) &&
+    samePoint(a.to, b.to) &&
+    samePoint(a.midpoint, b.midpoint) &&
+    samePoint(a.curveControl, b.curveControl) &&
+    samePoint(a.elbowPoint, b.elbowPoint) &&
+    samePoints(a.curveAnchors, b.curveAnchors)
+  );
+}
+
+export function sameRects(a: readonly Rect[], b: readonly Rect[]): boolean {
+  return (
+    a === b ||
+    (a.length === b.length &&
+      a.every((r, i) => {
+        const o = b[i]!;
+        return r.x === o.x && r.y === o.y && r.width === o.width && r.height === o.height;
+      }))
+  );
+}
+
+// An arrow's frame and its route-behind holes (docs/specs/008-canvas/arrow-route-behind.md), the
+// holes from its neighbours in the element grid rather than the whole board.
+export function arrowViewGeometry(
+  arrow: ArrowElement,
+  elementIndex: ElementIndex,
+  grid: ElementGrid,
+): { frame: ArrowViewFrame; holes: Rect[] } {
+  const frame = deriveArrowViewFrame(arrow, elementIndex);
+  const near = queryElementGrid(grid, routeBehindQueryRect(frame.from, frame.to));
+  return { frame, holes: routeBehindHoles(arrow, frame.from, frame.to, near) };
 }

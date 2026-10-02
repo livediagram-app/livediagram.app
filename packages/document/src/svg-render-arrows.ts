@@ -20,7 +20,8 @@ import {
 import { BORDER_DASH_ARRAY } from './border-style';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
-import { ROUTE_BEHIND_MARGIN, routeBehindHoles } from './arrow-behind';
+import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
+import { elementGridFor, queryElementGrid } from './element-grid';
 import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
@@ -169,7 +170,10 @@ export function svgArrow(
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
   // mask, the same one ArrowView mints, so the export shows the same gaps.
   const holes = [
-    ...routeBehindHoles(arrow, from, to, occluders).map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
+    ...routeBehindHoles(arrow, from, to, nearOccluders(occluders, from, to)).map((h) => ({
+      ...h,
+      rx: ROUTE_BEHIND_MARGIN,
+    })),
     ...labels.knockoutsOf(arrow.id).map((k) => ({ ...k, rx: KNOCKOUT_RADIUS_PX })),
   ];
   const maskId =
@@ -242,4 +246,16 @@ function svgArrowMask(id: string, rects: (Rect & { rx: number })[]): string {
     `<mask id="${xmlEscape(id)}" maskUnits="userSpaceOnUse" x="${MASK_ORIGIN}" y="${MASK_ORIGIN}" width="${MASK_SIZE}" height="${MASK_SIZE}">` +
     `<rect x="${MASK_ORIGIN}" y="${MASK_ORIGIN}" width="${MASK_SIZE}" height="${MASK_SIZE}" fill="white"/>${holes}</mask>`
   );
+}
+
+// The occluders worth testing for one arrow: from a list, its neighbours through the list's element
+// grid, so a render of every arrow costs each arrow its neighbourhood rather than the whole board
+// (docs/specs/008-canvas/canvas-performance.md).
+function nearOccluders(
+  occluders: Iterable<Element>,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): Iterable<Element> {
+  if (!Array.isArray(occluders)) return occluders;
+  return queryElementGrid(elementGridFor(occluders), routeBehindQueryRect(from, to));
 }

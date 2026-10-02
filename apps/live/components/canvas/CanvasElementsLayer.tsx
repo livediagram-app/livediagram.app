@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from 'react';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
+import { arrowViewGeometry } from './arrow-view-frame';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
@@ -17,6 +18,7 @@ import {
   snapSeamCoordinate,
   arrowRoutePoints,
   type CommentMention,
+  createElementGridTracker,
   type ElementIndex,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -360,6 +362,20 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);
+  // The drawn elements' grid (docs/specs/008-canvas/canvas-performance.md "Questions about neighbours
+  // ask a spatial index"), re-bucketing only what changed since the last one, and every arrow's frame
+  // and holes from it, once per element change. ArrowView compares both by value, so a move
+  // re-renders only the arrows whose geometry it changed.
+  const [gridTracker] = useState(createElementGridTracker);
+  const arrowGeometry = useMemo(() => {
+    const out = new Map<string, ReturnType<typeof arrowViewGeometry>>();
+    if (!elementIndex) return out;
+    const grid = gridTracker.gridFor(drawnElements);
+    for (const el of drawnElements) {
+      if (el.type === 'arrow') out.set(el.id, arrowViewGeometry(el, elementIndex, grid));
+    }
+    return out;
+  }, [drawnElements, elementIndex, gridTracker]);
   // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
   // it mounts; every element view portals its grips into them.
   const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
@@ -437,8 +453,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               >
                 <ArrowView
                   arrow={element}
-                  elementIndex={elementIndex!}
-                  occluders={drawnElements}
+                  frame={arrowGeometry.get(element.id)!.frame}
+                  holes={arrowGeometry.get(element.id)!.holes}
                   labelRender={arrowLabels.renderOf(element.id)}
                   draftLayout={arrowLabels.draftLayout}
                   isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}

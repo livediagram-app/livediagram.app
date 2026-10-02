@@ -154,3 +154,23 @@ describe('element views render only for their own changes', () => {
     expect([...renders.boxed.keys()]).toEqual([c.id]);
   });
 });
+
+describe('arrow views render only for their own changes', () => {
+  it('renders the arrow on a moved element and no other', () => {
+    const { rerender } = mount();
+    const movedC = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: movedC })} />);
+    expect(counts().arrows).toBe(0);
+    const movedA = movedC.map((el) => (el.id === a.id ? { ...el, y: 40 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: movedA })} />);
+    expect([...renders.arrow.keys()]).toEqual([ab.id]);
+  });
+
+  it('renders an arrow when a box moves into its path', () => {
+    const { rerender } = mount();
+    // c slides up between a and b, across the arrow: the arrow now breaks around it.
+    const across = BOARD.map((el) => (el.id === c.id ? { ...el, x: 200, y: 0 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: across })} />);
+    expect([...renders.arrow.keys()]).toEqual([ab.id]);
+  });
+});
