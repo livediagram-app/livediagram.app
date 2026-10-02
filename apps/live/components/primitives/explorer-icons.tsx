@@ -13,7 +13,6 @@ import {
 import {
   lucideAppWindow,
   lucideClock,
-  lucideCloudOff,
   lucideCloudUpload,
   lucideDownload,
   lucideExternalLink,
@@ -122,10 +121,6 @@ export function UnsortedIcon({ size = 13 }: IconProps) {
     </G16>
   );
 }
-
-// Cloud-with-slash for the synthetic Offline folder (docs/specs/006-document/offline-mode.md): documents
-// saved only in this browser, never on the server.
-export const OfflineFolderIcon = lucideGlyph(lucideCloudOff, 13);
 
 // Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {

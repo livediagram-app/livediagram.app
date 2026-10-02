@@ -10,7 +10,7 @@ import {
   ClockIcon,
   DocumentIcon,
   FolderSolidIcon,
-  OfflineFolderIcon,
+  ThisBrowserIcon,
   PlusIcon,
   ShareIcon,
   SparkleIcon,
@@ -62,8 +62,8 @@ const CONTENT: Record<
     cta: 'Set up an AI agent',
   },
   offline: {
-    icon: <OfflineFolderIcon />,
-    title: 'No offline documents',
+    icon: <ThisBrowserIcon />,
+    title: 'Nothing in this browser',
     description:
       'Choose "Local Browser" as the Save location in the New Document wizard and browser-only documents collect here.',
     cta: 'New document',

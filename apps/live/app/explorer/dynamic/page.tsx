@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ExplorerPane } from '../ExplorerPane';
+import { viewDocumentTitle } from '../view-titles';
 
 // /explorer/dynamic — the parent view for the synthetic folders (Unsorted,
 // Generated, Offline): live views over your documents, grouped under one
@@ -7,7 +8,7 @@ import { ExplorerPane } from '../ExplorerPane';
 // provides the chrome + state; this page only pins the route and the tab
 // title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: 'Dynamic | livediagram',
+  title: viewDocumentTitle('dynamic'),
 };
 
 export default function Page() {
