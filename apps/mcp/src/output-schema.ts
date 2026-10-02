@@ -68,7 +68,12 @@ export const createDocumentOutput = {
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
-  folder: z.string().describe('The Explorer folder it appears in ("Generated").'),
+  folder: z
+    .string()
+    .describe(
+      'The Explorer folder it appears in: "Generated", or the name of the user\'s default folder ' +
+        'it was filed in.',
+    ),
   url,
 };
 
