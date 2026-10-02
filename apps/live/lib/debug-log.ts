@@ -53,11 +53,32 @@ export function debugLog(message: string, ...details: unknown[]): void {
 }
 
 /**
- * The same rule for an inline boot script that runs before any module can load (the stale-page
- * guard, stale-html-guard.ts): the ES5 source of a `function (message, detail)` that writes a trace
- * line for `scope` exactly when `debugLog` would. `env` is fixed when the script is built. It reads
- * `console` and `localStorage` by name, so a test can hand it stubs.
+ * An inline boot script's logger settings, as data: they reach the script as `data-*` attributes on
+ * its own element, never written into its source. Strings, as data attributes are.
  */
-export function inlineDebugLogSource(scope: string, env: string | undefined): string {
-  return `function(m,d){if(${JSON.stringify(env ?? '')}!=='production'){console.info(m,d);return;}try{var f=localStorage.getItem(${JSON.stringify(DEBUG_STORAGE_KEY)});if(!f)return;var s=f.split(',');for(var i=0;i<s.length;i++){var t=s[i].replace(/^\\s+|\\s+$/g,'');if(t==='*'||t===${JSON.stringify(scope)}){console.info(m,d);return;}}}catch(e){}}`;
+export type InlineDebugLogConfig = { scope: string; quiet: 'true' | 'false'; flagKey: string };
+
+/** The settings for `scope`: quiet in a production build unless the debug flag names it. */
+export function inlineDebugLogConfig(scope: string): InlineDebugLogConfig {
+  return {
+    scope,
+    quiet: process.env.NODE_ENV === 'production' ? 'true' : 'false',
+    flagKey: DEBUG_STORAGE_KEY,
+  };
 }
+
+/**
+ * The same rule for an inline boot script that runs before any module can load (the stale-page
+ * guard, stale-html-guard.ts): static ES5 source of `function (config)` returning a
+ * `trace(message, detail)` that writes exactly when `debugLog` would. No value is written into it;
+ * the config arrives as data (`InlineDebugLogConfig`). It reads `console` and `localStorage` by
+ * name, so a test can hand it stubs.
+ */
+export const INLINE_DEBUG_LOG_SOURCE =
+  'function(c){return function(m,d){' +
+  "if(c.quiet!=='true'){console.info(m,d);return;}" +
+  'try{var f=localStorage.getItem(c.flagKey);if(!f)return;' +
+  "var s=f.split(',');for(var i=0;i<s.length;i++){" +
+  "var t=s[i].replace(/^\\s+|\\s+$/g,'');" +
+  "if(t==='*'||t===c.scope){console.info(m,d);return;}}" +
+  '}catch(e){}};}';

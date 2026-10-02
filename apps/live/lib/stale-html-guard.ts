@@ -21,12 +21,33 @@ import {
   RELOAD_GUARD_WINDOW_MS,
   claimReloadIn,
 } from './reload-guard';
-import { inlineDebugLogSource } from './debug-log';
+import { INLINE_DEBUG_LOG_SOURCE, inlineDebugLogConfig } from './debug-log';
 
+const trace = inlineDebugLogConfig('stale-html');
+
+/**
+ * The guard's settings, as `data-*` attributes for its own <script> element (the layout spreads
+ * them on). The script reads them back through `document.currentScript.dataset`: no value is ever
+ * written into its source, which stays static. Strings, as attributes are.
+ */
+export const STALE_HTML_GUARD_ATTRIBUTES: Readonly<Record<string, string>> = {
+  'data-reload-key': RELOAD_GUARD_KEY,
+  'data-reload-window': String(RELOAD_GUARD_WINDOW_MS),
+  'data-api': API_BASE,
+  'data-build-header': BUILD_ID_HEADER,
+  'data-app-flag': APP_RECOVERY_FLAG,
+  'data-trace-scope': trace.scope,
+  'data-trace-quiet': trace.quiet,
+  'data-trace-flag-key': trace.flagKey,
+};
+
+// Static source: two functions' own code (the shared reload claim and the inline logger) and fixed
+// text; every setting comes from the element's data. Without its data it does nothing at all.
 export const STALE_HTML_GUARD_SCRIPT = `(function(){
-var KEY=${JSON.stringify(RELOAD_GUARD_KEY)},WINDOW=${RELOAD_GUARD_WINDOW_MS},API=${JSON.stringify(API_BASE)},HEADER=${JSON.stringify(BUILD_ID_HEADER)},APP=${JSON.stringify(APP_RECOVERY_FLAG)};
+var c=document.currentScript&&document.currentScript.dataset;if(!c||!c.reloadKey)return;
+var KEY=c.reloadKey,WINDOW=Number(c.reloadWindow),API=c.api,HEADER=c.buildHeader,APP=c.appFlag;
 var claim=${claimReloadIn.toString()};
-var trace=${inlineDebugLogSource('stale-html', process.env.NODE_ENV)};
+var trace=(${INLINE_DEBUG_LOG_SOURCE})({scope:c.traceScope,quiet:c.traceQuiet,flagKey:c.traceFlagKey});
 function isAsset(u){return typeof u==='string'&&u.indexOf('/_next/static/')!==-1;}
 var reloading=false;
 function reloadOnce(reason,detail){

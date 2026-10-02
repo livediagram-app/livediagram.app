@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
+import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
+import { BUILD_ID_HEADER } from '@livediagram/api-schema';
+import { API_BASE } from './api/base';
+import { DEBUG_STORAGE_KEY } from './debug-log';
 import {
   APP_RECOVERY_FLAG,
   RELOAD_GUARD_KEY,
@@ -21,6 +24,7 @@ function harness({
   storage = new Map<string, string>(),
   storageThrows = false,
   appRecovery = false,
+  currentScript = true,
 } = {}) {
   const listeners: Record<string, Listener[]> = {};
   const docListeners: Record<string, Listener[]> = {};
@@ -47,7 +51,15 @@ function harness({
       storage.set(k, v);
     },
   };
+  // Its settings travel as data on its own <script> element, as the layout renders it.
+  const dataset = Object.fromEntries(
+    Object.entries(STALE_HTML_GUARD_ATTRIBUTES).map(([k, v]) => [
+      k.slice(5).replace(/-([a-z])/g, (_, c: string) => c.toUpperCase()),
+      v,
+    ]),
+  );
   const document = {
+    currentScript: currentScript ? { dataset } : null,
     addEventListener: (type: string, fn: Listener) => (docListeners[type] ??= []).push(fn),
     querySelector: (sel: string) =>
       sel === 'meta[name="livediagram-build"]' && build ? { content: build } : null,
@@ -86,6 +98,28 @@ const failed = (tagName: string, url: string) => ({
 });
 
 describe('the stale HTML guard', () => {
+  it('is static source: every setting travels as data, none is written into it', () => {
+    for (const value of [
+      RELOAD_GUARD_KEY,
+      String(RELOAD_GUARD_WINDOW_MS),
+      API_BASE,
+      BUILD_ID_HEADER,
+      APP_RECOVERY_FLAG,
+      DEBUG_STORAGE_KEY,
+      'stale-html',
+    ]) {
+      expect(STALE_HTML_GUARD_SCRIPT).not.toContain(JSON.stringify(value));
+      expect(Object.values(STALE_HTML_GUARD_ATTRIBUTES)).toContain(value);
+    }
+    expect(Object.keys(STALE_HTML_GUARD_ATTRIBUTES).every((k) => k.startsWith('data-'))).toBe(true);
+  });
+
+  it('does nothing when it cannot read its own settings', () => {
+    const h = harness({ currentScript: false });
+    h.fire('error', failed('SCRIPT', 'https://x.test/_next/static/chunks/a.js'));
+    expect(h.reload).not.toHaveBeenCalled();
+  });
+
   it('reloads once when a build script or stylesheet fails to load', () => {
     const h = harness();
     h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
