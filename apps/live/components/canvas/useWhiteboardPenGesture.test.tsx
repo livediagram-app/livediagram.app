@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
+import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -373,5 +374,26 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(down);
     expect(down.defaultPrevented).toBe(false);
     expect(stroke.shaped()).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: a pen stroke is a stroke gesture, however it ends.
+describe('useWhiteboardPenGesture gesture', () => {
+  afterEach(() => resetCanvasGesturesForTests());
+
+  it('opens a stroke from the press to the lift', () => {
+    const s = setup();
+    s.press(10, 20);
+    expect(canvasGestureNow()).toBe('stroke');
+    s.send(pointer('pointerup', { x: 30, y: 20 }));
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('closes the stroke the browser cancels', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const s = setup();
+    s.press(10, 20);
+    s.send(pointer('pointercancel', { x: 30, y: 20 }));
+    expect(canvasGestureNow()).toBe('idle');
   });
 });

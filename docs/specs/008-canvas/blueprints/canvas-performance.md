@@ -58,18 +58,18 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   idempotent. Listeners fire only when the snapshot changes.
 - Sources, each calling `end()` on its gesture's end, cancel and unmount:
 
-| Source                                                                            | Gesture          | Begins                                                          |
-| --------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------- |
-| `useEditorDrag`, `boxed` + `move`                                                 | `move`           | When the drag engages (`DRAG_ENGAGE_PX`)                        |
-| `useEditorDrag`, `boxed` + `resize-*`                                             | `resize`         | On the drag                                                     |
-| `useEditorDrag`, `arrow-translate`                                                | `move`           | On the drag                                                     |
-| `useEditorDrag`, `arrow-scale`                                                    | `resize`         | On the drag                                                     |
-| `useEditorDrag`, other `arrow-*`                                                  | `reshape`        | On the drag                                                     |
-| `useCanvasPanAndMarquee`                                                          | `pan`, `marquee` | When the pan or the marquee state is set                        |
-| `useCanvasPinchZoom`, plain wheel                                                 | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last |
-| `useCanvasPinchZoom`, Ctrl/Cmd, pinch                                             | `zoom`           | Likewise                                                        |
-| `useCanvasDrawGesture`, `useWhiteboardPenGesture`, `useShapeDrawing` drag-to-size | `stroke`         | On the pointer down that starts the drawing                     |
-| `useCanvasEraser` sweep                                                           | `erase`          | On the sweep's pointer down                                     |
+| Source                                                                                    | Gesture          | Begins                                                                                     |
+| ----------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| `useEditorDrag`, `boxed` + `move`                                                         | `move`           | When the drag engages (`DRAG_ENGAGE_PX`)                                                   |
+| `useEditorDrag`, `boxed` + `resize-*`                                                     | `resize`         | On the drag                                                                                |
+| `useEditorDrag`, `arrow-translate`                                                        | `move`           | On the drag                                                                                |
+| `useEditorDrag`, `arrow-scale`                                                            | `resize`         | On the drag                                                                                |
+| `useEditorDrag`, other `arrow-*`                                                          | `reshape`        | On the drag                                                                                |
+| `useCanvasPanAndMarquee`                                                                  | `pan`, `marquee` | When the pan or the marquee state is set                                                   |
+| `useCanvasPinchZoom`, plain wheel                                                         | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last                            |
+| `useCanvasPinchZoom`, Ctrl/Cmd, pinch                                                     | `zoom`           | Likewise                                                                                   |
+| `useCanvasDrawGesture` (`drawDrag`, `penPoints`), `useWhiteboardPenGesture` (`penStroke`) | `stroke`         | While the drawing state is set (draw-to-size, pencil, pen)                                 |
+| `useCanvasEraser` sweep                                                                   | `erase`          | On `beginErase`; ends on `pointerup` or `pointercancel` (both record the sweep) or unmount |
 
 - Discrete actions (a click, a key, a zoom button) open no gesture.
 

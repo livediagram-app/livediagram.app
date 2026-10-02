@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react';
+import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -196,5 +197,27 @@ describe('useCanvasDrawGesture hover snap', () => {
     const { result } = setup();
     press(result, 100, 100);
     expect(result.current.drawHover).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: drawing is a stroke gesture, press to release.
+describe('useCanvasDrawGesture gesture', () => {
+  afterEach(() => resetCanvasGesturesForTests());
+
+  it('opens a stroke while a box is drawn', () => {
+    const { result } = setup();
+    press(result, 100, 100);
+    expect(canvasGestureNow()).toBe('stroke');
+    pointer('pointermove', 300, 250);
+    pointer('pointerup');
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('opens a stroke while the pen draws', () => {
+    const { result } = setup({ pendingDraw: PEN });
+    press(result, 10, 10);
+    expect(canvasGestureNow()).toBe('stroke');
+    pointer('pointerup');
+    expect(canvasGestureNow()).toBe('idle');
   });
 });

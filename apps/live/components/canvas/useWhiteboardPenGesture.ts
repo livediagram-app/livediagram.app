@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -30,6 +31,9 @@ export function useWhiteboardPenGesture({
   onCommitFreehand,
 }: WhiteboardPenGestureDeps) {
   const [penStroke, setPenStroke] = useState<LiveStroke | null>(null);
+  // A pen stroke is a stroke gesture (docs/specs/008-canvas/canvas-performance.md), however it ends.
+  const stroking = penStroke !== null;
+  useEffect(() => (stroking ? beginCanvasGesture('stroke') : undefined), [stroking]);
 
   // The pen was put down mid-stroke (Escape, another tool): the stroke goes with it.
   if (penStroke && !isWhiteboardPenIntent(pendingDraw)) {

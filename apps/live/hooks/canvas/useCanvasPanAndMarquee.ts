@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
@@ -92,6 +93,13 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   // tripped React's "Maximum update depth exceeded" loop (re-subscribe →
   // setState → re-render → re-subscribe).
   const depsRef = useLatest(deps);
+
+  // The canvas gestures (docs/specs/008-canvas/canvas-performance.md): open while a pan or a
+  // marquee is held, keyed on presence so a marquee's per-frame updates open nothing new.
+  const panning = pan !== null;
+  const marqueeing = marquee !== null;
+  useEffect(() => (panning ? beginCanvasGesture('pan') : undefined), [panning]);
+  useEffect(() => (marqueeing ? beginCanvasGesture('marquee') : undefined), [marqueeing]);
 
   // Held-Space modifier turns canvas drag into a pan instead of a
   // marquee. Tracked via a ref so the pointerdown handler always

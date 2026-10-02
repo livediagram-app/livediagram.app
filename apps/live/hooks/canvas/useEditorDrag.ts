@@ -57,6 +57,8 @@ import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
 
 // Screen-pixel distance the pointer must travel before a body drag
 // actually starts moving the element. Below this a press (even one that
@@ -169,6 +171,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // Each new gesture starts un-engaged: a body move must cross
     // DRAG_ENGAGE_PX before it nudges anything (see the move branch).
     dragEngagedRef.current = false;
+    // The canvas gesture this drag is (docs/specs/008-canvas/canvas-performance.md): opened once it
+    // engages, closed with the drag.
+    let endGesture: (() => void) | null = null;
+    const engageGesture = () => {
+      endGesture ??= beginCanvasGesture(gestureOfDrag(drag));
+    };
+    if (!dragWaitsToEngage(drag)) engageGesture();
     // Tell the canvas a drag that could open a slot is in hand — for the whole
     // gesture rather than just while Alt is down, because the board's easing
     // must still be mounted when the slot CLOSES (or it snaps shut) and
@@ -310,6 +319,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             );
             if (travelled < DRAG_ENGAGE_PX) return;
             dragEngagedRef.current = true;
+            engageGesture();
           }
           // Insert between (docs/specs/021-event-storming/event-storming.md): while Alt is held on an event-storming
           // board, a single sticky offers to take its place BETWEEN two notes
@@ -462,6 +472,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         const travelled = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY);
         if (travelled < DRAG_ENGAGE_PX) return;
         dragEngagedRef.current = true;
+        engageGesture();
         if (drag.kind === 'arrow-bend') {
           debugLog('[arrow-bend]', drag.arrowId, drag.plan.kind);
           track('Element', 'Changed', 'ArrowBend');
@@ -860,6 +871,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     window.addEventListener('keydown', onAltChange);
     window.addEventListener('keyup', onAltChange);
     return () => {
+      endGesture?.();
       if (moveRaf !== null) cancelAnimationFrame(moveRaf);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onUp);

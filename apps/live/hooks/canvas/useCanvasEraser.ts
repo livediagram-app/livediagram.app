@@ -28,7 +28,7 @@
 // the gesture are tracked here via window listeners so an erase keeps
 // working even if the pointer leaves the canvas surface mid-drag.
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@livediagram/api-schema';
 import { arrowReferencesAny, type Element, type Tab } from '@livediagram/document';
 
@@ -42,6 +42,7 @@ import {
 } from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { WhiteboardEraserMode } from '@/lib/whiteboard-prefs';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
@@ -112,6 +113,8 @@ export function useCanvasEraser(deps: EraserDeps) {
   const frameRef = useRef<EraseFrame | null>(null);
   const prevRef = useRef<{ x: number; y: number } | null>(null);
   const cutRef = useRef(false);
+  // Ends the sweep in flight, if any: its listeners and its canvas gesture.
+  const stopSweepRef = useRef<(() => void) | null>(null);
 
   const checkpointOnce = () => {
     if (checkpointedRef.current) return;
@@ -233,9 +236,17 @@ export function useCanvasEraser(deps: EraserDeps) {
     const onMove = (ev: PointerEvent) => {
       if (!tapOnly) eraseAtPoint(ev.clientX, ev.clientY);
     };
-    const onUp = () => {
+    const endGesture = beginCanvasGesture('erase');
+    const detach = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      endGesture();
+      stopSweepRef.current = null;
+    };
+    // A cancelled sweep ends like a lift: what it already erased is recorded.
+    const onUp = () => {
+      detach();
       if (erasedRef.current.size > 0 || cutRef.current) {
         track('Element', 'Deleted', 'Eraser');
         // One activity entry for the whole gesture: diff the pre-gesture
@@ -247,9 +258,14 @@ export function useCanvasEraser(deps: EraserDeps) {
       }
       erasedRef.current = new Set();
     };
+    stopSweepRef.current?.();
+    stopSweepRef.current = detach;
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   };
+  // Unmounting mid-sweep detaches its listeners and closes the gesture.
+  useEffect(() => () => stopSweepRef.current?.(), []);
 
   return { beginErase };
 }

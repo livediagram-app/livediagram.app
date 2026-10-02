@@ -5,6 +5,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -70,6 +71,10 @@ export function useCanvasDrawGesture({
   // can't push thousands of samples per second through React's
   // reconciliation). Null when no pen drag is active.
   const [penPoints, setPenPoints] = useState<{ x: number; y: number }[] | null>(null);
+
+  // Drawing is a stroke gesture (docs/specs/008-canvas/canvas-performance.md), press to release.
+  const drawing = drawDrag !== null || penPoints !== null;
+  useEffect(() => (drawing ? beginCanvasGesture('stroke') : undefined), [drawing]);
 
   // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
   // samples, no React state per sample; docs/specs/023-whiteboard/whiteboard.md "Pens").
