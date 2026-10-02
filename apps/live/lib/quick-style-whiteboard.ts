@@ -1,9 +1,8 @@
-// The quick style panel on a whiteboard (docs/specs/023-whiteboard/whiteboard.md "The quick style panel
-// stays"). A whiteboard has no theme, so its Stroke and Text colour rows offer the whiteboard's
-// colours, as Marker colour does: Ink (no colour of its own, drawn in the board's ink), the seven
-// stock colours (stored by name, adaptive per board), then the tab's custom colours. Background
-// keeps the theme's fills, its first swatch "no fill": an unpainted shape there is drawn unfilled
-// (inkWhiteboardElement), so a shape left unfilled reads as that default.
+// The quick style panel in Draw mode (docs/specs/023-whiteboard/whiteboard.md "The quick style panel
+// stays"). Its Stroke and Text colour rows offer the stock colours, as Marker colour does: Ink and
+// the seven hued colours (each stored by name and drawn in its version for the canvas,
+// docs/specs/007-editor/editor-modes.md "One look"), then the tab's custom colours. Background keeps
+// the theme's fills, its first swatch "no fill", which is what Draw mode writes on its shapes.
 import {
   isPenColourName,
   supportsBorderRadius,
@@ -33,16 +32,17 @@ type Coloured = {
   penTextColour?: PenColourName;
 };
 
-// The element's colour as a choice: its own hex, its stock name, or the ink.
-const strokeChoice = (el: Coloured): PenColourChoice =>
-  el.strokeColor?.toLowerCase() ?? el.penColour ?? INK_CHOICE;
+// The element's colour as a choice: its own hex or its stock name. An unpainted line wears its
+// theme default, which is no stock colour; unpainted text is drawn in Ink.
+const strokeChoice = (el: Coloured): PenColourChoice | null =>
+  el.strokeColor?.toLowerCase() ?? el.penColour ?? null;
 const textChoice = (el: Coloured): PenColourChoice =>
   el.textColor?.toLowerCase() ?? el.penTextColour ?? INK_CHOICE;
 
 const shared = <T>(values: T[]): T | null =>
   values.length > 0 && values.every((v) => v === values[0]) ? values[0]! : null;
 
-function section(values: PenColourChoice[], palette: PenPalette): BoardColourSection {
+function section(values: (PenColourChoice | null)[], palette: PenPalette): BoardColourSection {
   return { value: shared(values), options: stockOptions(palette), custom: customOptions(palette) };
 }
 
@@ -134,13 +134,12 @@ function unfilled(targets: readonly Element[]): boolean {
   );
 }
 
-// The colour fields a choice writes: nothing for the ink, a name, or the exact hex.
+// The colour fields a choice writes: a stock colour (Ink included) by name, or the exact hex.
 function colourFields<N extends string, H extends string>(
   choice: PenColourChoice,
   named: N,
   hex: H,
 ): Partial<Record<N, PenColourName> & Record<H, string>> {
-  if (choice === INK_CHOICE) return {};
   return (isPenColourName(choice) ? { [named]: choice } : { [hex]: choice.toLowerCase() }) as never;
 }
 
