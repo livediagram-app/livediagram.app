@@ -4,8 +4,13 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
-import { createInkProjector } from '@/lib/whiteboard-ink';
+import {
+  canvasSurface,
+  DEFAULT_BUTTON_MODE,
+  isWhiteboardTab,
+  WHITEBOARD_INK,
+} from '@livediagram/document';
+import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
@@ -425,14 +430,14 @@ export function EditorCanvasHost() {
     return true;
   };
   const backdrop = resolveTabBackdrop(activeTab, appearance);
-  // A whiteboard draws every unpainted element in its ink (docs/specs/023-whiteboard/whiteboard.md
-  // "Appearance"). Display only: the projector caches per element, so an
-  // unchanged element keeps its identity and the memoised views stay quiet.
-  const [projectInk] = useState(createInkProjector);
-  const shownElements = presentingElements ?? activeTab.elements;
-  const canvasElements = isWhiteboardTab(activeTab)
-    ? projectInk(shownElements, appearance)
-    : shownElements;
+  // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
+  // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
+  // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
+  const [projectStockColours] = useState(createStockColourProjector);
+  const canvasElements = projectStockColours(
+    presentingElements ?? activeTab.elements,
+    canvasSurface(backdrop.backgroundColor),
+  );
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
