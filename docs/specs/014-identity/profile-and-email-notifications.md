@@ -43,8 +43,6 @@ directly.
 
 ### Reaching it
 
-- **Sidebar** - the "Hi {name}" greeting at the top of `ExplorerSidebar`
-  opens the Settings dialog.
 - **Header account menu** - `AuthControls`' dropdown has an **Account** item
   deep-linking `/explorer?settings=account`, so it is reachable from anywhere
   the header chrome renders (editor + explorer).

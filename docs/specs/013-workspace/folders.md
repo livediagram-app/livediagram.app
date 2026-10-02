@@ -36,9 +36,9 @@ In scope:
   browser** — the same two-level space -> folder tile-grid browse as
   the New Document wizard's Save In step ([Offline Mode](../006-document/offline-mode.md),
   `components/placement/PlacementBrowser`), so the product has exactly
-  one way to choose where a document lives. Spaces first (Personal Space +
-  each team, [Team shared documents](team-shared-documents.md), on an overview that is shown even when Personal
-  Space is the only space, so the choice is deliberate and the screen has
+  one way to choose where a document lives. Spaces first (My documents +
+  each team, [Team shared documents](team-shared-documents.md), on an overview that is shown even when My
+  documents is the only space, so the choice is deliberate and the screen has
   room for a create-team option; only team-scoped surfaces skip it and
   open straight inside their team), then the folder drill-down with a
   "here" card at every level, an inline New Folder tile, and a
@@ -56,7 +56,7 @@ In scope:
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the floating Explorer panel, and the team library —
-  and every document-move surface offers every space (Personal Space + each
+  and every document-move surface offers every space (My documents + each
   team, [Team shared documents](team-shared-documents.md)), so a document is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
@@ -66,20 +66,27 @@ In scope:
 
 Every Explorer section is its own page under `/explorer` (the chrome — header, sidebar tree, mobile drawer — is a shared layout, so the sidebar and its loaded data persist across section navigations):
 
-| Section                                                 | Route                                                       |
-| ------------------------------------------------------- | ----------------------------------------------------------- |
-| Recent documents                                        | `/explorer/recent` (default)                                |
-| Shared with you                                         | `/explorer/shared`                                          |
-| All documents                                           | `/explorer/all` (route kept for deep links; no sidebar row) |
-| Unsorted                                                | `/explorer/unsorted`                                        |
-| Made by AI (old Generated links)                        | `/explorer/generated` → `/explorer/recent?q=made-by:ai`     |
-| A folder                                                | `/explorer/folder?id=<id>`                                  |
-| A team ([Teams](teams.md))                              | `/explorer/team?id=<id>`                                    |
-| Invites ([Teams](teams.md))                             | `/explorer/invites`                                         |
-| Image gallery                                           | `/explorer/images`                                          |
-| Shape libraries ([Shape libraries](shape-libraries.md)) | `/explorer/shape-libraries`                                 |
+| Section                                                        | Route                                   |
+| -------------------------------------------------------------- | --------------------------------------- |
+| Home, the [Timeline](timeline.md)                              | `/explorer/timeline` (default)          |
+| Activity ([Activity page](activity-page.md))                   | `/explorer/activity`                    |
+| Shared with me                                                 | `/explorer/shared`                      |
+| Recent documents                                               | `/explorer/recent` (no sidebar row)     |
+| Favourites ([Favourite documents](favourites.md))              | `/explorer/favourites` (no sidebar row) |
+| My documents, the root of the personal tree                    | `/explorer/all`                         |
+| Dynamic (overview of the synthetic folders)                    | `/explorer/dynamic` (no sidebar row)    |
+| Unsorted                                                       | `/explorer/unsorted`                    |
+| Generated                                                      | `/explorer/generated`                   |
+| A folder                                                       | `/explorer/folder?id=<id>`              |
+| A team ([Teams](teams.md))                                     | `/explorer/team?id=<id>`                |
+| Invites ([Teams](teams.md))                                    | `/explorer/invites`                     |
+| This browser ([Offline Mode](../006-document/offline-mode.md)) | `/explorer/offline`                     |
+| Image gallery                                                  | `/explorer/images`                      |
+| Themes                                                         | `/explorer/themes`                      |
+| Shape libraries ([Shape libraries](shape-libraries.md))        | `/explorer/shape-libraries`             |
+| Trash ([Trash](trash.md))                                      | `/explorer/trash`                       |
 
-`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent documents", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent documents; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All documents" parent row; contrasts with team libraries, [Team shared documents](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
+`/explorer` itself redirects to `/explorer/timeline` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
 
 Out of scope (V1):
 
@@ -121,18 +128,24 @@ diagrams
 
 ### Dynamic (synthetic) folders
 
-**Unsorted** in **Personal Space** isn't a row in the `folders` table — it's a
-live view the Explorer always shows (badge hidden at zero), with an info block
-under its breadcrumb explaining why it exists:
+Two folders in **My documents** aren't rows in the `folders` table — they're
+live views the Explorer always shows (badge hidden at zero), each with an
+info block under its breadcrumb explaining why it exists:
 
-- **Unsorted** — `folder_id IS NULL`. Documents not filed into a folder,
-  AI-made ones included. It offers no New folder / New document affordances
-  (you don't author into it).
-- There is no **Generated** bucket. AI-made documents are documents like any
-  other: unfiled ones sit in Unsorted, filed ones in their folder, and
-  `made-by:ai` ([Explorer filters](explorer-filters.md)) lists them all. The
-  old `/explorer/generated` route replaces itself with
-  `/explorer/recent?q=made-by:ai`, so links to it keep working.
+- **Unsorted** — `folder_id IS NULL AND source IS NULL`. Documents not filed
+  into a folder and not made by AI.
+- **Generated** — `source IS NOT NULL AND folder_id IS NULL`. AI-made
+  documents (the AI assistant / MCP server) the user hasn't filed yet, so the
+  two synthetic buckets are mutually exclusive. Route: `/explorer/generated`.
+  Neither dynamic folder offers New folder / New document affordances (you
+  don't author into them).
+- **Generated is retired with the filter chips.** When the Explorer's filter
+  UI ships its **Made by AI** chip (`made-by:ai`,
+  [Explorer filters](explorer-filters.md)), Generated goes: Unsorted becomes
+  `folder_id IS NULL`, AI-made documents included, and `/explorer/generated`
+  replaces itself with `/explorer/recent?q=made-by:ai`, so links to it keep
+  working. Until then Generated stays reachable as a sidebar row
+  ([Explorer structure](explorer-structure.md)).
 - `parent_id IS NULL` means the folder is at the tree root.
 - `ON DELETE SET NULL` on both `parent_id` and `folder_id`: deleting
   a folder doesn't delete its contents. Direct subfolders become
@@ -330,25 +343,15 @@ the open-source GitHub link, Settings, dark-mode toggle). It's sticky so
 it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
-- **Sidebar (left, fixed width):**
-  - "Recent" — virtual entry, last N most-recently-saved documents
-    (personal + team + shared-with-you, interleaved by recency), with
-    a count badge.
-  - **"Personal Space"** — there is no "All documents" parent row; Unsorted and
-    the root folders render directly under the heading as a recursive
-    tree with chevron expand/collapse and indented nesting. Each folder
-    row carries an ellipsis menu with Rename, New subfolder, Change
-    Folder, Delete. Teams (under the "Teams" heading) likewise expand
-    to reveal their folders.
-  - "Image Gallery" (under a "Library" section heading) — virtual
-    entry that opens the per-owner image gallery on the right
-    pane. Always present (the section behind it degrades to an
-    empty state when the api worker reports 503, e.g. a self-host
-    without R2).
-  - "Shared with you" — virtual entry, only present when the user
-    has at least one accepted share.
+- **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
+  Overview (Home, Activity, Shared with me), Spaces (My documents with
+  Unsorted, Generated and the root folders beneath it, each team with its
+  folders, New team), and More (This browser, Library, Trash). Each folder
+  row carries an ellipsis menu with Rename, New subfolder, Change Folder,
+  Delete. The Image gallery (under Library) degrades to an empty state
+  when the api worker reports 503, e.g. a self-host without R2.
 - **Right pane:**
-  - Breadcrumb showing the path from "All documents" through every
+  - Breadcrumb showing the path from "My documents" through every
     ancestor of the focused folder. Each segment is a button that
     jumps the focus.
   - List view with four columns: Name, Updated, Visibility, action.
@@ -388,9 +391,10 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   For a folder move, the target folder's own subtree is filtered
   out client-side so cycle-creating choices don't appear (the server
   still rejects them via the cycle check on `PUT /api/folders/:id`).
-- **Selection state** (which sidebar node is focused, which
-  branches are expanded) is local React state — it doesn't survive
-  reload. Default selection: "All documents".
+- **Selection state**: the selected sidebar row is the current route;
+  which branches are expanded is session-local state that doesn't
+  survive reload ([Explorer structure](explorer-structure.md#expansion)).
+  Default selection: Home.
 
 Empty states:
 

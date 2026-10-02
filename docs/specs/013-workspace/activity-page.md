@@ -45,8 +45,8 @@ outstanding for me right now.**
 
 ## 1. What the user sees
 
-A new **Activity** row in the sidebar's **Quick find** section, directly
-under Timeline, with a badge counting the open actions **assigned to
+An **Activity** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
+under Home, with a badge counting the open actions **assigned to
 the reader** (zero hides it: a "0 things to do" badge is noise, and
 the count only covers work waiting on them, not work they handed out).
 
@@ -328,7 +328,7 @@ then a team's, then a shared one.
 The section checklist from [Timeline](timeline.md) §8.3: `views.tsx` gains
 `{ kind: 'activity' }`, `routes.ts` maps it both ways,
 `app/explorer/activity/page.tsx` is the route stub, `ExplorerSidebar`
-gets the Quick find row (with `ActivityIcon` in
+gets the Overview row (with `ActivityIcon` in
 `components/primitives/explorer-icons.tsx`),
 `useExplorerPane` names it, `ExplorerPane` dispatches to the
 lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Document / New

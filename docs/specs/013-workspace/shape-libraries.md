@@ -94,8 +94,8 @@ Named constants, checked by the api and before any upload by the client:
 The Explorer's **Library** section gains **Shape libraries** beside Themes and Image gallery
 ([Folders](folders.md)):
 
-- Route `/explorer/shape-libraries`; a sidebar row **Shape libraries** with a shapes glyph, between
-  Themes and Trash. The page header's **Import from** group shows there as on every Explorer page.
+- Route `/explorer/shape-libraries`; a sidebar row **Shape libraries** with a shapes glyph, under
+  **Library**, after Themes ([Explorer structure](explorer-structure.md)). The page header's **Import from** group shows there as on every Explorer page.
 - The page lists the owner's libraries, newest first, each a card: name, "14 shapes", the first eight
   items' thumbnails; **Rename** (inline, the same name rules; Enter saves, Escape cancels; a name the
   owner already uses is refused with "You already have a library with that name."), **Delete**

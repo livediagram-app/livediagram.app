@@ -106,6 +106,10 @@ The word **"Offline"** identifies these documents everywhere the status is shown
   The Explorer view merges the API-fetched cloud list with the local index of
   offline documents; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
+- **Sidebar.** The full-page Explorer's **This browser** row (the More group,
+  [Explorer structure](../013-workspace/explorer-structure.md)) opens
+  `/explorer/offline`, the list of every offline document; the row shows while
+  this browser holds at least one.
 
 ## Converting between Offline and Cloud
 
