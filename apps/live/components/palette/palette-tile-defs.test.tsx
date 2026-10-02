@@ -123,7 +123,7 @@ describe('tool blurbs', () => {
 // description and decide whether it still describes what is in the tab.
 //
 // Categories filled from a catalogue rather than from tiles (Favourites,
-// Icons, Stickers, Technology) hold none, and are pinned at 0 so that stays
+// Icons, Stickers, Technology, My shapes) hold none, and are pinned at 0 so that stays
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   favourites: 0,
@@ -135,6 +135,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   icons: 0,
   stickers: 0,
   technology: 0,
+  'my-shapes': 0,
   media: 8,
   components: 9,
   data: 7,

@@ -1448,6 +1448,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3v9M9 9l3 3 3-3" />
     </Glyph>
   ),
+  // A stack of cards with a shape on the top one: a set of shapes that is yours.
+  'shape-libraries': (
+    <Glyph>
+      <path d="M6 5h12a1.5 1.5 0 0 1 1.5 1.5V17" />
+      <rect x="3.5" y="8" width="13" height="12" rx="1.5" />
+      <circle cx="10" cy="14" r="3" />
+    </Glyph>
+  ),
   // A diagram's box and decision, joined by a bent connector, arriving as a document.
   'drawio-import': (
     <Glyph>

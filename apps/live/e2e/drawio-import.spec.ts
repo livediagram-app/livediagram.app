@@ -200,20 +200,20 @@ test.describe('importing draw.io files from the Explorer', () => {
     await expect(list).toContainText('Platform');
     await expect(list).toContainText('Edited 12 Mar 2026 · 3 pages');
     await expect(list).toContainText('Signup flow');
+    await expect(list).toContainText('Shape library · 1 shape');
     await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
-      '2 files will be left out',
+      '1 file will be left out',
     );
     await shot(page, 'explorer-1-list');
-    await page.getByRole('button', { name: 'Import 2 files' }).click();
+    await page.getByRole('button', { name: 'Import 3 files' }).click();
 
     const report = page.getByTestId('import-image-report');
     await expect(report).toContainText(
       "Positions and styles weren't in the file; the layout is automatic",
     );
     await expect(report).toContainText('notes.txt');
-    // A library is recognised and named as coming soon, never an error.
-    await expect(report).toContainText('Team shapes');
-    await expect(report).toContainText('Shape libraries are coming soon.');
+    // A library becomes a shape library of its own (docs/specs/013-workspace/shape-libraries.md).
+    await expect(page.getByTestId('import-libraries')).toContainText('Team shapes');
     const documents = page.getByTestId('import-documents');
     await expect(documents).toContainText('Platform');
     await expect(documents).toContainText('Signup flow');

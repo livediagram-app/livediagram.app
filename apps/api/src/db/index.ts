@@ -16,6 +16,7 @@ export * from './change-log';
 export * from './folders';
 export * from './favourites';
 export * from './custom-themes';
+export * from './shape-libraries';
 export * from './team-invites';
 export * from './teams';
 export * from './api-tokens';

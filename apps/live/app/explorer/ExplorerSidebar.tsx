@@ -6,6 +6,7 @@ import {
   ImageIcon,
   InviteIcon,
   PaletteIcon,
+  ShapesIcon,
   PlusIcon,
   ShareIcon,
   StarIcon,
@@ -362,6 +363,14 @@ export function ExplorerSidebar() {
         label="Themes"
         selected={selected.kind === 'themes'}
         onClick={() => go({ kind: 'themes' })}
+        depth={0}
+      />
+      {/* Shape libraries (docs/specs/013-workspace/shape-libraries.md): the owner's imported libraries. */}
+      <SidebarRow
+        icon={<ShapesIcon />}
+        label="Shape libraries"
+        selected={selected.kind === 'shape-libraries'}
+        onClick={() => go({ kind: 'shape-libraries' })}
         depth={0}
       />
       {/* Trash (docs/specs/013-workspace/trash.md): last in the Library, where

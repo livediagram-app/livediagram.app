@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Shape libraries',
+  description:
+    'Bring your draw.io shape libraries across as named libraries of your own, place their shapes on any tab from the palette, and rename or tidy them on the Explorer page.',
+  path: '/help/explorer/shape-libraries/',
+});
+
+<ArticleLayout
+  title="Shape libraries"
+  description="Your own sets of reusable shapes, placed from the palette."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+A **shape library** is a named set of shapes you reuse: a UML preset, your team's icons, a notation of your own. Each library is yours, kept with your documents, and its shapes are ready to place on any tab from the palette's **My shapes** category.
+
+## Making a library
+
+Shape libraries come from draw.io. In draw.io, a library is the set of shapes you keep in a scratchpad or save as a library file. Import the file with [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page, on its own or together with diagrams and folders:
+
+- **Each library file becomes its own library**, named after the file. Importing two libraries gives you two; they are never merged.
+- If you already have a library with that name, the new one is called "Team icons (2)", so neither is lost.
+- Shapes keep their order, titles and look, connections included. Pictures inside them are saved to your [image gallery](/help/explorer/image-gallery/).
+- Shapes that can't be read are left out, and the report says how many.
+
+You can have up to 100 shape libraries, each holding up to 1,000 shapes.
+
+## Placing a shape
+
+Open the palette's category picker and choose **My shapes**. It appears once you have a library with at least one shape. Each library has its own section, newest first; the search box at the top finds shapes by their title or by the library's name.
+
+- **Click a shape** to place it in the middle of the view, or **drag it** to where you want it.
+- It arrives selected, ready to move, and one undo takes it back.
+- What you place is ordinary shapes and connections: edit them like anything else.
+
+With the keyboard, Tab to a shape and press Enter or Space to place it in the middle of the view.
+
+## Managing your libraries
+
+The Explorer's **Shape libraries** page, in the Library section of the sidebar, lists your libraries with how many shapes each holds and a preview of the first ones.
+
+- **Rename** a library in place: type the new name and press Enter, or Escape to keep the old one.
+- **Delete** a library after confirming. Its shapes leave My shapes; documents where you placed them keep them.
+- **Show shapes** lists every shape in a library, each with its own **Delete**.
+
+<Tip>
+  Shape libraries belong to you, signed in or not. If you start as a guest and later sign up, your
+  libraries come with you.
+</Tip>
+
+</ArticleLayout>

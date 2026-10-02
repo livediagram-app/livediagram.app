@@ -6,6 +6,7 @@
 //   unsorted → /explorer/unsorted        shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
+//   shape-libraries → /explorer/shape-libraries
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
 //   trash    → /explorer/trash (Library sidebar row + Settings › Account)
 //
@@ -46,6 +47,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/images';
     case 'themes':
       return '/explorer/themes';
+    case 'shape-libraries':
+      return '/explorer/shape-libraries';
     case 'trash':
       return '/explorer/trash';
     case 'invites':
@@ -95,6 +98,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'gallery' };
     case '/explorer/themes':
       return { kind: 'themes' };
+    case '/explorer/shape-libraries':
+      return { kind: 'shape-libraries' };
     case '/explorer/trash':
       return { kind: 'trash' };
     case '/explorer/invites':

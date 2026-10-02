@@ -160,3 +160,15 @@ export function EventStormingTabIcon() {
     </Glyph>
   );
 }
+
+// My shapes (docs/specs/013-workspace/shape-libraries.md): a stack of cards with a shape on the top
+// one, a set of shapes that is yours, distinct from Shapes' loose cluster.
+export function MyShapesTabIcon() {
+  return (
+    <Glyph size={18} units={18} strokeLinecap="round">
+      <path d="M4.5 4.5h9.5a1 1 0 0 1 1 1v8" />
+      <rect x="2.5" y="6.5" width="10" height="9" rx="1" />
+      <circle cx="7.5" cy="11" r="2.2" />
+    </Glyph>
+  );
+}

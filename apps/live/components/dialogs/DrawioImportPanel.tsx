@@ -6,6 +6,7 @@ import {
   useDrawioFileImport,
   type DrawioImportStep,
   type ImportDrawioDocuments,
+  type ImportDrawioLibraries,
 } from '@/hooks/persistence/useDrawioFileImport';
 import { ImportChecklist } from './ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
@@ -30,13 +31,15 @@ export function filesOfPick(picked: PickedExport | null): File[] {
 // report. The host supplies the commit and what Done does.
 export function DrawioImportPanel({
   importDocuments,
+  importLibraries,
   onClose,
 }: {
   importDocuments: ImportDrawioDocuments;
+  importLibraries: ImportDrawioLibraries;
   onClose: () => void;
 }) {
   const [done, setDone] = useState<DoneOutcome | null>(null);
-  const flow = useDrawioFileImport({ importDocuments, onDone: setDone });
+  const flow = useDrawioFileImport({ importDocuments, importLibraries, onDone: setDone });
   const { state } = flow;
 
   if (done) {
@@ -46,6 +49,7 @@ export function DrawioImportPanel({
         scene={done.scene}
         failures={done.failures}
         documents={done.documents}
+        libraries={done.libraries}
         onDone={onClose}
       />
     );

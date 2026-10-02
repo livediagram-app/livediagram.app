@@ -173,7 +173,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 16,
+    articleCount: 17,
     kind: 'feature',
   },
   {
@@ -1353,6 +1353,16 @@ export const articles: Article[] = [
     title: 'Explorer Page',
     description: 'The full-page library: the sidebar sections, list view, and folders.',
     keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'shape-libraries',
+    title: 'Shape libraries',
+    description:
+      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
+    keywords:
+      'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

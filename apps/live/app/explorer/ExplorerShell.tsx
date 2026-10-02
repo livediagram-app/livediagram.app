@@ -18,6 +18,7 @@ import { writeUserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
+import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
@@ -55,7 +56,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           builder share one source of truth, keyed by the same owner id
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
-        <ShellChrome>{children}</ShellChrome>
+        {/* The owner's shape libraries (docs/specs/013-workspace/shape-libraries.md): the Shape
+            libraries page and the draw.io import share them. */}
+        <ShapeLibraryProvider ownerId={state.ownerId}>
+          <ShellChrome>{children}</ShellChrome>
+        </ShapeLibraryProvider>
       </CustomThemeProvider>
     </ExplorerProvider>
   );

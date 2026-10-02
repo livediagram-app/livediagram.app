@@ -1,19 +1,25 @@
 // The Explorer's draw.io import (docs/specs/020-import-export/drawio-import.md "Import as new
 // documents"): read the picked files and folders by content, list what was found when there is
-// more than one, make each ticked diagram its own document through the host's commit, and hand the
+// more than one, make each ticked diagram its own document and each ticked library its own shape
+// library (docs/specs/013-workspace/shape-libraries.md) through the host's commits, and hand the
 // report on with the files left out listed first.
 import { useRef, useState } from 'react';
 import type { ImportChecklistRow } from '@/components/dialogs/ImportChecklist';
 import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
-import type { DrawioFiles } from '@/lib/drawio/files';
+import type { DrawioFiles, DrawioLibraryFile } from '@/lib/drawio/files';
+import type { ShapeLibrariesImported } from '@/lib/drawio/library-store';
 import type { DrawioDocumentFile } from '@/lib/drawio/new-document';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { toggled, toggledAll } from '@/lib/import-selection';
 import { track } from '@/lib/telemetry';
 
 export const DRAWIO_UNEXPECTED = "Couldn't import that. Check the files and try again.";
-/** What a library file is told until shape libraries exist (docs/specs/013-workspace/shape-libraries.md). */
-export const DRAWIO_LIBRARIES_SOON = 'Shape libraries are coming soon.';
+
+/** The host's commit for libraries: each library its own shape library, counted after `offset`. */
+export type ImportDrawioLibraries = (
+  files: DrawioLibraryFile[],
+  progress: { onProgress: (p: BoardImportProgress) => void; offset: number; total: number },
+) => Promise<ShapeLibrariesImported>;
 
 /** The host's commit: each file its own new document. */
 export type ImportDrawioDocuments = (
@@ -46,7 +52,7 @@ const plural = (n: number, one: string, many: string) =>
   `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
 function rowsOf(read: DrawioFiles): ImportChecklistRow[] {
-  return read.diagrams.map((d, i) => ({
+  const diagrams = read.diagrams.map((d, i) => ({
     key: `diagram:${i}`,
     name: d.name,
     detail: [
@@ -56,18 +62,17 @@ function rowsOf(read: DrawioFiles): ImportChecklistRow[] {
       .filter(Boolean)
       .join(' · '),
   }));
-}
-
-// Everything left out: what could not be read, and each library (skipped until they exist).
-function leftOutOf(read: DrawioFiles): Failure[] {
-  return [
-    ...read.failures,
-    ...read.libraries.map((l) => ({ title: l.name, message: DRAWIO_LIBRARIES_SOON })),
-  ];
+  const libraries = read.libraries.map((l, i) => ({
+    key: `library:${i}`,
+    name: l.name,
+    detail: `Shape library · ${plural(l.items.length, 'shape', 'shapes')}`,
+  }));
+  return [...diagrams, ...libraries];
 }
 
 export function useDrawioFileImport(deps: {
   importDocuments: ImportDrawioDocuments;
+  importLibraries: ImportDrawioLibraries;
   onDone: (outcome: DoneOutcome) => void;
 }) {
   const [state, setState] = useState<DrawioImportStep>({ step: 'pick' });
@@ -84,11 +89,15 @@ export function useDrawioFileImport(deps: {
   const run = async (checked: ReadonlySet<string>) => {
     const files = read.current!;
     const diagrams = files.diagrams.filter((_, i) => checked.has(`diagram:${i}`));
-    const failures = leftOutOf(files);
+    const libraries = files.libraries.filter((_, i) => checked.has(`library:${i}`));
+    const total = diagrams.length + libraries.length;
     let outcome: DoneOutcome = { status: 'done' };
     if (diagrams.length > 0) {
-      setState({ step: 'importing', board: 1, boards: diagrams.length });
-      const landed = await deps.importDocuments(diagrams, onProgress);
+      setState({ step: 'importing', board: 1, boards: total });
+      // One count over diagrams and libraries alike.
+      const landed = await deps.importDocuments(diagrams, (p) =>
+        onProgress({ ...p, boards: total }),
+      );
       if (landed.status !== 'done') {
         setState({
           step: 'pick',
@@ -101,7 +110,17 @@ export function useDrawioFileImport(deps: {
       }
       outcome = landed;
     }
-    const all = [...failures, ...(outcome.failures ?? [])];
+    if (libraries.length > 0) {
+      setState({ step: 'importing', board: diagrams.length + 1, boards: total });
+      const made = await deps.importLibraries(libraries, {
+        onProgress,
+        offset: diagrams.length,
+        total,
+      });
+      const { withLibraries } = await import('@/lib/drawio/library-store');
+      outcome = withLibraries(outcome, made);
+    }
+    const all = [...files.failures, ...(outcome.failures ?? [])];
     setState({ step: 'pick' });
     deps.onDone({ ...outcome, ...(all.length > 0 ? { failures: all } : {}) });
   };
@@ -125,20 +144,13 @@ export function useDrawioFileImport(deps: {
       const found = await readDrawioFiles(files);
       read.current = found;
       const rows = rowsOf(found);
-      const leftOut = leftOutOf(found);
       if (rows.length === 0) {
-        // Only libraries (with or without unreadable files): a report naming them, never an error.
-        if (found.libraries.length > 0) {
-          setState({ step: 'pick' });
-          deps.onDone({ status: 'done', failures: leftOut });
-          return;
-        }
-        setState({ step: 'pick', error: leftOut[0]?.message ?? DRAWIO_UNEXPECTED });
+        setState({ step: 'pick', error: found.failures[0]?.message ?? DRAWIO_UNEXPECTED });
         return;
       }
       const all = new Set(rows.map((r) => r.key));
-      if (rows.length === 1 && leftOut.length === 0) return run(all);
-      setState({ step: 'list', rows, failures: leftOut, checked: all });
+      if (rows.length === 1 && found.failures.length === 0) return run(all);
+      setState({ step: 'list', rows, failures: found.failures, checked: all });
     });
 
   const toggle = (key: string) =>

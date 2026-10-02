@@ -200,6 +200,11 @@ under a skipped rule.
 | image     | images       |
 | frame     | frames       |
 
+An import that makes things outside the open tab names them after the counts, each a link: the new
+documents ("3 new documents:") and, from a draw.io library, the new [Shape libraries](../013-workspace/shape-libraries.md)
+("2 new shape libraries:", linking to the Explorer's Shape libraries page), then the files left out
+with their reasons.
+
 ## Compact output
 
 A board of thousands of strokes must fit one tab (the api's tab cap,

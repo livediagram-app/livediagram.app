@@ -8,6 +8,7 @@ import { thumbnailKey } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
 import { disconnectDrive } from '../drive/disconnect';
+import { uniqueLibraryName } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
@@ -99,6 +100,8 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): this owner's saved themes go too.
   await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
+  // shape_libraries (docs/specs/013-workspace/shape-libraries.md): this owner's libraries go too.
+  await env.DB.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
   // api_tokens (docs/specs/015-api/public-api-and-tokens.md): no API credential outlives the account.
   await env.DB.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
   // email_lifecycle (docs/specs/014-identity/transactional-email.md): drop the onboarding-email row so the address
@@ -258,10 +261,42 @@ export async function migrateOwnerId(
   await env.DB.prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
+  await migrateShapeLibraries(env, fromOwnerId, toOwnerId);
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     shared: sharedInsertRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,
   };
+}
+
+// shape_libraries (docs/specs/013-workspace/shape-libraries.md): the guest's libraries move onto the
+// account; one whose name the account already uses takes the next free " (n)" first, so the account
+// never holds two libraries of one name. The cap applies to creates, never to this move.
+async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: string) {
+  const names = async (owner: string) =>
+    (
+      await env.DB.prepare(
+        'SELECT id, name FROM shape_libraries WHERE owner_id = ? ORDER BY created_at',
+      )
+        .bind(owner)
+        .all<{ id: string; name: string }>()
+    ).results ?? [];
+  const guest = await names(fromOwnerId);
+  if (guest.length === 0) return;
+  const taken = (await names(toOwnerId)).map((r) => r.name);
+  let renamed = 0;
+  for (const row of guest) {
+    const name = uniqueLibraryName(row.name, taken);
+    taken.push(name);
+    if (name === row.name) continue;
+    renamed++;
+    await env.DB.prepare('UPDATE shape_libraries SET name = ? WHERE id = ?')
+      .bind(name, row.id)
+      .run();
+  }
+  await env.DB.prepare('UPDATE shape_libraries SET owner_id = ? WHERE owner_id = ?')
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  console.info('[shape-libraries] migrated', { moved: guest.length, renamed });
 }

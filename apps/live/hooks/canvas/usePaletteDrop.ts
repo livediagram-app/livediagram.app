@@ -14,6 +14,11 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
+import {
+  LIBRARY_SHAPE_DND_MIME,
+  readLibraryShapeRef,
+  type LibraryShapeRef,
+} from '@/lib/shape-library-dnd';
 
 type PaletteDropDeps = {
   // 'sticky' rides beside the shape kinds (docs/specs/021-event-storming/event-storming.md): a sticky is its own
@@ -39,6 +44,9 @@ type PaletteDropDeps = {
   // file or export lands there as its scene (docs/specs/020-import-export/excalidraw-import-export.md
   // "Paste"). Absent where the canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
+  // A shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md), with the
+  // canvas point it was released at. Absent where nothing can be placed.
+  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
 };
 
 export function usePaletteDrop({
@@ -47,6 +55,7 @@ export function usePaletteDrop({
   wrapperRef,
   onDropPhoto,
   onDropFile,
+  onDropLibraryShape,
 }: PaletteDropDeps) {
   // The one file the drop would read, or null. `image/*` only, and only when
   // the board is one that reads photos.
@@ -76,7 +85,8 @@ export function usePaletteDrop({
       e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
       e.dataTransfer.types.includes(ICON_DND_MIME) ||
       e.dataTransfer.types.includes(TECH_ICON_DND_MIME) ||
-      e.dataTransfer.types.includes(STICKER_DND_MIME)
+      e.dataTransfer.types.includes(STICKER_DND_MIME) ||
+      (onDropLibraryShape && e.dataTransfer.types.includes(LIBRARY_SHAPE_DND_MIME))
     ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
@@ -103,6 +113,20 @@ export function usePaletteDrop({
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect) return;
       onDropFile?.(file, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
+      return;
+    }
+    const libraryShape = onDropLibraryShape ? e.dataTransfer.getData(LIBRARY_SHAPE_DND_MIME) : '';
+    if (libraryShape) {
+      e.preventDefault();
+      const ref = readLibraryShapeRef(libraryShape);
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      if (!ref || !rect) {
+        console.warn('[shape-libraries] drop ignored', {
+          reason: ref ? 'no canvas' : 'bad payload',
+        });
+        return;
+      }
+      onDropLibraryShape?.(ref, pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom));
       return;
     }
     const payload = e.dataTransfer.getData(PALETTE_DND_MIME);

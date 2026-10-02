@@ -22,9 +22,11 @@ week stay two libraries.
 - **An item**: an id, a **title** (may be empty), a **width** and **height**, and its **elements**:
   ordinary livediagram elements positioned from the item's top-left corner at (0, 0), as the draw.io
   mapping ([draw.io import](../020-import-export/drawio-import.md)) produced them, connections
-  between them included. Images in an item were stored through the
-  [Import image pipeline](../020-import-export/import-image-pipeline.md) when the library was imported;
-  an item references them like any element does.
+  between them included. Pictures in an item (an image item, or an image inside a shape snippet) are
+  stored through the [Import image pipeline](../020-import-export/import-image-pipeline.md) when the
+  library is imported, into the owner's [Image gallery](../009-elements/images.md) like any imported
+  picture; an item references them by image id like any element does. Deleting that picture from the
+  gallery leaves the item's image empty, as it does in a document.
 - Where a library came from is kept (`source: 'drawio'`), so a later source (an Excalidraw library) is
   one more value.
 
@@ -39,6 +41,13 @@ week stay two libraries.
 - **Items** keep the library's order. An item that cannot be read is left out and counted in the
   import report ("Library shapes that couldn't be read were left out"); a library none of whose items
   can be read is not made, and the report says why.
+- **The report.** The import's one shared report ([Board scene](../020-import-export/board-scene.md)
+  "The report") lists the new libraries under the new documents, "2 new shape libraries:", each a
+  link to the Explorer's Shape libraries page. A library the api refuses (the cap, the size budget)
+  is listed with the files left out, with the api's reason. Libraries count toward the report's
+  landed totals like documents do.
+- **Diagrams and libraries in one pick** import together: the diagrams as documents, then the
+  libraries; one failing never stops the other.
 
 ## Limits
 
@@ -56,28 +65,46 @@ Named constants, checked by the api and before any upload by the client:
 ## Using a library: the palette
 
 - The palette gains a **My shapes** category in the Common band, after Shapes, shown when the owner
-  has at least one library ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)).
+  has at least one library holding a shape ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)).
 - It shows **one section per library**, headed by the library's name, newest library first, each item
-  a tile drawing a thumbnail of its elements with its title beneath (or "Shape n" when untitled).
-  Search runs over library names and item titles.
+  a tile drawing a thumbnail of its elements with its title beneath (or "Shape n" when untitled, n
+  its 1-based position). The thumbnail is the item's elements drawn by the editor's own SVG export,
+  as an inert image (pictures inside show as their placeholder), drawn when the category first
+  opens; until then, and when drawing fails, the tile shows its title alone in the same box, so
+  nothing shifts. A search box at the top filters by library name and item title, case-insensitive;
+  no match reads "No shapes match".
 - **Placing an item** works like pasting: a click places it at the centre of the view, a drag at the
   drop point; its elements get fresh ids (connections follow), land in **one undo step**, and are
-  **selected**. On a whiteboard tab they keep their own look, as a pasted diagram does.
+  **selected**.
+- **Consecutive clicks never cover one another.** A click whose shape would land on a shape placed
+  from My shapes earlier, still where it landed, goes 24 px to the right of it instead (the paste
+  offset, as a gap), centred on its row; a run of clicks lines up left to right. A drag lands exactly
+  where it is dropped.
 - Tiles are buttons in a list per section: reachable by Tab, activated by Enter or Space (placing at
   the view's centre), named "Insert <title> from <library>" for screen readers.
+- The palette, and with it My shapes, is not offered on a read-only tab (a view-role share) or a
+  whiteboard tab (its dock replaces the palette); a locked tab places nothing.
+- The list loads once per owner when the editor opens (as custom themes do); an import or a change
+  in the Explorer shows on the next open. Offline Mode documents place items too, from the list the
+  owner last loaded.
 
 ## Managing libraries: the Explorer
 
 The Explorer's **Library** section gains **Shape libraries** beside Themes and Image gallery
 ([Folders](folders.md)):
 
-- Route `/explorer/shape-libraries`; a sidebar row with a shapes glyph.
-- The page lists the owner's libraries, newest first: name, item count, the first items' thumbnails;
-  **Rename** (inline, the same name rules), **Delete** (confirm: "Delete this shape library? Its
-  shapes leave My shapes; documents that use them keep them."), and opening a library shows its items
-  with **Delete** per item.
+- Route `/explorer/shape-libraries`; a sidebar row **Shape libraries** with a shapes glyph, between
+  Themes and Trash. The page header's **Import from** group shows there as on every Explorer page.
+- The page lists the owner's libraries, newest first, each a card: name, "14 shapes", the first eight
+  items' thumbnails; **Rename** (inline, the same name rules; Enter saves, Escape cancels; a name the
+  owner already uses is refused with "You already have a library with that name."), **Delete**
+  (confirm: "Delete this shape library? Its shapes leave My shapes; documents that use them keep
+  them."). **Show shapes** expands the card to every item, each with its title and a **Delete**
+  button named "Delete <title>" (no confirm: one shape; the library itself is confirmed). Deleting the
+  last shape deletes nothing else: an empty library stays until deleted.
 - Deleting a library or an item never touches documents: a placed item is ordinary elements.
-- Empty state: "No shape libraries yet. Import a draw.io library with Import from draw.io."
+- Loading: the cards' skeleton; a failed load: "Couldn't load your shape libraries." with **Try
+  again**. Empty state: "No shape libraries yet. Import a draw.io library with Import from draw.io."
 
 ## API
 
@@ -92,8 +119,23 @@ same 400 / 403 / 404 conventions and envelopes):
   (the client sends the remaining items). Owner-gated.
 - `DELETE /api/shape-libraries/:id` → 204. Owner-gated.
 
-Items are validated as the tab endpoints validate elements (`isValidElement`), and stored as JSON in
-one column.
+Items are validated as the tab endpoints validate elements (`isValidElement`, after the same
+element migration), and stored as JSON in one column. 400 for a missing or invalid field, an item
+that fails validation, more than `MAX_SHAPE_LIBRARY_ITEMS` items, or a name over 120 characters;
+409 `shape_library_name_taken` for a rename onto a name the owner already uses.
+
+The route is owner-scoped in the guest-id guard (`OWNER_SCOPED_SEGMENTS`), like `custom-themes`. Deleting
+an account deletes its libraries; `POST /api/migrate` moves a guest's libraries to the signed-in
+owner, renaming any that clash with a name the account already uses by the same " (2)" rule.
+
+## Storage
+
+A D1 table `shape_libraries` (`id`, `owner_id`, `name`, `source`, `items` JSON, `created_at`,
+`updated_at`), indexed by owner and by (owner, created) for the newest-first list. Migration
+`0060_shape_libraries.sql`: 0059 is taken by an open pull request; if the merge order changes, this
+takes the next free number and this line follows. No new binding: the table lives in the api's
+existing D1 database, so staging applies the migration with the others and `pnpm staging:check` has
+nothing new to compare.
 
 ## Telemetry
 
@@ -105,6 +147,8 @@ pairs, new types only.
 ## Out of scope (for now)
 
 - Making a library from shapes on the canvas, or adding to one (only imports make libraries today).
+- Timeline cards for libraries (custom themes record theirs; libraries do not, yet).
+- Live updates across open editors: a change shows on the next open.
 - Team-shared libraries (a `team_id`), as for custom themes.
 - Exporting a library back to draw.io.
 - Libraries from other tools.

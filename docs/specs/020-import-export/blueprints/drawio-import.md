@@ -38,7 +38,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/import-tab.ts`                             | `pickTabFile` also returns the picked `File`; the shared `ImportOutcome` (`images`, `scene`, `failures`, `documents`)            |
 | `hooks/persistence/useTabImport.ts`             | The `drawio` format: multi-page apply, one undo step, telemetry, log                                                             |
 | `hooks/persistence/drawio-apply.ts`             | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                                                      |
-| `hooks/persistence/useDrawioFileImport.ts`      | The Explorer flow: read, list, import the ticked diagrams, report; libraries left out as coming soon                             |
+| `hooks/persistence/useDrawioFileImport.ts`      | The Explorer flow: read, list, import the ticked diagrams and libraries, report                                                  |
 | `hooks/persistence/useDrawioImportLauncher.tsx` | `useDrawioImportLauncher`: the dialog, loaded on first open                                                                      |
 | `components/dialogs/DrawioImportDialog.tsx`     | The Explorer dialog: title, subtitle, help link                                                                                  |
 | `components/dialogs/DrawioImportPanel.tsx`      | Pick (files, folder, drop), list, progress, report; `filesOfPick`                                                                |
@@ -491,8 +491,8 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   `{ title (string, may be empty), width: w, height: h, elements }`. An item that fails is counted
   `library-item-unreadable`; none readable → refusal `empty-library`. At most
   `DRAWIO_MAX_LIBRARY_ITEMS`, the rest `content-truncated`.
-- `importDrawio` given a library → refusal `library` ("This is a draw.io shape library, not a diagram.
-  Shape libraries are coming soon.").
+- `importDrawio` given a library → refusal `library` ("This is a draw.io shape library. Import it with
+  Import from draw.io on the Explorer page to add it to My shapes.").
 - `importDrawio`'s success gains `meta: { name?: string; modified?: string }`: the `mxfile`'s `name`
   and `modified` attributes when present (the JSON path: those of its `data` file, else none).
 
@@ -514,10 +514,9 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   the file name without its extension (the whole name for a file that is not draw.io's).
 - The commit: diagrams through `importDocuments` (`lib/board-scene-import.ts`, the foundation's
   new-document target for ready tabs) with `drawioDocumentSource` (`new-document.ts`: each page a diagram tab named after its page, oversized pages
-  left out and named, images through one pipeline pass per document). Libraries are not committed: each is
-  left out as `{ title: name, message: DRAWIO_LIBRARIES_SOON }` ("Shape libraries are coming soon.");
-  a pick whose only readable files are libraries ends on the report (`{ status: 'done', failures }`),
-  never on an error.
+  left out and named, images through one pipeline pass per document). Libraries, after the diagrams, through
+  the host's `importLibraries` ([Shape libraries blueprint](../../013-workspace/blueprints/shape-libraries.md)
+  "Behaviour and state" 1): each its own shape library, its failures listed with the files left out.
   One `track('Tab', 'Imported', 'Drawio')` per document made.
 
 ### 21. The Explorer source (`useDrawioFileImport`, `DrawioImportPanel`, `DrawioImportDialog`)
@@ -528,10 +527,11 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   `ImportChecklist`: pick (files: `multiple`, no `accept` filter, as Drive saves have no
   extension; a folder: `pickExport('folder')`; drop: files and folders through `readDrop`, each
   named after its path by `filesOfPick`) → "Reading files…" → list (legend "Files to import"; one row
-  per diagram, "Edited 12 Mar 2026 · 3 pages", all ticked; "1 file will be left out; the report says
-  why."; button "Import 3 files"; one diagram and nothing left out skips the list) → importing ("Importing 3 of 12…",
-  then "Importing images 3 of 12…") → the shared report (`ImportImageReport`, documents as links,
-  failures listed). One `track('Tab', 'Imported', 'Drawio')` per document made.
+  per diagram, "Edited 12 Mar 2026 · 3 pages", and per library, "Shape library · 14 shapes", all ticked;
+  "1 file will be left out; the report says why."; button "Import 3 files"; one readable file and
+  nothing left out skips the list) → importing ("Importing 3 of 12…",
+  then "Importing images 3 of 12…") → the shared report (`ImportImageReport`, documents and libraries as
+  links, failures listed). One `track('Tab', 'Imported', 'Drawio')` per document made.
 - `DrawioImportDialog`: title "Import from draw.io", subtitle "Each diagram becomes its own document,
   named and dated after the file.", its help link the `drawioImport` article
   (`explorer/drawio-import`, Explorer category).
@@ -727,7 +727,7 @@ Refusals (the `error` string, final copy):
 | `png-without-diagram` | "This PNG has no draw.io diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked."                                  |
 | `svg-without-diagram` | "This SVG has no draw.io diagram inside. In draw.io, export as SVG with 'Include a copy of my diagram' ticked."                                  |
 | `page-unreadable`     | "Page '<name>' couldn't be decoded." (`Page <n>` when unnamed)                                                                                   |
-| `library`             | "This is a draw.io shape library, not a diagram. Shape libraries are coming soon."                                                               |
+| `library`             | "This is a draw.io shape library. Import it with Import from draw.io on the Explorer page to add it to My shapes."                               |
 | `not-library`         | "This isn't a draw.io library (expected an mxlibrary holding a list of shapes)."                                                                 |
 | `empty-library`       | "None of this library's shapes could be read."                                                                                                   |
 | `unreadable`          | "Couldn't read this draw.io file."                                                                                                               |

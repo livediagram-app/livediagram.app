@@ -4604,6 +4604,82 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ShapeLibrary": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/ShapeLibraryItem"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "ownerId": {
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/components/schemas/ShapeLibrarySource"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "ownerId",
+      "name",
+      "source",
+      "items",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "ShapeLibraryItem": {
+    "additionalProperties": false,
+    "description": "One reusable shape: its elements placed from its top-left corner at (0, 0).",
+    "properties": {
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "width",
+      "height",
+      "elements"
+    ],
+    "type": "object"
+  },
+  "ShapeLibrarySource": {
+    "const": "drawio",
+    "description": "Where a library came from; one value today.",
+    "type": "string"
+  },
   "ShapeMarker": {
     "enum": [
       "green-circle",

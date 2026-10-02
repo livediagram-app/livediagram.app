@@ -29,7 +29,13 @@ describe('DrawioImportPanel', () => {
       documents: files.map((f, i) => ({ id: `d${i}`, name: f.name })),
     }));
     const onClose = vi.fn();
-    render(<DrawioImportPanel importDocuments={importDocuments} onClose={onClose} />);
+    render(
+      <DrawioImportPanel
+        importDocuments={importDocuments}
+        importLibraries={vi.fn()}
+        onClose={onClose}
+      />,
+    );
     fireEvent.change(screen.getByTestId('drawio-file-input'), {
       target: { files: [diagram('Roadmap'), diagram('Network.drawio'), new File(['x'], 'a.txt')] },
     });
@@ -46,7 +52,9 @@ describe('DrawioImportPanel', () => {
   });
 
   it('says why when nothing picked is draw.io', async () => {
-    render(<DrawioImportPanel importDocuments={vi.fn()} onClose={vi.fn()} />);
+    render(
+      <DrawioImportPanel importDocuments={vi.fn()} importLibraries={vi.fn()} onClose={vi.fn()} />,
+    );
     fireEvent.change(screen.getByTestId('drawio-file-input'), {
       target: { files: [new File(['x'], 'a.txt')] },
     });

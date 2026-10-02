@@ -1,7 +1,10 @@
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import type { ImportDrawioDocuments } from '@/hooks/persistence/useDrawioFileImport';
+import type {
+  ImportDrawioDocuments,
+  ImportDrawioLibraries,
+} from '@/hooks/persistence/useDrawioFileImport';
 import { DialogHeader } from './DialogHeader';
 import { DrawioImportPanel } from './DrawioImportPanel';
 
@@ -11,9 +14,11 @@ export const DRAWIO_IMPORT_TITLE = 'Import from draw.io';
 // new documents"): host-agnostic, the host supplies the commit (one document per diagram file).
 export function DrawioImportDialog({
   importDocuments,
+  importLibraries,
   onClose,
 }: {
   importDocuments: ImportDrawioDocuments;
+  importLibraries: ImportDrawioLibraries;
   onClose: () => void;
 }) {
   return (
@@ -26,7 +31,11 @@ export function DrawioImportDialog({
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        <DrawioImportPanel importDocuments={importDocuments} onClose={onClose} />
+        <DrawioImportPanel
+          importDocuments={importDocuments}
+          importLibraries={importLibraries}
+          onClose={onClose}
+        />
       </div>
     </Dialog>
   );

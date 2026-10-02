@@ -41,6 +41,7 @@ import { handleAi } from './routes/ai';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
+import { handleShapeLibraries } from './routes/shape-libraries';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext } from './routes/context';
 import { handleDocuments } from './routes/documents';
@@ -306,6 +307,8 @@ async function routeApiRequest(
         return await handleFolders(ctx);
       case 'custom-themes':
         return await handleCustomThemes(ctx);
+      case 'shape-libraries':
+        return await handleShapeLibraries(ctx);
       case 'teams':
         return await handleTeams(ctx);
       case 'tokens':

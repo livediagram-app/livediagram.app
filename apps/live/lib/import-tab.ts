@@ -20,6 +20,8 @@ export type ImportOutcome =
       failures?: { title: string; message: string }[];
       // The documents an import made, one per board (docs/specs/020-import-export/board-import.md).
       documents?: { id: string; name: string }[];
+      // The shape libraries a draw.io import made (docs/specs/013-workspace/shape-libraries.md).
+      libraries?: { id: string; name: string }[];
     }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
