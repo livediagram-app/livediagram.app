@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PEN_INK } from './pen-colours';
 import {
   canvasSurface,
   contrastRatio,
@@ -56,7 +57,7 @@ describe('element ink on dark paper', () => {
   });
 
   it('draws text and arrows so they read against it', () => {
-    expect(defaultTextColor(createText(0, 0), 'dark')).toBe('#ffffff');
+    expect(defaultTextColor(createText(0, 0), 'dark')).toBe(PEN_INK.dark);
     expect(defaultArrowStrokeColor('dark')).toBe('#64748b');
   });
 

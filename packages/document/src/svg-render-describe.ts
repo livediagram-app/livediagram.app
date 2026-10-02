@@ -26,6 +26,7 @@ import { borderOf } from './svg-render-border';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
+import { resolveStockColours } from './stock-colours';
 
 export const EXPORT_PADDING = 32;
 export const EXPORT_BG = '#ffffff';
@@ -125,8 +126,13 @@ export function exportFontIds(
   return fontIdsUsed(boxed, tabFont, boxed.map(eventStormingNoteFont));
 }
 
-export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions = {}): BoxedExport {
+export function describeBoxedExport(
+  source: BoxedElement,
+  opts: BoxedExportOptions = {},
+): BoxedExport {
   const surface = opts.surface ?? 'light';
+  // A stock colour stored by name is drawn in its version for this page.
+  const el = resolveStockColours(source, surface);
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
   const fontFamily = exportFontFamily(el, opts.tabFont);
   const opacity = el.opacity ?? 1;

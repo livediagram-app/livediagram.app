@@ -486,6 +486,7 @@ export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';
 export * from './pen-colours';
+export * from './stock-colours';
 export * from './snap-colours';
 export * from './path-geometry';
 export * from './path-element';

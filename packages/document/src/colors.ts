@@ -11,6 +11,7 @@ import {
   type TextAlignY,
 } from './index';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
+import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 
@@ -231,13 +232,15 @@ function behaviourSkin(
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.text;
+  // Text with no colour of its own is written in Ink, on every theme and in either editor mode
+  // (docs/specs/007-editor/editor-modes.md "One look").
+  if (element.type === 'text') return PEN_INK[surface];
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
   if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
-      case 'text':
       case 'image':
       case 'freehand':
       case 'path':
@@ -255,8 +258,6 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       return '#075985'; // brand-800
     case 'sticky':
       return '#451a03'; // amber-950-ish
-    case 'text':
-      return '#1e293b'; // slate-800
     case 'image':
       return '#1e293b'; // slate-800 (only used for alt-text rendering)
     case 'freehand':
@@ -371,6 +372,9 @@ export function defaultStrokeColor(
 ): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.stroke;
+  // A pen stroke with no colour of its own is drawn in Ink (docs/specs/007-editor/editor-modes.md
+  // "One look"); a highlighter keeps its own recipe.
+  if (element.type === 'freehand' && element.pen !== 'highlighter') return PEN_INK[surface];
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
