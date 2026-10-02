@@ -21,7 +21,7 @@ import {
 } from '@livediagram/document';
 import type { ReportTally } from './notes';
 import type { DrawioCell } from './cells';
-import { readFill, readInk } from './colour';
+import { readFill, readInk, type DrawioColour } from './colour';
 import { cellLabel } from './label';
 import { DRAWIO_DEFAULT_ARC_SIZE, DRAWIO_SHADOW } from './limits';
 import { nearest } from './nearest';
@@ -163,8 +163,11 @@ export function overPaper(hex: string, alpha: number): string {
 /** Fields every boxed element takes from its cell. */
 export function boxedProps(cell: DrawioCell, ctx: ConvertContext) {
   const s = cell.style;
-  const fill = readFill(s.str('fillColor'));
-  const stroke = readInk(s.str('strokeColor'));
+  // A fill or stroke at no opacity is none, whatever its colour (spec "Opacity over paper").
+  const fill: DrawioColour =
+    s.num('fillOpacity') === 0 ? { kind: 'none' } : readFill(s.str('fillColor'));
+  const stroke: DrawioColour =
+    s.num('strokeOpacity') === 0 ? { kind: 'none' } : readInk(s.str('strokeColor'));
   const translucency = Math.min(s.num('opacity') ?? 100, s.num('fillOpacity') ?? 100);
   // Over draw.io's white paper a translucent fill reads as the blend; that blend comes in opaque
   // unless the shape overlaps something, where seeing through it matters (spec "Opacity over paper").
@@ -186,7 +189,10 @@ export function boxedProps(cell: DrawioCell, ctx: ConvertContext) {
     ...(strokeStyle ? { strokeStyle } : {}),
     ...(opacity !== undefined && opacity < 100 ? { opacity: Math.max(0, opacity) / 100 } : {}),
     ...(rotation !== 0 ? { rotation } : {}),
-    ...(s.flag('shadow') ? { shadow: DRAWIO_SHADOW } : {}),
+    // Nothing to cast a shadow from: draw.io draws none.
+    ...(s.flag('shadow') && !(fill.kind === 'none' && stroke.kind === 'none')
+      ? { shadow: DRAWIO_SHADOW }
+      : {}),
     ...(s.flag('locked') ? { locked: true } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),

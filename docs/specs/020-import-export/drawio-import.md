@@ -300,6 +300,8 @@ When the cell has no label, the box is labelled with the stencil's readable name
   `opacity` (or `fillOpacity`) under 100 and a fill of its own comes in **opaque**, its fill blended
   with white by that opacity, unless it overlaps another element (where seeing through it matters):
   then it keeps its opacity. Its label, stroke and children stay fully opaque, as draw.io draws them.
+  A `fillOpacity` of 0 is no fill and a `strokeOpacity` of 0 no stroke, whatever their colours; a
+  shape with neither keeps no shadow, as draw.io casts none.
 - **Legible labels on own fills.** A label with no colour of its own on a shape (or lane title, entity,
   table cell) with a fill of its own takes the ink that reads on that fill: dark on a light fill, white
   on a dark one. draw.io's default label ink is black on paper, and the theme's text colour pairs with
@@ -534,8 +536,8 @@ These differ from draw.io for every file and are not worth a line each time:
   `snapToPoint` to a stencil's connection points, and the isometric router's skew (it routes as the
   elbow it is drawn from); perimeters draw.io registers that the port does not carry
   (`lifelinePerimeter`, the older `hexagonPerimeter`, ...) route as rectangles.
-- `spacing*`, `perimeterSpacing`, `whiteSpace`, `overflow`, `textOpacity`, `fillOpacity`,
-  `strokeOpacity`, `labelBorderColor`: livediagram lays text out itself.
+- `spacing*`, `perimeterSpacing`, `whiteSpace`, `overflow`, `textOpacity`, `fillOpacity` and
+  `strokeOpacity` between 0 and 100 on a stroke, `labelBorderColor`: livediagram lays text out itself.
 - Page size, grid, guides, page view and print settings; the page's zoom and scroll.
 - Custom connection points (`points=[...]`) beyond the anchor they resolve to.
 - draw.io comments, tags, metadata and the file's edit history.

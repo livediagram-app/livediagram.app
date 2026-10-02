@@ -262,7 +262,9 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
    `round(fill·o + 255·(1 − o))`) and `opacity` is omitted; when true, `opacity = o` as before.
    `overlapsOther(cell)`: the cell's absolute rect intersects (area > 0) the rect of another visible
    vertex that is neither its ancestor nor its descendant; checked only for translucent cells.
-7. `shadow=1` → `DRAWIO_SHADOW`. `locked=1` → `locked: true`.
+7. `fillOpacity=0` → `fillColor: 'transparent'` (before the paper rules); `strokeOpacity=0` →
+   `strokeWidth: 'none'`. `shadow=1` → `DRAWIO_SHADOW`, unless the fill is `transparent` and the
+   stroke `none`. `locked=1` → `locked: true`.
 8. Link (`cell.link`): `http:`, `https:`, `mailto:` → `{ kind: 'url', url }`; `data:page/id,<id>` →
    `{ kind: 'tab', tabId: pageIdToTab.get(id) }` when known; else dropped, `link-dropped`.
 9. Note: `tooltip` then each custom property as `name: value`, lines

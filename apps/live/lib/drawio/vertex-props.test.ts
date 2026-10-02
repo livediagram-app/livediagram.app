@@ -121,6 +121,19 @@ describe('boxedProps', () => {
     });
   });
 
+  it('reads a fill and a stroke at no opacity as none, and casts no shadow from nothing', () => {
+    expect(
+      boxedProps(
+        cell('fillColor=#ffffff;fillOpacity=0;strokeColor=#5e5e5e;strokeOpacity=0;shadow=1;'),
+        ctx(),
+      ),
+    ).toEqual({ fillColor: 'transparent', strokeWidth: 'none' });
+    expect(boxedProps(cell('fillColor=#dae8fc;fillOpacity=0;shadow=1;'), ctx())).toMatchObject({
+      fillColor: 'transparent',
+      shadow: { offsetX: 2 },
+    });
+  });
+
   it('carries tooltip and properties as a note, and the link', () => {
     const c = cellFrom(
       '<UserObject id="v" label="x" tooltip="Hover" owner="Ops" link="https://x.test"><mxCell vertex="1" parent="1"><mxGeometry width="1" height="1" as="geometry"/></mxCell></UserObject>',
