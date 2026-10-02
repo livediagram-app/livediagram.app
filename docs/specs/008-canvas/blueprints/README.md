@@ -9,5 +9,6 @@ Follow the references below only as needed; never upfront.
 - ./quick-style-panel.md - when implementing or changing the quick style panel, its swatches, placement, or style memory
 - ./selection-clicks.md - when implementing or changing what a plain click or Shift-click does to the selection
 - ./resize.md - when implementing or changing resize handles, the aspect lock, Shift constraints, draw-to-size with Shift, or where selection grips draw
+- ./canvas-performance.md - when implementing or changing the gesture store, element view stability, the element grid, the Map's settled drawing, or the performance probe
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers

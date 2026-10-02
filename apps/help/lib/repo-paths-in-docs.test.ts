@@ -64,6 +64,18 @@ const DELIBERATE = [/\/\.\.\.\//, /-1\/2\.ts$/];
 
 const QUOTED_PATH = /`([a-zA-Z0-9_.@/[\]-]+\.(?:ts|tsx|mjs|cjs|js|css|sql|toml|json))`/g;
 
+// A blueprint is written before its code (AGENTS.md "Blueprints"), so it may name a file that does not
+// exist yet, quoted with " (planned)" straight after it. Only in a blueprint, and self-cleaning: once
+// the file exists the marker must go (the test below fails until it does), so the exemption cannot
+// outlive the file's arrival the way the old migration placeholder did.
+const PLANNED_PATH =
+  /`([a-zA-Z0-9_.@/[\]-]+\.(?:ts|tsx|mjs|cjs|js|css|sql|toml|json))` \(planned\)/g;
+
+function plannedIn(f: string, src: string): Set<string> {
+  if (!f.includes('/blueprints/')) return new Set();
+  return new Set([...src.matchAll(PLANNED_PATH)].map((m) => m[1]!));
+}
+
 function docFiles(): string[] {
   const out: string[] = [];
   const walk = (dir: string) => {
@@ -248,12 +260,14 @@ describe('repo paths quoted in specs and docs', () => {
   });
 
   it('all point at files that exist', () => {
-    const quotes = files.flatMap((f) =>
-      [...readFileSync(`${ROOT}/${f}`, 'utf8').matchAll(QUOTED_PATH)]
+    const quotes = files.flatMap((f) => {
+      const src = readFileSync(`${ROOT}/${f}`, 'utf8');
+      const planned = plannedIn(f, src);
+      return [...src.matchAll(QUOTED_PATH)]
         .map((m) => m[1]!)
-        .filter((quoted) => quoted.includes('/'))
-        .map((quoted) => ({ f, quoted })),
-    );
+        .filter((quoted) => quoted.includes('/') && !planned.has(quoted))
+        .map((quoted) => ({ f, quoted }));
+    });
     const known = knownPaths(quotes.map(({ quoted }) => quoted));
     const broken = quotes
       .filter(({ quoted }) => !resolves(quoted, known))
@@ -262,6 +276,25 @@ describe('repo paths quoted in specs and docs', () => {
     // It reads every spec and doc and lists the repo: well under a second alone, but past the
     // 5 s default when the whole monorepo's suites run at once.
   }, 30_000);
+
+  it("drops a blueprint's (planned) once the file exists", () => {
+    const planned = files.flatMap((f) =>
+      [...plannedIn(f, readFileSync(`${ROOT}/${f}`, 'utf8'))].map((quoted) => ({ f, quoted })),
+    );
+    const known = knownPaths(planned.map(({ quoted }) => quoted));
+    const built = planned
+      .filter(({ quoted }) => resolves(quoted, known))
+      .map(({ f, quoted }) => `${f}: ${quoted} exists; drop its (planned)`);
+    expect(built).toEqual([]);
+  }, 30_000);
+
+  it('only exempts a planned path in a blueprint', () => {
+    const src = 'see `apps/live/lib/nowhere.ts` (planned)';
+    expect(plannedIn('docs/specs/008-canvas/blueprints/canvas-performance.md', src)).toEqual(
+      new Set(['apps/live/lib/nowhere.ts']),
+    );
+    expect(plannedIn('docs/specs/008-canvas/canvas-performance.md', src)).toEqual(new Set());
+  });
 
   it('accepts a declared build output and rejects a misspelt directory', () => {
     const built = 'apps/marketing/generated/licences.json';
