@@ -514,11 +514,16 @@ export function useCanvasChromePanels({
   const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
   // Hidden layers (docs/specs/006-document/layers.md) drop out of the miniature too, so the map
-  // matches the canvas.
+  // matches the canvas. Memoised: with a hidden layer the filter returns a new array, which would
+  // rebuild the Map's whole drawing on every render (docs/specs/008-canvas/canvas-performance.md).
+  const mapElements = useMemo(
+    () => visibleLayerElements(elements, props.tabLayers),
+    [elements, props.tabLayers],
+  );
   const minimapEl =
     !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
       <Minimap
-        elements={visibleLayerElements(elements, props.tabLayers)}
+        elements={mapElements}
         tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
