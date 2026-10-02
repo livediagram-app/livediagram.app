@@ -249,12 +249,16 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
    empty.
 10. Text: `readLabel`; `label = plain` (omitted when empty); `richText = runs` when the kind carries
     rich text (shape, text, sticky). `fontStyle` bits → `textBold` / `textItalic` / `textUnderline` /
-    `textStrikethrough`. `fontColor` hex → `textColor`. `fontSize` → `elementTextSize` (`text-size.ts`): nearest preset on the scale
-    (`LABEL_FONT_PX` for shapes and text, `NOTE_FONT_PX` for stickies, `arrowLabelFontSize` for
-    arrows), over `sm`, `md`, `lg` only, ties to the smaller. A span's px → `runTextSize(px,
-fontSize, scale)`: the nearest preset, omitted when it equals the element's; a span below the
-    smallest preset lands on it (the one place a smaller size or a report rule would go). `fontFamily` → `fontIdFor(family)`.
-    `align` → `textAlignX`; `verticalAlign` → `textAlignY` (`middle` kept as `middle`).
+    `textStrikethrough`. `fontColor` hex → `textColor`. `fontSize` → `elementTextSize`
+    (`text-size.ts`): nearest preset on the scale (`LABEL_FONT_PX` for shapes and text,
+    `NOTE_FONT_PX` for stickies, `arrowLabelFontSize` for arrows), over `sm`, `md`, `lg` only,
+    ties to the smaller. A span's px → `runTextSize(px, fontSize, scale)`: `xs` under
+    `DRAWIO_XS_BELOW_PX` (12), else the nearest preset; omitted when it equals the label's own size,
+    which is `xs` for a label under 12 px. A label under 12 px on a kind with runs gives every run
+    without a size `size: 'xs'` (the plain text becomes one run). Text under `RUN_XS_PX` (10)
+    anywhere in a label with runs counts `text-below-xs` once for that label. Arrows have no `xs`
+    (no runs). `fontFamily` → `fontIdFor(family)`. `align` → `textAlignX`; `verticalAlign` →
+    `textAlignY` (`middle` kept as `middle`).
 11. Label outside: `labelPosition` `left` / `right` or `verticalLabelPosition` `top` / `bottom` on a
     kind that is not an icon or an actor with its name above or below: alignment set towards that
     side (`textAlignX: 'left'|'right'`, `textAlignY: 'top'|'bottom'`), `label-moved` += 1 when the
@@ -552,6 +556,7 @@ export type ImportNoteKind =
   | 'collapsed-skipped'
   | 'link-dropped'
   | 'text-truncated'
+  | 'text-below-xs'
   | 'auto-layout'
   | 'library-item-unreadable'
   | 'content-truncated';
@@ -889,6 +894,8 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_GENERIC_LIBRARY_NAME`                       | `untitled library`, any case, with an optional ` (n)` or `-n`                                                                                               | draw.io's default library name                                                                       |
 | `DRAWIO_MAX_LIBRARY_ITEMS`                          | 1 000                                                                                                                                                       | Spec "Shape libraries" (the shape library item cap); 100 to 10 000                                   |
 | `DRAWIO_JSON_LOOSE_EDGE_PX`                         | 80                                                                                                                                                          | About half a default box's width (D34); 40 to 160                                                    |
+| `DRAWIO_XS_BELOW_PX`                                | 12                                                                                                                                                          | Text under it reads closer to `xs` (10) than `sm`; draw.io's 12 px body stays `sm` (D37); 11 to 12   |
+| `RUN_XS_PX`                                         | 10                                                                                                                                                          | `@livediagram/document` label-font.ts: the extra-small run size                                      |
 | `DRAWIO_SNIFF_CHARS`                                | 4096                                                                                                                                                        | Room for a BOM, an XML declaration and the root element                                              |
 | `DRAWIO_TAB_FILE_ACCEPT`                            | `.drawio,.xml,.json,.svg,.png` and their MIME types                                                                                                         | The spec (the Import dialog card); the Explorer picker sets no filter, Drive saves have no extension |
 | `DRAWIO_MARKERS`                                    | the table in step 12.4                                                                                                                                      | draw.io's marker names                                                                               |

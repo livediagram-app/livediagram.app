@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { elementTextSize, htmlFontSizePx, runTextSize } from './text-size';
+import {
+  DRAWIO_XS_BELOW_PX,
+  belowExtraSmall,
+  elementTextSize,
+  htmlFontSizePx,
+  labelIsExtraSmall,
+  runTextSize,
+} from './text-size';
 
 // docs/specs/020-import-export/drawio-import.md "Text": draw.io's font sizes (px) to livediagram's
 // presets, for a whole element and for a span inside its label. One module, so the mapping of
@@ -24,10 +31,21 @@ describe('runTextSize', () => {
     expect(runTextSize(22, 22, 'label')).toBeUndefined();
   });
 
-  it('leaves text below the smallest size at the smallest size, for now', () => {
-    // The open question (operator): an `xs` run size, a report rule, or both. This is the one place.
-    expect(runTextSize(7, 12, 'label')).toBeUndefined();
-    expect(runTextSize(9, 22, 'label')).toBe('sm');
+  it('maps a span under 12 px to xs, and 12 px to the nearest preset', () => {
+    expect(runTextSize(11.9, 12, 'label')).toBe('xs');
+    expect(runTextSize(7, 12, 'label')).toBe('xs');
+    expect(runTextSize(9, 22, 'note')).toBe('xs');
+    expect(runTextSize(12, 22, 'label')).toBe('sm');
+    expect(runTextSize(12, 12, 'label')).toBeUndefined();
+  });
+
+  it('compares a span in a small label against xs, so a larger span keeps its preset', () => {
+    expect(runTextSize(9, 9, 'label')).toBeUndefined();
+    expect(runTextSize(13, 9, 'label')).toBe('sm');
+  });
+
+  it('has no xs for arrow captions, which carry no runs', () => {
+    expect(runTextSize(9, 11, 'arrow')).toBeUndefined();
   });
 });
 
@@ -48,5 +66,14 @@ describe('elementTextSize, every scale', () => {
     expect(elementTextSize(14, 'note')).toBe('sm');
     expect(elementTextSize(11, 'arrow')).toBe('sm');
     expect(elementTextSize(20, 'arrow')).toBe('lg');
+  });
+});
+
+describe('the extra-small edges', () => {
+  it('reads a label under 12 px as small, and text under 10 px as below what xs shows', () => {
+    expect([11.9, 12].map((px) => labelIsExtraSmall(px, 'label'))).toEqual([true, false]);
+    expect(labelIsExtraSmall(9, 'arrow')).toBe(false);
+    expect([9.9, 10].map(belowExtraSmall)).toEqual([true, false]);
+    expect(DRAWIO_XS_BELOW_PX).toBe(12);
   });
 });

@@ -24,6 +24,7 @@ import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
 import type { BoxedElement, TextRun } from './index';
+import { runFontPx } from './label-font';
 
 export const EXPORT_PADDING = 32;
 export const EXPORT_BG = '#ffffff';
@@ -250,7 +251,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
     ? richText!.map((run) => ({
         text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
-        size: run.size ? fontSizeFor(run.size, multiline) * textScale : baseSize,
+        size: run.size ? runFontPx(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
       }))

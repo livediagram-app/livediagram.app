@@ -7,7 +7,7 @@
 // a shape with its own text fields), so every unset delta falls back to the
 // fixed body style below.
 
-import type { RunHeading, RunSize, TextRun } from '@livediagram/document';
+import { RUN_XS_PX, type RunHeading, type RunSize, type TextRun } from '@livediagram/document';
 import { isSafeFollowUrl } from '@/lib/url-safety';
 
 // Body size, in px. Small enough to fit a real paragraph in the popover,
@@ -15,7 +15,8 @@ import { isSafeFollowUrl } from '@/lib/url-safety';
 export const NOTE_BASE_PX = 13;
 
 // A run's explicit size override, on the same scale as the body.
-export const NOTE_RUN_PX: Record<RunSize, number> = { sm: 11, md: 13, lg: 16 };
+// xs is RUN_XS_PX, as on every label (docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs").
+export const NOTE_RUN_PX: Record<RunSize, number> = { xs: RUN_XS_PX, sm: 11, md: 13, lg: 16 };
 
 // Heading levels are line-level emphasis, not a separate block model: each
 // is a size + weight step over the body.

@@ -8,6 +8,7 @@ import {
   BORDER_STROKE_PX,
   FONTS,
   isLightColor,
+  normalizeRuns,
   type ArrowheadSize,
   type BorderRadius,
   type BorderStroke,
@@ -24,7 +25,13 @@ import { readColour } from './colour';
 import { readLabel } from './label';
 import { DRAWIO_DEFAULT_ARC_SIZE, DRAWIO_SHADOW } from './limits';
 import { nearest } from './nearest';
-import { elementTextSize, runTextSize, type TextScale } from './text-size';
+import {
+  belowExtraSmall,
+  elementTextSize,
+  labelIsExtraSmall,
+  runTextSize,
+  type TextScale,
+} from './text-size';
 import type { DrawioStyle } from './style';
 
 export type ConvertContext = {
@@ -188,9 +195,21 @@ export type TextFields = {
 export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOptions): TextFields {
   const s = cell.style;
   const basePx = s.num('fontSize') ?? 12;
-  const { plain, runs } = readLabel(cell.value, cell.html, (px) =>
-    runTextSize(px, basePx, options.scale),
-  );
+  // Text under what the extra-small run size shows, anywhere in the label (spec "Text size").
+  let belowXs = belowExtraSmall(basePx);
+  const read = readLabel(cell.value, cell.html, (px) => {
+    if (belowExtraSmall(px)) belowXs = true;
+    return runTextSize(px, basePx, options.scale);
+  });
+  const plain = read.plain;
+  // An extra-small label's own runs take xs; only kinds with runs can show it.
+  const smallLabel = options.rich && plain !== '' && labelIsExtraSmall(basePx, options.scale);
+  const runs = smallLabel
+    ? normalizeRuns(
+        (read.runs ?? [{ text: plain }]).map((r) => (r.size ? r : { ...r, size: 'xs' as const })),
+      )
+    : read.runs;
+  if (options.rich && plain !== '' && belowXs) ctx.tally.add('text-below-xs');
   const fontStyle = s.num('fontStyle') ?? 0;
   const color = readColour(s.str('fontColor'));
   const font = fontIdFor(s.str('fontFamily'));

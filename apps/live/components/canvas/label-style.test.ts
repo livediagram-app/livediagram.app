@@ -2,7 +2,7 @@ import type { BoxedElement, RunSize, TextRun } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { effectiveRunStyle, labelTextStyleCss } from './label-style';
 
-const RUN_PX: Record<RunSize, number> = { sm: 12, md: 16, lg: 22 };
+const RUN_PX: Record<RunSize, number> = { xs: 10, sm: 12, md: 16, lg: 22 };
 
 describe('labelTextStyleCss', () => {
   it('maps bold and italic to weight/style', () => {
@@ -67,5 +67,16 @@ describe('effectiveRunStyle', () => {
     const inherited = effectiveRunStyle(run(), el(), RUN_PX);
     expect(inherited.color).toBeUndefined();
     expect(inherited.fontSize).toBeUndefined();
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs".
+describe('extra-small runs', () => {
+  it('draw at 10 px on both label scales, scaled with the label', async () => {
+    const { labelRunPx, MULTI_RUN_PX } = await import('./label-style');
+    expect(MULTI_RUN_PX.xs).toBe(10);
+    expect(labelRunPx(false).xs).toBe(10);
+    expect(labelRunPx(true, 2).xs).toBe(20);
+    expect(labelRunPx(false).xs).toBeLessThan(labelRunPx(false).sm);
   });
 });

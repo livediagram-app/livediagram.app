@@ -30,6 +30,7 @@ export const DRAWIO_RULES: Readonly<Record<ImportNoteKind, string>> = {
   'collapsed-skipped': 'Items inside collapsed containers were left out',
   'link-dropped': "Links of a kind livediagram can't follow were dropped",
   'text-truncated': 'Texts were shortened to fit',
+  'text-below-xs': 'Text smaller than 10 px came in at 10 px',
   'auto-layout': "Positions and styles weren't in the file; the layout is automatic",
   'library-item-unreadable': "Library shapes that couldn't be read were left out",
   'content-truncated': 'Pages or items beyond the import limits were left out',

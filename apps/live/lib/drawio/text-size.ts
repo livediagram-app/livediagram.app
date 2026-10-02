@@ -1,11 +1,13 @@
 // draw.io font sizes (px) to livediagram's text presets
 // (docs/specs/020-import-export/blueprints/drawio-import.md "Text size"): a whole element's
-// `fontSize`, and a span's size inside an HTML label. Every size the importer sets comes from here,
-// so how text smaller than livediagram's smallest size maps is decided in one function.
+// `fontSize`, and a span's size inside an HTML label. Every size the importer sets comes from here:
+// text under 12 px takes the extra-small run size (`xs`, RUN_XS_PX), and text under what `xs`
+// shows is counted (spec "Text size"; docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs").
 
 import {
   LABEL_FONT_PX,
   NOTE_FONT_PX,
+  RUN_XS_PX,
   arrowLabelFontSize,
   type RunSize,
   type TextSize,
@@ -15,8 +17,15 @@ import { nearest } from './nearest';
 /** The scale an element's text sizes on: a shape's label, a sticky note's, an arrow's. */
 export type TextScale = 'label' | 'note' | 'arrow';
 
-// The fixed presets (a run has no 'scale'), smallest first.
-const SIZES: readonly RunSize[] = ['sm', 'md', 'lg'];
+/**
+ * Text under this many px reads extra-small: closer to `xs` (10 px) than to `sm` (14 px on a label,
+ * 12 px on a note), and draw.io's own default body text (12 px) stays `sm`. Safe range: 11 to 12.
+ */
+export const DRAWIO_XS_BELOW_PX = 12;
+
+// The element presets, smallest first ('xs' is a run size only, and an element has 'scale' too).
+type Preset = Exclude<RunSize, 'xs'>;
+const SIZES: readonly Preset[] = ['sm', 'md', 'lg'];
 const ARROW_PX = {
   sm: arrowLabelFontSize('sm'),
   md: arrowLabelFontSize('md'),
@@ -24,7 +33,7 @@ const ARROW_PX = {
 };
 const tableOf = (scale: TextScale) =>
   (scale === 'note' ? NOTE_FONT_PX : scale === 'arrow' ? ARROW_PX : LABEL_FONT_PX) as Record<
-    RunSize,
+    Preset,
     number
   >;
 
@@ -33,15 +42,28 @@ export function elementTextSize(px: number, scale: TextScale): TextSize {
   return nearest(tableOf(scale), SIZES, px);
 }
 
+/** Whether a label of this size reads extra-small; never on an arrow, whose caption has no runs. */
+export function labelIsExtraSmall(px: number, scale: TextScale): boolean {
+  return scale !== 'arrow' && px < DRAWIO_XS_BELOW_PX;
+}
+
+/** Whether text is smaller than `xs` can show: it comes in at `xs` and is counted. */
+export function belowExtraSmall(px: number): boolean {
+  return px < RUN_XS_PX;
+}
+
 /**
- * A span's size inside a label whose own size is `elementPx`: the preset nearest the span's px, or
- * undefined when that is the label's own preset (the run inherits it). A span smaller than the
- * smallest preset lands on the smallest; this is where a smaller run size, or a report rule, would
- * go (spec "Text size").
+ * A span's size inside a label whose own size is `elementPx`: `xs` under 12 px, else the preset
+ * nearest the span's px; undefined when that is the label's own size (the run inherits it). A label
+ * that is itself extra-small has `xs` as its own size, so a larger span inside it keeps its preset.
  */
 export function runTextSize(px: number, elementPx: number, scale: TextScale): RunSize | undefined {
-  const size = nearest(tableOf(scale), SIZES, px);
-  return size === elementTextSize(elementPx, scale) ? undefined : size;
+  if (scale === 'arrow') return undefined;
+  const size: RunSize = labelIsExtraSmall(px, scale) ? 'xs' : nearest(tableOf(scale), SIZES, px);
+  const own: RunSize = labelIsExtraSmall(elementPx, scale)
+    ? 'xs'
+    : nearest(tableOf(scale), SIZES, elementPx);
+  return size === own ? undefined : size;
 }
 
 // The HTML `<font size>` scale (1 to 7) in px, as browsers draw it.
