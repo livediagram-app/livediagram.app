@@ -64,6 +64,7 @@ function buildShape(
     ...LABEL,
     ...(actorCaption ? {} : { onFill: props.fillColor }),
     outsideMovesIn: !actorCaption,
+    boxHeight: box.height,
   });
   const caption = actorCaption ? captionBox(cell, box, text.label, text.textSize, ctx) : null;
   return {
@@ -96,7 +97,7 @@ function buildText(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): 
     ...(locked ? { locked } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
-    ...textProps(cell, ctx, { ...LABEL, onFill: fillColor }),
+    ...textProps(cell, ctx, { ...LABEL, onFill: fillColor, boxHeight: rect.height }),
   };
 }
 
@@ -117,7 +118,12 @@ function buildSticky(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string)
     ...(locked ? { locked } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
-    ...textProps(cell, ctx, { scale: 'note', rich: true, outsideMovesIn: true }),
+    ...textProps(cell, ctx, {
+      scale: 'note',
+      rich: true,
+      outsideMovesIn: true,
+      boxHeight: rect.height,
+    }),
   };
 }
 
@@ -362,7 +368,7 @@ function buildUnmatched(
   ctx.tally.add('shape-unmatched');
   ctx.tally.name('shape-unmatched', name);
   const props = boxedProps(cell, ctx);
-  const text = textProps(cell, ctx, { ...LABEL, onFill: props.fillColor });
+  const text = textProps(cell, ctx, { ...LABEL, onFill: props.fillColor, boxHeight: rect.height });
   return {
     id,
     type: 'shape',

@@ -273,7 +273,8 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
     rich text (shape, text, sticky). `fontStyle` bits → `textBold` / `textItalic` / `textUnderline` /
     `textStrikethrough`. `fontColor` hex → `paperColour(hex, 'ink')` → `textColor`. A run colour the
     same way. `overflow` `hidden` or `fill`: the label keeps its first `fitLines(rect, size)`
-    lines (`floor((rect.height · scale − 2 · LABEL_PADDING_PX) / lineHeightPx(size))`, at least 1),
+    lines (`floor((boxHeight · scale − 2 · PADDING_PX.sm) / (labelFontPx(size) · LABEL_LINE_HEIGHT))`,
+    at least 1; `TextOptions.boxHeight` from the shape, text, sticky and labelled-box builders),
     `text-truncated` += 1 when lines were cut. `fontSize` → `elementTextSize`
     (`text-size.ts`): nearest preset on the scale (`LABEL_FONT_PX` for shapes and text,
     `NOTE_FONT_PX` for stickies, `arrowLabelFontSize` for arrows), over `sm`, `md`, `lg` only,

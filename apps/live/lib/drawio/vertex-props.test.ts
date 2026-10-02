@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
+import { PADDING_PX, labelFontPx } from '@livediagram/document';
 import { ReportTally } from './notes';
+import { LABEL_LINE_HEIGHT } from './text-size';
 import { readGraph } from './cells';
 import { parseStyle } from './style';
 import { model, vertex } from './test-support';
@@ -156,6 +158,20 @@ describe('inkOnFill', () => {
 
 describe('textProps', () => {
   const opts = { scale: 'label' as const, rich: true, outsideMovesIn: true };
+
+  it('cuts a clipped label to the lines its box holds, and counts it', () => {
+    const c = ctx();
+    const value =
+      '9:00&lt;br&gt;10:00&lt;br&gt;11:00&lt;br&gt;12:00&lt;br&gt;&lt;b&gt;13:00&lt;/b&gt;';
+    const fits = Math.floor((60 - 2 * PADDING_PX.sm) / (labelFontPx('sm') * LABEL_LINE_HEIGHT));
+    const t = textProps(cell('html=1;overflow=hidden;', value), c, { ...opts, boxHeight: 60 });
+    expect(t.label!.split('\n')).toHaveLength(fits);
+    expect(t.label).toBe(['9:00', '10:00', '11:00', '12:00'].slice(0, fits).join('\n'));
+    expect(c.tally.notes()).toEqual([{ kind: 'text-truncated', count: 1 }]);
+    // A label that fits, or one draw.io lets overflow, keeps every line.
+    const all = textProps(cell('html=1;', value), ctx(), { ...opts, boxHeight: 60 });
+    expect(all.label!.split('\n')).toHaveLength(5);
+  });
 
   it('maps text, font style bits, colour, size, font and alignment', () => {
     const t = textProps(
