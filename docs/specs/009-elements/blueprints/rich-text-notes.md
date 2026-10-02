@@ -253,7 +253,7 @@ response.
 - Link field: placeholder `example.com`, Apply (brand, `SOLID_BRAND_DARK_CONTROL` in dark), Remove
   (only when pre-filled).
 - Read-only: `NoteRichText` in a `max-h-96` scroll box; no toolbar, no footer.
-- Rendering: base 13px; `size` 11 / 13 / 16px; heading 1 17px/700, 2 14.5px/600, 3 13.5px/600
+- Rendering: base 13px; `size` 10 / 11 / 13 / 16px (`xs` is `RUN_XS_PX`); heading 1 17px/700, 2 14.5px/600, 3 13.5px/600
   (D80); heading line-height 1.45; links underlined in `var(--note-link-color)` (D81).
 - Labels render headings at `1.7em`/700, `1.35em`/700, `1.15em`/600, line-height 1.25 (D84).
 - No loading state: the note is on the element already. No error state beyond E4's invalid field.

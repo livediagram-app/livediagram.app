@@ -289,8 +289,11 @@ When the cell has no label, the box is labelled with the stencil's readable name
   `textUnderline` / `textStrikethrough`.
 - `fontSize` (px) to the `textSize` preset whose rendered size is nearest on the element's own scale
   (shape labels, sticky notes and arrow captions each have one), so a 12 px draw.io label is `sm`, not
-  the 22 px default. A larger span inside an HTML label (`font-size`, `<font size>`) keeps its size
-  as a run size; a span smaller than livediagram's smallest size takes that smallest size.
+  the 22 px default. Smaller text keeps reading smaller: a span inside an HTML label (`font-size`,
+  `<font size>`), or a whole label, under 12 px comes in as the extra-small run size (`xs`, 10 px,
+  [Canvas](../008-canvas/canvas-and-palette.md) "Extra-small runs"); a larger span keeps the nearest
+  preset as its run size. Text under 10 px, which `xs` cannot show, comes in at 10 px and is counted
+  ("Text smaller than 10 px came in at 10 px").
 - `fontFamily` to a livediagram font where the name matches one (`Courier New` and monospace faces to
   `roboto-mono`, sketch faces to `caveat`, a family we ship by name to itself); anything else, and
   Helvetica, the default, is left unset.
@@ -413,6 +416,7 @@ a rule with its count, changes first and things left out after, then how the ima
 | `group-flattened`         | Groups were dropped                                                             | changed  |
 | `link-dropped`            | Links of a kind livediagram can't follow were dropped                           | changed  |
 | `text-truncated`          | Texts were shortened to fit                                                     | changed  |
+| `text-below-xs`           | Text smaller than 10 px came in at 10 px                                        | changed  |
 | `auto-layout`             | Positions and styles weren't in the file; the layout is automatic (pages)       | changed  |
 | `hidden-skipped`          | Hidden items were left out                                                      | left out |
 | `collapsed-skipped`       | Items inside collapsed containers were left out                                 | left out |
@@ -425,6 +429,9 @@ so the person sees what changed before they carry on. A clean import closes the 
 ## Accepted losses (documented, not counted)
 
 These differ from draw.io for every file and are not worth a line each time:
+
+- Lane and container titles and connection labels carry no runs, so they have no extra-small size:
+  under 12 px they take the smallest preset of their scale.
 
 - Gradients (`gradientColor`), glass, `sketch=1` hand-drawn rendering, `fillStyle` hatching: solid
   fills.
