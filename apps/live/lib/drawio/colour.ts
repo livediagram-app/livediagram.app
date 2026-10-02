@@ -6,7 +6,8 @@ export type DrawioColour = { kind: 'unset' } | { kind: 'none' } | { kind: 'hex';
 
 const UNSET: DrawioColour = { kind: 'unset' };
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
-const LIGHT_DARK = /^light-dark\(\s*([^,]+?)\s*,/i;
+// The light value: everything up to the first comma, trimmed by the caller (no overlapping quantifiers).
+const LIGHT_DARK = /^light-dark\(([^,]*),/i;
 const RGB = /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,[^)]*)?\)$/i;
 
 const byte = (v: string) => Math.min(255, Number(v)).toString(16).padStart(2, '0');
@@ -17,7 +18,7 @@ export function readColour(value: string | undefined): DrawioColour {
   if (v === 'none') return { kind: 'none' };
   if (HEX.test(v)) return { kind: 'hex', value: v.toLowerCase() };
   const lightDark = LIGHT_DARK.exec(v);
-  if (lightDark) return readColour(lightDark[1]);
+  if (lightDark) return readColour(lightDark[1]!.trim());
   const rgb = RGB.exec(v);
   if (rgb) return { kind: 'hex', value: `#${byte(rgb[1]!)}${byte(rgb[2]!)}${byte(rgb[3]!)}` };
   return UNSET;

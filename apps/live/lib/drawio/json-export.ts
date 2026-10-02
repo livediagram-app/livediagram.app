@@ -14,6 +14,7 @@ import {
 } from '@livediagram/document';
 import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';
 import { DrawioRefused } from './refusals';
+import { readLabel } from './label';
 import { elementLink, type ConvertContext } from './vertex-props';
 
 type JsonCell = {
@@ -54,45 +55,13 @@ export function readJsonExport(text: string): JsonExport {
   return { kind: 'graph', pages };
 }
 
-const NAMED_ENTITIES: Readonly<Record<string, string>> = {
-  amp: '&',
-  lt: '<',
-  gt: '>',
-  quot: '"',
-  apos: "'",
-  nbsp: ' ',
-};
-
-function decodeEntities(text: string): string {
-  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, body: string) => {
-    if (body[0] === '#') {
-      const code =
-        body[1] === 'x' || body[1] === 'X'
-          ? parseInt(body.slice(2), 16)
-          : parseInt(body.slice(1), 10);
-      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
-        ? String.fromCodePoint(code)
-        : whole;
-    }
-    return NAMED_ENTITIES[body.toLowerCase()] ?? whole;
-  });
-}
-
 /**
- * A draw.io HTML label as plain text: line breaks and block ends become new lines, every other tag
- * goes, entities decode, runs of blank lines collapse, the ends are trimmed.
+ * A draw.io HTML label as plain text, read by the same inert `DOMParser` walk as every other label
+ * (`readLabel`): `br` and block ends become new lines, entities decode once, scripts and styles are
+ * skipped, runs of blank lines collapse, the ends are trimmed. The result is text, never markup.
  */
 export function jsonLabelText(html: string): string {
-  const text = html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, '\n')
-    .replace(/<[^>]*>/g, '');
-  return decodeEntities(text)
-    .split('\n')
-    .map((line) => line.replace(/[ \t]+$/g, ''))
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return readLabel(html, true).plain;
 }
 
 const isHtml = (html: unknown) => html !== 0 && html !== '0' && html !== false;

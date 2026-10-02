@@ -73,8 +73,8 @@ the graph (`layer`, `node` with `label`, `html` and `metadata.link`, `edge` with
 - Otherwise each page's nodes and edges become a graph that is **laid out automatically** by the same
   layered layout Mermaid import uses (`layoutClusteredGraph`, `packages/document`): nodes as
   boxes, edges as connections between them, layers in document order. Labels convert from draw.io's
-  HTML to plain text (`<br>`, `<p>`, `<div>` and headings become line breaks, entities decode,
-  every other tag is dropped); an empty label stays empty. A node's `metadata.link` becomes its
+  HTML to plain text by the same HTML parser as every label (`<br>`, `<p>`, `<div>` and headings
+  become line breaks, entities decode once, so escaped markup stays text); an empty label stays empty. A node's `metadata.link` becomes its
   link by the same rule as any cell's: a web or email address, or a link to another page of the
   export as a link to that page's tab. An edge with only one end on a node keeps it, its free end
   drawn a short way out from the node (draw.io draws such an edge dangling); an edge with neither

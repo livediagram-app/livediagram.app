@@ -456,7 +456,9 @@ picture repeated across pages is stored once. This runs before the one `commitTa
   UTF-8 (bytes: the PNG signature first): `<mxfile`, `<mxGraphModel`, an `<svg` whose `content`
   attribute is present, the PNG signature, or a JSON object whose first keys include `pages` →
   `diagram`; `<mxlibrary` → `library`; anything else → null. Leading whitespace and a BOM are skipped.
-  No file name is read.
+  No file name is read. The root element comes from `rootTagOf(head)`, a linear scanner: it skips
+  whitespace, `<?…?>`, `<!--…-->` and `<!…>` with `indexOf` (null when one never closes), then
+  reads the tag name and the rest of its opening tag; no regular expression backtracks over the head.
 - **JSON export** (`readJsonExport(text)`): `JSON.parse` (throw → refusal `not-xml`); an object with
   a `pages` array, else `not-xml`. A string `data` starting `<mxfile` → that text through the XML
   path, its result returned as is. Otherwise per page (`jsonPageElements(page, { tally,
@@ -469,13 +471,16 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   `DRAWIO_JSON_LOOSE_EDGE_PX` out at the node's middle height, label kept, `connection-loosened`
   += 1; neither end → left out, `connection-loosened` += 1. `auto-layout` counted once per page
   with any node.
-- `jsonLabelText(html)`: `<br>` and the closing tags of `p`, `div`, `li`, `h1` to `h6` → `\n`;
-  every other tag removed; entities decoded (named and numeric); runs of blank lines collapsed;
-  trimmed.
+- `jsonLabelText(html)` = `readLabel(html, true).plain` (step 8): the inert `DOMParser('text/html')`
+  walk every label takes, so entities decode exactly once, `&lt;script&gt;` stays the literal text
+  `<script>`, a `script` or `style` element's content is skipped, and malformed HTML reads as a
+  browser would. Never a regex over tags.
 - `ImportNoteKind` gains `auto-layout` (after `text-truncated`) and `library-item-unreadable` (after
   `collapsed-skipped`, left out).
 - **Libraries** (`library.ts`, `importDrawioLibrary(input)` → `{ ok: true, items, images, report }`
-  or a refusal): `<mxlibrary>` text → `JSON.parse` of its body (an array, else `not-library`); per
+  or a refusal): `<mxlibrary>` text (BOM and outer whitespace trimmed, the body between the opening
+  tag's `>` and the final `</mxlibrary>`, found with `indexOf`) → `JSON.parse` of its body (an
+  array, else `not-library`); per
   item: `xml` decoded with `decompressDiagram` when it does not start with `<`, read as one
   `mxGraphModel`, converted by `convertPage` into elements normalised to the item's top-left at
   (0, 0); an image item (`data` a `data:` URL) → one `image` element `w` × `h` plus an image request;
@@ -754,7 +759,12 @@ Refusals (the `error` string, final copy):
 - The file is untrusted. XML parses with `DOMParser('application/xml')`, which loads no external
   entities and runs nothing; HTML labels parse with `DOMParser('text/html')`, an inert document:
   scripts do not run, images and styles do not load. Only text and a closed set of attributes are
-  read; no markup reaches the canvas.
+  read; no markup reaches the canvas. HTML is never converted to text by regex (tags stripped, then
+  entities decoded, would turn `&lt;script&gt;` into markup).
+- No regular expression over file content can backtrack super-linearly: envelopes, comments and
+  payloads are found with `indexOf` scanners (`rootTagOf`, the library body, Excalidraw's SVG
+  payload), and the remaining patterns are anchored with no overlapping quantifiers. Hostile heads
+  are unit tested against a time bound.
 - Links: only `http:`, `https:`, `mailto:` become URL links (label runs and element links alike);
   `javascript:`, `data:` (other than page links) and everything else are dropped and counted.
 - No network: nothing is fetched while importing; web image URLs are only listed.

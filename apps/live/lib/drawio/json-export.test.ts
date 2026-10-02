@@ -177,3 +177,17 @@ describe('the JSON export', () => {
     });
   });
 });
+
+describe('jsonLabelText, as a parser reads it', () => {
+  it.each([
+    ['&lt;script&gt;alert(1)&lt;/script&gt;', '<script>alert(1)</script>'],
+    ['<b><i>deep <u>nest</u></i></b>ed', 'deep nested'],
+    ['<div>open <b>never closed', 'open never closed'],
+    ['a <unknown attr="x">b</unknown> c', 'a b c'],
+    ['<scr<script>ipt>x', 'ipt>x'],
+    ['<script>alert(1)</script>kept', 'kept'],
+    ['5 &lt; 6 &amp;&amp; 7 &gt; 6', '5 < 6 && 7 > 6'],
+  ])('reads %j as the text %j', (html, text) => {
+    expect(jsonLabelText(html)).toBe(text);
+  });
+});

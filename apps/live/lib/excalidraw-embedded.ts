@@ -86,13 +86,26 @@ function pngSceneText(bytes: Uint8Array): string | null {
   return null;
 }
 
+const PAYLOAD_START = '<!-- payload-start -->';
+const PAYLOAD_END = '<!-- payload-end -->';
+
+/** The trimmed text between the first `start` and the next `end`; null when absent or blank. Linear. */
+function between(text: string, start: string, end: string): string | null {
+  const from = text.indexOf(start);
+  if (from < 0) return null;
+  const to = text.indexOf(end, from + start.length);
+  if (to < 0) return null;
+  const inner = text.slice(from + start.length, to).trim();
+  return inner === '' ? null : inner;
+}
+
 async function svgSceneText(svg: string): Promise<string> {
-  const match = /<!-- payload-start -->\s*(.+?)\s*<!-- payload-end -->/s.exec(svg);
-  if (!match) throw new BadScene('no payload');
+  const payload = between(svg, PAYLOAD_START, PAYLOAD_END);
+  if (!payload) throw new BadScene('no payload');
   const version = /<!-- payload-version:(\d+) -->/.exec(svg)?.[1] ?? '1';
   let binary: string;
   try {
-    binary = atob(match[1]!);
+    binary = atob(payload);
   } catch {
     throw new BadScene('bad base64');
   }

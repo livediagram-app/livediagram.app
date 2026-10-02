@@ -34,3 +34,18 @@ describe('readColour', () => {
     expect(readColour('red')).toEqual({ kind: 'unset' });
   });
 });
+
+describe('readColour on hostile values', () => {
+  it('reads a light-dark() with no comma in linear time', () => {
+    const started = performance.now();
+    expect(readColour(`light-dark(a${' '.repeat(100_000)}`)).toEqual(readColour(undefined));
+    expect(performance.now() - started).toBeLessThan(20);
+  });
+
+  it('still reads light-dark() with spaces around its first colour', () => {
+    expect(readColour('light-dark(  #112233  , #ffffff)')).toEqual({
+      kind: 'hex',
+      value: '#112233',
+    });
+  });
+});

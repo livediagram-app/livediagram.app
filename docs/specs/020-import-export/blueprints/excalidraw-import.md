@@ -169,7 +169,8 @@ end. For each `tEXt`: split data at the first `0x00`; keyword (Latin-1) equal to
 `application/vnd.excalidraw+json` → value (Latin-1) → `decodeWrapperText`. No such chunk →
 `NO_SCENE`. A chunk whose length runs past the end → `BAD_SCENE`.
 
-SVG path: `/<!-- payload-start -->\s*(.+?)\s*<!-- payload-end -->/s`; none → `BAD_SCENE`.
+SVG path: the trimmed text between `<!-- payload-start -->` and the next `<!-- payload-end -->`,
+found with `indexOf` (linear on any input); absent or blank → `BAD_SCENE`.
 Version from `/<!-- payload-version:(\d+) -->/`, default `1`. `atob` the payload (throw →
 `BAD_SCENE`); version ≠ 1: the binary string is the text; version 1: bytes decoded as UTF-8. Then
 `decodeWrapperText`.

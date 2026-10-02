@@ -193,3 +193,23 @@ describe('sniffDrawio', () => {
     expect(sniffDrawio(t(s))).toBeNull();
   });
 });
+
+describe('sniffDrawio on hostile heads', () => {
+  const t = (s: string) => ({ kind: 'text' as const, text: s });
+  it.each([
+    ['an unclosed comment of dashes', '<!--' + '-'.repeat(50_000)],
+    ['many unclosed comments', '<!--'.repeat(20_000)],
+    ['an unclosed declaration', '<?xml' + ' a'.repeat(30_000)],
+    ['a tag name that never ends', '<' + 'a'.repeat(60_000)],
+  ])('reads %s in linear time', (_, head) => {
+    const started = performance.now();
+    expect(sniffDrawio(t(head))).toBeNull();
+    expect(performance.now() - started).toBeLessThan(20);
+  });
+
+  it('skips a doctype and closed comments before the root', () => {
+    expect(
+      sniffDrawio(t('<?xml version="1.0"?><!DOCTYPE x><!-- a -- b --><!--c--> <mxfile/>')),
+    ).toBe('diagram');
+  });
+});

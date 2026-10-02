@@ -162,13 +162,44 @@ export function sniffDrawio(input: DrawioInput): 'diagram' | 'library' | null {
       /^\{\s*"version"\s*:\s*"\d+(?:\.\d+)*"/.test(head) || /^\{[^{}]*"pages"\s*:/.test(head);
     return exported ? 'diagram' : null;
   }
-  const root = /^(?:<\?xml[^>]*\?>\s*)?(?:<!--[\s\S]*?-->\s*)*<([A-Za-z][\w:.-]*)([^>]*)/.exec(
-    head,
-  );
+  const root = rootTagOf(head);
   if (!root) return null;
-  const [, tag, attrs] = root;
-  if (tag === 'mxlibrary') return 'library';
-  if (tag === 'mxfile' || tag === 'mxGraphModel') return 'diagram';
-  if (tag === 'svg' && /\scontent\s*=/.test(attrs ?? '')) return 'diagram';
+  if (root.tag === 'mxlibrary') return 'library';
+  if (root.tag === 'mxfile' || root.tag === 'mxGraphModel') return 'diagram';
+  if (root.tag === 'svg' && /\scontent\s*=/.test(root.attrs)) return 'diagram';
   return null;
+}
+
+const isSpace = (ch: string | undefined) =>
+  ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '\f';
+const isNameChar = (ch: string) => /[\w:.-]/.test(ch);
+
+// What may come before the root element, each skipped to its close: a declaration or processing
+// instruction, a comment, a doctype (after the comment, which it would otherwise match).
+const SKIPPED_BEFORE_ROOT: readonly (readonly [open: string, close: string])[] = [
+  ['<?', '?>'],
+  ['<!--', '-->'],
+  ['<!', '>'],
+];
+
+/**
+ * The root element of an XML head: its tag name and the rest of its opening tag. Skips whitespace,
+ * XML declarations and processing instructions, comments and a doctype with `indexOf`, so it reads
+ * any head in linear time; null when the head ends first or holds no element.
+ */
+export function rootTagOf(head: string): { tag: string; attrs: string } | null {
+  let i = 0;
+  for (;;) {
+    while (isSpace(head[i])) i++;
+    const skip = SKIPPED_BEFORE_ROOT.find(([open]) => head.startsWith(open, i));
+    if (!skip) break;
+    const end = head.indexOf(skip[1], i + skip[0].length);
+    if (end < 0) return null;
+    i = end + skip[1].length;
+  }
+  if (head[i] !== '<' || !/[A-Za-z]/.test(head[i + 1] ?? '')) return null;
+  let j = i + 1;
+  while (j < head.length && isNameChar(head[j]!)) j++;
+  const close = head.indexOf('>', j);
+  return { tag: head.slice(i + 1, j), attrs: head.slice(j, close < 0 ? head.length : close) };
 }

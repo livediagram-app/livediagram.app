@@ -121,3 +121,24 @@ describe('importDrawioLibrary', () => {
     });
   });
 });
+
+describe('importDrawioLibrary on hostile text', () => {
+  it.each([
+    ['leading whitespace with no library', ' '.repeat(200_000) + 'x'],
+    ['an unclosed library of spaces', '<mxlibrary>' + ' '.repeat(200_000)],
+    ['many closing tags', '<mxlibrary>' + '</mxlibrary> x'.repeat(20_000)],
+  ])('refuses %s in linear time', async (_, text) => {
+    const started = performance.now();
+    expect(await importDrawioLibrary({ kind: 'text', text })).toMatchObject({ ok: false });
+    expect(performance.now() - started).toBeLessThan(50);
+  });
+
+  it('reads a library after a BOM and whitespace, with whitespace after it', async () => {
+    const r = await importDrawioLibrary({
+      kind: 'text',
+      text: `\uFEFF  \n<mxlibrary title="x">[]</mxlibrary>\n  `,
+    });
+    // An empty list is a library with nothing readable: refused as empty, not as "not a library".
+    expect(r).toEqual({ ok: false, error: "None of this library's shapes could be read." });
+  });
+});

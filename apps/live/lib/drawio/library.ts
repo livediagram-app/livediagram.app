@@ -46,9 +46,24 @@ type RawItem = { xml?: unknown; data?: unknown; w?: unknown; h?: unknown; title?
 const size = (v: unknown, fallback: number) =>
   typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : fallback;
 
+const OPEN = '<mxlibrary';
+const CLOSE = '</mxlibrary>';
+
+/** The JSON between `<mxlibrary ...>` and `</mxlibrary>`, the whole text otherwise blank. Linear. */
+function libraryBody(text: string): string | null {
+  const trimmed = text.replace(/^\uFEFF/, '').trim();
+  if (!trimmed.startsWith(OPEN) || !trimmed.endsWith(CLOSE)) return null;
+  const after = trimmed[OPEN.length];
+  if (after !== '>' && after !== ' ' && after !== '\t' && after !== '\n' && after !== '\r')
+    return null;
+  const open = trimmed.indexOf('>', OPEN.length);
+  const close = trimmed.length - CLOSE.length;
+  return open >= 0 && open < close ? trimmed.slice(open + 1, close) : null;
+}
+
 function readItems(text: string): RawItem[] | null {
-  const body = /^\s*(?:\uFEFF)?\s*<mxlibrary[^>]*>([\s\S]*)<\/mxlibrary>\s*$/.exec(text)?.[1];
-  if (body === undefined) return null;
+  const body = libraryBody(text);
+  if (body === null) return null;
   try {
     const parsed: unknown = JSON.parse(body);
     return Array.isArray(parsed)
