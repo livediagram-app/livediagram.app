@@ -113,6 +113,7 @@ export function isProfilePictureUrl(url: unknown): url is string;
 //   400 invalid_picture_url; 404 no participant row; 200 { pictureUrl }
 // GET /api/participants/<id> → { participant: { id, name, color, createdAt, pictureUrl } }
 //   pictureUrl is null unless the caller is signed in (verifiedUserId)
+//   { participant: null } when the caller asks for its own id before saving a profile; 404 for another absent id
 
 // apps/live/components/primitives/PictureDisc.tsx
 export function PictureDisc(props: GlyphDiscProps & { pictureUrl?: string | null }): JSX.Element;
