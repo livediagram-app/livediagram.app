@@ -17,6 +17,13 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const board = (id = 'wb', over: Partial<Tab> = {}): Tab =>
   ({ id, name: 'Board', kind: 'whiteboard', elements: [], ...over }) as Tab;
+const stroke = {
+  id: 's1',
+  type: 'freehand',
+  x: 0,
+  y: 0,
+  points: [],
+} as unknown as Tab['elements'][number];
 const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] } as Tab;
 
 function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 'select' as const) {
@@ -57,7 +64,13 @@ afterEach(() => {
 });
 
 describe('useWhiteboard', () => {
-  it('puts the active pen in hand when a whiteboard opens', () => {
+  it('leaves Select in hand when a whiteboard with content opens', () => {
+    const { deps } = setup(board('wb', { elements: [stroke] }));
+    expect(deps.beginDraw).not.toHaveBeenCalled();
+    expect(deps.setCanvasTool).not.toHaveBeenCalled();
+  });
+
+  it('puts the active pen in hand when an empty whiteboard opens', () => {
     const { deps } = setup(board());
     expect(deps.beginDraw).toHaveBeenCalledWith({
       type: 'freehand',
@@ -141,6 +154,12 @@ describe('useWhiteboard', () => {
     const { deps } = setup(board(), null, 'highlighter' as never);
     expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
     expect(deps.beginDraw).toHaveBeenCalled();
+  });
+
+  it('puts down a carried-over highlighter for Select on a whiteboard with content', () => {
+    const { deps } = setup(board('wb', { elements: [stroke] }), null, 'highlighter' as never);
+    expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
+    expect(deps.beginDraw).not.toHaveBeenCalled();
   });
 
   it('stores a background on the tab as its pattern', () => {
