@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
@@ -7,16 +7,14 @@ import {
   defaultArrowLabelColor,
   defaultArrowStrokeColor,
   KNOCKOUT_RADIUS_PX,
-  routeBehindHoles,
   ROUTE_BEHIND_MARGIN,
   type ArrowElement,
   type ArrowLabelLayout,
-  type Element,
-  type ElementIndex,
+  type Rect,
 } from '@livediagram/document';
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
-import { deriveArrowViewFrame } from './arrow-view-frame';
+import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view-frame';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
@@ -39,14 +37,12 @@ const MASK_SPAN = { origin: -100000, size: 200000 } as const;
 
 type ArrowViewProps = {
   arrow: ArrowElement;
-  // Prebuilt id -> element index (one per Canvas render) so each
-  // arrow resolves its endpoints / label collisions with O(1) lookups
-  // instead of scanning the whole element array twice per arrow.
-  elementIndex: ElementIndex;
-  // The boxes the canvas is drawing (hidden layers left out), the only ones
-  // the line may pass behind: a box on a hidden layer must not leave a gap
-  // around nothing (docs/specs/008-canvas/arrow-route-behind.md). Stable per render of the layer.
-  occluders: readonly Element[];
+  // The arrow's resolved frame (ends, path, handle points) and the boxes it breaks around
+  // (docs/specs/008-canvas/arrow-route-behind.md), derived by the layer once per element change from
+  // the drawn elements' grid (arrowViewGeometry). Both compare by value, so an arrow re-renders only
+  // when its own geometry changes (docs/specs/008-canvas/canvas-performance.md).
+  frame: ArrowViewFrame;
+  holes: Rect[];
   // This arrow's label layout + the knockouts its line takes, from the
   // layer's one label pass (docs/specs/008-canvas/arrow-labels.md).
   labelRender: ArrowLabelRender;
@@ -110,16 +106,13 @@ type ArrowViewProps = {
   fontFamily?: string;
 };
 
-// Wrapped in React.memo at the export below: with id-bearing
-// callbacks the parent passes a single stable function per kind
-// rather than recreating per-arrow closures every render, so
-// shallow prop equality on `arrow` + `elementIndex` + the per-id
-// selection flags lets ArrowView skip the work when only an
-// unrelated arrow / element changed.
+// Wrapped in React.memo at the export below (arrowViewPropsEqual): stable callbacks, the arrow
+// itself, its frame and holes by value and the per-id flags let ArrowView skip the work when only
+// an unrelated arrow or element changed.
 function ArrowViewImpl({
   arrow,
-  elementIndex,
-  occluders,
+  frame,
+  holes,
   labelRender,
   draftLayout,
   isSelected,
@@ -172,10 +165,7 @@ function ArrowViewImpl({
   const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
-  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = deriveArrowViewFrame(
-    arrow,
-    elementIndex,
-  );
+  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = frame;
   // While editing, the label follows the draft text: laid out live so the
   // editor, its wrap and the knockout move as you type.
   const [draft, setDraft] = useState<string | null>(null);
@@ -200,12 +190,8 @@ function ArrowViewImpl({
   //
   // Done as a MASK rather than by splitting the path into segments: the one
   // path keeps its dash pattern, its flow animation class, and its markers,
-  // and N holes cost the same as one. Memoised on the element map identity
-  // so a pan / selection re-render doesn't rescan every element per arrow.
-  const behindHoles = useMemo(
-    () => routeBehindHoles(arrow, from, to, occluders),
-    [arrow, from, to, occluders],
-  );
+  // and N holes cost the same as one. The holes come in from the layer (arrowViewGeometry).
+  const behindHoles = holes;
   // Only mint a mask when something actually cuts this arrow — the common
   // case is nothing in the way, and an empty mask is pure overhead.
   const maskHoles = [
@@ -499,7 +485,10 @@ export const ArrowView = memo(ArrowViewImpl, arrowViewPropsEqual);
 export function arrowViewPropsEqual(a: ArrowViewProps, b: ArrowViewProps): boolean {
   const keys = Object.keys(a) as (keyof ArrowViewProps)[];
   if (keys.length !== Object.keys(b).length) return false;
-  return keys.every((k) =>
-    k === 'labelRender' ? sameLabelRender(a.labelRender, b.labelRender) : Object.is(a[k], b[k]),
-  );
+  return keys.every((k) => {
+    if (k === 'labelRender') return sameLabelRender(a.labelRender, b.labelRender);
+    if (k === 'frame') return sameArrowViewFrame(a.frame, b.frame);
+    if (k === 'holes') return sameRects(a.holes, b.holes);
+    return Object.is(a[k], b[k]);
+  });
 }

@@ -1,7 +1,14 @@
-import type { ArrowElement, ArrowLabelLayout, Element, ElementIndex } from '@livediagram/document';
+import {
+  elementGridFor,
+  type ArrowElement,
+  type ArrowLabelLayout,
+  type Element,
+  type ElementIndex,
+} from '@livediagram/document';
 import type { ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
+import { arrowViewGeometry } from '@/components/canvas/arrow-view-frame';
 
 // A drawn arrow has no label while it is being drawn.
 const NO_LABEL: ArrowLabelRender = { layout: null, knockouts: [] };
@@ -30,6 +37,9 @@ export function DrawnArrowPreview({
   // The shared arrowhead markers, when no arrow on the board has mounted them yet.
   withDefs: boolean;
 }) {
+  // The arrow it would land, laid out as the layer lays out every arrow: from the drawn elements'
+  // grid (cached per list), breaking around the boxes it would pass behind.
+  const geometry = arrowViewGeometry(arrow, elementIndex, elementGridFor(occluders));
   return (
     <svg
       data-arrow-draw-preview=""
@@ -40,8 +50,8 @@ export function DrawnArrowPreview({
       {withDefs ? <ArrowDefs /> : null}
       <ArrowView
         arrow={arrow}
-        elementIndex={elementIndex}
-        occluders={occluders}
+        frame={geometry.frame}
+        holes={geometry.holes}
         labelRender={NO_LABEL}
         draftLayout={draftLayout}
         isSelected

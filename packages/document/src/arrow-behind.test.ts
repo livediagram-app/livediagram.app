@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTE_BEHIND_MARGIN, arrowRoutesBehind, routeBehindHoles } from './arrow-behind';
+import {
+  ROUTE_BEHIND_MARGIN,
+  arrowRoutesBehind,
+  routeBehindHoles,
+  routeBehindQueryRect,
+} from './arrow-behind';
+import { buildElementGrid, queryElementGrid } from './element-grid';
+import { createShape } from './shape-factory';
+import { createArrow } from './factories';
 import type { ArrowElement, Element, PathElement, ShapeElement } from './index';
 import { encodeStrokePoints } from './stroke-points';
 
@@ -200,5 +208,30 @@ describe('routeBehindHoles', () => {
       ]);
       expect(holes).toHaveLength(1);
     });
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: an arrow asks the element grid for its neighbours.
+// The holes from the grid's candidates are exactly the holes from the whole board.
+describe('route-behind holes from the element grid', () => {
+  it('match the whole board over randomised boards and arrows', () => {
+    let seed = 11;
+    const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let board = 0; board < 20; board++) {
+      const els = Array.from({ length: 80 }, () => {
+        const el = createShape('square', rand() * 3000, rand() * 2000);
+        return { ...el, width: 40 + rand() * 300, height: 40 + rand() * 200, fillColor: '#ffffff' };
+      });
+      const grid = buildElementGrid(els);
+      for (let n = 0; n < 15; n++) {
+        const from = { x: rand() * 3000, y: rand() * 2000 };
+        const to = { x: rand() * 3000, y: rand() * 2000 };
+        const arrow = createArrow(from.x, from.y, to.x, to.y);
+        const near = queryElementGrid(grid, routeBehindQueryRect(from, to));
+        expect(routeBehindHoles(arrow, from, to, near)).toEqual(
+          routeBehindHoles(arrow, from, to, els),
+        );
+      }
+    }
   });
 });

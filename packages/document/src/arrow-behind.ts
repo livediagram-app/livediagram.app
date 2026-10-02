@@ -59,6 +59,32 @@ function isOccluder(el: Element): el is BoxedElement {
   return !(el.type === 'shape' && el.shape === 'frame');
 }
 
+// The arrow's own bounding box, padded by the margin so a box just past an endpoint still registers.
+// A curve can bow outside this, which only means a bow that swings wide of every obstacle keeps a
+// hole it never touches: invisible either way.
+function arrowBounds(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  pad: number,
+): Rect {
+  return {
+    x: Math.min(from.x, to.x) - pad,
+    y: Math.min(from.y, to.y) - pad,
+    width: Math.abs(to.x - from.x) + 2 * pad,
+    height: Math.abs(to.y - from.y) + 2 * pad,
+  };
+}
+
+// Where an arrow's possible occluders sit, for asking the element grid
+// (docs/specs/008-canvas/canvas-performance.md): a box can cut the arrow only if its margin-inflated
+// hole meets the padded bounds, so its raw box meets the bounds padded by the margin once more.
+export function routeBehindQueryRect(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): Rect {
+  return arrowBounds(from, to, 2 * ROUTE_BEHIND_MARGIN);
+}
+
 // The rects to punch out of an arrow, already inflated by the margin.
 // `from` / `to` are the arrow's resolved endpoints in canvas coords.
 export function routeBehindHoles(
@@ -68,16 +94,7 @@ export function routeBehindHoles(
   elements: Iterable<Element>,
 ): Rect[] {
   if (!arrowRoutesBehind(arrow)) return [];
-  // The arrow's own bounding box, padded by the margin so a box just past
-  // an endpoint still registers. A curve can bow outside this, which only
-  // means a bow that swings wide of every obstacle keeps a hole it never
-  // touches — invisible either way.
-  const bounds: Rect = {
-    x: Math.min(from.x, to.x) - ROUTE_BEHIND_MARGIN,
-    y: Math.min(from.y, to.y) - ROUTE_BEHIND_MARGIN,
-    width: Math.abs(to.x - from.x) + 2 * ROUTE_BEHIND_MARGIN,
-    height: Math.abs(to.y - from.y) + 2 * ROUTE_BEHIND_MARGIN,
-  };
+  const bounds = arrowBounds(from, to, ROUTE_BEHIND_MARGIN);
 
   const holes: Rect[] = [];
   for (const el of elements) {

@@ -5,28 +5,28 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 ## Files
 
-| File                                                       | Role                                                                            |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `apps/live/lib/canvas-gesture.ts`                          | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture` |
-| `apps/live/components/canvas/CanvasZoomContext.tsx`        | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`      | Stable per-element props; per-arrow frame and holes; the grid                   |
-| `apps/live/components/canvas/element-layer-props.ts`       | `idBound`, `useStableCollab`: identity-stable per-element objects               |
-| `apps/live/components/canvas/arrow-view-frame.ts`          | `ArrowViewFrame` and `sameArrowViewFrame`                                       |
-| `apps/live/components/canvas/ArrowView.tsx`                | Takes `frame` + `holes`, no `elementIndex` / `occluders`                        |
-| `apps/live/components/canvas/BoxedElementView.tsx`         | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                  |
-| `packages/document/src/element-grid.ts` (planned)          | `ElementGrid`: `buildElementGrid`, `updateElementGrid`, `queryElementGrid`      |
-| `packages/document/src/arrow-behind.ts`                    | `routeBehindHoles` unchanged in contract; callers pass grid candidates          |
-| `packages/document/src/svg-render-arrows.ts`               | The export builds one grid per render and queries it                            |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`           | `draftLayout` identity-stable across passes                                     |
-| `apps/live/hooks/canvas/useSettledElements.ts`             | What the Map draws: frozen during element gestures, throttled otherwise         |
-| `apps/live/components/canvas/Minimap.tsx`                  | Draws `useSettledElements(elements)`                                            |
-| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`          | Takes `suspended`; never measures while suspended                               |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | `toolbarsStale` includes `selectionMoving`                                      |
-| `apps/live/hooks/canvas/useCanvasLongTaskLog.ts` (planned) | The `[canvas-perf] long task` debug log                                         |
-| `apps/live/e2e/perf/reference-board.ts` (planned)          | `buildReferenceBoard(seed, count)`                                              |
-| `apps/live/e2e/perf/budget.ts` (planned)                   | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                           |
-| `apps/live/e2e/perf/canvas.perf.ts` (planned)              | The probe: seeds, runs each gesture under a trace, writes the report            |
-| `.github/workflows/canvas-perf.yml`                        | The nightly run and the budget issue                                            |
+| File                                                       | Role                                                                              |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `apps/live/lib/canvas-gesture.ts`                          | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
+| `apps/live/components/canvas/CanvasZoomContext.tsx`        | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only   |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`      | Stable per-element props; per-arrow frame and holes; the grid                     |
+| `apps/live/components/canvas/element-layer-props.ts`       | `idBound`, `useStableCollab`: identity-stable per-element objects                 |
+| `apps/live/components/canvas/arrow-view-frame.ts`          | `ArrowViewFrame` and `sameArrowViewFrame`                                         |
+| `apps/live/components/canvas/ArrowView.tsx`                | Takes `frame` + `holes`, no `elementIndex` / `occluders`                          |
+| `apps/live/components/canvas/BoxedElementView.tsx`         | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                    |
+| `packages/document/src/element-grid.ts`                    | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker` |
+| `packages/document/src/arrow-behind.ts`                    | `routeBehindHoles` unchanged in contract; callers pass grid candidates            |
+| `packages/document/src/svg-render-arrows.ts`               | The export builds one grid per render and queries it                              |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`           | `draftLayout` identity-stable across passes                                       |
+| `apps/live/hooks/canvas/useSettledElements.ts`             | What the Map draws: frozen during element gestures, throttled otherwise           |
+| `apps/live/components/canvas/Minimap.tsx`                  | Draws `useSettledElements(elements)`                                              |
+| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`          | Takes `suspended`; never measures while suspended                                 |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | `toolbarsStale` includes `selectionMoving`                                        |
+| `apps/live/hooks/canvas/useCanvasLongTaskLog.ts` (planned) | The `[canvas-perf] long task` debug log                                           |
+| `apps/live/e2e/perf/reference-board.ts` (planned)          | `buildReferenceBoard(seed, count)`                                                |
+| `apps/live/e2e/perf/budget.ts` (planned)                   | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                             |
+| `apps/live/e2e/perf/canvas.perf.ts` (planned)              | The probe: seeds, runs each gesture under a trace, writes the report              |
+| `.github/workflows/canvas-perf.yml`                        | The nightly run and the budget issue                                              |
 
 ## Domain and naming
 
@@ -118,7 +118,13 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   grid stays valid. It returns a new grid object.
 - `queryElementGrid(grid, rect)` returns each candidate once, in paint order (by the element's
   index in `next`), so output is deterministic. Callers still run their exact test.
-- The layer holds the grid in a ref, updated in a `useMemo` on `drawnElements`.
+- The layer holds a `createElementGridTracker()` (in `useState`); its `gridFor(drawnElements)`
+  re-buckets from the last grid, once per element change, inside the memo that derives every
+  arrow's `arrowViewGeometry` (frame and holes).
+- `routeBehindQueryRect(from, to)` is the rect to ask: the arrow's bounds padded by twice
+  `ROUTE_BEHIND_MARGIN`, so every box whose inflated hole could meet the padded bounds is a candidate.
+- Exports, thumbnails and the Map pass a list to `svgArrow`, which asks `elementGridFor(list)` (one
+  grid per list, cached in a `WeakMap`). `DrawnArrowPreview` does the same for its occluders.
 
 ### Selection chrome while a selection moves
 

@@ -533,6 +533,7 @@ export * from './arrow-orthogonal';
 export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
+export * from './element-grid';
 // Tab + document name length cap (docs/specs/006-document/name-length.md).
 export * from './names';
 export * from './geometry-snapping';
