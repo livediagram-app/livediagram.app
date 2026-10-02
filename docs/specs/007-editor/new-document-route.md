@@ -619,6 +619,10 @@ The picker's choice (or the URL pre-seed on a bypass) travels in the create body
 follow-up placement request, so a document asked for in a team can never be left personal
 by a request that failed quietly.
 
+The create also carries the new document's creation `intent` (its first tab's editor mode
+and kind), so a create with no place chosen lands in the person's
+[default folder](../013-workspace/default-folders.md) for it, resolved by the server.
+
 - **A refused placement** shows the error card with copy for the reason, eyebrow
   "Placement refused", title "Couldn't file the document there", and one action,
   **Choose another place**, which reopens `/new` without the bypass and placement params, so the
