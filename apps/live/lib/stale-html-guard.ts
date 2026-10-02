@@ -28,7 +28,7 @@ var reloading=false;
 function reloadOnce(reason,detail){
 if(reloading)return;
 if(!claim(sessionStorage,KEY,location.pathname+location.search,Date.now(),WINDOW)){console.warn('[stale-html] already reloaded this page; leaving it',detail);return;}
-reloading=true;console.info('[stale-html] '+reason+'; reloading',detail);location.reload();}
+reloading=true;console.warn('[stale-html] '+reason+'; reloading',detail);location.reload();}
 window.addEventListener('error',function(e){if(window[APP])return;var t=e&&e.target;if(!t||!t.tagName)return;
 var tag=String(t.tagName).toUpperCase(),url=tag==='SCRIPT'?t.src:tag==='LINK'?t.href:null;
 if(isAsset(url))reloadOnce('a build asset failed to load',url);},true);

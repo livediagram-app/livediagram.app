@@ -25,7 +25,6 @@ function harness({
   const listeners: Record<string, Listener[]> = {};
   const docListeners: Record<string, Listener[]> = {};
   const reload = vi.fn();
-  const info = vi.fn();
   const warn = vi.fn();
   const fetchSpy = vi.fn(() =>
     Promise.resolve({
@@ -65,21 +64,14 @@ function harness({
     'Date',
     'console',
     STALE_HTML_GUARD_SCRIPT,
-  )(
-    win,
-    document,
-    location,
-    sessionStorage,
-    performance,
-    fetchSpy,
-    { now: () => now },
-    { info, warn },
-  );
+  )(win, document, location, sessionStorage, performance, fetchSpy, { now: () => now }, { warn });
   const fire = (type: string, event: Record<string, unknown>) =>
     (listeners[type] ?? []).forEach((fn) => fn(event));
   const fireDoc = (type: string) => (docListeners[type] ?? []).forEach((fn) => fn({}));
-  return { fire, fireDoc, reload, fetchSpy, storage, info, warn };
+  return { fire, fireDoc, reload, fetchSpy, storage, warn };
 }
+
+const ALREADY = '[stale-html] already reloaded this page; leaving it';
 
 const failed = (tagName: string, url: string) => ({
   target: tagName === 'SCRIPT' ? { tagName, src: url } : { tagName, href: url, rel: 'stylesheet' },
@@ -90,7 +82,7 @@ describe('the stale HTML guard', () => {
     const h = harness();
     h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
     expect(h.reload).toHaveBeenCalledTimes(1);
-    expect(h.info).toHaveBeenCalledWith(
+    expect(h.warn).toHaveBeenCalledWith(
       '[stale-html] a build asset failed to load; reloading',
       'https://x/live/_next/static/chunks/old.js',
     );
@@ -99,13 +91,13 @@ describe('the stale HTML guard', () => {
     expect(css.reload).toHaveBeenCalledTimes(1);
   });
 
-  it('reloads once for a page whose assets fail together, without warning about the rest', () => {
+  it('reloads once for a page whose assets fail together, warning once, not about the rest', () => {
     const h = harness();
     h.fire('error', failed('LINK', 'https://x/live/_next/static/css/old.css'));
     h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/a.js'));
     h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/b.js'));
     expect(h.reload).toHaveBeenCalledTimes(1);
-    expect(h.warn).not.toHaveBeenCalled();
+    expect(h.warn).toHaveBeenCalledTimes(1);
   });
 
   it('leaves other failures alone', () => {
@@ -123,7 +115,7 @@ describe('the stale HTML guard', () => {
     const second = harness({ storage, now: 1_000 + RELOAD_GUARD_WINDOW_MS - 1 });
     second.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
     expect(second.reload).not.toHaveBeenCalled();
-    expect(second.warn).toHaveBeenCalled();
+    expect(second.warn).toHaveBeenCalledWith(ALREADY, expect.anything());
     const later = harness({ storage, now: 1_000 + RELOAD_GUARD_WINDOW_MS + 1 });
     later.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
     expect(later.reload).toHaveBeenCalledTimes(1);
@@ -141,7 +133,7 @@ describe('the stale HTML guard', () => {
     const h = harness({ storage, now: 2_000 });
     h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
     expect(h.reload).not.toHaveBeenCalled();
-    expect(h.warn).toHaveBeenCalled();
+    expect(h.warn).toHaveBeenCalledWith(ALREADY, expect.anything());
   });
 
   it('stands down for failures once the running app recovers chunks itself', () => {
