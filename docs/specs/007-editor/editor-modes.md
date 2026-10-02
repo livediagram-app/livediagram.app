@@ -50,6 +50,10 @@ where it is and changes only how the next mark is made.
   notation, and shows no switch.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
   moves when the mode changes.
+- **Shift+D** toggles between the two modes (with more modes, it moves to
+  the next), shown in the switch's tooltip, `aria-keyshortcuts` and Settings ›
+  Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
+  the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
   technology, its text and focus ring at least WCAG 2.2 AA.
 
@@ -65,6 +69,12 @@ where it is and changes only how the next mark is made.
 - **A switch is remembered** for that person and tab, in this browser, and
   wins over the tab's opening mode from then on.
 - **Switching never changes the opening mode.**
+- **Opens in:** the tab menu holds an **Opens in** submenu for editors,
+  listing every editor mode (Diagram, Draw) as a radio choice with the
+  current one checked. Choosing one sets `Tab.opensIn` for everyone; it does
+  not switch anyone's current mode, including the chooser's. The submenu
+  lists modes from one catalogue, so a further mode joins it as one entry.
+  Not offered on event-storming boards.
 
 ## One look
 
@@ -109,9 +119,13 @@ element in the same colour.
   [Toolbar layout](toolbar-layout.md) and the canvas specs.
 - **Draw mode** is what the whiteboard was: the dock with its pens, shapes,
   history and settings; the whiteboard's keyboard shortcuts; pen versus touch;
-  picking by the drawn line; strokes that stay open; text boxes that hug;
-  nothing animating in; no guides for pens; shape recognition and the two
+  picking by the drawn line; strokes that stay open; nothing animating in; no guides for pens; shape recognition and the two
   erasers ([Draw mode](../023-whiteboard/whiteboard.md)).
+- **What a mode writes, stays.** A rule that shapes content is stored on the
+  element when it is made, never read from the mode: a text box made in Draw
+  mode **hugs its text** (`autoWidth`) in both modes and for everyone; one
+  made in Diagram mode does not. A rule about input (what a click picks,
+  which keys do what) follows the person's current mode.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode.
 
