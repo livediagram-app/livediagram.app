@@ -50,19 +50,24 @@ export type SidebarLayoutInput = {
   signInAvailable: boolean;
   pendingInvites: number;
   offlineDocuments: number;
-  selected: SelectedNode['kind'];
+  // The current view, on the page; the panel has none (null).
+  selected: SelectedNode['kind'] | null;
+  // The full-page sidebar (default) or the editor's floating Explorer panel, which leaves
+  // invites, team creation and the sign-in nudge to the Explorer.
+  surface?: 'page' | 'panel';
 };
 
 export type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
 
 export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   const { signedIn, signInAvailable, pendingInvites, offlineDocuments, selected } = input;
+  const panel = input.surface === 'panel';
   const spaces: SidebarRowKind[] = ['myDocuments'];
   if (signedIn) {
     spaces.push('teams');
-    if (pendingInvites > 0 || selected === 'invites') spaces.push('invites');
-    spaces.push('newTeam');
-  } else if (signInAvailable) {
+    if (!panel && (pendingInvites > 0 || selected === 'invites')) spaces.push('invites');
+    if (!panel) spaces.push('newTeam');
+  } else if (signInAvailable && !panel) {
     spaces.push('signInNudge');
   }
   // A row whose view is current stays, so the highlight never vanishes under the reader.

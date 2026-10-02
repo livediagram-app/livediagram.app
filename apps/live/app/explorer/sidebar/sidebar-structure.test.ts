@@ -84,6 +84,31 @@ describe('sidebarGroups', () => {
   });
 });
 
+describe('sidebarGroups in the floating Explorer panel', () => {
+  const PANEL: SidebarLayoutInput = { ...SIGNED_IN, surface: 'panel', pendingInvites: 2 };
+
+  it('keeps the same three groups and Overview rows', () => {
+    expect(sidebarGroups(PANEL).map((g) => g.id)).toEqual(['overview', 'spaces', 'more']);
+    expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'activity', 'shared']);
+  });
+
+  it('shows the spaces but no Invites or New team', () => {
+    expect(rowsOf(PANEL, 'spaces')).toEqual(['myDocuments', 'teams']);
+  });
+
+  it('shows no sign-in nudge to a guest', () => {
+    expect(rowsOf({ ...GUEST, surface: 'panel' }, 'spaces')).toEqual(['myDocuments']);
+  });
+
+  it('shows This browser while it holds documents', () => {
+    expect(rowsOf({ ...PANEL, offlineDocuments: 1 }, 'more')).toEqual([
+      'thisBrowser',
+      'library',
+      'trash',
+    ]);
+  });
+});
+
 describe('sidebarDivider', () => {
   it('shows titles when Minimal chrome is off', () => {
     expect(sidebarDivider(false)).toBe('titles');
