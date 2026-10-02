@@ -14,13 +14,14 @@ const ANY = 'Any';
 
 export type LensChipOption = { value: string | null; label: string; selected: boolean };
 
-/** One chip. A `menu` chip lists its values after "Any"; Made by AI is a `toggle`. */
+/** One chip. A `multiple` chip lists its values after "Any", each toggled on its own; Made by AI,
+ *  a dimension of one value, is a `toggle`. */
 export type LensChip = {
   dimension: LensDimension;
   label: string;
-  control: 'menu' | 'toggle';
-  value: string | null;
-  valueLabel: string | null;
+  control: 'multiple' | 'toggle';
+  values: readonly string[];
+  valueLabels: readonly string[];
   name: string;
   options: LensChipOption[];
 };
@@ -30,7 +31,7 @@ export type LensPill = {
   start: number;
   end: number;
   dimension: LensDimension;
-  value: string;
+  values: readonly string[];
   state: TokenState;
   label: string;
   name: string;
@@ -38,43 +39,58 @@ export type LensPill = {
   note: string | null;
 };
 
-function tokenLabel(dimension: LensDimension, value: string, context: LensContext): string {
-  if (dimension === 'made-by') return DIMENSION_LABELS['made-by'];
-  return `${DIMENSION_LABELS[dimension]}: ${valueLabel(dimension, value, context.teams)}`;
+function valueLabels(
+  dimension: LensDimension,
+  values: readonly string[],
+  context: LensContext,
+): string[] {
+  return values.map((value) => valueLabel(dimension, value, context.teams));
 }
 
-/** The chips of the current view, each lit by the applied token of its dimension. */
+/** "Template: Retrospective, Kanban"; Made by AI names itself. */
+function tokenLabel(
+  dimension: LensDimension,
+  values: readonly string[],
+  context: LensContext,
+): string {
+  if (dimension === 'made-by') return DIMENSION_LABELS['made-by'];
+  return `${DIMENSION_LABELS[dimension]}: ${valueLabels(dimension, values, context).join(', ')}`;
+}
+
+function lensChip(dimension: LensDimension, parsed: ParsedLens, context: LensContext): LensChip {
+  const values: readonly string[] = parsed.lens.filters[dimension];
+  const label = DIMENSION_LABELS[dimension];
+  const toggle = dimension === 'made-by';
+  const unsetName = toggle ? label : `${label}, any`;
+  return {
+    dimension,
+    label,
+    control: toggle ? 'toggle' : 'multiple',
+    values,
+    valueLabels: valueLabels(dimension, values, context),
+    name: values.length === 0 ? unsetName : tokenLabel(dimension, values, context),
+    options: [
+      { value: null, label: ANY, selected: values.length === 0 },
+      ...valueOptions(dimension, context.teams).map((option) => ({
+        ...option,
+        selected: values.includes(option.value),
+      })),
+    ],
+  };
+}
+
+/** The chips of the current view, each lit by every value its dimension's applied tokens hold. */
 export function lensChips(parsed: ParsedLens, context: LensContext): LensChip[] {
   return LENS_DIMENSIONS.filter(
     (dimension) => dimension !== 'space' || context.view === 'aggregate',
-  ).map((dimension) => {
-    const value = parsed.lens.filters[dimension];
-    const label = DIMENSION_LABELS[dimension];
-    const toggle = dimension === 'made-by';
-    const unsetName = toggle ? label : `${label}, any`;
-    return {
-      dimension,
-      label,
-      control: toggle ? 'toggle' : 'menu',
-      value,
-      valueLabel: value === null ? null : valueLabel(dimension, value, context.teams),
-      name: value === null ? unsetName : tokenLabel(dimension, value, context),
-      options: [
-        { value: null, label: ANY, selected: value === null },
-        ...valueOptions(dimension, context.teams).map((option) => ({
-          ...option,
-          selected: option.value === value,
-        })),
-      ],
-    };
-  });
+  ).map((dimension) => lensChip(dimension, parsed, context));
 }
 
 /** The pills of the field: every token, in the string's order. Text and the word being typed are none. */
 export function lensPills(parsed: ParsedLens, context: LensContext): LensPill[] {
   return parsed.terms.flatMap((term) => {
     if (term.kind !== 'token') return [];
-    const label = tokenLabel(term.dimension, term.value, context);
+    const label = tokenLabel(term.dimension, term.values, context);
     const issue = parsed.issues.find((candidate) => candidate.start === term.start);
     const note = issue ? issueMessage(issue) : null;
     return [
@@ -82,7 +98,7 @@ export function lensPills(parsed: ParsedLens, context: LensContext): LensPill[] 
         start: term.start,
         end: term.end,
         dimension: term.dimension,
-        value: term.value,
+        values: term.values,
         state: term.state,
         label,
         name: note ? `Filter ${label}, not applied: ${note}` : `Filter ${label}`,
@@ -106,8 +122,6 @@ export function issueMessage(issue: LensIssue): string {
       return `“${issue.value}” isn’t a ${DIMENSION_LABELS[issue.dimension]} option, so it’s searched as text.`;
     case 'unknown_team':
       return 'That team isn’t one of yours, so it’s searched as text.';
-    case 'superseded':
-      return `Only the last ${DIMENSION_LABELS[issue.dimension]} filter applies.`;
     case 'space_not_here':
       return 'The breadcrumb sets the space here, so Space filters don’t apply.';
   }

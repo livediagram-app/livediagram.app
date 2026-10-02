@@ -2,12 +2,13 @@
 // docs/specs/013-workspace/blueprints/explorer-filters.md "Interfaces and contracts").
 
 import type {
-  BoardValue,
   EditedValue,
+  KindValue,
   LensDimension,
   MadeByValue,
   OpensInValue,
   PeopleValue,
+  TemplateValue,
 } from './dimensions';
 
 /** A space as the lens names it: My documents, Shared with me, or one team by id. */
@@ -16,7 +17,8 @@ export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 /** The value type of each dimension. */
 export type LensValueOf = {
   'opens-in': OpensInValue;
-  board: BoardValue;
+  kind: KindValue;
+  template: TemplateValue;
   'made-by': MadeByValue;
   edited: EditedValue;
   people: PeopleValue;
@@ -32,14 +34,15 @@ export type LensTeam = { id: string; name: string };
 /** What parsing needs to know about where the reader is. */
 export type LensContext = { view: LensView; teams: readonly LensTeam[] };
 
-/** One applied value per dimension, or null when the dimension is not set. */
-export type LensFilters = { readonly [D in LensDimension]: LensValueOf[D] | null };
+/** The applied values of each dimension, deduplicated, in the dimension's value order; empty when
+ *  the dimension is not set. Values of one dimension combine with or. */
+export type LensFilters = { readonly [D in LensDimension]: readonly LensValueOf[D][] };
 
-/** The one filter state: free words and one value per dimension. */
+/** The one filter state: free words and the values of every dimension. */
 export type Lens = { text: readonly string[]; filters: LensFilters };
 
-/** Why a token does or does not narrow the list. */
-export type TokenState = 'applied' | 'superseded' | 'inert';
+/** Whether a token narrows the list: `inert` for a Space token on a scoped view. */
+export type TokenState = 'applied' | 'inert';
 
 /** One word of the lens string, with its offsets into the input. */
 export type LensTerm =
@@ -51,7 +54,7 @@ export type LensTerm =
       start: number;
       end: number;
       dimension: LensDimension;
-      value: string;
+      values: readonly string[];
       state: TokenState;
     };
 
@@ -61,7 +64,6 @@ export const LENS_ISSUE_REASONS = [
   'missing_value',
   'unknown_value',
   'unknown_team',
-  'superseded',
   'space_not_here',
   'too_long',
 ] as const;
@@ -100,7 +102,8 @@ export type LensSubject = {
   people: PeopleValue;
   madeByAi: boolean | null;
   opensIn: OpensInValue | null;
-  board: BoardValue | null;
+  kind: KindValue | null;
+  template: TemplateValue | null;
 };
 
 /** What suggestions need beyond parsing: the rows in scope, to mark a value that matches nothing. */
