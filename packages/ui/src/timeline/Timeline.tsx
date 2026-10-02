@@ -175,18 +175,26 @@ export function Timeline({
 
   // Distinct from the empty state above. Telling someone with three
   // years of history that they have none, because a chip is off, is the
-  // kind of small lie that erodes trust in a feed.
+  // kind of small lie that erodes trust in a feed. The filters run on
+  // the loaded pages only, so while the server has more, "nothing
+  // matches" would be the same lie; the copy narrows its claim and
+  // Show more stays reachable.
   if (visibleEvents.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 px-6 py-10 text-center dark:border-slate-700">
-        <p className="text-sm text-slate-500 dark:text-slate-400">No events match these filters.</p>
-        <button
-          type="button"
-          onClick={controls.resetFilters}
-          className="mt-2 text-xs text-brand-600 hover:underline dark:text-brand-400"
-        >
-          Clear filters
-        </button>
+      <div>
+        <div className="rounded-xl border border-dashed border-slate-200 px-6 py-10 text-center dark:border-slate-700">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {hasMore ? 'No matches in the events loaded so far.' : 'No events match these filters.'}
+          </p>
+          <button
+            type="button"
+            onClick={controls.resetFilters}
+            className="mt-2 text-xs text-brand-600 hover:underline dark:text-brand-400"
+          >
+            Clear filters
+          </button>
+        </div>
+        {hasMore && <ShowMore loading={loadingMore} onClick={onLoadMore} />}
       </div>
     );
   }
@@ -273,18 +281,23 @@ export function Timeline({
         </TimelineGroup>
       ))}
 
-      {hasMore && (
-        <div className="pt-2 text-center">
-          <button
-            type="button"
-            disabled={loadingMore}
-            onClick={onLoadMore}
-            className="rounded-lg border border-slate-200 px-4 py-2 text-xs text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          >
-            {loadingMore ? 'Loading…' : 'Show more'}
-          </button>
-        </div>
-      )}
+      {hasMore && <ShowMore loading={loadingMore} onClick={onLoadMore} />}
+    </div>
+  );
+}
+
+/** Appends the next page (docs/specs/013-workspace/timeline.md §2.3). */
+function ShowMore({ loading, onClick }: { loading?: boolean; onClick?: () => void }) {
+  return (
+    <div className="pt-2 text-center">
+      <button
+        type="button"
+        disabled={loading}
+        onClick={onClick}
+        className="rounded-lg border border-slate-200 px-4 py-2 text-xs text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        {loading ? 'Loading…' : 'Show more'}
+      </button>
     </div>
   );
 }
