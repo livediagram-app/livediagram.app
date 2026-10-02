@@ -82,11 +82,12 @@ export function ExplorerPanel() {
         Explorer
       </Label>
       <line x1={28} y1={54} x2={216} y2={54} className="stroke-slate-200" strokeWidth={1.5} />
-      <SidebarRow x={28} y={66} w={188} label="Recent" count={8} active glyph="recent" />
-      <DocumentRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
-      <DocumentRow x={40} y={126} w={164} title="Data model" meta="edited today" />
-      <SidebarRow x={28} y={162} w={188} label="My documents" glyph="folder" />
-      <SidebarRow x={28} y={184} w={188} label="Shared with you" count={3} glyph="shared" />
+      {/* The same groups as the sidebar; My documents opened in place to its documents. */}
+      <SidebarRow x={28} y={62} w={188} label="Home" glyph="recent" />
+      <SidebarRow x={28} y={84} w={188} label="Shared with me" count={3} glyph="shared" />
+      <SidebarRow x={28} y={110} w={188} label="My documents" glyph="folder" />
+      <DocumentRow x={40} y={134} w={164} title="Onboarding flow" meta="edited 2m ago" active />
+      <DocumentRow x={40} y={168} w={164} title="Data model" meta="edited today" />
     </Scene>
   );
 }
