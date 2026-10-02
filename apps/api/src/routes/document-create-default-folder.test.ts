@@ -21,7 +21,8 @@ let logs: string[];
 
 const DIAGRAM = { mode: 'diagram' };
 const DRAW = { mode: 'draw' };
-const KANBAN = { mode: 'diagram', boardType: 'kanban' };
+const KANBAN = { mode: 'diagram', templateFamily: 'kanban' };
+const EVENT_STORMING = { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' };
 
 function create(
   who: { owner: string; clerkUserId: string | null },
@@ -52,6 +53,7 @@ beforeEach(async () => {
   seedFolder(db, 'team-sketches', 'user_alice', 't1');
   seedFolder(db, 'guest-sketches', 'guest-uuid');
   seedFolder(db, 'boards', 'user_alice');
+  seedFolder(db, 'es-boards', 'user_alice');
   await setPlacementDefault(db.env, 'user_alice', 'mode:diagram', 'diagrams');
   await setPlacementDefault(db.env, 'user_alice', 'mode:draw', 'team-sketches');
 });
@@ -79,34 +81,52 @@ describe('POST /documents with default folders', () => {
     expect(logs).toContain('placement: resolved scope=team folder=set via=default key=mode:draw');
   });
 
-  it('files a Kanban board in its board default before the mode default', async () => {
-    await setPlacementDefault(db.env, 'user_alice', 'board:kanban', 'boards');
+  it('files a Kanban board in its template default before the mode default', async () => {
+    await setPlacementDefault(db.env, 'user_alice', 'template:kanban', 'boards');
     const res = await create(asUser('user_alice'), { intent: KANBAN });
     expect(res.status).toBe(201);
     expect(stored()?.folder_id).toBe('boards');
     expect(logs).toContain(
-      'placement: resolved scope=personal folder=set via=default key=board:kanban',
+      'placement: resolved scope=personal folder=set via=default key=template:kanban',
     );
   });
 
-  it('files a Kanban board in the mode default when its board default dangles', async () => {
-    await setPlacementDefault(db.env, 'user_alice', 'board:kanban', 'gone');
+  it('files a Kanban board in the mode default when its template default dangles', async () => {
+    await setPlacementDefault(db.env, 'user_alice', 'template:kanban', 'gone');
     const res = await create(asUser('user_alice'), { intent: KANBAN });
     expect(res.status).toBe(201);
     expect(stored()?.folder_id).toBe('diagrams');
-    expect(logs).toContain('placement: default-skipped key=board:kanban reason=folder_missing');
+    expect(logs).toContain('placement: default-skipped key=template:kanban reason=folder_missing');
     expect(logs).toContain(
       'placement: resolved scope=personal folder=set via=default key=mode:diagram',
     );
   });
 
-  it('treats an explicit null placement at the root as no place', async () => {
-    const res = await create(asUser('user_alice'), {
-      teamId: null,
-      folderId: null,
-      intent: DIAGRAM,
-    });
+  it('files an event-storming board in its kind default before its template default', async () => {
+    await setPlacementDefault(db.env, 'user_alice', 'template:kanban', 'boards');
+    await setPlacementDefault(db.env, 'user_alice', 'kind:event-storming', 'es-boards');
+    const res = await create(asUser('user_alice'), { intent: EVENT_STORMING });
     expect(res.status).toBe(201);
+    expect(stored()?.folder_id).toBe('es-boards');
+    expect(logs).toContain(
+      'placement: resolved scope=personal folder=set via=default key=kind:event-storming',
+    );
+  });
+
+  it('lets an explicit root of My documents win over the default', async () => {
+    const res = await create(asUser('user_alice'), { folderId: null, intent: DIAGRAM });
+    expect(res.status).toBe(201);
+    expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: null });
+    expect(logs).toContain('placement: resolved scope=personal folder=root via=explicit');
+  });
+
+  it('reads a null team beside an explicit null folder as the explicit root', async () => {
+    await create(asUser('user_alice'), { teamId: null, folderId: null, intent: DIAGRAM });
+    expect(stored()?.folder_id).toBeNull();
+  });
+
+  it('reads a null team alone as no choice, where the default answers', async () => {
+    await create(asUser('user_alice'), { teamId: null, intent: DIAGRAM });
     expect(stored()?.folder_id).toBe('diagrams');
   });
 
@@ -169,8 +189,9 @@ describe('POST /documents with default folders', () => {
   it.each([
     ['a string', 'mode:draw'],
     ['an unknown mode', { mode: 'pixel', kind: 'diagram' }],
-    ['an unknown board type', { mode: 'draw', boardType: 'mindmap' }],
-    ['a missing mode', { boardType: 'kanban' }],
+    ['an unknown template family', { mode: 'draw', templateFamily: 'mindmap' }],
+    ['the legacy whiteboard kind', { mode: 'draw', tabKind: 'whiteboard' }],
+    ['a missing mode', { templateFamily: 'kanban' }],
   ])('refuses %s as an intent, writing nothing', async (_label, intent) => {
     const res = await create(asUser('user_alice'), { intent });
     expect(res.status).toBe(400);

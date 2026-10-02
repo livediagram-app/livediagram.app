@@ -3,11 +3,7 @@
 // filed before anything is written. The judgements are pure; the reads they need arrive through
 // `PlacementLookups`, so the whole decision is testable without a database.
 
-import type {
-  CreationIntent,
-  DocumentPlacement,
-  PlacementRejection,
-} from '@livediagram/api-schema';
+import type { CreationIntent, PlacementRejection } from '@livediagram/api-schema';
 import { defaultFolder } from './default-folder';
 import type {
   DefaultSkip,
@@ -16,6 +12,7 @@ import type {
   PlacementFolder,
   PlacementLookups,
   PlacementOutcome,
+  RequestedPlacement,
 } from './placement-types';
 
 type Judgement = 'ok' | PlacementRejection;
@@ -25,15 +22,17 @@ function placementId(value: unknown): string | null | undefined {
   return typeof value === 'string' && value !== '' ? value : undefined;
 }
 
-/** The placement a create body asks for; null when either field is malformed (`placement_invalid`). */
+/** The placement a create body asks for, and whether it is a choice at all; null when either field
+ *  is malformed (`placement_invalid`). `folderId: null`, present, is the root chosen on purpose;
+ *  an absent `folderId` with no team is no choice. */
 export function parsePlacement(body: {
   teamId?: unknown;
   folderId?: unknown;
-}): DocumentPlacement | null {
+}): RequestedPlacement | null {
   const teamId = placementId(body.teamId);
   const folderId = placementId(body.folderId);
   if (teamId === undefined || folderId === undefined) return null;
-  return { teamId, folderId };
+  return { teamId, folderId, chosen: teamId !== null || 'folderId' in body };
 }
 
 /** May this caller file into a team? Only a verified account that has joined it. */
@@ -62,7 +61,10 @@ export function judgeFolder(
 }
 
 const explicitFolder: FolderStep = async ({ requested, caller, lookups }) => {
-  if (requested.folderId === null) return null;
+  if (!requested.chosen) return null;
+  const placement = { teamId: requested.teamId, folderId: requested.folderId };
+  // A space's root chosen on purpose: the team judgement above already admitted the space.
+  if (requested.folderId === null) return { ok: true, placement, via: 'explicit' };
   const folder = await lookups.getFolder(requested.folderId);
   // Visibility of a team folder outside the requested space needs the caller's membership of it.
   const elsewhereTeam = folder?.teamId && folder.teamId !== requested.teamId ? folder.teamId : null;
@@ -72,21 +74,21 @@ const explicitFolder: FolderStep = async ({ requested, caller, lookups }) => {
       : false;
   const judgement = judgeFolder(folder, requested, caller, joinedFolderTeam);
   if (judgement !== 'ok') return { ok: false, rejection: judgement };
-  return { ok: true, placement: requested, via: 'explicit' };
+  return { ok: true, placement, via: 'explicit' };
 };
 
 /** Folder steps in order, first answer wins; the space's root answers when none does. */
 const FOLDER_STEPS: readonly FolderStep[] = [explicitFolder, defaultFolder];
 
-function spaceRoot(requested: DocumentPlacement, skipped: DefaultSkip[]): PlacementOutcome {
-  const placement = { teamId: requested.teamId, folderId: null };
-  return { ok: true, placement, via: 'root', skipped };
+/** Nothing was chosen and no default answered: the root of My documents. */
+function personalRoot(skipped: DefaultSkip[]): PlacementOutcome {
+  return { ok: true, placement: { teamId: null, folderId: null }, via: 'root', skipped };
 }
 
 /** Resolves a create's placement: the space first, then the folder steps, the creation intent
  *  choosing among the caller's default folders. Writes nothing. */
 export async function resolvePlacement(
-  requested: DocumentPlacement,
+  requested: RequestedPlacement,
   caller: PlacementCaller,
   lookups: PlacementLookups,
   intent: CreationIntent | null,
@@ -103,5 +105,5 @@ export async function resolvePlacement(
     const answer = await step({ requested, intent, caller, lookups, skipped });
     if (answer) return answer.ok ? { ...answer, skipped } : answer;
   }
-  return spaceRoot(requested, skipped);
+  return personalRoot(skipped);
 }

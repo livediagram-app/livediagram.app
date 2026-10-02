@@ -37,6 +37,10 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
     createdAt: 0,
     ownerName: null,
     ownerColor: null,
+    // No recorded creation intent (docs/specs/013-workspace/default-folders.md).
+    opensIn: null,
+    tabKind: null,
+    templateFamily: null,
     ...over,
   };
 }

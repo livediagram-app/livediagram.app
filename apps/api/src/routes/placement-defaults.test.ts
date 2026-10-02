@@ -73,13 +73,13 @@ describe('PUT /api/placement-defaults/:key', () => {
     expect(logs).toContain('placement-defaults: set key=mode:draw scope=team');
   });
 
-  it('sets a board default', async () => {
-    const res = await put(asUser('user_alice'), 'board:retrospective', {
-      folderId: 'alice-folder',
-    });
+  it('sets a kind default and a template default, listed in key order', async () => {
+    await put(asUser('user_alice'), 'template:retrospective', { folderId: 'alice-folder' });
+    const res = await put(asUser('user_alice'), 'kind:event-storming', { folderId: 't1-folder' });
     expect(res.status).toBe(204);
     expect(await list(asUser('user_alice'))).toEqual([
-      { key: 'board:retrospective', folderId: 'alice-folder' },
+      { key: 'kind:event-storming', folderId: 't1-folder' },
+      { key: 'template:retrospective', folderId: 'alice-folder' },
     ]);
   });
 
@@ -105,15 +105,20 @@ describe('PUT /api/placement-defaults/:key', () => {
     ]);
   });
 
-  it.each([['kind:event-storming'], ['board:mindmap'], ['draw'], ['mode:pixel'], ['%E0%A4%A']])(
-    'refuses the key %s',
-    async (key) => {
-      const res = await put(asUser('user_alice'), key, { folderId: 'alice-folder' });
-      expect(res.status).toBe(400);
-      expect(await errorOf(res)).toBe('default_key_invalid');
-      expect(logs).toContain('placement-defaults: rejected reason=default_key_invalid');
-    },
-  );
+  it.each([
+    ['board:kanban'],
+    ['kind:diagram'],
+    ['kind:whiteboard'],
+    ['template:mindmap'],
+    ['draw'],
+    ['mode:pixel'],
+    ['%E0%A4%A'],
+  ])('refuses the key %s', async (key) => {
+    const res = await put(asUser('user_alice'), key, { folderId: 'alice-folder' });
+    expect(res.status).toBe(400);
+    expect(await errorOf(res)).toBe('default_key_invalid');
+    expect(logs).toContain('placement-defaults: rejected reason=default_key_invalid');
+  });
 
   it.each([
     ['no folder', {}],

@@ -20,14 +20,36 @@ function lookups(over: Partial<PlacementLookups> = {}): PlacementLookups {
 }
 
 describe('parsePlacement', () => {
-  it('reads an absent placement as the personal root', () => {
-    expect(parsePlacement({})).toEqual({ teamId: null, folderId: null });
+  it('reads an absent placement as no choice', () => {
+    expect(parsePlacement({})).toEqual({ teamId: null, folderId: null, chosen: false });
   });
 
-  it('reads null as absent', () => {
+  it('reads a null team alone as no choice', () => {
+    expect(parsePlacement({ teamId: null })).toEqual({
+      teamId: null,
+      folderId: null,
+      chosen: false,
+    });
+  });
+
+  it('reads a null folder, present, as the root chosen on purpose', () => {
+    expect(parsePlacement({ folderId: null })).toEqual({
+      teamId: null,
+      folderId: null,
+      chosen: true,
+    });
     expect(parsePlacement({ teamId: null, folderId: null })).toEqual({
       teamId: null,
       folderId: null,
+      chosen: true,
+    });
+  });
+
+  it('reads a team as chosen', () => {
+    expect(parsePlacement({ teamId: 't1' })).toEqual({
+      teamId: 't1',
+      folderId: null,
+      chosen: true,
     });
   });
 
@@ -35,6 +57,7 @@ describe('parsePlacement', () => {
     expect(parsePlacement({ teamId: 't1', folderId: 'f1' })).toEqual({
       teamId: 't1',
       folderId: 'f1',
+      chosen: true,
     });
   });
 
@@ -112,7 +135,9 @@ describe('judgeFolder', () => {
 describe('resolvePlacement', () => {
   it('files at the personal root when nothing is asked for', async () => {
     const l = lookups();
-    expect(await resolvePlacement({ teamId: null, folderId: null }, guest, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: null, folderId: null, chosen: false }, guest, l, null),
+    ).toEqual({
       ok: true,
       placement: { teamId: null, folderId: null },
       via: 'root',
@@ -124,7 +149,9 @@ describe('resolvePlacement', () => {
 
   it("files into a guest's own personal folder", async () => {
     const l = lookups({ getFolder: vi.fn(async () => ({ ownerId: 'guest-uuid', teamId: null })) });
-    expect(await resolvePlacement({ teamId: null, folderId: 'f1' }, guest, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: null, folderId: 'f1', chosen: true }, guest, l, null),
+    ).toEqual({
       ok: true,
       placement: { teamId: null, folderId: 'f1' },
       via: 'explicit',
@@ -134,7 +161,12 @@ describe('resolvePlacement', () => {
 
   it('refuses a folder that does not exist', async () => {
     expect(
-      await resolvePlacement({ teamId: null, folderId: 'gone' }, alice, lookups(), null),
+      await resolvePlacement(
+        { teamId: null, folderId: 'gone', chosen: true },
+        alice,
+        lookups(),
+        null,
+      ),
     ).toEqual({
       ok: false,
       rejection: 'folder_not_found',
@@ -143,10 +175,12 @@ describe('resolvePlacement', () => {
 
   it("files at a team's root for a joined member", async () => {
     const l = lookups({ isJoinedMember: vi.fn(async () => true) });
-    expect(await resolvePlacement({ teamId: 't1', folderId: null }, alice, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: 't1', folderId: null, chosen: true }, alice, l, null),
+    ).toEqual({
       ok: true,
       placement: { teamId: 't1', folderId: null },
-      via: 'root',
+      via: 'explicit',
       skipped: [],
     });
     expect(l.isJoinedMember).toHaveBeenCalledWith('t1', 'user_alice');
@@ -157,7 +191,9 @@ describe('resolvePlacement', () => {
       isJoinedMember: vi.fn(async () => true),
       getFolder: vi.fn(async () => ({ ownerId: 'user_bob', teamId: 't1' })),
     });
-    expect(await resolvePlacement({ teamId: 't1', folderId: 'tf1' }, alice, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: 't1', folderId: 'tf1', chosen: true }, alice, l, null),
+    ).toEqual({
       ok: true,
       placement: { teamId: 't1', folderId: 'tf1' },
       via: 'explicit',
@@ -167,7 +203,9 @@ describe('resolvePlacement', () => {
 
   it('refuses a team the caller has not joined, before looking at the folder', async () => {
     const l = lookups({ getFolder: vi.fn(async () => ({ ownerId: 'user_bob', teamId: 't1' })) });
-    expect(await resolvePlacement({ teamId: 't1', folderId: 'tf1' }, alice, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: 't1', folderId: 'tf1', chosen: true }, alice, l, null),
+    ).toEqual({
       ok: false,
       rejection: 'team_forbidden',
     });
@@ -176,7 +214,9 @@ describe('resolvePlacement', () => {
 
   it('refuses a guest asking for a team without reading membership', async () => {
     const l = lookups({ isJoinedMember: vi.fn(async () => true) });
-    expect(await resolvePlacement({ teamId: 't1', folderId: null }, guest, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: 't1', folderId: null, chosen: true }, guest, l, null),
+    ).toEqual({
       ok: false,
       rejection: 'team_forbidden',
     });
@@ -188,7 +228,9 @@ describe('resolvePlacement', () => {
       isJoinedMember: vi.fn(async () => true),
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
     });
-    expect(await resolvePlacement({ teamId: 't1', folderId: 'mine' }, alice, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: 't1', folderId: 'mine', chosen: true }, alice, l, null),
+    ).toEqual({
       ok: false,
       rejection: 'folder_scope_mismatch',
     });
@@ -200,7 +242,9 @@ describe('resolvePlacement', () => {
       isJoinedMember,
       getFolder: vi.fn(async () => ({ ownerId: 'user_bob', teamId: 't2' })),
     });
-    expect(await resolvePlacement({ teamId: null, folderId: 'tf2' }, guest, l, null)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: null, folderId: 'tf2', chosen: true }, guest, l, null),
+    ).toEqual({
       ok: false,
       rejection: 'folder_not_found',
     });
@@ -211,10 +255,12 @@ describe('resolvePlacement', () => {
 // Default folders (docs/specs/013-workspace/default-folders.md): consulted only at the personal root
 // with an intent, the mode key of the intent, a dangling default skipped and never a refusal.
 describe('resolvePlacement with default folders', () => {
-  const root = { teamId: null, folderId: null };
-  const diagram = { mode: 'diagram' } as const;
-  const draw = { mode: 'draw' } as const;
-  const retro = { mode: 'diagram', boardType: 'retrospective' } as const;
+  // No choice: neither a team nor the folderId key in the body.
+  const root = { teamId: null, folderId: null, chosen: false };
+  const diagram = { mode: 'diagram', tabKind: 'diagram' } as const;
+  const draw = { mode: 'draw', tabKind: 'diagram' } as const;
+  const retro = { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' } as const;
+  const esRetro = { ...retro, tabKind: 'event-storming' } as const;
   const defaults = (entries: [PlacementDefaultKey, string][]) =>
     vi.fn(async (): Promise<ReadonlyMap<PlacementDefaultKey, string>> => new Map(entries));
 
@@ -271,11 +317,11 @@ describe('resolvePlacement with default folders', () => {
     });
   });
 
-  it('lets a board default win over the mode default', async () => {
+  it('lets a template default win over the mode default', async () => {
     const l = lookups({
       getPlacementDefaults: defaults([
         ['mode:diagram', 'f-diagrams'],
-        ['board:retrospective', 'f-retros'],
+        ['template:retrospective', 'f-retros'],
       ]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
     });
@@ -283,16 +329,16 @@ describe('resolvePlacement with default folders', () => {
       ok: true,
       placement: { teamId: null, folderId: 'f-retros' },
       via: 'default',
-      key: 'board:retrospective',
+      key: 'template:retrospective',
       skipped: [],
     });
   });
 
-  it('falls through a dangling board default to the mode default', async () => {
+  it('falls through a dangling template default to the mode default', async () => {
     const l = lookups({
       getPlacementDefaults: defaults([
         ['mode:diagram', 'f-diagrams'],
-        ['board:retrospective', 'f-gone'],
+        ['template:retrospective', 'f-gone'],
       ]),
       getFolder: vi.fn(async (id: string) =>
         id === 'f-diagrams' ? { ownerId: 'user_alice', teamId: null } : null,
@@ -303,11 +349,11 @@ describe('resolvePlacement with default folders', () => {
       placement: { teamId: null, folderId: 'f-diagrams' },
       via: 'default',
       key: 'mode:diagram',
-      skipped: [{ key: 'board:retrospective', reason: 'folder_missing' }],
+      skipped: [{ key: 'template:retrospective', reason: 'folder_missing' }],
     });
   });
 
-  it('files a board with no board default in its mode default', async () => {
+  it('files a document with no template default in its mode default', async () => {
     const l = lookups({
       getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
@@ -317,6 +363,34 @@ describe('resolvePlacement with default folders', () => {
       key: 'mode:diagram',
       skipped: [],
     });
+  });
+
+  it('lets a kind default win over the template and mode defaults', async () => {
+    const l = lookups({
+      getPlacementDefaults: defaults([
+        ['mode:diagram', 'f-diagrams'],
+        ['template:retrospective', 'f-retros'],
+        ['kind:event-storming', 'f-es'],
+      ]),
+      getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
+    });
+    expect(await resolvePlacement(root, alice, l, esRetro)).toMatchObject({
+      placement: { teamId: null, folderId: 'f-es' },
+      via: 'default',
+      key: 'kind:event-storming',
+    });
+  });
+
+  it('files at an explicit root of My documents without reading the defaults', async () => {
+    const l = lookups({ getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]) });
+    const explicitRoot = { teamId: null, folderId: null, chosen: true };
+    expect(await resolvePlacement(explicitRoot, alice, l, diagram)).toEqual({
+      ok: true,
+      placement: { teamId: null, folderId: null },
+      via: 'explicit',
+      skipped: [],
+    });
+    expect(l.getPlacementDefaults).not.toHaveBeenCalled();
   });
 
   it('never reads the defaults without an intent', async () => {
@@ -331,7 +405,12 @@ describe('resolvePlacement with default folders', () => {
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
     });
     expect(
-      await resolvePlacement({ teamId: null, folderId: 'f-picked' }, alice, l, diagram),
+      await resolvePlacement(
+        { teamId: null, folderId: 'f-picked', chosen: true },
+        alice,
+        l,
+        diagram,
+      ),
     ).toMatchObject({ ok: true, placement: { folderId: 'f-picked' }, via: 'explicit' });
     expect(l.getPlacementDefaults).not.toHaveBeenCalled();
   });
@@ -341,10 +420,12 @@ describe('resolvePlacement with default folders', () => {
       isJoinedMember: vi.fn(async () => true),
       getPlacementDefaults: defaults([['mode:diagram', 'f-diagrams']]),
     });
-    expect(await resolvePlacement({ teamId: 't1', folderId: null }, alice, l, diagram)).toEqual({
+    expect(
+      await resolvePlacement({ teamId: 't1', folderId: null, chosen: true }, alice, l, diagram),
+    ).toEqual({
       ok: true,
       placement: { teamId: 't1', folderId: null },
-      via: 'root',
+      via: 'explicit',
       skipped: [],
     });
     expect(l.getPlacementDefaults).not.toHaveBeenCalled();

@@ -242,7 +242,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // The creation intent, recorded once (docs/specs/013-workspace/default-folders.md
         // "Recorded intent"); null without one. A re-commit's upsert never rewrites it.
         opensIn: intent.intent?.mode ?? null,
-        boardType: intent.intent?.boardType ?? null,
+        tabKind: intent.intent?.tabKind ?? null,
+        templateFamily: intent.intent?.templateFamily ?? null,
       });
       // Seed tabs if the caller provided them. The live app's
       // welcome flow uses this when it commits a fresh document

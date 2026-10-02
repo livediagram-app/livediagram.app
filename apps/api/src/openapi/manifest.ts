@@ -141,18 +141,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         folderId: {
           type: ['string', 'null'],
           description:
-            "A folder of the chosen space; absent or null = that space's root (Unsorted).",
+            "A folder of the chosen space. null, present, is that space's root (Unsorted) chosen on " +
+            'purpose; absent with no teamId is no choice, where a default folder may answer.',
         },
         // The creation intent (docs/specs/013-workspace/default-folders.md).
         intent: {
           type: ['object', 'null'],
           description:
-            'How the new document opens, recorded on it as opensIn / boardType. With no teamId and no folderId, the document lands in ' +
-            "the caller's default folder for it: the board default, else the mode default, else " +
-            'the root. Malformed: intent_invalid (400).',
+            'What the new document is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
+            "With no choice of place, the document lands in the caller's default folder for it: " +
+            'the tab kind default, else the template family default, else the mode default, else ' +
+            'the root of My documents. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
-            boardType: { anyOf: [ref('BoardType'), { type: 'null' }] },
+            tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },
+            templateFamily: { anyOf: [ref('TemplateFamily'), { type: 'null' }] },
           },
           required: ['mode'],
         },
@@ -1014,8 +1017,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'placement-defaults',
     tag: 'Folders',
     summary:
-      "The caller's default folders, one per key (mode:diagram, mode:draw, board:event-storming, " +
-      'board:retrospective, board:kanban), dangling ones included.',
+      "The caller's default folders, one per key (mode:diagram, mode:draw, kind:event-storming, " +
+      'template:retrospective, template:kanban), dangling ones included.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: {

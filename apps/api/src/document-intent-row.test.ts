@@ -1,25 +1,56 @@
 import { describe, expect, it } from 'vitest';
-import { readBoardType, readOpensIn } from './document-intent-row';
+import { readRecordedIntent } from './document-intent-row';
 
 // The recorded creation intent as stored text (docs/specs/013-workspace/default-folders.md "Recorded
-// intent"): an editor mode or a board type reads as itself; anything else, null included, is unknown.
+// intent"): each value reads as itself only when it is in its list; a null or unreadable opens-in is
+// unknown, and then so is everything else.
 
-describe('readOpensIn', () => {
-  it.each(['diagram', 'draw'] as const)('reads %s', (mode) => {
-    expect(readOpensIn(mode)).toBe(mode);
-  });
-
-  it.each([null, 'whiteboard', 'pixel', ''])('reads %j as unknown', (value) => {
-    expect(readOpensIn(value)).toBeNull();
-  });
+const row = (opens_in: string | null, tab_kind: string | null, template_family: string | null) => ({
+  opens_in,
+  tab_kind,
+  template_family,
 });
 
-describe('readBoardType', () => {
-  it.each(['event-storming', 'retrospective', 'kanban'] as const)('reads %s', (board) => {
-    expect(readBoardType(board)).toBe(board);
+describe('readRecordedIntent', () => {
+  it('reads a full record', () => {
+    expect(readRecordedIntent(row('diagram', 'diagram', 'retrospective'))).toEqual({
+      opensIn: 'diagram',
+      tabKind: 'diagram',
+      templateFamily: 'retrospective',
+    });
   });
 
-  it.each([null, 'mindmap', ''])('reads %j as none', (value) => {
-    expect(readBoardType(value)).toBeNull();
+  it('reads a known record with no family', () => {
+    expect(readRecordedIntent(row('draw', 'diagram', null))).toEqual({
+      opensIn: 'draw',
+      tabKind: 'diagram',
+      templateFamily: null,
+    });
+  });
+
+  it('reads an event-storming board', () => {
+    expect(readRecordedIntent(row('diagram', 'event-storming', null)).tabKind).toBe(
+      'event-storming',
+    );
+  });
+
+  it.each([
+    ['no record', row(null, null, null)],
+    ['an unknown opens-in with stray values', row(null, 'diagram', 'kanban')],
+    ['a retired mode', row('pixel', 'diagram', 'kanban')],
+  ])('reads %s as unknown throughout', (_label, stored) => {
+    expect(readRecordedIntent(stored)).toEqual({
+      opensIn: null,
+      tabKind: null,
+      templateFamily: null,
+    });
+  });
+
+  it('reads a retired tab kind or family as null', () => {
+    expect(readRecordedIntent(row('draw', 'whiteboard', 'mindmap'))).toEqual({
+      opensIn: 'draw',
+      tabKind: null,
+      templateFamily: null,
+    });
   });
 });

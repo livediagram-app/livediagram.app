@@ -9,6 +9,11 @@ import type {
   PlacementRejection,
 } from '@livediagram/api-schema';
 
+/** The placement a create body asks for. `chosen` is whether the caller chose a place at all: a
+ *  team, or the `folderId` key present (null being the space's root, chosen on purpose). A body
+ *  with neither is no choice, where a default folder may answer. */
+export type RequestedPlacement = DocumentPlacement & { chosen: boolean };
+
 /** Who is creating: the hybrid owner (guest or account) and the verified account id, if any. Team
  *  membership is only ever read against `verifiedUserId`, never the guest header. */
 export type PlacementCaller = { ownerId: string; verifiedUserId: string | null };
@@ -46,7 +51,7 @@ export type PlacementOutcome =
   | { ok: false; rejection: PlacementRejection };
 
 export type FolderStepInput = {
-  requested: DocumentPlacement;
+  requested: RequestedPlacement;
   intent: CreationIntent | null;
   caller: PlacementCaller;
   lookups: PlacementLookups;

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentSummary } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument, listDocumentsByOwner } from '../db';
+import { copyDocument, getDocument, listDocumentsByOwner } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { asUser } from './placement-test-support';
@@ -11,6 +11,9 @@ import { asUser } from './placement-test-support';
 // (unknown) without an intent and on rows from before it was recorded, carried by a copy.
 
 let db: SqliteD1;
+
+const UNKNOWN = { opensIn: null, tabKind: null, templateFamily: null };
+const RETRO = { opensIn: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' };
 
 function create(id: string, extra: Record<string, unknown> = {}) {
   return handleDocuments(
@@ -23,7 +26,7 @@ function create(id: string, extra: Record<string, unknown> = {}) {
 }
 
 const stored = (id: string) =>
-  db.sql.prepare('SELECT opens_in, board_type FROM documents WHERE id = ?').get(id);
+  db.sql.prepare('SELECT opens_in, tab_kind, template_family FROM documents WHERE id = ?').get(id);
 
 async function summary(id: string): Promise<DocumentSummary | undefined> {
   return (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === id);
@@ -39,26 +42,49 @@ afterEach(() => {
 });
 
 describe('recorded creation intent', () => {
-  it('records the mode and board type in the create insert', async () => {
-    await create('d1', { intent: { mode: 'diagram', boardType: 'retrospective' } });
-    expect({ ...stored('d1') }).toEqual({ opens_in: 'diagram', board_type: 'retrospective' });
-    expect(await summary('d1')).toMatchObject({ opensIn: 'diagram', boardType: 'retrospective' });
+  it('records opens-in, tab kind and template family in the create insert', async () => {
+    await create('d1', { intent: { mode: 'diagram', templateFamily: 'retrospective' } });
+    expect({ ...stored('d1') }).toEqual({
+      opens_in: 'diagram',
+      tab_kind: 'diagram',
+      template_family: 'retrospective',
+    });
+    expect(await summary('d1')).toMatchObject(RETRO);
   });
 
-  it('records a known mode with no board as not a board', async () => {
+  it('records an event-storming board', async () => {
+    await create('d1', { intent: { mode: 'diagram', tabKind: 'event-storming' } });
+    expect(await summary('d1')).toMatchObject({ tabKind: 'event-storming', templateFamily: null });
+  });
+
+  it('records a known intent with no family as made from none', async () => {
     await create('d1', { intent: { mode: 'draw' } });
-    expect(await summary('d1')).toMatchObject({ opensIn: 'draw', boardType: null });
+    expect(await summary('d1')).toMatchObject({
+      opensIn: 'draw',
+      tabKind: 'diagram',
+      templateFamily: null,
+    });
   });
 
   it('records nothing for a create without an intent', async () => {
     await create('d1');
-    expect(await summary('d1')).toMatchObject({ opensIn: null, boardType: null });
+    expect(await summary('d1')).toMatchObject(UNKNOWN);
+  });
+
+  it('records the intent of a create filed at an explicit root', async () => {
+    await create('d1', { folderId: null, intent: { mode: 'draw' } });
+    expect(await summary('d1')).toMatchObject({ opensIn: 'draw', folderId: null });
   });
 
   it('never rewrites the record on a re-commit', async () => {
     await create('d1', { intent: { mode: 'draw' } });
-    await create('d1', { intent: { mode: 'diagram', boardType: 'kanban' } });
-    expect(await summary('d1')).toMatchObject({ opensIn: 'draw', boardType: null });
+    await create('d1', { intent: { mode: 'diagram', templateFamily: 'kanban' } });
+    expect(await summary('d1')).toMatchObject({ opensIn: 'draw', templateFamily: null });
+  });
+
+  it('exposes the record on the document as well as the summary', async () => {
+    await create('d1', { intent: { mode: 'diagram', templateFamily: 'retrospective' } });
+    expect(await getDocument(db.env, 'd1')).toMatchObject(RETRO);
   });
 
   it('reads a row from before intents were recorded as unknown', async () => {
@@ -68,20 +94,22 @@ describe('recorded creation intent', () => {
          VALUES ('old', 'user_alice', 'Old', 0, 1, 1)`,
       )
       .run();
-    expect(await summary('old')).toMatchObject({ opensIn: null, boardType: null });
+    expect(await summary('old')).toMatchObject(UNKNOWN);
   });
 
   it('reads a stored value outside the enums as unknown', async () => {
     await create('d1', { intent: { mode: 'draw' } });
-    db.sql
-      .prepare("UPDATE documents SET opens_in = 'retired', board_type = 'gone' WHERE id = 'd1'")
-      .run();
-    expect(await summary('d1')).toMatchObject({ opensIn: null, boardType: null });
+    db.sql.prepare("UPDATE documents SET opens_in = 'retired' WHERE id = 'd1'").run();
+    expect(await summary('d1')).toMatchObject(UNKNOWN);
   });
 
   it("carries the source's record into a copy", async () => {
-    await create('d1', { intent: { mode: 'diagram', boardType: 'kanban' } });
+    await create('d1', { intent: { mode: 'diagram', templateFamily: 'kanban' } });
     await copyDocument(db.env, 'd1', 'd2', 'user_alice', 'Copy');
-    expect({ ...stored('d2') }).toEqual({ opens_in: 'diagram', board_type: 'kanban' });
+    expect({ ...stored('d2') }).toEqual({
+      opens_in: 'diagram',
+      tab_kind: 'diagram',
+      template_family: 'kanban',
+    });
   });
 });

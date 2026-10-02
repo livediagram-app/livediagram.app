@@ -105,7 +105,7 @@ describe('POST /documents placement', () => {
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: 't1' });
     const body = (await res.json()) as { document: { teamId: string | null } };
     expect(body.document.teamId).toBe('t1');
-    expect(logs).toContain('placement: resolved scope=team folder=root via=root');
+    expect(logs).toContain('placement: resolved scope=team folder=root via=explicit');
   });
 
   it("files into a team's folder", async () => {

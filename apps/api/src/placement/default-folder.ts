@@ -42,8 +42,8 @@ export const defaultFolder: FolderStep = async ({
   lookups,
   skipped,
 }) => {
-  // The root of My documents is not an explicit place; a team or a folder is.
-  if (intent === null || requested.teamId !== null || requested.folderId !== null) return null;
+  // Only a create that chose no place consults the defaults; an explicit root is a choice.
+  if (intent === null || requested.chosen) return null;
   const defaults = await lookups.getPlacementDefaults(caller.ownerId);
   for (const key of defaultKeysFor(intent)) {
     const folderId = defaults.get(key);
