@@ -199,6 +199,7 @@ packages/
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
+  explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
