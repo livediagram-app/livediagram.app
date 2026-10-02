@@ -92,7 +92,9 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    - simulate a deploy for the stale build specs: `POST /__e2e/deploy` swaps in a copy of the
      build whose chunk files all carry new names (every reference rewritten), and
      `POST /__e2e/assets-out-of-cache` serves build assets `no-store` until then, so the browser
-     keeps a page but not its chunks.
+     keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
+     each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
+     the suite runs in parallel, and the tests beside it keep the build they loaded.
 3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
    since marketing owns `/` in production.
 

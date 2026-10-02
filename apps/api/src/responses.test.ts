@@ -36,6 +36,15 @@ describe('json', () => {
     expect(await readJson(res)).toEqual({ hello: 'world' });
   });
 
+  it('is never reused by a browser without asking, unless the route chooses a policy', () => {
+    expect(json({}).headers.get('Cache-Control')).toBe('no-cache');
+    expect(json({ error: 'document_trashed' }, { status: 410 }).headers.get('Cache-Control')).toBe(
+      'no-cache',
+    );
+    const chosen = json({}, { headers: { 'Cache-Control': 'public, max-age=300' } });
+    expect(chosen.headers.get('Cache-Control')).toBe('public, max-age=300');
+  });
+
   it('defaults to status 200 when no init is supplied', () => {
     expect(json({}).status).toBe(200);
   });

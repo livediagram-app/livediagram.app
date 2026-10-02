@@ -28,8 +28,11 @@ under `apps/live` (a fixture generator) writes its own output with `process.stdo
 
 ## Workers
 
-A web worker has no `localStorage`, so in a production build its trace lines are off; in
-development they show as anywhere else.
+A web worker has no `localStorage`, so in a production build its own trace lines are off; in
+development they show as anywhere else. A trace line a spec or a user relies on is therefore
+written by the page, from the worker's answer: the boundary model's `[photo-model] ready on …` and
+`[photo-model] N notes on … in … ms` are written by its client (`apps/live/lib/photo-model/client.ts`)
+as the `ready` and `cues` answers arrive.
 
 ## End-to-end tests
 

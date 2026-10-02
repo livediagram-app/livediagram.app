@@ -76,6 +76,8 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   page,
   pageErrors,
 }) => {
+  // The whole journey: two editors, three Explorer pages and an import, ~20 s alone on a CI runner.
+  test.setTimeout(60_000);
   await startBlankDocument(page);
   await dismissQuickTour(page);
 
