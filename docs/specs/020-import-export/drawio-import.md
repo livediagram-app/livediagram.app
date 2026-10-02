@@ -122,6 +122,22 @@ The dialog's draw.io card says this up front: "Multi-page files add a tab for ea
 Ids are re-minted inside the converter (with a map so connections, parents and links follow), so
 imported elements cannot collide with anything already on the diagram.
 
+### The page scale
+
+draw.io sets labels in 12 px Helvetica; livediagram's labels are larger and heavier, so a label that
+fills its draw.io box would overflow the same box here. Rather than shrink livediagram's text or the
+author's words, **the whole page scales up**: every position, size, waypoint and label offset is
+multiplied by the page scale, so each label keeps the room draw.io gave it, in livediagram's own type.
+
+- The page scale is how much wider livediagram sets the page's **commonest label size** than draw.io
+  does: the width of a reference text in livediagram's label face at the preset that size maps to,
+  over its width in Helvetica at the draw.io size. Each page has its own scale.
+- It is never below 1 (a page of large draw.io labels stays as drawn) and never above
+  `DRAWIO_MAX_PAGE_SCALE`.
+- Stroke widths, arrowhead sizes, font presets and corner radius presets do not scale: they are
+  livediagram's look, picked by the rules below.
+- A page with no labels has a scale of 1.
+
 ### The cell tree
 
 - **Layers.** The root cell's children are draw.io layers. One layer imports as the tab's implicit
@@ -142,7 +158,9 @@ imported elements cannot collide with anything already on the diagram.
   as draw.io shows them. The children are counted (`collapsed-skipped`).
 - **`UserObject` / `object` wrappers** carry the label (`label`), a link (`link`) and a tooltip
   (`tooltip`); other attributes are custom properties. `placeholders="1"` labels have their `%name%`
-  references filled from those properties first.
+  references filled from those properties first. Attributes another tool wrote to trace its own
+  objects (`lucidchartObjectId`, `visioObjectId`, `gliffyId`) are not the author's: they fill
+  placeholders but never become note lines.
 
 ### Vertices: shapes
 
@@ -165,6 +183,8 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | `actor`, `umlActor`                                                                                                                                                                                                                                                                           | `actor`                                                                       | exact        |
 | `mxgraph.flowchart.terminator`                                                                                                                                                                                                                                                                | `stadium`                                                                     | exact        |
 | `mxgraph.basic.star`                                                                                                                                                                                                                                                                          | `star`                                                                        | exact        |
+| `endState`                                                                                                                                                                                                                                                                                    | `circle` with its fill, its ring as a thick border                            | exact        |
+| `curlyBracket`                                                                                                                                                                                                                                                                                | headless `arrow` down the brace's spine (a `line`)                            | approximated |
 | `callout`, `wedgeCallout`                                                                                                                                                                                                                                                                     | `speech-bubble`                                                               | exact        |
 | `note`                                                                                                                                                                                                                                                                                        | `sticky` with its fill                                                        | exact        |
 | `text`, `edgeLabel` on a vertex; `mxgraph.flowchart.annotation_1` / `_2` (approximated)                                                                                                                                                                                                       | `text`                                                                        | exact        |
@@ -176,7 +196,7 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | `umlFrame`                                                                                                                                                                                                                                                                                    | `frame`                                                                       | exact        |
 | `mxgraph.android.phone2`, `mxgraph.ios7.misc.iphone`                                                                                                                                                                                                                                          | `phone`                                                                       | exact        |
 | `mxgraph.mockup.containers.browserWindow`                                                                                                                                                                                                                                                     | `browser`                                                                     | exact        |
-| `doubleEllipse`, `orEllipse`, `sumEllipse`, `or`, `xor`, `endState`, `mxgraph.flowchart.or_2`, `mxgraph.flowchart.summing_junction`, `umlBoundary`, `umlEntity`, `umlControl`, `mxgraph.bpmn.event`, `lineEllipse`                                                                            | `circle`                                                                      | approximated |
+| `doubleEllipse`, `orEllipse`, `sumEllipse`, `or`, `xor`, `mxgraph.flowchart.or_2`, `mxgraph.flowchart.summing_junction`, `umlBoundary`, `umlEntity`, `umlControl`, `mxgraph.bpmn.event`, `lineEllipse`                                                                                        | `circle`                                                                      | approximated |
 | `process`, `internalStorage`, `card`, `cube`, `folder`, `component`, `module`, `offPageConnector`, `mxgraph.flowchart.predefined_process`, `mxgraph.flowchart.off-page_reference`, `umlLifeline`, `partialRectangle`, `singleArrow`, `doubleArrow`, `mxgraph.bpmn.task`, `mxgraph.bpmn.shape` | `square`                                                                      | approximated |
 | `delay`, `display`, `mxgraph.flowchart.delay`, `mxgraph.flowchart.display`                                                                                                                                                                                                                    | `stadium`                                                                     | approximated |
 | `step`                                                                                                                                                                                                                                                                                        | `parallelogram`                                                               | approximated |
@@ -198,7 +218,12 @@ look changes, the meaning does not):
 - **AWS** (`mxgraph.aws4.*`, including `resourceIcon;resIcon=...` and `productIcon;prIcon=...`):
   S3 and buckets, EC2 and instance types, Lambda and functions, RDS / Aurora instances, DynamoDB,
   API Gateway, CloudFront, Route 53 and hosted zones, VPC, SQS and queues, SNS and topics, ECS, EKS,
-  CloudWatch and alarms, IAM and roles, to the matching `aws-*` Technology icon.
+  CloudWatch and alarms, IAM and roles, Lake Formation and data lakes (`data_lake_resource_icon`),
+  MSK (`managed_streaming_for_kafka`), to the matching `aws-*` Technology icon. A vendor stencil met
+  in real diagrams with no icon yet gets one in the Technology catalogue (operator decision), rather
+  than staying a labelled box.
+- **Marks**: `mxgraph.basic.x` to the `x` icon and `mxgraph.basic.tick` to `check`, in their stencil's
+  colour.
 - **Azure** (draw.io's `img/lib/azure2/...svg` icon images): virtual machines,
   storage accounts and blobs, App Service, Function Apps, SQL Database, Cosmos DB, AKS, virtual
   networks, load balancers, Service Bus, Key Vault, Monitor, to the matching `azure-*` icon.
@@ -237,16 +262,12 @@ When the cell has no label, the box is labelled with the stencil's readable name
   cell per cell, the row heights and the first row's column widths carried over, and each cell's fill,
   text colour, bold / italic / underline and alignment. A table's own label (the title draw.io draws in
   its `startSize` strip) comes in as a `text` element above the grid, counted (`shape-approximated`).
-- **Vertical lane titles.** draw.io writes a `horizontal=0` lane's title upright in a thin strip
-  (`startSize`, usually 20 px). A livediagram lane title cannot be turned: it reads across. So the
-  title strip widens to hold the whole title on one line, and the lane grows **to the left** by
-  whatever the gap before its first shape cannot give. The lane's content, its right edge and every
-  connection stay exactly where draw.io put them; nothing sits over a title. Lanes stacked in a pool
-  (siblings sharing a left edge and width) share one strip width and grow together, so the stack
-  stays aligned. A pool of lanes resolves from the inside out: it grows to make room for its lanes'
-  widened strips and then for its own title. Growing left can overlap something drawn close to the
-  lane's left side; that is accepted. Every titled vertical lane is counted
-  (`lane-title-turned`).
+- **Upright lane titles.** draw.io writes a `horizontal=0` lane's title upright in a thin strip
+  (`startSize`). The lane keeps it so: `titleOrientation: 'upright'`, the strip `startSize` (times
+  the page scale) wide, exactly as [The lane](../009-elements/lane.md) "Upright titles" draws it.
+  Nothing moves and nothing is counted.
+- **Lane edges.** A lane is square-cornered (`borderRadius: 'none'`), as draw.io draws a swimlane;
+  stacked lanes stay flush. A pool keeps its own strip and outline as the outer lane.
 - **Frames** (`umlFrame`, AWS and GCP groups) keep their title in the top-left corner, as a
   livediagram frame does.
 
@@ -261,12 +282,30 @@ When the cell has no label, the box is labelled with the stencil's readable name
   default colours and the white page follow the tab theme, and colours the author picked are kept.
   Keeping draw.io's white page and black-on-white shapes was considered and rejected, because it
   leaves a white island on a dark canvas.
+- **Paper colours follow the theme too.** draw.io diagrams are drawn on white paper, so authors pick
+  near-black for ink and near-white for panels as if they were the defaults, and draw.io's own dark
+  mode turns them as it turns its defaults. The importer does the same (operator decision):
+  - a **near-black** text, stroke or arrow colour (the board scene's ink rule, `INK_MAX_LIGHTNESS`
+    and `INK_MAX_CHROMA`, [Board scene](board-scene.md) "Colours") is left unset and takes the
+    theme's ink;
+  - a **near-white** fill (lightness at least `PAPER_MIN_LIGHTNESS`, chroma at most
+    `PAPER_MAX_CHROMA`) is left unset and takes the theme's surface, a gradient's lighter end
+    included;
+  - a text cell's near-white fill (a white box on white paper, which draw.io's reader never sees)
+    is no fill at all, so the text stays a `text` element.
+    Every other colour is kept verbatim. A label whose ink became unset on a fill of its own still
+    takes the legible ink below.
+- **Opacity over paper.** draw.io blends a translucent shape with its white paper. A shape with
+  `opacity` (or `fillOpacity`) under 100 and a fill of its own comes in **opaque**, its fill blended
+  with white by that opacity, unless it overlaps another element (where seeing through it matters):
+  then it keeps its opacity. Its label, stroke and children stay fully opaque, as draw.io draws them.
 - **Legible labels on own fills.** A label with no colour of its own on a shape (or lane title, entity,
   table cell) with a fill of its own takes the ink that reads on that fill: dark on a light fill, white
   on a dark one. draw.io's default label ink is black on paper, and the theme's text colour pairs with
   the theme's fill, not with a fill the author picked.
 - `strokeWidth` (px) to the nearest `thin` / `medium` / `thick` / `extra-thick`; `0` to `none`.
-- `dashed=1` to `dashed`; a `dashPattern` whose dashes are no longer than its gaps to `dotted`.
+- `dashed=1` to `dashed`; a `dashPattern` whose dashes are at most twice the stroke width (dots, not
+  dashes) to `dotted`. draw.io's default pattern, and `8 8` on a 2 px line, stay `dashed`.
 - `rounded=1` with `arcSize` (a percentage of the shorter side, default 10; `absoluteArcSize=1` makes
   it px) to the nearest `borderRadius` preset.
 - `opacity` 0 to 100 to `opacity` 0 to 1 (100 omitted). `rotation` (degrees, clockwise) to `rotation`.
@@ -293,44 +332,69 @@ When the cell has no label, the box is labelled with the stencil's readable name
   [Canvas](../008-canvas/canvas-and-palette.md) "Extra-small runs"); a larger span keeps the nearest
   preset as its run size. Text under 10 px, which `xs` cannot show, comes in at 10 px and is counted
   ("Text smaller than 10 px came in at 10 px").
+- **Blank lines** stay: an empty block (`<div><br></div>`, `<p></p>`) between two lines is one empty
+  line, as the browser shows it in draw.io.
+- **Clipped labels.** A label with `overflow=hidden` or `overflow=fill` is clipped to its shape in
+  draw.io; it comes in cut to the lines that fit its box at the page scale, counted
+  (`text-truncated`).
 - `fontFamily` to a livediagram font where the name matches one (`Courier New` and monospace faces to
   `roboto-mono`, sketch faces to `caveat`, a family we ship by name to itself); anything else, and
   Helvetica, the default, is left unset.
 - `align` to `textAlignX`; `verticalAlign` to `textAlignY`.
 - A label draw.io places **outside** its shape (`labelPosition` / `verticalLabelPosition` other than
-  centre) on anything but an icon or an actor is kept inside the shape, aligned towards that side.
-  Counted (`label-moved`).
+  centre) on anything but an icon, an actor or an image is kept inside the shape, aligned towards
+  that side. Counted (`label-moved`).
+- **Captions below.** An actor's, an icon's and an image's outside label is a caption on that side:
+  the box grows by the caption's lines and widens about its centre to the caption's measured width,
+  so the name sits under the figure, unwrapped, as draw.io draws it. An image's caption is its
+  `alt` and its caption both.
 
 ### Edges
 
-- **Ends.** An edge's `source` / `target` pin its ends to the elements they became. `exitX` / `exitY`
-  (and `entry...`) name a point on the shape; the end pins to the nearest anchor the shape offers.
-  A floating end pins to the anchor nearest where the line towards the next point leaves the shape;
-  an orthogonal edge's floating end sits at the middle of the side the line leaves through. A cell that was consumed (an entity
-  row, a table cell, a dropped group) hands its connections to the nearest ancestor that became an
-  element. An end with no cell, or an end on another edge, is a free end at its geometry point;
-  one that had a cell but has nowhere to pin is counted (`connection-loosened`).
-- **Route.** `edgeStyle=orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`,
-  `segmentEdgeStyle`, `isometricEdgeStyle` and the other routers are `angled`; `curved=1` is `curved`, over a router too
-  (draw.io smooths the routed path, which still leaves and enters through the side middles);
-  no edge style is `straight`. Waypoints become `curvePoints`: through them as given for a curved
-  edge; as a polyline for a straight edge (an `angled` arrow through its points, which is how
-  livediagram draws a bent straight line); with right-angle corners added between them for an
-  orthogonal edge.
+- **draw.io's route, exactly.** The importer works out the path draw.io itself draws for every edge,
+  with draw.io's own rules (its view: terminal perimeters, `exitX` / `entryX` constraints, the edge
+  style's router, waypoints, `jettySize`, loops), ported from draw.io's open-source graph library
+  (Apache-2.0, credited on the licences page). The arrow is that path; nothing is guessed
+  (operator decision).
+- **Ends.** An edge's `source` / `target` pin its ends to the elements they became, at the anchor
+  nearest the point where draw.io's path meets the shape. Where that anchor is not the point itself,
+  the path's end segment moves with it and stays on its axis, so an orthogonal route stays
+  orthogonal. A cell that was consumed (an entity row, a table cell, a dropped group) hands its
+  connections to the nearest ancestor that became an element. An end on another edge attaches to that
+  arrow's line (`on-arrow`) where draw.io's path meets it. An end with no cell is a free end at its
+  point (`sourcePoint` / `targetPoint`), so a legend's loose arrow keeps its length. One that had a
+  cell but has nowhere to pin is counted (`connection-loosened`).
+- **Shared ends stay shared.** draw.io lets edges leave or enter one point together and run along
+  one trunk. An imported arrow's ends are never fanned apart (`exactStart`, `exactEnd`), so a trunk
+  stays one line.
+- **Crossings stay.** draw.io draws an edge over whatever it crosses; an imported arrow does not
+  route behind boxes (`routeBehind: false`), so no part of it disappears under a shape.
+- **Route.** An orthogonal route (`orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`,
+  `segmentEdgeStyle`, `isometricEdgeStyle` and the other routers) is `angled` through every corner
+  of draw.io's path; a `curved=1` edge is `curved` through the same corners, as draw.io smooths them;
+  an edge with no style is `straight`, through its waypoints as a polyline. The corners are
+  `curvePoints`, stored as the angled bend points [Arrow bending](../008-canvas/arrow-bending.md)
+  defines.
 - **Heads.** `endArrow` / `startArrow` decide `arrowEnds` (draw.io's default end is `classic`, its
   default start none). The head shape is one per arrow: the end's, else the start's. `classic`,
   `block`, `classicThin`, `blockThin` to `triangle`; `open`, `openThin` to `line`; `oval`, `circle`
   to `circle`; `diamond`, `diamondThin` to `diamond`; `startFill=0` / `endFill=0` to the hollow
-  variant. `endSize` / `startSize` to the nearest `arrowheadSize`. Two different heads on one arrow,
+  variant. The head's drawn length is draw.io's (`endSize` / `startSize`, default 6, plus the stroke
+  width), so `arrowheadSize` is the preset nearest that length on the arrow's stroke: a thin line
+  keeps a readable head and a 5 px line no longer carries a giant one. Two different heads on one arrow,
   and markers livediagram does not draw (`dash`, `cross`, `async`, `box`, `halfCircle`, the ER
   crow's feet `ERone`, `ERmany`, `ERmandOne`, `ERoneToMany`, `ERzeroToOne`, `ERzeroToMany`, ...),
   become the nearest head and are counted (`arrowhead-approximated`).
 - **Stroke.** `strokeColor`, `strokeWidth` (px, kept as a number), `dashed`, `opacity` as for
   vertices.
 - **Labels.** The edge's own value and its `edgeLabel` children form the arrow's one label; several
-  labels join with a line break and are counted (`label-moved`). A label placed away from the middle
-  (`x` other than 0 on its geometry) keeps its place along the line as `labelOffset`. Font size and
-  styling map as for vertex labels, on the arrow caption scale.
+  labels join with a line break and are counted (`label-moved`). The label sits where draw.io puts
+  it on the routed path: its geometry `x` (-1 to 1 along the path's length) and `y` plus its offset
+  (sideways) become `labelOffset`, measured along the same path the arrow draws, curved or not.
+  The caption keeps draw.io's lines: `labelMaxWidth` is its widest line's measured width, so it
+  wraps only where the author broke it ([Arrow labels](../008-canvas/arrow-labels.md)).
+  Font size and styling map as for vertex labels, on the arrow caption scale; coloured runs keep
+  their colour.
 
 ### Images
 
@@ -411,7 +475,6 @@ a rule with its count, changes first and things left out after, then how the ima
 | `arrowhead-approximated`  | Arrowheads livediagram doesn't draw took the nearest one                        | changed  |
 | `connection-loosened`     | Connection ends that couldn't stay attached were left where they were           | changed  |
 | `label-moved`             | Labels were moved inside their shapes or merged onto one line                   | changed  |
-| `lane-title-turned`       | Upright lane titles now read across                                             | changed  |
 | `group-flattened`         | Groups were dropped                                                             | changed  |
 | `link-dropped`            | Links of a kind livediagram can't follow were dropped                           | changed  |
 | `text-truncated`          | Texts were shortened to fit                                                     | changed  |
@@ -432,8 +495,8 @@ These differ from draw.io for every file and are not worth a line each time:
 - Lane and container titles and connection labels carry no runs, so they have no extra-small size:
   under 12 px they take the smallest preset of their scale.
 
-- Gradients (`gradientColor`), glass, `sketch=1` hand-drawn rendering, `fillStyle` hatching: solid
-  fills.
+- Gradients (`gradientColor`), glass, `sketch=1` hand-drawn rendering (operator decision: livediagram
+  keeps its own lines), `fillStyle` hatching: solid fills.
 - Rounded corners on connector bends; jump-overs (`jumpStyle`); edge `labelBackgroundColor` (captions
   keep livediagram's knockout).
 - `spacing*`, `perimeterSpacing`, `whiteSpace`, `overflow`, `textOpacity`, `fillOpacity`,
@@ -443,10 +506,9 @@ These differ from draw.io for every file and are not worth a line each time:
 - draw.io comments, tags, metadata and the file's edit history.
 - Tooltips and custom properties on connections (a livediagram arrow has no note); on shapes they
   become the note.
-- A single word wider than its shape: livediagram's smallest label size (14 px) is larger than
-  draw.io's default 12 px, so a long word in a narrow shape (a `:PaymentGateway` lifeline) wraps
-  mid-word as livediagram wraps any label. The shape is not widened and the text is not shrunk
-  (operator decision): both would change what the author drew.
+- A single word wider than its shape at the page scale wraps mid-word as livediagram wraps any label.
+  The page scale gives every label draw.io's room, so this only happens where draw.io's own label
+  overflowed.
 - The white-and-black default colours (see properties): the theme paints them.
 
 ## UI

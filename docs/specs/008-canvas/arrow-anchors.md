@@ -113,6 +113,11 @@ start sits out of that anchor's fan (`exactStart: true` on the arrow); the other
 among themselves as if it were not there. Its far end still fans. Telemetry:
 `Element·Changed·ArrowExactStart`.
 
+**End at exact anchor** (`exactEnd: true`) is the same for the arrow's **end**. It has no switch:
+imports set it where the source draws ends meeting at one point and running along one trunk
+([draw.io import](../020-import-export/drawio-import.md) "Shared ends stay shared"). A user who
+re-pins that end clears it, so a hand-drawn connection fans as usual.
+
 ## Auto-rebind
 
 As elements move, a pinned end can end up on a side that makes its arrow run through a shape. The
