@@ -41,19 +41,34 @@ const library = `<mxlibrary>${JSON.stringify([
   },
 ])}</mxlibrary>`;
 
-// How many elements the active tab stores, read back through the api.
-async function storedElements(page: Page): Promise<number> {
+type Stored = {
+  type: string;
+  label?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+};
+
+// The elements the active tab stores, read back through the api.
+async function stored(page: Page): Promise<Stored[]> {
   return page.evaluate(async () => {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
     const doc = await (await fetch(`/api/documents/${id}`, { headers })).json();
     const tabId = doc.document?.tabs?.[0]?.id;
-    if (!tabId) return -1;
+    if (!tabId) return [];
     const tab = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
-    return (tab.tab?.elements ?? []).length as number;
+    return (tab.tab?.elements ?? []) as Stored[];
   });
 }
+const storedElements = async (page: Page) => (await stored(page)).length;
+const overlaps = (a: Stored, b: Stored) =>
+  a.x! < b.x! + b.width! &&
+  b.x! < a.x! + a.width! &&
+  a.y! < b.y! + b.height! &&
+  b.y! < a.y! + a.height!;
 
 test.use({ colorScheme: 'dark', viewport: { width: 1400, height: 900 } });
 
@@ -98,6 +113,12 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(1);
   await page.getByRole('button', { name: 'Insert Request from House shapes' }).click();
   await expect.poll(() => storedElements(page), { timeout: 15_000 }).toBe(4);
+  // Two clicks in a row never cover one another (spec "Consecutive clicks never cover one another").
+  const shapes = (await stored(page)).filter((e) => e.type === 'shape');
+  const service = shapes.find((s) => s.label === 'Service')!;
+  const request = shapes.filter((s) => s.label !== 'Service');
+  expect(request).toHaveLength(2);
+  for (const box of request) expect(overlaps(service, box)).toBe(false);
   await page.waitForTimeout(400);
   await shot(page, '3-placed');
 

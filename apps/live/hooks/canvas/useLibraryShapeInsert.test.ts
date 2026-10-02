@@ -111,3 +111,101 @@ describe('useLibraryShapeInsert', () => {
     expect(track).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/013-workspace/shape-libraries.md "Consecutive clicks never cover one another".
+describe('useLibraryShapeInsert, consecutive clicks', () => {
+  const service: ShapeLibraryItem = {
+    id: 's',
+    title: 'Service',
+    width: 120,
+    height: 60,
+    elements: [{ ...shape('a', 0), width: 120, height: 60 }],
+  };
+
+  // A stateful host: the hook sees the tab as the commits leave it, as the editor does.
+  function host(tabId = 't') {
+    let tab = { id: tabId, name: 'T', elements: [] as Element[] } as Tab;
+    const commit = vi.fn((map: (els: Element[]) => Element[]) => {
+      tab = { ...tab, elements: map(tab.elements) };
+    });
+    const deps = (): LibraryShapeInsertDeps => ({
+      activeTab: tab,
+      editsBlocked: false,
+      commit,
+      setSelectedId: vi.fn(),
+      setMultiSelectedIds: vi.fn(),
+      getViewportCenter: () => ({ x: 500, y: 300 }),
+    });
+    const view = renderHook((d: LibraryShapeInsertDeps) => useLibraryShapeInsert(d), {
+      initialProps: deps(),
+    });
+    return {
+      insert: (item: ShapeLibraryItem, at?: { x: number; y: number }) => {
+        view.rerender(deps());
+        return view.result.current(item, at);
+      },
+      boxes: () =>
+        tab.elements
+          .filter((e): e is ShapeElement => e.type === 'shape')
+          .map((e) => [e.x, e.y, e.width, e.height]),
+      edit: (map: (els: Element[]) => Element[]) => {
+        tab = { ...tab, elements: map(tab.elements) };
+      },
+      switchTab: (id: string) => {
+        tab = { id, name: id, elements: [] } as Tab;
+      },
+      commit,
+    };
+  }
+
+  it('lines a run of clicks up left to right, 24 px apart, one commit each', () => {
+    const h = host();
+    h.insert(service);
+    h.insert(service);
+    h.insert(service);
+    expect(h.boxes()).toEqual([
+      [440, 270, 120, 60],
+      [584, 270, 120, 60],
+      [728, 270, 120, 60],
+    ]);
+    expect(h.commit).toHaveBeenCalledTimes(3);
+  });
+
+  it('clears an item of a different size, centred on the row it joins', () => {
+    const h = host();
+    h.insert(service);
+    h.insert(pair);
+    expect(h.boxes().slice(1)).toEqual([
+      [584, 290, 40, 20],
+      [684, 290, 40, 20],
+    ]);
+  });
+
+  it('places at the centre again once the earlier insert has moved or gone', () => {
+    const h = host();
+    h.insert(service);
+    h.edit((els) => els.map((e) => ({ ...e, x: (e as ShapeElement).x + 5 })));
+    h.insert(service);
+    expect(h.boxes()[1]).toEqual([440, 270, 120, 60]);
+    h.edit(() => []);
+    h.insert(service);
+    expect(h.boxes()).toEqual([[440, 270, 120, 60]]);
+  });
+
+  it('drops exactly where dropped, and remembers the drop', () => {
+    const h = host();
+    h.insert(service);
+    h.insert(service, { x: 500, y: 300 });
+    expect(h.boxes()[1]).toEqual([440, 270, 120, 60]);
+    h.insert(service);
+    expect(h.boxes()[2]).toEqual([584, 270, 120, 60]);
+  });
+
+  it("ignores another tab's inserts", () => {
+    const h = host();
+    h.insert(service);
+    h.switchTab('other');
+    h.insert(service);
+    expect(h.boxes()).toEqual([[440, 270, 120, 60]]);
+  });
+});

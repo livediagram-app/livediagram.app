@@ -191,23 +191,23 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 ## Testing
 
-| Rule                                                                      | Test                                                                                |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Names: unique suffix, case, length; items validation and reasons          | `packages/api-schema/src/shape-libraries.test.ts`                                   |
-| Row mapping, corrupt items                                                | `apps/api/src/shape-library-row.test.ts`                                            |
-| Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename           | `apps/api/src/routes/shape-libraries.test.ts`                                       |
-| Sign-up move with clash renaming; account deletion                        | `apps/api/src/db/account-owner-columns.test.ts` (the owner-column ledger)           |
-| OpenAPI covers the routes; the route stays probeable                      | `apps/api/src/openapi/route-parity.test.ts`, `apps/api/src/route-resources.test.ts` |
-| Client calls and error copy                                               | `apps/live/lib/api/shape-libraries.test.ts`                                         |
-| Provider: load, create, rename, delete, delete item, failures             | `ShapeLibraryProvider.test.tsx`                                                     |
-| Import: libraries listed and made, failures, telemetry, outcome           | `useDrawioFileImport.test.ts`, `library-store.test.ts`                              |
-| Report links                                                              | `apps/live/components/dialogs/ImportImageReport.test.tsx`                           |
-| Palette: hidden when empty, sections, search, tile names, disabled        | `PaletteMyShapesTab.test.tsx`                                                       |
-| Insert: centred, fresh ids, connections, one commit, selection, read-only | `useLibraryShapeInsert.test.ts`                                                     |
-| Drop: the MIME reaches the host with the point                            | `usePaletteDrop.test.ts`                                                            |
-| Explorer page: list, rename, delete confirm, items, empty, error          | `ShapeLibrariesPane.test.tsx`                                                       |
-| Route mapping                                                             | `app/explorer/routes.test.ts`                                                       |
-| End to end: import a synthesised library, place a shape, rename, delete   | `apps/live/e2e/shape-libraries.spec.ts`                                             |
+| Rule                                                                                                                                                                                    | Test                                                                                |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Names: unique suffix, case, length; items validation and reasons                                                                                                                        | `packages/api-schema/src/shape-libraries.test.ts`                                   |
+| Row mapping, corrupt items                                                                                                                                                              | `apps/api/src/shape-library-row.test.ts`                                            |
+| Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename                                                                                                                         | `apps/api/src/routes/shape-libraries.test.ts`                                       |
+| Sign-up move with clash renaming; account deletion                                                                                                                                      | `apps/api/src/db/account-owner-columns.test.ts` (the owner-column ledger)           |
+| OpenAPI covers the routes; the route stays probeable                                                                                                                                    | `apps/api/src/openapi/route-parity.test.ts`, `apps/api/src/route-resources.test.ts` |
+| Client calls and error copy                                                                                                                                                             | `apps/live/lib/api/shape-libraries.test.ts`                                         |
+| Provider: load, create, rename, delete, delete item, failures                                                                                                                           | `ShapeLibraryProvider.test.tsx`                                                     |
+| Import: libraries listed and made, failures, telemetry, outcome                                                                                                                         | `useDrawioFileImport.test.ts`, `library-store.test.ts`                              |
+| Report links                                                                                                                                                                            | `apps/live/components/dialogs/ImportImageReport.test.tsx`                           |
+| Palette: hidden when empty, sections, search, tile names, disabled                                                                                                                      | `PaletteMyShapesTab.test.tsx`                                                       |
+| Insert: centred, fresh ids, connections, one commit, selection, read-only; consecutive clicks line up and never cover, a moved or deleted insert frees its spot, drops keep their point | `apps/live/hooks/canvas/useLibraryShapeInsert.test.ts`                              |
+| Drop: the MIME reaches the host with the point                                                                                                                                          | `usePaletteDrop.test.ts`                                                            |
+| Explorer page: list, rename, delete confirm, items, empty, error                                                                                                                        | `ShapeLibrariesPane.test.tsx`                                                       |
+| Route mapping                                                                                                                                                                           | `app/explorer/routes.test.ts`                                                       |
+| End to end: import a synthesised library, place two shapes whose boxes do not overlap, rename, delete                                                                                   | `apps/live/e2e/shape-libraries.spec.ts`                                             |
 
 ## Constants and configuration
 
