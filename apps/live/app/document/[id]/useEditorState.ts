@@ -2452,7 +2452,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectCanvasTool,
     beginDraw,
     cancelDraw: cancelDrawShape,
-    setBackgroundPattern,
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
     snapColours,

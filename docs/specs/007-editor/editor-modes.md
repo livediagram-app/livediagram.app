@@ -37,9 +37,23 @@ where it is and changes only how the next mark is made.
 
 ## The mode switch
 
-- **Placement:** directly beside the page switcher (the tab bar,
-  `components/chrome/TabBar.tsx`), so the two controls that answer "where am
-  I and how am I working" sit together.
+- **Placement:** directly beside the page switcher, at the left end of the
+  tab bar before the Tabs label (`components/chrome/TabBar.tsx`), so the two
+  controls that answer "how am I working and where am I" sit together.
+- **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
+  current mode's icon and name and a chevron, on the faint tint the editor's
+  menu-like controls use. A press opens a menu **above** it (the bar is at the
+  bottom) with one row per mode: its icon, its name, a one-line description
+  shown in full ("Shapes, arrows, the palette and snapping" / "Pens, the
+  eraser and shape recognition"), a check on the current mode and **Shift+D**
+  at the right. Choosing a row switches and closes the menu; Escape or a press
+  outside closes it. Two presses: the chip teaches what each mode is.
+  - On a phone the chip shows its icon and chevron only.
+  - Semantics: a menu button (`aria-haspopup="menu"`, `aria-expanded`) named
+    "Editor mode: Diagram", over a `menu` of `menuitemradio` rows.
+- **Power user mode** shows a compact switch instead
+  ([Quick mode switch](power-user-mode.md#quick-mode-switch)): a segmented
+  pill of **icons only**, one segment per mode, one press to switch.
 - **Two options, one chosen:** Diagram and Draw. Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
@@ -142,6 +156,7 @@ element in the same colour.
 
 - `Editor` · `Changed` · `ModeDiagram` / `ModeDraw`, fired by the switch
   before the mode applies.
+- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw`, fired by Opens in.
 
 ## Non-goals
 

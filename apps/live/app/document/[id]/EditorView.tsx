@@ -1,13 +1,15 @@
 'use client';
 
-import { hasBoardLook, truncateName } from '@livediagram/document';
+import { truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
 import { useEffect } from 'react';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { canvasSurface } from '@livediagram/document';
-import { getTheme, resolveTabBackdrop } from '@/lib/themes';
+import { getTheme } from '@/lib/themes';
+import { resolveViewBackdrop } from '@/lib/view-backdrop';
+import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
@@ -193,11 +195,10 @@ export function EditorView() {
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  // The board look has no theme (docs/specs/023-whiteboard/whiteboard.md "Appearance"): Default
-  // chrome. Both follow the viewer's editor mode (docs/specs/007-editor/editor-modes.md).
+  // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
+  // follows the tab's theme in Draw mode too.
   const drawMode = ctx.editorMode.mode === 'draw';
-  const boardLook = hasBoardLook(ctx.editorMode.mode);
-  useEditorAccent(boardLook ? undefined : activeTab.theme);
+  useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
@@ -232,7 +233,11 @@ export function EditorView() {
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
   const draftView = usePhotoDraftView();
-  const backdrop = resolveTabBackdrop(activeTab, ctx.editorMode.mode, appearance);
+  const backdrop = resolveViewBackdrop(
+    activeTab,
+    { mode: ctx.editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
+    appearance,
+  );
   const shiftSelectedKind = !shiftSelected
     ? null
     : shiftSelected.type === 'arrow'
@@ -551,7 +556,7 @@ export function EditorView() {
             {zenMode ||
             embedMode ||
             minimalChrome ||
-            boardLook ||
+            drawMode ||
             showSignInBanner ||
             showEmptyCanvasBanner ? null : (
               <ThemeModeBanner themeId={activeTab.theme} />
