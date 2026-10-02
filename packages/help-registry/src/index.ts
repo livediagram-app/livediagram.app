@@ -560,7 +560,7 @@ export const articles: Article[] = [
   {
     slug: 'google-drive',
     title: 'Google Drive',
-    description: 'Sync your Personal Space to your own Google Drive, both ways.',
+    description: 'Sync My documents to your own Google Drive, both ways.',
     keywords:
       'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
@@ -1351,8 +1351,10 @@ export const articles: Article[] = [
   {
     slug: 'explorer-page',
     title: 'Explorer Page',
-    description: 'The full-page library: the sidebar sections, list view, and folders.',
-    keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    description:
+      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
+    keywords:
+      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1436,7 +1438,7 @@ export const articles: Article[] = [
     slug: 'shared-with-you',
     title: 'Shared With You',
     description: 'Documents other people have shared with you, collected in one place.',
-    keywords: 'received from others incoming shares collaborations',
+    keywords: 'shared with me received from others incoming shares collaborations',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1458,19 +1460,18 @@ export const articles: Article[] = [
   },
   {
     slug: 'personal-space',
-    title: 'Personal Space and Folders',
-    description:
-      'Your own library: the Unsorted and Favourites buckets, and the folders you create.',
+    title: 'My Documents and Folders',
+    description: 'Your own library: Unsorted and Generated first, then the folders you create.',
     keywords:
-      'personal library my work your documents your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'The teams you belong to, their shared folders, and your pending invites.',
-    keywords: 'teams shared workspace invites membership group',
+    description: 'Each team as a space beside My documents, its shared folders, and your invites.',
+    keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

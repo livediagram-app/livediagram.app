@@ -1,6 +1,6 @@
 // Explorer-category illustrations (docs/specs/018-help/help-app.md): the full-page document library, the
-// compact in-editor panel, the sidebar sections (Recent, Shared with you, My
-// Work, Team Spaces) and the Library views (image gallery, saved themes).
+// compact in-editor panel, the sidebar's groups (Overview, Spaces, More), My
+// documents, team spaces, and the Library views (image gallery, saved themes).
 // Composed only from the shared primitives so the house style holds.
 
 import { Scene, Avatar, Label, Button } from './primitives';
@@ -32,7 +32,7 @@ export function ExplorerOverview() {
       />
       {/* Breadcrumb */}
       <Label x={192} y={32} size={10} weight={700} tone="strong">
-        Recent
+        Home
       </Label>
       <Button x={336} y={22} w={56} h={20} label="New" variant="primary" />
       <line x1={178} y1={48} x2={404} y2={48} className="stroke-slate-200" strokeWidth={1.5} />
@@ -85,7 +85,7 @@ export function ExplorerPanel() {
       <SidebarRow x={28} y={66} w={188} label="Recent" count={8} active glyph="recent" />
       <DocumentRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
       <DocumentRow x={40} y={126} w={164} title="Data model" meta="edited today" />
-      <SidebarRow x={28} y={162} w={188} label="Personal Space" glyph="folder" />
+      <SidebarRow x={28} y={162} w={188} label="My documents" glyph="folder" />
       <SidebarRow x={28} y={184} w={188} label="Shared with you" count={3} glyph="shared" />
     </Scene>
   );
@@ -173,8 +173,8 @@ export function SharedWithYou() {
   );
 }
 
-/** The Personal Space folder tree: an Unsorted bucket plus nested project folders. */
-export function PersonalSpaceTree() {
+/** My documents as a folder tree: Unsorted and Generated first, then nested project folders. */
+export function MyDocumentsTree() {
   const row = (
     y: number,
     label: string,
@@ -219,15 +219,15 @@ export function PersonalSpaceTree() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        Personal Space
+        My documents
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       {row(56, 'Unsorted', 0, { glyph: 'folder' })}
-      {row(82, 'Projects', 0, { open: true })}
-      {row(108, 'Acme Corp', 24, { open: true })}
-      {row(134, 'Kickoff diagram', 48, { glyph: 'doc' })}
-      {row(160, 'Architecture', 48, { glyph: 'doc', active: true })}
-      {row(186, 'Internal', 24, { glyph: 'folder' })}
+      {row(82, 'Generated', 0, { glyph: 'folder' })}
+      {row(108, 'Projects', 0, { open: true })}
+      {row(134, 'Acme Corp', 24, { open: true })}
+      {row(160, 'Kickoff diagram', 48, { glyph: 'doc' })}
+      {row(186, 'Architecture', 48, { glyph: 'doc', active: true })}
     </Scene>
   );
 }
@@ -462,7 +462,7 @@ export function ThemesLibrary() {
 }
 
 /** The Unsorted folder: the synthetic home for documents not filed anywhere,
- *  shown highlighted at the top of Personal Space with a couple of loose docs in it. */
+ *  shown highlighted at the top of My documents with a couple of loose docs in it. */
 export function UnsortedFolder() {
   return (
     <Scene w={420} h={214} bg="plain">
@@ -476,7 +476,7 @@ export function UnsortedFolder() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        Personal Space
+        My documents
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />

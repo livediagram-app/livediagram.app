@@ -395,41 +395,44 @@ export function ExplorerSidebar({
       <Label x={x + 34} y={y + 21} size={11} weight={700} tone="strong">
         Explorer
       </Label>
+      {/* The groups of docs/specs/013-workspace/explorer-structure.md: Overview, Spaces, More. */}
+      <Label x={x + 18} y={y + 40} size={8} weight={700} tone="muted">
+        OVERVIEW
+      </Label>
+      <SidebarRow x={x} y={y + 46} w={w} label="Home" active={active === 0} glyph="recent" />
       <SidebarRow
         x={x}
-        y={y + 40}
+        y={y + 70}
         w={w}
-        label="Recent"
-        count={8}
-        active={active === 0}
-        glyph="recent"
-      />
-      <SidebarRow
-        x={x}
-        y={y + 66}
-        w={w}
-        label="Shared with you"
+        label="Shared with me"
         count={3}
         active={active === 1}
         glyph="shared"
       />
-      <Label x={x + 18} y={y + 100} size={8} weight={700} tone="muted">
-        PERSONAL SPACE
-      </Label>
-      <SidebarRow x={x} y={y + 108} w={w} label="Unsorted" active={active === 2} glyph="folder" />
-      <SidebarRow x={x} y={y + 134} w={w} label="Projects" active={active === 3} glyph="folder" />
-      <Label x={x + 18} y={y + 168} size={8} weight={700} tone="muted">
-        TEAMS
+      <Label x={x + 18} y={y + 104} size={8} weight={700} tone="muted">
+        SPACES
       </Label>
       <SidebarRow
         x={x}
-        y={y + 176}
+        y={y + 110}
+        w={w}
+        label="My documents"
+        active={active === 2}
+        glyph="folder"
+      />
+      <SidebarRow
+        x={x}
+        y={y + 134}
         w={w}
         label="Design"
         count={4}
-        active={active === 4}
+        active={active === 3}
         glyph="team"
       />
+      <Label x={x + 18} y={y + 168} size={8} weight={700} tone="muted">
+        MORE
+      </Label>
+      <SidebarRow x={x} y={y + 174} w={w} label="Library" active={active === 4} glyph="image" />
     </g>
   );
 }
