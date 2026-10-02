@@ -23,13 +23,18 @@
 // the helper deliberately doesn't touch state outside the api
 // round-trip so it can stand alone.
 
+import type { DocumentPlacement } from '@livediagram/api-schema';
 import { remapTabLinks, type Tab } from '@livediagram/document';
 import { apiCreateDocument, apiLoadDocument, apiLoadTab, apiSaveDocumentMeta } from './api-client';
 import { isOfflineId, offlineCreateDocument } from './offline/offline-store';
 
+// `placement` files the copy in the create itself (docs/specs/013-workspace/folders.md "Placement
+// on create"): a team library's Duplicate keeps the copy beside the original. Absent, the copy is
+// personal, at the root.
 export async function duplicateDocument(
   ownerId: string,
   sourceId: string,
+  placement?: DocumentPlacement,
 ): Promise<string | undefined> {
   const src = await apiLoadDocument(ownerId, sourceId).catch(() => null);
   if (!src) return undefined;
@@ -75,6 +80,7 @@ export async function duplicateDocument(
       id: newId,
       name: `${src.name} copy`,
       tabs: remappedTabs,
+      ...placement,
     });
   } catch {
     return undefined;

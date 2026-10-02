@@ -488,6 +488,45 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
   });
 });
 
+describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const sentBody = async (d: Parameters<typeof apiCreateDocument>[1]) => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ document: { id: 'd1' } }), { status: 201 }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await apiCreateDocument('owner', d);
+    const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    return JSON.parse(init.body as string) as Record<string, unknown>;
+  };
+
+  it('carries the team and folder in the create body', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N', teamId: 't1', folderId: 'f1' });
+    expect(body).toMatchObject({ teamId: 't1', folderId: 'f1' });
+  });
+
+  it('leaves placement out when none is chosen', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N', teamId: null, folderId: null });
+    expect(body).not.toHaveProperty('teamId');
+    expect(body).not.toHaveProperty('folderId');
+  });
+
+  it('throws the refusal token for a refused placement', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ error: 'team_forbidden' }), { status: 403 }),
+        ),
+    );
+    await expect(
+      apiCreateDocument('owner', { id: 'd1', name: 'N', teamId: 't1' }),
+    ).rejects.toMatchObject({ status: 403, code: 'team_forbidden' });
+  });
+});
+
 describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 

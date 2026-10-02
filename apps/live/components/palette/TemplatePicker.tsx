@@ -34,7 +34,8 @@ export type NewDocumentSettings = {
   // Where the document is stored (docs/specs/006-document/save-locations.md): the api, or this browser only.
   saveLocation: SaveLocationId;
   documentName?: string;
-  // Personal folder placement, or a team library. At most one is set.
+  // Placement (docs/specs/013-workspace/folders.md "Placement on create"): a team library, and a
+  // folder of the chosen space; both null = personal Unsorted.
   folderId?: string | null;
   teamId?: string | null;
 };

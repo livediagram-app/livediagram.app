@@ -135,3 +135,20 @@ describe('duplicateDocument', () => {
     expect(mCreate.mock.calls[0]![1].tabs).toHaveLength(0);
   });
 });
+
+describe('duplicateDocument placement (docs/specs/013-workspace/team-shared-documents.md)', () => {
+  it('creates the copy in the given team folder in the one create', async () => {
+    mLoadDocument.mockResolvedValue(sourceDocument([{ id: 't1' }]));
+    mLoadTab.mockResolvedValue(tab('t1'));
+    await duplicateDocument('owner', 'src', { teamId: 'team-1', folderId: 'tf1' });
+    expect(mCreate).toHaveBeenCalledTimes(1);
+    expect(mCreate.mock.calls[0]![1]).toMatchObject({ teamId: 'team-1', folderId: 'tf1' });
+  });
+
+  it('creates a personal copy at the root when no placement is given', async () => {
+    mLoadDocument.mockResolvedValue(sourceDocument([{ id: 't1' }]));
+    mLoadTab.mockResolvedValue(tab('t1'));
+    await duplicateDocument('owner', 'src');
+    expect(mCreate.mock.calls[0]![1]).not.toHaveProperty('teamId');
+  });
+});

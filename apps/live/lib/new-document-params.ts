@@ -44,3 +44,17 @@ export function wizardBrowseCollection(search: string): TemplateCollection | nul
 export function wantsWelcome(search: string): boolean {
   return wizardBypassKind(search) === 'blank' && new URLSearchParams(search).has(WELCOME_PARAM);
 }
+
+// The placement context params (/new?folder=<id>, /new?team=<id>), pre-seeding the Settings
+// step's picker.
+const PLACEMENT_PARAMS = ['folder', 'team'] as const;
+
+// Where "Choose another place" leads after a refused placement (docs/specs/007-editor/
+// new-document-route.md "Placement rides the create"): /new without the refused placement and
+// without the bypass, so the wizard opens with its picker on Unsorted. Every other param is kept.
+export function choosePlacementAgainUrl(search: string): string {
+  const params = new URLSearchParams(search);
+  for (const key of [...WIZARD_BYPASS_PARAMS, ...PLACEMENT_PARAMS]) params.delete(key);
+  const qs = params.toString();
+  return qs ? `/new?${qs}` : '/new';
+}

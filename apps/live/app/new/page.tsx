@@ -22,19 +22,14 @@ import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { usePlacementOptions } from './usePlacementOptions';
-import {
-  apiCreateDocument,
-  apiLoadSelf,
-  apiSaveSelf,
-  apiSetDocumentFolder,
-} from '@/lib/api-client';
+import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
+import { createFailureCopy, type CreateFailure } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
-import { accepted } from '@/lib/accepted';
 import {
   ensureGuestSelfId,
   getGuestSelfId,
@@ -45,6 +40,7 @@ import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
 import {
   WIZARD_BYPASS_PARAMS,
+  choosePlacementAgainUrl,
   wantsWelcome,
   wizardBrowseCollection,
   wizardBypassKind,
@@ -126,11 +122,10 @@ export default function NewDocumentPage() {
   // RecentDocumentsCard's fetch; gates the interactive tour's welcome offer
   // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
   const [documentCount, setDocumentCount] = useState<number | null>(null);
-  // Set when the create POST fails (network / 5xx). Shows a retryable
-  // error instead of navigating to the editor for a document that was
-  // never persisted (which would 404). The ref keeps the last attempt's
-  // args so Retry can re-run the exact same create.
-  const [createError, setCreateError] = useState(false);
+  // Set when the create fails: the card's copy and action (create-failure.ts). Shows instead of
+  // navigating to the editor for a document that was never persisted (which would 404). The ref
+  // keeps the last attempt's args so Retry can re-run the exact same create.
+  const [createError, setCreateError] = useState<CreateFailure | null>(null);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
     name: string;
@@ -360,19 +355,26 @@ export default function NewDocumentPage() {
           Date.now(),
         );
       } else {
+        // Placement rides the create (docs/specs/007-editor/new-document-route.md): the Settings
+        // step's picker, pre-seeded from /new?folder= / ?team=, is filed by the same write, or the
+        // create is refused by name and nothing is written.
         await apiCreateDocument(who.id, {
           id: documentId,
           name: documentName,
           tabs: [tab],
+          teamId: settings.teamId ?? null,
+          folderId: settings.folderId ?? null,
         });
       }
-    } catch {
-      // Create FAILED (network / 5xx for cloud, or no IndexedDB for offline).
-      // Don't navigate to an editor for a document that was never persisted
-      // (that lands on a 404). Surface a retryable error card instead (Retry
-      // re-runs this exact create from lastCreateArgs).
+    } catch (err) {
+      // Create FAILED (network / 5xx / a refused placement for cloud, or no IndexedDB for
+      // offline). Don't navigate to an editor for a document that was never persisted (that
+      // lands on a 404). Surface the error card instead: Retry re-runs this exact create from
+      // lastCreateArgs; a refused placement offers another place.
+      const failure = createFailureCopy(err);
+      debugLog(`[new] create failed action=${failure.action}`);
       setSubmitting(false);
-      setCreateError(true);
+      setCreateError(failure);
       return;
     }
     // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a document was created. No id or name is
@@ -384,26 +386,10 @@ export default function NewDocumentPage() {
     // A whiteboard tab born from the wizard (docs/specs/023-whiteboard/whiteboard.md "Telemetry").
     if (templateKind === 'whiteboard') track('Whiteboard', 'Created', 'Template');
     cta.trackCreated();
-    // Placement. The Settings step's picker (docs/specs/006-document/offline-mode.md) is authoritative: the
-    // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
-    // on mount, so what the picker highlighted is exactly what gets filed.
-    // Done as a follow-up PUT so the create endpoint signature stays stable
-    // and placement can fail independently (a glitch just leaves it in the
-    // personal Unsorted, movable later). Offline documents have no server
-    // folder / team placement — skip it.
-    if (!offline) {
-      if (settings.teamId) {
-        // Created straight into a team library: the same Team·Added·Document
-        // an Explorer move into a team sends (docs/specs/017-telemetry/telemetry.md), and only once the
-        // placement landed (a failed PUT leaves it personal).
-        const placed = await accepted(
-          apiSetDocumentFolder(who.id, documentId, settings.folderId ?? null, settings.teamId),
-        );
-        if (placed) track('Team', 'Added', 'Document');
-      } else if (settings.folderId) {
-        await apiSetDocumentFolder(who.id, documentId, settings.folderId).catch(() => {});
-      }
-    }
+    // Created straight into a team library: the same Team·Added·Document an Explorer move into a
+    // team sends (docs/specs/017-telemetry/telemetry.md), only reached once the create, and so
+    // its placement, succeeded.
+    if (!offline && settings.teamId) track('Team', 'Added', 'Document');
     // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned documents)
     // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
@@ -466,10 +452,17 @@ export default function NewDocumentPage() {
         />
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
-            title="Couldn’t create the document"
-            message="We couldn’t reach the server to create your document. Check your connection and try again."
+            eyebrow={createError.eyebrow}
+            title={createError.title}
+            message={createError.message}
+            retryLabel={createError.actionLabel}
             onRetry={() => {
-              setCreateError(false);
+              if (createError.action === 'choose') {
+                // The refused placement would be refused again: reopen the wizard without it.
+                window.location.assign(choosePlacementAgainUrl(window.location.search));
+                return;
+              }
+              setCreateError(null);
               const a = lastCreateArgs.current;
               if (a) void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
             }}
