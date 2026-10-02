@@ -93,23 +93,48 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## "Offline" badge + Explorer
 
-The word **"Offline"** identifies these documents everywhere the status is shown:
-
-- **Editor header badge.** Today the status pill reads Private / Shared / Team
+- **Editor header badge.** The status pill reads Private / Shared / Team
   (the `SharedBadge` in `EditorHeader`). For an offline document it reads
-  **"Offline"** (a new state that supersedes "Private" for these documents), with
+  **"Offline"** (a state that supersedes "Private" for these documents), with
   its own tone + icon, and a hover card restating _"Saved only in this browser."_
-- **Explorer.** Offline documents appear in **Recent** (and the other lists)
-  alongside cloud documents. The full-page Explorer marks each with an
-  **"Offline"** visibility badge; every surface (panel + full page) shows the
+- **Explorer.** Offline documents appear in Recent (and the other lists)
+  alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.
   The Explorer view merges the API-fetched cloud list with the local index of
   offline documents; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
+- **The reader's own.** An offline document counts as one of the reader's own
+  documents: Space `mine` and owner "You", like a document in My documents
+  ([Explorer structure: Local only documents](../013-workspace/explorer-structure.md#local-only-documents)).
 - **Sidebar.** The full-page Explorer's **This browser** row (the More group,
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
-  `/explorer/offline`, the list of every offline document; the row shows while
-  this browser holds at least one.
+  `/explorer/offline`, the list of every offline document, titled **This
+  browser**; the row shows while this browser holds at least one.
+
+### Local only pill
+
+Every row and card of an offline document carries a **Local only** pill,
+wherever the document is listed: the list and card views (folders, Unsorted,
+This browser, Recent, Favourites), the folder previews' tiles excepted (they
+are pictures, not rows), the search panel's results, the floating Explorer
+panel's rows and its Current Document card, and the Trash.
+
+- **Not colour alone.** The pill shows an icon (a browser window) and the words
+  "Local only", in an amber tone whose text meets 4.5:1 on its fill in light and
+  dark mode; the ring meets 3:1 against the row.
+- **What it means, on hover and focus.** Its hover card reads "Local only" over
+  "Lives only in this browser. Clearing this browser's site data deletes it."
+  The same sentence is the pill's accessible description (`aria-describedby`),
+  so a screen reader hears it without hovering.
+- **The guide is one click away.** The pill is a link to the Offline Mode help
+  article (new tab, the editor's help-link telemetry), with its own focus ring.
+  Where the row is itself a single control (a search result), the pill is a
+  plain label inside it, carrying the same description: a link cannot sit inside
+  a button. The Trash row's pill is a link like any other.
+- **It replaces the "Offline" visibility badge** in the Explorer's lists: an
+  offline document shows the pill beside its name at every width, and its
+  visibility column stays empty. Minimal chrome keeps the words: the pill is a
+  warning, not a teaching hint.
 
 ## Converting between Offline and Cloud
 

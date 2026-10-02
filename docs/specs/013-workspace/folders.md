@@ -278,26 +278,19 @@ editor's bottom bar, which keeps Search, Settings and the appearance
 toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
 link.
 
-- The existing "Current Document" and "Recent Documents" sections stay
-  unchanged at the top.
-- A new "Folders" accordion sits below Recents. Its badge shows the
-  total number of user folders (does not include Unsorted).
-- Inside the Folders section: a recursive tree. The root level
-  contains every folder where `parent_id IS NULL`, plus the
-  synthetic Unsorted bucket. Each folder is itself an accordion;
-  expanding it reveals child folders and any documents directly in
-  that folder. Expansion state lives in the Explorer's local state
-  (not persisted) so reloads start collapsed and the panel stays
-  compact.
-- Each folder row shows the folder name + a count badge for the
-  combined number of direct children (folders + documents). A folder
-  with nothing inside shows no expand chevron (its slot stays, so
-  names line up).
-- The Teams tab's folders are the **same folder node** as the personal
-  tree, handed a team's rows: same count badge, same chevron rule,
-  same right-click menu, and team document rows play the same slide-out
-  when deleted. What differs is data, not markup: team folders take
-  no drag-and-drop, and Show in Explorer opens the team page.
+- A "Current Document" card sits at the top. Beneath it, the panel shows
+  the sidebar's three groups, Overview, Spaces and More, built from the
+  same rows ([Explorer structure: the floating Explorer panel](explorer-structure.md#the-floating-explorer-panel)).
+  In the panel, My documents, Unsorted, Generated, each folder and each
+  team expand to show their documents as rows; expansion is local state
+  (not persisted) and starts collapsed so the panel stays compact.
+- A folder with nothing inside shows no expand chevron (its gutter stays,
+  so names line up).
+- Team folders are the **same folder row** as the personal tree, handed
+  a team's rows: same chevron rule, same right-click menu, and team
+  document rows play the same slide-out when deleted. What differs is
+  data, not markup: team folders take no drag-and-drop, and Show in
+  Explorer opens the team page.
 - **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
 - Folder-row ellipsis menu: Rename, Delete, "Move to folder…".
 - Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands in Unsorted (its `folder_id` was already cleared by the folder delete's `SET NULL`).
@@ -315,17 +308,17 @@ link.
   and teams with their folders — see the move-picker note above).
   Picking one calls `PUT /api/documents/:id/folder`.
 - **Drag-and-drop**: document rows are HTML5-draggable. Drop targets
-  are folder headers (any nested depth) and the synthetic Unsorted
-  header. Drag-over highlights the target with a brand-blue ring so
+  are personal folder rows (any nested depth) and the synthetic Unsorted
+  row. Drag-over highlights the target with a brand-blue ring so
   the user sees where the document will land. Drop fires the same
   `onMoveDocumentToFolder(documentId, targetFolderId)` callback the
   picker uses, so the move travels through the same API path and
   optimistic update. Drag transfer uses a custom MIME type
   (`application/x-livediagram-id`) so dragging a document never
   triggers a browser navigation when dropped outside any target.
-- A "New folder" button sits at the top of the Folders section
-  and creates root-level folders. Each folder's own ellipsis offers
-  "New subfolder" so deeper layers are reachable.
+- Each folder's own ellipsis offers "New subfolder" so deeper layers
+  are reachable; root-level folders are created in the Explorer, or
+  from the move picker's New Folder tile.
 
 ### Standalone `/explorer` page
 
@@ -398,9 +391,8 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 
 Empty states:
 
-- No folders → the Folders accordion shows the "New folder" button
-  and Unsorted (with everything in it). User folders only appear
-  once at least one exists.
+- No folders → My documents holds Unsorted (with everything in it)
+  and Generated. User folders only appear once at least one exists.
 
 ## Non-goals for V1
 

@@ -36,7 +36,7 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Shared with me | `/explorer/shared`                                       | Documents shared with the reader                          |
 
 Home is the Explorer's landing view. Recent and Favourites have no sidebar row; their routes (`/explorer/recent`,
-`/explorer/favourites`) keep working, and the floating Explorer panel's Open Explorer still lands on Recent.
+`/explorer/favourites`) keep working.
 
 ### Spaces
 
@@ -67,10 +67,29 @@ Home is the Explorer's landing view. Recent and Favourites have no sidebar row; 
 | Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                   | None                      |
 
 - **This browser** shows only while this browser holds at least one offline document, or while its view is the current
-  one (so the highlighted row never vanishes under the reader).
+  one (so the highlighted row never vanishes under the reader). Its documents are the reader's own
+  ([Local only documents](#local-only-documents)).
 - **Library** has no view of its own: activating it expands or collapses it.
 
 The group's title is **More**.
+
+## Page titles follow the rows
+
+A view is named by its row, everywhere it is named: the page heading, the document title (`<label> | livediagram`),
+the breadcrumb and the help centre's copy. Routes stay as they are.
+
+| Row             | Route                       | Page title      |
+| --------------- | --------------------------- | --------------- |
+| Home            | `/explorer/timeline`        | Home            |
+| Shared with me  | `/explorer/shared`          | Shared with me  |
+| My documents    | `/explorer/all`             | My documents    |
+| This browser    | `/explorer/offline`         | This browser    |
+| Image gallery   | `/explorer/images`          | Image gallery   |
+| Shape libraries | `/explorer/shape-libraries` | Shape libraries |
+
+Every other row's view already carries its row's label (Activity, Unsorted, Generated, a folder or team by its name,
+Invites, Themes, Trash). Views without a row keep their own names (Recent, Favourites, Dynamic). The synthetic folder
+the My documents list shows for this browser reads **This browser** too.
 
 ## Visibility at a glance
 
@@ -101,13 +120,14 @@ The groups are told apart in one of two ways, following **Minimal chrome**
 
 - **Minimal chrome off** (the default, and always when power user mode is off): each group opens with its **title**, a
   small uppercase section heading: **Overview**, **Spaces**, **More**.
-- **Minimal chrome on**: the titles are replaced by thin **hairline separators** between the groups (none above the
-  first). Each title stays in the document as visually hidden text and still names its group for assistive
-  technology.
+- **Minimal chrome on**: the titles are replaced by thin **hairline separators** between the groups. There is no
+  separator above the first group, and no space kept for one: Home sits at the top. Each title stays in the document as
+  visually hidden text and still names its group for assistive technology.
 
-A title and its hairline occupy the same box, so switching moves no row. Switching happens at render, from the
-preference, read once the page has hydrated (a deployment without sign-in prerenders the sidebar, and the render that
-hydrates it matches that HTML); nothing moves on its own.
+Below the first group, a title and its hairline occupy the same box, so switching moves nothing below Home's group;
+only the first title's own height comes or goes. Switching happens at render, from the preference, read once the page
+has hydrated (a deployment without sign-in prerenders the sidebar, and the render that hydrates it matches that HTML);
+nothing moves on its own.
 
 ## Alignment
 
@@ -142,10 +162,34 @@ and the backdrop.
 
 ## The floating Explorer panel
 
-The editor's floating Explorer panel ([Folders: floating panel](folders.md#floating-explorer-panel-editor--new)) is a
-compact document browser, not the navigation tree. It names its spaces with the same words as the sidebar, read from
-the same definitions: its tabs are **Recent**, **My documents** and **Teams**. Its tree keeps its own layout (documents
-inline, a Dynamic group holding Unsorted and Offline).
+The editor's floating Explorer panel ([Folders: floating panel](folders.md#floating-explorer-panel-editor--new)) shows
+the same three groups, built from the same rows, layout rules and keyboard model, at the panel's width. Under its
+Current Document card it holds one `nav` named "Explorer" with Overview, Spaces and More, in place of the tabs it had.
+
+What differs is what a row does in an editor, where leaving the document is a bigger step:
+
+- **Rows with documents open in place.** Shared with me, My documents, Unsorted, Generated, each folder, each team and
+  This browser expand to show their documents as rows beneath them. Activating such a row expands or collapses it; it
+  never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
+  Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the
+  selected one.
+- **Rows without documents go to the Explorer.** Home, Activity, the Library pages and Trash open their Explorer page.
+- **No team management.** The panel shows no Invites row, no New team row and no sign-in nudge: answering invites and
+  creating teams happen in the Explorer, and the panel keeps its own sign-in notice under the tree.
+- **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
+  smallest; expansion lasts as long as the editor is open.
+- **Filing.** One of the reader's own document rows drags onto a personal folder row or Unsorted, as before. A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
+  the session may use.
+- Group titles and separators follow Minimal chrome exactly as in the sidebar.
+- The tree scrolls inside the panel when it is taller than the space it has.
+
+## Local only documents
+
+A document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)) is the reader's own: it counts
+wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My documents. Every
+row and card of one, wherever it is listed (folders and Unsorted, This browser, Recent and Favourites, search results,
+the floating panel, the Trash), carries the **Local only** pill
+([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
 
 ## Telemetry
 

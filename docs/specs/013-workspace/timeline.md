@@ -1493,15 +1493,15 @@ The default lands in three places, all of which must change together
    `default:` case, which catches mangled URLs and id-less
    `folder`/`team` links, returns `{ kind: 'timeline' }`.
 
-**Recent is not removed.** It keeps its route (`/explorer/recent`), and the
-floating Explorer panel's Open Explorer still lands on it; it answers a
-different question ("what did I touch last"). It has no sidebar row: Home is
+**Recent is not removed.** It keeps its route (`/explorer/recent`); it answers
+a different question ("what did I touch last"). It has no sidebar row: Home is
 the sidebar's recency view ([Explorer structure](explorer-structure.md)).
 
 ### 8.2 Sidebar
 
 The Timeline is the sidebar's **Home** row, first in the Overview group
-([Explorer structure](explorer-structure.md)):
+([Explorer structure](explorer-structure.md)), and its page is titled **Home**
+(heading, document title and breadcrumb); "Timeline" names the feed itself:
 
 ```text
 Overview
