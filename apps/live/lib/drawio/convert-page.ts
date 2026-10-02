@@ -20,6 +20,7 @@ import { cellLabel } from './label';
 import { classifyVertex } from './shapes';
 import { overlapTest } from './overlap';
 import { pageScale, scalePage } from './scale';
+import { autoTextRect, isAutoSized } from './text-box';
 import { buildImageCaption, buildVertex, type PageContext } from './vertices';
 
 export type ConvertedPage = {
@@ -119,8 +120,13 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
       forward.set(id, '');
       return;
     }
-    const rect = clampRect(rawRect);
     const cls = classifyVertex(cell, graph);
+    // Text draw.io sizes to itself comes in sized to its text (blueprint step 15.3).
+    const rect = clampRect(
+      cls.kind === 'text' && isAutoSized(rawRect)
+        ? autoTextRect(cell, rawRect, ctx.scale ?? 1)
+        : rawRect,
+    );
     const elementId = mint();
 
     if (cls.kind === 'group') {

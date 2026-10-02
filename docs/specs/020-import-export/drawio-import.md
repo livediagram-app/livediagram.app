@@ -336,6 +336,11 @@ When the cell has no label, the box is labelled with the stencil's readable name
 - **Line feeds are breaks.** draw.io draws a line feed in an HTML label as a line break (`nl2Br`,
   on by default), so the importer does too: `Internal`, an empty line and `Keep separated` stay three
   lines.
+- **Text sized to itself.** draw.io lets a text cell have no width or no height and draws its text
+  about the cell's point, as large as the text. Such a cell comes in as a text element sized to its
+  text (its longest line in the label face with a character to spare, its lines at the label line
+  height, each with the label padding), placed about the point as `align` and `verticalAlign` say
+  (centred, or growing right / left, down / up from it). A size the cell does have is kept.
 - **Clipped labels.** A label with `overflow=hidden` or `overflow=fill` is clipped to its shape in
   draw.io; it comes in cut to the lines that fit its box at the page scale, counted
   (`text-truncated`).
@@ -516,6 +521,9 @@ These differ from draw.io for every file and are not worth a line each time:
 - Rounded corners on connector bends; jump-overs (`jumpStyle`); edge `labelBackgroundColor` (captions
   keep livediagram's knockout, so labels draw.io stacks on one spot, the lower hidden by the upper's
   background, both show).
+- An arrow from a UML actor leaves at the anchor nearest draw.io's end of the route, and the actor's
+  anchors sit on the figure (its arm tips at the sides), so a level route from an actor can gain a
+  small step halfway along.
 - A slanted line's first and last leg come in squared: livediagram draws the leg next to a pinned
   end square to its anchor, so a straight edge with waypoints moves its first and last waypoint
   (operator decision).

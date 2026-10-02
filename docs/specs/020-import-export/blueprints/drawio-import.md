@@ -21,6 +21,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/drawio/shapes.ts`                          | `classifyVertex`: the shape mapping table                                                                                        |
 | `lib/drawio/vertex-props.ts`                    | `boxedProps`, `textProps`: the property maps shared by every vertex                                                              |
 | `lib/drawio/text-size.ts`                       | `elementTextSize`, `runTextSize`, `htmlFontSizePx`: every font size the importer sets                                            |
+| `lib/drawio/text-box.ts`                        | `isAutoSized`, `autoTextRect`: a text cell draw.io sizes to itself, sized to its text                                            |
 | `lib/drawio/nearest.ts`                         | `nearest`: the nearest preset to a px value                                                                                      |
 | `lib/drawio/vertices.ts`                        | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                                   |
 | `lib/drawio/containers.ts`                      | `buildLane`, `buildEntity`, `buildTable`                                                                                         |
@@ -479,7 +480,12 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
 3. Walk each layer's children depth-first (pre-order). Per cell: invisible → skip the subtree,
    `hidden-skipped` += 1 + descendants; edge → queue in paint order (built in pass 2), its children
    marked visited; vertex without geometry → skipped like a hidden one (D20); vertex → classify and
-   build. A `line` vertex becomes an arrow and nothing pins to it.
+   build. A `line` vertex becomes an arrow and nothing pins to it. A `text` vertex whose box has no
+   width or no height (`isAutoSized`) takes `autoTextRect` (`text-box.ts`): the missing width is
+   `(labelTextWidth(longest line + 1, labelFontPx(preset)) + 2 · PADDING_PX.sm) / scale`, the missing
+   height `(lines · labelFontPx(preset) · LABEL_LINE_HEIGHT + 2 · PADDING_PX.sm) / scale`; x is the
+   point (`align=left`), the point less the width (`right`) or less half of it (`center`), y
+   likewise by `verticalAlign`. Every box is then at least 1 × 1.
 4. Collapsed vertex: build it, skip descendants, `collapsed-skipped` += descendant count, and forward
    every descendant to it.
 5. `group` class: no element; `forward[group] = ''` (connections loosen), children walked,
@@ -939,7 +945,7 @@ Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-
 | Vertex properties                                                                                                            | `vertex-props.test.ts`                                                                                                  |
 | Lanes (upright titles, square corners), entities, tables                                                                     | `containers.test.ts`                                                                                                    |
 | Edges                                                                                                                        | `edges.test.ts`                                                                                                         |
-| Images, groups, hidden, collapsed, truncation, report                                                                        | `convert-page.test.ts`                                                                                                  |
+| Images, groups, hidden, collapsed, truncation, auto-sized text, report                                                       | `convert-page.test.ts`                                                                                                  |
 | Pages to tabs, page links, refusals, size limit                                                                              | `fixtures.test.ts` (via `importDrawio`)                                                                                 |
 | Every fixture valid + expected report                                                                                        | `fixtures.test.ts`                                                                                                      |
 | Apply to tabs: names, folder, look, layers                                                                                   | `drawio-apply.test.ts`                                                                                                  |

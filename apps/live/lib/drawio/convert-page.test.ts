@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { MAX_ELEMENTS_PER_TAB, isValidElement } from '@livediagram/document';
+import {
+  MAX_ELEMENTS_PER_TAB,
+  PADDING_PX,
+  isValidElement,
+  labelFontPx,
+} from '@livediagram/document';
+import { LABEL_LINE_HEIGHT, labelTextWidth } from './text-size';
 import { ReportTally } from './notes';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';
@@ -322,5 +328,41 @@ describe('the page scale', () => {
     const k = a.width / 120;
     expect(k).toBeGreaterThan(1.2);
     expect(a).toMatchObject({ x: 100 * k, y: 50 * k, height: 60 * k });
+  });
+});
+
+describe('auto-sized text', () => {
+  // draw.io lets a text cell have no size: it draws the text about the cell's point.
+  const at = (style: string, value = 'Ready / Waiting') =>
+    `<mxCell id="t" value="${value}" style="text;html=1;${style}" vertex="1" parent="1"><mxGeometry x="400" y="280" as="geometry"/></mxCell>`;
+  const sized = (lines: string[]) => {
+    const px = labelFontPx('sm');
+    const chars = Math.max(...lines.map((l) => l.length)) + 1;
+    return {
+      width: labelTextWidth(chars, px) + 2 * PADDING_PX.sm,
+      height: lines.length * px * LABEL_LINE_HEIGHT + 2 * PADDING_PX.sm,
+    };
+  };
+
+  it('sizes text in a zero-size box to its text, centred on the point', () => {
+    const { page } = convert(at('align=center;verticalAlign=middle;'));
+    const { width, height } = sized(['Ready / Waiting']);
+    expect(page.elements).toHaveLength(1);
+    const el = page.elements[0]!;
+    expect(el).toMatchObject({ type: 'text', label: 'Ready / Waiting' });
+    expect(el).toMatchObject({ width, height, x: 400 - width / 2, y: 280 - height / 2 });
+  });
+
+  it('grows from the point the way the text is aligned', () => {
+    const { page } = convert(at('align=left;verticalAlign=top;', 'One&lt;br&gt;Two'));
+    const { width, height } = sized(['One', 'Two']);
+    expect(page.elements[0]).toMatchObject({ x: 400, y: 280, width, height });
+  });
+
+  it('keeps a size the cell does have', () => {
+    const xml =
+      '<mxCell id="t" value="Note" style="text;html=1;" vertex="1" parent="1"><mxGeometry x="10" y="20" width="160" as="geometry"/></mxCell>';
+    const { page } = convert(xml);
+    expect(page.elements[0]).toMatchObject({ x: 10, width: 160, height: sized(['Note']).height });
   });
 });
