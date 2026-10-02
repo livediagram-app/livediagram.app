@@ -25,7 +25,7 @@ The sidebar holds navigation only. It carries no greeting, no search field, no N
 ## Groups and rows
 
 Top to bottom. "Opens" names the view a row selects; every view keeps its own route
-([Folders: Explorer routes](folders.md#explorer-routes)).
+([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are sentence case.
 
 ### Overview
 
