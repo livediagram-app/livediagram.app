@@ -127,10 +127,10 @@ contentType)`: a build asset (`^(/[a-z-]+)?/_next/static/`) with 2xx or 304 is `
 - **Pre-boot guard** (`STALE_HTML_GUARD_SCRIPT`, inline, first script of the layout's head; the
   framework's hoisted stylesheet and async chunk tags precede it). Its source is static: no value is
   written into it. Its settings (`RELOAD_GUARD_KEY`, the window, `API_BASE`, `BUILD_ID_HEADER`,
-  `APP_RECOVERY_FLAG`, the logger's scope, quietness and flag key) are `STALE_HTML_GUARD_ATTRIBUTES`,
+  `APP_RECOVERY_FLAG`) are `STALE_HTML_GUARD_ATTRIBUTES`,
   `data-*` attributes the layout spreads on its `<script>`, read once through
   `document.currentScript.dataset`; without them it does nothing. It embeds code only: the shared
-  claim (`claimReloadIn.toString()`) and `INLINE_DEBUG_LOG_SOURCE`. a capture-phase window `error`
+  claim (`claimReloadIn.toString()`). a capture-phase window `error`
   on a `SCRIPT` / `LINK` under `/_next/static/` → `reloadOnce`; at `DOMContentLoaded`, a
   `link[rel="stylesheet"]` under it without a `sheet`, or a resource timing entry under it with
   `responseStatus >= 400` → `reloadOnce`; `pageshow` with `persisted` and a `livediagram-build`
@@ -174,7 +174,7 @@ The build id grants nothing; a forged value can only make navigations full page 
 
 ## Observability
 
-- `trace('[stale-html] <reason>; reloading', detail)` (the inline form of `debugLog`, `INLINE_DEBUG_LOG_SOURCE`) and
+- `console.warn('[stale-html] <reason>; reloading', detail)` and
   `console.warn('[stale-html] already reloaded this page; leaving it', detail)` from the guard.
 - `debugLog('[stale-build] newer build live; loaded in full', { url })`.
 - `debugLog('[stale-chunks] a chunk from an earlier build is gone; loading the page in full', { destination })`.

@@ -1,12 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  DEBUG_STORAGE_KEY,
-  debugLogEnabled,
-  debugScopeOf,
-  INLINE_DEBUG_LOG_SOURCE,
-  inlineDebugLogConfig,
-  type InlineDebugLogConfig,
-} from './debug-log';
+import { DEBUG_STORAGE_KEY, debugLogEnabled, debugScopeOf } from './debug-log';
 
 // docs/specs/003-system-architecture/console-logging.md: trace lines show in development and tests,
 // and in production only when the debug flag names their scope.
@@ -87,55 +80,3 @@ describe('the console convention', () => {
 
 // An inline boot script (stale-html-guard.ts) cannot import this module; it embeds the same rule as
 // one static source, its settings handed over as data.
-describe('INLINE_DEBUG_LOG_SOURCE', () => {
-  const traceFn = (env: string, flag: string | null | Error) => {
-    const info = vi.fn();
-    const storage = {
-      getItem: () => {
-        if (flag instanceof Error) throw flag;
-        return flag;
-      },
-    };
-    const make = new Function('console', 'localStorage', `return (${INLINE_DEBUG_LOG_SOURCE});`)(
-      { info },
-      storage,
-    ) as (config: InlineDebugLogConfig) => (message: string, detail: unknown) => void;
-    make({
-      scope: 'stale-html',
-      quiet: env === 'production' ? 'true' : 'false',
-      flagKey: DEBUG_STORAGE_KEY,
-    })('[stale-html] reloading', {
-      at: 1,
-    });
-    return info;
-  };
-
-  it('always prints outside production', () => {
-    expect(traceFn('development', null)).toHaveBeenCalledWith('[stale-html] reloading', { at: 1 });
-  });
-
-  it('prints in production only when the flag names its scope or *', () => {
-    expect(traceFn('production', null)).not.toHaveBeenCalled();
-    expect(traceFn('production', 'drive-mirror')).not.toHaveBeenCalled();
-    expect(traceFn('production', 'drive-mirror, stale-html')).toHaveBeenCalled();
-    expect(traceFn('production', '*')).toHaveBeenCalled();
-  });
-
-  it('stays quiet when storage throws', () => {
-    expect(traceFn('production', new Error('denied'))).not.toHaveBeenCalled();
-  });
-
-  it('is static source: no setting is written into it', () => {
-    for (const value of [DEBUG_STORAGE_KEY, 'stale-html', 'production', 'development']) {
-      expect(INLINE_DEBUG_LOG_SOURCE).not.toContain(value);
-    }
-  });
-
-  it('describes its settings as data', () => {
-    expect(inlineDebugLogConfig('stale-html')).toEqual({
-      scope: 'stale-html',
-      quiet: process.env.NODE_ENV === 'production' ? 'true' : 'false',
-      flagKey: DEBUG_STORAGE_KEY,
-    });
-  });
-});

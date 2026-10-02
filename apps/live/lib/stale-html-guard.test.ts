@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
 import { BUILD_ID_HEADER } from '@livediagram/api-schema';
 import { API_BASE } from './api/base';
-import { DEBUG_STORAGE_KEY } from './debug-log';
 import {
   APP_RECOVERY_FLAG,
   RELOAD_GUARD_KEY,
@@ -97,8 +96,6 @@ describe('the stale HTML guard', () => {
       API_BASE,
       BUILD_ID_HEADER,
       APP_RECOVERY_FLAG,
-      DEBUG_STORAGE_KEY,
-      'stale-html',
     ]) {
       expect(STALE_HTML_GUARD_SCRIPT).not.toContain(JSON.stringify(value));
       expect(Object.values(STALE_HTML_GUARD_ATTRIBUTES)).toContain(value);
