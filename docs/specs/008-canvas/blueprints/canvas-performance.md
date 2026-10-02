@@ -7,7 +7,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 | File                                                           | Role                                                                              |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/lib/canvas-gesture.ts` (planned)                    | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
+| `apps/live/lib/canvas-gesture.ts`                              | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
 | `apps/live/components/canvas/CanvasZoomContext.tsx` (planned)  | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only   |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`          | Stable per-element props; per-arrow frame and holes; the grid                     |
 | `apps/live/components/canvas/element-layer-props.ts` (planned) | `useStableElementActions`, `useStableCollab`: identity-stable per-element objects |
