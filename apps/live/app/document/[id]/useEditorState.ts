@@ -43,10 +43,10 @@ import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
-import { useEditorMode } from '@/hooks/editor/useEditorMode';
-import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
+import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1647,6 +1647,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
   });
+  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody.
+  usePinTabOpening(activeTab, activeTabLoadState === 'ready');
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.
   // Folding the flags into one guard means every mutation helper
@@ -1983,7 +1985,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useTabActions({
     tabs,
     activeId,
-    drawMode,
+    editorMode: editorMode.mode,
     documentList,
     ownerId: selfParticipant.id,
     documentId,

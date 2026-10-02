@@ -2,8 +2,9 @@
 // lives"). Pure resolution plus the device-local memory behind it; the hook (useEditorMode) binds
 // the two to React.
 //
-// - Effective mode: the person's remembered choice for the tab, else the tab's opening mode
-//   (`Tab.opensIn`), else Diagram.
+// - Effective mode: the person's remembered choice for the tab, else the mode the tab opened in
+//   for this page, else the tab's opening mode (`Tab.opensIn`), else Diagram. A tab keeps the
+//   mode it opened in, so a later Opens in change switches nobody's current mode.
 // - Event-storming boards are always Diagram and offer no switch.
 // - View-role visitors always see the opening mode and offer no switch.
 // - A choice is remembered in this browser only, one key per tab under `livediagram:v2:`, and is
@@ -24,11 +25,14 @@ export type ResolvedEditorMode = { mode: EditorMode; canSwitch: boolean };
 export function resolveEditorMode(input: {
   tab: EditorModeTab | undefined;
   remembered: EditorMode | null;
+  // The mode the tab opened in for this page (pinOpening), if it has been pinned.
+  opened: EditorMode | null;
   canEdit: boolean;
 }): ResolvedEditorMode {
-  const { tab, remembered, canEdit } = input;
-  const opening = opensInOf(tab);
-  const canSwitch = !!tab && canEdit && editorModeSwitchable(tab);
+  const { tab, remembered, opened, canEdit } = input;
+  const switchable = !!tab && editorModeSwitchable(tab);
+  const opening = (switchable ? opened : null) ?? opensInOf(tab);
+  const canSwitch = switchable && canEdit;
   return { mode: canSwitch ? (remembered ?? opening) : opening, canSwitch };
 }
 
@@ -52,6 +56,26 @@ export function readRememberedMode(tabId: string): EditorMode | null {
 export function rememberMode(tabId: string, mode: EditorMode): void {
   writeLocalStorageSafe(editorModeKey(tabId), mode);
   cache.set(tabId, mode);
+  listeners.forEach((l) => l());
+}
+
+// The mode each tab opened in for this page (memory only): pinned once the tab has loaded, so a
+// later change to its opening mode moves nobody; released when a template or a new tab decides
+// the opening mode afresh.
+const opened = new Map<string, EditorMode>();
+
+export function openedMode(tabId: string): EditorMode | null {
+  return opened.get(tabId) ?? null;
+}
+
+export function pinOpening(tabId: string, mode: EditorMode): void {
+  if (opened.has(tabId)) return;
+  opened.set(tabId, mode);
+  listeners.forEach((l) => l());
+}
+
+export function releaseOpening(tabId: string): void {
+  if (!opened.delete(tabId)) return;
   listeners.forEach((l) => l());
 }
 

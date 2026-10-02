@@ -19,10 +19,12 @@ import {
   normalizeFolderOrder,
   tabFolderName,
   truncateName,
+  type EditorMode,
   type Element,
   type Tab,
 } from '@livediagram/document';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
+import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintElementIds, useTabImport } from './useTabImport';
@@ -33,8 +35,8 @@ import type { useToast } from '@/hooks/ui/useToast';
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
-  // The viewer works on the active tab in Draw mode (docs/specs/007-editor/editor-modes.md).
-  drawMode: boolean;
+  // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md).
+  editorMode: EditorMode;
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
@@ -105,30 +107,13 @@ export function useTabActions(deps: TabActionsDeps) {
   } = deps;
 
   const addTab = () => {
-    // Seed the new tab with the current tab's theme + canvas styling
-    // so a user mid-diagram who hits "+ tab" doesn't lose their
-    // visual context. Each tab still has its own independent
-    // styling once created (changing the new tab's theme doesn't
-    // affect the source). Skips when activeTab can't be resolved
-    // (the hook is mid-mount or the active id points at a tab
-    // that's been removed in another window), falling back to
-    // brand defaults the same way Tab 1 does.
-    const activeTab = tabs.find((t) => t.id === activeId);
-    const seed: Partial<Tab> = activeTab
-      ? {
-          theme: activeTab.theme,
-          backgroundPattern: activeTab.backgroundPattern,
-          backgroundColor: activeTab.backgroundColor,
-          backgroundOpacity: activeTab.backgroundOpacity,
-          patternColor: activeTab.patternColor,
-          // Carry the font + default text size too so tabs in one document
-          // stay visually consistent instead of each reverting to default.
-          // Fall back to small (docs/specs/004-interface-design/fonts.md) when the active tab has no explicit
-          // size, so a new tab still defaults to small rather than md.
-          font: activeTab.font,
-          defaultTextSize: activeTab.defaultTextSize ?? 'sm',
-        }
-      : {};
+    // The new tab takes the active tab's look and the creator's current editor mode (newTabSeed).
+    // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
+    // window), falling back to brand defaults the same way Tab 1 does.
+    const seed = newTabSeed(
+      tabs.find((t) => t.id === activeId),
+      deps.editorMode,
+    );
     const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
@@ -167,7 +152,7 @@ export function useTabActions(deps: TabActionsDeps) {
   const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
     tabs,
     activeId,
-    drawMode: deps.drawMode,
+    drawMode: deps.editorMode === 'draw',
     ownerId,
     documentId,
     replaceActiveTabContent,

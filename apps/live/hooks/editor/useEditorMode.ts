@@ -2,17 +2,19 @@
 //
 // Contract:
 // - `useEditorMode(tab, { canEdit })` returns `{ mode, setMode, canSwitch }` for that tab.
-// - `mode` is the person's remembered choice for the tab, else the tab's opening mode
-//   (`tab.opensIn`), else 'diagram'. Event-storming boards are always 'diagram'. A visitor who
+// - `mode` is the person's remembered choice for the tab, else the mode the tab opened in on
+//   this page (usePinTabOpening), else the tab's opening mode (`tab.opensIn`), else 'diagram'. Event-storming boards are always 'diagram'. A visitor who
 //   cannot edit (`canEdit: false`, the view role) always gets the opening mode.
 // - `canSwitch` is true only for an editor on a general tab; the mode switch shows only then.
 // - `setMode(next)` fires `Editor · Changed · ModeDiagram | ModeDraw` and then applies: it
 //   remembers the choice in this browser for this tab (never on the tab itself, so nobody else
 //   is affected). A no-op when the switch is not offered or `next` is already the mode.
 // - Every caller on the page shares one store: the switch and the editor always agree.
-import { useCallback, useSyncExternalStore } from 'react';
-import type { EditorMode } from '@livediagram/document';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { isEditorMode, opensInOf, type EditorMode } from '@livediagram/document';
 import {
+  openedMode,
+  pinOpening,
   readRememberedMode,
   rememberMode,
   resolveEditorMode,
@@ -28,19 +30,25 @@ export type EditorModeState = {
   canSwitch: boolean;
 };
 
-const noRemembered = () => null;
+const nothingStored = () => '|';
+const modeOrNull = (v: string | undefined): EditorMode | null => (isEditorMode(v) ? v : null);
 
 export function useEditorMode(
   tab: EditorModeTab | undefined,
   { canEdit }: { canEdit: boolean },
 ): EditorModeState {
   const tabId = tab?.id;
-  const remembered = useSyncExternalStore(
+  // One primitive snapshot of both stored values, so the store re-renders only on a change.
+  const stored = useSyncExternalStore(
     subscribeEditorModes,
-    () => (tabId ? readRememberedMode(tabId) : null),
-    noRemembered,
+    () => (tabId ? `${readRememberedMode(tabId) ?? ''}|${openedMode(tabId) ?? ''}` : '|'),
+    nothingStored,
   );
-  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, canEdit });
+  const [remembered, opened] = stored.split('|').map(modeOrNull) as [
+    EditorMode | null,
+    EditorMode | null,
+  ];
+  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, opened, canEdit });
   const setMode = useCallback(
     (next: EditorMode) => {
       if (!canSwitch || !tabId || next === mode) return;
@@ -52,4 +60,21 @@ export function useEditorMode(
     [canSwitch, tabId, mode],
   );
   return { mode, setMode, canSwitch };
+}
+
+// Pins the mode a tab opened in, once its content has loaded (before then a placeholder carries no
+// opening mode): from then on an Opens in change, by anyone, switches nobody on this page. Called
+// once, by the editor, for the active tab.
+export function usePinTabOpening(tab: EditorModeTab | undefined, loaded: boolean): void {
+  const tabId = tab?.id;
+  const opening = opensInOf(tab);
+  // Read so a release (a template deciding afresh) re-pins on the next render.
+  const pinned = useSyncExternalStore(
+    subscribeEditorModes,
+    () => (tabId ? openedMode(tabId) : null),
+    () => null,
+  );
+  useEffect(() => {
+    if (tabId && loaded && pinned === null) pinOpening(tabId, opening);
+  }, [tabId, loaded, opening, pinned]);
 }

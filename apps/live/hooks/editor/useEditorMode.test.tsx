@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useEditorMode } from './useEditorMode';
+import { releaseOpening } from '@/lib/editor-mode-store';
+import { useEditorMode, usePinTabOpening } from './useEditorMode';
 
 const events: unknown[][] = [];
 const stored: (string | null)[] = [];
@@ -98,5 +99,33 @@ describe('useEditorMode', () => {
     act(() => result.current.setMode('diagram'));
     rerender({ tab: first });
     expect(result.current.mode).toBe('draw');
+  });
+
+  // docs/specs/007-editor/editor-modes.md "Opens in": nobody's current mode moves.
+  it('keeps the mode a loaded tab opened in when its opening mode changes', () => {
+    const id = tabId();
+    const { result, rerender } = renderHook(
+      ({ tab, loaded }) => {
+        usePinTabOpening(tab, loaded);
+        return useEditorMode(tab, { canEdit: true });
+      },
+      {
+        initialProps: {
+          tab: { id } as { id: string; opensIn?: 'draw' | 'diagram' },
+          loaded: false,
+        },
+      },
+    );
+    // Still loading: the real tab arrives opening in Draw, and the page follows it.
+    rerender({ tab: { id, opensIn: 'draw' }, loaded: true });
+    expect(result.current.mode).toBe('draw');
+    rerender({ tab: { id, opensIn: 'diagram' }, loaded: true });
+    expect(result.current.mode).toBe('draw');
+    // A template deciding afresh releases the pin: the new opening mode applies.
+    act(() => releaseOpening(id));
+    expect(result.current.mode).toBe('diagram');
+    // ...and is pinned again at once.
+    rerender({ tab: { id, opensIn: 'draw' }, loaded: true });
+    expect(result.current.mode).toBe('diagram');
   });
 });

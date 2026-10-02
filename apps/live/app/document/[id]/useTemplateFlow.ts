@@ -1,5 +1,6 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { Tab } from '@livediagram/document';
+import { releaseOpening } from '@/lib/editor-mode-store';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
@@ -187,6 +188,9 @@ export function useTemplateFlow(opts: {
         };
       }),
     );
+    // A template that sets its own opening mode decides the tab's mode afresh, for its maker too
+    // (docs/specs/007-editor/editor-modes.md "Where the mode lives").
+    if (overrides.opensIn) releaseOpening(activeId);
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can
