@@ -169,7 +169,8 @@ Current Document card it holds one `nav` named "Explorer" with Overview, Spaces 
 What differs is what a row does in an editor, where leaving the document is a bigger step:
 
 - **Rows with documents open in place.** Shared with me, My documents, Unsorted, Generated, each folder, each team and
-  This browser expand to show their documents as rows beneath them. Activating such a row expands or collapses it; it
+  This browser expand to show their documents as rows beneath them. Shared with me with nothing shared, and a team
+  with nothing in it, go to their Explorer page instead. Activating such a row expands or collapses it; it
   never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
   Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the
   selected one.
@@ -190,6 +191,9 @@ wherever the reader's own documents count (Space `mine`, owner "You"), the same 
 row and card of one, wherever it is listed (folders and Unsorted, This browser, Recent and Favourites, search results,
 the floating panel, the Trash), carries the **Local only** pill
 ([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
+
+The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" strip carries the
+same pill (`LocalOnlyPill`) when the Home page's own layout lands; until then Home is the Timeline feed.
 
 ## Telemetry
 

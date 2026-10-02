@@ -91,12 +91,17 @@ trade for staying fully offline. (Conversion re-homes images — see below.)
 Autosave still runs for an offline document ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
 
-## "Offline" badge + Explorer
+## "Local only" badge + Explorer
 
 - **Editor header badge.** The status pill reads Private / Shared / Team
   (the `SharedBadge` in `EditorHeader`). For an offline document it reads
-  **"Offline"** (a state that supersedes "Private" for these documents), with
-  its own tone + icon, and a hover card restating _"Saved only in this browser."_
+  **"Local only"** (a state that supersedes "Private" for these documents),
+  matching the [Local only pill](#local-only-pill): the same words, the same
+  browser-window icon, the same amber tone and contrast, and the same sentence,
+  "Lives only in this browser. Clearing this browser's site data deletes it.",
+  shown in the badge's visibility legend on hover and focus and given to
+  assistive technology as the badge's description. It stays a status, not a
+  link: the legend explains it in place.
 - **Explorer.** Offline documents appear in Recent (and the other lists)
   alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.
@@ -192,7 +197,7 @@ confirmation:
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **Offline**. Referenced R2 images are downloaded and embedded
+  badge flips to **Local only**. Referenced R2 images are downloaded and embedded
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
@@ -335,11 +340,10 @@ Track adoption without content, reusing the closed vocabulary:
 - New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   Local Browser tile) + data-loss warning + contextual help link.
-- `EditorHeader` (`SharedBadge`) — the new **Offline** badge state.
-- Explorer (row + card components, `VisibilityBadge`): merge the local index,
-  show the **Offline** badge in the full-page Explorer plus a fixed offline
-  thumbnail everywhere, and skip server fetches for offline rows. (The in-editor
-  panel row shows the thumbnail but no text chip.)
+- `EditorHeader` (`SharedBadge`) — the **Local only** badge state.
+- Explorer (row + card components, `LocalOnlyPill`): merge the local index,
+  show the **Local only** pill wherever an offline document is listed plus a
+  fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Document" and "Take Offline" (with confirmation + image re-homing).
 - Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,
