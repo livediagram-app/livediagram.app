@@ -36,9 +36,13 @@ export const CORS_HEADERS = {
   'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}`,
 };
 
+// An answer is the caller's live state, so a browser never stores it unless the route chooses a
+// policy: Chromium keeps a 410 with no explicit expiry indefinitely, so a cached "deleted" would
+// outlive the restore (docs/specs/015-api/api.md, "Caching").
 export function json(body: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
+  if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-store');
   for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
   return new Response(JSON.stringify(body), { ...init, headers });
 }

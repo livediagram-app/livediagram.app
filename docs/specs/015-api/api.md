@@ -255,6 +255,14 @@ Local `wrangler dev` does not enforce it, so the api enforces it itself:
 - The cap is not raised and the storage format is unchanged; a tab that needs
   more is a separate decision.
 
+## Caching
+
+Every JSON answer is the caller's live state, so it goes out `Cache-Control: no-store` unless its
+route chooses a policy of its own (the OpenAPI document, the public telemetry summary). Without it
+a browser may keep an answer the server has since changed: Chromium holds a `410` with no explicit
+expiry indefinitely, so a share-link visitor who once saw a document deleted would keep seeing it
+after the owner restored it. Images and SVG snapshots set their own policies.
+
 ## Rate limiting
 
 Six limiters, each a Cloudflare Workers Rate Limiting binding declared under `[[unsafe.bindings]]` in `apps/api/wrangler.toml` (where the ceilings live). Over-limit requests get `429` with `{ "error": "rate_limited" }`, except the telemetry ingest, which answers with its usual no-op `204` so a throttled beacon never surfaces as an error.
