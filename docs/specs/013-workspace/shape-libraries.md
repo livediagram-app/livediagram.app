@@ -65,7 +65,7 @@ Named constants, checked by the api and before any upload by the client:
 ## Using a library: the palette
 
 - The palette gains a **My shapes** category in the Common band, after Shapes, shown when the owner
-  has at least one library ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)).
+  has at least one library holding a shape ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)).
 - It shows **one section per library**, headed by the library's name, newest library first, each item
   a tile drawing a thumbnail of its elements with its title beneath (or "Shape n" when untitled, n
   its 1-based position). The thumbnail is the item's elements drawn by the editor's own SVG export,
@@ -75,11 +75,11 @@ Named constants, checked by the api and before any upload by the client:
   no match reads "No shapes match".
 - **Placing an item** works like pasting: a click places it at the centre of the view, a drag at the
   drop point; its elements get fresh ids (connections follow), land in **one undo step**, and are
-  **selected**. On a whiteboard tab they keep their own look, as a pasted diagram does.
+  **selected**.
 - Tiles are buttons in a list per section: reachable by Tab, activated by Enter or Space (placing at
   the view's centre), named "Insert <title> from <library>" for screen readers.
-- A read-only tab (a view-role share, a locked tab) places nothing: the tiles are disabled, as every
-  palette tile is there.
+- The palette, and with it My shapes, is not offered on a read-only tab (a view-role share) or a
+  whiteboard tab (its dock replaces the palette); a locked tab places nothing.
 - The list loads once per owner when the editor opens (as custom themes do); an import or a change
   in the Explorer shows on the next open. Offline Mode documents place items too, from the list the
   owner last loaded.

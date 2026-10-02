@@ -4,27 +4,31 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 
 ## Files
 
-| File                                                       | Holds                                                                                                        |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/api-schema/src/shape-libraries.ts`               | `ShapeLibrary`, `ShapeLibraryItem`, the limits, `uniqueLibraryName`, `validateShapeLibraryItems`             |
-| `apps/api/migrations/0060_shape_libraries.sql`             | The table and its two indexes                                                                                |
-| `apps/api/src/shape-library-row.ts`                        | `ShapeLibraryRow`, `rowToShapeLibrary`: snake_case row and JSON items to the DTO                             |
-| `apps/api/src/db/shape-libraries.ts`                       | List, get, count, names, create, update, delete                                                              |
-| `apps/api/src/routes/shape-libraries.ts`                   | `handleShapeLibraries`: the four routes                                                                      |
-| `apps/api/src/db/account.ts`                               | Account deletion deletes the rows; `migrateOwnerId` moves them, renaming clashes                             |
-| `apps/api/src/auth/guest-rest.ts`                          | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                 |
-| `apps/api/src/openapi/manifest.ts`                         | The four operations, tag `Shape libraries`                                                                   |
-| `apps/live/lib/api/shape-libraries.ts`                     | `apiListShapeLibraries` (deduped), `apiCreateShapeLibrary`, `apiUpdateShapeLibrary`, `apiDeleteShapeLibrary` |
-| `apps/live/components/primitives/ShapeLibraryProvider.tsx` | `ShapeLibraryProvider`, `useShapeLibraries`: the owner's list and its changes                                |
-| `apps/live/lib/drawio/library-store.ts`                    | `libraryForStore`: an imported library's items with ids, images stored, ready to create                      |
-| `apps/live/hooks/persistence/useDrawioFileImport.ts`       | Libraries listed and imported beside diagrams                                                                |
-| `apps/live/components/dialogs/ImportImageReport.tsx`       | "N new shape libraries:" links                                                                               |
-| `apps/live/lib/shape-library-thumbnail.ts`                 | `libraryItemThumbnail`: an item's elements as an inert SVG data URL                                          |
-| `apps/live/components/palette/PaletteMyShapesTab.tsx`      | The My shapes category body: search, sections, tiles                                                         |
-| `apps/live/components/palette/LibraryShapeTile.tsx`        | One tile: thumbnail or title, click, keyboard, drag                                                          |
-| `apps/live/hooks/canvas/useLibraryShapeInsert.ts`          | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                       |
-| `apps/live/app/explorer/shape-libraries/page.tsx`          | The route                                                                                                    |
-| `apps/live/components/panels/ShapeLibrariesPane.tsx`       | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                   |
+| File                                                       | Holds                                                                                                                                                               |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/shape-libraries.ts`               | `ShapeLibrary`, `ShapeLibraryItem`, the limits, `uniqueLibraryName`, `validateShapeLibraryItems`                                                                    |
+| `apps/api/migrations/0060_shape_libraries.sql`             | The table and its two indexes                                                                                                                                       |
+| `apps/api/src/shape-library-row.ts`                        | `ShapeLibraryRow`, `rowToShapeLibrary`: snake_case row and JSON items to the DTO                                                                                    |
+| `apps/api/src/db/shape-libraries.ts`                       | List, get, count, names, create, update, delete                                                                                                                     |
+| `apps/api/src/routes/shape-libraries.ts`                   | `handleShapeLibraries`: the four routes                                                                                                                             |
+| `apps/api/src/db/account.ts`                               | Account deletion deletes the rows; `migrateOwnerId` moves them, renaming clashes                                                                                    |
+| `apps/api/src/auth/guest-rest.ts`                          | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                                                                        |
+| `apps/api/src/openapi/manifest.ts`                         | The four operations, tag `Shape libraries`                                                                                                                          |
+| `apps/live/lib/api/shape-libraries.ts`                     | `apiListShapeLibraries` (deduped), `apiCreateShapeLibrary`, `apiUpdateShapeLibrary`, `apiDeleteShapeLibrary`                                                        |
+| `apps/live/components/primitives/ShapeLibraryProvider.tsx` | `ShapeLibraryProvider`, `useShapeLibraries`: the owner's list and its changes                                                                                       |
+| `apps/live/lib/drawio/library-store.ts`                    | `importShapeLibraries`: each imported library's pictures stored, items given ids and titles, then created; `withLibraries`: an outcome with its libraries folded in |
+| `apps/live/hooks/persistence/useDrawioFileImport.ts`       | Libraries listed and imported beside diagrams                                                                                                                       |
+| `apps/live/components/dialogs/ImportImageReport.tsx`       | "N new shape libraries:" links                                                                                                                                      |
+| `apps/live/lib/shape-library-thumbnail.ts`                 | `libraryItemThumbnail`: an item's elements as an inert SVG data URL                                                                                                 |
+| `apps/live/components/palette/PaletteMyShapesTab.tsx`      | The My shapes category body: search, sections, tiles                                                                                                                |
+| `apps/live/components/palette/LibraryShapeTile.tsx`        | One tile: thumbnail or title, click, keyboard, drag                                                                                                                 |
+| `apps/live/hooks/canvas/useLibraryShapeInsert.ts`          | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                                                                              |
+| `apps/live/app/explorer/shape-libraries/page.tsx`          | The route                                                                                                                                                           |
+| `apps/live/components/panels/ShapeLibrariesPane.tsx`       | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                                                                          |
+| `apps/live/components/primitives/LibraryItemThumbnail.tsx` | `LibraryItemThumbnail`: one item drawn small, shared by My shapes and the Explorer page                                                                             |
+| `apps/live/lib/shape-library-dnd.ts`                       | `LIBRARY_SHAPE_DND_MIME`, `readLibraryShapeRef`: the drag payload                                                                                                   |
+| `apps/live/app/explorer/routes.ts`                         | `shape-libraries` to and from `/explorer/shape-libraries`                                                                                                           |
+| `apps/help/app/explorer/shape-libraries/page.mdx`          | The help article, key `shapeLibraries`                                                                                                                              |
 
 ## Domain and naming
 
@@ -40,10 +44,10 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 
 ## Behaviour and state
 
-1. **Import** (Explorer, `useDrawioFileImport`): `readDrawioFiles` already returns `libraries`. They become list rows (`library:<i>`, "Shape library · 14 shapes") beside diagrams, all ticked. `importChecked` runs the ticked diagrams through `importDocuments`, then the ticked libraries through `importLibraries` (a dep, the Explorer's), one at a time, progress "Importing 3 of 12…" counted over both. Each library: `libraryForStore` (images through one `attachImportImages` pass, `documentId: null`), then `createLibrary`. A create failure is that library's failure; the others go on. One `track('Element', 'Imported', 'ShapeLibrary')` per library made.
+1. **Import** (Explorer, `useDrawioFileImport`): `readDrawioFiles` already returns `libraries`. They become list rows (`library:<i>`, "Shape library · 14 shapes") beside diagrams, all ticked. `importChecked` runs the ticked diagrams through `importDocuments`, then the ticked libraries through `importLibraries` (a dep, the Explorer's), one at a time, progress "Importing 3 of 12…" counted over both. Each library (`importShapeLibraries`): images through one `attachDrawioImages` / `attachImportImages` pass (`documentId: null`), items given fresh ids and titles cut to `MAX_SHAPE_LIBRARY_TITLE_CHARS`, the byte budget checked before any call, then `createLibrary`. A refused library is that library's failure; the others go on. `withLibraries` folds the libraries' links, landed totals, images and failures into the documents' outcome. One `track('Element', 'Imported', 'ShapeLibrary')` per library made.
 2. **Outcome**: `ImportOutcome.done` gains `libraries?: { id, name }[]`; failures from both halves are listed together, read failures first.
 3. **Provider** (`ShapeLibraryProvider`, keyed on `ownerId`): on a non-null owner, one `apiListShapeLibraries`; state `{ libraries, status: 'loading' | 'ready' | 'error' }`; `reload()`. `createLibrary(input)` → `{ ok: true, library } | { ok: false, error }` and prepends on success. `renameLibrary(id, name)` → same shape, replaces in place. `deleteLibrary(id)` optimistic: removed first, the call after; a failed call reloads. `deleteItem(libraryId, itemId)` sends the remaining items and replaces the library. A null owner: no fetch, every change returns `{ ok: false, error: UNEXPECTED }`. Without a provider, `useShapeLibraries` returns an inert empty value.
-4. **Palette**: `usePaletteCatalogue` drops `my-shapes` from the tabs while the provider's list is empty. The body lists sections newest first (the api's order); the search filters items whose title or library name contains the query (case-insensitive, trimmed); a library whose name matches shows whole.
+4. **Palette**: `usePaletteCatalogue` drops `my-shapes` from the tabs while no library holds a shape. The body lists sections newest first (the api's order); the search filters items whose title or library name contains the query (case-insensitive, trimmed); a library whose name matches shows whole.
 5. **Insert** (`useLibraryShapeInsert`): read-only or edits blocked → nothing. Else `duplicateElements(item.elements, all ids, dx, dy)` with `(dx, dy)` moving the item's centre (`width / 2`, `height / 2`) onto `at ?? getViewportCenter()`; `commit((els) => [...els, ...copies])`; one copy selected alone, several multi-selected; `track('Element', 'Added', 'LibraryShape')`.
 6. **Drag**: a tile's `dragstart` sets `LIBRARY_SHAPE_DND_MIME` to `JSON.stringify({ libraryId, itemId })` and `copy`; `usePaletteDrop` accepts it and calls `onDropLibraryShape(ref, { x, y })`; the host resolves the item from the provider and inserts at that point. An unknown ref is ignored with a log.
 7. **Explorer page**: the provider's list; a card per library with rename (inline input, Enter saves, Escape or blur cancels; empty, unchanged or over-length input saves nothing), delete (confirm dialog), show shapes (toggle), delete a shape. A failed rename shows its error under the input and keeps the input open.
@@ -119,18 +123,19 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 ## Errors and edge cases
 
-| Case                                        | Handling                                                                                               |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| An owner at the cap imports another         | 409; that library is a failure with the cap copy; the rest import                                      |
-| Items over the byte budget                  | 413; the client checks first with `shapeLibraryItemsBytes` and skips the call                          |
-| The same file imported twice                | Two libraries, the second "(2)"                                                                        |
-| Every picture in a library fails to store   | The library still lands; its image elements stay placeholders; the images block of the report says why |
-| An empty library after deleting every shape | Kept, "0 shapes", hidden from My shapes (no items)                                                     |
-| A rename to the same name                   | Saved as is (no clash with itself)                                                                     |
-| A library deleted in another window         | The next list load drops it; a change against it gets 404 and reloads                                  |
-| Inserting on a read-only tab                | Nothing happens; tiles are disabled                                                                    |
-| A drag carrying an unknown library or item  | Ignored, logged                                                                                        |
-| Thumbnail rendering throws                  | The tile shows its title; logged once per item                                                         |
+| Case                                           | Handling                                                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| An owner at the cap imports another            | 409; that library is a failure with the cap copy; the rest import                                      |
+| Items over the byte budget                     | 413; the client checks first with `shapeLibraryItemsBytes` and skips the call                          |
+| The same file imported twice                   | Two libraries, the second "(2)"                                                                        |
+| Every picture in a library fails to store      | The library still lands; its image elements stay placeholders; the images block of the report says why |
+| An empty library after deleting every shape    | Kept, "0 shapes", hidden from My shapes (no items)                                                     |
+| A rename to the same name                      | Saved as is (no clash with itself)                                                                     |
+| A library deleted in another window            | The next list load drops it; a change against it gets 404 and reloads                                  |
+| Inserting on a read-only or locked tab         | The palette is absent read-only; a locked tab refuses, logged                                          |
+| An item that would pass `MAX_ELEMENTS_PER_TAB` | Refused, logged `[shape-libraries] insert refused` `{ reason: 'tab full' }`                            |
+| A drag carrying an unknown library or item     | Ignored, logged                                                                                        |
+| Thumbnail rendering throws                     | The tile shows its title; logged once per item                                                         |
 
 ## Security and trust
 
@@ -142,18 +147,22 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 ## Performance and limits
 
 - The list endpoint returns every library's items: at the cap, 100 libraries × up to 2 MB is far past what one list should carry, so the list is bounded in practice by the owner's own imports. The worst real case (the private survey's 14-item library) is about 7 KB. The list is fetched once per editor or Explorer open.
-- Thumbnails render lazily: only when My shapes is the open category, one item at a time with a yield between (`requestIdleCallback`, else `setTimeout(0)`), cached per item id for the session.
+- Thumbnails render lazily: each `LibraryItemThumbnail` draws after its surface has painted
+  (`setTimeout(0)`), only while My shapes or the Explorer page shows it, cached per item id for the
+  session; a failed drawing is not retried in that session.
 - Insert is one `duplicateElements` over the item's elements and one commit.
 
 ## Presentation and UX
 
 - Palette: category label **My shapes**, blurb "Shapes from your imported libraries, ready to place.", icon a stacked-shapes glyph. A search input labelled "Search my shapes" (placeholder "Search my shapes"). A section per library: heading the name, then a grid of tiles (the same tile size as Icons). Tile: the thumbnail (contain-fit) over the title, one line, truncated; untitled "Shape n". No matches: "No shapes match".
-- Report: under the documents block, "1 new shape library:" / "2 new shape libraries:", each name a link to `/explorer/shape-libraries/`.
-- Explorer page: header "Shape libraries"; cards in a column. Card: the name (heading), "14 shapes", a row of up to 8 thumbnails, buttons **Rename**, **Delete**, **Show shapes** / **Hide shapes**. Expanded: a grid of items, each thumbnail, title and **Delete**. Empty, loading and error copy as the spec.
+- Report: under the documents block, "New shape library:" / "2 new shape libraries:", each name a link to `/explorer/shape-libraries/`.
+- Explorer page: header "Shape libraries"; the article link "Learn more" (`shapeLibraries`) above the
+  cards and in the empty state; cards in a column. Card: the name (heading), "14 shapes", a row of up to 8 thumbnails, buttons **Rename**, **Delete**, **Show shapes** / **Hide shapes**. Expanded: a grid of items, each thumbnail, title and **Delete**. Empty, loading and error copy as the spec.
 
 ## Accessibility
 
-- Tiles are `button`s in a `ul` per section, each section a `section` labelled by its heading; `aria-label` "Insert <title> from <library>"; disabled on a read-only tab. Enter and Space place at the view's centre (native button behaviour).
+- Tiles are `button`s in a `ul` per section, each section a `section` labelled by its heading; `aria-label` "Insert <title> from <library>". The palette is absent on read-only and whiteboard tabs, so no
+  tile is ever shown disabled.$1Enter and Space place at the view's centre (native button behaviour).
 - The search input has a visible label (screen-reader only) and filters live; the result count is announced through the list itself (no live region needed: the user is typing into it).
 - Explorer: cards are `article`s labelled by their name; the rename input is labelled "Library name"; the delete confirmation is the shared confirm dialog (focus trapped, Escape cancels); item delete buttons are named "Delete <title>".
 - Contrast: existing palette and Explorer tokens only (WCAG 2.2 AA as they are). No motion added.
@@ -175,29 +184,30 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 | `[shape-libraries] list failed`      | `warn`  | client: the list load failed, `{ status }`                            |
 | `[shape-libraries] save failed`      | `warn`  | client: a create / rename / items change failed, `{ action, status }` |
 | `[shape-libraries] inserted`         | `debug` | client: `{ elements }`                                                |
+| `[shape-libraries] insert refused`   | `warn`  | client: `{ reason }`, `edits blocked` or `tab full`                   |
 | `[shape-libraries] drop ignored`     | `warn`  | client: an unknown library or item in a drag                          |
 | `[shape-libraries] thumbnail failed` | `warn`  | client: `{ cause }` (the error's name and message)                    |
 | `[drawio-import] library imported`   | `info`  | client: `{ items, images }`                                           |
 
 ## Testing
 
-| Rule                                                                      | Test                                                   |
-| ------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Names: unique suffix, case, length; items validation and reasons          | `packages/api-schema/src/shape-libraries.test.ts`      |
-| Row mapping, corrupt items                                                | `apps/api/src/shape-library-row.test.ts`               |
-| Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename           | `apps/api/src/routes/shape-libraries.test.ts`          |
-| Sign-up move with clash renaming; account deletion                        | `apps/api/src/db/account.test.ts` (or its route test)  |
-| OpenAPI covers the routes                                                 | the existing manifest coverage test                    |
-| Client calls and error copy                                               | `apps/live/lib/api/shape-libraries.test.ts`            |
-| Provider: load, create, rename, delete, delete item, failures             | `ShapeLibraryProvider.test.tsx`                        |
-| Import: libraries listed and made, failures, telemetry, outcome           | `useDrawioFileImport.test.ts`, `library-store.test.ts` |
-| Report links                                                              | `ImportImageReport.test.tsx`                           |
-| Palette: hidden when empty, sections, search, tile names, disabled        | `PaletteMyShapesTab.test.tsx`                          |
-| Insert: centred, fresh ids, connections, one commit, selection, read-only | `useLibraryShapeInsert.test.ts`                        |
-| Drop: the MIME reaches the host with the point                            | `usePaletteDrop.test.ts`                               |
-| Explorer page: list, rename, delete confirm, items, empty, error          | `ShapeLibrariesPane.test.tsx`                          |
-| Route mapping                                                             | `app/explorer/routes.test.ts`                          |
-| End to end: import a synthesised library, place a shape, rename, delete   | `shape-libraries.spec.ts` in apps/live/e2e             |
+| Rule                                                                      | Test                                                                                |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Names: unique suffix, case, length; items validation and reasons          | `packages/api-schema/src/shape-libraries.test.ts`                                   |
+| Row mapping, corrupt items                                                | `apps/api/src/shape-library-row.test.ts`                                            |
+| Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename           | `apps/api/src/routes/shape-libraries.test.ts`                                       |
+| Sign-up move with clash renaming; account deletion                        | `apps/api/src/db/account-owner-columns.test.ts` (the owner-column ledger)           |
+| OpenAPI covers the routes; the route stays probeable                      | `apps/api/src/openapi/route-parity.test.ts`, `apps/api/src/route-resources.test.ts` |
+| Client calls and error copy                                               | `apps/live/lib/api/shape-libraries.test.ts`                                         |
+| Provider: load, create, rename, delete, delete item, failures             | `ShapeLibraryProvider.test.tsx`                                                     |
+| Import: libraries listed and made, failures, telemetry, outcome           | `useDrawioFileImport.test.ts`, `library-store.test.ts`                              |
+| Report links                                                              | `apps/live/components/dialogs/ImportImageReport.test.tsx`                           |
+| Palette: hidden when empty, sections, search, tile names, disabled        | `PaletteMyShapesTab.test.tsx`                                                       |
+| Insert: centred, fresh ids, connections, one commit, selection, read-only | `useLibraryShapeInsert.test.ts`                                                     |
+| Drop: the MIME reaches the host with the point                            | `usePaletteDrop.test.ts`                                                            |
+| Explorer page: list, rename, delete confirm, items, empty, error          | `ShapeLibrariesPane.test.tsx`                                                       |
+| Route mapping                                                             | `app/explorer/routes.test.ts`                                                       |
+| End to end: import a synthesised library, place a shape, rename, delete   | `apps/live/e2e/shape-libraries.spec.ts`                                             |
 
 ## Constants and configuration
 
