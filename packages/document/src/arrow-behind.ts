@@ -49,9 +49,12 @@ export function arrowRoutesBehind(arrow: ArrowElement): boolean {
 //     element model, so it is excluded by name): ink hides nothing.
 //   - a shape with no fill (a whiteboard outline) has nothing to hide
 //     behind either, like text.
+//   - a path paints a fill only when closed, so an open curve (a drawn or
+//     imported line) is ink like freehand; a closed one follows the shape rule.
 function isOccluder(el: Element): el is BoxedElement {
   if (!isBoxed(el)) return false;
   if (el.type === 'text' || el.type === 'annotation' || el.type === 'freehand') return false;
+  if (el.type === 'path') return el.closed && el.fillColor !== 'transparent';
   if (el.type === 'shape' && el.fillColor === 'transparent') return false;
   return !(el.type === 'shape' && el.shape === 'frame');
 }
