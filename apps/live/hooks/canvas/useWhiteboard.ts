@@ -108,8 +108,9 @@ export function useWhiteboard(deps: Deps) {
     beginDraw(whiteboardPenIntent(pen, next.recognise));
   };
 
-  // Entering a whiteboard puts the active pen in hand (D2): "pick up a pen and
-  // draw". Only when nothing else is held, so a mode the user chose survives.
+  // Entering an empty whiteboard puts the active pen in hand (D2): "pick up a
+  // pen and draw". A board with content opens on Select. Only when nothing
+  // else is held, so a mode the user chose survives.
   // Leaving one puts a whiteboard pen down, so it cannot leak onto a diagram tab.
   // "Entering" is a new active tab, or the open tab becoming a whiteboard
   // (Quick Start on a fresh tab).
@@ -129,6 +130,10 @@ export function useWhiteboard(deps: Deps) {
     // a diagram tab is put down, and the pen picked up in its place.
     const heldElsewhere = canvasTool === 'highlighter' || canvasTool === 'format';
     if (canvasTool !== 'select' && canvasTool !== 'pan' && !heldElsewhere) return;
+    if (activeTab.elements.length > 0) {
+      if (heldElsewhere) setCanvasTool('select');
+      return;
+    }
     armPen(prefs);
     // Runs on a tab change only; the rest is read at that moment.
     // eslint-disable-next-line react-hooks/exhaustive-deps

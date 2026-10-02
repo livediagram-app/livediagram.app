@@ -104,7 +104,8 @@ centred across the **top** of the canvas by default (see
   technology ("Drawing tools", "Shapes", "History", "Settings"), each one Tab
   stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
-  1. **Select** (marquee and move; the ordinary select tool).
+  1. **Select** (marquee and move; the ordinary select tool). A board with content opens on
+     Select; an empty one puts the active pen in hand.
   2. **Markers 1, 2 and 3**: the preset pens, one button each (see [Pens](#pens)).
   3. **Text**.
   4. **Path tool** (see [Path tool](path-tool.md)).
@@ -789,8 +790,9 @@ The whiteboard is built in rounds and tuned with the operator between them.
 
 - **Round one** (built, being tuned): the kind, the template and Quick Start
   entry, the dock with every tool above, pen versus touch, the light and dark
-  board looks, the backgrounds, telemetry and the help article. Opening a
-  whiteboard, or turning a fresh tab into one, puts the active pen in hand.
+  board looks, the backgrounds, telemetry and the help article. Opening an empty
+  whiteboard, or turning a fresh tab into one, puts the active pen in hand; a
+  board with content opens on Select.
   The dock sits at the top, or at the bottom by choice
   ([Where the dock sits](#where-the-dock-sits)).
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,

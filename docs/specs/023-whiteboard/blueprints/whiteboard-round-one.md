@@ -133,8 +133,9 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 - Changing a pen's colour or width updates `pens[p]`, re-arms the intent when `p` is held, and tracks
   `Whiteboard / Changed / PenColour` or `PenWidth` (a pen is reported by its place, never its colour).
 - **Entering a whiteboard tab** (a new active tab, or the open tab turning into a whiteboard through
-  Quick Start; editable, no intent armed, tool `select` or `pan`) arms the active pen (D2). The hook
-  keys this on the pair of tab id and kind.
+  Quick Start; editable, no intent armed, tool `select` or `pan`) arms the active pen when the tab has
+  no elements, and leaves `select` in hand when it has any (D2). The hook keys this on the pair of
+  tab id and kind.
 - **Leaving a whiteboard tab** cancels a whiteboard pen intent.
 - Only one flyout is open at a time; it closes on Escape (focus returns to its dock button), on an
   outside press, on a tool change and on a tab switch.
@@ -655,8 +656,8 @@ outline is rebuilt per update, as Excalidraw does.
 - `CanvasStillProvider` (`apps/live/components/canvas/CanvasStillContext.tsx`), provided by `Canvas` with
   `still = isWhiteboardTab(tab)`; `useBoxedElementAnimation` drops `animate-element-pop-in` when
   still. Author-set looping animations are untouched.
-- On entering a whiteboard with `highlighter` or `format` held, the hook sets `select` and arms the
-  pen; `buildEditorCommands` with `whiteboard: true` drops `tool:highlighter` and `tool:format`.
+- On entering a whiteboard with `highlighter` or `format` held, the hook sets `select`, and arms the
+  pen when the tab has no elements; `buildEditorCommands` with `whiteboard: true` drops `tool:highlighter` and `tool:format`.
 
 ## Interfaces and contracts
 
@@ -967,7 +968,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Border width clears `penWidth`                                                 | `apps/live/lib/style-presets.test.ts`                                                    |
 | Backdrop on a whiteboard                                                       | `apps/live/lib/default-scheme.test.ts`                                                   |
 | Dock a11y, keyboard, flyouts                                                   | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                         |
-| Dock state, entering, telemetry                                                | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                          |
+| Dock state, entering, telemetry                                                | `apps/live/hooks/canvas/useWhiteboard.test.tsx`, `e2e/whiteboard-opening-tool.spec.ts`   |
 | Ink projection cache                                                           | `apps/live/lib/whiteboard-ink.test.ts`                                                   |
 | Eraser steps                                                                   | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
 | Shape outline: kinds, fill, radius, rotation, sweep                            | `packages/document/src/shape-hit.test.ts`, `svg-path-outline.test.ts`                    |
