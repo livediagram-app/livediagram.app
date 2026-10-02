@@ -5,12 +5,16 @@
 
 import {
   layoutClusteredGraph,
+  type ArrowElement,
+  type BoxedElement,
   type Element,
+  type ElementLink,
   type GraphEdge,
   type GraphNode,
 } from '@livediagram/document';
-import type { ReportTally } from './notes';
+import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';
 import { DrawioRefused } from './refusals';
+import { elementLink, type ConvertContext } from './vertex-props';
 
 type JsonCell = {
   id?: unknown;
@@ -92,43 +96,75 @@ export function jsonLabelText(html: string): string {
 }
 
 const isHtml = (html: unknown) => html !== 0 && html !== '0' && html !== false;
-const followable = (link: string) => /^(https?:|mailto:)/i.test(link);
+const labelOf = (cell: JsonCell) => {
+  const raw = typeof cell.label === 'string' ? cell.label : '';
+  return isHtml(cell.html) ? jsonLabelText(raw) : raw;
+};
+
+// An edge with exactly one end on a node: drawn from (or to) that node, its other end free.
+type LooseEdge = { nodeId: string; free: 'to' | 'from'; label: string };
+
+// The loose edge as an arrow: pinned on the node's facing side, the free end a short way out.
+function looseArrow(edge: LooseEdge, node: BoxedElement): ArrowElement {
+  const y = node.y + node.height / 2;
+  const pinned = {
+    kind: 'pinned' as const,
+    elementId: node.id,
+    anchor: edge.free === 'to' ? ('e' as const) : ('w' as const),
+  };
+  const free =
+    edge.free === 'to'
+      ? { kind: 'free' as const, x: node.x + node.width + DRAWIO_JSON_LOOSE_EDGE_PX, y }
+      : { kind: 'free' as const, x: node.x - DRAWIO_JSON_LOOSE_EDGE_PX, y };
+  return {
+    id: crypto.randomUUID(),
+    type: 'arrow',
+    from: edge.free === 'to' ? pinned : free,
+    to: edge.free === 'to' ? free : pinned,
+    ...(edge.label ? { label: edge.label } : {}),
+  };
+}
 
 /**
  * One graph-only page as laid-out elements: nodes as boxes, edges between them as connections. Ids
- * are minted fresh; edges to a node that is not on the page are dropped and counted.
+ * are minted fresh. Links follow the XML path's rule (web and email, and pages of the same export as
+ * tab links). An edge with one end on a node keeps it, its free end drawn a short way out; an edge
+ * with neither is left out. Both count as loosened connections.
  */
-export function jsonPageElements(page: JsonExportPage, tally: ReportTally): Element[] {
+export function jsonPageElements(page: JsonExportPage, ctx: ConvertContext): Element[] {
   const ids = new Map<string, string>();
+  const links = new Map<string, ElementLink>();
   const nodes: GraphNode[] = [];
   for (const cell of page.cells) {
     if (cell.type !== 'node' || typeof cell.id !== 'string') continue;
     const id = crypto.randomUUID();
     ids.set(cell.id, id);
-    const raw = typeof cell.label === 'string' ? cell.label : '';
-    const label = isHtml(cell.html) ? jsonLabelText(raw) : raw;
-    const link = typeof cell.metadata?.link === 'string' ? cell.metadata.link.trim() : '';
-    if (link && !followable(link)) tally.add('link-dropped');
-    nodes.push({
-      id,
-      ...(label ? { label } : {}),
-      ...(link && followable(link) ? { link } : {}),
-    });
+    const raw = typeof cell.metadata?.link === 'string' ? cell.metadata.link : undefined;
+    const link = elementLink(raw, ctx);
+    if (link) links.set(id, link);
+    const label = labelOf(cell);
+    nodes.push({ id, ...(label ? { label } : {}) });
   }
   const edges: GraphEdge[] = [];
+  const loose: LooseEdge[] = [];
   for (const cell of page.cells) {
     if (cell.type !== 'edge') continue;
     const from = typeof cell.source === 'string' ? ids.get(cell.source) : undefined;
     const to = typeof cell.target === 'string' ? ids.get(cell.target) : undefined;
-    if (!from || !to) {
-      tally.add('connection-loosened');
-      continue;
-    }
-    const raw = typeof cell.label === 'string' ? cell.label : '';
-    const label = isHtml(cell.html) ? jsonLabelText(raw) : raw;
-    edges.push({ from, to, ...(label ? { label } : {}) });
+    const label = labelOf(cell);
+    if (from && to) edges.push({ from, to, ...(label ? { label } : {}) });
+    else if (from) loose.push({ nodeId: from, free: 'to', label });
+    else if (to) loose.push({ nodeId: to, free: 'from', label });
+    ctx.tally.add('connection-loosened', from && to ? 0 : 1);
   }
   if (nodes.length === 0) return [];
-  tally.add('auto-layout');
-  return layoutClusteredGraph({ nodes, edges });
+  ctx.tally.add('auto-layout');
+  const laid = layoutClusteredGraph({ nodes, edges }).map((el) => {
+    const link = links.get(el.id);
+    return link ? { ...el, link } : el;
+  });
+  const boxes = new Map(
+    laid.filter((el): el is BoxedElement => el.type !== 'arrow').map((el) => [el.id, el]),
+  );
+  return [...laid, ...loose.map((edge) => looseArrow(edge, boxes.get(edge.nodeId)!))];
 }

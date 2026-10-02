@@ -439,11 +439,16 @@ picture repeated across pages is stored once. This runs before the one `commitTa
   No file name is read.
 - **JSON export** (`readJsonExport(text)`): `JSON.parse` (throw → refusal `not-xml`); an object with
   a `pages` array, else `not-xml`. A string `data` starting `<mxfile` → that text through the XML
-  path, its result returned as is. Otherwise per page: nodes (`type: 'node'`) and edges (`type:
-'edge'`, both ends among the page's nodes; others dropped and counted `connection-loosened`) to a
-  `MermaidGraph`-shaped graph (`id`, `label` from `jsonLabelText`, the default box), laid out by
-  `layoutClusteredGraph` (`packages/document`, `graphToElements` plus the layout), node links from `metadata.link` when `http`, `https` or
-  `mailto` (else `link-dropped`); `auto-layout` counted once per page with any node.
+  path, its result returned as is. Otherwise per page (`jsonPageElements(page, { tally,
+pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `jsonLabelText`
+  unless `html` is `0`, `'0'` or `false`), laid out by `layoutClusteredGraph` (`packages/document`,
+  `graphToElements` plus the layout); node links by `elementLink` (`vertex-props.ts`, the XML
+  path's rule: `http`, `https`, `mailto`, and `data:page/id,<id>` of a page in the export as a
+  `tab` link; else `link-dropped`). Edges with both ends on nodes are connections; one end on a node
+  → an arrow pinned on that node's east (free target) or west (free source) side, its free end
+  `DRAWIO_JSON_LOOSE_EDGE_PX` out at the node's middle height, label kept, `connection-loosened`
+  += 1; neither end → left out, `connection-loosened` += 1. `auto-layout` counted once per page
+  with any node.
 - `jsonLabelText(html)`: `<br>` and the closing tags of `p`, `div`, `li`, `h1` to `h6` → `\n`;
   every other tag removed; entities decoded (named and numeric); runs of blank lines collapsed;
   trimmed.
@@ -841,6 +846,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_EXTENSIONS`                                 | `.drawio.svg`, `.drawio.png`, `.drawio`, `.xml`, `.json`, `.svg`, `.png`                                                                                    | The spec's names rule                                                                                |
 | `DRAWIO_GENERIC_NAME`                               | `untitled`, `untitled diagram`, `diagram` or `drawing`, any case, with an optional ` (n)` or `-n`                                                           | draw.io's default names; the spec                                                                    |
 | `DRAWIO_GENERIC_LIBRARY_NAME`                       | `untitled library`, any case, with an optional ` (n)` or `-n`                                                                                               | draw.io's default library name                                                                       |
+| `DRAWIO_JSON_LOOSE_EDGE_PX`                         | 80                                                                                                                                                          | About half a default box's width (D34); 40 to 160                                                    |
 | `DRAWIO_SNIFF_CHARS`                                | 4096                                                                                                                                                        | Room for a BOM, an XML declaration and the root element                                              |
 | `DRAWIO_TAB_FILE_ACCEPT`                            | `.drawio,.xml,.json,.svg,.png` and their MIME types                                                                                                         | The spec (the Import dialog card); the Explorer picker sets no filter, Drive saves have no extension |
 | `DRAWIO_MARKERS`                                    | the table in step 12.4                                                                                                                                      | draw.io's marker names                                                                               |

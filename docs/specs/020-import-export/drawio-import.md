@@ -75,7 +75,10 @@ the graph (`layer`, `node` with `label`, `html` and `metadata.link`, `edge` with
   boxes, edges as connections between them, layers in document order. Labels convert from draw.io's
   HTML to plain text (`<br>`, `<p>`, `<div>` and headings become line breaks, entities decode,
   every other tag is dropped); an empty label stays empty. A node's `metadata.link` becomes its
-  link when it is a web or email address. The report says once per import that positions and
+  link by the same rule as any cell's: a web or email address, or a link to another page of the
+  export as a link to that page's tab. An edge with only one end on a node keeps it, its free end
+  drawn a short way out from the node (draw.io draws such an edge dangling); an edge with neither
+  end on a node is left out. Both count as connections that couldn't stay attached. The report says once per import that positions and
   styles were not in the file ("Positions and styles weren't in the file; the layout is
   automatic"), counting the pages laid out.
 - A page with no cells imports as an empty tab.

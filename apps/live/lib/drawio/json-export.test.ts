@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ArrowElement, ShapeElement } from '@livediagram/document';
 import { importDrawio } from './import';
 import { jsonLabelText } from './json-export';
+import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';
 import { fixtureBytes } from './test-support';
 
 // docs/specs/020-import-export/drawio-import.md "The JSON export". Exports synthesised here.
@@ -98,28 +99,63 @@ describe('the JSON export', () => {
     expect(r.report).toMatchObject({ pages: 2, elements: 5 });
   });
 
-  it('keeps web and email links, drops other kinds, and drops edges to nowhere', async () => {
+  it('keeps web and email links, links to pages as tab links, and drops other kinds', async () => {
     const r = await run(
       exported([
         page('Links', [
           layer,
           node('a', 'Web', { metadata: { link: 'https://example.com/x' } }),
           node('b', 'Mail', { metadata: { link: 'mailto:team@example.com' } }),
-          node('c', 'Page', { metadata: { link: 'data:page/id,other' } }),
-          edge('e1', 'a', 'missing'),
+          node('c', 'Next', { metadata: { link: 'data:page/id,p-Other' } }),
+          node('d', 'Script', { metadata: { link: 'javascript:alert(1)' } }),
         ]),
+        page('Other', [layer]),
       ]),
     );
     const shapes = r.pages[0]!.elements.filter((e): e is ShapeElement => e.type === 'shape');
     expect(shapes.map((s) => s.link)).toEqual([
       { kind: 'url', url: 'https://example.com/x' },
       { kind: 'url', url: 'mailto:team@example.com' },
+      { kind: 'tab', tabId: 'tab-1' },
       undefined,
     ]);
-    expect(r.pages[0]!.elements.some((e) => e.type === 'arrow')).toBe(false);
     expect(r.report.notes).toEqual([
-      { kind: 'connection-loosened', count: 1 },
       { kind: 'link-dropped', count: 1 },
+      { kind: 'auto-layout', count: 1 },
+    ]);
+  });
+
+  it('keeps an edge with one end on a node, its free end drawn a short way out', async () => {
+    const r = await run(
+      exported([
+        page('Loose', [
+          layer,
+          node('a', 'Start'),
+          edge('out', 'a', 'missing', 'goes on'),
+          { id: 'in', type: 'edge', parent: '1', target: 'a' },
+          { id: 'nowhere', type: 'edge', parent: '1' },
+        ]),
+      ]),
+    );
+    const [shape, ...arrows] = r.pages[0]!.elements as [ShapeElement, ...ArrowElement[]];
+    expect(arrows).toHaveLength(2);
+    const [out, into] = arrows;
+    expect(out!.from).toMatchObject({ kind: 'pinned', elementId: shape.id });
+    expect(out!.to).toEqual({
+      kind: 'free',
+      x: shape.x + shape.width + DRAWIO_JSON_LOOSE_EDGE_PX,
+      y: shape.y + shape.height / 2,
+    });
+    expect(out!.label).toBe('goes on');
+    expect(into!.from).toEqual({
+      kind: 'free',
+      x: shape.x - DRAWIO_JSON_LOOSE_EDGE_PX,
+      y: shape.y + shape.height / 2,
+    });
+    expect(into!.to).toMatchObject({ kind: 'pinned', elementId: shape.id });
+    // Two ends with nothing to hold, and one edge with neither end on a node, left out.
+    expect(r.report.notes).toEqual([
+      { kind: 'connection-loosened', count: 3 },
       { kind: 'auto-layout', count: 1 },
     ]);
   });

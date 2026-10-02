@@ -30,3 +30,8 @@ export const DRAWIO_REPORT_NAMES_MAX = 5;
  */
 export const DRAWIO_TAB_FILE_ACCEPT =
   '.drawio,.xml,.json,.svg,.png,application/xml,text/xml,application/json,image/svg+xml,image/png';
+/**
+ * How far out from its node a JSON export's edge with one free end is drawn: the export records no
+ * position for it (spec "The JSON export"). About half a default box's width; 40 to 160.
+ */
+export const DRAWIO_JSON_LOOSE_EDGE_PX = 80;

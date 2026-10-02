@@ -128,10 +128,13 @@ function jsonText(input: DrawioInput): string | null {
 function graphPages(sources: JsonExportPage[], options: DrawioImportOptions): DrawioImportResult {
   const tally = new ReportTally(DRAWIO_REPORT_NAMES_MAX);
   tally.add('content-truncated', Math.max(0, sources.length - DRAWIO_MAX_PAGES));
-  const pages: ImportedPage[] = sources.slice(0, DRAWIO_MAX_PAGES).map((source, index) => ({
-    tabId: options.tabIdForPage(index),
+  const kept = sources.slice(0, DRAWIO_MAX_PAGES);
+  const tabIds = kept.map((_, index) => options.tabIdForPage(index));
+  const pageIdToTab = new Map(kept.map((source, index) => [source.id, tabIds[index]!]));
+  const pages: ImportedPage[] = kept.map((source, index) => ({
+    tabId: tabIds[index]!,
     name: source.name,
-    elements: jsonPageElements(source, tally),
+    elements: jsonPageElements(source, { tally, pageIdToTab }),
   }));
   const report: DrawioReport = {
     pages: pages.length,
