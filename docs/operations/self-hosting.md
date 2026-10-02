@@ -142,6 +142,7 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 
 - `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and push.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
+- `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
 - `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all seven workers (marketing, live, telemetry, help, api, mcp, router) in the right order. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.

@@ -5,28 +5,31 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 ## Files
 
-| File                                                      | Role                                                                              |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/lib/canvas-gesture.ts`                         | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
-| `apps/live/components/canvas/CanvasZoomContext.tsx`       | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only   |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`     | Stable per-element props; per-arrow frame and holes; the grid                     |
-| `apps/live/components/canvas/element-layer-props.ts`      | `idBound`, `useStableCollab`: identity-stable per-element objects                 |
-| `apps/live/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                         |
-| `apps/live/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                          |
-| `apps/live/components/canvas/BoxedElementView.tsx`        | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                    |
-| `packages/document/src/element-grid.ts`                   | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker` |
-| `packages/document/src/arrow-behind.ts`                   | `routeBehindHoles` unchanged in contract; callers pass grid candidates            |
-| `packages/document/src/svg-render-arrows.ts`              | The export builds one grid per render and queries it                              |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                       |
-| `apps/live/hooks/canvas/useSettledElements.ts`            | What the Map draws: frozen during element gestures, throttled otherwise           |
-| `apps/live/components/canvas/Minimap.tsx`                 | Draws `useSettledElements(elements)`                                              |
-| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`         | Takes `suspended`; never measures while suspended                                 |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx` | `toolbarsStale` includes `selectionMoving`                                        |
-| `apps/live/hooks/canvas/useCanvasLongTaskLog.ts`          | The `[canvas-perf] long task` debug log                                           |
-| `apps/live/e2e/perf/reference-board.ts` (planned)         | `buildReferenceBoard(seed, count)`                                                |
-| `apps/live/e2e/perf/budget.ts` (planned)                  | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                             |
-| `apps/live/e2e/perf/canvas.perf.ts` (planned)             | The probe: seeds, runs each gesture under a trace, writes the report              |
-| `.github/workflows/canvas-perf.yml`                       | The nightly run and the budget issue                                              |
+| File                                                      | Role                                                                                |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `apps/live/lib/canvas-gesture.ts`                         | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`     |
+| `apps/live/components/canvas/CanvasZoomContext.tsx`       | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only     |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`     | Stable per-element props; per-arrow frame and holes; the grid                       |
+| `apps/live/components/canvas/element-layer-props.ts`      | `idBound`, `useStableCollab`: identity-stable per-element objects                   |
+| `apps/live/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                           |
+| `apps/live/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                            |
+| `apps/live/components/canvas/BoxedElementView.tsx`        | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                      |
+| `packages/document/src/element-grid.ts`                   | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`   |
+| `packages/document/src/arrow-behind.ts`                   | `routeBehindHoles` unchanged in contract; callers pass grid candidates              |
+| `packages/document/src/svg-render-arrows.ts`              | The export builds one grid per render and queries it                                |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                         |
+| `apps/live/hooks/canvas/useSettledElements.ts`            | What the Map draws: frozen during element gestures, throttled otherwise             |
+| `apps/live/components/canvas/Minimap.tsx`                 | Draws `useSettledElements(elements)`                                                |
+| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`         | Takes `suspended`; never measures while suspended                                   |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx` | `toolbarsStale` includes `selectionMoving`                                          |
+| `apps/live/hooks/canvas/useCanvasLongTaskLog.ts`          | The `[canvas-perf] long task` debug log                                             |
+| `apps/live/e2e/perf/reference-board.ts`                   | `buildReferenceBoard(seed, count)`                                                  |
+| `apps/live/e2e/perf/budget.ts`                            | `evaluateBudget`, `budgetTable` and the budget constants (pure)                     |
+| `apps/live/e2e/perf/budget-report.ts`                     | `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue |
+| `apps/live/e2e/perf/nightly.mjs`                          | The nightly run's I/O: `previous` and `report`                                      |
+| `apps/live/e2e/perf/trace-tasks.ts`                       | `mainThreadTasks`: the renderer main thread's task durations from a trace           |
+| `apps/live/e2e/perf/canvas.perf.ts`                       | The probe: seeds, runs each gesture under a trace, writes the report                |
+| `.github/workflows/canvas-perf.yml`                       | The nightly run and the budget issue                                                |
 
 ## Domain and naming
 
@@ -180,10 +183,19 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### The probe
 
-- A Playwright project `perf` (`testMatch: /e2e\/perf\/.*\.perf\.ts/`), excluded from
-  `chromium`; `pnpm perf:canvas` runs it against the e2e stack.
-- It seeds one document with two tabs (`kind: 'whiteboard'`, `kind: 'diagram'`), each the
-  reference board, through the api.
+- A Playwright project `perf` (`testMatch: /perf\/.*\.perf\.ts/`), opt-in with `E2E_PERF=1` and
+  ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
+  (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
+  live app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
+- It seeds one document per tab kind (`whiteboard`, `diagram`), each the reference board, through
+  the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
+- Each zoom starts from Shift+1 (fit, centring the board); 100% then presses Mod+0 (a bare `0` is
+  the eraser). A screenshot per tab and zoom goes with the report. After an undo the probe waits
+  1 s, so its commit lands outside the next gesture's window.
+- Timings are the renderer main thread's `RunTask` durations (`trace-tasks.ts`); compositor and
+  raster threads are not counted. A drag's median frame comes from an in-page
+  `requestAnimationFrame` recorder; the idle row runs without it. Measured values are shown
+  rounded up.
 - For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at 4, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
   deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
@@ -193,7 +205,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `disabled-by-default-devtools.timeline` only. Starting V8's profiler makes source positions
   available for every compiled function in one main-thread task (about 1.1 s at 4× on a
   658-element board), which would land in the first gesture's window.
-- `evaluateBudget(measurements)` maps them onto `BUDGET_ROWS`; `budgetTable(rows)` renders
+- `evaluateBudget(measurements)` maps them onto the budget rules; `budgetTable(rows)` renders
   markdown. Written to `test-results/perf/canvas-perf.md` and `.json`; traces to
   `test-results/perf/traces/`.
 - A budget miss never fails the test; a harness error (seeding, the stack, a missing element)
@@ -201,17 +213,20 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### The nightly run
 
-- `.github/workflows/canvas-perf.yml`: `schedule` at `PERF_CRON` and `workflow_dispatch`.
-- Skip step: the head SHA of the last successful run of this workflow
-  (`gh run list --workflow canvas-perf.yml --status success -L 1`) equals `github.sha` → the job
-  ends successfully without building.
-- Otherwise: the e2e image and install as `e2e.yml`, `next build` of `apps/live`,
-  `pnpm --filter @livediagram/live perf:canvas`, the table to `$GITHUB_STEP_SUMMARY`, traces and
-  report uploaded as `canvas-perf` with `retention-days: 14`.
-- Report step (`gh`, `GH_TOKEN: ${{ github.token }}`): any failing row → find the open issue
-  titled `Canvas performance budget` (label `performance`); comment the table and
-  `git log --oneline <last-pass-sha>..HEAD` on it, or create it with that body. All rows passing
-  and the issue open → comment "Back within budget at <sha>" and close it.
+- `.github/workflows/canvas-perf.yml`: `schedule` at `PERF_CRON` and `workflow_dispatch`; permissions
+  `contents: read`, `issues: write`, `actions: read`; one run at a time.
+- `apps/live/e2e/perf/nightly.mjs previous` prints the head SHA of the last successful run of this
+  workflow on `main` (the REST API, `GITHUB_API_URL`). On a scheduled run that SHA equals
+  `github.sha` → the summary says nothing is new and every later step is skipped.
+- Otherwise: the e2e image and install as `e2e.yml` (with its image check), `next build` of
+  `apps/live`, `pnpm --filter @livediagram/live perf:canvas`, then `nightly.mjs report`, and the
+  `test-results/perf` folder (report, gzipped traces, screenshots) uploaded as `canvas-perf` with
+  `retention-days: 14`.
+- `nightly.mjs report` writes the table to `$GITHUB_STEP_SUMMARY`, finds the open issue titled
+  `Canvas performance budget` (by title; no label), and acts on `budgetIssueAction`
+  (`budget-report.ts`): a miss opens it or comments on it, an all-pass run comments "Back within
+  budget at <sha>" and closes it. `budgetIssueComment` carries the table,
+  `git log --oneline <previous-sha>..<sha>` and the run's link.
 
 ## Interfaces and contracts
 

@@ -90,7 +90,7 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   artefact for 14 days.
 - **It reports, it never blocks**: timings on shared runners are too noisy to fail a build on. A
   run with a failing row opens one issue, **Canvas performance budget**, or comments on it if open,
-  with the table and the commits since the last passing run; the first all-pass run closes it. No
+  with the table and the commits since the previous run; the first all-pass run closes it. No
   one has to remember to run or read it.
 
 ## Observability

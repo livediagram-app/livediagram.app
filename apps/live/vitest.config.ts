@@ -26,7 +26,8 @@ export default defineProject({
   // extension but runs under Playwright, not Vitest — keep it out of
   // the unit run (it has its own `test:e2e` script).
   test: {
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // Playwright's specs run under Playwright; pure helpers beside them (e2e/perf) keep unit tests here.
+    exclude: [...configDefaults.exclude, 'e2e/**/*.spec.ts'],
     // Unmount rendered trees after each test. `globals: false` stops React
     // Testing Library registering its own cleanup, and a tree left mounted
     // when jsdom is torn down crashes a later file in the same worker with

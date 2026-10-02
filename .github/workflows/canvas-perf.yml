@@ -1,0 +1,106 @@
+name: Canvas Performance
+
+# The nightly canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring"):
+# the reference board, every gesture traced at 4x CPU, judged against the budget. It reports and
+# never blocks: the table goes to the job summary, traces and screenshots to an artefact, and a miss
+# opens (or comments on) one issue, "Canvas performance budget", which the first all-pass run closes.
+# A scheduled night with no new commit on main since the last successful run is skipped.
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: canvas-perf
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Reference board
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The e2e image: Chromium and its libraries, the locked Playwright version (checked below).
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001 --ipc=host
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          # The commits since the previous run go in the issue.
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Find the previous run
+        id: previous
+        working-directory: apps/live
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          sha="$(node e2e/perf/nightly.mjs previous)"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_EVENT_NAME}" = "schedule" ] && [ "${sha}" = "${GITHUB_SHA}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "main has not moved since ${sha}: nothing new to measure." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Set up pnpm
+        if: steps.previous.outputs.skip != 'true'
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Cache the pnpm store
+        if: steps.previous.outputs.skip != 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.previous.outputs.skip != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Check the image matches Playwright
+        if: steps.previous.outputs.skip != 'true'
+        run: |
+          locked="$(pnpm --filter @livediagram/live exec playwright --version | awk '{print $2}')"
+          image="$(grep -o 'mcr.microsoft.com/playwright:v[0-9.]*' .github/workflows/canvas-perf.yml | head -n 1)"
+          if [ "${image}" != "mcr.microsoft.com/playwright:v${locked}" ]; then
+            echo "::error::Set the canvas-perf.yml container image to v${locked}"
+            exit 1
+          fi
+
+      # As production builds it: no api base, so it calls same-origin /api, which the e2e stack proxies.
+      - name: Build live app
+        if: steps.previous.outputs.skip != 'true'
+        run: pnpm --filter @livediagram/live build
+
+      - name: Run the probe
+        if: steps.previous.outputs.skip != 'true'
+        run: pnpm --filter @livediagram/live perf:canvas
+
+      - name: Report
+        if: steps.previous.outputs.skip != 'true'
+        working-directory: apps/live
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PREVIOUS_SHA: ${{ steps.previous.outputs.sha }}
+        run: node e2e/perf/nightly.mjs report
+
+      - name: Upload traces and screenshots
+        if: always() && steps.previous.outputs.skip != 'true' && hashFiles('apps/live/test-results/perf/**') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: canvas-perf
+          path: apps/live/test-results/perf
+          retention-days: 14
