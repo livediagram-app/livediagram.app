@@ -147,15 +147,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         intent: {
           type: ['object', 'null'],
           description:
-            'What the new document opens as. With no teamId and no folderId, the document lands in ' +
+            'How the new document opens, recorded on it as opensIn / boardType. With no teamId and no folderId, the document lands in ' +
             "the caller's default folder for it: the board default, else the mode default, else " +
             'the root. Malformed: intent_invalid (400).',
           properties: {
-            mode: { type: 'string', enum: ['diagram', 'draw'] },
-            boardType: {
-              type: ['string', 'null'],
-              enum: ['event-storming', 'retrospective', 'kanban', null],
-            },
+            mode: ref('EditorMode'),
+            boardType: { anyOf: [ref('BoardType'), { type: 'null' }] },
           },
           required: ['mode'],
         },

@@ -763,6 +763,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "BoardType": {
+    "enum": [
+      "event-storming",
+      "retrospective",
+      "kanban"
+    ],
+    "type": "string"
+  },
   "BorderRadius": {
     "enum": [
       "none",
@@ -2238,6 +2246,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DocumentSummary": {
     "additionalProperties": false,
     "properties": {
+      "boardType": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/BoardType"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "createdAt": {
         "type": "number"
       },
@@ -2255,6 +2273,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "opensIn": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/EditorMode"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "ownerId": {
         "type": "string"
@@ -2297,6 +2325,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folderId",
       "teamId",
       "source",
+      "opensIn",
+      "boardType",
       "savedAt",
       "createdAt",
       "empty"

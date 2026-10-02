@@ -13,7 +13,8 @@
 // new code should prefer the canonical names here.
 
 import type { DriveMode } from './drive';
-import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
+import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
+import type { BoardType } from './placement-defaults';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -85,6 +86,12 @@ export type DocumentSummary = {
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md) — see LiveDoc.source.
   source: DocumentSource | null;
+  // The creation intent recorded when it was created (docs/specs/013-workspace/default-folders.md
+  // "Recorded intent"): the editor mode it opens in and, for a board, its board type. A null
+  // `opensIn` is unknown (made before intents were recorded, or by a create without one), never
+  // Diagram; with a known `opensIn`, a null `boardType` means not a board.
+  opensIn: EditorMode | null;
+  boardType: BoardType | null;
   savedAt: number;
   createdAt: number;
   // Nothing drawn: the first tab has no elements, or there is no tab

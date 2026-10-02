@@ -13,6 +13,8 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
     folderId: null,
     teamId: null,
     source: null,
+    opensIn: null,
+    boardType: null,
     savedAt: 1,
     createdAt: 1,
     empty: false,

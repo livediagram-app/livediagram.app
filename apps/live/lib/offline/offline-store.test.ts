@@ -124,6 +124,8 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
     await offlineSetDocumentFolder('d1', 'f1', 200);
     expect((await offlineListDocuments())[0]?.folderId).toBe('f1');
+    // No creation intent is recorded in the browser (docs/specs/013-workspace/default-folders.md).
+    expect((await offlineListDocuments())[0]).toMatchObject({ opensIn: null, boardType: null });
     await offlineSetDocumentFolder('d1', null, 300);
     expect((await offlineListDocuments())[0]?.folderId).toBeNull();
   });

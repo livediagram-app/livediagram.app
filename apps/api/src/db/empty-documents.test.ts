@@ -4,7 +4,7 @@
 
 import type { Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
+import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';
 import { listSharedWith } from './shared';
 import { seedTabs, stampTabElementCount, swapTabData, upsertTab } from './tabs';
@@ -127,7 +127,8 @@ describe('migration 0059 adds the count without reading a body', () => {
                      ('oo', 'x', 'not json', 1)`);
     sql.exec(`INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
               VALUES ('old-blank', 'ob', 0, 1), ('old-drawn', 'od', 0, 1), ('old-odd', 'oo', 0, 1)`);
-    applyMigration(sql, '0059');
+    // 0059 and every migration after it: the list projection below reads today's schema.
+    migrateFrom(sql, '0059');
     const counts = sql.prepare('SELECT id, element_count FROM tabs ORDER BY id').all();
     expect(counts.map((c) => ({ ...c }))).toEqual([
       { id: 'ob', element_count: null },

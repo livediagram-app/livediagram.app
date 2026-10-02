@@ -108,6 +108,10 @@ function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     folderId: rec.folderId,
     teamId: null,
     source: null,
+    // No creation intent is recorded in the browser: unknown (docs/specs/013-workspace/
+    // default-folders.md "Recorded intent").
+    opensIn: null,
+    boardType: null,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
     empty: (rec.tabs[0]?.elements.length ?? 0) === 0,

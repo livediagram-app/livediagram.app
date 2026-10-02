@@ -11,6 +11,9 @@ import { collabIndexCopyStatements } from './collab-index';
 import { imageRefAddStatements } from './image-refs';
 import { documentRemovalStatements } from './document-removal';
 import { firstTabCountSql, isEmptyCount } from './tabs';
+import type { BoardType } from '@livediagram/api-schema';
+import type { EditorMode } from '@livediagram/document';
+import { readBoardType, readOpensIn } from '../document-intent-row';
 
 type DocumentRow = {
   id: string;
@@ -31,7 +34,12 @@ type DocumentRow = {
   share_code: string | null;
 };
 
-type SummaryRow = DocumentRow & { first_tab_count: number | null };
+// The recorded creation intent (migration 0062), read only by the list projection.
+type SummaryRow = DocumentRow & {
+  first_tab_count: number | null;
+  opens_in: string | null;
+  board_type: string | null;
+};
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
@@ -91,7 +99,7 @@ const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}`;
+const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, opens_in, board_type, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -177,6 +185,8 @@ function rowToSummary(row: SummaryRow): DocumentSummary {
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentSummary['source']) ?? null,
+    opensIn: readOpensIn(row.opens_in),
+    boardType: readBoardType(row.board_type),
     savedAt: row.saved_at,
     createdAt: row.created_at,
     empty: isEmptyCount(row.first_tab_count),
@@ -215,7 +225,11 @@ export async function listDocumentsByTeam(env: Env, teamId: string): Promise<Doc
 // table, owner info comes via a participants join on read.
 export async function upsertDocumentMeta(
   env: Env,
-  d: Omit<DocumentDTO, 'tabs' | 'ownerName' | 'ownerColor'>,
+  d: Omit<DocumentDTO, 'tabs' | 'ownerName' | 'ownerColor'> & {
+    // The recorded creation intent (docs/specs/013-workspace/default-folders.md "Recorded intent").
+    opensIn?: EditorMode | null;
+    boardType?: BoardType | null;
+  },
 ): Promise<void> {
   // `shareCode` is intentionally absent from the INSERT — it now
   // lives only in share_links. The DTO field is read-only (derived
@@ -229,9 +243,11 @@ export async function upsertDocumentMeta(
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
   // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
   // re-commit keeps its place, and moving is setDocumentFolder's job.
+  // `opens_in` and `board_type` are the recorded creation intent, written here once and never by the
+  // DO UPDATE, so nothing after the create re-derives or rewrites them.
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, opens_in, board_type)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -248,6 +264,8 @@ export async function upsertDocumentMeta(
       d.presentation ?? null,
       d.savedAt,
       d.createdAt,
+      d.opensIn ?? null,
+      d.boardType ?? null,
     )
     .run();
 }
@@ -392,11 +410,13 @@ export async function copyDocument(
   const source = await getDocument(env, sourceId);
   if (!source) return null;
   const now = Date.now();
+  // The copy carries the source's recorded creation intent, read in the same statement, never
+  // re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent").
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at)
-     VALUES (?, ?, ?, 0, NULL, ?, ?)`,
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, opens_in, board_type)
+     SELECT ?, ?, ?, 0, NULL, ?, ?, opens_in, board_type FROM documents WHERE id = ?`,
   )
-    .bind(newId, newOwnerId, newName, now, now)
+    .bind(newId, newOwnerId, newName, now, now, sourceId)
     .run();
   // Walk the source's tab rows via the link table and re-insert
   // each under the new document id with a freshly minted tab id.

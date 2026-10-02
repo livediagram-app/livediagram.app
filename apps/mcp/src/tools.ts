@@ -190,7 +190,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
-        '"Generated" folder (or files it in the user\'s default folder for that kind of document, ' +
+        '"Generated" folder (or files it in the user\'s default folder for how that document opens, ' +
         'when they have set one), and returns the link, the folder, and an inline PNG of the first tab.',
       inputSchema: createDocumentShape,
       outputSchema: createDocumentOutput,
