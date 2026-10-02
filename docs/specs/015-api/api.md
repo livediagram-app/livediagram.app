@@ -28,7 +28,7 @@ The api resolves the request owner through three identities, in this order of pr
 
 1. **Clerk Bearer JWT** — `Authorization: Bearer <jwt>`. Verified against `env.CLERK_JWKS_URL` in `apps/api/src/auth/clerk.ts` using `jose`'s `createRemoteJWKSet` + `jwtVerify`. The token's `sub` claim is the owner id. Returns null on any failure (invalid signature, expired, malformed, missing env var), logged as `[auth] clerk_jwt_rejected reason=<jose code>`, never 401, because the worker must still serve the other paths. `exp` / `nbf` allow 5 seconds of clock skew, matching Clerk's backend SDK.
 2. **API token** — `Authorization: Bearer lvd_…`, consulted only when no Clerk JWT verified. `resolveApiToken` hashes it and looks up a live (non-revoked, non-expired) `api_tokens` row; the owner id is that row's Clerk userId, so a token request flows through the same ownership and gate checks as a signed-in one. A token minted **read-only** is refused on every `POST` / `PUT` / `DELETE` with `403 read_only_token`, at one choke point in `index.ts`.
-3. **Guest header** — `X-Owner-Id: <participant-id>`, used when neither Bearer credential resolved. The participant id is server-minted by `POST /api/guest-id` and persisted in `localStorage` under `livediagram:v2:self-id`. On the owner-scoped segments (`OWNER_SCOPED_SEGMENTS` in `apps/api/src/auth/guest-rest.ts`: `documents`, `folders`, `images`, `custom-themes`, `participants`, `preferences`, `shared`, `timeline`, `activity`, `favourites`) two guards run before any handler:
+3. **Guest header** — `X-Owner-Id: <participant-id>`, used when neither Bearer credential resolved. The participant id is server-minted by `POST /api/guest-id` and persisted in `localStorage` under `livediagram:v2:self-id`. On the owner-scoped segments (`OWNER_SCOPED_SEGMENTS` in `apps/api/src/auth/guest-rest.ts`: `documents`, `folders`, `images`, `custom-themes`, `shape-libraries`, `participants`, `preferences`, `shared`, `timeline`, `activity`, `favourites`) two guards run before any handler:
    - A header value shaped like a Clerk account id is refused unconditionally with `401 account_id_not_a_guest_credential` (`isClerkIdShape`): no real client ever sends one, so it can only be a replayed, harvested account id ([Public API and API tokens §4.1](public-api-and-tokens.md#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
    - Once enforcement is armed (`GUEST_ID_HMAC_SECRET` set **and** `GUEST_SIG_ENFORCE_AFTER` in the past, `guestSignatureEnforced`), the header must carry a matching HMAC in `X-Owner-Sig`, or the request gets `401 signature_required`. Until an operator arms it, an unsigned guest id is still accepted on REST; this is the legacy-guest grace window ([Public API and API tokens §4](public-api-and-tokens.md#4-x-owner-id-trust-change)).
 
@@ -53,32 +53,33 @@ Visitor-edit endpoints (`PUT /api/documents/:id/tabs/:tabId`, the change-log wri
 
 All JSON unless stated. CORS allows any origin (the live app is same-origin via the router; this is mostly a dev convenience). Routes are dispatched in `apps/api/src/index.ts`, a thin switch over `segments[1]` with 24 resource segments; each owns a `handle<Resource>(ctx)` module under `apps/api/src/routes/` that implements every method and sub-path it handles. Read the dispatcher for the surface, then the matching route module for the authoritative behaviour. The machine-readable reference is `GET /api/openapi.json` ([API documentation (OpenAPI)](api-documentation.md)).
 
-| Segment         | Route module                     | Behaviour lives in                                                                                     |
-| --------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `capabilities`  | `capabilities.ts`                | this spec, below                                                                                       |
-| `openapi.json`  | `openapi.ts`                     | [API documentation (OpenAPI)](api-documentation.md)                                                    |
-| `unfurl`        | `unfurl.ts`                      | [Link cards](../009-elements/link-cards.md)                                                            |
-| `ai`            | `ai.ts`, `ai-read-notes.ts`      | this spec, below; [AI Assistance](../007-editor/ai-assistance.md)                                      |
-| `events`        | `events.ts`                      | [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)                             |
-| `telemetry`     | `telemetry.ts`                   | [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)                             |
-| `share`         | `share.ts`                       | this spec, below                                                                                       |
-| `shared`        | `shared.ts`                      | this spec, below                                                                                       |
-| `images`        | `images.ts`                      | [Images](../009-elements/images.md)                                                                    |
-| `documents`     | `documents.ts` + its sub-modules | this spec, below                                                                                       |
-| `folders`       | `folders.ts`                     | this spec, below; [Folders](../013-workspace/folders.md)                                               |
-| `custom-themes` | `custom-themes.ts`               | [Custom themes](../011-theme/custom-themes.md)                                                         |
-| `teams`         | `teams.ts`                       | [Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md) |
-| `tokens`        | `tokens.ts`                      | [Public API and API tokens](public-api-and-tokens.md)                                                  |
-| `oauth`         | `oauth.ts`                       | [MCP server](mcp-server.md)                                                                            |
-| `account`       | `account.ts`                     | this spec, below                                                                                       |
-| `favourites`    | `favourites.ts`                  | [Favourites](../013-workspace/favourites.md)                                                           |
-| `timeline`      | `timeline.ts`                    | [Timeline](../013-workspace/timeline.md)                                                               |
-| `activity`      | `activity.ts`                    | [Activity page](../013-workspace/activity-page.md)                                                     |
-| `preferences`   | `preferences.ts`                 | this spec, below; [User preferences](../007-editor/user-preferences.md)                                |
-| `migrate`       | `migrate.ts`                     | this spec, below                                                                                       |
-| `guest-id`      | `guest-id.ts`                    | this spec, below                                                                                       |
-| `participants`  | `participants.ts`                | this spec, below                                                                                       |
-| `drive`         | `drive.ts`                       | [Google Drive mirror](../022-drive-mirror/drive-mirror.md)                                             |
+| Segment           | Route module                     | Behaviour lives in                                                                                     |
+| ----------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `capabilities`    | `capabilities.ts`                | this spec, below                                                                                       |
+| `openapi.json`    | `openapi.ts`                     | [API documentation (OpenAPI)](api-documentation.md)                                                    |
+| `unfurl`          | `unfurl.ts`                      | [Link cards](../009-elements/link-cards.md)                                                            |
+| `ai`              | `ai.ts`, `ai-read-notes.ts`      | this spec, below; [AI Assistance](../007-editor/ai-assistance.md)                                      |
+| `events`          | `events.ts`                      | [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)                             |
+| `telemetry`       | `telemetry.ts`                   | [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)                             |
+| `share`           | `share.ts`                       | this spec, below                                                                                       |
+| `shared`          | `shared.ts`                      | this spec, below                                                                                       |
+| `images`          | `images.ts`                      | [Images](../009-elements/images.md)                                                                    |
+| `documents`       | `documents.ts` + its sub-modules | this spec, below                                                                                       |
+| `folders`         | `folders.ts`                     | this spec, below; [Folders](../013-workspace/folders.md)                                               |
+| `custom-themes`   | `custom-themes.ts`               | [Custom themes](../011-theme/custom-themes.md)                                                         |
+| `shape-libraries` | `shape-libraries.ts`             | [Shape libraries](../013-workspace/shape-libraries.md)                                                 |
+| `teams`           | `teams.ts`                       | [Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md) |
+| `tokens`          | `tokens.ts`                      | [Public API and API tokens](public-api-and-tokens.md)                                                  |
+| `oauth`           | `oauth.ts`                       | [MCP server](mcp-server.md)                                                                            |
+| `account`         | `account.ts`                     | this spec, below                                                                                       |
+| `favourites`      | `favourites.ts`                  | [Favourites](../013-workspace/favourites.md)                                                           |
+| `timeline`        | `timeline.ts`                    | [Timeline](../013-workspace/timeline.md)                                                               |
+| `activity`        | `activity.ts`                    | [Activity page](../013-workspace/activity-page.md)                                                     |
+| `preferences`     | `preferences.ts`                 | this spec, below; [User preferences](../007-editor/user-preferences.md)                                |
+| `migrate`         | `migrate.ts`                     | this spec, below                                                                                       |
+| `guest-id`        | `guest-id.ts`                    | this spec, below                                                                                       |
+| `participants`    | `participants.ts`                | this spec, below                                                                                       |
+| `drive`           | `drive.ts`                       | [Google Drive mirror](../022-drive-mirror/drive-mirror.md)                                             |
 
 Owner-only routes require a resolved owner (see Auth above). When none resolves, the route returns 400 via the shared `missingAuth()` helper. Shared-edit routes additionally accept `X-Share-Code` from visitors holding an edit-role share link.
 
@@ -405,6 +406,7 @@ This is the one list of columns that hold an owner id (a guest id or a Clerk use
 | `favourites.owner_id`                     | Deleted, stars on other people's documents included ([Favourites](../013-workspace/favourites.md))                                                                     | Moved: `INSERT OR IGNORE` + `DELETE` (primary key `(owner_id, document_id)`)                                                                         |
 | `user_preferences.owner_id`               | Deleted                                                                                                                                                                | Moved: `INSERT OR IGNORE` + `DELETE` (primary key `owner_id`)                                                                                        |
 | `custom_themes.owner_id`                  | Deleted                                                                                                                                                                | Moved (`UPDATE`; the id is the primary key)                                                                                                          |
+| `shape_libraries.owner_id`                | Deleted                                                                                                                                                                | Moved (`UPDATE`), a name the account already uses first renamed " (n)"                                                                               |
 | `images.owner_id`                         | Deleted, R2 bytes first                                                                                                                                                | Moved: `UPDATE OR IGNORE` on `UNIQUE (owner_id, sha256)`; a dedupe loser stays on the guest id, out of reach of a later account deletion (known gap) |
 | `participants.id`                         | Deleted                                                                                                                                                                | Moved: `INSERT OR IGNORE` + `DELETE` (the id is the owner id)                                                                                        |
 | `timeline_events.actor_id`                | Deleted ([Timeline](../013-workspace/timeline.md))                                                                                                                     | Moved (`UPDATE`)                                                                                                                                     |

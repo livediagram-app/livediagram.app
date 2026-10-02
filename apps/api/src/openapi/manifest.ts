@@ -706,6 +706,68 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404],
   },
 
+  // ---- Shape libraries ----
+  {
+    method: 'GET',
+    path: '/shape-libraries',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: "List the caller's shape libraries, newest first.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: listOf('libraries', 'ShapeLibrary'),
+    statuses: [200, 401],
+  },
+  {
+    method: 'POST',
+    path: '/shape-libraries',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: 'Create a shape library; a name already in use is suffixed.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        source: { type: 'string', enum: ['drawio'] },
+        items: { type: 'array', items: ref('ShapeLibraryItem') },
+      },
+      required: ['id', 'name', 'source', 'items'],
+    },
+    responseSchema: wrap('library', 'ShapeLibrary'),
+    statuses: [201, 400, 401, 409, 413],
+  },
+  {
+    method: 'PUT',
+    path: '/shape-libraries/{id}',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: 'Rename a shape library, or replace its items.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        items: { type: 'array', items: ref('ShapeLibraryItem') },
+      },
+    },
+    responseSchema: wrap('library', 'ShapeLibrary'),
+    statuses: [200, 400, 401, 403, 404, 409, 413],
+  },
+  {
+    method: 'DELETE',
+    path: '/shape-libraries/{id}',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: 'Delete a shape library. Placed shapes stay in their documents.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404],
+  },
+
   // ---- API tokens ----
   {
     method: 'GET',

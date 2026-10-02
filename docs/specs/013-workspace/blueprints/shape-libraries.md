@@ -6,11 +6,11 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 
 | File                                                          | Holds                                                                                                        |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `shape-libraries.ts` in packages/api-schema/src               | `ShapeLibrary`, `ShapeLibraryItem`, the limits, `uniqueLibraryName`, `validateShapeLibraryItems`             |
-| `0060_shape_libraries.sql` in apps/api/migrations             | The table and its two indexes                                                                                |
-| `shape-library-row.ts` in apps/api/src                        | `ShapeLibraryRow`, `rowToShapeLibrary`: snake_case row and JSON items to the DTO                             |
-| `shape-libraries.ts` in apps/api/src/db                       | List, get, count, names, create, update, delete                                                              |
-| `shape-libraries.ts` in apps/api/src/routes                   | `handleShapeLibraries`: the four routes                                                                      |
+| `packages/api-schema/src/shape-libraries.ts`                  | `ShapeLibrary`, `ShapeLibraryItem`, the limits, `uniqueLibraryName`, `validateShapeLibraryItems`             |
+| `apps/api/migrations/0060_shape_libraries.sql`                | The table and its two indexes                                                                                |
+| `apps/api/src/shape-library-row.ts`                           | `ShapeLibraryRow`, `rowToShapeLibrary`: snake_case row and JSON items to the DTO                             |
+| `apps/api/src/db/shape-libraries.ts`                          | List, get, count, names, create, update, delete                                                              |
+| `apps/api/src/routes/shape-libraries.ts`                      | `handleShapeLibraries`: the four routes                                                                      |
 | `apps/api/src/db/account.ts`                                  | Account deletion deletes the rows; `migrateOwnerId` moves them, renaming clashes                             |
 | `apps/api/src/auth/guest-rest.ts`                             | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                 |
 | `apps/api/src/openapi/manifest.ts`                            | The four operations, tag `Shape libraries`                                                                   |
@@ -183,9 +183,9 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 | Rule                                                                      | Test                                                   |
 | ------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Names: unique suffix, case, length; items validation and reasons          | `shape-libraries.test.ts` in packages/api-schema/src   |
-| Row mapping, corrupt items                                                | `shape-library-row.test.ts` in apps/api/src            |
-| Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename           | `shape-libraries.test.ts` in apps/api/src/routes       |
+| Names: unique suffix, case, length; items validation and reasons          | `packages/api-schema/src/shape-libraries.test.ts`      |
+| Row mapping, corrupt items                                                | `apps/api/src/shape-library-row.test.ts`               |
+| Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename           | `apps/api/src/routes/shape-libraries.test.ts`          |
 | Sign-up move with clash renaming; account deletion                        | `apps/api/src/db/account.test.ts` (or its route test)  |
 | OpenAPI covers the routes                                                 | the existing manifest coverage test                    |
 | Client calls and error copy                                               | `shape-libraries.test.ts` in apps/live/lib/api         |
