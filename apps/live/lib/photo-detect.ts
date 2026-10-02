@@ -18,6 +18,7 @@ import {
 import { isFlatImage } from '@livediagram/sticky-model';
 import { boundaryCuesFor } from './photo-model/client';
 import type { BoundaryBackend, BoundaryOutcome, ClassicalReason } from './photo-model/protocol';
+import { debugLog } from '@/lib/debug-log';
 
 // Getting a photograph ready to become notes (docs/specs/021-event-storming/event-storming.md Phase 8) — all of it in
 // the browser.
@@ -203,7 +204,7 @@ async function boundaryModelFor(image: {
   model: { cues: ModelCues; rules: typeof HYBRID_RULES } | null;
 }> {
   if (isFlatImage(image)) {
-    console.info('[photo-detect] classical (flat-image)');
+    debugLog('[photo-detect] classical (flat-image)');
     return { detector: { path: 'classical', reason: 'flat-image' }, model: null };
   }
   let outcome: BoundaryOutcome;
@@ -214,12 +215,10 @@ async function boundaryModelFor(image: {
     outcome = { ok: false, reason: 'inference-failed' };
   }
   if (!outcome.ok) {
-    console.info(`[photo-detect] classical (${outcome.reason})`);
+    debugLog(`[photo-detect] classical (${outcome.reason})`);
     return { detector: { path: 'classical', reason: outcome.reason }, model: null };
   }
-  console.info(
-    `[photo-detect] hybrid (${outcome.backend}, ${outcome.cues.notes.length} model notes)`,
-  );
+  debugLog(`[photo-detect] hybrid (${outcome.backend}, ${outcome.cues.notes.length} model notes)`);
   return {
     detector: { path: 'hybrid', backend: outcome.backend },
     model: { cues: outcome.cues, rules: HYBRID_RULES },

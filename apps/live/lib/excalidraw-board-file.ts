@@ -6,6 +6,7 @@ import type { BoardScene } from './board-scene/scene';
 import type { ExcalidrawContainer } from './excalidraw-embedded';
 import { isExcalidrawFileCandidate } from './excalidraw-paste';
 import { readExcalidrawFile, type ExcalidrawFileRead } from './excalidraw-read';
+import { debugLog } from '@/lib/debug-log';
 
 /** An untitled board's name; its date follows when Excalidraw's default name gives one. */
 export const EXCALIDRAW_BOARD_NAME = 'Excalidraw board';
@@ -105,7 +106,7 @@ export async function readExcalidrawBoardFiles(
       });
     }
   }
-  console.info('[excalidraw-import] files', {
+  debugLog('[excalidraw-import] files', {
     files: files.length,
     boards: out.scenes.length,
     failures: out.failures.length,

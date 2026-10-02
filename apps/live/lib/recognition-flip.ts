@@ -4,6 +4,7 @@
 import type { LiveStroke } from './live-stroke';
 import { recogniseBoardStroke } from './recognition-preview';
 import { track } from './telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 export type RecognitionFlip = 'recognised' | 'broken';
 /** How the flip was asked for: the Alt key, or a tap on the chip. */
@@ -28,7 +29,7 @@ export function flipStrokeRecognition(
   via: RecognitionFlipVia,
 ): RecognitionFlip | null {
   const flip = flipRecognition(stroke, penWidth);
-  console.debug(`[whiteboard] recognition flip by ${via}: ${flip ?? 'no shape'}`);
+  debugLog(`[whiteboard] recognition flip by ${via}: ${flip ?? 'no shape'}`);
   if (!flip) return null;
   track(
     'Whiteboard',

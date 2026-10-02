@@ -35,6 +35,7 @@ import { SlotGhost } from './SlotGhost';
 import { useDockFlyout, type DockFlyout } from './useDockFlyout';
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
+import { debugLog } from '@/lib/debug-log';
 
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
@@ -74,7 +75,7 @@ export function WhiteboardDock({
   // Where the dock is, logged only while one is shown: on mount and on every move.
   const { position } = model;
   useEffect(() => {
-    console.debug('[whiteboard-dock] position', position);
+    debugLog('[whiteboard-dock] position', position);
   }, [position]);
   const [hint, setHint] = useState<{ left: number } | null>(null);
 
@@ -93,7 +94,7 @@ export function WhiteboardDock({
       document.querySelector<HTMLElement>('#whiteboard-flyout-shapes input')?.focus();
       return;
     }
-    console.debug('[whiteboard-dock] Shapes flyout opened by S');
+    debugLog('[whiteboard-dock] Shapes flyout opened by S');
     fly.open('shapes', opener, { viaKey: true });
   }, [shapesRequest, fly]);
 
@@ -123,7 +124,7 @@ export function WhiteboardDock({
   const settle = (outcome: SlotOutcome) => {
     if (outcome.type === 'none') return;
     if (outcome.type === 'refused') {
-      console.debug('[whiteboard-dock] pin refused: side full');
+      debugLog('[whiteboard-dock] pin refused: side full');
       showPinsFull(shapesBar());
       return;
     }

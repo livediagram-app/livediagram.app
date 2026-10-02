@@ -25,6 +25,7 @@ import {
   setPendingGuestUpgrade,
 } from './local-identity';
 import { apiMintGuestId, apiUpgradeGuestId } from './api/self';
+import { debugLog } from '@/lib/debug-log';
 
 type GuestIdentity = { id: string; sig: string | null };
 
@@ -58,7 +59,7 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
     }
     setGuestIdentity(pending.to, pending.sig);
     setPendingGuestUpgrade(null);
-    console.info('[guest-identity] resumed an interrupted signed-id upgrade');
+    debugLog('[guest-identity] resumed an interrupted signed-id upgrade');
     return { id: pending.to, sig: pending.sig };
   }
   if (pending) setPendingGuestUpgrade(null);

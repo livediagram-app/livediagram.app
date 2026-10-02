@@ -11,6 +11,7 @@ import {
   serializeOfflineWrite,
   type OfflineDocumentRecord,
 } from './offline-store';
+import { debugLog } from '@/lib/debug-log';
 
 function trashRow(rec: OfflineDocumentRecord & { trashedAt: number }): TrashedDocument {
   return {
@@ -73,6 +74,6 @@ export async function offlinePurgeExpiredTrash(now: number): Promise<number> {
     (r) => isTrashed(r) && isTrashExpired(r.trashedAt, now),
   );
   for (const rec of expired) await offlineDeleteDocument(rec.id);
-  if (expired.length > 0) console.info('[trash] purged local', expired.length);
+  if (expired.length > 0) debugLog('[trash] purged local', expired.length);
   return expired.length;
 }

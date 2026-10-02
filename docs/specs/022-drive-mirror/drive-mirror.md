@@ -527,7 +527,10 @@ D1, owned by the api worker:
   still reads changes.
 - Every decision point logs a fingerprinted line in the browser console
   (`[drive-mirror]`) and every api route logs its outcome (`drive:`), so a
-  failure is traceable from either side.
+  failure is traceable from either side. The console lines are trace lines
+  ([Console logging](../003-system-architecture/console-logging.md)): shown in
+  development, and in production only with the debug flag set
+  (`localStorage['livediagram:debug'] = 'drive-mirror'`); its warnings always.
 
 ## Self-hosting
 

@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { snapTabColours, snappableCustomColours, type Element } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 export type SnapColoursApi = {
   // The distinct custom colours a snap would convert, most recently drawn first.
@@ -28,7 +29,7 @@ export function useSnapColours(deps: {
 
   const snap = () => {
     if (editsBlocked || colours.length === 0) {
-      console.debug('[snap-colours] nothing to snap', { blocked: editsBlocked });
+      debugLog('[snap-colours] nothing to snap', { blocked: editsBlocked });
       return 0;
     }
     let result = { colours: 0, changed: 0 };
@@ -39,7 +40,7 @@ export function useSnapColours(deps: {
       return out.elements;
     });
     if (result.changed === 0) return 0;
-    console.info('[snap-colours] snapped', { colours: result.colours, elements: result.changed });
+    debugLog('[snap-colours] snapped', { colours: result.colours, elements: result.changed });
     track('Whiteboard', 'Changed', 'SnapColours');
     return result.colours;
   };

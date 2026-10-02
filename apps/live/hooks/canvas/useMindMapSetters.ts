@@ -7,6 +7,7 @@ import {
   type MindFlow,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 type MindMapSetterDeps = {
   currentSelectionIds: () => Set<string>;
@@ -42,7 +43,7 @@ export function useMindMapSetters({ currentSelectionIds, commit }: MindMapSetter
         if (!plan) continue;
         next = applyMindMoves(next, plan.moves, plan.reanchored);
         if (flow) next = next.map((el) => (el.id === rootId ? { ...el, mindFlow: flow } : el));
-        console.debug(
+        debugLog(
           `[mind-layout] relayout root=${rootId} flow=${flow ?? 'current'} moves=${plan.moves.length}`,
         );
       }

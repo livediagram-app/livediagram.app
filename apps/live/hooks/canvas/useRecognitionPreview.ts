@@ -17,6 +17,7 @@ import {
   recogniseBoardStroke,
   stillSince,
 } from '@/lib/recognition-preview';
+import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
 
@@ -72,13 +73,13 @@ export function useRecognitionPreview(
       const read = stroke.shaped() ? null : recogniseBoardStroke(stroke.ink(penWidth));
       // Alt held keeps it ink: holding still does not snap it again.
       if (read && active && !stroke.inkHeld()) {
-        console.debug('[whiteboard] recognition preview', read.kind);
+        debugLog('[whiteboard] recognition preview', read.kind);
         // The stroke is the shape from here on: dragging on reshapes it. Shown as shaped() reads,
         // so a Shift already held shows it perfect, as release would land it.
         stroke.snapTo(read);
       }
       chip = !chips ? null : stroke.shaped() ? 'keep' : read ? 'make' : null;
-      if (chip) console.debug('[whiteboard] recognition chip', chip);
+      if (chip) debugLog('[whiteboard] recognition chip', chip);
       publish();
     };
     const onUpdate = () => {

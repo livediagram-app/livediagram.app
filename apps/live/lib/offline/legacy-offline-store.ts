@@ -2,6 +2,8 @@
 // document (docs/specs/006-document/offline-mode.md). Version 2 of the database moves every
 // record into the current store. Runs inside the version-change transaction, so a reader
 // never sees a half-moved store.
+
+import { debugLog } from '@/lib/debug-log';
 const LEGACY_STORE = 'diagrams';
 
 export function upgradeStores(db: IDBDatabase, tx: IDBTransaction, store: string): void {
@@ -19,6 +21,6 @@ export function upgradeStores(db: IDBDatabase, tx: IDBTransaction, store: string
       return;
     }
     db.deleteObjectStore(LEGACY_STORE);
-    console.info('[offline-store] moved', moved, 'offline documents to the', store, 'store');
+    debugLog('[offline-store] moved', moved, 'offline documents to the', store, 'store');
   };
 }

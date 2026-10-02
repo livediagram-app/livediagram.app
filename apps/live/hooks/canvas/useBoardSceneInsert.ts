@@ -28,6 +28,7 @@ import {
   type HugText,
 } from '@/lib/board-scene-browser';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@/lib/debug-log';
 
 export type BoardSceneSource = BoardScene['source'];
 
@@ -84,7 +85,7 @@ export function useBoardSceneInsert(deps: BoardSceneInsertDeps): BoardSceneInser
     const d = latest.current;
     const tab = d.activeTab;
     if (d.editsBlocked || tab.locked) {
-      console.info('[board-scene] insert refused', { reason: 'edits blocked' });
+      debugLog('[board-scene] insert refused', { reason: 'edits blocked' });
       return false;
     }
     const whiteboard = isWhiteboardTab(tab);
@@ -118,7 +119,7 @@ export function useBoardSceneInsert(deps: BoardSceneInsertDeps): BoardSceneInser
     // A tab switched while the images uploaded: the paste belonged to the tab it was made on.
     const now = latest.current;
     if (now.activeTab.id !== tab.id) {
-      console.info('[board-scene] insert dropped', { reason: 'tab changed' });
+      debugLog('[board-scene] insert dropped', { reason: 'tab changed' });
       return false;
     }
     if (elements.length > 0) {
@@ -131,7 +132,7 @@ export function useBoardSceneInsert(deps: BoardSceneInsertDeps): BoardSceneInser
         now.setMultiSelectedIds(new Set(elements.map((el) => el.id)));
       }
     }
-    console.info('[board-scene] insert', {
+    debugLog('[board-scene] insert', {
       elements: elements.length,
       images: result.imageRequests.length,
     });

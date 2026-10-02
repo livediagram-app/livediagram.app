@@ -63,7 +63,7 @@ export async function writeQaAction(env: Env, req: QaWriteRequest): Promise<QaWr
     // Bytes, as D1 counts them, not UTF-16 units (docs/specs/015-api/api.md "Tab size").
     let swapped: boolean;
     try {
-      swapped = await swapTabData(env, documentId, tabId, raw, nextData);
+      swapped = await swapTabData(env, documentId, tabId, raw, nextData, data.elements.length);
     } catch (error) {
       if (error instanceof TabTooLargeError) return { ok: false, status: 413 };
       throw error;

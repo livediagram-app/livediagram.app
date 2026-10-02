@@ -19,6 +19,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { beginMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
+import { debugLog } from '@/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -136,7 +137,7 @@ export function useMindGrowth(opts: {
     scrollIntoView(node.x, node.y, node.width, node.height, {
       sideMargin: MIND_REVEAL_SIDE_MARGIN,
     });
-    console.debug(
+    debugLog(
       `[mind-grow] ${kind} from=${id} node=${node.id} moves=${plan.moves.length} style=${plan.styleFrom ? 'level' : 'default'}`,
     );
     track('Element', 'Added', 'MindNode');

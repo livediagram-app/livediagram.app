@@ -14,6 +14,7 @@ import {
 } from '@/lib/server-release';
 import { reloadWhenSaved } from '@/lib/reload-when-saved';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 type Phase = 'offered' | 'saving' | 'unsaved';
 
@@ -42,7 +43,7 @@ export function NewVersionPrompt({
   useEffect(() => {
     if (!visible || announced.current) return;
     announced.current = true;
-    console.info('[document-format] newer on the server', { editor: DOCUMENT_FORMAT, server });
+    debugLog('[document-format] newer on the server', { editor: DOCUMENT_FORMAT, server });
     track('UI', 'Opened', 'NewVersionPrompt');
   }, [visible, server]);
 

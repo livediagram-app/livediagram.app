@@ -57,6 +57,7 @@ export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
     shareCode: s.shareCode,
     ownerId: '',
     shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
+    empty: s.empty,
   };
 }
 
@@ -261,6 +262,7 @@ export function SharedList({
                 ownerId={ownerId}
                 documentId={s.id}
                 version={s.savedAt}
+                empty={s.empty}
                 shareCode={s.shareCode}
               />
               <span className="truncate">{s.name}</span>

@@ -19,7 +19,7 @@ const square = (): P[] => {
 const scribble = (): P[] => Array.from({ length: 30 }, (_, i) => ({ x: i * 7, y: (i * 37) % 23 }));
 
 beforeEach(() => {
-  vi.spyOn(console, 'debug').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.mocked(track).mockClear();
 });
 afterEach(() => vi.restoreAllMocks());

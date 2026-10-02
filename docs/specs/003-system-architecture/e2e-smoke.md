@@ -141,6 +141,12 @@ chatter, Chromium's generic "Failed to load resource" line, and the blocked
 model fetches of the photo tests). A test that takes `pageErrors` ends with
 **`expectNoPageErrors(pageErrors)`**, which fails naming what leaked.
 
+The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
+context before any page loads, so the production build the suite drives writes its trace lines
+([Console logging](console-logging.md)) and a spec may wait for one (`[drive-mirror] pass-end`).
+A spec that opens its own context with `browser.newContext()` sets it there with
+`enableDebugLogs(context)`.
+
 ## What the suite asserts
 
 One spec file per feature, each linking the spec it proves:

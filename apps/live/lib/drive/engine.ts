@@ -31,6 +31,7 @@ import { buildSnapshot, itemKey, ldFolderForParent, type MirrorSnapshot } from '
 import type { Rasteriser } from './thumbnail';
 import { seenRowsOf, type SeenStore } from './tombstones';
 import { DriveTokenError, type TokenSource } from './token-source';
+import { debugLog } from '@/lib/debug-log';
 
 export type PassKind = 'arrival' | 'poll' | 'focus' | 'write' | 'flush' | 'manual';
 
@@ -548,8 +549,7 @@ export class DriveMirrorEngine {
   // Settles research E-A3 against real Drive: does the start token move for
   // changes livediagram cannot see? Opt-in, one quiet line per check.
   private diagnose(moved: boolean, listed: number): void {
-    if (this.deps.diagnostics?.())
-      console.info(`drive: start-token moved=${moved} listed=${listed}`);
+    if (this.deps.diagnostics?.()) debugLog(`drive: start-token moved=${moved} listed=${listed}`);
   }
 
   private async outbound(snapshot: MirrorSnapshot, kind: PassKind): Promise<void> {

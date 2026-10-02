@@ -12,6 +12,7 @@ import {
   type QuickStyleLayout,
   type Rect,
 } from '@/lib/quick-style-placement';
+import { debugLog } from '@/lib/debug-log';
 
 const AREA_SELECTOR = 'main[data-canvas-a11y-root]';
 // The floating Palette panel, whose width the Floating layout's panel wears.
@@ -75,7 +76,7 @@ export function useQuickStylePlacement(
         obstacles,
       });
       if (placed.fallback) {
-        console.debug('[quick-style] placement fallback', { layout, obstacles: obstacles.length });
+        debugLog('[quick-style] placement fallback', { layout, obstacles: obstacles.length });
       }
       setSpot((prev) =>
         prev && prev.left === placed.left && prev.top === placed.top && prev.width === width

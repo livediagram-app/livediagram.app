@@ -45,6 +45,9 @@ export type DocumentListItem = Pick<
   // so synthetic rows (shared / team placeholders) can omit it. Absent or
   // null means user-made (not in the Generated folder).
   source?: DocumentSummary['source'];
+  // Nothing drawn (docs/specs/006-document/document-snapshots.md): the row asks for no thumbnail. Absent on a
+  // synthetic row, which asks as before.
+  empty?: DocumentSummary['empty'];
 };
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict

@@ -143,7 +143,7 @@ describe('WhiteboardPenPreview', () => {
 
     it('swaps the stroke for the clean shape, in canvas px, once the pen holds still', () => {
       vi.useFakeTimers();
-      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      vi.spyOn(console, 'info').mockImplementation(() => {});
       const { container } = render(
         <WhiteboardPenPreview
           stroke={liveStrokeOf(square)}
@@ -185,7 +185,7 @@ describe('WhiteboardPenPreview', () => {
 
     const held = (pointerType: string, recognise = false) => {
       vi.useFakeTimers();
-      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      vi.spyOn(console, 'info').mockImplementation(() => {});
       const stroke = liveStrokeOf(square, { pointerType });
       const view = render(
         <WhiteboardPenPreview stroke={stroke} pen={pen({ recognise })} ink="#1c1917" zoom={2} />,

@@ -13,6 +13,7 @@ import { replayBoard, type ReplayedBoard } from './replay';
 import { boardDates, boardTitle, type BoardDates } from './board-identity';
 import { boardDocumentName } from '@/lib/board-scene/board-document';
 import { boardToScene, type BoardImage } from './to-scene';
+import { debugLog } from '@/lib/debug-log';
 
 export type BoardSummary = {
   dir: string;
@@ -51,7 +52,7 @@ export async function listBoards(
   { ok: true; boards: BoardSummary[]; failures: BoardFailure[] } | { ok: false; error: string }
 > {
   const refs = findBoards(files);
-  console.info('[ms-whiteboard] boards found', { count: refs.length });
+  debugLog('[ms-whiteboard] boards found', { count: refs.length });
   if (refs.length === 0) return { ok: false, error: MESSAGES.noBoards };
   const boards: BoardSummary[] = [];
   const failures: BoardFailure[] = [];
@@ -66,7 +67,7 @@ export async function listBoards(
       failures.push({ title: label(ref.dir), message: MESSAGES.unreadable });
       continue;
     }
-    console.info('[ms-whiteboard] replayed', replayed.stats);
+    debugLog('[ms-whiteboard] replayed', replayed.stats);
     const board = readBoard(replayed);
     const dates = boardDates(read.board.created, read.board.modified);
     const title = boardTitle(read.board.title);
@@ -111,6 +112,6 @@ export async function boardSceneOf(
   });
   const kinds: Record<string, number> = {};
   for (const item of scene.items) kinds[item.kind] = (kinds[item.kind] ?? 0) + 1;
-  console.info('[ms-whiteboard] scene', { items: kinds, notes: scene.notes });
+  debugLog('[ms-whiteboard] scene', { items: kinds, notes: scene.notes });
   return scene;
 }

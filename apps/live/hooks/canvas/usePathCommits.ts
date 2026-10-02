@@ -13,6 +13,7 @@ import {
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import type { PathCommit } from '@/components/canvas/path/usePathDrawGesture';
+import { debugLog } from '@/lib/debug-log';
 
 export type PathEditKind = 'edit' | 'join';
 
@@ -31,11 +32,11 @@ export function usePathCommits({
 }) {
   const commitPath = ({ anchors, closed, continuing }: PathCommit) => {
     if (editsBlocked) {
-      console.debug('[path] refused: blocked');
+      debugLog('[path] refused: blocked');
       return;
     }
     if (!isCommittablePath(anchors, closed)) {
-      console.debug('[path] refused: too few nodes');
+      debugLog('[path] refused: too few nodes');
       return;
     }
     const fresh = styleNewElement(createPath(anchors, closed));
@@ -51,7 +52,7 @@ export function usePathCommits({
     });
     setSelectedId(continued && continuing ? continuing.id : fresh.id);
     track('Element', 'Added', 'Path');
-    console.debug(
+    debugLog(
       `[path] committed nodes=${anchors.length} closed=${closed ? 'yes' : 'no'} continued=${continued ? 'yes' : 'no'}`,
     );
   };
@@ -63,7 +64,7 @@ export function usePathCommits({
     kind: PathEditKind,
   ) => {
     if (editsBlocked) {
-      console.debug('[path] refused: blocked');
+      debugLog('[path] refused: blocked');
       return;
     }
     const keep = isCommittablePath(next.anchors, next.closed);
@@ -74,7 +75,7 @@ export function usePathCommits({
       }),
     );
     track('Element', 'Changed', kind === 'join' ? 'PathJoin' : 'PathEdit');
-    console.debug(`[path] edit ${keep ? kind : 'deleted'} nodes=${next.anchors.length}`);
+    debugLog(`[path] edit ${keep ? kind : 'deleted'} nodes=${next.anchors.length}`);
   };
 
   return { commitPath, commitPathEdit };

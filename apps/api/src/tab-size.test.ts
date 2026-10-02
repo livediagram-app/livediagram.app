@@ -84,7 +84,7 @@ describe('the storage layer', () => {
     // Two bytes a character: under the cap in characters, over it in bytes.
     const next = JSON.stringify({ elements: [], pad: 'é'.repeat(MAX_TAB_BYTES / 2) });
     expect(next.length).toBeLessThan(MAX_TAB_BYTES);
-    await expect(swapTabData(db.env, 'd1', 't1', raw, next)).rejects.toBeInstanceOf(
+    await expect(swapTabData(db.env, 'd1', 't1', raw, next, 0)).rejects.toBeInstanceOf(
       TabTooLargeError,
     );
     expect(stored(db, 't1')?.n).toBe(100);

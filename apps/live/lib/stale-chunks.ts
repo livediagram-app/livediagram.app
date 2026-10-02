@@ -7,6 +7,7 @@
 // over unsaved editor changes. Pure but for the dependencies passed in.
 import { claimReload } from './reload-guard';
 import { reloadWhenSaved } from './reload-when-saved';
+import { debugLog } from '@/lib/debug-log';
 
 /** How long a navigation's destination stays the one a chunk failure is blamed on. */
 export const NAVIGATION_INTENT_MS = 10_000;
@@ -70,7 +71,7 @@ export async function recoverFromChunkError(
     });
     return 'gave-up';
   }
-  console.info('[stale-chunks] a chunk from an earlier build is gone; loading the page in full', {
+  debugLog('[stale-chunks] a chunk from an earlier build is gone; loading the page in full', {
     destination,
   });
   const outcome = await reloadWhenSaved({

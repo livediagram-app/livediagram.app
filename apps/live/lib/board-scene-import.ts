@@ -31,6 +31,7 @@ import {
   type CreateImageSession,
   type HugText,
 } from '@/lib/board-scene-browser';
+import { debugLog } from '@/lib/debug-log';
 
 // A board whose document the server refuses as too large (413): its own failure, never "try again".
 export const BOARD_TOO_BIG = 'This board is too big for one document';
@@ -222,7 +223,7 @@ export async function importBoardsAsDocuments(
     report = report ? addReports(report, boardReport) : boardReport;
     if (done.images) images = addImageReports(images ?? emptyImportImageReport(), done.images);
   }
-  console.info('[board-scene] import', {
+  debugLog('[board-scene] import', {
     boards: scenes.length,
     target: 'new-document',
     offline: o.offline,

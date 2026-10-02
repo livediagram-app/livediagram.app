@@ -9,6 +9,7 @@ import { isOfflineIdSync } from '../offline/offline-store';
 import { createImportImageSession } from './session';
 import type { DecodedImage, ImageCodec, ImportImageSession } from './types';
 import { createWebpEncoder, type WasmWebpEncode } from './webp';
+import { debugLog } from '@/lib/debug-log';
 
 type Drawable = ImageBitmap | HTMLImageElement;
 type BrowserDecoded = DecodedImage & { source: Drawable };
@@ -89,7 +90,7 @@ const orNull = async <T>(run: () => Promise<T | null> | T | null): Promise<T | n
 // only when a canvas cannot encode WebP itself: its own chunk and .wasm asset.
 const webpEncoder = createWebpEncoder({
   loadWasm: async () => (await import('@jsquash/webp/encode')).default as WasmWebpEncode,
-  log: (fingerprint, outcome, detail) => console.info(fingerprint, outcome, detail),
+  log: (fingerprint, outcome, detail) => debugLog(fingerprint, outcome, detail),
 });
 
 async function encode(

@@ -22,7 +22,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 describe('useRecognitionPreview', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -112,7 +112,7 @@ describe('useRecognitionPreview', () => {
 describe('useRecognitionPreview, flipped', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -184,7 +184,7 @@ describe('useRecognitionPreview, flipped', () => {
 describe('useRecognitionPreview, the chip', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
   });
   afterEach(() => {
     vi.useRealTimers();

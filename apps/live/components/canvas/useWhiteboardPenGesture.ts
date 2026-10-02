@@ -4,6 +4,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { createLiveStroke, type LiveStroke } from '@/lib/live-stroke';
 import { flipStrokeRecognition } from '@/lib/recognition-flip';
+import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
 
@@ -32,7 +33,7 @@ export function useWhiteboardPenGesture({
 
   // The pen was put down mid-stroke (Escape, another tool): the stroke goes with it.
   if (penStroke && !isWhiteboardPenIntent(pendingDraw)) {
-    console.debug('[whiteboard] stroke discarded: pen put down');
+    debugLog('[whiteboard] stroke discarded: pen put down');
     setPenStroke(null);
   }
 
@@ -56,7 +57,7 @@ export function useWhiteboardPenGesture({
   const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
   const commitStroke = useEffectEvent((stroke: LiveStroke) => {
     if (stroke.points.length < 2) return;
-    console.debug(
+    debugLog(
       `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
     );
     const snapped = stroke.shaped();
@@ -109,7 +110,7 @@ export function useWhiteboardPenGesture({
       if (pinchingNow()) pinched = true;
       setPenStroke(null);
       if (pinched) {
-        console.debug('[whiteboard] stroke discarded: pinch');
+        debugLog('[whiteboard] stroke discarded: pinch');
         return;
       }
       // Where the pen lifted, if it moved since the last sample. A lifted pen reports no
@@ -121,7 +122,7 @@ export function useWhiteboardPenGesture({
     };
     const onCancel = (e: PointerEvent) => {
       if (!mine(e)) return;
-      console.debug('[whiteboard] stroke discarded: cancel');
+      debugLog('[whiteboard] stroke discarded: cancel');
       setPenStroke(null);
     };
     // Each Alt press flips the stroke (docs/specs/023-whiteboard/whiteboard.md "Shape recognition");

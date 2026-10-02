@@ -13,6 +13,7 @@ import {
 } from '@/lib/power-user-offer';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { ToastOffer } from './useToast';
+import { debugLog } from '@/lib/debug-log';
 
 export type PowerUserOfferDeps = {
   prefs: UserPreferences;
@@ -53,7 +54,7 @@ export function usePowerUserOffer(deps: PowerUserOfferDeps): { onShortcutUsed: (
     // Marked the moment it shows: never again, answered or not.
     d.apply({ ...d.prefs, powerUserOfferShown: true });
     track('UI', 'Opened', 'PowerUserOffer');
-    console.info('[power-user-offer] shown', {
+    debugLog('[power-user-offer] shown', {
       days: counters.days,
       shortcuts: counters.shortcuts,
     });
@@ -62,13 +63,13 @@ export function usePowerUserOffer(deps: PowerUserOfferDeps): { onShortcutUsed: (
       onConfirm: () => {
         track('UI', 'Used', 'PowerUserOffer');
         track('UI', 'Toggled', 'PowerUserModeOn');
-        console.info('[power-user-offer] accepted');
+        debugLog('[power-user-offer] accepted');
         const latest = live.current;
         latest.apply(setPowerUserMode({ ...latest.prefs, powerUserOfferShown: true }, true).prefs);
       },
       onDecline: () => {
         track('UI', 'Declined', 'PowerUserOffer');
-        console.info('[power-user-offer] declined');
+        debugLog('[power-user-offer] declined');
       },
     });
   };

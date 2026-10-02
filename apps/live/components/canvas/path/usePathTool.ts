@@ -23,6 +23,7 @@ import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
 import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
+import { debugLog } from '@/lib/debug-log';
 
 // A press on a toolbar floating over the canvas (the selection toolbar, the edit toolbar) is a
 // button press, never a node.
@@ -116,7 +117,7 @@ export function usePathTool({
     const vanished = !editing && editingId !== null && editingId === lastEditedRef.current;
     lastEditedRef.current = editing?.id ?? null;
     if (!stale && !vanished) return;
-    console.debug(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
+    debugLog(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
     onLeaveEdit();
   }, [stale, editing, editingId, onLeaveEdit]);
   const edit = usePathEditGesture({
