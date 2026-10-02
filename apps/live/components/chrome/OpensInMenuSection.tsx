@@ -50,7 +50,7 @@ export function OpensInMenuSection({
               }}
               className={`flex w-full items-start gap-2.5 px-3 py-1.5 text-left transition ${
                 choice.disabled
-                  ? 'cursor-not-allowed text-slate-400 dark:text-slate-500'
+                  ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
                   : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
             >
