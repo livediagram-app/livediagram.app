@@ -48,8 +48,10 @@ sets them.
 
 ## The pre-boot guard
 
-A small inline script, the first thing in the editor's `<head>`, before any build asset, for stale
-HTML that still slips through (a bfcache restore, a proxy that ignores `no-store`):
+A small inline script, the first script the editor's layout puts in its `<head>`, for stale HTML
+that still slips through (a bfcache restore, a proxy that ignores `no-store`). The framework hoists
+its own stylesheet and async chunk tags above every inline script, so a build asset can fail before
+the guard runs; it therefore both listens and, once the document is parsed, looks back:
 
 - **A build asset that fails to load:** a capture-phase `error` listener on the window sees a
   `<script>` or `<link rel="stylesheet">` under `/_next/static/` fail; at `DOMContentLoaded` it
