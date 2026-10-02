@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { budgetTable, evaluateBudget, type Measurement } from './budget';
+import { budgetTable, evaluateBudget, medianOfRuns, type Measurement } from './budget';
 
 // docs/specs/008-canvas/canvas-performance.md "The budget": each gesture's rule, read from what the
 // probe measured.
@@ -74,5 +74,28 @@ describe('budgetTable', () => {
       '| whiteboard | fit | pan | longest task ≤ 50 ms | 13 ms | pass |',
       '| diagram | 100% | drag | longest task ≤ 50 ms, median frame ≤ 33 ms | 80 ms, 20 ms | **fail** |',
     ]);
+  });
+});
+
+describe('medianOfRuns', () => {
+  it('reads each metric as the median of the runs', () => {
+    const runs = [12, 300, 40, 55, 41].map((t, i) =>
+      m({ gesture: 'drag', longestTaskMs: t, medianFrameMs: [16, 50, 17, 16, 33][i] }),
+    );
+    expect(medianOfRuns(runs)).toEqual(
+      m({ gesture: 'drag', longestTaskMs: 41, medianFrameMs: 17 }),
+    );
+  });
+
+  it('keeps a metric only the runs carry', () => {
+    const runs = [3, 1, 2].map((w) => m({ gesture: 'idle', idleWorkMs: w }));
+    expect(medianOfRuns(runs)).toEqual(m({ gesture: 'idle', idleWorkMs: 2 }));
+  });
+
+  it('refuses no runs, or runs of different rows', () => {
+    expect(() => medianOfRuns([])).toThrow('NoRuns');
+    expect(() => medianOfRuns([m({ gesture: 'pan' }), m({ gesture: 'zoom' })])).toThrow(
+      'MixedRuns',
+    );
   });
 });

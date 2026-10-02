@@ -81,3 +81,27 @@ export function budgetTable(rows: readonly BudgetRow[]): string {
     ),
   ].join('\n');
 }
+
+const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
+
+// One row from repeated runs of the same gesture: each metric the median of the runs, since a single
+// run of a gesture can read two to five times another (docs/specs/008-canvas/canvas-performance.md).
+export function medianOfRuns(runs: readonly Measurement[]): Measurement {
+  const [first] = runs;
+  if (!first) throw new Error('NoRuns');
+  if (runs.some((r) => r.tab !== first.tab || r.zoom !== first.zoom || r.gesture !== first.gesture))
+    throw new Error('MixedRuns');
+  const metric = (key: 'medianFrameMs' | 'idleWorkMs' | 'openMs') => {
+    const values = runs.map((r) => r[key]).filter((v): v is number => v !== undefined);
+    return values.length ? { [key]: median(values) } : {};
+  };
+  return {
+    tab: first.tab,
+    zoom: first.zoom,
+    gesture: first.gesture,
+    longestTaskMs: median(runs.map((r) => r.longestTaskMs)),
+    ...metric('medianFrameMs'),
+    ...metric('idleWorkMs'),
+    ...metric('openMs'),
+  };
+}
