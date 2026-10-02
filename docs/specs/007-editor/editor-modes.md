@@ -76,10 +76,10 @@ element in the same colour.
 
 - **Off-white light canvas.** The Default theme's light canvas is the board's
   off-white (`#fbfaf7`); its dark canvas stays `#0d121a`.
-- **Ink is a theme colour.** The Default theme gains **Ink**, its drawing
-  colour (`#1c1917` light, `#e2e8f0` dark), stored by name and drawn in the
-  version for each viewer's appearance. Ink is in the palette's colours, so
-  any element can take it.
+- **Ink is one colour everywhere.** **Ink**, the drawing colour (`#1c1917`
+  light, `#e2e8f0` dark), is the same on every theme, stored by name and
+  drawn in the version for each viewer's appearance. Ink is in the palette's
+  colours, so any element can take it.
   - Pen strokes and text with no colour of their own are drawn in Ink, in
     both modes.
   - Shapes keep their theme defaults: a shape added in Diagram mode is filled
@@ -91,12 +91,16 @@ element in the same colour.
   Orange, Green, Teal, Violet, Pink) are stored by name on any element and
   drawn in the version tuned for each viewer's appearance, on every tab, in
   every export, thumbnail and image the api or MCP renders.
-- **Draw mode's backdrop ignores the custom background colour.** A tab's
-  custom background colour stays stored and shows in Diagram mode; in Draw
-  mode the canvas is the board colour for the viewer's appearance.
-- **The background pattern is the person's, per mode.** Plain, Dots or Grid
-  is taken from what that person last chose in that mode, not from the
-  document.
+- **One backdrop colour in both modes.** The canvas colour is the tab's
+  own: its theme's canvas, or the custom background colour when one is set;
+  on the Default theme, the off-white or dark canvas.
+- **The pattern:** in Diagram mode, the tab's stored pattern, shared by
+  everyone. In Draw mode, the person's own: Plain, Dots or Grid as they last
+  chose it in Draw mode (synced preferences, Grid until chosen), not stored
+  on the tab, so choosing it changes nothing for anyone else.
+- **Exports, thumbnails and api or MCP images** use the tab's Diagram
+  backdrop: its colour and stored pattern, whoever exports and in whichever
+  mode.
 
 ## What a mode brings into focus
 
