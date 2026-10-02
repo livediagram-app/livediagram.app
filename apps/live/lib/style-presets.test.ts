@@ -400,3 +400,52 @@ describe('applyIconWeightToEl', () => {
     expect(applyIconWeightToEl(square, 'thin')).toBe(square);
   });
 });
+
+// docs/specs/007-editor/editor-modes.md "One look": the element menu's Ink swatch stores Ink by
+// name; any other colour replaces a stored name.
+describe('Ink by name from the colour rows', () => {
+  it('stores Ink as the line\u2019s name on a shape, an arrow and a pen stroke', () => {
+    for (const type of ['shape', 'arrow', 'freehand']) {
+      const out = applyStrokeColorToEl(el(type, { strokeColor: '#ff0000' }), 'ink') as {
+        strokeColor?: string;
+        penColour?: string;
+      };
+      expect(out.penColour, type).toBe('ink');
+      expect(out.strokeColor, type).toBeUndefined();
+    }
+  });
+
+  it('stores Ink as the text\u2019s name on a shape, a text box, a note and an arrow label', () => {
+    for (const type of ['shape', 'text', 'sticky', 'arrow']) {
+      const out = applyTextColorToEl(el(type, { textColor: '#ff0000' }), 'ink') as {
+        textColor?: string;
+        penTextColour?: string;
+      };
+      expect(out.penTextColour, type).toBe('ink');
+      expect(out.textColor, type).toBeUndefined();
+    }
+  });
+
+  it('lets a picked colour replace a stored name', () => {
+    const line = applyStrokeColorToEl(el('shape', { penColour: 'ink' }), '#00ff00') as {
+      penColour?: string;
+      strokeColor?: string;
+    };
+    expect(line.penColour).toBeUndefined();
+    expect(line.strokeColor).toBe('#00ff00');
+    const text = applyTextColorToEl(el('text', { penTextColour: 'blue' }), '#00ff00') as {
+      penTextColour?: string;
+    };
+    expect(text.penTextColour).toBeUndefined();
+  });
+});
+
+describe('Ink where no name can be stored', () => {
+  it('leaves a table and a note border as they are', () => {
+    const table = el('table', { strokeColor: '#123456', textColor: '#123456' });
+    expect(applyStrokeColorToEl(table, 'ink')).toBe(table);
+    expect(applyTextColorToEl(table, 'ink')).toBe(table);
+    const note = el('sticky', { strokeColor: '#123456' });
+    expect(applyStrokeColorToEl(note, 'ink')).toBe(note);
+  });
+});

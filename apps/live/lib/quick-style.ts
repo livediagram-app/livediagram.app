@@ -230,7 +230,13 @@ export function quickStyleView(
     const swatches = applySwatchOverrides(quickSwatches(theme, 'fill'), overrides.fill);
     sections.background = {
       swatches,
-      value: shared(background.map((el) => swatchValue(el, theme, 'fill', swatches))),
+      // A fill stores no name, so it is never Ink.
+      value: shared(
+        background.map((el) => {
+          const v = swatchValue(el, theme, 'fill', swatches);
+          return v === QUICK_INK ? null : v;
+        }),
+      ),
     };
   }
   const textColour = supporting('textColour');
@@ -292,15 +298,21 @@ export function applyQuickStroke(
   if (!isLinedTarget(el, 'stroke')) return el;
   // The swatch replaces a stock colour stored by name; Ink is one, stored as its name.
   const { penColour: _named, strokeColor: _c, strokeSwatch: _s, ...rest } = el;
-  const pick =
-    slot === QUICK_INK
-      ? { penColour: QUICK_INK }
-      : (({ colour, bind }) => ({ strokeColor: colour, strokeSwatch: bind }))(
-          pickFor(theme, 'stroke', slot, overrides),
-        );
+  const pick = strokePick(theme, slot, overrides);
   return rest.type === 'shape'
     ? ({ ...rest, ...pick, colorPreset: undefined } as Element)
     : ({ ...rest, ...pick } as Element);
+}
+
+// What a Stroke row choice writes: Ink by name, or a swatch's colour with its binding.
+function strokePick(
+  theme: ThemeDefinition,
+  slot: QuickColourValue,
+  overrides: SwatchOverrides,
+): { penColour: typeof QUICK_INK } | { strokeColor?: string; strokeSwatch?: QuickSwatchSlot } {
+  if (slot === QUICK_INK) return { penColour: QUICK_INK };
+  const { colour, bind } = pickFor(theme, 'stroke', slot, overrides);
+  return { strokeColor: colour, strokeSwatch: bind };
 }
 
 export function applyQuickFill(

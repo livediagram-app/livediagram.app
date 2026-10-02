@@ -91,6 +91,14 @@ Boxed elements carry three optional colour fields:
 
 All stored as CSS-compatible colour strings (typically `#rrggbb`).
 
+A **stock colour** (Ink, Blue, Red, Orange, Green, Teal, Violet, Pink) is stored by name instead, in
+`penColour` (the line) or `penTextColour` (the text), and drawn in its version for the canvas; an
+own colour in `strokeColor` / `textColor` wins over a name
+([One look](../007-editor/editor-modes.md#one-look)). The context menu's **Text**, **Border**, **Line**
+and caption colour rows offer **Ink** as the swatch after the theme's colours, wherever the element
+can store it by name (shapes, text, notes' text, arrows, pen strokes); choosing it stores `ink`, and
+choosing any other colour clears the name. Text with no colour of its own is drawn in Ink.
+
 ### Default scheme, dark half
 
 The Default colour scheme's dark half is the canvas a dark-mode reader sees on an un-themed tab: a blue-slate one

@@ -10,6 +10,7 @@
 // theme binding, so they only touch their own fields.
 
 import {
+  INK_PEN_COLOUR,
   encodeStrokePoints,
   freehandNormalisedPoints,
   ARROW_THICKNESS_PX,
@@ -131,21 +132,40 @@ export function applyFillColorToEl(el: Element, color: string): Element {
   return el;
 }
 
+// A colour row's choice on an element that stores stock colours by name (docs/specs/007-editor/
+// editor-modes.md "One look"): Ink is stored as its name, any other colour replaces the name.
+const lineColour = (color: string): { strokeColor?: string; penColour?: typeof INK_PEN_COLOUR } =>
+  color === INK_PEN_COLOUR
+    ? { strokeColor: undefined, penColour: INK_PEN_COLOUR }
+    : { strokeColor: color, penColour: undefined };
+const textColour = (
+  color: string,
+): { textColor?: string; penTextColour?: typeof INK_PEN_COLOUR } =>
+  color === INK_PEN_COLOUR
+    ? { textColor: undefined, penTextColour: INK_PEN_COLOUR }
+    : { textColor: color, penTextColour: undefined };
+
 export function applyStrokeColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape')
-    return { ...el, strokeColor: color, colorPreset: undefined, strokeSwatch: undefined };
+    return { ...el, ...lineColour(color), colorPreset: undefined, strokeSwatch: undefined };
+  if (el.type === 'freehand') return { ...el, ...lineColour(color) };
+  if (el.type === 'arrow') return { ...el, ...lineColour(color), strokeSwatch: undefined };
+  // The rest store no name, so Ink (offered only where it can be stored) leaves them as they are.
+  if (color === INK_PEN_COLOUR) return el;
   if (el.type === 'table') return { ...el, strokeColor: color, tablePreset: undefined };
-  if (el.type === 'arrow') return { ...el, strokeColor: color, strokeSwatch: undefined };
-  if (el.type === 'sticky' || el.type === 'freehand') return { ...el, strokeColor: color };
+  if (el.type === 'sticky') return { ...el, strokeColor: color };
   return el;
 }
 
 export function applyTextColorToEl(el: Element, color: string): Element {
-  if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
-  if (el.type === 'table') return { ...el, textColor: color, tablePreset: undefined };
+  if (el.type === 'shape') return { ...el, ...textColour(color), colorPreset: undefined };
   // A hand-picked colour is no longer the quick-swatch slot it came from.
-  if (el.type === 'text') return { ...el, textColor: color, textSwatch: undefined };
-  if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
+  if (el.type === 'text') return { ...el, ...textColour(color), textSwatch: undefined };
+  if (el.type === 'table' && color !== INK_PEN_COLOUR)
+    return { ...el, textColor: color, tablePreset: undefined };
+  if (el.type === 'sticky' || el.type === 'arrow') return { ...el, ...textColour(color) };
+  if (color === INK_PEN_COLOUR) return el;
+  if (isBoxed(el)) return { ...el, textColor: color };
   return el;
 }
 

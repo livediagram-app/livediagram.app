@@ -33,6 +33,8 @@ import {
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -68,6 +70,7 @@ export function ElementContentSections({
   labelFillHandlers,
 }: ElementContentSectionsProps) {
   const boxed = isBoxed(target);
+  const surface = useCanvasSurface();
   return (
     <>
       {/* Caption / Text: whole-element label formatting for a labelled
@@ -126,7 +129,8 @@ export function ElementContentSections({
           <ColourRow
             label={target.type === 'arrow' ? 'Text' : 'Colour'}
             icon={<TextColourIcon />}
-            value={target.textColor ?? '#0f172a'}
+            value={shownColour(target, 'text', surface, '#0f172a')}
+            ink={inkSwatch(target, 'text', surface)}
             {...textColorHandlers}
             {...colorProps('text')}
             {...props.colourPalette}

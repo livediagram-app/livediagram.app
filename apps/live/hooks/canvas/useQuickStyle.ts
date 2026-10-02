@@ -54,6 +54,7 @@ import {
   type QuickIconAlign,
   type QuickStrokeStyle,
   type QuickStyleView,
+  type QuickColourValue,
   type QuickSwatchValue,
   type QuickWidth,
 } from '@/lib/quick-style';
@@ -63,9 +64,9 @@ import type { SwatchOverridesApi } from './useSwatchOverrides';
 
 export type QuickStyleApi = {
   view: QuickStyleView | null;
-  setStroke: (slot: QuickSwatchValue) => void;
+  setStroke: (slot: QuickColourValue) => void;
   setBackground: (slot: QuickSwatchValue) => void;
-  setTextColour: (slot: QuickSwatchValue) => void;
+  setTextColour: (slot: QuickColourValue) => void;
   setWidth: (width: QuickWidth) => void;
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
@@ -148,10 +149,14 @@ export function useQuickStyle(deps: {
   const view = useMemo(() => {
     if (editsBlocked) return null;
     if (phantom && intent) {
-      const tool = onWhiteboard(quickStyleView([phantom], theme, overrides), [phantom], palette);
+      const tool = onWhiteboard(
+        quickStyleView([phantom], theme, overrides, palette.ink),
+        [phantom],
+        palette,
+      );
       return tool && { ...tool, caption: toolCaption(intent) };
     }
-    const plain = quickStyleView(selected, theme, overrides);
+    const plain = quickStyleView(selected, theme, overrides, palette.ink);
     if (!whiteboard) return plain;
     const board = onWhiteboard(plain, selected, palette);
     // Selected strokes first; with nothing selected, the pen in hand.

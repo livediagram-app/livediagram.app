@@ -423,19 +423,86 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
 // docs/specs/008-canvas/quick-style-panel.md "Where it sits": a swatch row never wraps and is never
 // clipped, so the width counts the targets, their gaps, the padding and the border exactly.
 describe('panelFrame', () => {
-  it('is fixed in every form: compact, pen rows, Floating with or without a Palette', () => {
-    // Seven touching 24 px targets, 8 px padding and a 1 px border each side.
-    expect(panelFrame(false, false, false).width).toBe(7 * 24 + 2 * 8 + 2 * 1);
-    // Eight for a whiteboard's pen rows: the ink and seven colours, or the opener.
-    expect(panelFrame(false, false, true).width).toBe(8 * 24 + 2 * 8 + 2 * 1);
+  it('is one width in every mode: eight targets, compact or Floating, or the Palette’s', () => {
+    // Eight touching 24 px targets (the theme's seven and Ink, or the pens' eight), 8 px
+    // padding and a 1 px border each side, so switching mode never resizes the panel.
+    expect(panelFrame(false, false).width).toBe(8 * 24 + 2 * 8 + 2 * 1);
     // Floating spreads eight with 4 px gaps inside 10 px padding.
-    expect(panelFrame(true, false, true).width).toBe(8 * 24 + 7 * 4 + 2 * 10 + 2 * 1);
+    expect(panelFrame(true, false).width).toBe(8 * 24 + 7 * 4 + 2 * 10 + 2 * 1);
     // With a Palette on screen the Palette's width is the panel's.
-    expect(panelFrame(true, true, true).width).toBeUndefined();
+    expect(panelFrame(true, true).width).toBeUndefined();
   });
 
   it('pads the compact panel by the padding the width counts', () => {
-    expect(panelFrame(false, false, true).padding).toBe(8);
-    expect(panelFrame(true, false, true).padding).toBeUndefined();
+    expect(panelFrame(false, false).padding).toBe(8);
+    expect(panelFrame(true, false).padding).toBeUndefined();
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "One look": Ink is the eighth swatch of the Stroke and Text
+// colour rows in Diagram mode, after the theme's colours.
+describe('QuickStylePanel: the Ink swatch', () => {
+  const swatches = Array.from({ length: 7 }, (_, slot) => ({
+    slot: slot as 0,
+    name: slot === 0 ? 'Theme default' : `Colour ${slot}`,
+    color: '#0ea5e9',
+  }));
+  const api = () => ({
+    view: {
+      targetIds: ['a'],
+      sections: {
+        stroke: { value: 'ink' as const, swatches, ink: '#1c1917' },
+        background: { value: 0 as const, swatches },
+        textColour: { value: null, swatches, ink: '#1c1917' },
+      },
+    },
+    setStroke: vi.fn(),
+    setBackground: vi.fn(),
+    setWidth: vi.fn(),
+    setStrokeStyle: vi.fn(),
+    setTextAlign: vi.fn(),
+    setIconAlign: vi.fn(),
+    setCorners: vi.fn(),
+    setTextColour: vi.fn(),
+    setPenColour: vi.fn(),
+    setPenWidth: vi.fn(),
+    setBoardStroke: vi.fn(),
+    setBoardTextColour: vi.fn(),
+    clearStyles: vi.fn(),
+    setSwatchOverride: vi.fn(),
+    clearSwatchOverride: vi.fn(),
+  });
+
+  it('ends the Stroke and Text colour rows with Ink, never Background', () => {
+    render(<QuickStylePanel quickStyle={api()} hidden={false} layout="toolbar" />);
+    const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
+    expect(stroke).toHaveLength(8);
+    expect(stroke[7]!.getAttribute('aria-label')).toBe('Ink');
+    expect(stroke[7]!.getAttribute('aria-checked')).toBe('true');
+    const text = within(screen.getByRole('radiogroup', { name: 'Text colour' })).getAllByRole(
+      'radio',
+    );
+    expect(text[7]!.getAttribute('aria-label')).toBe('Ink');
+    const fill = within(screen.getByRole('radiogroup', { name: 'Background' })).getAllByRole(
+      'radio',
+    );
+    expect(fill).toHaveLength(7);
+  });
+
+  it('chooses Ink by name', () => {
+    const quickStyle = api();
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    const text = within(screen.getByRole('radiogroup', { name: 'Text colour' })).getAllByRole(
+      'radio',
+    );
+    fireEvent.click(text[7]!);
+    expect(quickStyle.setTextColour).toHaveBeenCalledWith('ink');
+  });
+
+  it('opens no custom-colour popover on Ink', () => {
+    render(<QuickStylePanel quickStyle={api()} hidden={false} layout="toolbar" />);
+    const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
+    fireEvent.contextMenu(stroke[7]!);
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

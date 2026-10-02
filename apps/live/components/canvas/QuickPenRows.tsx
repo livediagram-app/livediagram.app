@@ -42,7 +42,7 @@ export function QuickPenRows({
         showTitle={showTitles}
         density={density}
         options={swatches(pen.colour.options)}
-        columns={QUICK_ROW_TARGETS.pen}
+        columns={QUICK_ROW_TARGETS}
         value={pen.colour.value}
         onChoose={quickStyle.setPenColour}
       />
@@ -53,7 +53,7 @@ export function QuickPenRows({
           showTitle={showTitles}
           density={density}
           options={swatches(pen.colour.custom)}
-          columns={QUICK_ROW_TARGETS.pen}
+          columns={QUICK_ROW_TARGETS}
           value={pen.colour.value}
           onChoose={quickStyle.setPenColour}
         />
@@ -106,7 +106,7 @@ export function BoardColourRows({
         showTitle={showTitles}
         density={density}
         options={swatches(section.options)}
-        columns={QUICK_ROW_TARGETS.pen}
+        columns={QUICK_ROW_TARGETS}
         value={section.value}
         onChoose={onChoose}
       />
@@ -117,7 +117,7 @@ export function BoardColourRows({
           showTitle={showTitles}
           density={density}
           options={swatches(section.custom)}
-          columns={QUICK_ROW_TARGETS.pen}
+          columns={QUICK_ROW_TARGETS}
           value={section.value}
           onChoose={onChoose}
         />
