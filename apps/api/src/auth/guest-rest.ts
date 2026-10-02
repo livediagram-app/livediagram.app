@@ -50,4 +50,6 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   'favourites',
   // The Trash lists deleted documents' names and restores / purges them.
   'trash',
+  // A person's default folders (docs/specs/013-workspace/default-folders.md).
+  'placement-defaults',
 ]);

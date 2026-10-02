@@ -3,27 +3,20 @@
 // filed before anything is written. The judgements are pure; the reads they need arrive through
 // `PlacementLookups`, so the whole decision is testable without a database.
 
-import type { DocumentPlacement, PlacementRejection } from '@livediagram/api-schema';
-
-/** Who is creating: the hybrid owner (guest or account) and the verified account id, if any. Team
- *  membership is only ever read against `verifiedUserId`, never the guest header. */
-export type PlacementCaller = { ownerId: string; verifiedUserId: string | null };
-
-/** The folder fields placement reads. */
-export type PlacementFolder = { ownerId: string; teamId: string | null };
-
-/** The reads the resolver needs, injected so it stays free of `env`. */
-export type PlacementLookups = {
-  isJoinedMember(teamId: string, userId: string): Promise<boolean>;
-  getFolder(folderId: string): Promise<PlacementFolder | null>;
-};
-
-/** Which folder step decided. A default-folder step would add its own name. */
-export type PlacementVia = 'explicit' | 'root';
-
-export type PlacementOutcome =
-  | { ok: true; placement: DocumentPlacement; via: PlacementVia }
-  | { ok: false; rejection: PlacementRejection };
+import type {
+  CreationIntent,
+  DocumentPlacement,
+  PlacementRejection,
+} from '@livediagram/api-schema';
+import { defaultFolder } from './default-folder';
+import type {
+  DefaultSkip,
+  FolderStep,
+  PlacementCaller,
+  PlacementFolder,
+  PlacementLookups,
+  PlacementOutcome,
+} from './placement-types';
 
 type Judgement = 'ok' | PlacementRejection;
 
@@ -68,15 +61,6 @@ export function judgeFolder(
   return visible ? 'folder_scope_mismatch' : 'folder_not_found';
 }
 
-type FolderStepInput = {
-  requested: DocumentPlacement;
-  caller: PlacementCaller;
-  lookups: PlacementLookups;
-};
-
-/** One rung of folder resolution: an outcome, or null to pass to the next rung. */
-type FolderStep = (input: FolderStepInput) => Promise<PlacementOutcome | null>;
-
 const explicitFolder: FolderStep = async ({ requested, caller, lookups }) => {
   if (requested.folderId === null) return null;
   const folder = await lookups.getFolder(requested.folderId);
@@ -91,19 +75,21 @@ const explicitFolder: FolderStep = async ({ requested, caller, lookups }) => {
   return { ok: true, placement: requested, via: 'explicit' };
 };
 
-/** Folder steps in order, first answer wins; the space's root answers when none does. A
- *  default-folder step is appended after `explicitFolder`. */
-const FOLDER_STEPS: readonly FolderStep[] = [explicitFolder];
+/** Folder steps in order, first answer wins; the space's root answers when none does. */
+const FOLDER_STEPS: readonly FolderStep[] = [explicitFolder, defaultFolder];
 
-function spaceRoot(requested: DocumentPlacement): PlacementOutcome {
-  return { ok: true, placement: { teamId: requested.teamId, folderId: null }, via: 'root' };
+function spaceRoot(requested: DocumentPlacement, skipped: DefaultSkip[]): PlacementOutcome {
+  const placement = { teamId: requested.teamId, folderId: null };
+  return { ok: true, placement, via: 'root', skipped };
 }
 
-/** Resolves a create's placement: the space first, then the folder steps. Writes nothing. */
+/** Resolves a create's placement: the space first, then the folder steps, the creation intent
+ *  choosing among the caller's default folders. Writes nothing. */
 export async function resolvePlacement(
   requested: DocumentPlacement,
   caller: PlacementCaller,
   lookups: PlacementLookups,
+  intent: CreationIntent | null,
 ): Promise<PlacementOutcome> {
   if (requested.teamId !== null) {
     const joined =
@@ -112,9 +98,10 @@ export async function resolvePlacement(
     const judgement = judgeTeam(caller.verifiedUserId, joined);
     if (judgement !== 'ok') return { ok: false, rejection: judgement };
   }
+  const skipped: DefaultSkip[] = [];
   for (const step of FOLDER_STEPS) {
-    const outcome = await step({ requested, caller, lookups });
-    if (outcome) return outcome;
+    const answer = await step({ requested, intent, caller, lookups, skipped });
+    if (answer) return answer.ok ? { ...answer, skipped } : answer;
   }
-  return spaceRoot(requested);
+  return spaceRoot(requested, skipped);
 }

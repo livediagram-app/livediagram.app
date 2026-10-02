@@ -1,7 +1,7 @@
 // The response for a refused placement (docs/specs/013-workspace/folders.md "Placement on create"):
 // the shared `{ error }` envelope, with the status each refusal carries.
 
-import type { PlacementRejection } from '@livediagram/api-schema';
+import { INTENT_INVALID, type PlacementRejection } from '@livediagram/api-schema';
 import { json } from '../responses';
 
 const PLACEMENT_REJECTION_STATUS: Record<PlacementRejection, number> = {
@@ -13,4 +13,9 @@ const PLACEMENT_REJECTION_STATUS: Record<PlacementRejection, number> = {
 
 export function placementRejected(rejection: PlacementRejection): Response {
   return json({ error: rejection }, { status: PLACEMENT_REJECTION_STATUS[rejection] });
+}
+
+/** The create's refusal of a malformed creation intent (docs/specs/013-workspace/default-folders.md). */
+export function intentRejected(): Response {
+  return json({ error: INTENT_INVALID }, { status: 400 });
 }

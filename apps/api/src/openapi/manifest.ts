@@ -121,7 +121,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary:
       'Create a document, optionally seeding it with tabs and filing it in a team and/or folder. ' +
       'An invalid placement refuses the whole create by name (placement_invalid, team_forbidden, ' +
-      'folder_not_found, folder_scope_mismatch); nothing is written.',
+      'folder_not_found, folder_scope_mismatch) or a malformed intent (intent_invalid); nothing is ' +
+      'written.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -141,6 +142,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: ['string', 'null'],
           description:
             "A folder of the chosen space; absent or null = that space's root (Unsorted).",
+        },
+        // The creation intent (docs/specs/013-workspace/default-folders.md).
+        intent: {
+          type: ['object', 'null'],
+          description:
+            'What the new document opens as. With no teamId and no folderId, the document lands in ' +
+            "the caller's default folder for it: the board default, else the mode default, else " +
+            'the root. Malformed: intent_invalid (400).',
+          properties: {
+            mode: { type: 'string', enum: ['diagram', 'draw'] },
+            boardType: {
+              type: ['string', 'null'],
+              enum: ['event-storming', 'retrospective', 'kanban', null],
+            },
+          },
+          required: ['mode'],
         },
         // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
         createdAt: { type: 'integer' },
@@ -991,6 +1008,61 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Un-star a document for the caller.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
+  },
+
+  // ---- Default folders (docs/specs/013-workspace/default-folders.md) ----
+  {
+    method: 'GET',
+    path: '/placement-defaults',
+    segment: 'placement-defaults',
+    tag: 'Folders',
+    summary:
+      "The caller's default folders, one per key (mode:diagram, mode:draw, board:event-storming, " +
+      'board:retrospective, board:kanban), dangling ones included.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: {
+      type: 'object',
+      properties: {
+        defaults: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { key: { type: 'string' }, folderId: { type: 'string' } },
+            required: ['key', 'folderId'],
+          },
+        },
+      },
+    },
+    statuses: [200, 401],
+  },
+  {
+    method: 'PUT',
+    path: '/placement-defaults/{key}',
+    segment: 'placement-defaults',
+    tag: 'Folders',
+    summary:
+      "Set the caller's default folder for a key: their own personal folder or a folder of a team " +
+      'they have joined. Refusals: default_key_invalid, default_folder_invalid (400), ' +
+      'folder_not_found (404).',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { folderId: { type: 'string', minLength: 1 } },
+      required: ['folderId'],
+    },
+    statuses: [204, 400, 401, 404, 429],
+  },
+  {
+    method: 'DELETE',
+    path: '/placement-defaults/{key}',
+    segment: 'placement-defaults',
+    tag: 'Folders',
+    summary: "Clear the caller's default folder for a key. Idempotent; default_key_invalid (400).",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 400, 401, 429],
   },
 
   // ---- Trash (docs/specs/013-workspace/trash.md) ----

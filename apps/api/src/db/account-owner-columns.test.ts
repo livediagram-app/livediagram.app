@@ -35,6 +35,8 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   },
   { table: 'shared_with', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
+  { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
   // Shape libraries (docs/specs/013-workspace/shape-libraries.md): guests have them too.
@@ -128,6 +130,12 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     last_seen: T0,
   });
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
+  insert(sql, 'placement_defaults', {
+    owner_id: id,
+    default_key: 'mode:draw',
+    folder_id: `f-${id}`,
+    updated_at: T0,
+  });
   insert(sql, 'custom_themes', {
     id: `t-${id}`,
     owner_id: id,

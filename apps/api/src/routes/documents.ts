@@ -19,6 +19,8 @@ import {
 import {
   CHANGE_LOG_TAB_NOT_SAVED,
   DOCUMENT_CONVERSION_HEADER,
+  INTENT_INVALID,
+  readCreationIntent,
   readDocumentConversion,
 } from '@livediagram/api-schema';
 import { parseChangeLogEntryBody } from '../change-log-body';
@@ -73,12 +75,13 @@ import { handleDocumentSubresources } from './document-subresource-routes';
 import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
 import { placementLookups } from '../placement/placement-lookups';
 import {
+  logDefaultSkipped,
   logPlacementRejected,
   logPlacementResolved,
   logPlacementSkipped,
   placementScope,
 } from '../placement/placement-log';
-import { placementRejected } from '../placement/placement-response';
+import { intentRejected, placementRejected } from '../placement/placement-response';
 import type { ChangeLogEntryDTO, DocumentDTO } from '../types';
 import {
   gateEdit,
@@ -104,6 +107,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       const body = (await request.json()) as Omit<Partial<DocumentDTO>, 'tabs'> & {
         tabs?: Tab[];
+        intent?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -120,6 +124,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!requested) {
         logPlacementRejected('placement_invalid', placementScope(body.teamId));
         return placementRejected('placement_invalid');
+      }
+      // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
+      // create at the root of My documents lands in. Malformed, it refuses the create.
+      const intent = readCreationIntent(body.intent);
+      if (!intent.ok) {
+        logPlacementRejected(INTENT_INVALID, placementScope(body.teamId));
+        return intentRejected();
       }
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
@@ -181,12 +192,14 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           requested,
           { ownerId: owner, verifiedUserId: ctx.verifiedUserId },
           placementLookups(env),
+          intent.intent,
         );
         if (!outcome.ok) {
           logPlacementRejected(outcome.rejection, placementScope(requested.teamId));
           return placementRejected(outcome.rejection);
         }
-        logPlacementResolved(outcome.placement, outcome.via);
+        for (const skip of outcome.skipped) logDefaultSkipped(skip);
+        logPlacementResolved(outcome.placement, outcome);
         placement = outcome.placement;
       }
       // A seeded tab whose id another document holds is created under a fresh

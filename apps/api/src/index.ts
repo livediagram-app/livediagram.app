@@ -52,6 +52,7 @@ import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
+import { handlePlacementDefaults } from './routes/placement-defaults';
 import { handleTimeline } from './routes/timeline';
 import { handleActivity } from './routes/activity';
 import { handlePreferences } from './routes/preferences';
@@ -319,6 +320,8 @@ async function routeApiRequest(
         return await handleAccount(ctx);
       case 'favourites':
         return await handleFavourites(ctx);
+      case 'placement-defaults':
+        return await handlePlacementDefaults(ctx);
       case 'trash':
         return await handleTrash(ctx);
       case 'timeline':
