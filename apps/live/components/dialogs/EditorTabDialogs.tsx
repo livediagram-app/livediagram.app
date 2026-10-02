@@ -75,8 +75,8 @@ export function EditorTabDialogs() {
           // Export what the author is LOOKING at: a tab on the Default colour
           // scheme paints in the viewer's appearance (docs/specs/007-editor/live-app.md), so the export
           // takes the resolved backdrop rather than the stored one — and, from
-          // it, the ink for every element that carries no colours of its own (a
-          // whiteboard's board ink included, lib/export-as-seen).
+          // it, the ink for every element that carries no colours of its own. It is the tab's
+          // Diagram backdrop in either mode (docs/specs/007-editor/editor-modes.md "One look").
           tab={tabAsSeen({
             ...activeTab,
             ...(exportScope === 'selection'

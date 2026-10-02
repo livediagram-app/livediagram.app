@@ -206,7 +206,7 @@ describe('standalone text', () => {
       y: 6,
       width: 90,
       height: 79,
-      autoWidth: true,
+      sizing: 'fit',
       text: {
         text: 'Tools',
         fontPx: 63.36,
@@ -224,7 +224,7 @@ describe('standalone text', () => {
       sceneOf([b.text('a long\nline', { originalText: 'a long line', autoResize: false })]).items,
       'text',
     );
-    expect(t!.autoWidth).toBe(false);
+    expect(t!.sizing).toBe('wrap');
     expect(t!.text.text).toBe('a long line');
   });
 
@@ -232,7 +232,7 @@ describe('standalone text', () => {
     const b = excalidrawBuilder();
     const [t] = only(sceneOf([b.text('one\ntwo\nthree', { autoResize: undefined })]).items, 'text');
     expect(t!.text.text).toBe('one\ntwo\nthree');
-    expect(t!.autoWidth).toBe(true);
+    expect(t!.sizing).toBe('fit');
   });
 
   it('maps code families to mono and the rest to sans', () => {

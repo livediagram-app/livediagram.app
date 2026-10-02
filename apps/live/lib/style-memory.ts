@@ -17,7 +17,7 @@ import { isQuickStyleTarget } from './quick-style';
 
 // `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every
 // text element; `board:` before any of them on a whiteboard, which keeps a memory
-// of its own (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays").
+// of its own (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays").
 type BaseKindKey = `shape:${string}` | 'arrow' | 'text' | 'path';
 export type StyleKindKey = BaseKindKey | `board:${BaseKindKey}`;
 const BOARD_PREFIX = 'board:';
@@ -29,8 +29,8 @@ export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 // The fields memory records and applies. The label colour and a preset's
 // binding ride with the colours, so a remembered background never lands under
 // unreadable text and a remembered preset look follows the theme.
-// `penColour` / `penTextColour`: a whiteboard stock colour stored by name (docs/specs/023-whiteboard/
-// whiteboard.md "The quick style panel stays"), checked against the names when read.
+// `penColour` / `penTextColour`: a whiteboard stock colour stored by name (docs/specs/023-draw-mode/
+// draw-mode.md "The quick style panel stays"), checked against the names when read.
 const SHAPE_MEMORY_FIELDS = {
   strokeColor: 'string',
   penColour: 'string',
@@ -52,7 +52,7 @@ const ARROW_MEMORY_FIELDS = {
   strokeStyle: 'string',
   flow: 'string',
 } as const;
-// A path (docs/specs/023-whiteboard/path-tool.md "Style"): its line and its fill.
+// A path (docs/specs/023-draw-mode/path-tool.md "Style"): its line and its fill.
 const PATH_MEMORY_FIELDS = {
   strokeColor: 'string',
   penColour: 'string',

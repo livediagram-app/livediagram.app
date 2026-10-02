@@ -50,7 +50,7 @@ describe('useCanvasPanAndMarquee space-held modifier', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Selecting": Shift with Select on a whiteboard always
+// docs/specs/023-draw-mode/draw-mode.md "Selecting": Shift with Select on a whiteboard always
 // drags a selection box that adds to the selection; a Shift-click on an element toggles it.
 describe('useCanvasPanAndMarquee additive marquee', () => {
   const square = { id: 'a', type: 'shape', shape: 'square', x: 10, y: 10, width: 20, height: 20 };

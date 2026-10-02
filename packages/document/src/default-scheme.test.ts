@@ -25,7 +25,8 @@ describe('the Default colour scheme', () => {
     expect(light.id).toBe(dark.id);
     expect(light.label).toBe(dark.label);
     // Different canvas.
-    expect(light.backgroundColor).toBe('#ffffff');
+    // The light canvas is the board's off-white (docs/specs/007-editor/editor-modes.md "One look").
+    expect(light.backgroundColor).toBe('#fbfaf7');
     expect(dark.backgroundColor).toBe('#0d121a');
     expect(light.patternColor).not.toBe(dark.patternColor);
   });
@@ -47,7 +48,7 @@ describe('the Default colour scheme', () => {
 
   it('answers an unknown id with the Default scheme for that appearance', () => {
     expect(getBuiltInTheme(undefined, 'dark').backgroundColor).toBe('#0d121a');
-    expect(getBuiltInTheme('not-a-scheme', 'light').backgroundColor).toBe('#ffffff');
+    expect(getBuiltInTheme('not-a-scheme', 'light').backgroundColor).toBe('#fbfaf7');
   });
 });
 

@@ -25,7 +25,6 @@ import {
   ES_LANES,
   isEventStormingNote,
   isBoxed,
-  isWhiteboardTab,
   nearestElementTowards,
   opposingAnchor,
   rebindArrowAnchorsAfterMove,
@@ -442,10 +441,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
-          // A lone whiteboard text box hugs its text through the resize
-          // (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+          // A lone text box that fits or wraps hugs its text through the resize, in either
+          // editor mode (docs/specs/007-editor/editor-modes.md "A text box's sizing").
           const textHug =
-            isWhiteboardTab(activeTab) && drag.startBounds.size === 1
+            drag.startBounds.size === 1
               ? {
                   mode: drag.mode,
                   constrain: drag.aspectLocked || e.shiftKey,

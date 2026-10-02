@@ -27,8 +27,9 @@ import {
   type QuickCorners,
   type QuickIconAlign,
   type QuickStrokeStyle,
+  QUICK_INK,
+  type QuickColourValue,
   type QuickStyleView,
-  type QuickSwatchValue,
   type QuickWidth,
 } from '@/lib/quick-style';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
@@ -84,14 +85,24 @@ const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
   right: 'Icon after label',
 };
 
-const swatchOptions = (swatches: ShownSwatch[]): QuickOption<number>[] =>
-  swatches.map((s) => ({
+// A colour row's options: the theme's seven swatches, then, on the Stroke and Text colour rows,
+// Ink (docs/specs/007-editor/editor-modes.md "One look"), stored by name.
+const swatchOptions = (swatches: ShownSwatch[], ink?: string): QuickOption<QuickColourValue>[] => [
+  ...swatches.map((s) => ({
     value: s.slot,
     name: s.name,
     content: null,
     swatch: s.color,
     overridden: s.override !== undefined,
-  }));
+  })),
+  ...(ink ? [inkOption(ink)] : []),
+];
+const inkOption = (ink: string): QuickOption<QuickColourValue> => ({
+  value: QUICK_INK,
+  name: 'Ink',
+  content: null,
+  swatch: ink,
+});
 
 // The swatch whose custom-colour popover is open.
 type Editing = { role: QuickSwatchRole; slot: QuickSwatchSlot; anchor: HTMLButtonElement };
@@ -172,12 +183,7 @@ export function QuickStylePanel({
   if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
-  // Eight-colour rows (the pens', a whiteboard's Stroke and Text colour) need the wider frame.
-  const frame = panelFrame(
-    docked,
-    !!spot?.width,
-    !!view.pen || !!view.sections.boardStroke || !!view.sections.boardText,
-  );
+  const frame = panelFrame(docked, !!spot?.width);
   const editedSwatch = editing
     ? view.sections[ROW_OF(editing.role).section]?.swatches[editing.slot]
     : undefined;
@@ -283,16 +289,15 @@ export function QuickStylePanel({
 }
 
 // A fixed width, never the content's (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
-// switching between a one-colour and a seven-colour row must not resize the panel, and a swatch row
+// switching between a one-colour and an eight-colour row, or between modes, must not resize the panel, and a swatch row
 // never wraps and is never clipped, so the width counts the targets, their gaps, the padding and
 // the border exactly. Compact rows put their targets side by side, touching; Floating spreads them
 // with a gap, and takes the Palette's width when a Palette is on screen.
 export function panelFrame(
   docked: boolean,
   paletteWidth: boolean,
-  penRows: boolean,
 ): { className: string; width?: number; padding?: number } {
-  const targets = penRows ? QUICK_ROW_TARGETS.pen : QUICK_ROW_TARGETS.swatches;
+  const targets = QUICK_ROW_TARGETS;
   const border = 2 * QUICK_BORDER_PX;
   if (docked) {
     if (paletteWidth) return { className: '' };
@@ -322,9 +327,11 @@ function QuickStyleSections({
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
   // Slot 0 is the way back to the theme and is never overridden.
-  const editFor = (role: QuickSwatchRole) => (slot: number, anchor: HTMLButtonElement) => {
-    if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
-  };
+  // Nor is Ink: it is the same colour on every theme.
+  const editFor =
+    (role: QuickSwatchRole) => (slot: QuickColourValue, anchor: HTMLButtonElement) => {
+      if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
+    };
   const { width, style, textAlign, iconAlign, corners } = view.sections;
   // Whose style this is when it is not plainly the selection: the pen in hand,
   // the selected strokes, or a tool's next mark. Power user mode leaves it out.
@@ -373,11 +380,17 @@ function QuickStyleSections({
             title={row.title}
             testId={row.testId}
             showTitle={showTitles}
-            options={swatchOptions(colours.swatches)}
+            options={swatchOptions(colours.swatches, 'ink' in colours ? colours.ink : undefined)}
+            columns={QUICK_ROW_TARGETS}
             density={density}
             onOptionContext={editFor(row.role)}
             value={colours.value}
-            onChoose={(slot) => quickStyle[row.set](slot as QuickSwatchValue)}
+            onChoose={(value) => {
+              // Ink is a choice of the Stroke and Text colour rows only.
+              if (value !== QUICK_INK) quickStyle[row.set](value);
+              else if (row.role === 'stroke') quickStyle.setStroke(value);
+              else if (row.role === 'text') quickStyle.setTextColour(value);
+            }}
           />
         ) : null;
       })}

@@ -17,7 +17,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Pens".
+// docs/specs/023-draw-mode/draw-mode.md "Pens".
 describe('whiteboard pens', () => {
   it('offers the main pen and second and third pens, ink then blue then red, at medium width', () => {
     const pens = DEFAULT_WHITEBOARD_PREFS.pens;
@@ -81,7 +81,7 @@ describe('parseWhiteboardPrefs', () => {
   });
 
   it('keeps the main pen in the ink, and lets the second and third pens take the ink too', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": Ink is a stock colour for any marker.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": Ink is a stock colour for any marker.
     const parsed = parseWhiteboardPrefs({
       pens: [
         { id: 'main', colour: '#e5484d', width: 'fine' },

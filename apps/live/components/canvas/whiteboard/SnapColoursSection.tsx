@@ -1,6 +1,6 @@
 'use client';
 
-// The Settings flyout's Colours section (docs/specs/023-whiteboard/whiteboard.md "Snap colours"):
+// The Settings flyout's Colours section (docs/specs/023-draw-mode/draw-mode.md "Snap colours"):
 // shown only while the board has custom colours to snap, naming how many, with one button that
 // snaps them all to stock colours. Afterwards it says what happened, until the flyout closes.
 

@@ -19,7 +19,7 @@ import {
 export type { ShelfCategory };
 
 // Whiteboard is a different activity from the diagram templates, and not a category: never on a
-// category shelf or a tile of its own, only on Popular (third) (docs/specs/023-whiteboard/whiteboard.md "Creating one").
+// category shelf or a tile of its own, only on Popular (third) (docs/specs/023-draw-mode/draw-mode.md "Creating one").
 const onShelf = (t: TemplateDescriptor) => t.kind !== 'whiteboard';
 
 // The template step's browse surface, lifted out of TemplatePicker: the

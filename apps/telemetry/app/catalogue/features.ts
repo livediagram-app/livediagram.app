@@ -210,42 +210,67 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Whiteboards (docs/specs/023-whiteboard/whiteboard.md): boards made, and which of the dock's
+// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
 // choices people reach for. Headed by the boards made; the rest are settings.
 export const WHITEBOARDS_CREATED = chart(
-  'Whiteboard',
+  'Draw',
   'Created',
   'Whiteboards Created',
   'A whiteboard tab made, from the New Document wizard or as a new tab.',
 );
 
 export const WHITEBOARD_PENS = chart(
-  'Whiteboard',
+  'Draw',
   'Selected',
   'Pens Picked',
   'A whiteboard pen picked up: the main, second or third pen.',
 );
 
 export const WHITEBOARD_SETTINGS = chart(
-  'Whiteboard',
+  'Draw',
   'Changed',
   'Pens, Eraser and Background',
   "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
 );
 
 export const WHITEBOARD_RECOGNITION = chart(
-  'Whiteboard',
+  'Draw',
   'Toggled',
   'Shape Recognition',
   'Shape recognition switched on or off on a whiteboard.',
 );
 
+// Editor modes (docs/specs/007-editor/editor-modes.md): switches between Diagram and Draw.
+export const EDITOR_MODE_SWITCHES = chart(
+  'Editor',
+  'Changed',
+  'Editor Mode Switches',
+  'A tab switched to Diagram mode or Draw mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw'] },
+);
+
+// The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
+export const TAB_OPENS_IN = chart(
+  'Tab',
+  'Changed',
+  'Opening Modes Set',
+  'A tab set to open in Diagram mode or Draw mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw'] },
+);
+
 export const WHITEBOARDS: MetricStack = {
   stack: true,
-  title: 'Whiteboards',
+  title: 'Draw Mode',
   blurb:
-    'Whiteboard tabs made, and the pens, erasers, backgrounds and recognition people use on them.',
-  members: [WHITEBOARDS_CREATED, WHITEBOARD_PENS, WHITEBOARD_SETTINGS, WHITEBOARD_RECOGNITION],
+    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+  members: [
+    WHITEBOARDS_CREATED,
+    EDITOR_MODE_SWITCHES,
+    TAB_OPENS_IN,
+    WHITEBOARD_PENS,
+    WHITEBOARD_SETTINGS,
+    WHITEBOARD_RECOGNITION,
+  ],
   headline: WHITEBOARDS_CREATED,
 };
 

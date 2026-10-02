@@ -100,7 +100,7 @@ describe('onShortcutUsed', () => {
   });
 });
 
-describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts")', () => {
+describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts")', () => {
   const board = () => {
     const wb = {
       pickSelect: vi.fn(),
@@ -233,5 +233,62 @@ describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard sho
     expect(wb.pickPen).not.toHaveBeenCalled();
     expect(wb.pickEraser).not.toHaveBeenCalled();
     expect(wb.pickSelect).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Shift+D moves to the next editor mode (docs/specs/007-editor/editor-modes.md "The mode switch").
+describe('Shift+D', () => {
+  it('cycles the editor mode where a switch is offered', () => {
+    const onCycleEditorMode = vi.fn();
+    const { bag, spies } = deps({ selectedId: null, onCycleEditorMode });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    const e = press('D', { shiftKey: true });
+    expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
+    expect(e.defaultPrevented).toBe(true);
+    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing where no switch is offered, and adds no diamond', () => {
+    const addShape = vi.fn();
+    const { bag } = deps({ selectedId: null, onCycleEditorMode: null, addShape });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    const e = press('D', { shiftKey: true });
+    expect(e.defaultPrevented).toBe(false);
+    expect(addShape).not.toHaveBeenCalled();
+  });
+
+  it('still reaches Draw mode, whose dock owns the plain keys', () => {
+    const onCycleEditorMode = vi.fn();
+    const { bag } = deps({ selectedId: null, onCycleEditorMode, whiteboard: {} as never });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('D', { shiftKey: true });
+    expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
+  });
+
+  it('yields to type-to-edit on a selected labelled element', () => {
+    const onCycleEditorMode = vi.fn();
+    const onTypeIntoSelected = vi.fn(() => true);
+    const { bag } = deps({ onCycleEditorMode, onTypeIntoSelected });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('D', { shiftKey: true });
+    expect(onTypeIntoSelected).toHaveBeenCalledWith('a', 'D');
+    expect(onCycleEditorMode).not.toHaveBeenCalled();
+  });
+
+  it('obeys the shortcuts switch', () => {
+    const onCycleEditorMode = vi.fn();
+    const { bag } = deps({ selectedId: null, onCycleEditorMode, enabled: false });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('D', { shiftKey: true });
+    expect(onCycleEditorMode).not.toHaveBeenCalled();
+  });
+
+  it('leaves a modified D (duplicate) alone', () => {
+    const onCycleEditorMode = vi.fn();
+    const { bag } = deps({ selectedId: null, onCycleEditorMode });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('D', { shiftKey: true, metaKey: true });
+    press('D', { shiftKey: true, altKey: true });
+    expect(onCycleEditorMode).not.toHaveBeenCalled();
   });
 });

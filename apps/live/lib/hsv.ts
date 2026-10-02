@@ -1,5 +1,5 @@
 // Hue, saturation and value for the custom colour picker's square and slider
-// (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): the square is saturation (x) by
+// (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the square is saturation (x) by
 // brightness (y) at the slider's hue. Hue in degrees 0 to 360, saturation and value 0 to 1.
 
 export type Hsv = { h: number; s: number; v: number };

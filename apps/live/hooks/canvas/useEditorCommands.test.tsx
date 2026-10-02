@@ -22,6 +22,7 @@ function editor(over: Record<string, unknown> = {}) {
     selectedId: null,
     multiSelectedIds: new Set<string>(),
     activeTab: { id: 't1', elements: [] },
+    editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },
     canUndo: true,
     canRedo: false,
     zenMode: false,
@@ -65,5 +66,15 @@ describe('useEditorCommands', () => {
     result.current.runCommand('undo');
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  // docs/specs/007-editor/editor-modes.md: Draw mode has no highlighter or format painter.
+  it('follows the editor mode, not the tab', () => {
+    ctx = editor({ editorMode: { mode: 'draw', setMode: vi.fn(), canSwitch: true } });
+    const draw = ids(renderHook(() => useEditorCommands()).result.current.commandItems);
+    expect(draw).not.toContain('tool:highlighter');
+    ctx = editor();
+    const diagram = ids(renderHook(() => useEditorCommands()).result.current.commandItems);
+    expect(diagram).toContain('tool:highlighter');
   });
 });

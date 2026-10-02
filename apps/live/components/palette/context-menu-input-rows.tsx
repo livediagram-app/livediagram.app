@@ -3,7 +3,7 @@ import { Tooltip, Glyph } from '@livediagram/ui';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
-import { type IconPosition } from '@livediagram/document';
+import { INK_PEN_COLOUR, type IconPosition } from '@livediagram/document';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
 const NOOP = () => {};
@@ -58,6 +58,7 @@ export function ColourRow({
   onPreview,
   onCommit,
   onPreviewEnd,
+  ink,
 }: {
   label: string;
   // A mark for what this row paints (docs/specs/008-canvas/canvas-and-palette.md Colours). Every category shows
@@ -77,6 +78,9 @@ export function ColourRow({
   onPreview?: (color: string) => void;
   onCommit?: (color: string) => void;
   onPreviewEnd?: () => void;
+  // Ink, in its version for the canvas, where the row can store it by name
+  // (docs/specs/007-editor/editor-modes.md "One look"): the swatch after the theme's colours.
+  ink?: string;
 } & ColourPalette) {
   // Revert an in-flight swatch preview if the menu/section unmounts mid-hover
   // (pointerleave doesn't fire on unmount).
@@ -218,6 +222,27 @@ export function ColourRow({
               />
             </Tooltip>
             {presets.map((c) => swatch(c, false))}
+            {ink ? (
+              <Tooltip label="Ink">
+                <button
+                  type="button"
+                  aria-label="Ink"
+                  aria-pressed={value.toLowerCase() === ink.toLowerCase()}
+                  // Chosen by name, so never one of your colours.
+                  onClick={() => (onCommit ?? onChange)(INK_PEN_COLOUR)}
+                  onPointerEnter={
+                    onPreview ? onMouseHover(() => onPreview(INK_PEN_COLOUR)) : undefined
+                  }
+                  onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
+                  className={`h-7 w-7 cursor-pointer transition ${
+                    value.toLowerCase() === ink.toLowerCase()
+                      ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
+                      : 'hover:brightness-95'
+                  }`}
+                  style={{ backgroundColor: ink }}
+                />
+              </Tooltip>
+            ) : null}
             {(customs ?? [])
               .filter((c) => !presets.some((p) => p.toLowerCase() === c.toLowerCase()))
               .map((c) => swatch(c, true))}

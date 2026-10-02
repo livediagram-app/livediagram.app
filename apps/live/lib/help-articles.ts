@@ -96,7 +96,7 @@ export const HELP_ARTICLES = {
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
-  whiteboards: 'canvas/whiteboards',
+  drawMode: 'canvas/draw-mode',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
 } as const;
@@ -347,9 +347,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
   },
-  whiteboards: {
-    title: 'Learn about whiteboards',
-    description: 'The dock, its pens and shapes, and where it sits.',
+  drawMode: {
+    title: 'Learn about Draw mode',
+    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   livePresence: {
     title: 'Learn about live presence',

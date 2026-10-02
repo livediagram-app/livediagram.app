@@ -33,6 +33,7 @@ function harness() {
     get activeTab() {
       return { id: 't', name: 'Tab', elements } as Tab;
     },
+
     zoomRef: { current: 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),

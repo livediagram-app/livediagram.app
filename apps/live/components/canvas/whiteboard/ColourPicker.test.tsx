@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { penColourHex, readablePenColour, type PenColour } from '@livediagram/document';
 import { ColourPicker } from './ColourPicker';
 
-// docs/specs/023-whiteboard/whiteboard.md "The colour picker".
+// docs/specs/023-draw-mode/draw-mode.md "The colour picker".
 const INK = '#e2e8f0';
 function setup(value: PenColour | null = 'blue', yours: string[] = ['#ff6b00', '#00a39b']) {
   const onPick = vi.fn();
@@ -105,7 +105,7 @@ describe('ColourPicker', () => {
   });
 
   it('removes a custom colour from its menu, and moves the focus to the next one', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": Removing one.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": Removing one.
     const { onRemove, rerender } = setup('blue', ['#ff6b00', '#00a39b']);
     const orange = screen.getByRole('button', { name: 'Custom #ff6b00' });
     fireEvent.contextMenu(orange);

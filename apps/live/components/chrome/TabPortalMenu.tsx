@@ -24,6 +24,7 @@ import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
+import { OpensInMenuSection, type OpensInChoice } from './OpensInMenuSection';
 import {
   AddTabToDocumentDialog,
   AddTabToFolderDialog,
@@ -48,6 +49,7 @@ export function PortalMenu({
   onCopyTo,
   onToggleLock,
   locked,
+  opensIn,
   selfId,
   voteSelfId,
   otherDocuments,
@@ -77,6 +79,8 @@ export function PortalMenu({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
+  // The Opens in choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
+  opensIn?: OpensInChoice;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
@@ -419,6 +423,7 @@ export function PortalMenu({
                 />
               </MenuTileGrid>
             </MenuAccordionSection>
+            {opensIn ? <OpensInMenuSection choice={opensIn} {...sectionProps('opens-in')} /> : null}
             {/* ── Look & Feel / Font / Cleanup band — see
                 TabCanvasMenuSections. Rendered whenever canvas actions are
                 available, which is both entry points (canvas right-click AND

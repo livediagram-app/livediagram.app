@@ -235,7 +235,7 @@ export function RichLabel({
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: LabelPadding;
-  // A Shift-resized text box's scale on every size (docs/specs/023-whiteboard/whiteboard.md).
+  // A Shift-resized text box's scale on every size (docs/specs/023-draw-mode/draw-mode.md).
   textScale?: number;
   fontFamily?: string;
   multiline: boolean;

@@ -252,7 +252,7 @@ describe('boardToScene', () => {
     });
     expect(items[2]).toMatchObject({
       kind: 'text',
-      autoWidth: true,
+      sizing: 'fit',
       height: 30,
       text: { fontPx: 12, family: 'sans' },
     });
@@ -274,7 +274,7 @@ describe('boardToScene', () => {
       ],
       { background: { hex: '#1f1f1f' } },
     );
-    expect(items[0]).toMatchObject({ autoWidth: false, width: 200, text: { colour: 'ink' } });
+    expect(items[0]).toMatchObject({ sizing: 'wrap', width: 200, text: { colour: 'ink' } });
   });
 
   it('maps images to assets once per file, and notes missing ones', () => {

@@ -5,7 +5,7 @@ import { STRIP_SELECTOR, useStripCrowdsCorners } from './useStripCrowdsCorners';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 
 // Whether a bar across the top (the Toolbar strip, or a whiteboard dock at the top) reaches into a
-// top-corner panel stack (docs/specs/007-editor/toolbar-layout.md, docs/specs/023-whiteboard/whiteboard.md
+// top-corner panel stack (docs/specs/007-editor/toolbar-layout.md, docs/specs/023-draw-mode/draw-mode.md
 // "Where the dock sits").
 
 function boxed(el: HTMLElement, left: number, right: number) {

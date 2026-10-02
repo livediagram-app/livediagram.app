@@ -19,7 +19,7 @@ export type FreehandGeometry = Pick<FreehandElement, 'x' | 'y' | 'width' | 'heig
 // outwards to whole canvas px, and every point normalised into [0..1] inside it,
 // so the saved element resizes proportionally. No points: a 1x1 box at the
 // origin. Shared with the whiteboard pen's live ink, which lays itself out as
-// exactly the stroke it lands as (docs/specs/023-whiteboard/whiteboard.md
+// exactly the stroke it lands as (docs/specs/023-draw-mode/draw-mode.md
 // "Pens"). The whole-px box is what keeps drawn ink still while the stroke
 // grows: layout snaps a positioned box and its svg to the pixel grid, so a
 // fractional origin that moved with every sample re-rasterised the whole path

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { tabToExcalidrawText } from './excalidraw-export';
 import type { Element, Tab } from '@livediagram/document';
-import { createPath } from '@livediagram/document';
+import { createPath, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
 import { STROKE_PRESSURE_MAX_ERROR, encodeStrokePoints } from '@livediagram/document';
 
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
@@ -46,6 +46,13 @@ describe('tabToExcalidrawText envelope', () => {
     expect(scene.elements).toEqual([]);
     expect(scene.appState.viewBackgroundColor).toBe('#0f172a');
     expect(scene.files).toEqual({});
+  });
+});
+
+describe('tabToExcalidrawText canvas', () => {
+  it('paints the Default theme light canvas when the tab stores none', () => {
+    const scene = parse(tabToExcalidrawText(tab([])));
+    expect(scene.appState.viewBackgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
   });
 });
 
@@ -236,7 +243,7 @@ describe('boxed element degradation', () => {
     );
   });
 
-  it('exports a path as a line sampled along its curve (docs/specs/023-whiteboard/path-tool.md)', () => {
+  it('exports a path as a line sampled along its curve (docs/specs/023-draw-mode/path-tool.md)', () => {
     const path = createPath(
       [
         { x: 0, y: 0, mode: 'corner', handleOut: { x: 0, y: -40 } },

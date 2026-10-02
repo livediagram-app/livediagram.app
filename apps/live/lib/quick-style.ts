@@ -8,6 +8,8 @@ import {
   arrowThicknessOf,
   canvasSurface,
   defaultArrowStrokeColor,
+  INK_PEN_COLOUR,
+  PEN_INK,
   supportsTextAlign,
   quickSwatches,
   supportsBorderControls,
@@ -37,6 +39,10 @@ export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathE
 export type QuickSectionId =
   'stroke' | 'background' | 'textColour' | 'width' | 'style' | 'textAlign' | 'iconAlign';
 export type QuickSwatchValue = 0 | QuickSwatchSlot;
+// Ink, the eighth choice of the Stroke and Text colour rows (docs/specs/007-editor/editor-modes.md
+// "One look"): stored by name, drawn in its version for the canvas.
+export const QUICK_INK = INK_PEN_COLOUR;
+export type QuickColourValue = QuickSwatchValue | typeof QUICK_INK;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
@@ -53,9 +59,10 @@ export type QuickStyleView = {
   // The elements the panel styles, in selection order.
   targetIds: string[];
   sections: {
-    stroke?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
+    // `ink`: the Ink swatch's colour for the canvas, after the theme's.
+    stroke?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
     background?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
-    textColour?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
+    textColour?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
@@ -73,7 +80,7 @@ export type QuickStyleView = {
   caption?: string;
 };
 
-// An unlocked shape, arrow, text element or path (docs/specs/023-whiteboard/path-tool.md "Style"):
+// An unlocked shape, arrow, text element or path (docs/specs/023-draw-mode/path-tool.md "Style"):
 // the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
   return (
@@ -151,7 +158,7 @@ function swatchValue(
   theme: ThemeDefinition,
   role: QuickSwatchRole,
   swatches: ShownSwatch[],
-): QuickSwatchValue | null {
+): QuickColourValue | null {
   const fields = ROLE_FIELDS[role];
   const values = el as RoleValues;
   const bound = values[fields.swatch];
@@ -161,9 +168,8 @@ function swatchValue(
   // A whiteboard stock colour stored by name is no theme swatch (docs/specs/008-canvas/quick-style-panel.md
   // "Multi-selection").
   const named = NAMED_FIELD[role];
-  if (colour === undefined && named && (el as Record<string, unknown>)[named] !== undefined) {
-    return null;
-  }
+  const name = named ? (el as Record<string, unknown>)[named] : undefined;
+  if (colour === undefined && name !== undefined) return name === QUICK_INK ? QUICK_INK : null;
   if (colour === undefined) return 0;
   const own = theme[fields.theme];
   const lower = colour.toLowerCase();
@@ -194,6 +200,8 @@ export function quickStyleView(
   elements: readonly Element[],
   theme: ThemeDefinition,
   overrides: SwatchOverrides = {},
+  // The Ink swatch's colour: the version for the canvas the tab paints (the theme's, unless told).
+  ink: string = PEN_INK[canvasSurface(theme.backgroundColor)],
 ): QuickStyleView | null {
   const targets = elements.filter(isQuickStyleTarget);
   const supporting = (s: QuickSectionId) => targets.filter((el) => supportsQuickSection(el, s));
@@ -213,6 +221,7 @@ export function quickStyleView(
     }
     sections.stroke = {
       swatches,
+      ink,
       value: shared(stroke.map((el) => swatchValue(el, theme, 'stroke', swatches))),
     };
   }
@@ -221,7 +230,13 @@ export function quickStyleView(
     const swatches = applySwatchOverrides(quickSwatches(theme, 'fill'), overrides.fill);
     sections.background = {
       swatches,
-      value: shared(background.map((el) => swatchValue(el, theme, 'fill', swatches))),
+      // A fill stores no name, so it is never Ink.
+      value: shared(
+        background.map((el) => {
+          const v = swatchValue(el, theme, 'fill', swatches);
+          return v === QUICK_INK ? null : v;
+        }),
+      ),
     };
   }
   const textColour = supporting('textColour');
@@ -229,6 +244,7 @@ export function quickStyleView(
     const swatches = applySwatchOverrides(quickSwatches(theme, 'text'), overrides.text);
     sections.textColour = {
       swatches,
+      ink,
       value: shared(textColour.map((el) => swatchValue(el, theme, 'text', swatches))),
     };
   }
@@ -276,16 +292,27 @@ function pickFor(
 export function applyQuickStroke(
   el: Element,
   theme: ThemeDefinition,
-  slot: QuickSwatchValue,
+  slot: QuickColourValue,
   overrides: SwatchOverrides = {},
 ): Element {
   if (!isLinedTarget(el, 'stroke')) return el;
-  const { colour, bind } = pickFor(theme, 'stroke', slot, overrides);
-  // The swatch replaces a stock colour stored by name.
-  const { penColour: _named, ...rest } = el;
+  // The swatch replaces a stock colour stored by name; Ink is one, stored as its name.
+  const { penColour: _named, strokeColor: _c, strokeSwatch: _s, ...rest } = el;
+  const pick = strokePick(theme, slot, overrides);
   return rest.type === 'shape'
-    ? { ...rest, strokeColor: colour, strokeSwatch: bind, colorPreset: undefined }
-    : { ...rest, strokeColor: colour, strokeSwatch: bind };
+    ? ({ ...rest, ...pick, colorPreset: undefined } as Element)
+    : ({ ...rest, ...pick } as Element);
+}
+
+// What a Stroke row choice writes: Ink by name, or a swatch's colour with its binding.
+function strokePick(
+  theme: ThemeDefinition,
+  slot: QuickColourValue,
+  overrides: SwatchOverrides,
+): { penColour: typeof QUICK_INK } | { strokeColor?: string; strokeSwatch?: QuickSwatchSlot } {
+  if (slot === QUICK_INK) return { penColour: QUICK_INK };
+  const { colour, bind } = pickFor(theme, 'stroke', slot, overrides);
+  return { strokeColor: colour, strokeSwatch: bind };
 }
 
 export function applyQuickFill(
@@ -309,13 +336,14 @@ export function applyQuickFill(
 export function applyQuickTextColour(
   el: Element,
   theme: ThemeDefinition,
-  slot: QuickSwatchValue,
+  slot: QuickColourValue,
   overrides: SwatchOverrides = {},
 ): Element {
   if (el.type !== 'text' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'textColour'))
     return el;
+  const { penTextColour: _named, textColor: _c, textSwatch: _s, ...rest } = el;
+  if (slot === QUICK_INK) return { ...rest, penTextColour: QUICK_INK };
   const { colour, bind } = pickFor(theme, 'text', slot, overrides);
-  const { penTextColour: _named, ...rest } = el;
   return { ...rest, textColor: colour, textSwatch: bind };
 }
 

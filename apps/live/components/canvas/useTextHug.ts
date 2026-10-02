@@ -1,12 +1,11 @@
-// A whiteboard text box hugging its text while it is typed into (docs/specs/023-whiteboard/
-// whiteboard.md "Text boxes"). The editor reports its live content; this measures it and holds
+// A text box that fits or wraps, hugging its text while it is typed into (docs/specs/023-draw-mode/
+// draw-mode.md "Text boxes"). The editor reports its live content; this measures it and holds
 // the box they need, which the element view draws in place of the stored size until the edit
 // commits. The size is local to the view and never written per keystroke: the commit writes the
 // label and its hugged size together, as one step (useSelectionEditing.commitLabel).
 
 import { useCallback, useState } from 'react';
 import type { BoxedElement } from '@livediagram/document';
-import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import {
   hugsText,
   hugTextSize,
@@ -28,8 +27,6 @@ export function useTextHug(
   isEditing: boolean,
   fontFamily: string | undefined,
 ): { box: BlockSize | null; label: TextHugLabel | undefined } {
-  // The still canvas is the whiteboard's (CanvasStillContext).
-  const whiteboard = useCanvasStill();
   const [live, setLive] = useState<BlockSize | null>(null);
   const onLiveText = useCallback(
     (editor: HTMLElement) => {
@@ -38,7 +35,8 @@ export function useTextHug(
     },
     [element, fontFamily],
   );
-  if (!hugsText(element, whiteboard)) return { box: null, label: undefined };
+  // Keyed on the element's sizing, so it draws the same in either editor mode, for every viewer.
+  if (!hugsText(element)) return { box: null, label: undefined };
   return {
     box: isEditing ? live : null,
     label: {

@@ -7,7 +7,9 @@
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
 
-export type TabKind = 'diagram' | 'event-storming' | 'whiteboard';
+// Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
+// 'whiteboard' is migrated on read into a general tab that opens in Draw (./legacy-whiteboard-tab).
+export type TabKind = 'diagram' | 'event-storming';
 
 export const DEFAULT_TAB_KIND: TabKind = 'diagram';
 
@@ -19,7 +21,6 @@ export const DEFAULT_TAB_KIND: TabKind = 'diagram';
 export function tabKindOf(tab: { kind?: string } | undefined): TabKind {
   switch (tab?.kind) {
     case 'event-storming':
-    case 'whiteboard':
       return tab.kind;
     default:
       return DEFAULT_TAB_KIND;

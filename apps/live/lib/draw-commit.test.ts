@@ -22,7 +22,7 @@ const bareTheme = {} as unknown as ThemeDefinition;
 const tab = (overrides: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [], ...overrides }) as unknown as Tab;
 
-// docs/specs/023-whiteboard/whiteboard.md "Shapes": the preview and the commit build one arrow.
+// docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview and the commit build one arrow.
 describe('buildDressedDrawnArrow', () => {
   const thick = <T extends Element>(el: T): T => ({
     ...el,
@@ -31,7 +31,8 @@ describe('buildDressedDrawnArrow', () => {
   });
   const board = { elements: [] as Element[], theme: themed, whiteboard: true };
 
-  it('is the drawn arrow in its tool style, unpainted on a whiteboard', () => {
+  // Written in Ink by name (docs/specs/007-editor/editor-modes.md "One look").
+  it('is the drawn arrow in its tool style, in Ink in Draw mode', () => {
     const out = buildDressedDrawnArrow(
       { type: 'arrow', ends: 'to', board: true },
       10,
@@ -46,7 +47,7 @@ describe('buildDressedDrawnArrow', () => {
       ends: 'to',
       unpainted: true,
     });
-    expect(rest).toEqual({ ...raw, strokeWidth: 6, arrowheadSize: 'large' });
+    expect(rest).toEqual({ ...raw, penColour: 'ink', strokeWidth: 6, arrowheadSize: 'large' });
     expect(out.strokeColor).toBeUndefined();
   });
 
@@ -87,7 +88,7 @@ describe('buildDrawnArrow', () => {
   });
 
   it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
-    // docs/specs/023-whiteboard/whiteboard.md: unpainted, so it takes the board's ink.
+    // docs/specs/023-draw-mode/draw-mode.md: unpainted, so it takes the board's ink.
     const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
     expect(arrow.arrowEnds).toBe('to');
     expect(arrow.strokeColor).toBeUndefined();
@@ -141,8 +142,19 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  // docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box hugs its text.
-  it('places a whiteboard text box empty, caret-sized, at the click', () => {
+  // docs/specs/023-draw-mode/draw-mode.md "Text boxes": in Draw mode a text box hugs its text.
+  it('places a Draw mode text box empty, caret-sized, at the click', () => {
+    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab(), true);
+    // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
+    expect(out).toMatchObject({ label: '', sizing: 'fit', x: 496, y: 289, width: 8, height: 22 });
+  });
+
+  it('sets a dragged Draw mode text box to the dragged width and one line', () => {
+    const out = buildDrawnBoxed({ type: 'text' }, 100, 50, 340, 200, null, tab(), true);
+    expect(out).toMatchObject({ label: '', sizing: 'wrap', x: 100, y: 50, width: 240, height: 22 });
+  });
+
+  it('keeps a Diagram mode text box at its default size, whatever the tab opens in', () => {
     const out = buildDrawnBoxed(
       { type: 'text' },
       500,
@@ -150,29 +162,10 @@ describe('buildDrawnBoxed', () => {
       502,
       301,
       null,
-      tab({ kind: 'whiteboard' }),
+      tab({ opensIn: 'draw' }),
     );
-    // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
-    expect(out).toMatchObject({ label: '', autoWidth: true, x: 496, y: 289, width: 8, height: 22 });
-  });
-
-  it('sets a dragged whiteboard text box to the dragged width and one line', () => {
-    const out = buildDrawnBoxed(
-      { type: 'text' },
-      100,
-      50,
-      340,
-      200,
-      null,
-      tab({ kind: 'whiteboard' }),
-    );
-    expect(out).toMatchObject({ label: '', x: 100, y: 50, width: 240, height: 22 });
-    expect('autoWidth' in out).toBe(false);
-  });
-
-  it('keeps a diagram tab text box at its default size', () => {
-    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab());
     expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
+    expect(out).not.toHaveProperty('sizing');
   });
 
   it('centres the factory-default size on a tap', () => {

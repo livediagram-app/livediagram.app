@@ -127,9 +127,9 @@ describe('resolveBoxedResize, a multi-selection with Shift', () => {
   });
 });
 
-// A whiteboard text box hugs its text through a resize (docs/specs/023-whiteboard/whiteboard.md
-// "Text boxes"): the frame's bounds set the width, the height is the text's, and Shift scales the
-// text instead.
+// A text box that fits or wraps hugs its text through a resize (docs/specs/023-draw-mode/
+// draw-mode.md "Text boxes"), in either editor mode: the frame's bounds set the width, the height
+// is the text's, and Shift scales the text instead.
 describe('resizedElement', () => {
   const hello = {
     ...createText(0, 0),
@@ -137,6 +137,7 @@ describe('resizedElement', () => {
     width: 43,
     height: 22,
     textSize: 'sm' as const,
+    sizing: 'fit' as const,
   };
   // Half the font px a character, the leading 1.25, wrapping at the given width.
   const measure = (el: TextElement) => (width: number) => {
@@ -150,13 +151,22 @@ describe('resizedElement', () => {
     expect(out).toMatchObject({ x: 1, y: 2, width: 30, height: 90 });
   });
 
-  it('hugs the height of a whiteboard text box to the rewrapped text', () => {
+  it('hugs the height of a hugging text box to the rewrapped text, now wrapping', () => {
     const hug = { mode: 'resize-e' as const, constrain: false, measure };
     const out = resizedElement(hello, { x: 0, y: 0, width: 28, height: 22 }, hug);
-    expect(out).toMatchObject({ width: 28, height: 39 });
+    expect(out).toMatchObject({ width: 28, height: 39, sizing: 'wrap' });
   });
 
-  it('scales the text of a whiteboard text box under Shift', () => {
+  // docs/specs/007-editor/editor-modes.md "A text box's sizing": a fixed box stays fixed.
+  it('gives a fixed text box the bounds as they are', () => {
+    const hug = { mode: 'resize-e' as const, constrain: false, measure };
+    const bounds = { x: 0, y: 0, width: 28, height: 90 };
+    const out = resizedElement({ ...hello, sizing: undefined }, bounds, hug);
+    expect(out).toMatchObject(bounds);
+    expect(out).not.toHaveProperty('sizing', 'wrap');
+  });
+
+  it('scales the text of a hugging text box under Shift', () => {
     const hug = { mode: 'resize-se' as const, constrain: true, measure };
     const out = resizedElement(hello, { x: 0, y: 0, width: 78, height: 40 }, hug);
     expect(out).toMatchObject({ width: 78, height: 39, textScale: 2 });

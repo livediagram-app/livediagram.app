@@ -1,7 +1,7 @@
 'use client';
 
-// What a whiteboard pen stroke shows while it is drawn, beyond its ink (docs/specs/023-whiteboard/
-// whiteboard.md "Shape recognition"): the shape it is locked to, and on a pen or touch stroke the
+// What a whiteboard pen stroke shows while it is drawn, beyond its ink (docs/specs/023-draw-mode/
+// draw-mode.md "Shape recognition"): the shape it is locked to, and on a pen or touch stroke the
 // chip that flips it. Subscribed to the live stroke: each update checks only the samples added
 // since the last one, and any sample beyond the still radius moves the anchor, sends the chip
 // away and restarts the dwell timer. When it fires with recognition on, the stroke's centre line

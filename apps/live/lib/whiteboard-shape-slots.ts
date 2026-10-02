@@ -1,4 +1,4 @@
-// The dock's shape slots (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): the default pins,
+// The dock's shape slots (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the default pins,
 // which kinds fill the Shapes flyout's six slots (Most used, Recent), how a pick is recorded, and
 // where a shape dragged onto the bar lands. Pure; the dock prefs (lib/whiteboard-dock-prefs.ts) store the results and
 // the slot drag (useShapeSlotDrag) measures.
@@ -15,7 +15,7 @@ export type ShapePicks = Readonly<Partial<Record<WhiteboardShapeKey, readonly [n
 
 export const PINNED_SHAPES_MAX = 7;
 
-// The pinned side of a user who never changed it (docs/specs/023-whiteboard/whiteboard.md "Shape slots").
+// The pinned side of a user who never changed it (docs/specs/023-draw-mode/draw-mode.md "Shape slots").
 export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = ['arrow', 'rectangle'];
 
 // The Shapes flyout's two rows of slots.

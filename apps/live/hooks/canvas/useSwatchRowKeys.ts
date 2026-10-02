@@ -1,6 +1,6 @@
 'use client';
 
-// Arrow keys along a row of swatches (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+// Arrow keys along a row of swatches (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
 // Left and Right move (held at the ends), Home and End jump to the ends. Focus moves, nothing is
 // picked: Enter or Space on a swatch picks it. One swatch is the row's Tab stop (roving tabindex).
 

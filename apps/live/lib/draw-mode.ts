@@ -46,7 +46,7 @@ export type PendingDraw =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
-      // A whiteboard shape (docs/specs/023-whiteboard/whiteboard.md "Shapes"): drawn in the board's ink,
+      // A whiteboard shape (docs/specs/023-draw-mode/draw-mode.md "Shapes"): drawn in the board's ink,
       // unfilled, at the default width. Pens never colour it.
       board?: true;
     }
@@ -75,7 +75,7 @@ export type PendingDraw =
   // embed the user then has to go and re-point.
   | { type: 'video'; provider?: EmbedProvider }
   // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
-  // (docs/specs/023-whiteboard/whiteboard.md), which differ only in their heads.
+  // (docs/specs/023-draw-mode/draw-mode.md), which differ only in their heads.
   | { type: 'arrow'; ends?: ArrowEnds; board?: true }
   // A composite Component (docs/specs/008-canvas/canvas-and-palette.md): banner / hero / header / callout / stat /
   // process / avatar. Draws to size exactly like a shape — a tap drops it at
@@ -97,7 +97,7 @@ export type PendingDraw =
   // to check before every stroke. It is now which pen you picked, so the
   // answer is the tile you clicked.
   | { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
-  // A whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens"): held like the highlighter,
+  // A whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens"): held like the highlighter,
   // carrying the pen's colour (null = the board's ink), width in px and whether
   // shape recognition is on.
   | {
@@ -112,7 +112,7 @@ export type PendingDraw =
   // the start vertex or double-click / Enter commits a
   // straight-edged FreehandElement.
   | { type: 'polygon' }
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a vector pen held on a whiteboard. Clicks
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a vector pen held on a whiteboard. Clicks
   // place corner nodes and drags pull out curves; the canvas keeps the path being drawn
   // (usePathDrawGesture) and the tool stays in hand after each path lands.
   | { type: 'path' };
@@ -167,14 +167,14 @@ export function isMarkerIntent(intent: PendingDraw | null | undefined): boolean 
 }
 
 // A whiteboard pen draws freely: no alignment guides and no start snap
-// (docs/specs/023-whiteboard/whiteboard.md "No guides for pens").
+// (docs/specs/023-draw-mode/draw-mode.md "No guides for pens").
 export function isWhiteboardPenIntent(
   intent: PendingDraw | null | undefined,
 ): intent is Extract<PendingDraw, { variant: 'whiteboard' }> {
   return intent?.type === 'freehand' && intent.variant === 'whiteboard';
 }
 
-// A tool that exists on a whiteboard only (docs/specs/023-whiteboard/whiteboard.md "Shapes"): a pen,
+// A tool that exists on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md "Shapes"): a pen,
 // the Path tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so
 // the board's tools and their look never reach a diagram tab.
 export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
@@ -185,14 +185,14 @@ export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): 
 
 // Whether a freshly drawn element drops straight into typing. A text box is
 // only useful once typed into; on a whiteboard a sticky is too, as on a real
-// board (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
+// board (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
 export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolean {
   return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
 }
 
 // A pen held in the hand rather than armed for one gesture: the highlighter,
-// a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens") and the Path tool
-// (docs/specs/023-whiteboard/path-tool.md). None wears the one-shot banner.
+// a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens") and the Path tool
+// (docs/specs/023-draw-mode/path-tool.md). None wears the one-shot banner.
 export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
   return (
     isMarkerIntent(intent) ||
@@ -201,7 +201,7 @@ export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean
   );
 }
 
-// The Path tool in hand (docs/specs/023-whiteboard/path-tool.md).
+// The Path tool in hand (docs/specs/023-draw-mode/path-tool.md).
 export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
   return intent?.type === 'path';
 }
@@ -245,7 +245,7 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       // difference between it and Freehand (docs/specs/008-canvas/two-pens.md).
       if (intent.variant === 'shape-pen')
         return isMobile ? 'Draw a shape' : 'Draw a rough shape — it snaps to the real one';
-      // A whiteboard pen is held and never closes (docs/specs/023-whiteboard/whiteboard.md); its dock
+      // A whiteboard pen is held and never closes (docs/specs/023-draw-mode/draw-mode.md); its dock
       // button says it is in hand, so this copy only reaches a screen reader.
       if (intent.variant === 'whiteboard') return 'Drag to draw';
       return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';

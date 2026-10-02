@@ -15,18 +15,21 @@ const text = (over: Partial<TextElement> = {}): TextElement => ({
 });
 
 describe('hugLandedText', () => {
-  it('hugs auto-width boxes to their text and set-width ones in height only', () => {
+  it('hugs fitting boxes to their text, wrapping ones in height only, and leaves fixed ones', () => {
     const measure = () => () => ({ width: 50, height: 20 });
-    const [auto, set, other] = hugLandedText(
+    const fixed = text({ id: 'x' });
+    const [auto, set, kept, other] = hugLandedText(
       [
-        text({ autoWidth: true }),
-        text({ id: 'u' }),
+        text({ sizing: 'fit' }),
+        text({ id: 'u', sizing: 'wrap' }),
+        fixed,
         { id: 'f', type: 'frame' } as unknown as Element,
       ],
       measure,
     ) as TextElement[];
     expect(auto).toMatchObject({ width: 58, height: 24 });
     expect(set).toMatchObject({ width: 300, height: 24 });
+    expect(kept).toBe(fixed);
     expect(other).toEqual({ id: 'f', type: 'frame' });
   });
 });

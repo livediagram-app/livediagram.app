@@ -6,7 +6,7 @@ import { createPath, type PathAnchor, type PathElement } from '@livediagram/docu
 import { usePathEditGesture } from './usePathEditGesture';
 import { PATH_ADD_CURSOR } from '@/lib/path-edit';
 
-// A path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing").
+// A path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing").
 
 const corner = (x: number, y: number): PathAnchor => ({ x, y, mode: 'corner' });
 

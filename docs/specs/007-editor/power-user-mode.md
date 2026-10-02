@@ -145,6 +145,20 @@ switches between Light and Dark instead of cycling through System, so the everyd
 - The Settings **Appearance** row is unchanged: it offers all three settings.
 - Telemetry is the control's existing `UI / Toggled / <setting>` event, whichever gesture made the pick.
 
+### Quick mode switch
+
+While the mode is on, the tab bar's **editor mode switch** ([Editor modes](editor-modes.md#the-mode-switch)) is a
+segmented pill of **icons only** instead of the dropdown chip, so switching is one press:
+
+- One segment per editor mode, from the same catalogue as the chip's menu; the current one sits on a raised thumb,
+  marked by the thumb, its border and weight, never by colour alone.
+- **The words come back on hover and focus**: each segment's tooltip names the mode, says what it is for and shows
+  **Shift+D** ("Draw: pens, the eraser and shape recognition · Shift+D"), and the segment keeps the mode's name as
+  its accessible name.
+- Semantics: a `radiogroup` named "Editor mode" of `radio` segments with a roving focus; arrow keys move and select.
+- Fixed width, so switching between modes never moves anything beside it.
+- Telemetry is the switch's existing `Editor / Changed / Mode*` event.
+
 ## Discovery: the offer
 
 The mode is offered **once**, ever, to people whose use suggests they would want it.

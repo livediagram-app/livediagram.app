@@ -3,7 +3,7 @@
 // with a scene in one undoable step (the Excalidraw card), or make each scene its own new document,
 // named and dated as its board (lib/board-scene-import, shared with the Explorer page).
 
-import { isWhiteboardTab, type Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import { landBoardScene } from '@/lib/board-scene/land';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { ImportImageProgress } from '@/lib/import-images';
@@ -23,6 +23,9 @@ export type { BoardImportProgress, NewBoardDocument } from '@/lib/board-scene-im
 export type BoardSceneImportDeps = {
   tabs: Tab[];
   activeId: string;
+  // The viewer works on the active tab in Draw mode (docs/specs/007-editor/editor-modes.md): a
+  // scene lands the whiteboard way.
+  drawMode: boolean;
   ownerId: string;
   // The open document: an Offline Mode one makes Offline Mode documents, as a copy does.
   documentId: string | null;
@@ -45,7 +48,7 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
     if (active.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
-    const whiteboard = isWhiteboardTab(active);
+    const whiteboard = deps.drawMode;
     const landed = landBoardScene(scene, {
       profile: whiteboard ? 'whiteboard' : 'diagram',
       placement: { kind: 'origin' },
@@ -68,7 +71,7 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
       elements,
       theme: active.theme,
       ...(tabPatch.backgroundColor ? { backgroundColor: tabPatch.backgroundColor } : {}),
-      // A whiteboard keeps its own background unless the scene names one.
+      // In Draw mode the tab keeps its own background unless the scene names one.
       ...(whiteboard && scene.background?.pattern
         ? { backgroundPattern: tabPatch.backgroundPattern }
         : {}),

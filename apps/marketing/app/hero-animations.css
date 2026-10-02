@@ -10,13 +10,13 @@
    scheme the hero's theme beat picks: Forest in light, Pine in dark. app/dark-art.test.ts holds
    every value to its source. Markup reads them through utilities, keyframes through var(). */
 :root {
-  --art-paper: #ffffff;
+  --art-paper: #fbfaf7;
   --art-grid: #cbd5e1;
   --art-ink-fill: #f0f9ff;
   --art-ink-stroke: #0ea5e9;
   --art-ink-text: #075985;
   --art-ink-shade: #e0f2fe;
-  --art-text: #1e293b;
+  --art-text: #1c1917;
   --art-arrow: #334155;
   --art-arrow-label: #334155;
   --art-table-line: #94a3b8;
@@ -33,7 +33,7 @@
   --art-ink-stroke: #64748b;
   --art-ink-text: #ffffff;
   --art-ink-shade: #1c2533;
-  --art-text: #ffffff;
+  --art-text: #e2e8f0;
   --art-arrow: #64748b;
   --art-arrow-label: #94a3b8;
   --art-table-line: #64748b;

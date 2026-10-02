@@ -21,7 +21,7 @@ editable.
   not offer it. A path element that reaches a diagram tab (paste, a tab that stops being a
   whiteboard) renders, selects, moves, styles and edits there like any element.
 - **Dock:** in the Shapes group, after the sticky note (see
-  [Whiteboard](whiteboard.md) "What a whiteboard shows"), labelled **Path tool**, key **P**
+  [Draw mode](draw-mode.md) "What a whiteboard shows"), labelled **Path tool**, key **P**
   (shown on the button and in `aria-keyshortcuts`). Its icon is **the Shape Pen's own palette
   icon**, unchanged: the same component, at the dock's icon size, never a
   redrawn copy.
@@ -189,7 +189,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
 | Event                       | Action     | Type                   |
 | --------------------------- | ---------- | ---------------------- |
-| The Path tool picked        | `Selected` | `Whiteboard` · `Path`  |
+| The Path tool picked        | `Selected` | `Draw` · `Path`        |
 | A path committed            | `Added`    | `Element` · `Path`     |
 | A path edited in edit mode  | `Changed`  | `Element` · `PathEdit` |
 | A path closed while editing | `Changed`  | `Element` · `PathJoin` |

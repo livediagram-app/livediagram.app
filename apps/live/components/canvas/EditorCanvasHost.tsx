@@ -4,8 +4,8 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
-import { createInkProjector } from '@/lib/whiteboard-ink';
+import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/document';
+import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
@@ -17,7 +17,9 @@ import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
-import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { resolveViewBackdrop } from '@/lib/view-backdrop';
+import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -354,7 +356,11 @@ export function EditorCanvasHost() {
     zenMode,
     whiteboardDock,
     drag,
+    editorMode,
   } = useEditorContext();
+  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
+  // rules into focus; the board look keys on it through hasBoardLook.
+  const drawMode = editorMode.mode === 'draw';
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
   // owner's libraries, then placed at the drop point.
   const { libraries } = useShapeLibraries();
@@ -410,7 +416,7 @@ export function EditorCanvasHost() {
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/live-app.md). Subscribing to the appearance here is what makes the
-  // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
+  // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
@@ -424,15 +430,17 @@ export function EditorCanvasHost() {
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
   };
-  const backdrop = resolveTabBackdrop(activeTab, appearance);
-  // A whiteboard draws every unpainted element in its ink (docs/specs/023-whiteboard/whiteboard.md
-  // "Appearance"). Display only: the projector caches per element, so an
-  // unchanged element keeps its identity and the memoised views stay quiet.
-  const [projectInk] = useState(createInkProjector);
-  const shownElements = presentingElements ?? activeTab.elements;
-  const canvasElements = isWhiteboardTab(activeTab)
-    ? projectInk(shownElements, appearance)
-    : shownElements;
+  const backdrop = resolveViewBackdrop(
+    activeTab,
+    { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
+    appearance,
+  );
+  // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
+  // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
+  // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
+  const [projectStockColours] = useState(createStockColourProjector);
+  const surface = canvasSurface(backdrop.backgroundColor);
+  const canvasElements = projectStockColours(presentingElements ?? activeTab.elements, surface);
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
@@ -453,7 +461,7 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
-    whiteboard: isWhiteboardTab(activeTab),
+    whiteboard: drawMode,
     setContextMenu,
   });
 
@@ -549,15 +557,16 @@ export function EditorCanvasHost() {
         elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
+        editorMode={editorMode.mode}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
-        whiteboardInk={WHITEBOARD_INK[appearance]}
+        whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
           drawnArrowAsShown(intent, startX, startY, endX, endY, {
             elements: activeTab.elements,
             theme: getTheme(activeTab.theme),
-            whiteboard: isWhiteboardTab(activeTab),
+            whiteboard: drawMode,
             styleNewElement,
-            ink: WHITEBOARD_INK[appearance],
+            surface,
           })
         }
         layerInertIds={layerInertIds}

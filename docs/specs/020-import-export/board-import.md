@@ -43,7 +43,7 @@ throws. Only the parse stage has to be pure.
    - **replace-tab**: the elements replace the active tab, one undoable step
      (the Excalidraw card);
    - **new-document**: each board becomes **its own new document** with one
-     whiteboard tab, **named after the board** (an untitled board: "Whiteboard,
+     tab that opens in Draw mode, **named after the board** (an untitled board: "Whiteboard,
      14 Aug 2020", its created date) and **dated as the board** (its created
      and last-modified dates, see [Document dates](../015-api/api.md#document-dates)),
      filed in the folder the import was started from (the Explorer's), else

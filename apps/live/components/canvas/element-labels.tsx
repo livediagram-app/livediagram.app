@@ -55,13 +55,13 @@ export function renderLabel(
   // element's invisible bounding box. Set only for text elements (see
   // isTextNativeAnim in BoxedElementView); undefined otherwise.
   labelAnimClass?: string,
-  // A whiteboard text box hugging its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+  // A whiteboard text box hugging its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
   // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
   // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
   hug?: TextHugLabel,
 ) {
   const isSticky = element.type === 'sticky';
-  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-whiteboard/whiteboard.md).
+  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
   const textScale = element.type === 'text' ? (element.textScale ?? 1) : 1;
   const textPadding = hug ? hug.padding : padding;
   // Shape elements don't carry a placeholder during edit. The user

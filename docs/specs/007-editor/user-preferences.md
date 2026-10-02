@@ -260,21 +260,25 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
-  // The whiteboard dock (../023-whiteboard/whiteboard.md "Shape slots"): up to
+  // The whiteboard dock (../023-draw-mode/draw-mode.md "Shape slots"): up to
   // seven pinned shape keys (unset is the default pins, an empty list an
   // emptied side), and per shape key [times picked, last picked ms] for the
   // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
   // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
   whiteboardPinnedShapes?: string[];
   whiteboardShapePicks?: Record<string, [number, number]>;
-  // The whiteboard markers' Your colours (../023-whiteboard/whiteboard.md "The
+  // The whiteboard markers' Your colours (../023-draw-mode/draw-mode.md "The
   // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
   // takes one out. Junk is dropped on read (lib/pen-colour-memory).
   whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (../023-whiteboard/whiteboard.md "Where the
+  // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
   // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
   // top (lib/whiteboard-dock-prefs).
   whiteboardDockPosition?: 'top' | 'bottom';
+  // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
+  // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
+  // anything else, is Grid (lib/whiteboard-dock-prefs).
+  drawPattern?: 'blank' | 'grid' | 'graph';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -328,6 +332,9 @@ Missing key === undefined === default behaviour. Concretely:
   `PanelLayoutFloating` or `PanelLayoutToolbar`.
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
+- `drawPattern` undefined → Grid (`graph`) behind every tab the person works
+  on in Draw mode. The dock's Background row writes it; it emits the same
+  Background events as before and changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -507,7 +514,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
-  middle-mouse pan, then a **Whiteboard** section: dock position, Top or
+  middle-mouse pan, then a **Draw mode** section: dock position, Top or
   Bottom, then a **Power User** section: power user mode, and
   Minimal chrome while the mode is on), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as

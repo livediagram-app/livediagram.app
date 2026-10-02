@@ -1,6 +1,6 @@
 'use client';
 
-// The Shapes flyout's state (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows",
+// The Shapes flyout's state (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows",
 // "Shape slots"): the query, what it shows (the six slots in two rows, Recent over Most used, or at
 // most six results) and the entry the arrow keys have reached. Focus stays in the field; the active
 // entry is announced through aria-activedescendant (the combobox pattern).

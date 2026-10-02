@@ -176,3 +176,17 @@ describe('buildTemplateTab', () => {
     expect(strokes).toBeGreaterThan(0);
   });
 });
+
+// docs/specs/007-editor/editor-modes.md: the Whiteboard template makes a general tab that opens in
+// Draw mode; there is no whiteboard kind.
+describe('buildTemplateTab: the Whiteboard template', () => {
+  it('makes a general tab that opens in Draw', () => {
+    const tab = buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard');
+    expect(tab.kind).toBe('diagram');
+    expect(tab.opensIn).toBe('draw');
+  });
+
+  it('leaves every other template opening in Diagram', () => {
+    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBeUndefined();
+  });
+});

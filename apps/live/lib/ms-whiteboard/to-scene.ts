@@ -120,7 +120,7 @@ export function boardToScene(input: SceneInput): BoardScene {
           // Without a fixed size the box hugs its text; this estimate is the landing's start.
           width: el.width ? el.width * el.scale : Math.max(1, longest * t.fontPx * 0.55),
           height: el.height ? el.height * el.scale : lines.length * t.fontPx * 1.25,
-          autoWidth: !el.width,
+          sizing: el.width ? 'wrap' : 'fit',
           text: t,
           ...rotation(el.rotationDeg),
         });

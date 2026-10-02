@@ -6,6 +6,7 @@ import { contentBounds, renderElementsToSvg } from './svg-render';
 import { arrowLabelFontStack } from './svg-render-arrows';
 import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
 import { encodeStrokePoints } from './stroke-points';
+import { DEFAULT_BACKGROUND_COLOR as PAPER } from './canvas-colors';
 
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -104,9 +105,9 @@ describe('renderElementsToSvg', () => {
       expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${INK}"/>`));
     });
 
-    it('renders a hollow triangle as a white-filled stroked polygon', () => {
+    it('renders a hollow triangle as a paper-filled stroked polygon', () => {
       const svg = render({ arrowheadShape: 'triangle-hollow' });
-      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
+      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${PAPER}" stroke="${INK}"`));
     });
 
     it('fills a hollow head with the tab paper, so it reads hollow on a dark canvas', () => {
@@ -131,7 +132,7 @@ describe('renderElementsToSvg', () => {
         new RegExp(`<circle[^/]+ fill="${INK}"/>`),
       );
       expect(render({ arrowheadShape: 'circle-hollow' })).toMatch(
-        new RegExp(`<circle[^/]+ fill="#ffffff" stroke="${INK}"`),
+        new RegExp(`<circle[^/]+ fill="${PAPER}" stroke="${INK}"`),
       );
     });
 
@@ -140,7 +141,7 @@ describe('renderElementsToSvg', () => {
       const filledHead = filled.match(new RegExp(`<polygon points="([^"]+)" fill="${INK}"/>`));
       expect(filledHead?.[1]?.split(' ')).toHaveLength(4);
       const hollow = render({ arrowheadShape: 'diamond-hollow' });
-      expect(hollow).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
+      expect(hollow).toMatch(new RegExp(`<polygon points="[^"]+" fill="${PAPER}" stroke="${INK}"`));
     });
 
     it('scales the head with the arrowheadSize preset', () => {
@@ -326,7 +327,7 @@ describe('renderElementsToSvg', () => {
 
   describe('freehand + silhouettes + rotation', () => {
     it('exports a whiteboard pen stroke as the canvas draws it: the filled pressure outline', () => {
-      // docs/specs/023-whiteboard/whiteboard.md "Pens": the same function as FreehandSvg.
+      // docs/specs/023-draw-mode/draw-mode.md "Pens": the same function as FreehandSvg.
       const el = {
         id: 'pen',
         type: 'freehand',

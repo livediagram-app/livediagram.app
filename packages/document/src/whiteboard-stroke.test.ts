@@ -103,7 +103,7 @@ describe('eraseStrokePart', () => {
   });
 
   it('keeps a pressure for every point of each piece, interpolated, and the streamline', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pen stroke's ink survives a partial erase.
+    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pen stroke's ink survives a partial erase.
     const src = line({ streamline: 0.2 }, [0.2, 1]);
     const pieces = eraseStrokePart(src, { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
     expect(pieces).toHaveLength(2);
@@ -122,7 +122,7 @@ describe('eraseStrokePart', () => {
   });
 
   it('keeps the marker\u2019s named colour on every piece', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": the stroke adapts after a split too.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": the stroke adapts after a split too.
     const pieces = eraseStrokePart(
       line({ penColour: 'violet' }),
       { x: 100, y: 100 },
@@ -191,7 +191,7 @@ describe('eraseStrokePart', () => {
   });
 });
 
-describe('pathTouchesBrush (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing")', () => {
+describe('pathTouchesBrush (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing")', () => {
   const arch = createPath(
     [
       { x: 0, y: 100, mode: 'corner', handleOut: { x: 0, y: 0 } },

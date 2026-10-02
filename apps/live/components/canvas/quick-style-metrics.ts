@@ -5,6 +5,6 @@ export const QUICK_BORDER_PX = 1;
 export const QUICK_COMPACT_PADDING_PX = 8;
 export const QUICK_FLOATING_PADDING_PX = 10;
 export const QUICK_FLOATING_GAP_PX = 4;
-// Targets in the widest row: a theme's seven swatches, or a whiteboard's pen colours (the ink and
-// six colours, then the picker's opener).
-export const QUICK_ROW_TARGETS = { swatches: 7, pen: 8 } as const;
+// Targets in every colour row: a theme's seven swatches and Ink in Diagram mode, or the stock
+// colours (Ink and seven) in Draw mode, so the panel is one width in both modes.
+export const QUICK_ROW_TARGETS = 8;

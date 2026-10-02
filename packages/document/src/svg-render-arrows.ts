@@ -25,6 +25,7 @@ import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './a
 import { elementGridFor, queryElementGrid } from './element-grid';
 import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
+import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
@@ -124,7 +125,7 @@ export function svgArrowhead(
 }
 
 export function svgArrow(
-  arrow: ArrowElement,
+  source: ArrowElement,
   elements: Element[],
   surface: CanvasSurface = 'light',
   // The tab's font, for a caption that has not chosen one of its own
@@ -146,6 +147,8 @@ export function svgArrow(
   // knows the tab's own background.
   paper: string = surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR,
 ): string {
+  // A stock colour stored by name is drawn in its version for this page.
+  const arrow = resolveStockColours(source, surface);
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
   const rawFrom = endpointPosition(arrow.from, elements);

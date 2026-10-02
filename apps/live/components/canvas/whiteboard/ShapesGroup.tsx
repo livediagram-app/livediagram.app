@@ -1,6 +1,6 @@
 'use client';
 
-// The dock's Shapes group (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows", "Shape
+// The dock's Shapes group (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows", "Shape
 // slots"): the pinned shapes, a separator, and Shapes, whose flyout holds the six slots and the
 // search. A pinned shape arms its kind; dragged past the separator or off the bar it unpins; its
 // menu (right-click, long-press, Shift+F10) does the same without a drag. Shapes dragged from the

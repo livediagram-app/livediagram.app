@@ -22,6 +22,15 @@ import type { DragMode } from '@/lib/canvas';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
+// Stands in for the DOM text measure in Draw mode: 10 px a character at 14 px, scaled with the
+// text, one line of 1.25 leading.
+vi.mock('@/components/canvas/text-hug-measure', () => ({
+  measureDrawnText: () => (el: { label?: string; textScale?: number }) => () => {
+    const px = 14 * (el.textScale ?? 1);
+    return { width: ((el.label ?? '').length * 10 * px) / 14, height: px * 1.25 };
+  },
+}));
+
 // Shift keeps the aspect ratio everywhere (docs/specs/008-canvas/canvas-and-palette.md "Resize"),
 // through the whole drag machine: every boxed kind, every tab kind, and Shift pressed or released
 // mid-drag taking effect on the next pointer move.
@@ -176,18 +185,15 @@ describe('Shift resize, every boxed kind', () => {
 });
 
 describe('Shift resize, every tab kind', () => {
-  it.each(['diagram', 'whiteboard', 'event-storming'] as const)(
-    'keeps the ratio on a %s tab',
-    (kind) => {
-      syncFrames();
-      const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
-      const h = harness(el, kind);
-      h.press('resize-ne');
-      move(10, -80, true);
-      expect(ratio(h.current())).toBeCloseTo(2, 6);
-      release();
-    },
-  );
+  it.each(['diagram', 'event-storming'] as const)('keeps the ratio on a %s tab', (kind) => {
+    syncFrames();
+    const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
+    const h = harness(el, kind);
+    h.press('resize-ne');
+    move(10, -80, true);
+    expect(ratio(h.current())).toBeCloseTo(2, 6);
+    release();
+  });
 });
 
 describe('Shift pressed or released mid-drag', () => {
@@ -202,6 +208,51 @@ describe('Shift pressed or released mid-drag', () => {
     expect(h.current()).toMatchObject({ width: 300, height: 150 });
     move(100, 10, false);
     expect(h.current()).toMatchObject({ width: 300, height: 110 });
+    release();
+  });
+});
+
+// docs/specs/023-draw-mode/draw-mode.md "Text boxes": Shift keeps a hugging text box's
+// ratio by scaling its text with the box; the height hugs the scaled text.
+// Keyed on the box's sizing, never the editor mode (docs/specs/007-editor/editor-modes.md "A text
+// box's sizing"); the drag machine has no mode at all.
+describe('Shift resize of a hugging text box', () => {
+  const hello = () => ({
+    ...createText(0, 0),
+    label: 'Hello',
+    sizing: 'fit' as const,
+    textSize: 'sm' as const,
+    width: 58,
+    height: 22,
+  });
+  // The text's own block (the box less its 4 px / 2 px hug padding).
+  const textRatio = (el: { width: number; height: number }) => (el.width - 8) / (el.height - 4);
+
+  it.each(['resize-se', 'resize-ne', 'resize-e'] as const)(
+    'keeps the text block’s ratio from %s, scaling the text',
+    (mode) => {
+      syncFrames();
+      const h = harness(hello());
+      const before = textRatio(h.current());
+      h.press(mode);
+      move(58, mode === 'resize-ne' ? -10 : 10, true);
+      const after = h.current() as ReturnType<typeof hello> & { textScale?: number };
+      expect(after.width).toBe(116);
+      expect(after.textScale).toBeCloseTo(108 / 50, 6);
+      // The height is whole px, rounded up, so the ratio holds to within a pixel of height.
+      expect(Math.abs(textRatio(after) - before)).toBeLessThan(before / (after.height - 4));
+      release();
+    },
+  );
+
+  it('keeps a fixed text box’s own ratio, its text unscaled', () => {
+    syncFrames();
+    const h = harness({ ...hello(), sizing: undefined });
+    h.press('resize-se');
+    move(58, 10, true);
+    const after = h.current() as ReturnType<typeof hello> & { textScale?: number };
+    expect(after.width / after.height).toBeCloseTo(58 / 22, 6);
+    expect(after.textScale).toBeUndefined();
     release();
   });
 });

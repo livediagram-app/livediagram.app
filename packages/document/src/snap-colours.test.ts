@@ -78,7 +78,7 @@ const sticky = (over: Partial<StickyElement> = {}): StickyElement => ({
   ...over,
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Snap colours".
+// docs/specs/023-draw-mode/draw-mode.md "Snap colours".
 describe('snapTabColours', () => {
   it('snaps a marker stroke, a shape outline and an arrow to their stock colours by name', () => {
     const els: Element[] = [
@@ -177,7 +177,7 @@ describe('snapTabColours', () => {
     expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(sticky()))).toHaveLength(0);
   });
 
-  // docs/specs/023-whiteboard/blueprints/snap-colours.md: the named colours imports land on.
+  // docs/specs/023-draw-mode/blueprints/snap-colours.md: the named colours imports land on.
   it('snaps a text box, a path, an unfilled shape’s label and an arrow’s label', () => {
     const out = snapTabColours([
       text({ textColor: '#1971C2', textSwatch: 2 }),

@@ -78,3 +78,10 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
     expect(undocumented.sort()).toEqual([]);
   });
 });
+
+describe('the editor mode key', () => {
+  it('lists Shift+D as moving to the next editor mode', () => {
+    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
+    expect(rows).toContainEqual({ keys: ['⇧', 'D'], label: 'Next editor mode (Diagram / Draw)' });
+  });
+});

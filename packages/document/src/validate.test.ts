@@ -91,7 +91,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pressure per point, 0 to 1, packed.
+    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -104,7 +104,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": stored by name.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
     const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -134,14 +134,16 @@ describe('isValidElement', () => {
     }
   });
 
-  // docs/specs/023-whiteboard/whiteboard.md "Imported and pasted content": a text box's and a
+  // docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content": a text box's and a
   // shape label's stock colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };
     const shape = { id: 's', type: 'shape', shape: 'square', label: 'Hi', ...box };
     for (const el of [text, shape]) {
       expect(isValidElement({ ...el, penTextColour: 'green' })).toBe(true);
-      expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(false);
+      // Ink is a stock colour by name (docs/specs/007-editor/editor-modes.md "One look").
+      expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(true);
+      expect(isValidElement({ ...el, penTextColour: 'chalk' })).toBe(false);
       expect(isValidElement({ ...el, penTextColour: '#2f9e44' })).toBe(false);
       expect(isValidElement({ ...el, penTextColour: 3 })).toBe(false);
     }
@@ -264,7 +266,7 @@ describe('image credit (docs/specs/009-elements/image-search.md)', () => {
   });
 });
 
-describe('path validation (docs/specs/023-whiteboard/path-tool.md)', () => {
+describe('path validation (docs/specs/023-draw-mode/path-tool.md)', () => {
   const node = (nx: number, ny: number) => ({ nx, ny, mode: 'corner' });
   const path = (extra: Record<string, unknown> = {}) => ({
     id: 'p',
@@ -430,20 +432,22 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box's hug fields.
+// docs/specs/007-editor/editor-modes.md "A text box's sizing": a text box's sizing and Shift scale.
 describe('text box validation', () => {
   const text = { id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi' };
 
-  it('takes an auto width and a Shift scale in range', () => {
-    expect(isValidElement({ ...text, autoWidth: true, textScale: 2.5 })).toBe(true);
+  it('takes a sizing and a Shift scale in range', () => {
+    expect(isValidElement({ ...text, sizing: 'fit', textScale: 2.5 })).toBe(true);
+    expect(isValidElement({ ...text, sizing: 'wrap' })).toBe(true);
     expect(isValidElement({ ...text, textScale: TEXT_SCALE_MIN })).toBe(true);
     expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX })).toBe(true);
   });
 
-  it('refuses a scale out of range and a non-boolean auto width', () => {
+  it('refuses a scale out of range and any other sizing', () => {
     expect(isValidElement({ ...text, textScale: 0 })).toBe(false);
     expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX + 1 })).toBe(false);
     expect(isValidElement({ ...text, textScale: Number.NaN })).toBe(false);
-    expect(isValidElement({ ...text, autoWidth: 'yes' })).toBe(false);
+    expect(isValidElement({ ...text, sizing: 'grow' })).toBe(false);
+    expect(isValidElement({ ...text, sizing: true })).toBe(false);
   });
 });

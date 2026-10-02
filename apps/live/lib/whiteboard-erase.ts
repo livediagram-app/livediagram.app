@@ -1,4 +1,4 @@
-// One step of the whiteboard eraser (docs/specs/023-whiteboard/whiteboard.md "Eraser"): a brush of radius
+// One step of the whiteboard eraser (docs/specs/023-draw-mode/draw-mode.md "Eraser"): a brush of radius
 // `r` swept from `a` to `b`, in canvas coords. Stroke mode removes the strokes
 // whose INK the brush crosses, and the shapes whose drawn outline or visible fill
 // it touches (shape-hit.ts, the same outline selecting picks by); Partial cuts strokes. Everything else is the
@@ -33,7 +33,7 @@ export function strokesTouched(
 
 /**
  * Ids of the unprotected paths the brush touches: a path is erased whole in either mode
- * (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing").
+ * (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing").
  */
 export function pathsTouched(
   elements: readonly Element[],
@@ -49,7 +49,7 @@ export function pathsTouched(
 
 /**
  * Ids of the unprotected shapes the brush touches where they are drawn: along their
- * outline, or on a visible fill (docs/specs/023-whiteboard/whiteboard.md "Eraser").
+ * outline, or on a visible fill (docs/specs/023-draw-mode/draw-mode.md "Eraser").
  */
 export function shapesTouched(
   elements: readonly Element[],

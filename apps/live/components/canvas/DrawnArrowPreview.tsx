@@ -14,7 +14,7 @@ import { arrowViewGeometry } from '@/components/canvas/arrow-view-frame';
 const NO_LABEL: ArrowLabelRender = { layout: null, knockouts: [] };
 const noop = () => {};
 
-// The line or arrow a draw gesture will land, while the drag is in flight (docs/specs/023-whiteboard/whiteboard.md
+// The line or arrow a draw gesture will land, while the drag is in flight (docs/specs/023-draw-mode/draw-mode.md
 // "Shapes"): the very element the release commits (buildDressedDrawnArrow), drawn by ArrowView in the
 // canvas's transformed layer after every element, where the committed arrow lands. It draws as it
 // lands, selected, so release changes no pixel of it; only the grips arrive with the release. The

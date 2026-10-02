@@ -4,7 +4,9 @@
 // a cycle leaves the constants undefined exactly when the catalogue reads them).
 // index.ts re-exports them, so every existing importer is unaffected.
 
-export const DEFAULT_BACKGROUND_COLOR = '#ffffff';
+// The light canvas is the board's off-white (docs/specs/007-editor/editor-modes.md "One look"), so
+// Diagram and Draw mode share one backdrop.
+export const DEFAULT_BACKGROUND_COLOR = '#fbfaf7';
 export const DEFAULT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 
 // The same canvas in dark appearance: the Default colour scheme's dark half

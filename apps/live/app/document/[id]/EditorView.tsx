@@ -1,13 +1,15 @@
 'use client';
 
-import { isWhiteboardTab, truncateName } from '@livediagram/document';
+import { truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
 import { useEffect } from 'react';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { canvasSurface } from '@livediagram/document';
-import { getTheme, resolveTabBackdrop } from '@/lib/themes';
+import { getTheme } from '@/lib/themes';
+import { resolveViewBackdrop } from '@/lib/view-backdrop';
+import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
@@ -193,9 +195,10 @@ export function EditorView() {
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  // A whiteboard has no theme (docs/specs/023-whiteboard/whiteboard.md "Appearance"): Default chrome.
-  const whiteboard = isWhiteboardTab(activeTab);
-  useEditorAccent(whiteboard ? undefined : activeTab.theme);
+  // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
+  // follows the tab's theme in Draw mode too.
+  const drawMode = ctx.editorMode.mode === 'draw';
+  useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
@@ -221,8 +224,8 @@ export function EditorView() {
     !showSignInBanner &&
     !templateGridOpen &&
     !pendingDraw &&
-    // A whiteboard's dock is its own hint (docs/specs/023-whiteboard/whiteboard.md).
-    !whiteboard &&
+    // Draw mode's dock is its own hint (docs/specs/023-draw-mode/draw-mode.md).
+    !drawMode &&
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
@@ -230,7 +233,11 @@ export function EditorView() {
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
   const draftView = usePhotoDraftView();
-  const backdrop = resolveTabBackdrop(activeTab, appearance);
+  const backdrop = resolveViewBackdrop(
+    activeTab,
+    { mode: ctx.editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
+    appearance,
+  );
   const shiftSelectedKind = !shiftSelected
     ? null
     : shiftSelected.type === 'arrow'
@@ -409,6 +416,7 @@ export function EditorView() {
                   }
                   onCopyTabTo={linkActiveTabTo}
                   onToggleLockTab={toggleActiveTabLock}
+                  opensInFor={ctx.opensInFor}
                   onReorder={reorderTabs}
                   // A tab-scoped visitor edits their tab's content at most, never the
                   // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
@@ -419,6 +427,7 @@ export function EditorView() {
                   selfId={selfParticipant.id}
                   voteSelfId={voteSelfId}
                   selfRole={sessionRole}
+                  editorMode={ctx.editorMode}
                   onOpenSettings={() => {
                     // Preferences are user-scoped, not document-scoped, so
                     // view-role visitors can still flip them for their own
@@ -549,7 +558,7 @@ export function EditorView() {
             {zenMode ||
             embedMode ||
             minimalChrome ||
-            whiteboard ||
+            drawMode ||
             showSignInBanner ||
             showEmptyCanvasBanner ? null : (
               <ThemeModeBanner themeId={activeTab.theme} />

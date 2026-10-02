@@ -106,7 +106,7 @@ describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', 
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a Shift-resized text box draws its text
+// docs/specs/023-draw-mode/draw-mode.md "Text boxes": a Shift-resized text box draws its text
 // scaled, and exports that way too.
 describe('Scaled text box export', () => {
   it('draws the label at its size times its scale', () => {

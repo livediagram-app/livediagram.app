@@ -1,6 +1,6 @@
 # Snap colours: blueprint
 
-Derived from [Whiteboard](../whiteboard.md) "Snap colours" (and the Settings bullet of "What a
+Derived from [Draw mode](../draw-mode.md) "Snap colours" (and the Settings bullet of "What a
 whiteboard shows"). Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) as `Sn`.
 
@@ -77,7 +77,7 @@ keeps its exact colour (the board scene's own rule, docs/specs/020-import-export
 - Output: `SnapColoursApi`, `{ colours: string[], blocked: boolean, snap(): number }`; `colours` is
   `snappableCustomColours`, memoised on `elements` and `inertIds`.
 - `snap()`: no-op returning 0 when blocked or nothing to snap; else one `commit` running
-  `snapTabColours` on the live elements (one undo step), `track('Whiteboard', 'Changed',
+  `snapTabColours` on the live elements (one undo step), `track('Draw', 'Changed',
 'SnapColours')`, a `console.info` fingerprint, and returns the number of colours the commit converted.
 
 ### Section (`SnapColoursSection`)

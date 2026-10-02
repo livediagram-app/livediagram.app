@@ -64,7 +64,7 @@ export const MULTI_RUN_PX: Record<RunSize, number> = {
 
 // The base px a label is drawn at: a note's scale for a multi-line label, else the single-line
 // scale, where 'scale' is a middling fixed size (only a note fits its text to its box). A
-// Shift-resized text box multiplies it by its own scale (docs/specs/023-whiteboard/whiteboard.md).
+// Shift-resized text box multiplies it by its own scale (docs/specs/023-draw-mode/draw-mode.md).
 export function labelBasePx(multiline: boolean, textSize: TextSize): number {
   return multiline ? MULTI_FONT_PX[textSize] : LABEL_FONT_PX[textSize];
 }

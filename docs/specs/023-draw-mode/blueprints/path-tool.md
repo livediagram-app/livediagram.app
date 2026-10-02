@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/live/lib/path-edit.ts`                                | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
 | `apps/live/lib/path-edit-keys.ts`                           | `pathEditKey`: what one key does in edit mode                                                                                     |
 | `apps/live/lib/whiteboard-erase.ts`                         | `pathsTouched`: the eraser takes a path whole                                                                                     |
-| `apps/live/lib/export-as-seen.ts`                           | `tabAsSeen`: an export draws a whiteboard in its own ink                                                                          |
+| `apps/live/lib/export-as-seen.ts`                           | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
 | `apps/live/lib/draw-mode.ts`                                | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
 | `apps/live/lib/whiteboard-tool.ts`                          | `WhiteboardTool` gains `path`                                                                                                     |
 | `apps/live/lib/quick-style.ts`, `quick-style-tool.ts`       | A path is a quick-style target; "Next path" phantom                                                                               |
@@ -52,7 +52,7 @@ Scope, by file:
 | `apps/live/components/canvas/whiteboard/WhiteboardDock.tsx` | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
 | `apps/live/components/palette/palette-icons.tsx`            | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | `apps/telemetry/app/event-explanations.ts`                  | Sentences for the four events                                                                                                     |
-| `apps/help/app/canvas/whiteboards/page.mdx`                 | The Path tool section                                                                                                             |
+| `apps/help/app/canvas/draw-mode/page.mdx`                   | The Path tool section                                                                                                             |
 
 ## Domain and naming
 
@@ -122,7 +122,7 @@ export type PathElement = {
   `c2 = handleIn(j) ?? p3`, `straight` when neither handle exists.
 - `pathD(anchors, closed, fmt = identity)`: `M p0` then per segment `L p3` (straight) or
   `C c1 c2 p3`; `Z` when closed. No anchors: `''`.
-- `cubicAt(seg, t)`, `cubicBounds(seg)`: the extremes from the roots of the derivative per axis
+- `cubicAt(seg, t)`; `pathBounds` takes each segment's extremes from the roots of the derivative per axis
   (quadratic in `t`, roots in (0, 1)), plus `p0`, `p3`. `pathBounds` is their union.
 - `pathGeometry(anchors, closed)`: the box is `pathBounds`; a dimension under 1 grows to 1 about its
   centre (a straight horizontal or vertical path). Nodes and handles normalise against it. No
@@ -309,7 +309,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 
 - `activeWhiteboardTool`: `pendingDraw.type === 'path'` → `'path'`.
 - `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
-  `Whiteboard·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
+  `Draw·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
 - The dock button, in the Shapes group after the sticky note (the dock's own blueprint places it):
   key `path`, label "Path tool", shortcut `P`,
   `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component
@@ -341,9 +341,9 @@ With the Path tool in hand, the draft is editable (as in Figma):
 
 ### Style
 
-- Created unpainted: `strokeColor` and `fillColor` absent, so a whiteboard draws it in the ink
-  (`inkWhiteboardElement`: `strokeColor ?? ink`, `fillColor ?? 'transparent'`) and a diagram tab in
-  `defaultStrokeColor`, unfilled (`defaultFillColor` = `transparent` for a path).
+- Created in Ink by name, unfilled: `boardShape(createPath(...))` writes `penColour: 'ink'` and
+  `fillColor: 'transparent'` (the Path tool is a Draw mode tool), then the remembered Draw style; it
+  looks the same in Diagram mode ([One look](../../007-editor/editor-modes.md#one-look)).
 - Quick style: `isQuickStyleTarget` includes an unlocked path. Sections: stroke, width, style (solid,
   dashed, dotted) always; background when `closed`. Apply and clear as for a shape.
 - Style memory kind `path` (`board:path` on a whiteboard), fields `strokeColor`, `strokeSwatch`,
@@ -398,7 +398,7 @@ export function openPathAt(anchors: readonly PathAnchor[], i: number): PathAncho
 export function dragNodes(base, moving, pressed, delta: Point, shift: boolean, snapRadius: number): { anchors: PathAnchor[]; guides: PathGuides | null };
 export function pathEditKey(key: { key: string; shiftKey: boolean; mod: boolean }, anchors, closed, selected): PathKeyOutcome;
 export function toLocal(el, p: Point): Point; export function toWorld(el, p: Point): Point;
-export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab;
+export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab; // the tab's Diagram backdrop, stock colours resolved
 export function editingLook(element: { type: string }, isEditing: boolean): { raise: boolean; textCursor: boolean };
 // CanvasProps
 onCommitPath: (draft: { anchors: PathAnchor[]; closed: boolean; continuing: { id: string } | null }) => void;
@@ -452,7 +452,7 @@ numbers only).
 
 ## Performance and limits
 
-- A render: `pathD` is O(nodes). `cubicBounds` is O(nodes) with a closed-form quadratic per axis.
+- A render: `pathD` is O(nodes). `pathBounds` is O(nodes) with a closed-form quadratic per axis.
 - A draft move: one state update per animation frame; the preview is one svg.
 - Edit hit test per press: O(nodes · 36) for the segment search; 5 000 nodes is under 2 ms.
 - `MAX_PATH_NODES = 5 000`; a drawn path rarely exceeds 50.

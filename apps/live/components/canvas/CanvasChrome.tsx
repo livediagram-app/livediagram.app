@@ -1,4 +1,4 @@
-import { ES_LANES, isWhiteboardTab } from '@livediagram/document';
+import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -306,14 +306,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: always, on a phone.
   const toolbarActive = toolbarLayout === true;
-  // A whiteboard trades the palette, the strip and the theme controls for its
-  // dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
-  const whiteboard = isWhiteboardTab({ kind: props.tabKind });
+  // Draw mode trades the palette, the strip and the theme controls for its
+  // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  const whiteboard = props.editorMode === 'draw';
   // The strip only renders for an editor (not read-only) with the chrome up,
   // and never on a whiteboard.
   const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
-  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-whiteboard/whiteboard.md
+  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
   const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
@@ -521,7 +521,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      {/* The whiteboard's dock (docs/specs/023-whiteboard/whiteboard.md): top or bottom centre, in place
+      {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
         <WhiteboardDock

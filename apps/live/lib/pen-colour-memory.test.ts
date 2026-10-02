@@ -10,7 +10,7 @@ import {
 
 const empty: PenColourMemory = { yours: [] };
 
-// docs/specs/023-whiteboard/whiteboard.md "The colour picker": Your colours.
+// docs/specs/023-draw-mode/draw-mode.md "The colour picker": Your colours.
 describe('Your colours', () => {
   it('remembers nothing for the ink or a stock colour', () => {
     expect(rememberPenColour(empty, null)).toBe(empty);

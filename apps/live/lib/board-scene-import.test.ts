@@ -19,7 +19,7 @@ const textItem = (text: string): SceneItem => ({
   y: 0,
   width: 100,
   height: 20,
-  autoWidth: false,
+  sizing: 'wrap',
   text: { text: text || ' x', fontPx: 22, family: 'sans', colour: 'ink' },
 });
 
@@ -164,7 +164,7 @@ describe('importBoardsAsDocuments', () => {
       ...seams,
     });
     expect(made[0]!.folderId).toBeUndefined();
-    expect(made[0]!.tabs[0]).toMatchObject({ kind: 'whiteboard' });
+    expect(made[0]!.tabs[0]).toMatchObject({ opensIn: 'draw' });
   });
 });
 

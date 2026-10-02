@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { hexToHsv, hsvToHex } from './hsv';
 
-// The custom colour picker's square and hue slider (docs/specs/023-whiteboard/whiteboard.md).
+// The custom colour picker's square and hue slider (docs/specs/023-draw-mode/draw-mode.md).
 describe('hsv', () => {
   it('turns hue, saturation and value into a hex', () => {
     expect(hsvToHex({ h: 0, s: 1, v: 1 })).toBe('#ff0000');

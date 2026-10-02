@@ -19,7 +19,7 @@ import {
 } from './quick-style-whiteboard';
 import { INK_CHOICE, type PenPalette } from './quick-style-pen';
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a whiteboard has no theme,
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a whiteboard has no theme,
 // so its Stroke and Text colour rows offer the whiteboard's colours (Ink, the seven stock colours,
 // the tab's custom colours), as Marker colour does; Background keeps its fills, "no fill" first.
 const INK = '#1c1917';
@@ -50,7 +50,8 @@ describe('onWhiteboard', () => {
   });
 
   it('marks the ink, a stock name and a custom colour, and nothing when they disagree', () => {
-    expect(view([shape]).sections.boardStroke!.value).toBe(INK_CHOICE);
+    expect(view([{ ...shape, penColour: 'ink' }]).sections.boardStroke!.value).toBe(INK_CHOICE);
+    expect(view([text]).sections.boardText!.value).toBe(INK_CHOICE);
     expect(view([{ ...shape, penColour: 'blue' }]).sections.boardStroke!.value).toBe('blue');
     const custom = { ...arrow, strokeColor: '#868E96' };
     const p = { ...palette, custom: ['#868e96'] };
@@ -58,6 +59,9 @@ describe('onWhiteboard', () => {
     expect(v.sections.boardStroke!.value).toBe('#868e96');
     expect(v.sections.boardStroke!.custom.map((o) => o.value)).toEqual(['#868e96']);
     expect(view([shape, { ...arrow, penColour: 'red' }]).sections.boardStroke!.value).toBeNull();
+    // An unpainted line wears its theme default, not the ink (docs/specs/007-editor/editor-modes.md
+    // "One look"), so no choice is marked.
+    expect(view([shape]).sections.boardStroke!.value).toBeNull();
     expect(view([{ ...text, penTextColour: 'green' }]).sections.boardText!.value).toBe('green');
   });
 
@@ -117,7 +121,7 @@ describe('the Corners row', () => {
 });
 
 describe('applyBoardStroke', () => {
-  it('stores the ink as no colour, a stock colour by name, a custom one as its hex', () => {
+  it('stores the ink and a stock colour by name, a custom one as its hex', () => {
     const painted = {
       ...shape,
       strokeColor: '#ff0000',
@@ -126,7 +130,7 @@ describe('applyBoardStroke', () => {
     } as ShapeElement;
     const ink = applyBoardStroke(painted, INK_CHOICE) as ShapeElement;
     expect(ink.strokeColor).toBeUndefined();
-    expect(ink.penColour).toBeUndefined();
+    expect(ink.penColour).toBe('ink');
     expect(ink.strokeSwatch).toBeUndefined();
     expect(ink.colorPreset).toBeUndefined();
     const blue = applyBoardStroke(painted, 'blue') as ShapeElement;
@@ -153,6 +157,7 @@ describe('applyBoardTextColour', () => {
     expect((hex as TextElement).textSwatch).toBeUndefined();
     const ink = applyBoardTextColour({ ...text, textColor: '#0c8599' }, INK_CHOICE) as TextElement;
     expect(ink.textColor).toBeUndefined();
+    expect(ink.penTextColour).toBe('ink');
     expect(applyBoardTextColour(shape, 'violet')).toBe(shape);
   });
 });

@@ -4,7 +4,7 @@ Derived from [Canvas and palette](../canvas-and-palette.md) "Resize", "Aspect ra
 "Rotation" and "Adding elements", for the resize of boxed elements and multi-selections, the
 Shift constraint on draw-to-size, and where every selection grip draws ("The handles are always on
 top"). Reshaping a recognised whiteboard shape is owned by the
-[whiteboard blueprint](../../023-whiteboard/blueprints/whiteboard-round-one.md).
+[whiteboard blueprint](../../023-draw-mode/blueprints/whiteboard-round-one.md).
 
 ## Domain and naming
 

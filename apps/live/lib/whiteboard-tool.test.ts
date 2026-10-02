@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createPath } from '@livediagram/document';
 import type { PendingDraw } from './draw-mode';
 import {
   WHITEBOARD_SHAPES,
@@ -101,7 +102,7 @@ describe('whiteboardPointerRoute', () => {
 });
 
 describe('whiteboardShapeIntent', () => {
-  // docs/specs/023-whiteboard/whiteboard.md "Shapes": a pen is a separate tool; pens do not set the
+  // docs/specs/023-draw-mode/draw-mode.md "Shapes": a pen is a separate tool; pens do not set the
   // colour of the other tools.
   it('arms a board shape: ink, unfilled, default width, whatever pen was in hand', () => {
     expect(whiteboardShapeIntent('ellipse')).toEqual({
@@ -113,8 +114,10 @@ describe('whiteboardShapeIntent', () => {
   });
 });
 
+// docs/specs/007-editor/editor-modes.md "One look": Draw mode writes Ink, unfilled, onto what it
+// makes, so it looks the same in Diagram mode and to every collaborator.
 describe('boardShape', () => {
-  it('leaves a shape unpainted and unfilled', () => {
+  it('writes an Ink outline and label by name, and no fill, on a shape', () => {
     const shape = {
       id: 's',
       type: 'shape',
@@ -125,14 +128,42 @@ describe('boardShape', () => {
       height: 9,
     } as const;
     const out = boardShape(shape);
-    expect(out).toMatchObject({ fillColor: 'transparent' });
+    expect(out).toMatchObject({
+      fillColor: 'transparent',
+      penColour: 'ink',
+      penTextColour: 'ink',
+    });
     expect('strokeColor' in out).toBe(false);
     expect('strokeWidth' in out).toBe(false);
+  });
+
+  it('writes an Ink line on a line, an arrow and a path', () => {
+    const arrow = {
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 9, y: 9 },
+    } as const;
+    expect(boardShape(arrow)).toMatchObject({ penColour: 'ink' });
+    expect('fillColor' in boardShape(arrow)).toBe(false);
+    const path = createPath(
+      [
+        { x: 0, y: 0, mode: 'corner' },
+        { x: 9, y: 9, mode: 'corner' },
+      ],
+      false,
+    );
+    expect(boardShape(path)).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
+  });
+
+  it('leaves a sticky and a text box to their own colours', () => {
+    const text = { id: 't', type: 'text', x: 0, y: 0, width: 9, height: 9 } as const;
+    expect(boardShape(text)).toBe(text);
   });
 });
 
 describe('whiteboardTakesTyping', () => {
-  // docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts": on a whiteboard only a note or text
+  // docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts": on a whiteboard only a note or text
   // box turns a keypress into typing; a selected shape or stroke leaves the key to the dock.
   it('lets a note or a text box take the keypress', () => {
     expect(whiteboardTakesTyping({ type: 'sticky' })).toBe(true);

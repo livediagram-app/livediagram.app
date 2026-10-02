@@ -7,12 +7,7 @@
 // anything leaves a notice; a lossless one leaves none.
 
 import { useEffect, useState, type RefObject } from 'react';
-import {
-  MAX_ELEMENTS_PER_TAB,
-  isWhiteboardTab,
-  type Element,
-  type Tab,
-} from '@livediagram/document';
+import { MAX_ELEMENTS_PER_TAB, type Element, type Tab } from '@livediagram/document';
 import { landBoardScene } from '@/lib/board-scene/land';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import { reportHasLosses, type BoardSceneReport } from '@/lib/board-scene/report';
@@ -46,6 +41,9 @@ type Point = { x: number; y: number };
 
 export type BoardSceneInsertDeps = {
   activeTab: Tab;
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): a paste lands the
+  // whiteboard way (adaptive colours, hugging text).
+  drawMode: boolean;
   editsBlocked: boolean;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -88,7 +86,7 @@ export function useBoardSceneInsert(deps: BoardSceneInsertDeps): BoardSceneInser
       debugLog('[board-scene] insert refused', { reason: 'edits blocked' });
       return false;
     }
-    const whiteboard = isWhiteboardTab(tab);
+    const whiteboard = d.drawMode;
     const at = point ?? d.canvasPointerRef?.current ?? d.getViewportCenter();
     const result = landBoardScene(scene, {
       profile: whiteboard ? 'whiteboard' : 'diagram',

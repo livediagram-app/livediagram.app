@@ -1,6 +1,6 @@
 'use client';
 
-// What each dock flyout holds (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): a
+// What each dock flyout holds (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): a
 // pen's colour and width, the eraser's mode, the Settings sections and a shape slot's menu. The
 // Shapes flyout has its own component (ShapesFlyout).
 
@@ -28,7 +28,7 @@ import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
 import { ColourPicker } from './ColourPicker';
 import { SnapColoursSection } from './SnapColoursSection';
-import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 
 const ERASER_MODES = [
@@ -42,11 +42,12 @@ const CURSOR_NAMES: Record<PenCursorVariant, string> = {
 };
 
 export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: WhiteboardDockModel }) {
-  const { appearance } = useAppearance();
+  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  const appearance = useCanvasSurface();
   return (
     <FlyoutRows>
       {/* The main pen always stays the board's ink: its flyout is the width only. The others get
-          the colour picker (docs/specs/023-whiteboard/whiteboard.md "The colour picker"). */}
+          the colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"). */}
       {penAdjustsColour(pen) ? (
         <ColourPicker
           value={pen.colour}
@@ -125,7 +126,7 @@ export function SettingsFlyoutBody({
           </FlyoutOption>
         ))}
       </FlyoutRow>
-      {/* The pen cursor (docs/specs/023-whiteboard/whiteboard.md "Pens"), each option showing itself. */}
+      {/* The pen cursor (docs/specs/023-draw-mode/draw-mode.md "Pens"), each option showing itself. */}
       <FlyoutRow label="Cursor" heading>
         {PEN_CURSOR_VARIANTS.map((v) => (
           <FlyoutOption
@@ -149,7 +150,7 @@ export function SettingsFlyoutBody({
           </FlyoutOption>
         ))}
       </FlyoutRow>
-      {/* A device-local setting (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"). */}
+      {/* A device-local setting (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"). */}
       <FlyoutRow label="Drawing" heading>
         {([false, true] as const).map((on) => (
           <FlyoutOption
@@ -169,7 +170,7 @@ export function SettingsFlyoutBody({
   );
 }
 
-// A shape slot's menu (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): pin or unpin without
+// A shape slot's menu (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): pin or unpin without
 // a drag.
 export function SlotMenuBody({ pinned, onChoose }: { pinned: boolean; onChoose: () => void }) {
   const label = pinned ? 'Unpin' : 'Pin to dock';

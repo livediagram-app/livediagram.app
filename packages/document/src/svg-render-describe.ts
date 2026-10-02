@@ -26,9 +26,12 @@ import { borderOf } from './svg-render-border';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
+import { resolveStockColours } from './stock-colours';
+import { DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 
 export const EXPORT_PADDING = 32;
-export const EXPORT_BG = '#ffffff';
+// A tab that stores no canvas colour is on the Default theme: its light canvas.
+export const EXPORT_BG = DEFAULT_BACKGROUND_COLOR;
 export const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 export const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 export const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
@@ -125,8 +128,13 @@ export function exportFontIds(
   return fontIdsUsed(boxed, tabFont, boxed.map(eventStormingNoteFont));
 }
 
-export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions = {}): BoxedExport {
+export function describeBoxedExport(
+  source: BoxedElement,
+  opts: BoxedExportOptions = {},
+): BoxedExport {
   const surface = opts.surface ?? 'light';
+  // A stock colour stored by name is drawn in its version for this page.
+  const el = resolveStockColours(source, surface);
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
   const fontFamily = exportFontFamily(el, opts.tabFont);
   const opacity = el.opacity ?? 1;
@@ -244,7 +252,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  // A Shift-resized text box draws its text scaled (docs/specs/023-whiteboard/whiteboard.md).
+  // A Shift-resized text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
   const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
   const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;

@@ -56,8 +56,9 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
-  Whiteboard:
-    'Whiteboard tabs, drawn on with a dock of pens: a whiteboard created (from the New Document wizard or as a new tab), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
+  Editor:
+    'Editor modes: a person switching a tab between Diagram mode (shapes, arrows and the palette) and Draw mode (freehand pens). Only the mode, never the tab or what is on it.',
+  Draw: 'Draw mode, drawn in with a dock of pens: a Whiteboard tab created (from the New Document wizard, as a new tab or by an import), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
@@ -109,7 +110,9 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Email: '#0d9488',
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.
-  Whiteboard: '#78716c',
+  Draw: '#78716c',
+  // Deep violet: the mode switch, apart from Draw's stone beside it.
+  Editor: '#6d28d9',
 };
 export const categoryColor = (c: string, appearance: Appearance = 'light') =>
   forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);

@@ -6,7 +6,7 @@ import { createPath, type Element } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
 
-// The Path tool's drawing gesture (docs/specs/023-whiteboard/path-tool.md "Drawing").
+// The Path tool's drawing gesture (docs/specs/023-draw-mode/path-tool.md "Drawing").
 
 const PATH: PendingDraw = { type: 'path' };
 
@@ -382,7 +382,7 @@ describe('usePathDrawGesture', () => {
     expect(s.hook.result.current.editPointer).toBe(false);
   });
 
-  describe('undo while drawing (docs/specs/023-whiteboard/path-tool.md "Drawing")', () => {
+  describe('undo while drawing (docs/specs/023-draw-mode/path-tool.md "Drawing")', () => {
     const xs = (s: ReturnType<typeof setup>) =>
       s.hook.result.current.draft?.anchors.map((a) => a.x);
 

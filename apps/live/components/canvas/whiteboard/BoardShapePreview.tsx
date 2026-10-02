@@ -1,7 +1,7 @@
 'use client';
 
 // Whiteboard shape outlines drawn over the canvas before they land
-// (docs/specs/023-whiteboard/whiteboard.md "Shapes", "Shape recognition"): a dock shape being dragged
+// (docs/specs/023-draw-mode/draw-mode.md "Shapes", "Shape recognition"): a dock shape being dragged
 // out, and the shape a held-still pen stroke is recognised as.
 
 import {

@@ -149,7 +149,7 @@ describe('TEMPLATES catalogue', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
-      // docs/specs/023-whiteboard/whiteboard.md); every other kind seeds content. Either way the
+      // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
       const empty = kind === 'blank' || kind === 'whiteboard';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
@@ -158,11 +158,12 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes a whiteboard tab on a Grid board', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Board background": the kind and the Grid land on
-    // every creation path through here (the template, a new tab, Quick Start, the MCP worker).
+  it('makes a general tab that opens in Draw, on a Grid board', () => {
+    // docs/specs/007-editor/editor-modes.md "Where the mode lives": the opening mode and the Grid
+    // land on every creation path through here (the template, a new tab, Quick Start, the MCP
+    // worker); the tab stays a general one.
     expect(templateCanvasOverrides('whiteboard')).toEqual({
-      kind: 'whiteboard',
+      opensIn: 'draw',
       backgroundPattern: 'graph',
     });
   });

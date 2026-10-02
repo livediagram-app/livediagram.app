@@ -13,7 +13,7 @@ const classesOf = (below?: 'toolbar' | 'dock') => {
 };
 
 // The top-centre stack never sits under a bar across the top of the canvas
-// (docs/specs/007-editor/toolbar-layout.md, docs/specs/023-whiteboard/whiteboard.md "Where the dock sits").
+// (docs/specs/007-editor/toolbar-layout.md, docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
 describe('TopCenterStack', () => {
   it('starts at the top from sm, below the phone dock on a phone', () => {
     expect(classesOf()).toEqual(expect.arrayContaining(['top-[4.75rem]', 'sm:top-3']));

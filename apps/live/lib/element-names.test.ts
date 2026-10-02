@@ -70,7 +70,7 @@ describe('elementAriaLabel', () => {
   });
 });
 
-describe('a path (docs/specs/023-whiteboard/path-tool.md "Accessibility")', () => {
+describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () => {
   const corner = (x: number, y: number) => ({ x, y, mode: 'corner' as const });
   it('is named by its points, open or closed', () => {
     const open = createPath([corner(0, 0), corner(10, 0), corner(10, 10)], false);

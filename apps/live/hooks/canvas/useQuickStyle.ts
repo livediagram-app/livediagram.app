@@ -17,7 +17,7 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { isPenColourName, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { canvasSurface, isPenColourName, PEN_INK } from '@livediagram/document';
 import {
   applyBoardStroke,
   applyBoardTextColour,
@@ -39,6 +39,7 @@ import {
 import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { PenColourMemoryApi } from './usePenColourMemory';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { resolveTabBackdrop } from '@/lib/themes';
 import {
   applyQuickFill,
   applyQuickIconAlign,
@@ -53,6 +54,7 @@ import {
   type QuickIconAlign,
   type QuickStrokeStyle,
   type QuickStyleView,
+  type QuickColourValue,
   type QuickSwatchValue,
   type QuickWidth,
 } from '@/lib/quick-style';
@@ -62,9 +64,9 @@ import type { SwatchOverridesApi } from './useSwatchOverrides';
 
 export type QuickStyleApi = {
   view: QuickStyleView | null;
-  setStroke: (slot: QuickSwatchValue) => void;
+  setStroke: (slot: QuickColourValue) => void;
   setBackground: (slot: QuickSwatchValue) => void;
-  setTextColour: (slot: QuickSwatchValue) => void;
+  setTextColour: (slot: QuickColourValue) => void;
   setWidth: (width: QuickWidth) => void;
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
@@ -85,6 +87,8 @@ export type QuickStyleApi = {
 
 export function useQuickStyle(deps: {
   activeTab: Tab;
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): the board rows show.
+  drawMode: boolean;
   theme: ThemeDefinition;
   selectionIds: ReadonlySet<string>;
   editsBlocked: boolean;
@@ -111,21 +115,25 @@ export function useQuickStyle(deps: {
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
-  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays") the
-  // defaults read as the board's ink, and the style memory is the board's own
-  // (useStyleMemory's board scope), never a diagram tab's.
-  const whiteboard = isWhiteboardTab(activeTab);
+  // In Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays") the
+  // defaults read as the board's ink, and the style memory is Draw mode's own
+  // (useStyleMemory's board scope), never Diagram mode's.
+  const whiteboard = deps.drawMode;
+  // The stock colours in their version for the canvas the tab paints
+  // (docs/specs/007-editor/editor-modes.md "One look"): the viewer's appearance on the Default
+  // theme, the theme's own canvas otherwise.
   const { appearance } = useAppearance();
-  const ink = WHITEBOARD_INK[appearance];
+  const board = canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor);
+  const ink = PEN_INK[board];
   const held = deps.pen?.held ?? null;
   // The custom colours used on this tab, the Marker colour row's second section.
   const palette = useMemo(
     () => ({
-      board: appearance,
+      board,
       ink,
       custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
     }),
-    [appearance, ink, whiteboard, activeTab.elements],
+    [board, ink, whiteboard, activeTab.elements],
   );
   // A tool's choices land in memory, not the document: a version to re-read it.
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
@@ -141,10 +149,14 @@ export function useQuickStyle(deps: {
   const view = useMemo(() => {
     if (editsBlocked) return null;
     if (phantom && intent) {
-      const tool = onWhiteboard(quickStyleView([phantom], theme, overrides), [phantom], palette);
+      const tool = onWhiteboard(
+        quickStyleView([phantom], theme, overrides, palette.ink),
+        [phantom],
+        palette,
+      );
       return tool && { ...tool, caption: toolCaption(intent) };
     }
-    const plain = quickStyleView(selected, theme, overrides);
+    const plain = quickStyleView(selected, theme, overrides, palette.ink);
     if (!whiteboard) return plain;
     const board = onWhiteboard(plain, selected, palette);
     // Selected strokes first; with nothing selected, the pen in hand.

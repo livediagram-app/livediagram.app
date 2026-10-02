@@ -2,17 +2,17 @@
 
 Excalidraw content reaches livediagram four ways, all through **one parser**:
 
-- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. On a
-  whiteboard tab it lands as whiteboard-native content (marker strokes, shapes,
-  text boxes that hug, stickies, arrows, a frame) as if drawn there; on a
-  diagram tab it lands as diagram elements.
+- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. In Draw
+  mode it lands as whiteboard-native content (marker strokes, shapes,
+  text boxes that hug, stickies, arrows, a frame) as if drawn there; in
+  Diagram mode it lands as diagram elements.
 - **Import dialog**: a `.excalidraw` file (Excalidraw's plain-JSON save format,
   also what excalidraw.com's "Save to disk" produces), or a `.png` / `.svg`
   Excalidraw exported with its scene embedded, replaces the active tab.
 - **Drop**: a `.excalidraw` file, or an Excalidraw PNG / SVG with an embedded
   scene, dropped on the canvas lands like a paste.
 - **New documents** (the Explorer's Import from group): each picked file becomes
-  its own document with one whiteboard tab, named and dated after the file.
+  its own document with one tab that opens in Draw mode, named and dated after the file.
 
 The parser turns Excalidraw into a [Board scene](board-scene.md), the
 source-neutral intermediate every board import shares; the shared landing turns
@@ -159,7 +159,7 @@ neither envelope records a theme. Items keep the scene's z-order (below).
 | `ellipse`                                          | `shape` `ellipse`                                                                                                                                                                                                                                                                                                                                                  |
 | `diamond`                                          | `shape` `diamond`; `rounded` when `roundness` is set                                                                                                                                                                                                                                                                                                               |
 | `text` with a `containerId`                        | the container's `label` (`shape`, `sticky`) or the arrow's `label` (`connector`); consumed. A container that is not in the scene leaves it standalone                                                                                                                                                                                                              |
-| `text` standalone                                  | `text` with the element's box; `autoWidth` from `autoResize` (absent reads `true`); the unwrapped `originalText` (else `text`)                                                                                                                                                                                                                                     |
+| `text` standalone                                  | `text` with the element's box; `sizing` from `autoResize`: `fit` when true or absent, else `wrap`; the unwrapped `originalText` (else `text`)                                                                                                                                                                                                                      |
 | `freedraw`                                         | `ink`: absolute points; `p` from `pressures` when `simulatePressure` is `false` and there is one pressure per point; `closed` when the ends coincide (within `EXCALIDRAW_CLOSE_EPSILON_PX`), the repeated end point dropped; `streamline` from `strokeOptions.streamline` (Excalidraw's default 0.5 when absent); a non-transparent background is the ink's `fill` |
 | `line`                                             | `polyline`: absolute points; `closed` when `polygon` is `true` or the ends coincide (3+ points); `curved` when `roundness` is set and there are 3+ points; a non-transparent background on a closed line is its `fill`; arrowheads as `heads`                                                                                                                      |
 | `arrow`                                            | `connector`: absolute points; `from` / `to` the keys of the bound elements when they are in the scene; `curved` when `roundness` is set, it bends (3+ points) and it is not `elbowed` (an elbow or sharp arrow is not curved; the landing draws its bends as a curve and says so); `heads` per the table below; bound text as `label`                              |
@@ -249,7 +249,7 @@ hand-drawn font).
 
 The landing is [Board scene](board-scene.md)'s, one for every source:
 
-- **Whiteboard profile** (a whiteboard tab): ink as marker strokes with
+- **Whiteboard profile** (in Draw mode): ink as marker strokes with
   pressure where recorded, adaptive ink and stock colours, text boxes that hug
   their text at the exact font size, stickies, whiteboard shapes, arrows
   pinned to their shapes, the frame.
@@ -363,8 +363,8 @@ with the colours you see, not blanks.
 - **Import dialog** ([Markdown import](markdown-import.md) + [Mermaid import & export](mermaid.md)): a fourth format card, "Excalidraw",
   opening the same paste-or-file panel; the file picker accepts
   `.excalidraw`, `.json`, `.png` and `.svg`. Same replace-the-tab semantics +
-  single undo step; on a whiteboard tab the scene lands with the whiteboard
-  profile, elsewhere with the diagram profile. While images upload the footer
+  single undo step; in Draw mode the scene lands with the whiteboard
+  profile, in Diagram mode with the diagram profile. While images upload the footer
   beside the buttons reads "Importing images 3 of 12…"; an import with images
   or notes ends on the shared report instead of closing.
 - **Export dialog** ([Mermaid import & export](mermaid.md)): a seventh card in the text-format group with the

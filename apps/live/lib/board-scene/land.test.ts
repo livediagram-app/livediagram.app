@@ -61,7 +61,7 @@ describe('landBoardScene', () => {
         y: 90,
         width: 40,
         height: 20,
-        autoWidth: true,
+        sizing: 'fit',
         text: sceneText('Hi'),
       },
     ]);
@@ -103,7 +103,7 @@ describe('landBoardScene', () => {
         y: 0,
         width: 10,
         height: 10,
-        autoWidth: true,
+        sizing: 'fit',
         text: sceneText(' '),
       },
       rect('ok'),
@@ -229,7 +229,7 @@ describe('the tab patch', () => {
       options(),
     );
     expect(r.ok && r.tabPatch).toEqual({
-      kind: 'whiteboard',
+      opensIn: 'draw',
       name: 'Retro',
       backgroundPattern: 'grid',
     });
@@ -238,7 +238,7 @@ describe('the tab patch', () => {
   it('starts an untitled whiteboard on Grid as "Whiteboard"', () => {
     const r = landBoardScene(boardScene([]), options());
     expect(r.ok && r.tabPatch).toEqual({
-      kind: 'whiteboard',
+      opensIn: 'draw',
       name: 'Whiteboard',
       backgroundPattern: 'graph',
     });

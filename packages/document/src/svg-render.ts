@@ -111,6 +111,7 @@ import { boundsOfPoints, type Point } from './geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
+import { resolveStockColours } from './stock-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -146,9 +147,11 @@ export function contentBounds(
 
 export { svgIconShape } from './svg-render-image-icon';
 
-export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): string {
-  const { opacity, shape, label } = describeBoxedExport(el, opts);
+export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
   const surface = opts.surface ?? 'light';
+  // A stock colour stored by name is drawn in its version for this page.
+  const el = resolveStockColours(source, surface);
+  const { opacity, shape, label } = describeBoxedExport(el, opts);
   // What a self-drawing element writes its own text in: the label's resolved
   // colour and face, so a chart's key and a rail's captions read like every
   // other label on the canvas.
@@ -180,7 +183,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
   }
   if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-whiteboard/path-tool.md "Export").
+    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export").
     return `<g${opAttr}${rotAttr}>${svgPathElementShape(el, shape.stroke, shape.fill)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {

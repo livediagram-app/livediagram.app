@@ -25,7 +25,7 @@ describe('computeDrawGuides for pens', () => {
     expect(guides({ type: 'freehand' }).length).toBeGreaterThan(0);
   });
 
-  it('draws no guides for a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "No guides for pens")', () => {
+  it('draws no guides for a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "No guides for pens")', () => {
     const pen: PendingDraw = {
       type: 'freehand',
       variant: 'whiteboard',

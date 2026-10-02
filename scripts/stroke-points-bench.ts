@@ -88,7 +88,7 @@ function boards() {
     const geometry = freehandGeometry(raw);
     former.push({ id, type: 'freehand', ...geometry, closed: false, pressures, ...style });
   });
-  const tab = (elements: unknown[]) => ({ theme: 'default', kind: 'whiteboard', elements });
+  const tab = (elements: unknown[]) => ({ theme: 'default', opensIn: 'draw', elements });
   return { samples, packed: tab(packed), former: tab(former) };
 }
 

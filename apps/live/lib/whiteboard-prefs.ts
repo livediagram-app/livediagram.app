@@ -1,4 +1,4 @@
-// The whiteboard's device-local tool settings (docs/specs/023-whiteboard/whiteboard.md "Pens"): the main,
+// The whiteboard's device-local tool settings (docs/specs/023-draw-mode/draw-mode.md "Pens"): the main,
 // second and third pens, which one is in hand, shape recognition and the eraser mode. The user's,
 // not the board's: stored in this browser, never sent with the document.
 
@@ -18,7 +18,7 @@ import {
 
 // Named by their place in the dock, never by a colour: the second and third can be any colour.
 export type WhiteboardPenId = 'main' | 'second' | 'third';
-// `colour` (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): null is the board's own
+// `colour` (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): null is the board's own
 // ink, the first stock colour, which any pen may take and the main pen always has; a stock name
 // ("blue") is drawn in its version for the board; a custom `#rrggbb` is the same on both. `width`
 // is in px, derived from a named preset.

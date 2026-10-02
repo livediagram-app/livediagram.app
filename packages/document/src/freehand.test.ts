@@ -186,7 +186,7 @@ describe('createFreehand', () => {
   });
 
   // Drawn ink stays still while a whiteboard pen stroke grows
-  // (docs/specs/023-whiteboard/whiteboard.md "Pens"): the box sits on whole canvas px, so layout
+  // (docs/specs/023-draw-mode/draw-mode.md "Pens"): the box sits on whole canvas px, so layout
   // never snaps it to a different sub-pixel offset as a sample moves its bounds.
   it('grows the padded box outwards to whole canvas px, however fractional the samples', () => {
     const raw = [

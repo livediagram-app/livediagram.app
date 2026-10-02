@@ -9,6 +9,7 @@
 // the container) so they stay attached when edited in Excalidraw.
 
 import {
+  DEFAULT_BACKGROUND_COLOR,
   freehandStrokePoints,
   defaultFillColor,
   defaultStrokeColor,
@@ -126,7 +127,7 @@ export function tabToExcalidrawText(tab: Tab): string {
       strokeStyle: strokeStyleOut(borderStyle),
     };
 
-    // A path (docs/specs/023-whiteboard/path-tool.md "Export"): a line sampled along its curve.
+    // A path (docs/specs/023-draw-mode/path-tool.md "Export"): a line sampled along its curve.
     if (el.type === 'path') {
       const pts = samplePath(pathAnchors(el, { x: 0, y: 0 }), el.closed).map(
         (p): [number, number] => [p.x, p.y],
@@ -317,7 +318,7 @@ export function tabToExcalidrawText(tab: Tab): string {
       elements: out,
       appState: {
         gridSize: null,
-        viewBackgroundColor: tab.backgroundColor ?? '#ffffff',
+        viewBackgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
       },
       files: {},
     },

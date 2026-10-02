@@ -27,7 +27,7 @@ describe('canvas element entry', () => {
   });
 });
 
-describe('a still canvas (a whiteboard, docs/specs/023-whiteboard/whiteboard.md)', () => {
+describe('a still canvas (a whiteboard, docs/specs/023-draw-mode/draw-mode.md)', () => {
   it('lets a new element appear as drawn, with no entry animation', () => {
     const wrapper = ({ children }: { children: ReactNode }) =>
       createElement(CanvasStillProvider, { still: true, children });

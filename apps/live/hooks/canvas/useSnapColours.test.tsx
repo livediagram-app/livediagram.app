@@ -39,7 +39,7 @@ function setup(elements: Element[], over: { inertIds?: Set<string>; editsBlocked
 
 afterEach(() => vi.mocked(track).mockClear());
 
-// docs/specs/023-whiteboard/whiteboard.md "Snap colours".
+// docs/specs/023-draw-mode/draw-mode.md "Snap colours".
 describe('useSnapColours', () => {
   it('lists the snappable custom colours, leaving protected layers out', () => {
     const { hook } = setup([stroke('a', '#e03131'), stroke('b', '#1971c2'), stroke('c')], {
@@ -54,7 +54,7 @@ describe('useSnapColours', () => {
     expect(hook.result.current.snap()).toBe(2);
     expect(commit).toHaveBeenCalledTimes(1);
     expect(live()).toEqual([{ ...stroke('a'), penColour: 'red' }, stroke('b')]);
-    expect(track).toHaveBeenCalledExactlyOnceWith('Whiteboard', 'Changed', 'SnapColours');
+    expect(track).toHaveBeenCalledExactlyOnceWith('Draw', 'Changed', 'SnapColours');
   });
 
   it('does nothing while edits are blocked or with nothing to snap', () => {

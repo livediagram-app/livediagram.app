@@ -9,7 +9,13 @@ import {
   type PathElement,
 } from '@livediagram/document';
 import { PathSvg } from './PathSvg';
-import { NodeMarker, HandleMarker, OVERLAY_SVG_CLASS, PATH_OVERLAY_Z } from './path-markers';
+import {
+  NodeMarker,
+  HandleMarker,
+  OVERLAY_SVG_CLASS,
+  PATH_OVERLAY_Z,
+  PATH_RING_PX,
+} from './path-markers';
 import type { PathRing } from './usePathDrawGesture';
 
 type Point = { x: number; y: number };
@@ -30,7 +36,7 @@ export type PathDraftView = {
   zoom: number;
 };
 
-// The path being drawn (docs/specs/023-whiteboard/path-tool.md "Drawing"; blueprint path-tool
+// The path being drawn (docs/specs/023-draw-mode/path-tool.md "Drawing"; blueprint path-tool
 // "Rendering"), inside the canvas's transformed layer after the elements: the path itself is a
 // PathSvg laid out exactly as the element it lands as, so release changes no pixel; the rubber
 // band shares its stroke; nodes, the active node's handles and the rings sit on top, sized in
@@ -103,7 +109,7 @@ export function PathDraftLayer({
             data-path-ring={ring.kind}
             cx={ring.point.x}
             cy={ring.point.y}
-            r={8 / zoom}
+            r={PATH_RING_PX / zoom}
             strokeWidth={1.5 / zoom}
             className={
               ring.kind === 'close'

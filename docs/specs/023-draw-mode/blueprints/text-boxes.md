@@ -1,6 +1,6 @@
 # Text boxes: blueprint
 
-Derived from [Whiteboard](../whiteboard.md) "Text boxes". The spec decides; this file adds
+Derived from [Draw mode](../draw-mode.md) "Text boxes". The spec decides; this file adds
 engineering precision. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `Tn`.
 
@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                                    | Role                                                                                     |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                | `TextElement.autoWidth`, `TextElement.textScale`                                         |
+| `packages/document/src/element-types.ts`                | `TextElement.sizing`, `TextElement.textScale`                                            |
 | `packages/document/src/validate.ts`                     | `TEXT_SCALE_MIN`, `TEXT_SCALE_MAX`; the two fields' checks                               |
 | `packages/document/src/svg-render-describe.ts`          | An export draws a text box's label at its scale                                          |
 | `apps/api/src/openapi/schemas.generated.ts`             | Regenerated: the two fields on `TextElement`                                             |
@@ -23,10 +23,10 @@ Scope, by file:
 | `apps/live/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                    |
 | `apps/live/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                     |
 | `apps/live/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
-| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a whiteboard text box through `placedTextBox`                   |
+| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                    |
 | `apps/live/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                 |
 | `apps/live/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                        |
-| `apps/live/hooks/canvas/useEditorDrag.ts`               | A lone whiteboard text box resizes through `resizedElement`                              |
+| `apps/live/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                 |
 | `apps/live/hooks/canvas/useTextStyleSetters.ts`         | Size, font, bold, italic, underline, strikethrough re-hug; a picked size drops the scale |
 | `apps/live/hooks/canvas/useElementStyle.ts`             | Passes `activeTab` to the text setters                                                   |
 | `apps/live/hooks/canvas/useEditModeContextMenu.ts`      | No element menu beside a whiteboard text box being typed into (T4)                       |
@@ -34,14 +34,14 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term             | Identifier                 | Meaning                                                                   |
-| ---------------- | -------------------------- | ------------------------------------------------------------------------- |
-| Hugging text box | `hugsText(el, whiteboard)` | A `text` element on a whiteboard                                          |
-| Auto width       | `TextElement.autoWidth`    | The width follows the text up to the wrap width; absent: the width is set |
-| Text scale       | `TextElement.textScale`    | Multiplier on the label px, from a Shift resize; absent: 1                |
-| Hug padding      | `textHugPadding(el)`       | `{ x: 4, y: 2 }`, or the element's padding preset on every side (T2)      |
-| Text block       | `MeasureTextBlock`         | The text's own laid-out size at a width, padding excluded                 |
-| Hug size         | `hugTextSize(el, measure)` | The box around a text block                                               |
+| Term             | Identifier                 | Meaning                                                                                                                 |
+| ---------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Hugging text box | `hugsText(el)`             | A `text` element whose `sizing` is set, in either mode                                                                  |
+| Sizing           | `TextElement.sizing`       | `fit`: the width follows the text up to the wrap width; `wrap`: the width is set; absent: a fixed box that does not hug |
+| Text scale       | `TextElement.textScale`    | Multiplier on the label px, from a Shift resize; absent: 1                                                              |
+| Hug padding      | `textHugPadding(el)`       | `{ x: 4, y: 2 }`, or the element's padding preset on every side (T2)                                                    |
+| Text block       | `MeasureTextBlock`         | The text's own laid-out size at a width, padding excluded                                                               |
+| Hug size         | `hugTextSize(el, measure)` | The box around a text block                                                                                             |
 
 "Hug" is the one verb; "fit" stays the sticky's auto-fit, "auto-size" is not used.
 
@@ -67,9 +67,9 @@ Scope, by file:
 ### Placement (`placedTextBox`, from `buildDrawnBoxed`)
 
 - Line height `h = ceil(textHugFontPx * 1.25) + 2 * pad.y` (22 px at the default 14 px).
-- Tap: `label ''`, `autoWidth: true`, `x = tapX - pad.x`, `y = tapY - h / 2`, `width = 2 * pad.x`,
+- Tap: `label ''`, `sizing: 'fit'`, `x = tapX - pad.x`, `y = tapY - h / 2`, `width = 2 * pad.x`,
   `height = h`.
-- Drag: `label ''`, no `autoWidth`, the dragged box's `x`, `y` and `width`, `height = h`.
+- Drag: `label ''`, `sizing: 'wrap'`, the dragged box's `x`, `y` and `width`, `height = h`.
 - Either opens for typing (`opensForTyping`). No placeholder is shown: the caret is the box.
 - Diagram tabs: unchanged (`createText`'s 220 × 64 and "Text").
 
@@ -98,13 +98,13 @@ empty text box <id>` logged.
 
 Only for a single hugging element, unrotated (T3). `constrain = drag.aspectLocked || shift`.
 
-- Plain, a handle with `e` or `w`: `autoWidth` removed, the frame's `x` and `width` taken, the
+- Plain, a handle with `e` or `w`: `sizing` set to `wrap`, the frame's `x` and `width` taken, the
   height hugs. Top and bottom handles leave the width (and an auto width) alone; the height hugs.
 - The edge the handle does not move stays: the bottom for an `n` handle, else the top.
 - Shift: `textScale' = clamp(textScale * (next.width - 2 pad.x) / (current.width - 2 pad.x))` to
   `[TEXT_SCALE_MIN, TEXT_SCALE_MAX]`, relative to the previous frame so frames never drift; the
   frame's `x` and `width`; the height hugs the scaled text at that width. The anchor: bottom for
-  `n`, top for `s`, else the middle. `autoWidth` is kept. The text keeps its ratio exactly; the
+  `n`, top for `s`, else the middle. `sizing` is kept. The text keeps its ratio exactly; the
   4 / 2 px padding does not scale, so the box's ratio moves by the padding alone (T5).
 - One gesture is one history step (the drag's checkpoint).
 
@@ -118,14 +118,14 @@ drops `textScale` on a text box (any tab).
 
 ```ts
 export type MeasureTextBlock = (width: number, fixed: boolean) => BlockSize;
-export function hugsText(el: Element, whiteboard: boolean): el is TextElement;
+export function hugsText(el: Element): el is TextElement;
 export function hugTextSize(el: TextElement, measure: MeasureTextBlock): BlockSize;
 export function placedTextBox(
   el,
   tap,
   start,
   drag,
-): Pick<TextElement, 'x' | 'y' | 'width' | 'height' | 'label' | 'autoWidth'>;
+): Pick<TextElement, 'x' | 'y' | 'width' | 'height' | 'label' | 'sizing'>;
 export function hugCommittedText(
   el: TextElement,
   measure: (el: TextElement) => MeasureTextBlock,
@@ -150,18 +150,20 @@ export function resizedElement(
 
 ## Data and persistence
 
-- `autoWidth?: boolean`, `textScale?: number` on `TextElement`: optional, absent on every existing
-  document, so no migration. An existing box keeps its stored size until an edit changes its
-  label, a style change re-hugs it or a handle resizes it; with no `autoWidth` it keeps its width
+- `sizing?: TextSizing` (`fit` | `wrap`), `textScale?: number` on `TextElement`: optional. A stored
+  `autoWidth: true` reads as `fit` and a migrated whiteboard's other text boxes as `wrap` (the
+  editor-modes blueprint). An existing box keeps its stored size until an edit changes its
+  label, a style change re-hugs it or a handle resizes it; with `wrap` it keeps its width
   and its height hugs (T1).
-- `validate.ts` refuses a non-boolean `autoWidth` and a `textScale` outside `[0.1, 40]`.
+- `validate.ts` refuses a `sizing` other than `fit` or `wrap` and a `textScale` outside `[0.1, 40]`.
 
 ## Errors and edge cases
 
 - Empty or whitespace-only on commit: removed (above). Undo brings the empty box back, one step.
 - A word longer than the wrap width breaks inside the word (`overflow-wrap: break-word`).
 - Rotated box, multi-selection resize: the frame's bounds as on any tab (T3).
-- Diagram tab: no hug anywhere (`hugsText` is false).
+- A fixed box (no `sizing`, made in Diagram mode): no hug anywhere (`hugsText` is false), in
+  either mode; a hugging box keeps hugging in Diagram mode too.
 - An explicit padding preset: that padding on every side (T2).
 
 ## Security and trust

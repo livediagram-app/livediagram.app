@@ -9,7 +9,7 @@ import {
 } from '@livediagram/document';
 import { FREEHAND_SVG_CLASS, StrokeHitPath } from '@/components/canvas/boxed-element-overlays';
 
-// A path element as the canvas draws it (docs/specs/023-whiteboard/path-tool.md; blueprint path-tool
+// A path element as the canvas draws it (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
 // "Rendering"): its curve in canvas px, in an svg with a viewBox the size of its box, so the canvas
 // zoom scales it like every other element. The path being drawn is this same component in the same
 // layer (PathDraftLayer), so a path lands without a pixel changing. The export twin is

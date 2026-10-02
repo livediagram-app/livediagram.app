@@ -1,6 +1,6 @@
 'use client';
 
-// A catalogue shape's own preview (docs/specs/023-whiteboard/whiteboard.md "Shape slots", More
+// A catalogue shape's own preview (docs/specs/023-draw-mode/draw-mode.md "Shape slots", More
 // shapes): a Shapes flyout kind shows the dock's glyph, every other kind its palette tile's icon.
 // Line art in currentColor, so the caller paints it: the board's ink in the search, the dock's own
 // text colour on a slot. Fixed 20 px box, so a result or a slot never changes size.

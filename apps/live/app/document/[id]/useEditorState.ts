@@ -42,7 +42,11 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, isWhiteboardTab } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID } from '@livediagram/document';
+import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
+import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
+import { announce } from '@/lib/announcer';
+import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -734,12 +738,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/live-app.md#role-pill).
-  const { viewPreview, canToggleRole, toggleViewPreview } = useViewPreview(sessionRole, () => {
-    setSelectedId(null);
-    setMultiSelectedIds(new Set());
-    setEditingId(null);
-  });
-  const isReadOnly = sessionRole === 'view' || viewPreview;
+  const { viewPreview, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
+    sessionRole,
+    () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+    },
+  );
+  const isReadOnly = !canEdit;
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
@@ -1086,6 +1093,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
+  // tool and rule gate keys on it, never on what the tab is.
+  const editorMode = useEditorMode(activeTab, { canEdit });
+  const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
@@ -1611,6 +1622,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     changeLogRef,
   });
+  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in.
+  const tabOpensIn = useTabOpensIn({ tabs, canEdit: !isReadOnly, commitTabs, emitTabMeta });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1637,6 +1650,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
   });
+  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody.
+  usePinTabOpening(activeTab, activeTabLoadState === 'ready');
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.
   // Folding the flags into one guard means every mutation helper
@@ -1710,7 +1725,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const styleMemory = useStyleMemory({
     documentId,
     theme: activeTheme,
-    board: isWhiteboardTab(activeTab),
+    board: drawMode,
   });
   const liveActiveElements = () =>
     (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
@@ -1973,6 +1988,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useTabActions({
     tabs,
     activeId,
+    editorMode: editorMode.mode,
     documentList,
     ownerId: selfParticipant.id,
     documentId,
@@ -2313,6 +2329,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasTool,
     setCanvasTool,
     activeTab,
+    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -2321,7 +2338,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
   });
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn path, a continued one, an edit.
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: createBlocked,
     commit,
@@ -2425,7 +2442,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   });
 
-  // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): one commit, one undo step.
+  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): one commit, one undo step.
   const snapColours = useSnapColours({
     elements: activeTab.elements,
     inertIds: layerInertIds,
@@ -2433,10 +2450,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
   });
 
-  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md): device-local pens, recognition and
+  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
   // eraser mode, and the dock presses turned into ordinary editor calls.
   const whiteboardDock = useWhiteboard({
     activeTab,
+    drawMode,
     canvasTool,
     pendingDraw,
     editsBlocked: createBlocked,
@@ -2444,7 +2462,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectCanvasTool,
     beginDraw,
     cancelDraw: cancelDrawShape,
-    setBackgroundPattern,
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
     snapColours,
@@ -2598,6 +2615,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   const quickStyle = useQuickStyle({
     activeTab,
+    drawMode,
     theme: activeTheme,
     selectionIds: quickSelectionIds,
     editsBlocked,
@@ -2764,6 +2782,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     documentName,
     tabs,
     activeTab,
+    drawMode,
     commit,
     tickTabs,
     applyFormatFromSource,
@@ -2927,6 +2946,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // "In the editor"): one commit at the pointer, selected, with its notice.
   const boardSceneInsert = useBoardSceneInsert({
     activeTab,
+    drawMode,
     editsBlocked,
     commit,
     setSelectedId,
@@ -3026,6 +3046,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
+    onCycleEditorMode: editorModeShortcut(editorMode, announce),
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -3038,7 +3059,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onOpenSearch: () => dialogs.setSearchOpen(true),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
-    // A whiteboard's keys are its dock's (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
     whiteboard: whiteboardDock.whiteboard
       ? {
           pickSelect: whiteboardDock.pickSelect,
@@ -3054,6 +3075,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // The person's editor mode on the active tab, for the mode switch and the canvas.
+    editorMode,
+    // The tab menu's Opens in choice for a tab, absent where it is not offered.
+    opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).

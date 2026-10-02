@@ -1,4 +1,4 @@
-// The keys of a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"; blueprint
+// The keys of a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"; blueprint
 // path-tool "Edit mode"), as a pure rule: what one key press does to the anchors and the node
 // selection. The gesture (usePathEditGesture) applies the outcome.
 import type { PathAnchor } from '@livediagram/document';

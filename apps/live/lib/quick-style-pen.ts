@@ -1,4 +1,4 @@
-// The quick style panel's marker rows on a whiteboard (docs/specs/023-whiteboard/whiteboard.md "The
+// The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "The
 // quick style panel stays"): the colour and width of the selected marker strokes, or, with nothing
 // selected, of the marker in hand. Quick choices only: Marker colour is the eight stock colours (Ink
 // first), adaptive per board, then, only when custom colours are used on this tab, a second section

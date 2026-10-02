@@ -16,7 +16,7 @@ type WhiteboardPenGestureDeps = Pick<
   wrapperRef: RefObject<HTMLDivElement | null>;
 };
 
-// The whiteboard pen's gesture (docs/specs/023-whiteboard/whiteboard.md "Pens", "Touch and pen
+// The whiteboard pen's gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen
 // input"; blueprint whiteboard-round-one "Pen ink"). The press makes one LiveStroke and sets it as
 // state once; after that every move adds its raw sample and pressure straight to the stroke and
 // notifies its subscribers (the ink, the recognition dwell), so drawing costs no React render. One
@@ -102,7 +102,7 @@ export function useWhiteboardPenGesture({
       if (!mine(e)) return;
       if (pinchingNow()) pinched = true;
       if (pinched) return;
-      // Shift reshapes a locked shape perfect, from this move on (whiteboard.md "Shape
+      // Shift reshapes a locked shape perfect, from this move on (draw-mode.md "Shape
       // recognition"); a move that only changes Shift still redraws.
       const shiftChanged = stroke.constrain(e.shiftKey);
       const p = canvasPoint(e);
@@ -129,7 +129,7 @@ export function useWhiteboardPenGesture({
       debugLog('[whiteboard] stroke discarded: cancel');
       setPenStroke(null);
     };
-    // Each Alt press flips the stroke (docs/specs/023-whiteboard/whiteboard.md "Shape recognition");
+    // Each Alt press flips the stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition");
     // while it is held, holding still does not snap the stroke again, and releasing it changes
     // nothing else.
     const onKeyDown = (e: KeyboardEvent) => {

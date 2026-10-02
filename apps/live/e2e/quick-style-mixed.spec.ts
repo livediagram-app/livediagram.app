@@ -5,7 +5,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './f
 // The quick style panel on a mixed whiteboard selection (docs/specs/008-canvas/quick-style-panel.md
 // "Multi-selection"), as a pasted or imported board selects: every row styles what it fits,
 // stickies and images are passed over, named stock colours draw in the board's version
-// (docs/specs/023-whiteboard/whiteboard.md "Imported and pasted content"). Dark mode throughout.
+// (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"). Dark mode throughout.
 
 const SHOTS = process.env.E2E_SHOTS_DIR;
 const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
@@ -67,7 +67,7 @@ const BOARD = [
     y: 280,
     width: 200,
     height: 30,
-    autoWidth: true,
+    sizing: 'fit',
     label: 'Retro notes',
     font: 'caveat',
     textSize: 'md',

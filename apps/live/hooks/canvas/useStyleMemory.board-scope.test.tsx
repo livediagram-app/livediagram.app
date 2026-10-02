@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
   defaultScheme,
-  isWhiteboardTab,
+  opensInOf,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -13,14 +13,14 @@ import { boardShape, whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
 import { useStyleMemory } from './useStyleMemory';
 
-// docs/specs/023-whiteboard/whiteboard.md "Shapes": a whiteboard keeps its own style memory, so a
+// docs/specs/023-draw-mode/draw-mode.md "Shapes": a whiteboard keeps its own style memory, so a
 // board's styles never dress a diagram's next shape, nor a diagram's a board's, for any shape kind,
 // tool style or restyle, in the same document or another. The real memory and the real panel,
 // rendered together as the editor renders them, across tab and document switches.
 
 const theme = defaultScheme('light');
 const diagram = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] } as unknown as Tab;
-const board = { id: 'wb', name: 'Board', kind: 'whiteboard', elements: [] } as unknown as Tab;
+const board = { id: 'wb', name: 'Board', opensIn: 'draw', elements: [] } as unknown as Tab;
 const rectangle = whiteboardShapeIntent('rectangle');
 
 type Props = { documentId: string; tab: Tab; intent: PendingDraw | null };
@@ -28,9 +28,12 @@ type Props = { documentId: string; tab: Tab; intent: PendingDraw | null };
 function setup(initial: Props) {
   return renderHook(
     ({ documentId, tab, intent }: Props) => {
-      const memory = useStyleMemory({ documentId, theme, board: isWhiteboardTab(tab) });
+      // The viewer's editor mode, as the editor resolves it: here the tab's opening mode.
+      const drawMode = opensInOf(tab) === 'draw';
+      const memory = useStyleMemory({ documentId, theme, board: drawMode });
       const quick = useQuickStyle({
         activeTab: tab,
+        drawMode,
         theme,
         selectionIds: new Set(),
         editsBlocked: false,
@@ -121,6 +124,6 @@ describe('style memory across a diagram tab and a whiteboard tab', () => {
     // Another document, its whiteboard open, the rectangle still in hand.
     view.rerender({ documentId: 'second', tab: board, intent: rectangle });
     expect(view.result.current.quick.view?.sections.boardStroke?.value).toBe('ink');
-    expect(nextSquare(view.result.current.memory, true).penColour).toBeUndefined();
+    expect(nextSquare(view.result.current.memory, true).penColour).toBe('ink');
   });
 });

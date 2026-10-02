@@ -1,6 +1,6 @@
 'use client';
 
-// A marker's colour picker (docs/specs/023-whiteboard/whiteboard.md "The colour picker"), top to
+// A marker's colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"), top to
 // bottom: the eight stock colours in one row (Ink first, the default), each in its version for the
 // board it is shown on; Your colours, the custom ones, newest first; and + at the end of that row,
 // which opens the custom picker in place. Arrow keys move through a row; Enter picks. A custom

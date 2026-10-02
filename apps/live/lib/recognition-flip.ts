@@ -1,5 +1,5 @@
 // Alt (Option), or the chip on a touch screen, flips the stroke being drawn between ink and the
-// shape it reads as (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"), whichever way
+// shape it reads as (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"), whichever way
 // the recognition setting is, and never changes that setting.
 import type { LiveStroke } from './live-stroke';
 import { recogniseBoardStroke } from './recognition-preview';
@@ -32,7 +32,7 @@ export function flipStrokeRecognition(
   debugLog(`[whiteboard] recognition flip by ${via}: ${flip ?? 'no shape'}`);
   if (!flip) return null;
   track(
-    'Whiteboard',
+    'Draw',
     'Toggled',
     flip === 'recognised'
       ? via === 'key'

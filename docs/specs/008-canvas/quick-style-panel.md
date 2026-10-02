@@ -49,13 +49,14 @@ Each layout keeps its dress. In the Floating layout the panel wears the Palette'
 same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
 header with its title ("Quick style") and a help link. It is not draggable and has no collapse
 button of its own; it leaves when the selection does. In the Toolbar layout it is
-**compact** (no header, 186 px wide): the colour swatches draw a little smaller (20 px) but each
-still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), seven to a row with the
+**compact** (no header, 210 px wide): the colour swatches draw a little smaller (20 px) but each
+still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), eight to a row with the
 targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
-rows change: a row of swatches never wraps and is never clipped (the width counts the swatches, their gaps, the padding and the border exactly), and a whiteboard's pen rows (up to eight colours: the ink
-and seven) use a compact width of eight targets (210 px) for every pen, even the main pen with its
-one. In the Floating layout with no Palette on screen (a whiteboard) it is 242 px, room for eight
-swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
+rows change, nor when the editor mode changes: every colour row lays out on the same eight columns
+(the theme's seven and Ink in Diagram mode, Ink and the seven stock colours in Draw mode, a
+Background row's seven in the first seven), a row of swatches never wraps and is never clipped (the
+width counts the swatches, their gaps, the padding and the border exactly). In the Floating layout
+with no Palette on screen it is 242 px, room for eight swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
 Floating, and a 1 px border a side.) The panel-opacity preference
 ([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
 
@@ -92,21 +93,21 @@ Top to bottom, each a small title over one row of option buttons:
 
 | Section        | Applies to                                         | Options                            |
 | -------------- | -------------------------------------------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows                                    | 7 colours                          |
+| Stroke         | Shapes + arrows                                    | 7 colours, then Ink                |
 | Background     | Shapes                                             | 7 colours                          |
-| Text colour    | Text elements                                      | 7 colours                          |
+| Text colour    | Text elements                                      | 7 colours, then Ink                |
 | Stroke width   | Shapes + arrows                                    | Thin / Medium / Thick              |
 | Stroke style   | Shapes                                             | Solid / Dashed / Dotted            |
 |                | Arrows                                             | Solid / Dashed / Flowing           |
 | Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
 | Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
-| Corners        | Free-corner shapes (whiteboards only)              | None / Small / Medium / Large      |
+| Corners        | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large      |
 | Actions        | Shapes + arrows + text elements                    | Clear styles                       |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
-- **Corners** (whiteboards only) sets the corner preset ([Corner radius](corner-radius.md)) of
+- **Corners** (Draw mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
   every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
   the web components with a rectangular surface) and leaves the rest. It earns its place on a
   whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the
@@ -168,6 +169,11 @@ The seven colours are **theme-relative**:
   a near-black one still yields visible strokes). That keeps every row genuinely on-theme (a Sand
   diagram's green is a muted green) while still offering six distinct colours, and it puts the six in
   the same order a multi-colour palette runs, so slot 4 means green everywhere.
+- **Then Ink**, on the Stroke and Text colour rows only, the eighth swatch
+  ([One look](../007-editor/editor-modes.md#one-look)): the same drawing colour on every theme,
+  stored by name (`ink`) and drawn in its version for the canvas, named "Ink" (its accessible name
+  and tooltip). It is not a theme colour, so it takes no custom colour in its place, and a fill
+  has none. Ink is marked when every styled element stores it.
 - **Text colours are readable on the canvas.** The Text colour row's first swatch is the theme's
   label colour. Its six are the same hues as the Stroke row (the palette's branch strokes, or the
   six toned hues), each stepped darker (or lighter, on dark paper) until it reads at 4.5:1 against
@@ -263,14 +269,17 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **On a whiteboard the Stroke and Text colour rows are the whiteboard's colours**: Ink, the seven
-  stock colours and the tab's custom colours, as Marker colour offers them
-  ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel stays"); a stock colour is
-  stored by name and marked by name. Background keeps the theme's fills.
-- **A colour stored by name** on a diagram tab (a whiteboard element pasted there) matches no
-  theme swatch, so it marks none; choosing a swatch replaces the name with the swatch's colour.
+- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the seven hued
+  colours and the tab's custom colours, as Marker colour offers them
+  ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
+  Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
+  A line with no colour of its own wears its theme default and marks none. Background keeps the
+  theme's fills.
+- **A colour stored by name** shown in Diagram mode matches no theme swatch, so it marks none;
+  choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
+  canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
 - **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
-  its marker strokes ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel
+  its marker strokes ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel
   stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
   style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
   strokes; the others never touch a stroke.

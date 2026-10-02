@@ -17,7 +17,7 @@ import {
   type PenPalette,
 } from './quick-style-pen';
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": pen strokes and the pen in
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": pen strokes and the pen in
 // hand take their colour and width from the panel: quick choices only, the eight stock colours (Ink
 // first), adaptive, then the tab's custom colours when there are any; the pens' named widths.
 const INK = '#1c1917';
@@ -117,7 +117,7 @@ describe('tabCustomColours', () => {
 });
 
 describe('tabCustomColours on imported boards', () => {
-  // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the custom colours of the
+  // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the custom colours of the
   // tab's lines, arrows, paths and text too, so an imported board's own colours are one press away.
   it('reads arrows, paths and text boxes, never named stock colours or fills', () => {
     const els = [

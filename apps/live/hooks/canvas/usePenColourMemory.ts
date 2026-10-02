@@ -1,6 +1,6 @@
 'use client';
 
-// Your colours (docs/specs/023-whiteboard/whiteboard.md "The colour picker"), in the user's synced
+// Your colours (docs/specs/023-draw-mode/draw-mode.md "The colour picker"), in the user's synced
 // preferences, written the way the other synced preferences are (the same owner, guest or signed
 // in). The logic is pure, in lib/pen-colour-memory.
 

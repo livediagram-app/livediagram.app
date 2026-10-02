@@ -6,7 +6,7 @@ import { lucideGlyph } from './lucide-glyph';
 // The three kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"):
 // a marker for freehand drawing, a flowchart for a diagram, a mind map for a brainstorm.
 
-// The whiteboard dock's marker silhouette (docs/specs/023-whiteboard/whiteboard.md "Pens") on its
+// The whiteboard dock's marker silhouette (docs/specs/023-draw-mode/draw-mode.md "Pens") on its
 // 24-unit grid, body, nib and the band below, in the text colour and centred in its box.
 export function MarkerIcon({ size = 16, ...rest }: IconProps) {
   return (

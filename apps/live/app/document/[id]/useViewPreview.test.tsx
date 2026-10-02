@@ -34,4 +34,15 @@ describe('useViewPreview', () => {
     expect(result.current.viewPreview).toBe(false);
     expect(onEnter).not.toHaveBeenCalled();
   });
+
+  // One answer to "may this person edit?", read by the editor and the tab bar's mode switch alike
+  // (docs/specs/007-editor/editor-modes.md "The mode switch").
+  it('says whether the person may edit: an edit session not previewing', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const edit = renderHook(() => useViewPreview('edit', vi.fn()));
+    expect(edit.result.current.canEdit).toBe(true);
+    act(() => edit.result.current.toggleViewPreview());
+    expect(edit.result.current.canEdit).toBe(false);
+    expect(renderHook(() => useViewPreview('view', vi.fn())).result.current.canEdit).toBe(false);
+  });
 });

@@ -77,7 +77,7 @@ export function useCanvasDrawGesture({
   useEffect(() => (drawing ? beginCanvasGesture('stroke') : undefined), [drawing]);
 
   // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
-  // samples, no React state per sample; docs/specs/023-whiteboard/whiteboard.md "Pens").
+  // samples, no React state per sample; docs/specs/023-draw-mode/draw-mode.md "Pens").
   const { penStroke, beginWhiteboardStroke } = useWhiteboardPenGesture({
     pendingDraw,
     wrapperRef,

@@ -1,6 +1,6 @@
 'use client';
 
-// The custom colour picker, opened in place by + (docs/specs/023-whiteboard/whiteboard.md "The colour
+// The custom colour picker, opened in place by + (docs/specs/023-draw-mode/draw-mode.md "The colour
 // picker"): a saturation and brightness square, a hue slider, a hex field and, where the browser has
 // one, an eyedropper; Use applies it. When the colour is under 3:1 on either board, a warning says
 // which and offers a nearby version readable on both, as a swatch to press; its line is always

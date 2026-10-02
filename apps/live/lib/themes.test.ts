@@ -8,7 +8,7 @@ import type {
   TextElement,
 } from '@livediagram/document';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from '@livediagram/document';
+import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
 import {
   THEMES,
   deriveNewBoxedColours,
@@ -441,7 +441,7 @@ describe('switchThemeBackdrop', () => {
   const prev: ThemeDefinition = {
     id: 'brand',
     label: 'Brand',
-    backgroundColor: '#ffffff',
+    backgroundColor: DEFAULT_BACKGROUND_COLOR,
     backgroundPattern: 'grid',
     patternColor: '#cbd5e1',
     elementFill: null,

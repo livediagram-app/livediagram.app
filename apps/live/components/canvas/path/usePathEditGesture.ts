@@ -61,7 +61,7 @@ export type PathGuides = { x?: number; y?: number };
 
 const NO_NODES: ReadonlySet<number> = new Set();
 
-// A path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"; blueprint path-tool "Edit
+// A path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"; blueprint path-tool "Edit
 // mode"): every press on the canvas while a path is being edited lands here first, so the rest of
 // the canvas stays inert. Each gesture holds its anchors as a draft while it runs and lands as one
 // `onCommitPathEdit`, so it is one undo step.
@@ -432,7 +432,7 @@ export function usePathEditGesture({
     return () => window.removeEventListener('keydown', listener, { capture: true });
   }, [selectedPathId, editingId]);
 
-  // The edit toolbar's actions (docs/specs/023-whiteboard/path-tool.md "Editing").
+  // The edit toolbar's actions (docs/specs/023-draw-mode/path-tool.md "Editing").
   const setNodeType = (type: PathAnchor['mode']) => {
     const el = element;
     const sel = selectedRef.current;

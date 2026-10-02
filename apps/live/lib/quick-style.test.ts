@@ -386,7 +386,7 @@ describe('Text colour: text elements', () => {
   });
 });
 
-describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
   const open = createPath(
     [
       { x: 0, y: 0, mode: 'corner' },

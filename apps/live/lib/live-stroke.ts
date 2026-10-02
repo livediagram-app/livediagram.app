@@ -1,4 +1,4 @@
-// The stroke being drawn with a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens";
+// The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
 // blueprint whiteboard-round-one "Pen ink"). One object per stroke, made on the press: its raw
 // samples in canvas px (only exact repeats dropped, as Excalidraw does), a pressure per sample when
 // the pointer is a pen, the streamline its pointer draws with, and the subscribers that draw it, so
@@ -34,7 +34,7 @@ export type LiveStroke = {
   notify(): void;
   /**
    * Locks the stroke to the shape it was recognised as, with the pen where it is now: from then on
-   * the stroke IS that shape, and dragging on reshapes it (docs/specs/023-whiteboard/whiteboard.md
+   * the stroke IS that shape, and dragging on reshapes it (docs/specs/023-draw-mode/draw-mode.md
    * "Shape recognition").
    */
   snapTo(shape: RecognisedShape): void;

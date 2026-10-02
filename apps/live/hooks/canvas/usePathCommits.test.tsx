@@ -34,7 +34,15 @@ describe('usePathCommits', () => {
     s.api.commitPath({ anchors: [corner(0, 0), corner(10, 10)], closed: false, continuing: null });
     expect(s.commit).toHaveBeenCalledTimes(1);
     expect(s.els()).toHaveLength(1);
-    expect(s.els()[0]).toMatchObject({ type: 'path', closed: false, strokeWidth: 'thick' });
+    // Written in Ink by name, unfilled, as Draw mode writes what it makes
+    // (docs/specs/007-editor/editor-modes.md "One look").
+    expect(s.els()[0]).toMatchObject({
+      type: 'path',
+      closed: false,
+      strokeWidth: 'thick',
+      penColour: 'ink',
+      fillColor: 'transparent',
+    });
     expect(track).toHaveBeenCalledWith('Element', 'Added', 'Path');
     // Selected, so it can be edited at once (Edit points, Enter).
     expect(s.setSelectedId).toHaveBeenCalledWith(s.els()[0]!.id);

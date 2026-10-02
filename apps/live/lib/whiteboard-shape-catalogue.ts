@@ -1,4 +1,4 @@
-// The whiteboard's shape catalogue (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows",
+// The whiteboard's shape catalogue (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows",
 // "Shape slots"): every shape a whiteboard can arm, derived from the palette's own shape tiles rather
 // than restated. The Shapes flyout's six open it under their dock names; every other palette shape
 // kind follows, grouped by its palette category. Icons, stickers, technology and the Components
@@ -91,7 +91,7 @@ function dockEntry(id: WhiteboardShapeId, label: string): WhiteboardShapeEntry {
   };
 }
 
-// The sticky note (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): found by its names,
+// The sticky note (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): found by its names,
 // armed as the plain note (no Event Storming colour).
 function stickyEntry(): WhiteboardShapeEntry {
   const tile = PALETTE_TILES.find((t) => t.action.type === 'sticky' && !('fill' in t.action));

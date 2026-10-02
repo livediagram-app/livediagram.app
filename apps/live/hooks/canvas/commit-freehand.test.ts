@@ -13,7 +13,7 @@ import { makeCommitFreehand } from './commit-freehand';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-const board: Tab = { id: 't', name: 'Board', kind: 'whiteboard', elements: [] } as Tab;
+const board: Tab = { id: 't', name: 'Board', opensIn: 'draw', elements: [] } as Tab;
 
 function setup(pendingDraw: PendingDraw) {
   let elements: Element[] = [];
@@ -120,12 +120,33 @@ describe('a whiteboard pen stroke', () => {
     expect(s.setPendingDraw).not.toHaveBeenCalledWith(null);
   });
 
-  it('leaves a main-pen shape unpainted so it follows the board', () => {
+  // docs/specs/007-editor/editor-modes.md "One look": a shape made in Draw mode is written in Ink.
+  it('writes a main-pen shape in Ink by name', () => {
     const s = setup(pen({ recognise: true }));
     s.commit(loop, false);
     const shape = s.elements[0] as ShapeElement;
     expect(shape.type).toBe('shape');
     expect(shape.strokeColor).toBeUndefined();
+    expect(shape.penColour).toBe('ink');
+  });
+
+  it('writes a main-pen line in Ink by name', () => {
+    const s = setup(pen({ recognise: true }));
+    const snapped = {
+      kind: 'line' as const,
+      bbox: { x: 0, y: 0, width: 300, height: 40 },
+      confidence: 1,
+      from: { x: 0, y: 0 },
+      to: { x: 300, y: 40 },
+    };
+    s.commit(scribble, false, { snapped });
+    expect(s.elements[0]).toMatchObject({ type: 'arrow', penColour: 'ink' });
+  });
+
+  it('leaves a main-pen stroke unpainted, which is drawn in Ink', () => {
+    const s = setup(pen());
+    s.commit(scribble, false);
+    expect('penColour' in s.elements[0]!).toBe(false);
   });
 
   it('lands its raw samples as given, never simplified', () => {

@@ -156,7 +156,7 @@ describe('SelectionPopover mind-node growth', () => {
   });
 });
 
-describe('Edit points (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+describe('Edit points (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
   afterEach(cleanup);
 
   it('offers Edit points for a path and opens its edit mode', () => {

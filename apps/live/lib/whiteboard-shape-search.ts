@@ -1,4 +1,4 @@
-// The Shapes flyout's search (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): at
+// The Shapes flyout's search (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): at
 // most six of the whiteboard's shape catalogue, ranked the way the palette search ranks (exact
 // name, name prefix, name substring, keyword), best match first; an empty field finds nothing (the
 // flyout shows its slots). Never the full list. Plus the grid's arrow-key movement. Pure.

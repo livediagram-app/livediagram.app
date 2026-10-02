@@ -74,7 +74,7 @@ export function landText(item: SceneTextItem, id: string, ctx: LandContext): Tex
     id,
     type: 'text',
     ...boxOf(item),
-    ...(item.autoWidth ? { autoWidth: true } : {}),
+    sizing: item.sizing,
     ...textBoxFields(item.text, ctx),
     ...commonFields(item, ctx, 1),
   };

@@ -50,7 +50,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
     // A whiteboard's eraser is a held tool too: Escape puts it down
-    // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
     const whiteboardEraser = liveRef.current.whiteboard !== null && canvasTool === 'eraser';
     if (
       formatSourceId === null &&
@@ -317,8 +317,19 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
       }
 
+      // --- Editor mode (Shift+D, docs/specs/007-editor/editor-modes.md) ---
+      // After type-to-edit, so a capital D still types into a selected
+      // label; before the dock keys, so it works in Draw mode too. Where no
+      // switch is offered it does nothing (it is never Diamond's D).
+      if (e.shiftKey && !e.altKey && lower === 'd') {
+        if (!live.onCycleEditorMode) return;
+        e.preventDefault();
+        live.onCycleEditorMode();
+        return;
+      }
+
       // A whiteboard's keys are its dock's, and only these
-      // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the diagram tab's element and
+      // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
       // mode keys have no palette to mirror there.
       if (live.whiteboard) {
         const action =

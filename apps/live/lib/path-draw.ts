@@ -1,4 +1,4 @@
-// The Path tool's drawing state (docs/specs/023-whiteboard/path-tool.md "Drawing"): pure steps over
+// The Path tool's drawing state (docs/specs/023-draw-mode/path-tool.md "Drawing"): pure steps over
 // the path being drawn. The gesture (components/canvas/path/usePathDrawGesture) turns pointer and
 // key events into these steps; nothing here touches the DOM or the document.
 import {

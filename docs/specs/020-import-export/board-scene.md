@@ -13,7 +13,7 @@ is a change here, never a parser-local workaround.
 Content that lands on a whiteboard looks and behaves as if it had been drawn
 there: marker strokes with pressure, ink and stock colours that follow light
 and dark boards, text boxes that hug their text, stickies, shapes, lines,
-arrows, images and frames. See [Whiteboard](../023-whiteboard/whiteboard.md)
+arrows, images and frames. See [Draw mode](../023-draw-mode/draw-mode.md)
 "Imported and pasted content".
 
 ## Where it lives
@@ -83,7 +83,7 @@ Each scene colour resolves to one of three things, in this order:
    same on both boards (Excalidraw's grey `#868e96`, pastels, browns).
 
 "Nearest stock colour" means the whiteboard's one definition, the one
-[Snap colours](../023-whiteboard/whiteboard.md) uses. The two rules differ on
+[Snap colours](../023-draw-mode/draw-mode.md) uses. The two rules differ on
 purpose: the snap is **always nearest** (a grey becomes Ink, a pastel its
 hue's stock colour), the import **keeps the exact hex unless the colour is
 clearly a stock colour**, so a board arrives as it was drawn and its custom
@@ -115,7 +115,7 @@ colours can be snapped afterwards, in one press, if wanted.
 ## Text
 
 - A **text item** lands as a whiteboard text box: its width per the source
-  (an auto-sized source text widens with its words, `autoWidth`), its height
+  (an auto-sized source text widens with its words, sizing `fit`; any other wraps at its width, `wrap`), its height
   hugging its lines once laid out in our fonts (see "In the editor").
 - **Font size** survives exactly: the nearest size preset (Small, Medium,
   Large) by ratio, times a text scale for the rest, within the text box's
@@ -175,7 +175,7 @@ colours can be snapped afterwards, in one press, if wanted.
 ## The tab
 
 A landing also says what the tab it fills should be: on the whiteboard
-profile, `kind: 'whiteboard'`, its background pattern from the scene
+profile, `opensIn: 'draw'`, its background pattern from the scene
 (Plain, Dots, Grid), else the new-board default (Grid), and its name from the
 scene's title, else "Whiteboard"; on the diagram profile, the scene's
 background colour, when it has one.
@@ -246,7 +246,7 @@ the landing writes no more than the drawing needs:
   its images upload belongs to that tab, so it does not land on another.
 - **Import a board** (the Import dialog): replace the active tab (the
   Excalidraw card, one undo step), or make each board **its own new document**
-  with one whiteboard tab (the Microsoft Whiteboard card), named after the board
+  with one tab that opens in Draw mode (the Microsoft Whiteboard card), named after the board
   and dated as it (the scene's `createdAt` / `modifiedAt`; a date that cannot
   be read is left out, so the document is dated today, and the report says so:
   "Board dates that couldn't be read were set to today"). An untitled board is

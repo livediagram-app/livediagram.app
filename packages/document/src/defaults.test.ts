@@ -13,6 +13,7 @@ import {
   type Padding,
 } from './index';
 import { tableKeys } from './table-keys';
+import { PEN_INK } from './pen-colours';
 
 // These default-resolution helpers drive the editor's rendering
 // fallbacks: every shape, sticky and text element that doesn't
@@ -67,8 +68,8 @@ describe('defaultTextColor', () => {
     expect(defaultTextColor(createSticky(0, 0))).toBe('#451a03');
   });
 
-  it('text elements fall to slate-800 on the transparent fill', () => {
-    expect(defaultTextColor(createText(0, 0))).toBe('#1e293b');
+  it('writes unpainted text in Ink, on every theme', () => {
+    expect(defaultTextColor(createText(0, 0))).toBe(PEN_INK.light);
   });
 });
 

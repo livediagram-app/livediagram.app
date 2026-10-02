@@ -8,7 +8,7 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
-import { isWhiteboardTab, visibleLayerElements } from '@livediagram/document';
+import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
@@ -482,8 +482,8 @@ export function useCanvasChromePanels({
     ) : null;
 
   const paletteEl =
-    // A whiteboard draws from its dock, not the palette (docs/specs/023-whiteboard/whiteboard.md).
-    chromeHidden || readOnly || toolbarActive || isWhiteboardTab({ kind: props.tabKind }) ? null : (
+    // Draw mode draws from its dock, not the palette (docs/specs/023-draw-mode/draw-mode.md).
+    chromeHidden || readOnly || toolbarActive || props.editorMode === 'draw' ? null : (
       <CommandPalette
         position={paletteWiring.position}
         canvasTool={canvasTool}

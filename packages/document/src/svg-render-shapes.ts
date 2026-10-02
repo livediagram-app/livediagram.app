@@ -149,7 +149,7 @@ export function svgShapeSilhouette(
 // open ones render stroke-only.
 export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
   if (freehandStrokePoints(el).count < 2) return '';
-  // A whiteboard pen stroke (docs/specs/023-whiteboard/whiteboard.md "Pens"): the filled
+  // A whiteboard pen stroke (docs/specs/023-draw-mode/draw-mode.md "Pens"): the filled
   // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
   if (isPenStroke(el)) {
     const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
@@ -171,7 +171,7 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );
   }
-  // A recorded pen width (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) wins over the preset.
+  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset.
   const strokeWidth =
     el.penWidth ??
     (BORDER_STROKE_PX[
@@ -189,7 +189,7 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   );
 }
 
-// A path (docs/specs/023-whiteboard/path-tool.md): the headless twin of the canvas PathSvg, the same
+// A path (docs/specs/023-draw-mode/path-tool.md): the headless twin of the canvas PathSvg, the same
 // curve from the same function at the border preset width, filled only when closed.
 export function svgPathElementShape(el: PathElement, stroke: string, fill: string): string {
   if (el.nodes.length < 2) return '';

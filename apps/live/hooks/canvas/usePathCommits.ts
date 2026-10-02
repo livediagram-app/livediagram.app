@@ -1,6 +1,6 @@
 'use client';
 
-// Where a path lands in the document (docs/specs/023-whiteboard/path-tool.md; blueprint path-tool
+// Where a path lands in the document (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
 // "Drawing" and "Edit mode"): a drawn path, a continued one, and every edit-mode gesture, each one
 // `commit`, so each is one undo step.
 import {
@@ -14,6 +14,7 @@ import {
 import { track } from '@/lib/telemetry';
 import type { PathCommit } from '@/components/canvas/path/usePathDrawGesture';
 import { debugLog } from '@/lib/debug-log';
+import { boardShape } from '@/lib/whiteboard-tool';
 
 export type PathEditKind = 'edit' | 'join';
 
@@ -39,7 +40,8 @@ export function usePathCommits({
       debugLog('[path] refused: too few nodes');
       return;
     }
-    const fresh = styleNewElement(createPath(anchors, closed));
+    // The Path tool is a Draw mode tool: its path is written in Ink, unfilled (boardShape).
+    const fresh = styleNewElement(boardShape(createPath(anchors, closed)));
     let continued = false;
     commit((els) => {
       const original = continuing

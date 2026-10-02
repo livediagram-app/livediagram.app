@@ -5,6 +5,8 @@ import {
   createFreehand,
   createShape,
   defaultScheme,
+  PEN_INK,
+  penColourHex,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -13,7 +15,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the pen rows style the
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the pen rows style the
 // selected strokes as one commit, or the pen in hand when nothing is selected.
 const stroke = {
   ...createFreehand(
@@ -35,7 +37,7 @@ function setup(
   initial: Element[] = [stroke],
 ) {
   let elements: Element[] = initial;
-  const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements } as unknown as Tab;
+  const tab = { id: 't', name: 'Board', opensIn: 'draw', elements } as unknown as Tab;
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
   });
@@ -44,6 +46,7 @@ function setup(
   const { result } = renderHook(() =>
     useQuickStyle({
       activeTab: tab,
+      drawMode: true,
       theme: defaultScheme('light'),
       selectionIds: new Set(selection),
       editsBlocked: false,
@@ -72,7 +75,7 @@ describe('useQuickStyle pen rows', () => {
   });
 
   it('offers the tab\u2019s custom colours, and remembers a custom restyle in Your colours', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the second section.
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the second section.
     const { result, elements, colours } = setup(['s1']);
     expect(result.current.view?.pen?.colour.custom).toEqual([]);
     act(() => result.current.setPenColour('teal'));
@@ -126,7 +129,7 @@ describe('useQuickStyle on a mixed whiteboard selection', () => {
     const [s, q, n] = elements();
     expect(s).toBe(stroke);
     expect(n).toBe(sticky);
-    expect((q as { penColour?: string }).penColour).toBeUndefined();
+    expect((q as { penColour?: string }).penColour).toBe('ink');
   });
 
   it('stores a stock colour by name and moves a custom one to the front of Your colours', () => {
@@ -177,5 +180,38 @@ describe('useQuickStyle for a tool in hand', () => {
     const { result } = setup(['s1'], null, whiteboardShapeIntent('rectangle'));
     // The selection's caption, never the tool's "Next rectangle".
     expect(result.current.view?.caption).toBe('Marker stroke');
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "One look": the swatches show each stock colour in its
+// version for the canvas the tab paints, which on a dark theme is the dark one in any appearance.
+describe('useQuickStyle swatches on a themed canvas', () => {
+  it('shows the dark canvas versions on a dark theme', () => {
+    const square = { ...createShape('square', 0, 0), id: 'q1' } as Element;
+    const tab = {
+      id: 't',
+      name: 'Board',
+      theme: 'midnight',
+      backgroundColor: '#0f172a',
+      elements: [square],
+    } as unknown as Tab;
+    const { result } = renderHook(() =>
+      useQuickStyle({
+        activeTab: tab,
+        drawMode: true,
+        theme: defaultScheme('light'),
+        selectionIds: new Set(['q1']),
+        editsBlocked: false,
+        liveElements: () => tab.elements,
+        commit: vi.fn(),
+        memory: { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el },
+        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
+        pen: { held: null, update: vi.fn(), colours: { remember: vi.fn() } },
+        toolIntent: null,
+      } as never),
+    );
+    const options = result.current.view!.sections.boardStroke!.options;
+    expect(options[0]!.swatch).toBe(PEN_INK.dark);
+    expect(options[1]!.swatch).toBe(penColourHex('blue', 'dark'));
   });
 });

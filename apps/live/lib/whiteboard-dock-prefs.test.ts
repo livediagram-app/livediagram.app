@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   WHITEBOARD_DOCK_POSITIONS,
+  readDrawPattern,
   readWhiteboardDockPosition,
   readWhiteboardDockPrefs,
+  withDrawPattern,
   withWhiteboardDockPosition,
   withWhiteboardDockPrefs,
 } from './whiteboard-dock-prefs';
@@ -83,7 +85,7 @@ describe('withWhiteboardDockPrefs', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Where the dock sits".
+// docs/specs/023-draw-mode/draw-mode.md "Where the dock sits".
 describe('the dock position', () => {
   it('offers the top and the bottom, top first', () => {
     expect(WHITEBOARD_DOCK_POSITIONS).toEqual(['top', 'bottom']);
@@ -109,5 +111,34 @@ describe('the dock position', () => {
       whiteboardDockPosition: 'bottom',
     });
     expect(before).not.toHaveProperty('whiteboardDockPosition');
+  });
+});
+
+// Draw mode's pattern is the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+// Plain, Dots or Grid as last chosen in Draw mode, synced, Grid until chosen.
+describe('readDrawPattern', () => {
+  it('is Grid until chosen', () => {
+    expect(readDrawPattern({})).toBe('graph');
+  });
+
+  it('reads each of Plain, Dots and Grid back', () => {
+    for (const pattern of ['blank', 'grid', 'graph'] as const) {
+      expect(readDrawPattern(withDrawPattern({}, pattern))).toBe(pattern);
+    }
+  });
+
+  it('reads a pattern the dock does not offer, or a malformed one, as Grid', () => {
+    expect(readDrawPattern({ drawPattern: 'isometric' } as unknown as UserPreferences)).toBe(
+      'graph',
+    );
+    expect(readDrawPattern({ drawPattern: 3 } as unknown as UserPreferences)).toBe('graph');
+  });
+
+  it('keeps every other preference when one is chosen', () => {
+    const prefs: UserPreferences = { whiteboardDockPosition: 'bottom' };
+    expect(withDrawPattern(prefs, 'blank')).toEqual({
+      whiteboardDockPosition: 'bottom',
+      drawPattern: 'blank',
+    });
   });
 });

@@ -1,4 +1,4 @@
-// A path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"; blueprint path-tool "Edit
+// A path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"; blueprint path-tool "Edit
 // mode"): pure operations on its anchors, the hit test behind every press, and the rule for when
 // the mode is open. The gesture (components/canvas/path/usePathEditGesture) owns the events and
 // the commit. Anchors here are in the path's own unrotated frame, in canvas px.
@@ -21,7 +21,7 @@ export type HandleSide = 'in' | 'out';
 
 // Screen px around a node or a handle that catches a press: a 24 x 24 target.
 export const PATH_NODE_HIT_PX = 12;
-// A finger's reach (docs/specs/023-whiteboard/path-tool.md "Touch"): the nearest node or handle
+// A finger's reach (docs/specs/023-draw-mode/path-tool.md "Touch"): the nearest node or handle
 // within this many screen px.
 export const PATH_TOUCH_HIT_PX = 16;
 // Screen px within which a dragged node lines up with another node or its own start.
@@ -416,7 +416,7 @@ const PEN_PLUS_SVG =
 export const PATH_ADD_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(PEN_PLUS_SVG)}") 3 3, copy`;
 
 /**
- * The cursor edit mode shows over what a press would land on (docs/specs/023-whiteboard/path-tool.md
+ * The cursor edit mode shows over what a press would land on (docs/specs/023-draw-mode/path-tool.md
  * "Cursors in edit mode"): move over a node or handle, the pen with a plus over a segment, the
  * arrow elsewhere, the fill included. Never a text cursor.
  */

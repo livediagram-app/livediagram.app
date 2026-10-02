@@ -270,7 +270,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
-  'apps/live/hooks/canvas/useWhiteboard.ts Whiteboard·Selected': {
+  'apps/live/hooks/canvas/useWhiteboard.ts Draw·Selected': {
     values: ['Main', 'Second', 'Third'],
     open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },

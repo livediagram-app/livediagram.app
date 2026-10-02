@@ -224,18 +224,21 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): the pinned shape
+  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
   // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
   whiteboardShapePicks?: ShapePicks;
-  // The markers' Your colours (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): up to
+  // The markers' Your colours (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): up to
   // eight custom #rrggbb, newest first. Read and written through lib/pen-colour-memory, which parses
   // them. Missing === none yet.
   whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits").
+  // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
   // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
   whiteboardDockPosition?: 'top' | 'bottom';
+  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+  // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
+  drawPattern?: 'blank' | 'grid' | 'graph';
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

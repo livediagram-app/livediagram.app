@@ -157,7 +157,7 @@ describe('an Excalidraw file as a new document', () => {
       savedAt: MODIFIED,
     });
     expect(doc!.tabs).toHaveLength(1);
-    expect(doc!.tabs[0]).toMatchObject({ kind: 'whiteboard' });
+    expect(doc!.tabs[0]).toMatchObject({ opensIn: 'draw' });
     expect(doc!.tabs[0]!.backgroundColor).toBeUndefined();
     expect(doc!.tabs[0]!.elements.map((e) => e.type)).toEqual(['shape', 'text']);
     // Valid dates: nothing reported about them.

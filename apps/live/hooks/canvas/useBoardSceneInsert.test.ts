@@ -21,7 +21,7 @@ const square = (key: string, x: number): SceneItem => ({
   stroke: inkStroke(),
 });
 
-function setup(over: Partial<BoardSceneInsertDeps> = {}, kind: Tab['kind'] = 'whiteboard') {
+function setup(over: Partial<BoardSceneInsertDeps> = {}, drawMode = true) {
   const state = {
     elements: [] as Element[],
     commits: 0,
@@ -29,7 +29,8 @@ function setup(over: Partial<BoardSceneInsertDeps> = {}, kind: Tab['kind'] = 'wh
     multi: new Set<string>(),
   };
   const deps: BoardSceneInsertDeps = {
-    activeTab: { id: 'tab', name: 'Board', kind, elements: [] } as unknown as Tab,
+    activeTab: { id: 'tab', name: 'Board', elements: [] } as unknown as Tab,
+    drawMode,
     editsBlocked: false,
     commit: (map) => {
       state.commits += 1;
@@ -99,13 +100,13 @@ describe('useBoardSceneInsert', () => {
       y: 0,
       width: 300,
       height: 20,
-      autoWidth: true,
+      sizing: 'fit',
       text: sceneText('Hi'),
     };
     const board = setup();
     await insert(board.hook, boardScene([text]));
     expect(board.state.elements[0]).toMatchObject({ width: 42, type: 'text' });
-    const diagram = setup({}, 'diagram');
+    const diagram = setup({}, false);
     await insert(diagram.hook, boardScene([text]));
     expect(diagram.state.elements[0]).toMatchObject({ width: 300 });
   });
@@ -155,7 +156,6 @@ describe('useBoardSceneInsert', () => {
       activeTab: {
         id: 'tab',
         name: 'Board',
-        kind: 'whiteboard',
         elements: Array.from({ length: 10_000 }, (_, i) => ({ id: `e${i}` })),
       } as unknown as Tab,
     });
@@ -168,7 +168,7 @@ describe('useBoardSceneInsert', () => {
     const blocked = setup({ editsBlocked: true });
     expect(await insert(blocked.hook, boardScene([square('a', 0)]))).toBe(false);
     const locked = setup({
-      activeTab: { id: 'tab', name: 'B', kind: 'whiteboard', elements: [], locked: true } as Tab,
+      activeTab: { id: 'tab', name: 'B', elements: [], locked: true } as Tab,
     });
     expect(await insert(locked.hook, boardScene([square('a', 0)]))).toBe(false);
     expect(blocked.state.commits + locked.state.commits).toBe(0);

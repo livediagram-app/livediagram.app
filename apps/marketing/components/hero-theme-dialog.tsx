@@ -15,7 +15,7 @@ type ThemeCard = {
   picked?: boolean;
 };
 const THEME_CARDS: ThemeCard[] = [
-  { name: 'Default', canvas: '#ffffff', stroke: '#0ea5e9', current: true },
+  { name: 'Default', canvas: '#fbfaf7', stroke: '#0ea5e9', current: true },
   { name: 'Forest', canvas: '#f0fdf4', stroke: '#15803d', picked: true },
   { name: 'Ocean', canvas: '#ecfeff', stroke: '#0e7490' },
   { name: 'Sunset', canvas: '#fff7ed', stroke: '#c2410c' },

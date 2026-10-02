@@ -259,7 +259,7 @@ describe('opensForTyping', () => {
     expect(opensForTyping({ type: 'text' }, false)).toBe(true);
   });
 
-  it('opens a sticky for typing on a whiteboard only (docs/specs/023-whiteboard/whiteboard.md)', () => {
+  it('opens a sticky for typing on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md)', () => {
     expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
     expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
   });
@@ -269,7 +269,7 @@ describe('opensForTyping', () => {
   });
 });
 
-describe('the Path tool (docs/specs/023-whiteboard/path-tool.md)', () => {
+describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
     expect(isHeldPenIntent({ type: 'path' })).toBe(true);
     expect(isPathIntent({ type: 'path' })).toBe(true);

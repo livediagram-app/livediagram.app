@@ -188,7 +188,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
   (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
   live app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
-- It seeds one document per tab kind (`whiteboard`, `diagram`), each the reference board, through
+- It seeds one document per series (`whiteboard`: a tab opening in Draw mode; `diagram`), each the reference board, through
   the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
 - Each zoom starts from Shift+1 (fit, centring the board); 100% then presses Mod+0 (a bare `0` is
   the eraser). A screenshot per tab and zoom goes with the report. After an undo the probe waits

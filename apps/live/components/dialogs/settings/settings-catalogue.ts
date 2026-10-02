@@ -360,16 +360,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
       {
-        // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": only a whiteboard has a
-        // dock, so only a whiteboard moves with this.
+        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
+        // so only Draw mode moves with this. Named Draw mode in the interface
+        // (docs/specs/007-editor/editor-modes.md "Naming in the interface").
         kind: 'choice',
         key: 'whiteboardDockPosition',
-        keywords: 'whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
-        section: 'Whiteboard',
+        keywords:
+          'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
+        section: 'Draw mode',
         label: 'Dock Position',
         description:
-          "Where a whiteboard's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only whiteboards have a dock, so other tabs are unchanged.",
-        helpArticle: 'whiteboards',
+          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
+        helpArticle: 'drawMode',
         options: [
           { id: 'top', label: 'Top' },
           { id: 'bottom', label: 'Bottom' },

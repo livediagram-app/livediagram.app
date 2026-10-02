@@ -1,11 +1,10 @@
-// A tab as the author sees it, for export (docs/specs/023-whiteboard/path-tool.md "Export, sharing
-// and import"; docs/specs/023-whiteboard/whiteboard.md "Appearance"): the resolved backdrop for the
-// viewer's appearance, and on a whiteboard every unpainted element in the board's ink, as the
-// canvas draws it (projectWhiteboardElement: named marker colours in their version for that board),
-// so an export matches the board.
+// A tab as the author sees it, for export (docs/specs/007-editor/editor-modes.md "One look"): the
+// tab's own Diagram backdrop resolved for the export's appearance, whoever exports and in
+// whichever editor mode, and every stock colour stored by name in its version for that canvas, so
+// every export format (the image renderers and the text formats alike) draws what the canvas does.
 import {
-  projectWhiteboardElement,
-  isWhiteboardTab,
+  canvasSurface,
+  resolveStockColours,
   type Appearance,
   type Tab,
 } from '@livediagram/document';
@@ -14,10 +13,10 @@ import { resolveTabBackdrop } from './themes';
 
 export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
   const backdrop = resolveTabBackdrop(tab, appearance);
-  if (!isWhiteboardTab(tab)) return { ...tab, ...backdrop };
+  const surface = canvasSurface(backdrop.backgroundColor);
   return {
     ...tab,
     ...backdrop,
-    elements: tab.elements.map((el) => projectWhiteboardElement(el, appearance)),
+    elements: tab.elements.map((el) => resolveStockColours(el, surface)),
   };
 }
