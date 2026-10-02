@@ -18,7 +18,13 @@ import type {
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { isPenColourName, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
-import { applyBoardStroke, applyBoardTextColour, onWhiteboard } from '@/lib/quick-style-whiteboard';
+import {
+  applyBoardStroke,
+  applyBoardTextColour,
+  applyQuickCorners,
+  clearQuickCorners,
+  onWhiteboard,
+} from '@/lib/quick-style-whiteboard';
 import { quickStyleApplicability, quickStyleCaption } from '@/lib/quick-style-applicability';
 import {
   applyPenStyle,
@@ -43,6 +49,7 @@ import {
   applyQuickWidth,
   clearQuickStyle,
   quickStyleView,
+  type QuickCorners,
   type QuickIconAlign,
   type QuickStrokeStyle,
   type QuickStyleView,
@@ -62,6 +69,8 @@ export type QuickStyleApi = {
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
   setIconAlign: (align: QuickIconAlign) => void;
+  // A whiteboard's Corners row (docs/specs/008-canvas/corner-radius.md).
+  setCorners: (corners: QuickCorners) => void;
   // A whiteboard's Stroke and Text colour rows: the whiteboard's colours.
   setBoardStroke: (colour: PenColourChoice) => void;
   setBoardTextColour: (colour: PenColourChoice) => void;
@@ -216,6 +225,7 @@ export function useQuickStyle(deps: {
     setStrokeStyle: (style) => run((el) => applyQuickStrokeStyle(el, style), 'QuickStrokeStyle'),
     setTextAlign: (align) => run((el) => applyQuickTextAlign(el, align), 'QuickTextAlign'),
     setIconAlign: (align) => run((el) => applyQuickIconAlign(el, align), 'QuickIconAlign'),
+    setCorners: (corners) => run((el) => applyQuickCorners(el, corners), 'QuickCorners'),
     setBoardStroke: (colour) => {
       run((el) => applyBoardStroke(el, colour), 'QuickStroke');
       rememberCustom(colour);
@@ -233,7 +243,12 @@ export function useQuickStyle(deps: {
         track('Element', 'Changed', 'QuickClearStyles');
         return;
       }
-      run((el) => clearQuickStyle(el, theme), 'QuickClearStyles');
+      // On a whiteboard the corners are a quick-style field too (the Corners row).
+      run(
+        (el) =>
+          whiteboard ? clearQuickCorners(clearQuickStyle(el, theme)) : clearQuickStyle(el, theme),
+        'QuickClearStyles',
+      );
       // Forget every kind the selection styles, not only the ones that
       // changed: a shape already at the default can have a memory waiting.
       const targets = new Set(view.targetIds);

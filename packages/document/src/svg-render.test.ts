@@ -857,8 +857,9 @@ describe('chrome the canvas draws on a box', () => {
     const svg = renderElementsToSvg(
       tab([shape('s', { strokeWidth: 'thick', strokeStyle: 'dashed', borderRadius: 'lg' })]),
     );
-    // 4px stroke inset by 2, radius 24 less 2, the canvas's dashed pattern.
-    expect(svg).toMatch(/<rect[^>]*rx="22"[^>]*stroke-width="4" stroke-dasharray="6 5"/);
+    // 4px stroke inset by 2; Large's 24 px capped at a quarter of the 80 px side
+    // (docs/specs/008-canvas/corner-radius.md), 20 less 2; the canvas's dashed pattern.
+    expect(svg).toMatch(/<rect[^>]*rx="18"[^>]*stroke-width="4" stroke-dasharray="6 5"/);
   });
 });
 

@@ -20,7 +20,7 @@ import {
   svgPathElementShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
-import { BORDER_RADIUS_PX } from './border-style';
+import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { canvasSurface } from './colors';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 import { DIAMOND_POINTS } from './shape-geometry';
@@ -250,7 +250,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
             // that honours its corner-radius pick (a round bubble-map node).
             el.type === 'shape' && el.shape === 'mind-node'
             ? Math.min(
-                el.borderRadius !== undefined ? BORDER_RADIUS_PX[el.borderRadius] : 12,
+                cornerRadiusPx(el.borderRadius, el.width, el.height, MIND_NODE_RADIUS_PX),
                 Math.min(el.width, el.height) / 2,
               )
             : 6;

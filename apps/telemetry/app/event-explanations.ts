@@ -267,6 +267,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Clear styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
   'Element|Changed|QuickIconAlign':
     'Someone moved the icon before, above, or after the label of the selected shapes from the quick style panel.',
+  'Element|Changed|QuickCorners':
+    'Someone changed the corners of the selected rectangles on a whiteboard from the quick style panel.',
   'Element|Changed|QuickStroke':
     'Someone picked a line colour for the selected shapes or arrows from the quick style panel beside the selection.',
   'Element|Changed|QuickStrokeStyle':

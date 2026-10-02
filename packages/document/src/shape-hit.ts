@@ -12,7 +12,7 @@
 // paints its own face (a chart, a panel, a web component, an icon) is its box.
 // Pure; no DOM.
 
-import { BORDER_RADIUS_PX, BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from './border-style';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, cornerRadiusPx } from './border-style';
 import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from './geometry-primitives';
 import type { Element, ShapeElement } from './index';
@@ -181,9 +181,7 @@ function cssOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'h
     const outer =
       el.shape === 'stadium'
         ? Infinity
-        : el.borderRadius !== undefined
-          ? BORDER_RADIUS_PX[el.borderRadius]
-          : CSS_DEFAULT_RADIUS_PX;
+        : cornerRadiusPx(el.borderRadius, el.width, el.height, CSS_DEFAULT_RADIUS_PX);
     const r = Math.max(0, Math.min(outer, el.width / 2, el.height / 2) - inset);
     ring = roundedRect(inset, inset, w, h, r, r);
   }

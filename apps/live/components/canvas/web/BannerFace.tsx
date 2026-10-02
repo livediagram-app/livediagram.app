@@ -1,4 +1,9 @@
-import { bannerLayout, BORDER_RADIUS_PX, PAGE_HEADING_MAX } from '@livediagram/document';
+import {
+  bannerLayout,
+  BORDER_RADIUS_PX,
+  cornerRadiusPx,
+  PAGE_HEADING_MAX,
+} from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
@@ -17,7 +22,12 @@ export function BannerFace({
   onSetHeading,
 }: WebFaceProps) {
   const l = bannerLayout(element.width, element.height);
-  const radius = BORDER_RADIUS_PX[element.borderRadius ?? 'lg'];
+  const radius = cornerRadiusPx(
+    element.borderRadius,
+    element.width,
+    element.height,
+    BORDER_RADIUS_PX.lg,
+  );
   return (
     <>
       <div

@@ -23,6 +23,9 @@ import { sceneImageSource } from './attach';
 import { labelFields, textBoxFields } from './text';
 import { borderStrokeOf } from './width';
 
+/** The corner preset a source's rounded rectangle lands with, on both profiles. */
+export const ROUNDED_CORNER_PRESET = 'lg' as const;
+
 const SHAPE_KINDS = {
   rectangle: 'square',
   ellipse: 'circle',
@@ -50,7 +53,9 @@ export function landShape(item: SceneShape, id: string, ctx: LandContext): Shape
     type: 'shape',
     shape: SHAPE_KINDS[item.shape],
     ...boxOf(item),
-    ...(item.rounded ? { borderRadius: 'md' as const } : {}),
+    // A rounded corner lands Large: never more than a quarter of the shorter side, so it matches
+    // Excalidraw's adaptive rounding (docs/specs/008-canvas/corner-radius.md).
+    ...(item.rounded ? { borderRadius: ROUNDED_CORNER_PRESET } : {}),
     ...(width !== 'medium' ? { strokeWidth: width } : {}),
     ...(stroke?.dash === 'dashed' || stroke?.dash === 'dotted' ? { strokeStyle: stroke.dash } : {}),
     ...(stroke ? lineColourFields(ctx.colour(stroke.colour)) : {}),

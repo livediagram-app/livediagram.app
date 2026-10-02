@@ -120,6 +120,30 @@ describe('whiteboard stock colours in memory', () => {
   });
 });
 
+// docs/specs/008-canvas/quick-style-panel.md "Corners": a board remembers a rectangle's corners for
+// its next one; a diagram's memory does not take them.
+describe('corners in memory', () => {
+  it('remembers a board rectangle’s corners, never a diagram one’s', () => {
+    const before = [shape('a', 'square')];
+    const after = [{ ...shape('a', 'square'), borderRadius: 'sm' as const }];
+    const board = recordStyleEdit({}, before, after, forest, true);
+    expect(board).toEqual({ 'board:shape:square': { borderRadius: 'sm' } });
+    expect(applyStyleMemory(shape('b', 'square'), board, forest, true)).toMatchObject({
+      borderRadius: 'sm',
+    });
+    expect(recordStyleEdit({}, before, after, forest, false)).toEqual({});
+  });
+
+  it('reads back only a real corner preset', () => {
+    const raw = JSON.stringify({
+      'board:shape:square': { borderRadius: 'lg' },
+      'board:shape:circle': { borderRadius: 'huge' },
+      'shape:square': { borderRadius: 'lg' },
+    });
+    expect(parseStyleMemory(raw)).toEqual({ 'board:shape:square': { borderRadius: 'lg' } });
+  });
+});
+
 describe('applyStyleMemory', () => {
   const memory: StyleMemory = {
     'shape:circle': { strokeColor: '#ff0000', strokeWidth: 'thick', textAlignX: 'left' },

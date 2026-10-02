@@ -218,7 +218,7 @@ omitted), `locked: true`, `link` (see Security), `opacity`.
   `closed` with `fill` → `fillColor`; stroke colour per the line role, `strokeWidth:
 borderStrokeOf`, `strokeStyle` from `dash`. A duplicated closing point is dropped first.
 - **shape** → `ShapeElement`: `shape` rectangle `square`, ellipse `circle`, diamond `diamond`,
-  triangle `triangle`; `borderRadius: 'md'` when `rounded`; `stroke: null` → `strokeWidth: 'none'`;
+  triangle `triangle`; `borderRadius: 'lg'` when `rounded` (both profiles; [Corner radius](../../008-canvas/corner-radius.md)); `stroke: null` → `strokeWidth: 'none'`;
   else line colour and `strokeWidth`, `strokeStyle`; `fillColor` from `resolveFill` (unset when
   unfilled, so the board draws it unfilled); `label` via `labelFields`.
 - **connector** (and headed polyline) → `ArrowElement`: `from` / `to` from the first and last

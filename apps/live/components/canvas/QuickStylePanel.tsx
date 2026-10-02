@@ -6,7 +6,12 @@
 // handful of them, and never grows into the old Editor panel.
 
 import { useRef, useState, type PointerEvent } from 'react';
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
+import {
+  BorderRadiusIcon,
+  BorderStrokeIcon,
+  BorderStyleIcon,
+} from '@/components/palette/palette-style-previews';
+import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -19,6 +24,7 @@ import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,
   QUICK_WIDTHS,
+  type QuickCorners,
   type QuickIconAlign,
   type QuickStrokeStyle,
   type QuickStyleView,
@@ -64,6 +70,13 @@ const TEXT_ALIGN_NAMES: Record<TextAlignX, string> = {
   left: 'Align left',
   center: 'Align centre',
   right: 'Align right',
+};
+// The Corners row (docs/specs/008-canvas/quick-style-panel.md "Corners"), whiteboards only.
+const CORNER_NAMES: Record<QuickCorners, string> = {
+  none: 'None',
+  sm: 'Small',
+  md: 'Medium',
+  lg: 'Large',
 };
 const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
   left: 'Icon before label',
@@ -312,7 +325,7 @@ function QuickStyleSections({
   const editFor = (role: QuickSwatchRole) => (slot: number, anchor: HTMLButtonElement) => {
     if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
   };
-  const { width, style, textAlign, iconAlign } = view.sections;
+  const { width, style, textAlign, iconAlign, corners } = view.sections;
   // Whose style this is when it is not plainly the selection: the pen in hand,
   // the selected strokes, or a tool's next mark. Power user mode leaves it out.
   const caption = view.caption ?? view.pen?.subject.name;
@@ -395,6 +408,22 @@ function QuickStyleSections({
           }))}
           value={style.value}
           onChoose={quickStyle.setStrokeStyle}
+        />
+      ) : null}
+      {corners ? (
+        <QuickRadioRow
+          title="Corners"
+          testId="quick-style-corners"
+          showTitle={showTitles}
+          density={density}
+          columns={QUICK_CORNERS.length}
+          options={QUICK_CORNERS.map((c) => ({
+            value: c,
+            name: CORNER_NAMES[c],
+            content: <BorderRadiusIcon value={c} />,
+          }))}
+          value={corners.value}
+          onChoose={quickStyle.setCorners}
         />
       ) : null}
       {textAlign ? (

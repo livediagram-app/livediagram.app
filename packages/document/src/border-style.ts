@@ -57,3 +57,35 @@ export const BORDER_RADIUS_PX: Record<BorderRadius, number> = {
   // a rectangle as a stadium — what a circular avatar (docs/specs/008-canvas/canvas-and-palette.md) needs.
   full: 9999,
 };
+
+// The kinds' own corners when none is set: a box on the canvas (element-variant.ts) and in the
+// export, an image (ImageElementView), a mind node (docs/specs/009-elements/mind-node.md "Round
+// nodes").
+export const DEFAULT_BOX_RADIUS_PX = 8;
+export const IMAGE_DEFAULT_RADIUS_PX = 4;
+export const MIND_NODE_RADIUS_PX = 12;
+
+// Corners scale down on small shapes (docs/specs/008-canvas/corner-radius.md): never more than this
+// share of the box's shorter side. Excalidraw's roundness is 25% of the shorter side, so a small
+// rounded square stays a rounded square instead of clamping into a circle. Safe range 0.2 to 0.5
+// (at 0.5 the rule only restates the CSS clamp).
+export const CORNER_RADIUS_MAX_SHARE = 0.25;
+
+/**
+ * The radius a corner is drawn with: the preset's px (`fallbackPx`, the kind's own default, when
+ * none is set), never more than a quarter of the shorter side. Full is exempt: it keeps its huge
+ * radius, which the consumer's own clamp to half the shorter side turns into a pill or a circle.
+ * Every renderer and hit outline that draws a corner reads this.
+ */
+export function cornerRadiusPx(
+  preset: BorderRadius | undefined,
+  width: number,
+  height: number,
+  fallbackPx: number,
+): number {
+  if (preset === 'full') return BORDER_RADIUS_PX.full;
+  const wanted = preset === undefined ? fallbackPx : BORDER_RADIUS_PX[preset];
+  const shorter = Math.min(width, height);
+  const room = Number.isFinite(shorter) && shorter > 0 ? CORNER_RADIUS_MAX_SHARE * shorter : 0;
+  return Math.max(0, Math.min(wanted, room));
+}

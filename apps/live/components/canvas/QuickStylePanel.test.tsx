@@ -211,6 +211,7 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
+    setCorners: vi.fn(),
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
@@ -257,6 +258,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     setStrokeStyle: vi.fn(),
     setTextAlign: vi.fn(),
     setIconAlign: vi.fn(),
+    setCorners: vi.fn(),
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
@@ -311,6 +313,26 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     fireEvent.click(within(custom).getByRole('radio', { name: 'Custom #868e96' }));
     expect(quickStyle.setBoardTextColour).toHaveBeenCalledWith('#868e96');
     expect(screen.getByRole('radiogroup', { name: 'Custom stroke colours' })).toBeTruthy();
+  });
+
+  it('offers Corners as four quick choices, marking the shared one', () => {
+    // docs/specs/008-canvas/quick-style-panel.md "Corners".
+    const quickStyle = {
+      ...api(undefined, ['q1']),
+      view: { targetIds: ['q1'], sections: { corners: { value: 'md' as const } } },
+    };
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    const row = screen.getByRole('radiogroup', { name: 'Corners' });
+    expect(
+      within(row)
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('aria-label')),
+    ).toEqual(['None', 'Small', 'Medium', 'Large']);
+    expect(within(row).getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(within(row).getByRole('radio', { name: 'Large' }));
+    expect(quickStyle.setCorners).toHaveBeenCalledWith('lg');
   });
 
   it('drops the pen name in power user mode', () => {

@@ -9,7 +9,14 @@ import {
   type TextElement,
 } from '@livediagram/document';
 import { quickStyleView } from './quick-style';
-import { applyBoardStroke, applyBoardTextColour, onWhiteboard } from './quick-style-whiteboard';
+import {
+  QUICK_CORNERS,
+  applyBoardStroke,
+  applyBoardTextColour,
+  applyQuickCorners,
+  clearQuickCorners,
+  onWhiteboard,
+} from './quick-style-whiteboard';
 import { INK_CHOICE, type PenPalette } from './quick-style-pen';
 
 // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a whiteboard has no theme,
@@ -64,6 +71,48 @@ describe('onWhiteboard', () => {
 
   it('passes a missing view through', () => {
     expect(onWhiteboard(null, [], palette)).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/quick-style-panel.md "Corners": whiteboards only, the elements that take a
+// corner preset, None / Small / Medium / Large.
+describe('the Corners row', () => {
+  it('shows for a selection with a rectangle, marking the shared preset', () => {
+    expect(view([{ ...shape, borderRadius: 'lg' }]).sections.corners).toEqual({ value: 'lg' });
+    expect(view([{ ...shape, borderRadius: 'none' }, text]).sections.corners).toEqual({
+      value: 'none',
+    });
+    expect(
+      view([
+        { ...shape, borderRadius: 'sm' },
+        { ...shape, id: 'b', borderRadius: 'md' },
+      ]).sections.corners,
+    ).toEqual({ value: null });
+  });
+
+  it('marks nothing for a kind default or a pill', () => {
+    expect(view([shape]).sections.corners).toEqual({ value: null });
+    expect(view([{ ...shape, borderRadius: 'full' }]).sections.corners).toEqual({ value: null });
+  });
+
+  it('stays away from a selection with nothing that takes corners', () => {
+    const circle = { ...createShape('circle', 0, 0) } as ShapeElement;
+    expect(view([circle, text, arrow]).sections.corners).toBeUndefined();
+  });
+
+  it('goes back to the kind’s default on Clear styles', () => {
+    expect(clearQuickCorners({ ...shape, borderRadius: 'lg' })).not.toHaveProperty('borderRadius');
+    expect(clearQuickCorners(text)).toBe(text);
+  });
+
+  it('applies only to what takes corners', () => {
+    expect(QUICK_CORNERS).toEqual(['none', 'sm', 'md', 'lg']);
+    expect(applyQuickCorners(shape, 'sm')).toMatchObject({ borderRadius: 'sm' });
+    const circle = { ...createShape('circle', 0, 0) } as ShapeElement;
+    expect(applyQuickCorners(circle, 'sm')).toBe(circle);
+    expect(applyQuickCorners(text, 'sm')).toBe(text);
+    const locked = { ...shape, locked: true };
+    expect(applyQuickCorners(locked, 'sm')).toBe(locked);
   });
 });
 

@@ -77,6 +77,20 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.borderRadius).toBe('4px');
   });
 
+  // docs/specs/008-canvas/corner-radius.md: a corner is never more than a quarter of the shorter side.
+  it('rounds a small rectangle by a quarter of its side, a large one by its preset', () => {
+    const small = shape({ width: 14, height: 14, borderRadius: 'lg' });
+    expect(describeVariant(small, false, false, null).style.borderRadius).toBe('3.5px');
+    const large = shape({ width: 200, height: 120, borderRadius: 'lg' });
+    expect(describeVariant(large, false, false, null).style.borderRadius).toBe('24px');
+    const unset = shape({ width: 16, height: 40 });
+    expect(describeVariant(unset, false, false, null).style.borderRadius).toBe('4px');
+    const pill = shape({ width: 14, height: 14, borderRadius: 'full' });
+    expect(describeVariant(pill, false, false, null).style.borderRadius).toBe('9999px');
+    const node = shape({ shape: 'mind-node', width: 20, height: 20 });
+    expect(describeVariant(node, false, false, null).style.borderRadius).toBe('5px');
+  });
+
   it('circle and stadium use fixed silhouette radii', () => {
     expect(describeVariant(shape({ shape: 'circle' }), false, false, null).style.borderRadius).toBe(
       '50%',
