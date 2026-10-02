@@ -132,7 +132,11 @@ kept apart: only a clean 404 reaches NotFound, and a thrown request
 raises `loadError`, which renders `components/chrome/ApiErrorPage.tsx`
 instead. That card leads with **Retry** (a reload), because unlike a
 missing document the condition is expected to clear on its own. The
-same card serves the failed-create path on `/new`.
+same card serves the failed-create path on `/new`, with one exception: a
+create refused for its **placement** (`team_forbidden`, `folder_not_found`,
+`folder_scope_mismatch`, `placement_invalid`, see
+[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+a retry, so the card says why and offers **Choose another place** instead.
 
 The distinction is made at every call site that can fail this way —
 the document load and the share-link resolve in `useIdentityBootstrap`,
@@ -607,6 +611,26 @@ Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's
 picker would have defaulted, not silently into personal Unsorted.
 
+### Placement rides the create
+
+The picker's choice (or the URL pre-seed on a bypass) travels in the create body as
+`{ teamId?, folderId? }`, and the server files the document in the same write
+([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+follow-up placement request, so a document asked for in a team can never be left personal
+by a request that failed quietly.
+
+- **A refused placement** shows the error card with copy for the reason, eyebrow
+  "Placement refused", title "Couldn't file the document there", and one action,
+  **Choose another place**, which reopens `/new` without the bypass and placement params, so the
+  picker starts from Unsorted:
+  - `team_forbidden`: "You're not a member of that team, so the document can't be filed in its library."
+  - `folder_not_found`: "That folder no longer exists, or isn't yours."
+  - `folder_scope_mismatch`: "That folder belongs to a different space from the one you chose."
+  - `placement_invalid`: "That isn't a place a document can be filed."
+- **Any other failure** keeps the connection copy and **Try again**.
+- **Telemetry:** `Team / Added / Document` fires once a create into a team has succeeded,
+  never on a refused one.
+
 Telemetry: the Start Blank bypass (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
 the usual `Document / Created` event, so wizard-bypass adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
@@ -624,7 +648,8 @@ theme for a new tab.
 ## API impact
 
 - No new endpoints. `POST /api/documents` already accepts an
-  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it.
+  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the new route uses it,
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
 
 ## Tests / sanity-check checklist
 

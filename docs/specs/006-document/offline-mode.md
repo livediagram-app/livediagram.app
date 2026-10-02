@@ -131,6 +131,12 @@ Share dialog gate).
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
   caller's own personal folders, else Unsorted) and the star ([Favourite documents](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
+- **A refused folder lands in Unsorted, on the sync's say-so.** The create carries the folder as
+  its placement ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)),
+  and the server refuses a folder deleted since, or not the caller's, by name rather than
+  filing it elsewhere. On `folder_not_found` or `folder_scope_mismatch` the sync creates the
+  document again in Unsorted and logs `[offline-sync] placement refused reason=<code>, filed in Unsorted`;
+  any other failure fails the sync and keeps the local copy.
 - **A forked tab comes back as its own tab.** The create never writes into a tab
   another document holds: a seeded tab whose id is already taken outside this
   document is created under a fresh id, and the document's tab / element links and
