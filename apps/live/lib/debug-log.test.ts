@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEBUG_STORAGE_KEY, debugLogEnabled, debugScopeOf } from './debug-log';
+import { DEBUG_STORAGE_KEY, debugLogEnabled, debugScopeOf, debugScopeOn } from './debug-log';
 
 // docs/specs/003-system-architecture/console-logging.md: trace lines show in development and tests,
 // and in production only when the debug flag names their scope.
@@ -80,3 +80,9 @@ describe('the console convention', () => {
 
 // An inline boot script (stale-html-guard.ts) cannot import this module; it embeds the same rule as
 // one static source, its settings handed over as data.
+
+describe('debugScopeOn', () => {
+  it('says a scope logs, as its trace lines would, outside production', () => {
+    expect(debugScopeOn('canvas-perf')).toBe(true);
+  });
+});

@@ -41,13 +41,17 @@ function browserStore(): FlagStore {
   }
 }
 
-/** A trace line: `message` carries its fingerprint (`[scope] event`), `details` anything after. */
-export function debugLog(message: string, ...details: unknown[]): void {
-  const scope = debugScopeOf(message);
+/** Whether a scope's trace lines show on this page, for work done only to feed them. */
+export function debugScopeOn(scope: string): boolean {
   let on = decided.get(scope);
   if (on === undefined) {
     on = debugLogEnabled(scope, process.env.NODE_ENV, browserStore());
     decided.set(scope, on);
   }
-  if (on) console.info(message, ...details);
+  return on;
+}
+
+/** A trace line: `message` carries its fingerprint (`[scope] event`), `details` anything after. */
+export function debugLog(message: string, ...details: unknown[]): void {
+  if (debugScopeOn(debugScopeOf(message))) console.info(message, ...details);
 }

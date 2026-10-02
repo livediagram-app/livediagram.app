@@ -41,6 +41,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
@@ -142,6 +143,9 @@ export function Canvas(props: CanvasProps) {
   // suppressed on boxed elements AND arrows), not only once a source is armed.
   const isPaintMode = formatSourceId !== null || canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
+  // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
+  // (docs/specs/008-canvas/canvas-performance.md "Observability").
+  useCanvasLongTaskLog();
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
