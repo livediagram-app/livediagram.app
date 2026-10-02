@@ -325,7 +325,10 @@ non-empty rect, in a layout effect before paint, then again on: `ResizeObserver`
 obstacles, so a collapsing Palette is followed), a `MutationObserver` on the anchor's
 `style` / `class` (so a dragged Palette is followed live), `resize`, `pointerup` / `keyup`
 (capture), `transitionend`, and `livediagram:panel-layout-changed`; coalesced to one run per
-animation frame. The panel's height is its natural height (`[data-quick-style-body]` scroll
+animation frame. Each run observes only the elements it has not seen before and unobserves the ones
+that left (`observe()` always delivers an initial notification, so re-observing every run would
+re-run it every frame); the `MutationObserver` re-attaches only when the anchor changes. Still
+chrome means no runs. The panel's height is its natural height (`[data-quick-style-body]` scroll
 height). Until the first measure the panel
 renders `visibility: hidden` so it never paints in the wrong spot.
 
@@ -467,6 +470,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                                                        |
 | Parse drops junk                                                                  | `style-memory.test.ts`                                                             |
 | Placement order and fallback                                                      | `quick-style-placement.test.ts`                                                    |
+| Placement re-runs on chrome change only, never while still                        | `useQuickStylePlacement.test.tsx`                                                  |
 | Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts`                   |
 | Toolbar and Floating sit on the left edge                                         | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts`                   |
 | One click on Flowing sets dashed + flow                                           | `e2e/quick-style-panel.spec.ts`                                                    |

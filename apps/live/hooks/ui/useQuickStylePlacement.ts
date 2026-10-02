@@ -4,7 +4,7 @@
 // panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge, vertically centred,
 // clear of the chrome.
 // Re-runs when the chrome moves or resizes, coalesced to one run per frame;
-// never on a timer.
+// never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import {
@@ -84,16 +84,28 @@ export function useQuickStylePlacement(
           : { left: placed.left, top: placed.top, width },
       );
       // Watch whatever chrome exists now; a panel that mounts later arrives
-      // with a pointer or key gesture, which re-runs this.
-      resizeObserver.disconnect();
-      for (const el of [area, panel, ...obstacleEls()]) resizeObserver.observe(el);
+      // with a pointer or key gesture, which re-runs this. Only newly seen
+      // elements are observed: observe() always delivers an initial
+      // notification, so re-observing every pass would re-run this forever.
+      watchResizes(new Set<Element>([area, panel, ...obstacleEls()]));
       // A dragged Palette moves by its inline style: follow it live.
-      mutationObserver.disconnect();
-      if (palette)
-        mutationObserver.observe(palette, {
-          attributes: true,
-          attributeFilter: ['style', 'class'],
-        });
+      if (palette !== watchedPalette) {
+        mutationObserver.disconnect();
+        watchedPalette = palette;
+        if (palette)
+          mutationObserver.observe(palette, {
+            attributes: true,
+            attributeFilter: ['style', 'class'],
+          });
+      }
+    };
+
+    let resizeWatched = new Set<Element>();
+    let watchedPalette: HTMLElement | null = null;
+    const watchResizes = (next: Set<Element>) => {
+      for (const el of resizeWatched) if (!next.has(el)) resizeObserver.unobserve(el);
+      for (const el of next) if (!resizeWatched.has(el)) resizeObserver.observe(el);
+      resizeWatched = next;
     };
 
     let frame = 0;
