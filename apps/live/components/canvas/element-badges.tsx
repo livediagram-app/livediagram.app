@@ -14,18 +14,18 @@
 import { initialsOf } from '@/lib/identity';
 import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, HoverCard, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock
 // badge, remote-selector avatars) disappear entirely.
 export const ADORNMENT_MIN_ZOOM = 0.4;
 
 export function RemoteSelectorsStrip({
-  zoom,
   selectors,
 }: {
-  zoom: number;
   selectors: { id: string; name: string; color: string }[];
 }) {
+  const zoom = useCanvasZoom();
   if (zoom < ADORNMENT_MIN_ZOOM) return null;
   return (
     <div
@@ -69,7 +69,6 @@ export function RemoteSelectorsStrip({
 // Scales with the canvas zoom and hides below ADORNMENT_MIN_ZOOM (see the
 // header comment).
 export function BadgeStrip({
-  zoom,
   linked,
   linkLabel,
   commentCount,
@@ -82,7 +81,6 @@ export function BadgeStrip({
   onOpenNote,
   onOpenAction,
 }: {
-  zoom: number;
   linked: boolean;
   // Destination shown in the link badge's hover card (e.g. the URL),
   // so a user sees where a link goes before clicking. Undefined when
@@ -101,6 +99,7 @@ export function BadgeStrip({
   onOpenNote?: () => void;
   onOpenAction?: () => void;
 }) {
+  const zoom = useCanvasZoom();
   // Order (LTR inside the pill, which is anchored to the top-right of
   // the element): link, note, action, comment. Comment sits at the far
   // right because it's the highest-traffic affordance: an unresolved

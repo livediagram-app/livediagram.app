@@ -7,6 +7,7 @@ import {
 } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): inset near the bottom of the image in the
 // image's fill (the theme accent when dropped from the palette), with a title
@@ -16,17 +17,16 @@ export function HeroCaptionCard({
   element,
   caption,
   editable,
-  zoom,
   fontFamily,
   onSetLine,
 }: {
   element: ImageElement;
   caption: HeroCaption;
   editable: boolean;
-  zoom: number;
   fontFamily: string | undefined;
   onSetLine?: (field: keyof HeroCaption, value: string) => void;
 }) {
+  const zoom = useCanvasZoom();
   const l = heroCaptionLayout(element.width, element.height);
   const color = element.textColor ?? ACCENT_BAR_TEXT;
   const canEdit = editable && !!onSetLine;

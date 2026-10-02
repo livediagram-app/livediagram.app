@@ -68,7 +68,7 @@ describe('ShapeSvgOverlay draws the shared table', () => {
 
 describe('the fixed-pixel drawings read the table too', () => {
   it('BrowserChrome draws the table nav glyphs', () => {
-    const { container } = render(<BrowserChrome stroke="#000" zoom={1} />);
+    const { container } = render(<BrowserChrome stroke="#000" />);
     expect(marks(container.querySelector('svg')!)).toEqual([...BROWSER_CHROME.nav.paths]);
   });
 

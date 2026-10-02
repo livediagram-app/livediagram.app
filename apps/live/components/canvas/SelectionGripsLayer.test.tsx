@@ -14,6 +14,7 @@ import {
   SelectionGripsLayer,
   type SelectionGripHosts,
 } from './SelectionGripsLayer';
+import { CanvasZoomProvider } from './CanvasZoomContext';
 
 // The handles are always on top (docs/specs/008-canvas/canvas-and-palette.md "Resize"): every grip
 // renders in the one grips layer drawn after the elements, never inside an element's own box, so no
@@ -41,15 +42,16 @@ const box = { x: 10, y: 20, width: 100, height: 50 };
 
 function chrome(onBeginDrag = vi.fn()) {
   return (
-    <SelectionChromeLayer
-      elementId="a"
-      box={box}
-      zoom={2}
-      rotation={20}
-      showHandles
-      showAnchors
-      onBeginDrag={onBeginDrag}
-    />
+    <CanvasZoomProvider zoom={2}>
+      <SelectionChromeLayer
+        elementId="a"
+        box={box}
+        rotation={20}
+        showHandles
+        showAnchors
+        onBeginDrag={onBeginDrag}
+      />
+    </CanvasZoomProvider>
   );
 }
 
@@ -92,7 +94,6 @@ describe('SelectionGripsLayer', () => {
         <SelectionChromeLayer
           elementId="a"
           box={box}
-          zoom={1}
           rotation={0}
           shiftX={12}
           showHandles
@@ -131,7 +132,6 @@ describe('SelectionGripsLayer', () => {
         <SelectionChromeLayer
           elementId="a"
           box={box}
-          zoom={1}
           rotation={0}
           showHandles={false}
           showAnchors={false}

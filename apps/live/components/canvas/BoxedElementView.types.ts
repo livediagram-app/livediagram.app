@@ -35,7 +35,6 @@ export type BoxedElementViewProps = {
   isPaintMode: boolean;
   showHandles: boolean;
   showAnchors: boolean;
-  zoom: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.

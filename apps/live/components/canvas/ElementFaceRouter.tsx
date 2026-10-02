@@ -28,7 +28,6 @@ import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
-import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
@@ -68,7 +67,6 @@ type ElementFaceRouterProps = Pick<
   | 'isEditing'
   | 'isSelected'
   | 'readOnly'
-  | 'zoom'
   | 'fontFamily'
   | 'activeMode'
   | 'collab'
@@ -122,7 +120,6 @@ export function ElementFaceRouter({
   isEditing,
   isSelected,
   readOnly,
-  zoom,
   fontFamily,
   activeMode,
   collab,
@@ -386,7 +383,6 @@ export function ElementFaceRouter({
               element={element}
               caption={element.heroCaption}
               editable={isSelected && !readOnly && !isLocked}
-              zoom={zoom}
               fontFamily={fontFamily}
               onSetLine={
                 onSetHeroCaptionLine
@@ -400,7 +396,7 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
-            hitWidth={lineHit ? strokeHitWidth(element.penWidth ?? 0, zoom) : undefined}
+            hitPenWidth={lineHit ? (element.penWidth ?? 0) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
@@ -420,10 +416,8 @@ export function ElementFaceRouter({
         // A path (docs/specs/023-whiteboard/path-tool.md) draws its curve and takes no label.
         <PathSvg
           element={element}
-          hitWidth={
-            lineHit
-              ? strokeHitWidth(BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE], zoom)
-              : undefined
+          hitPenWidth={
+            lineHit ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
           }
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
@@ -438,7 +432,6 @@ export function ElementFaceRouter({
           onLinkCell={onLinkCell}
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
-          zoom={zoom}
         />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
         /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and
@@ -454,7 +447,6 @@ export function ElementFaceRouter({
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           textColor={textColor}
           fontFamily={fontFamily}
-          zoom={zoom}
           editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
           onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
           onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
@@ -495,7 +487,6 @@ export function ElementFaceRouter({
             readOnly={isLocked || readOnly}
             onSetHeading={onSetPageHeading}
             fontFamily={fontFamily}
-            zoom={zoom}
           />
           {/* The body keeps its own padding, which reads as the gap under the
               rule; only the horizontal padding would double up, so the label's

@@ -7,7 +7,7 @@ import {
   pathD,
   type PathElement,
 } from '@livediagram/document';
-import { FREEHAND_SVG_CLASS } from '@/components/canvas/boxed-element-overlays';
+import { FREEHAND_SVG_CLASS, StrokeHitPath } from '@/components/canvas/boxed-element-overlays';
 
 // A path element as the canvas draws it (docs/specs/023-whiteboard/path-tool.md; blueprint path-tool
 // "Rendering"): its curve in canvas px, in an svg with a viewBox the size of its box, so the canvas
@@ -18,14 +18,14 @@ export function PathSvg({
   element,
   stroke,
   fill,
-  hitWidth,
+  hitPenWidth,
 }: {
   element: PathElement;
   stroke: string;
   fill: string;
   // Set when only the drawn line (and a closed path's fill) picks the path: the invisible line
   // this wide, in canvas px, catches pointers.
-  hitWidth?: number;
+  hitPenWidth?: number;
 }) {
   const w = Math.max(element.width, 1);
   const h = Math.max(element.height, 1);
@@ -49,13 +49,11 @@ export function PathSvg({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {hitWidth !== undefined ? (
-        <path
-          data-stroke-hit=""
+      {hitPenWidth !== undefined ? (
+        <StrokeHitPath
+          penWidth={hitPenWidth}
           d={d}
           fill={filled ? 'transparent' : 'none'}
-          stroke="transparent"
-          strokeWidth={hitWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{ pointerEvents: filled ? 'all' : 'stroke' }}

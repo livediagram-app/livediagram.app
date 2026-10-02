@@ -30,7 +30,6 @@ function renderFace(
       fill={colors.surface}
       textColor={colors.ink}
       fontFamily={undefined}
-      zoom={1}
       editable={opts.editable ?? true}
       onSetRows={onSetRows}
       onSetHeading={onSetHeading}
@@ -102,7 +101,6 @@ describe('web component faces (docs/specs/009-elements/web-components-and-no-gro
         fill="#fff"
         textColor="#000"
         fontFamily={undefined}
-        zoom={1}
         editable={false}
         onSetRows={() => {}}
         onSetHeading={() => {}}

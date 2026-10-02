@@ -11,10 +11,12 @@ import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
 } from '@/components/chrome/floating-controls';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // --- Lock badge ------------------------------------------------------------
 
-export function LockBadge({ zoom = 1 }: { zoom?: number }) {
+export function LockBadge() {
+  const zoom = useCanvasZoom();
   // Scales with the canvas and hides at overview zooms, like the other
   // on-element adornments (element-badges.tsx). The resize handles below
   // KEEP their counter-scaling: interaction grips need a constant hit size.
@@ -209,7 +211,6 @@ export function UnionResizeHandles({
 export function SelectionChromeLayer({
   elementId,
   box,
-  zoom,
   rotation,
   shiftX,
   showHandles,
@@ -219,7 +220,6 @@ export function SelectionChromeLayer({
   elementId: string;
   // The element's box in canvas coordinates.
   box: { x: number; y: number; width: number; height: number };
-  zoom: number;
   rotation: number;
   // The insert-between preview's shift (canvas px), when the element is standing aside.
   shiftX?: number;
@@ -227,6 +227,7 @@ export function SelectionChromeLayer({
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
 }) {
+  const zoom = useCanvasZoom();
   if (!showHandles && !showAnchors) return null;
   const transform = [
     shiftX ? `translateX(${shiftX}px)` : '',

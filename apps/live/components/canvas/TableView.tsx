@@ -29,6 +29,7 @@ import { useTableCellInput } from '@/components/canvas/useTableCellInput';
 import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Build a CSS grid-template track list: an explicit `Npx` for each pinned
 // size, `minmax(0, 1fr)` for the rest, so unpinned tracks share the
@@ -57,7 +58,6 @@ export function TableView({
   onLinkCell,
   onFollowLink,
   fontFamily,
-  zoom,
 }: {
   element: TableElement;
   isSelected: boolean;
@@ -84,8 +84,8 @@ export function TableView({
   // Canvas zoom, so the floating UI (per-cell toolbar + column / row header
   // controls) can counter-scale (1/zoom) and stay a fixed on-screen size like
   // every other toolbar, instead of ballooning / shrinking with the table.
-  zoom: number;
 }) {
+  const zoom = useCanvasZoom();
   // The paper under the grid, for the rules and text a table doesn't colour
   // itself (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();

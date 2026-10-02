@@ -5,6 +5,7 @@ import {
   type TabVote,
 } from '@livediagram/document';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
@@ -19,7 +20,6 @@ export function ElementVoteOverlay({
   votableInVote,
   voteReviewActive,
   isVoteFocus,
-  zoom,
   onRetractVote,
   onCastVote,
 }: {
@@ -34,10 +34,10 @@ export function ElementVoteOverlay({
   // so attention lands on a single pick at a time.
   voteReviewActive?: boolean;
   isVoteFocus?: boolean;
-  zoom: number;
   onRetractVote?: (elementId: string) => void;
   onCastVote?: (elementId: string) => void;
 }) {
+  const zoom = useCanvasZoom();
   // Dot-vote tally for this element: total dots, how many are mine, and
   // whether it is a revealed winner.
   const myVotes =

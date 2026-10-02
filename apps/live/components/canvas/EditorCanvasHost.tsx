@@ -24,6 +24,7 @@ import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
+import { useStableCollab } from '@/components/canvas/element-layer-props';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -468,6 +469,51 @@ export function EditorCanvasHost() {
     ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
     : null;
 
+  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to
+  // docs/specs/012-collaboration/roll-call.md). One bag for all their faces; the write handlers drop out
+  // entirely for a view-role visitor. Held stable while nothing a face shows changes, so a render here
+  // does not re-render every element (docs/specs/008-canvas/canvas-performance.md).
+  const collab = useStableCollab({
+    // The document-write key, not the owner id — see CollabApi.selfKey.
+    selfKey: participantKey(selfParticipant),
+    // Ourselves first: livePresence is the REMOTE roster, and an estimate
+    // card that can't show your own avatar is showing the wrong room.
+    participants: [selfParticipant, ...livePresence],
+    tabTimer: activeTab.timer,
+    respond: isReadOnly ? undefined : collabElements.respond,
+    setResponsesRevealed:
+      isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
+    clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
+    chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
+    addIdea: isReadOnly ? undefined : collabElements.addIdea,
+    revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
+    clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
+    scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
+    pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+    takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
+    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
+    // view-role visitor: the server owns the board and gates them on
+    // read access, which is the point of the element. Running it is
+    // the facilitator's, else any editor's.
+    selfOwnerId: selfParticipant.id,
+    selfName: selfParticipant.name,
+    addQaNote: qaBoard.addQaNote,
+    voteQaNote: qaBoard.voteQaNote,
+    discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
+    closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
+    reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
+    removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
+    clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
+    // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
+    // editing and running the round are the facilitator's, else any editor's.
+    answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
+    startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
+    lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
+    revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
+    resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
+    saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
+  });
+
   return (
     <>
       <Canvas
@@ -624,50 +670,7 @@ export function EditorCanvasHost() {
             : null
         }
         onStopFollowing={followMe.stopFollowing}
-        // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md). One prop for all
-        // five faces; the write handlers drop out entirely for a view-role
-        // visitor, so the faces render readable but inert rather than offering
-        // presses the room would discard.
-        collab={{
-          // The document-write key, not the owner id — see CollabApi.selfKey.
-          selfKey: participantKey(selfParticipant),
-          // Ourselves first: livePresence is the REMOTE roster, and an estimate
-          // card that can't show your own avatar is showing the wrong room.
-          participants: [selfParticipant, ...livePresence],
-          tabTimer: activeTab.timer,
-          respond: isReadOnly ? undefined : collabElements.respond,
-          setResponsesRevealed:
-            isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
-          clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
-          chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
-          addIdea: isReadOnly ? undefined : collabElements.addIdea,
-          revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
-          clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
-          scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
-          pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
-          takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-          // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
-          // view-role visitor: the server owns the board and gates them on
-          // read access, which is the point of the element. Running it is
-          // the facilitator's, else any editor's.
-          selfOwnerId: selfParticipant.id,
-          selfName: selfParticipant.name,
-          addQaNote: qaBoard.addQaNote,
-          voteQaNote: qaBoard.voteQaNote,
-          discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
-          closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
-          reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
-          removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
-          clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
-          // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
-          // editing and running the round are the facilitator's, else any editor's.
-          answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
-          startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
-          lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
-          revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
-          resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
-          saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
-        }}
+        collab={collab}
         onEraseStart={isReadOnly ? undefined : beginErase}
         onDuplicateMultiSelected={duplicateMultiSelected}
         onDeleteMultiSelected={deleteMultiSelected}

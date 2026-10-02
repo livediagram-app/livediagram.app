@@ -14,7 +14,6 @@ export type WebFaceProps = {
   fill: string;
   textColor: string;
   fontFamily: string | undefined;
-  zoom: number;
   // Whether the secondary lines are editable in place: selected, and neither
   // read-only nor locked. The first click selects, the next one edits.
   editable: boolean;

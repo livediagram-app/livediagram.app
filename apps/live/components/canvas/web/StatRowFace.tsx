@@ -6,6 +6,7 @@ import {
 } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Stat row (docs/specs/009-elements/web-components-and-no-groups.md): KPI cards sharing the width, each a big value in the
 // accent over a muted caption. The value's size follows the card height (see
@@ -16,10 +17,10 @@ export function StatRowFace({
   fill,
   textColor,
   fontFamily,
-  zoom,
   editable,
   onSetRows,
 }: WebFaceProps) {
+  const zoom = useCanvasZoom();
   const stats = element.stats ?? [];
   const l = statRowLayout(element.width, element.height, stats.length);
   const edit = (i: number, field: 'value' | 'caption', v: string) =>

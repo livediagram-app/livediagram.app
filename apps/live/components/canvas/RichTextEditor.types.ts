@@ -34,7 +34,6 @@ export type RichTextEditorProps = {
   // the auto-fit measures the caps so the size can't jump on commit.
   uppercase?: boolean;
   cursorAtEnd: boolean;
-  zoom: number;
   textClassName?: string;
   // When true, the editor lays out as a flex CHILD (it fills the slot it's
   // given) instead of an `absolute inset-0` fill of the whole element, and

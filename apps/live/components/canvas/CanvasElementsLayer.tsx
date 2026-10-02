@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useState } from 'react';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { idBound } from './element-layer-props';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
@@ -15,6 +16,7 @@ import {
   layerOpacityOf,
   snapSeamCoordinate,
   arrowRoutePoints,
+  type CommentMention,
   type ElementIndex,
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -254,7 +256,57 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onEditCode,
     onDropIcon,
     onLinkCell,
+    // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
+    onSetSessionConfig,
+    onOpenElementSettings,
+    onEnterPortal,
+    onFireReaction,
+    onReactionBurstDone,
+    onPauseTimer,
+    onResumeTimer,
+    onResetTimer,
+    onClearTimer,
+    onSetTimerDuration,
+    commentAdd: commentPanelActions?.add,
+    commentRemove: commentPanelActions?.remove,
+    commentResolve: commentPanelActions?.resolve,
+    commentUnresolve: commentPanelActions?.unresolve,
+    actionConfigure: actionPanelActions?.configure,
+    actionComplete: actionPanelActions?.complete,
+    actionReopen: actionPanelActions?.reopen,
   });
+  // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
+  // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
+  const timerControls = useMemo(
+    () => ({
+      pause: h.onPauseTimer,
+      resume: h.onResumeTimer,
+      reset: h.onResetTimer,
+      clear: h.onClearTimer,
+      setDuration: h.onSetTimerDuration,
+    }),
+    [h],
+  );
+  const commentActionsFor = useMemo(() => {
+    const { commentAdd, commentRemove, commentResolve, commentUnresolve } = h;
+    if (!commentAdd || !commentRemove || !commentResolve || !commentUnresolve) return null;
+    return idBound((id) => ({
+      add: (text: string, mentions: CommentMention[]) => commentAdd(id, text, mentions),
+      remove: (commentId: string) => commentRemove(id, commentId),
+      resolve: () => commentResolve(id),
+      unresolve: () => commentUnresolve(id),
+    }));
+  }, [h]);
+  const actionActionsFor = useMemo(() => {
+    const { actionConfigure, actionComplete, actionReopen } = h;
+    if (!actionConfigure || !actionComplete || !actionReopen) return null;
+    return idBound((id) => ({
+      add: () => actionConfigure(id, null),
+      edit: (actionId: string) => actionConfigure(id, actionId),
+      complete: (actionId: string) => actionComplete(id, actionId),
+      reopen: (actionId: string) => actionReopen(id, actionId),
+    }));
+  }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontsReady).
@@ -454,7 +506,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             isPaintMode={isPaintMode}
             showHandles={showHandles(element.id)}
             showAnchors={showAnchorsFor(element.id)}
-            zoom={viewportZoom}
             badgeColor={badgeColor}
             tabLocked={tabLocked}
             tabSummaries={tabSummaries}
@@ -488,37 +539,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             sessionStartBlocked={sessionStartBlocked}
             timerState={timerState}
             tabTimer={tabTimer ?? null}
-            onSetSessionConfig={onSetSessionConfig}
-            onOpenElementSettings={onOpenElementSettings}
+            onSetSessionConfig={h.onSetSessionConfig}
+            onOpenElementSettings={h.onOpenElementSettings}
             commentSelfId={commentSelfId}
-            commentActions={
-              commentPanelActions
-                ? {
-                    add: (text, mentions) => commentPanelActions.add(element.id, text, mentions),
-                    remove: (id) => commentPanelActions.remove(element.id, id),
-                    resolve: () => commentPanelActions.resolve(element.id),
-                    unresolve: () => commentPanelActions.unresolve(element.id),
-                  }
-                : undefined
-            }
+            commentActions={commentActionsFor?.(element.id)}
             actionSelfId={actionSelfId}
-            actionActions={
-              actionPanelActions
-                ? {
-                    add: () => actionPanelActions.configure(element.id, null),
-                    edit: (id) => actionPanelActions.configure(element.id, id),
-                    complete: (id) => actionPanelActions.complete(element.id, id),
-                    reopen: (id) => actionPanelActions.reopen(element.id, id),
-                  }
-                : undefined
-            }
-            timerControls={{
-              pause: onPauseTimer,
-              resume: onResumeTimer,
-              reset: onResetTimer,
-              clear: onClearTimer,
-              setDuration: onSetTimerDuration,
-            }}
+            actionActions={actionActionsFor?.(element.id)}
+            timerControls={timerControls}
             revealedForMe={revealedIds?.has(element.id)}
             onToggleReveal={h.onToggleReveal}
             onRollPicker={h.onRollPicker}
@@ -530,10 +557,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // Narrow rather than widen — a "Switch to Slide Deck" button is
             // exactly what docs/specs/012-collaboration/presentation-mode.md rules out.
             activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
-            onEnterPortal={onEnterPortal}
-            onFireReaction={onFireReaction}
+            onEnterPortal={h.onEnterPortal}
+            onFireReaction={h.onFireReaction}
             reactionBurst={reactionBursts?.get(element.id)}
-            onReactionBurstDone={onReactionBurstDone}
+            onReactionBurstDone={h.onReactionBurstDone}
             onOpenComments={h.onOpenComments}
             onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}
