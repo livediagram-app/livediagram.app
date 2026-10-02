@@ -10,6 +10,7 @@ import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
+import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
@@ -46,6 +47,7 @@ export function usePaletteCatalogue({
   onAddIcon,
   onAddSticker,
   onAddTechIcon,
+  onInsertLibraryShape,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -75,6 +77,7 @@ export function usePaletteCatalogue({
   // (the shared useIsMobileViewport, as MovablePanel uses) so the option
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
+  const { libraries } = useShapeLibraries();
   const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
   // resize / rotate), revert to Select: the option has just left the picker,
@@ -221,10 +224,15 @@ export function usePaletteCatalogue({
     techQuery,
     setTechQuery,
     techResults,
+    insertLibraryShape: (item) => armed(() => onInsertLibraryShape(item))(),
   });
+  // My shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
+  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
   // Event Storming is the ES board's own category (docs/specs/021-event-storming/event-storming.md),
   // where it is the only one: an ordinary tab's category picker does not offer it.
-  const tabs = esBoard ? allTabs : allTabs.filter((t) => t.id !== 'event-storming');
+  const tabs = allTabs.filter(
+    (t) => (esBoard || t.id !== 'event-storming') && (hasLibraryShapes || t.id !== 'my-shapes'),
+  );
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current

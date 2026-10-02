@@ -19,10 +19,10 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 | `apps/live/lib/drawio/library-store.ts`                    | `libraryForStore`: an imported library's items with ids, images stored, ready to create                      |
 | `apps/live/hooks/persistence/useDrawioFileImport.ts`       | Libraries listed and imported beside diagrams                                                                |
 | `apps/live/components/dialogs/ImportImageReport.tsx`       | "N new shape libraries:" links                                                                               |
-| `shape-library-thumbnail.ts` in apps/live/lib              | `libraryItemThumbnail`: an item's elements as an inert SVG data URL                                          |
-| `PaletteMyShapesTab.tsx` in apps/live/components/palette   | The My shapes category body: search, sections, tiles                                                         |
-| `LibraryShapeTile.tsx` in apps/live/components/palette     | One tile: thumbnail or title, click, keyboard, drag                                                          |
-| `useLibraryShapeInsert.ts` in apps/live/hooks/canvas       | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                       |
+| `apps/live/lib/shape-library-thumbnail.ts`                 | `libraryItemThumbnail`: an item's elements as an inert SVG data URL                                          |
+| `apps/live/components/palette/PaletteMyShapesTab.tsx`      | The My shapes category body: search, sections, tiles                                                         |
+| `apps/live/components/palette/LibraryShapeTile.tsx`        | One tile: thumbnail or title, click, keyboard, drag                                                          |
+| `apps/live/hooks/canvas/useLibraryShapeInsert.ts`          | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                       |
 | `page.tsx` in apps/live/app/explorer/shape-libraries       | The route                                                                                                    |
 | `ShapeLibrariesPane.tsx` in apps/live/components/panels    | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                   |
 

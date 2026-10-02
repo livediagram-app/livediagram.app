@@ -22,6 +22,8 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
+import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -120,6 +122,7 @@ export function EditorCanvasHost() {
     createBlocked,
     addTable,
     addTechIcon,
+    insertLibraryShape,
     addText,
     aiCapable,
     aiPanelPosition,
@@ -351,6 +354,19 @@ export function EditorCanvasHost() {
     whiteboardDock,
     drag,
   } = useEditorContext();
+  // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
+  // owner's libraries, then placed at the drop point.
+  const { libraries } = useShapeLibraries();
+  const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
+    const item = libraries
+      .find((l) => l.id === ref.libraryId)
+      ?.items.find((i) => i.id === ref.itemId);
+    if (!item) {
+      console.warn('[shape-libraries] drop ignored', { reason: 'unknown shape' });
+      return;
+    }
+    insertLibraryShape(item, at);
+  };
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -672,6 +688,7 @@ export function EditorCanvasHost() {
         onAddIcon={addIcon}
         onAddSticker={addSticker}
         onAddTechIcon={addTechIcon}
+        onInsertLibraryShape={(item) => void insertLibraryShape(item)}
         onDropIcon={isReadOnly ? undefined : dropIconOnElement}
         onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
         onAddTable={addTable}
@@ -702,6 +719,7 @@ export function EditorCanvasHost() {
         onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
         onDropFile={isReadOnly ? undefined : dropBoardFile}
+        onDropLibraryShape={isReadOnly ? undefined : dropLibraryShape}
         createBlocked={createBlocked}
         onAddImage={addImage}
         onAddArrow={addArrow}
