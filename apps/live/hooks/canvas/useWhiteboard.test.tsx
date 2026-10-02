@@ -37,7 +37,6 @@ function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 's
     selectCanvasTool: vi.fn(),
     beginDraw: vi.fn(),
     cancelDraw: vi.fn(),
-    setBackgroundPattern: vi.fn(),
     pathEditing: false,
     leavePathEdit: vi.fn(),
     snapColours: { colours: [], blocked: false, snap: vi.fn(() => 0) },
@@ -194,17 +193,26 @@ describe('useWhiteboard', () => {
     expect(deps.beginDraw).not.toHaveBeenCalled();
   });
 
-  it('stores a background on the tab as its pattern', () => {
-    const { deps, hook } = setup(board());
-    act(() => hook.result.current.setBackground('grid'));
-    expect(deps.setBackgroundPattern).toHaveBeenCalledWith('graph');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'BackgroundGrid');
+  // docs/specs/007-editor/editor-modes.md "One look": Draw mode's pattern is the person's own,
+  // in the synced preferences, never on the tab.
+  it('starts on Grid, whatever the tab stores', () => {
+    const { hook } = setup(board('wb', { backgroundPattern: 'blank' }));
+    expect(hook.result.current.background).toBe('graph');
   });
 
-  it('does nothing for the background already on the board', () => {
-    const { deps, hook } = setup(board('wb', { backgroundPattern: 'grid' }));
+  it('stores a background as the person’s Draw pattern, never on the tab', () => {
+    const { hook } = setup(board());
     act(() => hook.result.current.setBackground('dots'));
-    expect(deps.setBackgroundPattern).not.toHaveBeenCalled();
+    expect(readUserPreferences().drawPattern).toBe('grid');
+    expect(hook.result.current.background).toBe('grid');
+    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'BackgroundDots');
+  });
+
+  it('does nothing for the background already chosen', () => {
+    const { hook } = setup(board());
+    act(() => hook.result.current.setBackground('grid'));
+    expect(readUserPreferences().drawPattern).toBeUndefined();
+    expect(track).not.toHaveBeenCalledWith('Whiteboard', 'Changed', 'BackgroundGrid');
   });
 });
 

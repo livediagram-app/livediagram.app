@@ -17,7 +17,9 @@ import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
-import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { resolveViewBackdrop } from '@/lib/view-backdrop';
+import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -414,7 +416,7 @@ export function EditorCanvasHost() {
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/live-app.md). Subscribing to the appearance here is what makes the
-  // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
+  // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
@@ -428,7 +430,11 @@ export function EditorCanvasHost() {
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
   };
-  const backdrop = resolveTabBackdrop(activeTab, editorMode.mode, appearance);
+  const backdrop = resolveViewBackdrop(
+    activeTab,
+    { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
+    appearance,
+  );
   // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.

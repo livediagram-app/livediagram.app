@@ -8,13 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
-import {
-  WHITEBOARD_BACKGROUNDS,
-  WHITEBOARD_UNSET_PATTERN,
-  type BackgroundPattern,
-  type PenColour,
-  type Tab,
-} from '@livediagram/document';
+import { WHITEBOARD_BACKGROUNDS, type PenColour, type Tab } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import { isWhiteboardOnlyIntent, type PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
@@ -38,6 +32,7 @@ import {
   type WhiteboardShapeKey,
 } from '@/lib/whiteboard-shape-catalogue';
 import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
+import { DRAW_PATTERNS } from '@/lib/whiteboard-dock-prefs';
 import { usePenColourMemory } from './usePenColourMemory';
 import type { SnapColoursApi } from './useSnapColours';
 
@@ -56,7 +51,6 @@ type Deps = {
   selectCanvasTool: (tool: CanvasTool) => void;
   beginDraw: (intent: PendingDraw) => void;
   cancelDraw: () => void;
-  setBackgroundPattern: (pattern: BackgroundPattern) => void;
   // A path is open in its edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"), and how to
   // leave it: the dock presses Select with a path glyph meanwhile.
   pathEditing: boolean;
@@ -84,7 +78,6 @@ export function useWhiteboard(deps: Deps) {
     selectCanvasTool,
     beginDraw,
     cancelDraw,
-    setBackgroundPattern,
     pathEditing,
     leavePathEdit,
   } = deps;
@@ -242,11 +235,14 @@ export function useWhiteboard(deps: Deps) {
     track('Whiteboard', 'Changed', cursor === 'dot' ? 'CursorDot' : 'CursorCrosshair');
   };
 
+  // The Background row writes the person's own Draw pattern, never the tab
+  // (docs/specs/007-editor/editor-modes.md "One look").
   const setBackground = (id: (typeof WHITEBOARD_BACKGROUNDS)[number]['id']) => {
     const bg = WHITEBOARD_BACKGROUNDS.find((b) => b.id === id);
-    if (!bg || bg.pattern === (activeTab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN)) return;
-    setBackgroundPattern(bg.pattern);
+    const pattern = DRAW_PATTERNS.find((p) => p === bg?.pattern);
+    if (!bg || !pattern || pattern === dockPrefs.pattern) return;
     track('Whiteboard', 'Changed', BACKGROUND_TOKEN[bg.id]);
+    dockPrefs.setPattern(pattern);
   };
 
   return {
@@ -254,7 +250,7 @@ export function useWhiteboard(deps: Deps) {
     tool,
     prefs,
     activePen,
-    background: activeTab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
+    background: dockPrefs.pattern,
     pickSelect,
     pickPen,
     updatePen,

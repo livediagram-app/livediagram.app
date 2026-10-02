@@ -14,12 +14,7 @@ import {
   deriveShapeColours,
   deriveTextColorForBg,
   isDefaultSchemeBackdrop,
-  hasBoardLook,
-  type EditorMode,
   schemeBackdrop,
-  WHITEBOARD_BOARD,
-  WHITEBOARD_UNSET_PATTERN,
-  WHITEBOARD_PATTERN,
   type Appearance,
   type BackgroundPattern,
   type BoxedElement,
@@ -95,7 +90,9 @@ export function getTheme(
 // The backdrop a tab actually PAINTS, which is not always the backdrop it
 // stores. A tab on the Default scheme whose canvas is still the scheme's own
 // (nobody has hand-picked a colour) follows the viewer's appearance instead:
-// white grid in light chrome, blue-slate grid in dark. Nothing is written back —
+// the off-white canvas in light chrome, blue-slate in dark. It is the same in both editor modes
+// (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Draw pattern is laid over it by
+// resolveViewBackdrop. Nothing is written back —
 // the document keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.
 //
@@ -113,21 +110,8 @@ export function resolveTabBackdrop(
     Tab,
     'theme' | 'backgroundColor' | 'backgroundPattern' | 'patternColor' | 'backgroundOpacity'
   >,
-  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md), which decides the look.
-  mode: EditorMode,
   appearance: Appearance = getResolvedAppearance(),
 ): ResolvedBackdrop {
-  // The board look (docs/specs/023-whiteboard/whiteboard.md "Appearance") has no theme: it is
-  // always the Default scheme's board for the viewer's appearance. Only its pattern
-  // (Plain / Dots / Grid) is the tab's own.
-  if (hasBoardLook(mode)) {
-    return {
-      backgroundColor: WHITEBOARD_BOARD[appearance],
-      patternColor: WHITEBOARD_PATTERN[appearance],
-      backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
-      backgroundOpacity: 1,
-    };
-  }
   const stored = {
     backgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
     patternColor: tab.patternColor ?? DEFAULT_PATTERN_COLOR,

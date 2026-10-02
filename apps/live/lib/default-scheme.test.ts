@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { WHITEBOARD_BOARD, WHITEBOARD_PATTERN, createShape, type Tab } from '@livediagram/document';
+import { DEFAULT_BACKGROUND_COLOR, createShape, type Tab } from '@livediagram/document';
 import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
@@ -22,7 +22,7 @@ afterEach(() => {
 describe('getTheme under an appearance', () => {
   it('resolves Default to the half the viewer is in', () => {
     setAppearance('light');
-    expect(getTheme('brand').backgroundColor).toBe('#ffffff');
+    expect(getTheme('brand').backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
     setAppearance('dark');
     expect(getTheme('brand').backgroundColor).toBe('#0d121a');
   });
@@ -48,66 +48,42 @@ describe('getTheme under an appearance', () => {
 });
 
 describe('resolveTabBackdrop', () => {
-  it('paints the board in Draw mode in both appearances, ignoring the stored theme', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Appearance": the board ignores any stored theme or colour.
-    const t = tab({
-      theme: 'midnight',
-      backgroundColor: '#fde68a',
-      patternColor: '#f59e0b',
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-    });
-    setAppearance('light');
-    expect(resolveTabBackdrop(t, 'draw')).toEqual({
-      backgroundColor: WHITEBOARD_BOARD.light,
-      patternColor: WHITEBOARD_PATTERN.light,
-      backgroundPattern: 'graph',
-      backgroundOpacity: 1,
-    });
-    setAppearance('dark');
-    expect(resolveTabBackdrop(t, 'draw')).toMatchObject({
-      backgroundColor: WHITEBOARD_BOARD.dark,
-      patternColor: WHITEBOARD_PATTERN.dark,
-    });
-  });
-
-  it('keeps a tab stored without a pattern on Plain in Draw mode, as a board always showed', () => {
-    expect(resolveTabBackdrop(tab(), 'draw').backgroundPattern).toBe('blank');
-  });
-
-  // docs/specs/007-editor/editor-modes.md: the look follows the viewer's editor mode, never what
-  // the tab opens in.
-  it('paints a tab that opens in Draw as itself for a viewer in Diagram mode', () => {
+  // docs/specs/007-editor/editor-modes.md "One look": one backdrop colour, whatever the mode.
+  it('paints a tab that opens in Draw as itself', () => {
     const t = tab({ opensIn: 'draw', theme: 'slate', backgroundColor: '#fdf2f8' });
-    expect(resolveTabBackdrop(t, 'diagram').backgroundColor).toBe('#fdf2f8');
+    expect(resolveTabBackdrop(t).backgroundColor).toBe('#fdf2f8');
   });
 
   it('paints a Default tab in the viewer’s appearance', () => {
-    const t = tab({ theme: 'brand', backgroundColor: '#ffffff', patternColor: '#cbd5e1' });
+    const t = tab({
+      theme: 'brand',
+      backgroundColor: DEFAULT_BACKGROUND_COLOR,
+      patternColor: '#cbd5e1',
+    });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
+    expect(resolveTabBackdrop(t)).toMatchObject({
       backgroundColor: '#0d121a',
       patternColor: '#1c2735',
     });
     setAppearance('light');
-    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
-      backgroundColor: '#ffffff',
+    expect(resolveTabBackdrop(t)).toMatchObject({
+      backgroundColor: DEFAULT_BACKGROUND_COLOR,
       patternColor: '#cbd5e1',
     });
   });
 
   it('paints a Default tab saved in the OTHER appearance correctly too', () => {
     // Someone in dark chrome picked Default, so the tab carries the dark
-    // backdrop. A light-chrome viewer must still see white, or the whole
+    // backdrop. A light-chrome viewer must still see the light canvas, or the whole
     // point of merging the two schemes is lost.
     const t = tab({ theme: 'brand', backgroundColor: '#0d121a', patternColor: '#1c2735' });
     setAppearance('light');
-    expect(resolveTabBackdrop(t, 'diagram').backgroundColor).toBe('#ffffff');
+    expect(resolveTabBackdrop(t).backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
   });
 
   it('paints an unthemed tab as Default', () => {
     setAppearance('dark');
-    expect(resolveTabBackdrop(tab(), 'diagram').backgroundColor).toBe('#0d121a');
+    expect(resolveTabBackdrop(tab()).backgroundColor).toBe('#0d121a');
   });
 
   it('never overrides a hand-picked canvas colour', () => {
@@ -115,7 +91,7 @@ describe('resolveTabBackdrop', () => {
     // chrome, in both directions.
     const t = tab({ theme: 'brand', backgroundColor: '#fde68a', patternColor: '#f59e0b' });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
+    expect(resolveTabBackdrop(t)).toMatchObject({
       backgroundColor: '#fde68a',
       patternColor: '#f59e0b',
     });
@@ -126,13 +102,13 @@ describe('resolveTabBackdrop', () => {
     // Graph paper in both.
     const t = tab({
       theme: 'brand',
-      backgroundColor: '#ffffff',
+      backgroundColor: DEFAULT_BACKGROUND_COLOR,
       patternColor: '#cbd5e1',
       backgroundPattern: 'graph',
       backgroundOpacity: 0.8,
     });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
+    expect(resolveTabBackdrop(t)).toMatchObject({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.8,
     });
@@ -141,7 +117,7 @@ describe('resolveTabBackdrop', () => {
   it('leaves a tab on any other scheme untouched', () => {
     const t = tab({ theme: 'slate', backgroundColor: '#fdf2f8', patternColor: '#fbcfe8' });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t, 'diagram').backgroundColor).toBe('#fdf2f8');
+    expect(resolveTabBackdrop(t).backgroundColor).toBe('#fdf2f8');
   });
 });
 
@@ -149,7 +125,7 @@ describe('Default never bakes a colour onto an element', () => {
   it('adds an element with no colours of its own, in either appearance', () => {
     for (const appearance of ['light', 'dark'] as const) {
       setAppearance(appearance);
-      const t = resolveTabBackdrop(tab({ theme: 'brand' }), 'diagram');
+      const t = resolveTabBackdrop(tab({ theme: 'brand' }));
       const colours = deriveNewBoxedColours(createShape('square', 0, 0), {
         backgroundColor: t.backgroundColor,
         patternColor: t.patternColor,
