@@ -5,28 +5,28 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 ## Files
 
-| File                                                      | Role                                                                              |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/lib/canvas-gesture.ts`                         | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
-| `apps/live/components/canvas/CanvasZoomContext.tsx`       | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only   |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`     | Stable per-element props; per-arrow frame and holes; the grid                     |
-| `apps/live/components/canvas/element-layer-props.ts`      | `useStableElementActions`, `useStableCollab`: identity-stable per-element objects |
-| `apps/live/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                         |
-| `apps/live/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                          |
-| `apps/live/components/canvas/BoxedElementView.tsx`        | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                    |
-| `packages/document/src/element-grid.ts`                   | `ElementGrid`: `buildElementGrid`, `updateElementGrid`, `queryElementGrid`        |
-| `packages/document/src/arrow-behind.ts`                   | `routeBehindHoles` unchanged in contract; callers pass grid candidates            |
-| `packages/document/src/svg-render-arrows.ts`              | The export builds one grid per render and queries it                              |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                       |
-| `apps/live/hooks/canvas/useSettledElements.ts`            | What the Map draws: frozen during element gestures, throttled otherwise           |
-| `apps/live/components/canvas/Minimap.tsx`                 | Draws `useSettledElements(elements)`                                              |
-| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`         | Takes `suspended`; never measures while suspended                                 |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx` | `toolbarsStale` includes `selectionMoving`                                        |
-| `apps/live/hooks/canvas/useCanvasLongTaskLog.ts`          | The `[canvas-perf] long task` debug log                                           |
-| `apps/live/e2e/perf/reference-board.ts`                   | `buildReferenceBoard(seed, count)`                                                |
-| `apps/live/e2e/perf/budget.ts`                            | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                             |
-| `apps/live/e2e/perf/canvas.perf.ts`                       | The probe: seeds, runs each gesture under a trace, writes the report              |
-| `.github/workflows/canvas-perf.yml`                       | The nightly run and the budget issue                                              |
+| File                                                           | Role                                                                              |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `apps/live/lib/canvas-gesture.ts` (planned)                    | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
+| `apps/live/components/canvas/CanvasZoomContext.tsx` (planned)  | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only   |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`          | Stable per-element props; per-arrow frame and holes; the grid                     |
+| `apps/live/components/canvas/element-layer-props.ts` (planned) | `useStableElementActions`, `useStableCollab`: identity-stable per-element objects |
+| `apps/live/components/canvas/arrow-view-frame.ts`              | `ArrowViewFrame` and `sameArrowViewFrame`                                         |
+| `apps/live/components/canvas/ArrowView.tsx`                    | Takes `frame` + `holes`, no `elementIndex` / `occluders`                          |
+| `apps/live/components/canvas/BoxedElementView.tsx`             | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                    |
+| `packages/document/src/element-grid.ts` (planned)              | `ElementGrid`: `buildElementGrid`, `updateElementGrid`, `queryElementGrid`        |
+| `packages/document/src/arrow-behind.ts`                        | `routeBehindHoles` unchanged in contract; callers pass grid candidates            |
+| `packages/document/src/svg-render-arrows.ts`                   | The export builds one grid per render and queries it                              |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`               | `draftLayout` identity-stable across passes                                       |
+| `apps/live/hooks/canvas/useSettledElements.ts` (planned)       | What the Map draws: frozen during element gestures, throttled otherwise           |
+| `apps/live/components/canvas/Minimap.tsx`                      | Draws `useSettledElements(elements)`                                              |
+| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`              | Takes `suspended`; never measures while suspended                                 |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`      | `toolbarsStale` includes `selectionMoving`                                        |
+| `apps/live/hooks/canvas/useCanvasLongTaskLog.ts` (planned)     | The `[canvas-perf] long task` debug log                                           |
+| `apps/live/e2e/perf/reference-board.ts` (planned)              | `buildReferenceBoard(seed, count)`                                                |
+| `apps/live/e2e/perf/budget.ts` (planned)                       | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                             |
+| `apps/live/e2e/perf/canvas.perf.ts` (planned)                  | The probe: seeds, runs each gesture under a trace, writes the report              |
+| `.github/workflows/canvas-perf.yml`                            | The nightly run and the budget issue                                              |
 
 ## Domain and naming
 
@@ -325,7 +325,7 @@ export function budgetTable(rows: readonly BudgetRow[]): string;
 | Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                |
 | The Map redraws when a gesture ends              | `useSettledElements.test.ts`: frozen, released, throttled, trailing                                                        |
 | Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                        |
-| Whole-board passes linear and once               | `useArrowLabelLayouts.test.tsx`: `draftLayout` stable; one pass per element change                                         |
+| Whole-board passes linear and once               | `useArrowLabelLayouts.test.ts`: `draftLayout` stable; one pass per element change                                          |
 | A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it and its arrows                                       |
 | Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                   |
 | Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                  |
