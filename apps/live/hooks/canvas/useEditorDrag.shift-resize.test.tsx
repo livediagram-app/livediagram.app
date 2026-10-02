@@ -22,6 +22,15 @@ import type { DragMode } from '@/lib/canvas';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
+// Stands in for the DOM text measure in Draw mode: 10 px a character at 14 px, scaled with the
+// text, one line of 1.25 leading.
+vi.mock('@/components/canvas/text-hug-measure', () => ({
+  measureDrawnText: () => (el: { label?: string; textScale?: number }) => () => {
+    const px = 14 * (el.textScale ?? 1);
+    return { width: ((el.label ?? '').length * 10 * px) / 14, height: px * 1.25 };
+  },
+}));
+
 // Shift keeps the aspect ratio everywhere (docs/specs/008-canvas/canvas-and-palette.md "Resize"),
 // through the whole drag machine: every boxed kind, every tab kind, and Shift pressed or released
 // mid-drag taking effect on the next pointer move.
@@ -204,6 +213,49 @@ describe('Shift pressed or released mid-drag', () => {
     expect(h.current()).toMatchObject({ width: 300, height: 150 });
     move(100, 10, false);
     expect(h.current()).toMatchObject({ width: 300, height: 110 });
+    release();
+  });
+});
+
+// docs/specs/023-whiteboard/whiteboard.md "Text boxes": in Draw mode Shift keeps a text box's
+// ratio by scaling its text with the box; the height hugs the scaled text.
+describe('Shift resize of a text box in Draw mode', () => {
+  const hello = () => ({
+    ...createText(0, 0),
+    label: 'Hello',
+    autoWidth: true,
+    textSize: 'sm' as const,
+    width: 58,
+    height: 22,
+  });
+  // The text's own block (the box less its 4 px / 2 px hug padding).
+  const textRatio = (el: { width: number; height: number }) => (el.width - 8) / (el.height - 4);
+
+  it.each(['resize-se', 'resize-ne', 'resize-e'] as const)(
+    'keeps the text block’s ratio from %s, scaling the text',
+    (mode) => {
+      syncFrames();
+      const h = harness(hello(), 'diagram', true);
+      const before = textRatio(h.current());
+      h.press(mode);
+      move(58, mode === 'resize-ne' ? -10 : 10, true);
+      const after = h.current() as ReturnType<typeof hello> & { textScale?: number };
+      expect(after.width).toBe(116);
+      expect(after.textScale).toBeCloseTo(108 / 50, 6);
+      // The height is whole px, rounded up, so the ratio holds to within a pixel of height.
+      expect(Math.abs(textRatio(after) - before)).toBeLessThan(before / (after.height - 4));
+      release();
+    },
+  );
+
+  it('keeps the box’s ratio, text unscaled, in Diagram mode', () => {
+    syncFrames();
+    const h = harness(hello(), 'diagram', false);
+    h.press('resize-se');
+    move(58, 10, true);
+    const after = h.current() as ReturnType<typeof hello> & { textScale?: number };
+    expect(after.width / after.height).toBeCloseTo(58 / 22, 6);
+    expect(after.textScale).toBeUndefined();
     release();
   });
 });
