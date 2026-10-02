@@ -104,9 +104,18 @@ document renders lazily.
   document's background colour. A snapshot already cached when the
   thumbnail mounts paints at once, with no loader. The box never changes
   size.
-- Degrades gracefully: no R2 binding, no access, or an empty document →
-  404 → the row shows the still, dashed sketch, captioned "Nothing drawn
-  yet" where there is room. The no-snapshot 404 (past the access gate)
+- **An empty document is never asked for.** Every document list carries
+  `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
+  first tab has no elements, or it has no tab. Such a row shows the still,
+  dashed sketch at once, captioned "Nothing drawn yet" where there is room,
+  and makes no request, so an Explorer of new or blank documents fires no
+  404s. The list knows without reading any tab body: each tab row keeps its
+  element count (`tabs.element_count`), written with the tab by every tab
+  write and backfilled once by migration; a list reads the first tab's count.
+  A count not yet known (`null`) reads as not empty, so the row asks as before.
+- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
+  shows the still, dashed sketch, captioned "Nothing drawn yet" where there
+  is room. The no-snapshot 404 (past the access gate)
   carries the same `private, max-age=86400` as the image, because it is
   version-keyed too; an access-denied 404 carries no cache header.
 
