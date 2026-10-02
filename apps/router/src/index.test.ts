@@ -248,3 +248,51 @@ describe('staging noindex header', () => {
     expect(res.webSocket).toBe(socket);
   });
 });
+
+// docs/specs/016-platform/stale-builds.md "Caching rules": one policy for every site, at the router.
+describe('the caching rules', () => {
+  const answering = (body: string, init: ResponseInit) =>
+    ({ fetch: () => Promise.resolve(new Response(body, init)) }) as unknown as Fetcher;
+
+  it('keeps every site’s pages out of the cache and makes their build assets immutable', async () => {
+    const html = { headers: { 'Content-Type': 'text/html' } };
+    const env: Env = {
+      MARKETING: answering('<html></html>', html),
+      LIVE: answering('<html></html>', html),
+      HELP: answering('<html></html>', html),
+      TELEMETRY: answering('<html></html>', html),
+    };
+    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry']) {
+      expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
+    }
+    const assets: Env = {
+      LIVE: answering('x', { headers: { 'Content-Type': 'text/javascript' } }),
+    };
+    expect(
+      (await dispatch('/live/_next/static/chunks/a.js', assets)).headers.get('Cache-Control'),
+    ).toBe('public, max-age=31536000, immutable');
+  });
+
+  it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
+    const env: Env = {
+      LIVE: answering('<html>404</html>', {
+        status: 404,
+        headers: { 'Content-Type': 'text/html' },
+      }),
+    };
+    const res = await dispatch('/live/_next/static/css/old.css', env);
+    expect(res.status).toBe(404);
+    expect(res.headers.get('Content-Type')).toBe('text/plain; charset=utf-8');
+  });
+
+  it('leaves the api’s responses as the api sets them', async () => {
+    const env: Env = {
+      API: answering('<html>docs</html>', {
+        headers: { 'Content-Type': 'text/html', 'Cache-Control': 'public, max-age=60' },
+      }),
+    };
+    expect((await dispatch('/api/docs', env)).headers.get('Cache-Control')).toBe(
+      'public, max-age=60',
+    );
+  });
+});

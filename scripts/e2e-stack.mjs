@@ -20,14 +20,48 @@ import { spawn } from 'node:child_process';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import {
+  cpSync,
+  createReadStream,
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+// The caching rules production's router applies (docs/specs/016-platform/stale-builds.md), run from
+// the same file: type-only TypeScript, which Node runs as is.
+import {
+  HTML_CACHE_CONTROL,
+  IMMUTABLE_CACHE_CONTROL,
+  cacheRule,
+  isBuildAsset,
+} from '../apps/router/src/cache-policy.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
 // the signed-in specs run against (apps/live/scripts/build-clerk-stub.mjs).
 const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
+// The build being served: OUT_DIR, until a simulated deploy (POST /__e2e/deploy) swaps in a copy
+// whose chunk files carry new names, as a real deploy's do.
+let liveOut = OUT_DIR;
+const deployDirs = [];
+// Production's caching, as a browser meets it (docs/specs/016-platform/stale-builds.md): Cloudflare's
+// asset server marks every file `public, max-age=0, must-revalidate` with an ETag, and the router's
+// caching rules then make pages `no-store` and build assets immutable. E2E_CACHE_POLICY=off serves
+// without the router's rules, as production did before them.
+const ASSET_SERVER_CACHE_CONTROL = 'public, max-age=0, must-revalidate';
+const CACHE_POLICY = process.env.E2E_CACHE_POLICY !== 'off';
+// Set by POST /__e2e/assets-out-of-cache, cleared by the next simulated deploy: build assets go out
+// `no-store`, so the browser keeps a page but not its chunks, as a cache that evicted them (or never
+// held a lazily loaded one) does.
+let assetsOutOfCache = false;
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
@@ -120,6 +154,7 @@ function run(cmd, args, opts = {}) {
   return child;
 }
 function shutdown(code) {
+  for (const dir of deployDirs) rmSync(dir, { recursive: true, force: true });
   for (const c of children) {
     try {
       c.kill('SIGTERM');
@@ -172,18 +207,91 @@ const MIME = {
   '.map': 'application/json; charset=utf-8',
 };
 
-function serveFile(res, filePath) {
+// What production sends for a response: the asset server's caching, then the router's rules.
+function cacheControlFor(pathname, status, contentType) {
+  if (assetsOutOfCache && isBuildAsset(pathname)) return { cacheControl: 'no-store', missing: false };
+  if (!CACHE_POLICY) return { cacheControl: ASSET_SERVER_CACHE_CONTROL, missing: false };
+  const rule = cacheRule(pathname, status, contentType);
+  if (rule === 'no-store') return { cacheControl: HTML_CACHE_CONTROL, missing: false };
+  if (rule === 'immutable') return { cacheControl: IMMUTABLE_CACHE_CONTROL, missing: false };
+  if (rule === 'missing-asset') return { cacheControl: HTML_CACHE_CONTROL, missing: true };
+  return { cacheControl: ASSET_SERVER_CACHE_CONTROL, missing: false };
+}
+
+function serveFile(req, res, filePath, pathname) {
   const ext = path.extname(filePath);
-  res.writeHead(200, {
-    'Content-Type': MIME[ext] ?? 'application/octet-stream',
-    // NEVER let a browser hold on to this build. The HTML names the hashed
-    // JS chunks, so a cached page keeps running the code it was built with —
-    // and a tab left open across a rebuild then shows behaviour that no
-    // longer exists in the repo, which is indistinguishable from the fix not
-    // working. Costs nothing here: this server exists for e2e and review.
-    'Cache-Control': 'no-store, must-revalidate',
-  });
+  const contentType = MIME[ext] ?? 'application/octet-stream';
+  const { size, mtimeMs } = statSync(filePath);
+  const etag = `W/"${size}-${Math.floor(mtimeMs)}"`;
+  const headers = {
+    'Content-Type': contentType,
+    ETag: etag,
+    'Cache-Control': cacheControlFor(pathname, 200, contentType).cacheControl,
+  };
+  if (req.headers['if-none-match'] === etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+  res.writeHead(200, headers);
   createReadStream(filePath).pipe(res);
+}
+
+// A missing file: the site's HTML 404 page, as Cloudflare's `not_found_handling = "404-page"`
+// answers, unless the router's rules make a missing build asset a plain-text 404.
+function serveNotFound(res, pathname, notFoundPage) {
+  const html = 'text/html; charset=utf-8';
+  const { cacheControl, missing } = cacheControlFor(pathname, 404, html);
+  if (missing || !notFoundPage || !existsSync(notFoundPage)) {
+    res.writeHead(404, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': cacheControl,
+      'X-Content-Type-Options': 'nosniff',
+    });
+    res.end('Not found');
+    return;
+  }
+  res.writeHead(404, { 'Content-Type': html, 'Cache-Control': cacheControl });
+  createReadStream(notFoundPage).pipe(res);
+}
+
+// A deploy, simulated: a copy of the build being served whose chunk files are renamed, every
+// reference to them rewritten, and the copy served from now on. The old names are gone, exactly
+// as after a real deploy, while a page the browser kept still names them.
+const TEXT_FILES = new Set(['.html', '.txt', '.js', '.css', '.json', '.map']);
+function filesUnder(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const p = path.join(dir, name);
+    if (statSync(p).isDirectory()) filesUnder(p, out);
+    else out.push(p);
+  }
+  return out;
+}
+function simulateDeploy() {
+  const n = deployDirs.length + 1;
+  const next = mkdtempSync(path.join(tmpdir(), 'livediagram-e2e-deploy-'));
+  deployDirs.push(next);
+  cpSync(liveOut, next, { recursive: true });
+  const renames = new Map();
+  for (const file of filesUnder(path.join(next, '_next', 'static', 'chunks'))) {
+    const ext = path.extname(file);
+    const name = path.basename(file);
+    const renamed = `${name.slice(0, -ext.length)}-d${n}${ext}`;
+    renames.set(name, renamed);
+    renameSync(file, path.join(path.dirname(file), renamed));
+  }
+  const escaped = [...renames.keys()].map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(?<![A-Za-z0-9_-])(${escaped.join('|')})`, 'g');
+  for (const file of filesUnder(next)) {
+    if (!TEXT_FILES.has(path.extname(file))) continue;
+    const text = readFileSync(file, 'utf8');
+    const rewritten = text.replace(pattern, (m) => renames.get(m) ?? m);
+    if (rewritten !== text) writeFileSync(file, rewritten);
+  }
+  liveOut = next;
+  assetsOutOfCache = false;
+  console.log(`[e2e] simulated deploy ${n}: ${renames.size} chunks renamed, serving ${next}`);
+  return n;
 }
 
 // Resolve a request path to a file in out/, mirroring the live worker
@@ -196,9 +304,9 @@ function resolveStatic(pathname) {
   if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
   if (p === '/') p = '/index';
   const candidates = [
-    path.join(OUT_DIR, p), // exact file (assets)
-    path.join(OUT_DIR, `${p}.html`), // clean route → new.html
-    path.join(OUT_DIR, p, 'index.html'),
+    path.join(liveOut, p), // exact file (assets)
+    path.join(liveOut, `${p}.html`), // clean route → new.html
+    path.join(liveOut, p, 'index.html'),
   ];
   for (const c of candidates) {
     if (existsSync(c) && statSync(c).isFile()) return c;
@@ -305,6 +413,18 @@ function startLiveServer() {
       return;
     }
     if (serveClerkStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
+    if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
+      assetsOutOfCache = true;
+      res.writeHead(204, { 'Cache-Control': 'no-store' });
+      res.end();
+      return;
+    }
+    if (pathname === '/__e2e/deploy' && req.method === 'POST') {
+      const deploy = simulateDeploy();
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify({ deploy }));
+      return;
+    }
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
     // Match the worker's /explorer → /explorer/recent redirect.
     if (pathname === '/explorer' || pathname === '/explorer/') {
@@ -318,14 +438,14 @@ function startLiveServer() {
     // this the stack answered 404, the page recovered client-side without its
     // query string, and `?truth=1` typed on `/new/` armed nothing.
     const bare = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : null;
-    if (bare && !bare.startsWith('/document') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
+    if (bare && !bare.startsWith('/document') && existsSync(path.join(liveOut, `${bare}.html`))) {
       const search = new URL(req.url, 'http://localhost').search;
       res.writeHead(307, { Location: `${bare}${search}` });
       res.end();
       return;
     }
     const site = resolveSite(pathname);
-    if (typeof site === 'string') return serveFile(res, site);
+    if (typeof site === 'string') return serveFile(req, res, site, pathname);
     if (site) {
       console.warn(`[e2e] ${pathname}: no build at ${site.notFound}`);
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -333,18 +453,15 @@ function startLiveServer() {
       return;
     }
     const file = resolveStatic(pathname);
-    if (file) return serveFile(res, file);
-    const notFound = path.join(OUT_DIR, '404.html');
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    if (existsSync(notFound)) createReadStream(notFound).pipe(res);
-    else res.end('Not found');
+    if (file) return serveFile(req, res, file, pathname);
+    serveNotFound(res, pathname, path.join(liveOut, '404.html'));
   });
   server.on('upgrade', proxyApiUpgrade);
   server.listen(LIVE_PORT, () => console.log(`[e2e] live static server on :${LIVE_PORT}`));
   startMarketingServer();
 }
 
-// Marketing on its own port, clean routes, same no-store rule. Absent build: a logged 404.
+// Marketing on its own port, clean routes, the same caching as production. Absent build: a logged 404.
 function startMarketingServer() {
   if (!existsSync(MARKETING_DIR)) {
     console.warn(`[e2e] marketing not built (${MARKETING_DIR}); :${MARKETING_PORT} answers 404`);
@@ -353,7 +470,7 @@ function startMarketingServer() {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const p = pathname === '/' ? '/index' : pathname.replace(/\/$/, '');
     const file = existsSync(MARKETING_DIR) ? resolveIn(MARKETING_DIR, p) : null;
-    if (file) return serveFile(res, file);
+    if (file) return serveFile(req, res, file, pathname);
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end(existsSync(MARKETING_DIR) ? 'Not found' : `Not built: ${MARKETING_DIR}`);
   });

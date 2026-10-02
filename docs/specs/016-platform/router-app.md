@@ -104,3 +104,10 @@ The routing decisions stay identical in both modes — only the transport (bindi
 ## Routing infrastructure, not logic
 
 The router is **routing infrastructure**, not application logic, holding no data and running no business rules. That separation is non-negotiable: if you find yourself adding business logic to the router, stop, the logic belongs in a service the router forwards to (marketing, live, telemetry, help, or api).
+
+Two response rules sit with the routing because every site passes through it, and they are HTTP
+policy rather than business rules: on staging every response is marked `X-Robots-Tag: noindex,
+nofollow` ([Staging environment](./staging-environment.md)), and every site's response follows the
+caching rules (`src/cache-policy.ts`: pages `no-store`, build assets immutable, a missing asset a
+plain-text 404; [Stale builds](./stale-builds.md) "Caching rules"). The api's responses are left as
+the api sets them.
