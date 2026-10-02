@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PEN_INK, penColourHex } from '@livediagram/document';
 import type { DocumentDTO, Env } from './types';
 
 // The render-cache reads/writes the snapshot freshness + first-tab body
@@ -294,5 +295,30 @@ describe('a thumbnail of a Charcoal tab', () => {
     const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
     expect(out).not.toContain('#2c2c33');
     expect(out).toContain('#0d121a');
+  });
+});
+
+// Stock colours are first-class (docs/specs/007-editor/editor-modes.md "One look"): a thumbnail
+// draws a colour stored by name in its version for the page, on any tab, whatever mode drew it.
+describe('a thumbnail of named stock colours', () => {
+  it('draws Blue and Ink by name in the light page version', async () => {
+    const images = r2();
+    images.get.mockResolvedValue(null);
+    db.getThumbRenderedAt.mockResolvedValue(null);
+    const shape = { type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80 };
+    db.getTabBody.mockResolvedValue(
+      stored(
+        JSON.stringify({
+          elements: [
+            { ...shape, id: 'e1', penColour: 'blue' },
+            { ...shape, id: 'e2', x: 200, penColour: 'ink' },
+          ],
+        }),
+        2,
+      ),
+    );
+    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
+    expect(out).toContain(penColourHex('blue', 'light'));
+    expect(out).toContain(PEN_INK.light);
   });
 });
