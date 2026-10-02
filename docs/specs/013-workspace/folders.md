@@ -66,18 +66,17 @@ In scope:
 
 Every Explorer section is its own page under `/explorer` (the chrome — header, sidebar tree, mobile drawer — is a shared layout, so the sidebar and its loaded data persist across section navigations):
 
-| Section                                                 | Route                                                       |
-| ------------------------------------------------------- | ----------------------------------------------------------- |
-| Recent documents                                        | `/explorer/recent` (default)                                |
-| Shared with you                                         | `/explorer/shared`                                          |
-| All documents                                           | `/explorer/all` (route kept for deep links; no sidebar row) |
-| Unsorted                                                | `/explorer/unsorted`                                        |
-| Generated                                               | `/explorer/generated`                                       |
-| A folder                                                | `/explorer/folder?id=<id>`                                  |
-| A team ([Teams](teams.md))                              | `/explorer/team?id=<id>`                                    |
-| Invites ([Teams](teams.md))                             | `/explorer/invites`                                         |
-| Image gallery                                           | `/explorer/images`                                          |
-| Shape libraries ([Shape libraries](shape-libraries.md)) | `/explorer/shape-libraries`                                 |
+| Section                     | Route                                                       |
+| --------------------------- | ----------------------------------------------------------- |
+| Recent documents            | `/explorer/recent` (default)                                |
+| Shared with you             | `/explorer/shared`                                          |
+| All documents               | `/explorer/all` (route kept for deep links; no sidebar row) |
+| Unsorted                    | `/explorer/unsorted`                                        |
+| Generated                   | `/explorer/generated`                                       |
+| A folder                    | `/explorer/folder?id=<id>`                                  |
+| A team ([Teams](teams.md))  | `/explorer/team?id=<id>`                                    |
+| Invites ([Teams](teams.md)) | `/explorer/invites`                                         |
+| Image gallery               | `/explorer/images`                                          |
 
 `/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent documents", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, [Timeline](timeline.md); Activity, [Activity page](activity-page.md); Recent documents; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All documents" parent row; contrasts with team libraries, [Team shared documents](team-shared-documents.md)), **"Teams"** ([Teams](teams.md)), and **"Library"**.
 

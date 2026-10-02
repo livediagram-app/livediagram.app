@@ -22,7 +22,7 @@ export function DrawioImportDialog({
         title={DRAWIO_IMPORT_TITLE}
         subtitle="Each diagram becomes its own document, named and dated after the file."
       >
-        <HelpArticleLink article="importTabs" size="md" />
+        <HelpArticleLink article="drawioImport" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">

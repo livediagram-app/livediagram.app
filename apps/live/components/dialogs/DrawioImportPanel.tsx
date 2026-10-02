@@ -64,7 +64,7 @@ export function DrawioImportPanel({
         onToggleAll={flow.toggleAll}
         {...(state.failures.length > 0
           ? {
-              leftOut: `${plural(state.failures.length, "file isn't", "files aren't")} draw.io's or couldn't be read, and will be left out.`,
+              leftOut: `${plural(state.failures.length, 'file', 'files')} will be left out; the report says why.`,
             }
           : {})}
         importLabel={`Import ${plural(count, 'file', 'files')}`}

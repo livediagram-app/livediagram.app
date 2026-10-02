@@ -117,8 +117,7 @@ describe('importDrawioLibrary', () => {
     const r = await importDrawio(text(library([])), { tabIdForPage: () => 't' });
     expect(r).toEqual({
       ok: false,
-      error:
-        "This is a draw.io shape library. Import it from the Explorer's Import from draw.io to add it to My shapes.",
+      error: 'This is a draw.io shape library, not a diagram. Shape libraries are coming soon.',
     });
   });
 });

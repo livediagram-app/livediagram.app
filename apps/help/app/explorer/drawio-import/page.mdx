@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Importing draw.io files',
+  description:
+    'Bring draw.io (diagrams.net) diagrams across from the Explorer: pick files or a whole folder, including files saved to Google Drive and JSON exports, and each diagram becomes its own document with a tab per page.',
+  path: '/help/explorer/drawio-import/',
+});
+
+<ArticleLayout
+  title="Importing draw.io files"
+  description="Bring draw.io diagrams across as documents, a tab per page."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Import from draw.io** brings diagrams made in [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins) across as livediagram documents. Pick as many files as you like, or a whole folder: each diagram becomes **its own document**, and each of its pages becomes a [diagram tab](/help/tabs/import-tabs/#importing-from-draw-io) in that document.
+
+To import one diagram into the tab you are working on instead, use [Import in the tab menu](/help/tabs/import-tabs/#importing-from-draw-io).
+
+## What you can pick
+
+The import reads each file by what is inside it, never by its name, so all of these work:
+
+- `.drawio` and `.xml` files, compressed or not.
+- **Files saved to Google Drive.** draw.io saves to Drive without an extension; download them and pick them as they are.
+- **PNG and SVG exports** made with **Include a copy of my diagram** ticked.
+- **JSON exports** (draw.io's **Export as JSON**). When the export includes the full diagram, it imports exactly like the `.drawio` file. When it holds only the shapes and connections, without their positions, livediagram lays the diagram out for you, and the import says so.
+
+Anything else in a folder, such as notes or pictures, is left out and named in the report, never treated as an error.
+
+**draw.io libraries** (the shape sets draw.io keeps in a scratchpad, saved as a library file) are recognised, but they can't be imported yet: shape libraries are coming soon. A library file is left out and named in the report, and the diagrams beside it still import.
+
+## Importing
+
+On the [Explorer page](/help/explorer/explorer-page/), **Import from** at the top right shows a button for each tool you can import from. Press the **draw.io** button (hover it to see its name). From inside a folder, the new documents go into that folder. Then choose files, choose a folder, or drop either onto the panel.
+
+A single diagram imports straight away. When there are several, the panel lists them, each under the name its document will get, with the date it was last edited and how many pages it has. Every diagram starts ticked; untick the ones you don't want and press **Import**.
+
+## Names and dates
+
+- A document is **named after its file**. When the file has draw.io's default name (such as "Untitled Diagram"), it takes the name saved inside the file, else its first page's name, else "draw.io diagram" with the date.
+- A document is **dated as the diagram**: draw.io records when a file was last saved, and the document shows that date, so your library keeps its history.
+
+## What comes across
+
+Shapes, text, connections, containers, swimlanes, tables, layers, colours and pictures come across as they do in the [tab import](/help/tabs/import-tabs/#importing-from-draw-io). When the import finishes, it lists the new documents so you can open them, says what changed on the way (for example shapes that came in as the nearest livediagram shape) and names any files it left out, with the reason.
+
+<Tip>
+  A page too large to store as one tab is left out of its document and named in the report; the
+  file's other pages still arrive.
+</Tip>
+
+</ArticleLayout>

@@ -6,6 +6,7 @@ import type { DrawioDocumentFile } from '@/lib/drawio/new-document';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 import {
+  DRAWIO_LIBRARIES_SOON,
   DRAWIO_UNEXPECTED,
   useDrawioFileImport,
   type ImportDrawioDocuments,
@@ -92,21 +93,32 @@ describe('useDrawioFileImport', () => {
     );
   });
 
-  it('lists a library with its shape count, and leaves it out while libraries cannot land', async () => {
+  it('leaves a library out, named, as coming soon: never an error', async () => {
     const h = setup();
     await act(() => h.result.current.open([diagram('Roadmap'), library('Team icons.xml')]));
     const state = h.result.current.state;
     if (state.step !== 'list') throw new Error(state.step);
-    expect(state.rows.map((r) => [r.name, r.detail])).toEqual([
-      ['Roadmap', 'Edited 12 Mar 2026 · 1 page'],
-      ['Team icons', 'Shape library · 1 shape'],
-    ]);
+    expect(state.rows.map((r) => r.name)).toEqual(['Roadmap']);
+    expect(state.failures).toEqual([{ title: 'Team icons', message: DRAWIO_LIBRARIES_SOON }]);
     await act(() => h.result.current.importChecked());
     expect(h.onDone).toHaveBeenCalledWith(
       expect.objectContaining({
-        failures: [{ title: 'Team icons', message: "Shape libraries can't be imported here yet." }],
+        documents: [{ id: 'd0', name: 'Roadmap' }],
+        failures: [{ title: 'Team icons', message: 'Shape libraries are coming soon.' }],
       }),
     );
+  });
+
+  it('reports a lone library as coming soon, not as an error', async () => {
+    const h = setup();
+    await act(() => h.result.current.open([library('Team icons.xml')]));
+    expect(h.result.current.state).toEqual({ step: 'pick' });
+    expect(h.onDone).toHaveBeenCalledWith({
+      status: 'done',
+      failures: [{ title: 'Team icons', message: DRAWIO_LIBRARIES_SOON }],
+    });
+    expect(h.importDocuments).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalled();
   });
 
   it('goes back to picking with the reason when nothing can be read', async () => {

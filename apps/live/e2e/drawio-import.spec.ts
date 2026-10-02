@@ -174,6 +174,10 @@ test.describe('importing draw.io files from the Explorer', () => {
     ],
   });
 
+  const library = `<mxlibrary>${JSON.stringify([
+    { xml: compress(page1('Service')), w: 160, h: 60, aspect: 'fixed', title: 'Service' },
+  ])}</mxlibrary>`;
+
   test('each diagram becomes its own document, after the list', async ({ page, pageErrors }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
@@ -190,12 +194,15 @@ test.describe('importing draw.io files from the Explorer', () => {
       { name: 'Platform', mimeType: '', buffer: Buffer.from(driveSave) },
       { name: 'Signup flow.json', mimeType: 'application/json', buffer: Buffer.from(jsonExport) },
       { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('not a diagram') },
+      { name: 'Team shapes.xml', mimeType: 'text/xml', buffer: Buffer.from(library) },
     ]);
     const list = page.getByRole('group', { name: 'Files to import' });
     await expect(list).toContainText('Platform');
     await expect(list).toContainText('Edited 12 Mar 2026 · 3 pages');
     await expect(list).toContainText('Signup flow');
-    await expect(page.getByRole('dialog').getByRole('alert')).toContainText('will be left out');
+    await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
+      '2 files will be left out',
+    );
     await shot(page, 'explorer-1-list');
     await page.getByRole('button', { name: 'Import 2 files' }).click();
 
@@ -204,6 +211,9 @@ test.describe('importing draw.io files from the Explorer', () => {
       "Positions and styles weren't in the file; the layout is automatic",
     );
     await expect(report).toContainText('notes.txt');
+    // A library is recognised and named as coming soon, never an error.
+    await expect(report).toContainText('Team shapes');
+    await expect(report).toContainText('Shape libraries are coming soon.');
     const documents = page.getByTestId('import-documents');
     await expect(documents).toContainText('Platform');
     await expect(documents).toContainText('Signup flow');

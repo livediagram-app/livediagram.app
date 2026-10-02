@@ -36,7 +36,7 @@ describe('DrawioImportPanel', () => {
     await screen.findByRole('group', { name: 'Files to import' });
     expect(screen.getAllByText('Edited 12 Mar 2026 · 1 page')).toHaveLength(2);
     expect(screen.getByRole('alert').textContent).toBe(
-      "1 file isn't draw.io's or couldn't be read, and will be left out.",
+      '1 file will be left out; the report says why.',
     );
     fireEvent.click(screen.getByRole('checkbox', { name: /Network/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Import 1 file' }));

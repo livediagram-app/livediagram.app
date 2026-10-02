@@ -9,7 +9,6 @@ import {
   type Element,
   type ImageElement,
 } from '@livediagram/document';
-import { MAX_SHAPE_LIBRARY_ITEMS } from '@livediagram/api-schema';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';
@@ -19,6 +18,7 @@ import { ByteBudget, decompressDiagram } from './inflate';
 import {
   DRAWIO_MAX_FILE_BYTES,
   DRAWIO_MAX_INFLATED_BYTES,
+  DRAWIO_MAX_LIBRARY_ITEMS,
   DRAWIO_REPORT_NAMES_MAX,
 } from './limits';
 import { ReportTally, type DrawioReport } from './notes';
@@ -92,13 +92,13 @@ export async function importDrawioLibrary(input: DrawioInput): Promise<DrawioLib
     return { ok: false, error: refusalMessage('not-library') };
   }
   const tally = new ReportTally(DRAWIO_REPORT_NAMES_MAX);
-  tally.add('content-truncated', Math.max(0, raw.length - MAX_SHAPE_LIBRARY_ITEMS));
+  tally.add('content-truncated', Math.max(0, raw.length - DRAWIO_MAX_LIBRARY_ITEMS));
   const budget = new ByteBudget(DRAWIO_MAX_INFLATED_BYTES);
   const images: ImportImageRequest[] = [];
   const imageKeys = new Map<string, string>();
   const items: ImportedLibraryItem[] = [];
 
-  for (const item of raw.slice(0, MAX_SHAPE_LIBRARY_ITEMS)) {
+  for (const item of raw.slice(0, DRAWIO_MAX_LIBRARY_ITEMS)) {
     const title = typeof item.title === 'string' ? item.title : '';
     const width = size(item.w, 80);
     const height = size(item.h, 80);

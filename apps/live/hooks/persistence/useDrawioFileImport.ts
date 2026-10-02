@@ -12,7 +12,8 @@ import { toggled, toggledAll } from '@/lib/import-selection';
 import { track } from '@/lib/telemetry';
 
 export const DRAWIO_UNEXPECTED = "Couldn't import that. Check the files and try again.";
-const LIBRARIES_UNAVAILABLE = "Shape libraries can't be imported here yet.";
+/** What a library file is told until shape libraries exist (docs/specs/013-workspace/shape-libraries.md). */
+export const DRAWIO_LIBRARIES_SOON = 'Shape libraries are coming soon.';
 
 /** The host's commit: each file its own new document. */
 export type ImportDrawioDocuments = (
@@ -45,22 +46,23 @@ const plural = (n: number, one: string, many: string) =>
   `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
 function rowsOf(read: DrawioFiles): ImportChecklistRow[] {
+  return read.diagrams.map((d, i) => ({
+    key: `diagram:${i}`,
+    name: d.name,
+    detail: [
+      d.modifiedAt ? `Edited ${DATE.format(new Date(d.modifiedAt))}` : null,
+      plural(d.pages.length, 'page', 'pages'),
+    ]
+      .filter(Boolean)
+      .join(' · '),
+  }));
+}
+
+// Everything left out: what could not be read, and each library (skipped until they exist).
+function leftOutOf(read: DrawioFiles): Failure[] {
   return [
-    ...read.diagrams.map((d, i) => ({
-      key: `diagram:${i}`,
-      name: d.name,
-      detail: [
-        d.modifiedAt ? `Edited ${DATE.format(new Date(d.modifiedAt))}` : null,
-        plural(d.pages.length, 'page', 'pages'),
-      ]
-        .filter(Boolean)
-        .join(' · '),
-    })),
-    ...read.libraries.map((l, i) => ({
-      key: `library:${i}`,
-      name: l.name,
-      detail: `Shape library · ${plural(l.items.length, 'shape', 'shapes')}`,
-    })),
+    ...read.failures,
+    ...read.libraries.map((l) => ({ title: l.name, message: DRAWIO_LIBRARIES_SOON })),
   ];
 }
 
@@ -82,11 +84,7 @@ export function useDrawioFileImport(deps: {
   const run = async (checked: ReadonlySet<string>) => {
     const files = read.current!;
     const diagrams = files.diagrams.filter((_, i) => checked.has(`diagram:${i}`));
-    const libraries = files.libraries.filter((_, i) => checked.has(`library:${i}`));
-    const failures: Failure[] = [
-      ...files.failures,
-      ...libraries.map((l) => ({ title: l.name, message: LIBRARIES_UNAVAILABLE })),
-    ];
+    const failures = leftOutOf(files);
     let outcome: DoneOutcome = { status: 'done' };
     if (diagrams.length > 0) {
       setState({ step: 'importing', board: 1, boards: diagrams.length });
@@ -127,13 +125,20 @@ export function useDrawioFileImport(deps: {
       const found = await readDrawioFiles(files);
       read.current = found;
       const rows = rowsOf(found);
+      const leftOut = leftOutOf(found);
       if (rows.length === 0) {
-        setState({ step: 'pick', error: found.failures[0]?.message ?? DRAWIO_UNEXPECTED });
+        // Only libraries (with or without unreadable files): a report naming them, never an error.
+        if (found.libraries.length > 0) {
+          setState({ step: 'pick' });
+          deps.onDone({ status: 'done', failures: leftOut });
+          return;
+        }
+        setState({ step: 'pick', error: leftOut[0]?.message ?? DRAWIO_UNEXPECTED });
         return;
       }
       const all = new Set(rows.map((r) => r.key));
-      if (rows.length === 1 && found.failures.length === 0) return run(all);
-      setState({ step: 'list', rows, failures: found.failures, checked: all });
+      if (rows.length === 1 && leftOut.length === 0) return run(all);
+      setState({ step: 'list', rows, failures: leftOut, checked: all });
     });
 
   const toggle = (key: string) =>

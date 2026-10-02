@@ -6,38 +6,50 @@ cited as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                     | Role                                                                                                                    |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `lib/drawio/limits.ts`                   | Named constants of this blueprint                                                                                       |
-| `lib/drawio/inflate.ts`                  | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget                               |
-| `lib/drawio/png.ts`                      | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                                              |
-| `lib/drawio/refusals.ts`                 | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                                                    |
-| `lib/drawio/envelope.ts`                 | `readDrawioPages`: input sniffing, `mxfile` / `mxGraphModel` / SVG / PNG to page sources                                |
-| `lib/drawio/style.ts`                    | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                                                |
-| `lib/drawio/colour.ts`                   | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                                              |
-| `lib/drawio/cells.ts`                    | `readGraph`: the cell tree, layers, absolute geometry                                                                   |
-| `lib/drawio/label.ts`                    | `readLabel`: plain and HTML labels to text and `TextRun[]`                                                              |
-| `lib/drawio/stencils.ts`                 | Pure data: stencil and library-image names to icon ids                                                                  |
-| `lib/drawio/shapes.ts`                   | `classifyVertex`: the shape mapping table                                                                               |
-| `lib/drawio/vertex-props.ts`             | `boxedProps`, `textProps`: the property maps shared by every vertex                                                     |
-| `lib/drawio/vertices.ts`                 | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                          |
-| `lib/drawio/containers.ts`               | `buildLane`, `buildEntity`, `buildTable`                                                                                |
-| `lib/drawio/edges.ts`                    | `buildArrow`: endpoints, route, heads, labels                                                                           |
-| `lib/drawio/convert-page.ts`             | `convertPage`: one page's graph to elements, layers, background                                                         |
-| `lib/drawio/import.ts`                   | `importDrawio`: the entry point                                                                                         |
-| `lib/drawio/notes.ts`                    | `DrawioReport`, `ImportNoteKind`, `ImportNote`, `ReportTally`: what changed, tallied by kind                            |
-| `lib/drawio/report.ts`                   | `DRAWIO_RULES`, `drawioSceneReport`, `drawioOutcome`: the notes as the one shared import report                         |
-| `lib/drawio/new-document.ts`             | `drawioDocumentSource`: a file's pages as the ready tabs of its own document                                            |
-| `lib/board-scene-import.ts`              | `importDocuments`: the foundation's new-document target, taking ready tabs (each source prepared, oversized tabs named) |
-| `lib/drawio/images.ts`                   | `attachDrawioImages`: every page's image requests through one pipeline pass                                             |
-| `lib/import-tab.ts`                      | `pickTabFile` also returns the picked `File`; `ImportOutcome.done` gains `report`                                       |
-| `hooks/persistence/useTabImport.ts`      | The `drawio` format: multi-page apply, one undo step, telemetry, log                                                    |
-| `hooks/persistence/drawio-apply.ts`      | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                                             |
-| `components/dialogs/ImportTabDialog.tsx` | The draw.io card; routes a reported outcome to the summary                                                              |
-| `components/dialogs/TextImportPanel.tsx` | `onDone(outcome)`                                                                                                       |
-| `lib/drawio/__fixtures__/`               | The corpus and its generator                                                                                            |
-| `lib/drawio/test-support.ts`             | DOM test helpers: a model from XML, a vertex, fixture bytes                                                             |
-| `e2e/drawio-import.spec.ts`              | The corpus through the real dialog on the production build, persistence and undo                                        |
+| File                                            | Role                                                                                                                             |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/drawio/limits.ts`                          | Named constants of this blueprint                                                                                                |
+| `lib/drawio/inflate.ts`                         | `inflateBytes`, `decompressDiagram`, `ByteBudget`: DecompressionStream with a byte budget                                        |
+| `lib/drawio/png.ts`                             | `extractPngDiagram`: the embedded XML from a `.drawio.png`                                                                       |
+| `lib/drawio/refusals.ts`                        | `DrawioRefused`, `refusalMessage`: the named refusals and their copy                                                             |
+| `lib/drawio/envelope.ts`                        | `readDrawioSource`, `sniffDrawio`: content sniffing; `mxfile` / `mxGraphModel` / SVG / PNG to page sources and the file's `meta` |
+| `lib/drawio/style.ts`                           | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                                                         |
+| `lib/drawio/colour.ts`                          | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                                                       |
+| `lib/drawio/cells.ts`                           | `readGraph`: the cell tree, layers, absolute geometry                                                                            |
+| `lib/drawio/label.ts`                           | `readLabel`: plain and HTML labels to text and `TextRun[]`                                                                       |
+| `lib/drawio/stencils.ts`                        | Pure data: stencil and library-image names to icon ids                                                                           |
+| `lib/drawio/shapes.ts`                          | `classifyVertex`: the shape mapping table                                                                                        |
+| `lib/drawio/vertex-props.ts`                    | `boxedProps`, `textProps`: the property maps shared by every vertex                                                              |
+| `lib/drawio/vertices.ts`                        | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                                   |
+| `lib/drawio/containers.ts`                      | `buildLane`, `buildEntity`, `buildTable`                                                                                         |
+| `lib/drawio/edges.ts`                           | `buildArrow`: endpoints, route, heads, labels                                                                                    |
+| `lib/drawio/convert-page.ts`                    | `convertPage`: one page's graph to elements, layers, background                                                                  |
+| `lib/drawio/import.ts`                          | `importDrawio`: the entry point                                                                                                  |
+| `lib/drawio/json-export.ts`                     | `readJsonExport`, `jsonLabelText`, `jsonPageElements`: draw.io's JSON export, its `data` file or its graph laid out              |
+| `lib/drawio/library.ts`                         | `importDrawioLibrary`: an `<mxlibrary>` decoded into items (read, then left out until shape libraries exist)                     |
+| `lib/drawio/files.ts`                           | `readDrawioFiles`, `drawioFileTitle`, `drawioFileDates`, `drawioLibraryTitle`: picked files by content, named and dated          |
+| `lib/drawio/notes.ts`                           | `DrawioReport`, `ImportNoteKind`, `ImportNote`, `ReportTally`: what changed, tallied by kind                                     |
+| `lib/drawio/report.ts`                          | `DRAWIO_RULES`, `drawioSceneReport`, `drawioOutcome`: the notes as the one shared import report                                  |
+| `lib/drawio/new-document.ts`                    | `drawioDocumentSource`: a file's pages as the ready tabs of its own document                                                     |
+| `lib/board-scene-import.ts`                     | `importDocuments`: the foundation's new-document target, taking ready tabs (each source prepared, oversized tabs named)          |
+| `lib/drawio/images.ts`                          | `attachDrawioImages`: every page's image requests through one pipeline pass                                                      |
+| `lib/import-tab.ts`                             | `pickTabFile` also returns the picked `File`; the shared `ImportOutcome` (`images`, `scene`, `failures`, `documents`)            |
+| `hooks/persistence/useTabImport.ts`             | The `drawio` format: multi-page apply, one undo step, telemetry, log                                                             |
+| `hooks/persistence/drawio-apply.ts`             | `applyDrawioPages`: pure `Tab[]` transform the hook commits                                                                      |
+| `hooks/persistence/useDrawioFileImport.ts`      | The Explorer flow: read, list, import the ticked diagrams, report; libraries left out as coming soon                             |
+| `hooks/persistence/useDrawioImportLauncher.tsx` | `useDrawioImportLauncher`: the dialog, loaded on first open                                                                      |
+| `components/dialogs/DrawioImportDialog.tsx`     | The Explorer dialog: title, subtitle, help link                                                                                  |
+| `components/dialogs/DrawioImportPanel.tsx`      | Pick (files, folder, drop), list, progress, report; `filesOfPick`                                                                |
+| `components/dialogs/ImportChecklist.tsx`        | The list step every many-file import shares                                                                                      |
+| `components/dialogs/ImportDropZone.tsx`         | The drop area every file import's pick step shares                                                                               |
+| `lib/import-selection.ts`                       | `toggled`, `toggledAll`: what a list has ticked                                                                                  |
+| `app/explorer/import-sources.tsx`               | The `drawio` source in the Explorer's Import from group                                                                          |
+| `scripts/drawio-verify.mts`                     | Real files through the importer, aggregates only (never content)                                                                 |
+| `components/dialogs/ImportTabDialog.tsx`        | The draw.io card; routes a reported outcome to the summary                                                                       |
+| `components/dialogs/TextImportPanel.tsx`        | `onDone(outcome)`                                                                                                                |
+| `lib/drawio/__fixtures__/`                      | The corpus and its generator                                                                                                     |
+| `lib/drawio/test-support.ts`                    | DOM test helpers: a model from XML, a vertex, fixture bytes                                                                      |
+| `e2e/drawio-import.spec.ts`                     | The corpus through the real dialog on the production build, persistence and undo                                                 |
 
 ## Domain and naming
 
@@ -69,7 +81,7 @@ for an edge, "warning" for a note, "stencil" for a named style (`ellipse` is a n
 
 1. `bytes` longer than `DRAWIO_MAX_FILE_BYTES` (or `text` longer, in UTF-16 units) → refuse
    `too-large`.
-2. `readDrawioPages(input, budget)` → page sources, or a refusal.
+2. `readDrawioSource(input, budget)` → `{ pages, meta }`, or a refusal.
 3. Pages beyond `DRAWIO_MAX_PAGES` are dropped: note `content-truncated` += dropped count.
 4. `pageTabIds = pages.map((_, i) => tabIdForPage(i))`; `pageIdToTab` maps each page's `id` to its tab.
 5. Per page, in order: `readGraph(page.model)` then `convertPage(graph, ctx)`.
@@ -79,7 +91,7 @@ for an edge, "warning" for a note, "stencil" for a named style (`ellipse` is a n
 `DrawioImportResult = { ok: true; pages: ImportedPage[]; images: ImportImageRequest[]; report: DrawioReport } | { ok: false; error: string }`.
 Never throws: any exception inside is caught and refused as `unreadable`, logged (see Observability).
 
-### 2. Envelope (`readDrawioPages`)
+### 2. Envelope (`readDrawioSource`)
 
 1. `bytes` starting with the PNG signature `89 50 4E 47 0D 0A 1A 0A` → `extractPngDiagram`; `null` →
    refuse `png-without-diagram`; else continue with that text.
@@ -463,9 +475,9 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   (0, 0); an image item (`data` a `data:` URL) → one `image` element `w` × `h` plus an image request;
   `{ title (string, may be empty), width: w, height: h, elements }`. An item that fails is counted
   `library-item-unreadable`; none readable → refusal `empty-library`. At most
-  `MAX_SHAPE_LIBRARY_ITEMS`, the rest `content-truncated`.
-- `importDrawio` given a library → refusal `library` ("This is a draw.io shape library. Import it from
-  the Explorer's Import from draw.io to add it to My shapes.").
+  `DRAWIO_MAX_LIBRARY_ITEMS`, the rest `content-truncated`.
+- `importDrawio` given a library → refusal `library` ("This is a draw.io shape library, not a diagram.
+  Shape libraries are coming soon.").
 - `importDrawio`'s success gains `meta: { name?: string; modified?: string }`: the `mxfile`'s `name`
   and `modified` attributes when present (the JSON path: those of its `data` file, else none).
 
@@ -487,8 +499,10 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   the file name without its extension (the whole name for a file that is not draw.io's).
 - The commit: diagrams through `importDocuments` (`lib/board-scene-import.ts`, the foundation's
   new-document target for ready tabs) with `drawioDocumentSource` (`new-document.ts`: each page a diagram tab named after its page, oversized pages
-  left out and named, images through one pipeline pass per document); libraries through the shape
-  library api ([Shape libraries](../../013-workspace/shape-libraries.md) "API").
+  left out and named, images through one pipeline pass per document). Libraries are not committed: each is
+  left out as `{ title: name, message: DRAWIO_LIBRARIES_SOON }` ("Shape libraries are coming soon.");
+  a pick whose only readable files are libraries ends on the report (`{ status: 'done', failures }`),
+  never on an error.
   One `track('Tab', 'Imported', 'Drawio')` per document made.
 
 ### 21. The Explorer source (`useDrawioFileImport`, `DrawioImportPanel`, `DrawioImportDialog`)
@@ -499,11 +513,13 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   `ImportChecklist`: pick (files: `multiple`, no `accept` filter, as Drive saves have no
   extension; a folder: `pickExport('folder')`; drop: files and folders through `readDrop`, each
   named after its path by `filesOfPick`) → "Reading files…" → list (legend "Files to import"; one row
-  per diagram, "Edited 12 Mar 2026 · 3 pages", and per library, "Shape library · 14 shapes", all
-  ticked; "1 file isn't draw.io's or couldn't be read, and will be left out."; button "Import 3
-  files"; one readable file and nothing left out skips the list) → importing ("Importing 3 of 12…",
+  per diagram, "Edited 12 Mar 2026 · 3 pages", all ticked; "1 file will be left out; the report says
+  why."; button "Import 3 files"; one diagram and nothing left out skips the list) → importing ("Importing 3 of 12…",
   then "Importing images 3 of 12…") → the shared report (`ImportImageReport`, documents as links,
   failures listed). One `track('Tab', 'Imported', 'Drawio')` per document made.
+- `DrawioImportDialog`: title "Import from draw.io", subtitle "Each diagram becomes its own document,
+  named and dated after the file.", its help link the `drawioImport` article
+  (`explorer/drawio-import`, Explorer category).
 - `DrawioSourceIcon` (`import-source-icons.tsx`): an original glyph, a box joined by an elbow
   connector to a decision diamond, white on `#c2410c` (5.2:1).
 
@@ -695,7 +711,7 @@ Refusals (the `error` string, final copy):
 | `png-without-diagram` | "This PNG has no draw.io diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked."                                  |
 | `svg-without-diagram` | "This SVG has no draw.io diagram inside. In draw.io, export as SVG with 'Include a copy of my diagram' ticked."                                  |
 | `page-unreadable`     | "Page '<name>' couldn't be decoded." (`Page <n>` when unnamed)                                                                                   |
-| `library`             | "This is a draw.io shape library. Import it from the Explorer's Import from draw.io to add it to My shapes."                                     |
+| `library`             | "This is a draw.io shape library, not a diagram. Shape libraries are coming soon."                                                               |
 | `not-library`         | "This isn't a draw.io library (expected an mxlibrary holding a list of shapes)."                                                                 |
 | `empty-library`       | "None of this library's shapes could be read."                                                                                                   |
 | `unreadable`          | "Couldn't read this draw.io file."                                                                                                               |
@@ -784,11 +800,18 @@ Refusals (the `error` string, final copy):
 
 ## Observability
 
-| Fingerprint               | Level   | When                                                                                                                    |
-| ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `[drawio-import] refused` | `warn`  | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
-| `[drawio-import] page`    | `debug` | Each page converted: `{ index, cells, elements }`                                                                       |
-| `[drawio-import] applied` | `info`  | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
+| Fingerprint                               | Level   | When                                                                                                                    |
+| ----------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `[drawio-import] refused`                 | `warn`  | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
+| `[drawio-import] page`                    | `debug` | Each page converted: `{ index, cells, elements }`                                                                       |
+| `[drawio-import] applied`                 | `info`  | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
+| `[drawio-import] json export laid out`    | `debug` | A graph-only JSON export laid out: `{ pages }`                                                                          |
+| `[drawio-import] library read`            | `info`  | A library decoded: `{ items, unreadable }`                                                                              |
+| `[drawio-import] library refused`         | `warn`  | A library refused: `{ reason: 'not-library'                                                                             | 'empty-library', items? }` |
+| `[drawio-import] library item unreadable` | `debug` | One library item left out: `{ cause }` (the error name and message, never content)                                      |
+| `[drawio-import] files`                   | `info`  | The Explorer read its picks: `{ files, diagrams, libraries, failures }`                                                 |
+| `[drawio-import] file unreadable`         | `warn`  | A picked file threw while reading: `{ error }`                                                                          |
+| `[drawio-import] import failed`           | `warn`  | The Explorer flow hit an unexpected error: `{ error }`; the panel shows the pick step with a message                    |
 
 ## Testing
 
@@ -848,6 +871,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_EXTENSIONS`                                 | `.drawio.svg`, `.drawio.png`, `.drawio`, `.xml`, `.json`, `.svg`, `.png`                                                                                    | The spec's names rule                                                                                |
 | `DRAWIO_GENERIC_NAME`                               | `untitled`, `untitled diagram`, `diagram` or `drawing`, any case, with an optional ` (n)` or `-n`                                                           | draw.io's default names; the spec                                                                    |
 | `DRAWIO_GENERIC_LIBRARY_NAME`                       | `untitled library`, any case, with an optional ` (n)` or `-n`                                                                                               | draw.io's default library name                                                                       |
+| `DRAWIO_MAX_LIBRARY_ITEMS`                          | 1 000                                                                                                                                                       | Spec "Shape libraries" (the shape library item cap); 100 to 10 000                                   |
 | `DRAWIO_JSON_LOOSE_EDGE_PX`                         | 80                                                                                                                                                          | About half a default box's width (D34); 40 to 160                                                    |
 | `DRAWIO_SNIFF_CHARS`                                | 4096                                                                                                                                                        | Room for a BOM, an XML declaration and the root element                                              |
 | `DRAWIO_TAB_FILE_ACCEPT`                            | `.drawio,.xml,.json,.svg,.png` and their MIME types                                                                                                         | The spec (the Import dialog card); the Explorer picker sets no filter, Drive saves have no extension |

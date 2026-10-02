@@ -35,3 +35,5 @@ export const DRAWIO_TAB_FILE_ACCEPT =
  * position for it (spec "The JSON export"). About half a default box's width; 40 to 160.
  */
 export const DRAWIO_JSON_LOOSE_EDGE_PX = 80;
+/** Items read from one library; the rest are counted (spec "Shape libraries": the first 1 000). */
+export const DRAWIO_MAX_LIBRARY_ITEMS = 1000;
