@@ -181,6 +181,60 @@ describe('EditorModeSwitch variant D (sliding switch)', () => {
   });
 });
 
+// What each variant tells assistive technology about the mode it shows; the
+// visible state (thumb, pressed tint, chip label, switch position) is driven by
+// the same `mode === 'draw'` test, so this pins both to the prop.
+const EXPOSED_MODE: Record<ModeSwitchVariant, () => EditorMode> = {
+  a: () =>
+    screen.getByRole('radio', { name: 'Draw' }).getAttribute('aria-checked') === 'true'
+      ? 'draw'
+      : 'diagram',
+  b: () =>
+    screen.getByRole('button', { name: 'Draw mode' }).getAttribute('aria-pressed') === 'true'
+      ? 'draw'
+      : 'diagram',
+  c: () =>
+    screen.getByRole('button', { name: /^Editor mode:/ }).getAttribute('aria-label') ===
+    'Editor mode: Draw'
+      ? 'draw'
+      : 'diagram',
+  d: () =>
+    screen.getByRole('switch', { name: 'Draw' }).getAttribute('aria-checked') === 'true'
+      ? 'draw'
+      : 'diagram',
+};
+
+describe('EditorModeSwitch state', () => {
+  it.each(
+    (['a', 'b', 'c', 'd'] as const).flatMap((variant) =>
+      (['diagram', 'draw'] as const).map((mode) => [variant, mode] as const),
+    ),
+  )('variant %s shows %s exactly when given it', (variant, mode) => {
+    renderSwitch(variant, mode);
+    expect(EXPOSED_MODE[variant]()).toBe(mode);
+  });
+
+  it.each(['a', 'b', 'c', 'd'] as const)(
+    'variant %s asks for the other mode when operated from either state',
+    (variant) => {
+      for (const mode of ['diagram', 'draw'] as const) {
+        const { onChange } = renderSwitch(variant, mode);
+        const other = mode === 'draw' ? 'diagram' : 'draw';
+        if (variant === 'a')
+          fireEvent.click(screen.getByRole('radio', { name: /^D/, checked: false }));
+        if (variant === 'b') fireEvent.click(screen.getByRole('button', { name: 'Draw mode' }));
+        if (variant === 'c') {
+          fireEvent.click(screen.getByRole('button', { name: /^Editor mode:/ }));
+          fireEvent.click(screen.getByRole('menuitemradio', { checked: false }));
+        }
+        if (variant === 'd') fireEvent.click(screen.getByRole('switch', { name: 'Draw' }));
+        expect(onChange).toHaveBeenCalledWith(other);
+        cleanup();
+      }
+    },
+  );
+});
+
 describe('EditorModeSwitch slot', () => {
   it.each(['a', 'b', 'c', 'd'] as const)(
     'variant %s keeps the same slot width in both modes',
