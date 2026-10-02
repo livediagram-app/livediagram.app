@@ -35,6 +35,8 @@ import { useTimelineUnread } from './useTimelineUnread';
 import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
+import { useSidebarExpansion } from './sidebar/useSidebarExpansion';
+import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
 import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
@@ -178,11 +180,9 @@ export function useExplorerState() {
       setSettingsOpen(true);
     }
   }
-  // Which folder branches (and which teams) are open in the sidebar.
-  // Local state only; a fresh visit starts everything collapsed. Team
-  // ids live in the same set so a team's folder subtree expands the
-  // same way a personal folder does (one expand model, docs/specs/013-workspace/team-shared-documents.md).
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
+  // Which sidebar rows are open: folders, teams, My documents and Library
+  // (docs/specs/013-workspace/explorer-structure.md#expansion).
+  const { expanded, expand, toggleExpand } = useSidebarExpansion(selected);
   // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
   // search panel's Folders group, the move modal's team destinations,
   // the Recent list's team rows, and the sidebar's team subtrees.
@@ -312,7 +312,8 @@ export function useExplorerState() {
     const created = await hookCreateFolder({ parentId });
     if (created) {
       setRenamingFolderId(created.id);
-      if (parentId) setExpanded((prev) => new Set(prev).add(parentId));
+      // Reveal the new row so its rename field shows: its parent, or My documents for a root folder.
+      expand(parentId ?? MY_DOCUMENTS_EXPAND_KEY);
     }
   };
 
@@ -470,15 +471,6 @@ export function useExplorerState() {
     },
     [ownerId],
   );
-
-  const toggleExpand = (id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   // Folder-row context-menu actions, shared between the tree and
   // the list view so both surfaces offer the same set.

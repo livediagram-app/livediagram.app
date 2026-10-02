@@ -87,6 +87,15 @@ describe('eventExplanation', () => {
     );
   });
 
+  it('names the Explorer sidebar row someone picked', () => {
+    expect(eventExplanation('UI', 'Selected', 'Sidebar.SharedWithMe')).toBe(
+      "Someone picked the shared with me row in the Explorer's sidebar.",
+    );
+    expect(eventExplanation('UI', 'Selected', 'SignInBannerExplorer')).toBe(
+      EXACT['UI|Selected|SignInBannerExplorer'],
+    );
+  });
+
   it('names help articles by their title', () => {
     expect(articleTitle('api-tokens')).toBe('API Tokens');
     expect(articleTitle('your-first-diagram')).toBe('Your First Diagram');

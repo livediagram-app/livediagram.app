@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
+import { HeaderSearchAction } from '@/components/chrome/HeaderSearchAction';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -132,7 +133,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <AuthControls onOpenAccount={() => openSettingsOn('account')} />
+        <div className="flex h-full items-stretch">
+          <HeaderSearchAction onOpen={() => setSearchOpen(true)} />
+          <AuthControls onOpenAccount={() => openSettingsOn('account')} />
+        </div>
       </header>
 
       <main
@@ -211,7 +215,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
           placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "Personal Space" plus each team as a space (for document moves);
+          "My documents" plus each team as a space (for document moves);
           `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}

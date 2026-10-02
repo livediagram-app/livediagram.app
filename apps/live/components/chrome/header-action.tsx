@@ -9,6 +9,10 @@ import { IconSlot } from '@livediagram/ui';
 export const HEADER_ACTION_BTN =
   'flex h-full min-w-[3.75rem] cursor-pointer flex-col items-center justify-center gap-1 border-l border-slate-200 px-3 text-[10px] font-medium leading-none transition dark:border-slate-800';
 
+// The slate tone of the header actions other than Share: Sign in, the account, Search.
+export const HEADER_ACTION_TONE =
+  'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800';
+
 // Every header action's glyph sits in one slot this size, so the actions form one stack row: labels
 // share a baseline whether the glyph is a 13px icon or the 20px account disc
 // (docs/specs/004-interface-design/optical-alignment.md).

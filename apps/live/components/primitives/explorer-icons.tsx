@@ -11,15 +11,19 @@ import {
   TrashIcon as SharedTrashIcon,
 } from '@livediagram/ui';
 import {
+  lucideAppWindow,
   lucideClock,
   lucideCloudOff,
   lucideCloudUpload,
   lucideDownload,
   lucideExternalLink,
   lucideFolder,
+  lucideFolderRoot,
   lucideHistory,
+  lucideHouse,
   lucideImage,
   lucideKey,
+  lucideLibrary,
   lucideMail,
   lucidePalette,
   lucideShapes,
@@ -202,6 +206,12 @@ export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 export const KeyIcon = lucideGlyph(lucideKey, 13);
 export const TeamIcon = lucideGlyph(lucideUsers, 13);
 export const InviteIcon = lucideGlyph(lucideMail, 13);
+// The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
+// documents (a root folder), Library, and This browser (a browser window).
+export const HomeIcon = lucideGlyph(lucideHouse, 13);
+export const MyDocumentsIcon = lucideGlyph(lucideFolderRoot, 13);
+export const LibraryIcon = lucideGlyph(lucideLibrary, 13);
+export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
 
 // ---------- Verbs ----------------------------------------------------
 
