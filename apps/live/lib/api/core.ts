@@ -121,6 +121,8 @@ export type ShareLinksResponse = { links: ShareLink[]; password: string | null }
 export type SharePasswordResponse = { password: string | null };
 export type ChangeLogListResponse = { entries: ChangeLogEntry[] };
 export type ChangeLogAppendResponse = { entry: ChangeLogEntry };
+// GET /api/participants/<id>. `null` when you ask for your own id before you have saved a profile
+// (docs/specs/015-api/api.md); another absent id is a 404.
 export type ParticipantResponse = {
   participant: {
     id: string;
@@ -128,7 +130,7 @@ export type ParticipantResponse = {
     color: string;
     createdAt: number;
     pictureUrl?: string | null;
-  };
+  } | null;
 };
 
 // Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected document

@@ -62,6 +62,24 @@ describe('handleParticipants', () => {
     expect(res.status).toBe(404);
   });
 
+  // docs/specs/015-api/api.md: a caller's own profile not saved yet is expected state, not an error.
+  it('GET answers null for the caller own id before a profile is saved', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    db.getParticipant.mockResolvedValue(null);
+    const res = await handleParticipants(makeCtx('GET', '/api/participants/owner-1'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ participant: null });
+    expect(info).toHaveBeenCalledWith('[participants] self_absent');
+  });
+
+  it('GET still 404s an absent id that is not the caller, signed out or as someone else', async () => {
+    db.getParticipant.mockResolvedValue(null);
+    for (const owner of [null, 'owner-2']) {
+      const res = await handleParticipants(makeCtx('GET', '/api/participants/owner-1', { owner }));
+      expect(res.status).toBe(404);
+    }
+  });
+
   it('PUT 400 when no owner resolves', async () => {
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/p1', { owner: null, body: { name: 'X', color: '#000' } }),
