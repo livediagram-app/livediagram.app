@@ -147,7 +147,7 @@ describe('captions below figures', () => {
         'i',
         'shape=image;verticalLabelPosition=bottom;verticalAlign=top;image=https://x.test/a.png;',
         'x="0" y="0" width="200" height="100"',
-        'parent="1" value="Home page"',
+        'parent="1" value="Sample picture"',
       ),
     );
     expect(page.elements.map((e) => e.type)).toEqual(['image', 'text']);
@@ -156,10 +156,10 @@ describe('captions below figures', () => {
       y: 0,
       width: 200,
       height: 100,
-      alt: 'Home page',
+      alt: 'Sample picture',
     });
     expect(page.elements[1]).toMatchObject({
-      label: 'Home page',
+      label: 'Sample picture',
       y: 100,
       width: 200,
       textAlignX: 'center',
