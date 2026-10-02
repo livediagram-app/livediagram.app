@@ -15,6 +15,7 @@ import { colourAlpha } from './colour';
 import { commonFields, endsMeet, limitPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';
 import { CLOSED_END_EPSILON_PX, strokeOpacity } from './land-marks';
+import { ROUNDED_CORNER_PRESET } from './land-boxes';
 import type {
   SceneColour,
   SceneInk,
@@ -106,7 +107,9 @@ export function diagramShape(item: SceneShape, id: string, ctx: LandContext): Sh
     y: item.y,
     width: item.width,
     height: item.height,
-    ...(item.shape === 'rectangle' ? { borderRadius: item.rounded ? 'md' : 'none' } : {}),
+    ...(item.shape === 'rectangle'
+      ? { borderRadius: item.rounded ? ROUNDED_CORNER_PRESET : 'none' }
+      : {}),
     fillColor: fillOf(item.fill),
     ...(stroke ? strokeFields(stroke, ctx) : { strokeWidth: 'none' as const }),
     ...(item.label && item.label.text.trim() !== '' ? labelOf(item.label, ctx) : {}),

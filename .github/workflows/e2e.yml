@@ -63,6 +63,10 @@ jobs:
       # NEXT_PUBLIC_API_BASE / Clerk keys, so it calls same-origin `/api`
       # (the e2e stack proxies it) and runs in guest mode.
       - name: Build live app
+        # A build id, so the stale build spec can make the server report a newer one
+        # (docs/specs/016-platform/stale-builds.md).
+        env:
+          NEXT_PUBLIC_BUILD_ID: e2e-build
         run: pnpm --filter @livediagram/live build
 
       # The optical-alignment audit also opens the help centre, the telemetry

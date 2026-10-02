@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
-import { resetDocumentFormatForTests, serverDocumentFormat } from '../document-format';
+import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 import { connectRoom, roomQueryString } from './room';
 
 describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
@@ -135,10 +135,11 @@ describe('connectRoom reconnect cursor', () => {
     );
     const socket = FakeSocket.all[0]!;
     socket.fire('open');
-    socket.fire('message', { kind: 'format', format: DOCUMENT_FORMAT + 1 });
+    socket.fire('message', { kind: 'format', format: DOCUMENT_FORMAT + 1, build: 'b2' });
     expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+    expect(serverBuild()).toBe('b2');
     room.close();
-    resetDocumentFormatForTests();
+    resetServerReleaseForTests();
   });
 
   it("ignores another epoch's cursor, leaving the catch-up to reconcile", () => {

@@ -249,6 +249,21 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
   (text), parsed only as stock names.
 - **Telemetry** is unchanged: the row's own token, once per choice.
 
+## Corners row (whiteboards only)
+
+- `onWhiteboard` (`lib/quick-style-whiteboard.ts`, so diagram tabs never see it) builds
+  `sections.corners` (`{ value: QuickCorners | null }`) when any target takes a corner preset
+  (`supportsBorderRadius`, unlocked); value = their shared preset among `none`, `sm`, `md`, `lg`
+  (unset or `full` → `null`, so no option is marked).
+- `QUICK_CORNERS` = `['none', 'sm', 'md', 'lg']` named None / Small / Medium / Large, drawn with the
+  menu's `BorderRadiusIcon`; `applyQuickCorners(el, c)` sets `borderRadius` on supporting elements only;
+  `clearQuickCorners` removes it, composed into Clear styles on a whiteboard. `QuickRadioRow`'s
+  `columns` sets a button row's count (four here; unset three).
+- `useQuickStyle.setCorners`, token `QuickCorners` (dashboard sentence in
+  `apps/telemetry/app/event-explanations.ts`). The board's style memory records `borderRadius` for
+  shape kinds (`board:shape:*` only), so "Next rectangle" keeps its corners; diagram memory is unchanged.
+- Placed after Stroke style, before Text alignment; a four-option row in the button-row layout.
+
 ## Style memory
 
 `StyleMemory` is `Partial<Record<StyleKindKey, RememberedStyle>>`, a remembered style being `Record<field, string | number>`.

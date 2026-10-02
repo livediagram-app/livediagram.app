@@ -10,12 +10,11 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
+  DEFAULT_BOX_RADIUS_PX,
+  cornerRadiusPx,
 } from './border-style';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
-
-// The canvas's corner when an element sets none (element-variant.ts).
-export const DEFAULT_BOX_RADIUS_PX = 8;
 
 type Bordered = Pick<BoxedElement, 'x' | 'y' | 'width' | 'height'> & {
   strokeWidth?: keyof typeof BORDER_STROKE_PX;
@@ -27,8 +26,7 @@ type Bordered = Pick<BoxedElement, 'x' | 'y' | 'width' | 'height'> & {
 export function borderOf(el: Bordered): { width: number; dash: string | null; radius: number } {
   const width = BORDER_STROKE_PX[el.strokeWidth ?? DEFAULT_BORDER_STROKE];
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
-  const wanted =
-    el.borderRadius !== undefined ? BORDER_RADIUS_PX[el.borderRadius] : DEFAULT_BOX_RADIUS_PX;
+  const wanted = cornerRadiusPx(el.borderRadius, el.width, el.height, DEFAULT_BOX_RADIUS_PX);
   // CSS clamps a radius to half the shorter side, so 'full' is a pill.
   const radius = Math.min(wanted, Math.min(el.width, el.height) / 2);
   return { width, dash, radius };

@@ -1,4 +1,9 @@
-import { BORDER_RADIUS_PX, headerLayout, WEB_TEXT_MAX } from '@livediagram/document';
+import {
+  BORDER_RADIUS_PX,
+  cornerRadiusPx,
+  headerLayout,
+  WEB_TEXT_MAX,
+} from '@livediagram/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
@@ -33,7 +38,12 @@ export function SiteHeaderFace({
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundColor: bar,
-          borderRadius: BORDER_RADIUS_PX[element.borderRadius ?? 'md'],
+          borderRadius: cornerRadiusPx(
+            element.borderRadius,
+            element.width,
+            element.height,
+            BORDER_RADIUS_PX.md,
+          ),
         }}
       />
       <GlyphDisc

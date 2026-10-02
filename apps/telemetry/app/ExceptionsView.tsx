@@ -8,6 +8,7 @@ import {
   CLIENT_EXCEPTIONS,
   FAILED_REQUESTS,
   REALTIME_RESYNCS,
+  STALE_CHUNK_RELOADS,
   SERVER_CRASHES,
 } from './metric-catalogue';
 import { RankCard, rank } from './RankCard';
@@ -31,7 +32,13 @@ export { RECOVERY_TYPES, isRecovery, isServerCrash } from './error-kinds';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Error volume',
-    metrics: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS],
+    metrics: [
+      FAILED_REQUESTS,
+      SERVER_CRASHES,
+      CLIENT_EXCEPTIONS,
+      REALTIME_RESYNCS,
+      STALE_CHUNK_RELOADS,
+    ],
   },
 ];
 

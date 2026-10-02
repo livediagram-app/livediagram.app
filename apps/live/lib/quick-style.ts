@@ -40,6 +40,8 @@ export type QuickSwatchValue = 0 | QuickSwatchSlot;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
+// The Corners row's choices: the corner presets but Full, which is a pill rather than a corner.
+export type QuickCorners = 'none' | 'sm' | 'md' | 'lg';
 
 export const QUICK_WIDTHS: readonly QuickWidth[] = ['thin', 'medium', 'thick'];
 export const QUICK_TEXT_ALIGNS: readonly TextAlignX[] = ['left', 'center', 'right'];
@@ -62,6 +64,8 @@ export type QuickStyleView = {
     // colours in place of `stroke` and `textColour`.
     boardStroke?: BoardColourSection;
     boardText?: BoardColourSection;
+    // A whiteboard's Corners row (docs/specs/008-canvas/corner-radius.md): the shared preset.
+    corners?: { value: QuickCorners | null };
   };
   // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
   pen?: QuickPenStyle;

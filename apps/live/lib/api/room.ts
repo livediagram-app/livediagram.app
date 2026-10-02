@@ -15,7 +15,7 @@ import {
   type RoomOutgoing,
 } from '@livediagram/api-schema';
 import { opForTheWire } from '@livediagram/document';
-import { noteServerDocumentFormat } from '../document-format';
+import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -191,9 +191,11 @@ export function connectRoom(
         if (msg.kind === 'presence') handlers.onPresence(msg.participants);
         else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
-        // The server's document format number (docs/specs/016-platform/new-version-prompt.md).
-        else if (msg.kind === 'format') noteServerDocumentFormat(msg.format);
-        else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
+        // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
+        else if (msg.kind === 'format') {
+          noteServerDocumentFormat(msg.format);
+          noteServerBuild(msg.build);
+        } else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
         else if (msg.kind === 'cursor') {
           // Our own op's seq, or where the stream stood when we joined. A
           // different epoch is a restarted room: leave the cursor for the

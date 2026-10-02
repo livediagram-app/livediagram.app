@@ -4,7 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
-import { BORDER_RADIUS_PX } from './border-style';
+import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { ownColours } from './behaviour-skin';
 import {
   defaultFillColor,
@@ -131,7 +131,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar
     // 'full' → circle), objectFit defaults to 'contain'.
-    const radius = el.borderRadius !== undefined ? BORDER_RADIUS_PX[el.borderRadius] : 4;
+    const radius = cornerRadiusPx(el.borderRadius, el.width, el.height, IMAGE_DEFAULT_RADIUS_PX);
     const objectFit = el.objectFit ?? 'contain';
     const href = el.imageId ? resolveImageHref?.(el.imageId) : undefined;
     return {

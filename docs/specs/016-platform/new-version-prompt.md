@@ -17,13 +17,15 @@ the open editor asks, calmly, to be reloaded.
 
 ## How a running editor learns the server's number
 
-No request is made for it; it rides traffic the editor already has.
+No request is made for it; it rides traffic the editor already has. This **server release signal**
+also carries the live build id, which [Stale builds](./stale-builds.md) uses; one mechanism, two
+facts.
 
-- **Every api response** carries the header `X-Livediagram-Format: <n>` (the WebSocket upgrade
-  excepted). The editor's one fetch wrapper (`apiFetch`) reads it. The header is exposed to
+- **Every api response** carries the header `X-Livediagram-Format: <n>`, and
+  `X-Livediagram-Build: <id>` when the deploy set one (the WebSocket upgrade excepted). The editor's one fetch wrapper (`apiFetch`) reads it. Both headers are exposed to
   cross-origin callers (`Access-Control-Expose-Headers`), for a self-hosted or local editor on
   another origin.
-- **The realtime room** sends `{ kind: 'format', format }` to each socket as it joins. A deploy
+- **The realtime room** sends `{ kind: 'format', format, build? }` to each socket as it joins. A deploy
   restarts the room, every editor reconnects, so a viewer that makes no api calls hears it too.
 - A value that is missing or not a positive integer is ignored.
 

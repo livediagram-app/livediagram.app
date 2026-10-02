@@ -4,6 +4,7 @@
 // owns the state and the storage.
 import {
   SHAPE_KINDS,
+  BORDER_RADIUS_PX,
   isPenColourName,
   isQuickSwatchSlot,
   rederiveColorPresetForTheme,
@@ -92,8 +93,14 @@ export function styleKindOf(el: Element, board = false): StyleKindKey | null {
   return base && board ? `${BOARD_PREFIX}${base}` : base;
 }
 
+// A board's shapes also remember their corners (the Corners row, whiteboards only:
+// docs/specs/008-canvas/quick-style-panel.md "Corners"); a diagram's do not.
+const BOARD_SHAPE_MEMORY_FIELDS = { ...SHAPE_MEMORY_FIELDS, borderRadius: 'string' } as const;
+
 function fieldsFor(scoped: StyleKindKey): FieldTypes {
   const kind = baseOf(scoped);
+  if (scoped.startsWith(BOARD_PREFIX) && kind.startsWith('shape:'))
+    return BOARD_SHAPE_MEMORY_FIELDS;
   if (kind === 'arrow') return ARROW_MEMORY_FIELDS;
   if (kind === 'path') return PATH_MEMORY_FIELDS;
   return kind === 'text' ? TEXT_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
@@ -180,6 +187,8 @@ export function parseStyleMemory(raw: string | null): StyleMemory {
       if (types[field] !== typeof value) continue;
       if (field.endsWith('Swatch') && !isQuickSwatchSlot(value)) continue;
       if (field.startsWith('pen') && !isPenColourName(value)) continue;
+      if (field === 'borderRadius' && !(typeof value === 'string' && value in BORDER_RADIUS_PX))
+        continue;
       entry[field] = value as string | number;
     }
     if (Object.keys(entry).length > 0) out[kind] = entry;

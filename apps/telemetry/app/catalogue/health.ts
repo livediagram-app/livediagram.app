@@ -1,7 +1,7 @@
 // Error health and the help centre (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { isRecovery, isServerCrash } from '../error-kinds';
+import { isRecovery, isServerCrash, kindOf } from '../error-kinds';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 
@@ -43,10 +43,20 @@ export const REALTIME_RESYNCS: Metric = {
   rising: 'bad',
   category: 'Error',
   action: 'Client',
-  typeIn: isRecovery,
+  typeIn: (type) => kindOf(type) === 'RealtimeResync',
   title: 'Realtime Resyncs',
   blurb:
     'Not an exception: the editor noticed it had missed live updates and refetched the document to catch up. A rising line means the realtime room is dropping updates.',
+};
+
+export const STALE_CHUNK_RELOADS: Metric = {
+  rising: 'neutral',
+  category: 'Error',
+  action: 'Client',
+  typeIn: (type) => kindOf(type) === 'StaleChunkReload',
+  title: 'Stale Build Reloads',
+  blurb:
+    'Not an exception: a tab still running an earlier build asked for code the last deploy removed, and loaded the page in full instead of crashing. Expect a small rise after each deploy.',
 };
 
 export const WARNINGS: Metric = {
@@ -68,8 +78,15 @@ export const EXCEPTIONS: MetricStack = {
   stack: true,
   title: 'Exceptions',
   blurb:
-    'Errors people hit, from failed requests and client exceptions, beside the server crashes behind them, the realtime resyncs that recovered, and the warnings the author was carried through. Zero is the goal.',
-  members: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS, WARNINGS],
+    'Errors people hit, from failed requests and client exceptions, beside the server crashes behind them, the realtime resyncs and stale build reloads that recovered, and the warnings the author was carried through. Zero is the goal.',
+  members: [
+    FAILED_REQUESTS,
+    SERVER_CRASHES,
+    CLIENT_EXCEPTIONS,
+    REALTIME_RESYNCS,
+    STALE_CHUNK_RELOADS,
+    WARNINGS,
+  ],
   headline: [FAILED_REQUESTS, CLIENT_EXCEPTIONS],
   seeAlso: { view: 'exceptions', label: 'See Each Error on the Exceptions Tab' },
 };

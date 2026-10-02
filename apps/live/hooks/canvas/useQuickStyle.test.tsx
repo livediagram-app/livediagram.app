@@ -140,6 +140,20 @@ describe('useQuickStyle on a mixed whiteboard selection', () => {
   });
 });
 
+// docs/specs/008-canvas/quick-style-panel.md "Corners": one commit, the rectangles only.
+describe('useQuickStyle Corners', () => {
+  it('rounds the selected rectangles in one commit, leaving the strokes', () => {
+    const square = { ...createShape('square', 0, 0), id: 'q1' } as Element;
+    const memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el };
+    const { result, commit, elements } = setup(['s1', 'q1'], null, null, memory, [stroke, square]);
+    expect(result.current.view?.sections.corners).toEqual({ value: null });
+    act(() => result.current.setCorners('sm'));
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(elements()[0]).toBe(stroke);
+    expect(elements()[1]).toMatchObject({ borderRadius: 'sm' });
+  });
+});
+
 describe('useQuickStyle for a tool in hand', () => {
   it('styles the next rectangle: remembered, nothing on the board changes', () => {
     const { result, commit, memory } = setup([], null, whiteboardShapeIntent('rectangle'));

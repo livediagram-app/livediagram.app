@@ -7,7 +7,7 @@
 // the generic centred label, which would print it over the whole box.
 
 import { capBandBaselineY } from '@livediagram/icons';
-import { BORDER_RADIUS_PX } from './border-style';
+import { BORDER_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { labelFontPx } from './label-font';
 import type { BoxedElement, ImageElement } from './index';
 import { svgWrappedLabel } from './svg-render-labels';
@@ -86,8 +86,11 @@ function label(el: Shape, text: string, r: LayoutRect, color: string, fontFamily
 const rect = (el: BoxedElement, r: LayoutRect, rx: number, attrs: string) =>
   `<rect x="${r2(el.x + r.x)}" y="${r2(el.y + r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" rx="${r2(Math.min(rx, r.width / 2, r.height / 2))}" ${attrs}/>`;
 
-const radiusOf = (el: Shape, fallback: number) =>
-  el.borderRadius !== undefined ? BORDER_RADIUS_PX[el.borderRadius] : fallback;
+// The corner of the box `r` it draws (docs/specs/008-canvas/corner-radius.md): a stat row's cards
+// are smaller than the element, so each is capped by its own size. The fallbacks are the canvas
+// faces' own defaults (BannerFace Large, SiteHeaderFace and StatRowFace Medium).
+const radiusOf = (el: Shape, fallback: number, r: LayoutRect) =>
+  cornerRadiusPx(el.borderRadius, r.width, r.height, fallback);
 
 /** The body of a web component shape, or '' for any other kind. */
 export function svgWebComponent(
@@ -103,7 +106,7 @@ export function svgWebComponent(
       const white = el.textColor ?? ACCENT_BAR_TEXT;
       const l = bannerLayout(el.width, el.height);
       return (
-        rect(el, whole, radiusOf(el, 12), `fill="${xmlEscape(bar)}"`) +
+        rect(el, whole, radiusOf(el, BORDER_RADIUS_PX.lg, whole), `fill="${xmlEscape(bar)}"`) +
         label(el, text, l.title, white, fontFamily) +
         line(el, el.pageSubtitle ?? '', l.subtitle, l.subtitlePx, white, {
           opacity: 0.85,
@@ -141,10 +144,10 @@ export function svgWebComponent(
     case 'stat-row': {
       const stats = el.stats ?? [];
       const l = statRowLayout(el.width, el.height, stats.length);
-      const rx = radiusOf(el, 8);
       return stats
         .map((st, i) => {
           const c = l.cards[i]!;
+          const rx = radiusOf(el, BORDER_RADIUS_PX.md, c);
           const valueBand = { ...c, y: c.height * 0.12, height: c.height * 0.5 };
           const captionBand = { ...c, y: c.height * 0.58, height: c.height * 0.3 };
           return (
@@ -196,7 +199,7 @@ export function svgWebComponent(
       const l = headerLayout(el.width, el.height, el.navLinks ?? []);
       const monogram = (text.trim()[0] ?? '').toUpperCase();
       return (
-        rect(el, whole, radiusOf(el, 8), `fill="${xmlEscape(bar)}"`) +
+        rect(el, whole, radiusOf(el, BORDER_RADIUS_PX.md, whole), `fill="${xmlEscape(bar)}"`) +
         `<circle cx="${r2(el.x + l.logo.cx)}" cy="${r2(el.y + l.logo.cy)}" r="${r2(l.logo.r)}" fill="${xmlEscape(white)}" opacity="0.9"/>` +
         line(
           el,

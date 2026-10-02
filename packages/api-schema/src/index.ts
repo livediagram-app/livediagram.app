@@ -526,6 +526,8 @@ export {
 export { titleCase } from './title-case';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
+// The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
+export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
 // so the two can't disagree on what a request presented (see ./request-auth.ts).

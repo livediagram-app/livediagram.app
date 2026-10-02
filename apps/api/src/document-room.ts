@@ -2,6 +2,7 @@ import {
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
   isPresenceOpKind,
+  parseBuildId,
   isSystemOpKind,
 } from '@livediagram/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
@@ -585,8 +586,9 @@ export class DocumentRoom implements DurableObject {
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
       // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
-      // older than it offers a reload.
-      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT });
+      // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
+      const build = parseBuildId(this.env?.BUILD_ID);
+      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
       // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
       for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();

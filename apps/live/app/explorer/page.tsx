@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 
 // /explorer is an index with no content of its own: every section
 // lives at /explorer/<section> (docs/specs/013-workspace/folders.md, routes.ts). Default landing
@@ -11,7 +11,8 @@ import { useRouter } from 'next/navigation';
 // dev-server / direct-asset fallback. Both, plus selectedFromRoute's
 // default case, have to agree on the landing section.
 export default function ExplorerIndexRedirect() {
-  const router = useRouter();
+  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
+  const router = useAppNavigation();
   useEffect(() => {
     router.replace('/explorer/timeline');
   }, [router]);

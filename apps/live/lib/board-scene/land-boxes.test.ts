@@ -57,7 +57,7 @@ describe('landShape', () => {
       createLandContext(),
     );
     expect(el).toMatchObject({
-      borderRadius: 'md',
+      borderRadius: 'lg',
       strokeWidth: 'thick',
       strokeStyle: 'dashed',
       penColour: 'green',
