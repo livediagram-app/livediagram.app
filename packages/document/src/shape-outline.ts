@@ -9,6 +9,7 @@ import type { BoxedElement } from './index';
 import { techIconMarkBounds } from './icon-size';
 import { distToSegment, rotatePoint, type Point } from './geometry-primitives';
 import { ACTOR_HULL, ACTOR_VIEWBOX, shapePathData, shapePolygonVertices } from './shape-geometry';
+import { actorFigureRect } from './actor-figure';
 import { sampleSvgPath } from './svg-path-outline';
 import type { ShapeKind } from './shape-kind';
 
@@ -94,11 +95,12 @@ function cylinderOutline(x: number, y: number, w: number, h: number): Point[] {
   return points;
 }
 
-function actorOutline(x: number, y: number, w: number, h: number): Point[] {
-  // Fitted like the drawing: preserveAspectRatio "xMidYMid meet".
-  const k = Math.min(w / ACTOR_VIEWBOX.width, h / ACTOR_VIEWBOX.height);
-  const ox = x + (w - ACTOR_VIEWBOX.width * k) / 2;
-  const oy = y + (h - ACTOR_VIEWBOX.height * k) / 2;
+function actorOutline(el: BoxedElement, x: number, y: number): Point[] {
+  // Fitted like the drawing: the figure's own rect (actor-figure.ts), "xMidYMid meet" inside it.
+  const r = actorFigureRect(el);
+  const k = Math.min(r.width / ACTOR_VIEWBOX.width, r.height / ACTOR_VIEWBOX.height);
+  const ox = x + r.x + (r.width - ACTOR_VIEWBOX.width * k) / 2;
+  const oy = y + r.y + (r.height - ACTOR_VIEWBOX.height * k) / 2;
   return ACTOR_HULL.map(([vx, vy]) => ({ x: ox + vx * k, y: oy + vy * k }));
 }
 
@@ -112,7 +114,7 @@ export function anchorOutline(el: BoxedElement): AnchorOutline | null {
     return { kind: 'ellipse', cx: x + w / 2, cy: y + h / 2, rx: w / 2, ry: h / 2 };
   }
   if (el.shape === 'stadium') return { kind: 'polygon', points: stadiumOutline(x, y, w, h) };
-  if (el.shape === 'actor') return { kind: 'polygon', points: actorOutline(x, y, w, h) };
+  if (el.shape === 'actor') return { kind: 'polygon', points: actorOutline(el, x, y) };
   if (el.shape === 'cylinder') return { kind: 'polygon', points: cylinderOutline(x, y, w, h) };
   const poly = POLYGONS[el.shape];
   if (!poly) return null;

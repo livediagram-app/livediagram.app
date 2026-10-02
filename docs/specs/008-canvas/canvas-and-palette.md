@@ -285,7 +285,7 @@ The palette is laid out top-to-bottom as: canvas-tool toggle (Select / Hand / La
 - **Hexagon** — adds a 140×120 flat-top hexagon.
 - **Document** — adds a 140×110 document shape (slightly wider than tall).
 - **Stadium** — adds a 160×64 pill (flowchart Start / End terminator).
-- **User** — adds a 90×130 UML actor (stickman + label band below).
+- **User** — adds a 90×130 UML actor (stickman + label band below). While the name fits the figure's own band the figure fills the box as it always has; when the name needs more room (a second line, a larger size, an imported caption), the figure shrinks and rises so its legs end where the name's lines begin, and never draws over them (`actorFigureRect`, `packages/document/src/actor-figure.ts`, used by the canvas, the export, hit-testing and anchors).
 - **Cloud** — adds a 180×140 cloud container (networking / architecture).
 - **Triangle** — adds a 130×120 upward triangle (SVG polygon).
 - **Trapezoid** — adds a 160×110 trapezoid (wider at the base; flowchart manual operation).

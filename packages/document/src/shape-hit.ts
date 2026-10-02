@@ -13,6 +13,7 @@
 // Pure; no DOM.
 
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, cornerRadiusPx } from './border-style';
+import { actorFigureRect } from './actor-figure';
 import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from './geometry-primitives';
 import type { Element, ShapeElement } from './index';
@@ -154,7 +155,9 @@ function partLines(part: ShapePart): HitLine[] {
 function drawnOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'halfWidth'> {
   const geometry = shapeGeometry(el.shape, el.width / el.height);
   if (!geometry) return { lines: [], fills: [] };
-  const fit = boxFit(geometry, { x: 0, y: 0, width: el.width, height: el.height });
+  const area =
+    el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: el.width, height: el.height };
+  const fit = boxFit(geometry, area);
   const place = (p: Point): Point => ({ x: fit.ox + p.x * fit.sx, y: fit.oy + p.y * fit.sy });
   const lines: HitLine[] = [];
   const fills: Point[][] = [];

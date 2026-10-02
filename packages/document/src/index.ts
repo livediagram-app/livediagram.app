@@ -444,6 +444,7 @@ export * from './collab-shapes';
 // Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
 export * from './quiz';
 export * from './shape-geometry';
+export * from './actor-figure';
 export * from './color-wash';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';

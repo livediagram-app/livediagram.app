@@ -2,6 +2,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAX_ELEMENTS_PER_TAB,
+  actorFigureRect,
+  actorNameRoom,
+  type ShapeElement,
   PADDING_PX,
   isValidElement,
   labelFontPx,
@@ -124,7 +127,7 @@ describe('convertPage', () => {
 });
 
 describe('captions below figures', () => {
-  it('widens an actor so its name reads on one line under the figure', () => {
+  it('widens an actor to hold its name on one line and its figure unsquashed', () => {
     const { page } = convert(
       vertex(
         'a',
@@ -135,10 +138,30 @@ describe('captions below figures', () => {
     );
     const actor = page.elements[0]!;
     expect(actor).toMatchObject({ shape: 'actor', label: 'Consumer', textAlignY: 'bottom' });
-    // 9 character widths of the 14 px label face, its padding, and the caption padding.
-    const width = 9 * 0.4785 * 14 + 2 * 6 + 16;
+    // The wider of the name (9 character widths of the 14 px face, its padding, the caption padding)
+    // and the figure at draw.io's height (90 wide for every 112 of the legs' reach).
+    const width = Math.max(9 * 0.4785 * 14 + 2 * 6 + 16, (135 * 90) / 112);
     expect((actor as { width: number }).width).toBeCloseTo(width, 1);
     expect((actor as { x: number }).x).toBeCloseTo(130 - width / 2, 1);
+  });
+
+  it('keeps the figure at the drawn height, its name in its own room below', () => {
+    const { page } = convert(
+      vertex(
+        'a',
+        'shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;',
+        'x="0" y="0" width="30" height="60"',
+        'parent="1" value="Returning visitor"',
+      ),
+    );
+    const actor = page.elements[0] as ShapeElement;
+    const figure = actorFigureRect(actor);
+    // The legs reach 112 of the geometry's 130: draw.io's 60 px figure, then the name's room.
+    expect((figure.height * 112) / 130).toBeCloseTo(60, 6);
+    expect(figure.y + (figure.height * 112) / 130).toBeCloseTo(
+      actor.height - actorNameRoom(actor),
+      6,
+    );
   });
 
   it("brings an image's label in as a caption under it", () => {
@@ -364,5 +387,67 @@ describe('auto-sized text', () => {
       '<mxCell id="t" value="Note" style="text;html=1;" vertex="1" parent="1"><mxGeometry x="10" y="20" width="160" as="geometry"/></mxCell>';
     const { page } = convert(xml);
     expect(page.elements[0]).toMatchObject({ x: 10, width: 160, height: sized(['Note']).height });
+  });
+});
+
+describe('notes and the text laid on them', () => {
+  it("keeps a pale note pale: the nearest sticky colour, with that colour's ink", () => {
+    const { page } = convert(
+      vertex(
+        'n',
+        'shape=note;fillColor=#f5f5f5;',
+        'width="120" height="60"',
+        'parent="1" value="x"',
+      ),
+    );
+    expect(page.elements[0]).toMatchObject({
+      type: 'sticky',
+      fillColor: '#ffffff',
+      textColor: '#0f172a',
+    });
+  });
+
+  it('makes the text laid on an empty note the words of that note', () => {
+    const { page } = convert(
+      vertex('n', 'shape=note;fillColor=#f5f5f5;', 'width="120" height="60"', 'parent="1"') +
+        vertex(
+          't',
+          'text;html=1;align=left;',
+          'x="10" y="10" width="100" height="40"',
+          'parent="1" value="&lt;u&gt;Event&lt;/u&gt;&lt;br&gt;viewed"',
+        ),
+    );
+    expect(page.elements).toHaveLength(1);
+    expect(page.elements[0]).toMatchObject({
+      type: 'sticky',
+      label: 'Event\nviewed',
+      richText: [{ text: 'Event', underline: true }, { text: '\nviewed' }],
+      textAlignX: 'left',
+      textColor: '#0f172a',
+    });
+  });
+
+  it('gives text laid over a filled shape the ink that reads on that fill', () => {
+    const { page } = convert(
+      vertex('n', 'fillColor=#fff2cc;', 'width="120" height="60"', 'parent="1"') +
+        vertex(
+          't',
+          'text;html=1;',
+          'x="10" y="10" width="100" height="20"',
+          'parent="1" value="Title"',
+        ) +
+        vertex(
+          'o',
+          'text;html=1;',
+          'x="300" y="10" width="100" height="20"',
+          'parent="1" value="Off"',
+        ),
+    );
+    expect(page.elements.find((e) => 'label' in e && e.label === 'Title')).toMatchObject({
+      textColor: '#1e293b',
+    });
+    expect(page.elements.find((e) => 'label' in e && e.label === 'Off')).not.toHaveProperty(
+      'textColor',
+    );
   });
 });

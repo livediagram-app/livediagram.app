@@ -60,6 +60,20 @@ describe('ShapeSvgOverlay draws the shared table', () => {
     },
   );
 
+  it('draws an actor figure in its own rect, clear of the name', () => {
+    const { container } = render(
+      <ShapeSvgOverlay
+        shape="actor"
+        fill="#fff"
+        stroke="#000"
+        figure={{ x: 0, y: 4, width: 120, height: 80 }}
+      />,
+    );
+    const svg = container.querySelector('svg')!;
+    expect(svg.style.top).toBe('4px');
+    expect(svg.style.height).toBe('80px');
+  });
+
   it('paints a frame with its fill, like every other shape', () => {
     const { container } = render(<ShapeSvgOverlay shape="frame" fill="#fef3c7" stroke="#000" />);
     expect(container.querySelector('rect')!.getAttribute('fill')).toBe('#fef3c7');

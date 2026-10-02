@@ -18,6 +18,7 @@ import { buildEntity, buildLane, buildTable } from './containers';
 import { createEdgeBuilder, type EdgeSlot } from './edge-pass';
 import { cellLabel } from './label';
 import { classifyVertex } from './shapes';
+import { inkOverFills } from './ink-over';
 import { overlapTest } from './overlap';
 import { pageScale, scalePage } from './scale';
 import { autoTextRect, isAutoSized } from './text-box';
@@ -200,6 +201,9 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
     }
   }
   elements = edges.finish(elements);
+
+  const inked = inkOverFills(elements);
+  elements.splice(0, elements.length, ...inked);
 
   if (elements.length > MAX_ELEMENTS_PER_TAB) {
     ctx.tally.add('content-truncated', elements.length - MAX_ELEMENTS_PER_TAB);

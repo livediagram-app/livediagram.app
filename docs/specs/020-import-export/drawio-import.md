@@ -187,7 +187,7 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | `endState`                                                                                                                                                                                                                                                                                    | `circle` with its fill, its ring as a thick border                            | exact        |
 | `curlyBracket`                                                                                                                                                                                                                                                                                | headless `arrow` down the brace's spine (a `line`)                            | approximated |
 | `callout`, `wedgeCallout`                                                                                                                                                                                                                                                                     | `speech-bubble`                                                               | exact        |
-| `note`                                                                                                                                                                                                                                                                                        | `sticky` with its fill                                                        | exact        |
+| `note`                                                                                                                                                                                                                                                                                        | `sticky` in the nearest sticky colour                                         | exact        |
 | `text`, `edgeLabel` on a vertex; `mxgraph.flowchart.annotation_1` / `_2` (approximated)                                                                                                                                                                                                       | `text`                                                                        | exact        |
 | `text` with a fill or stroke of its own (draw.io draws a box)                                                                                                                                                                                                                                 | `square`                                                                      | exact        |
 | `line` (a vertex drawn as a line)                                                                                                                                                                                                                                                             | headless `arrow` across the box's middle                                      | exact        |
@@ -306,6 +306,15 @@ When the cell has no label, the box is labelled with the stencil's readable name
   table cell) with a fill of its own takes the ink that reads on that fill: dark on a light fill, white
   on a dark one. draw.io's default label ink is black on paper, and the theme's text colour pairs with
   the theme's fill, not with a fill the author picked.
+  The same holds for a text drawn over a filled shape (a label in a group): a `text` with no colour of
+  its own whose box lies wholly on a shape painted before it takes the ink that reads on that shape's
+  fill, the nearest such shape below it deciding. A text lying wholly on an empty note becomes that
+  note's own words, with its formatting and alignment, since a note without words shows its "Note" hint;
+  a connection to the text lands on the note.
+- **Notes keep a sticky's colours.** A `note` comes in as the sticky colour nearest its fill, with
+  that colour's ink: a tinted note the tinted sticky nearest its hue (draw.io's pale yellow on Classic,
+  its pale blue on Sky), a grey or white one the neutral sticky nearest its lightness, so a pale note
+  stays pale rather than turning the theme's yellow.
 - `strokeWidth` (px) to the nearest `thin` / `medium` / `thick` / `extra-thick`; `0` to `none`.
 - `dashed=1` to `dashed`; a `dashPattern` whose dashes are at most twice the stroke width (dots, not
   dashes) to `dotted`. draw.io's default pattern, and `8 8` on a 2 px line, stay `dashed`.
@@ -355,7 +364,9 @@ When the cell has no label, the box is labelled with the stencil's readable name
   that side. Counted (`label-moved`).
 - **Captions below.** An actor's, an icon's and an image's outside label is a caption on that side:
   the box grows by the caption's lines and widens about its centre to the caption's measured width,
-  so the name sits under the figure, unwrapped, as draw.io draws it. A caption sits on the canvas, so it
+  so the name sits under the figure, unwrapped, as draw.io draws it. An actor grows by as many label lines as
+  its name has, at the canvas line height, so the figure keeps draw.io's height and the name its room
+  below it. A caption sits on the canvas, so it
   takes the theme's text colour, never the ink for the figure's own fill. An image has no caption of its own, so
   its outside label comes in as a `text` element on that side of it (and stays its `alt`).
 
