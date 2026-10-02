@@ -263,12 +263,15 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **On a whiteboard the Stroke and Text colour rows are the whiteboard's colours**: Ink, the seven
-  stock colours and the tab's custom colours, as Marker colour offers them
-  ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel stays"); a stock colour is
-  stored by name and marked by name. Background keeps the theme's fills.
-- **A colour stored by name** on a diagram tab (a whiteboard element pasted there) matches no
-  theme swatch, so it marks none; choosing a swatch replaces the name with the swatch's colour.
+- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the seven hued
+  colours and the tab's custom colours, as Marker colour offers them
+  ([Draw mode](../023-whiteboard/whiteboard.md) "The quick style panel stays"); a stock colour,
+  Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
+  A line with no colour of its own wears its theme default and marks none. Background keeps the
+  theme's fills.
+- **A colour stored by name** shown in Diagram mode matches no theme swatch, so it marks none;
+  choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
+  canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
 - **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
   its marker strokes ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel
   stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke

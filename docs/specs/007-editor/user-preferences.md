@@ -275,6 +275,10 @@ type UserPreferences = {
   // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
   // top (lib/whiteboard-dock-prefs).
   whiteboardDockPosition?: 'top' | 'bottom';
+  // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
+  // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
+  // anything else, is Grid (lib/whiteboard-dock-prefs).
+  drawPattern?: 'blank' | 'grid' | 'graph';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -328,6 +332,9 @@ Missing key === undefined === default behaviour. Concretely:
   `PanelLayoutFloating` or `PanelLayoutToolbar`.
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
+- `drawPattern` undefined → Grid (`graph`) behind every tab the person works
+  on in Draw mode. The dock's Background row writes it; it emits the same
+  Background events as before and changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.

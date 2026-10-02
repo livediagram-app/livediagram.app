@@ -44,9 +44,10 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **New tab:** the tab bar's new-tab action opens Quick Start as on any
   document, and Quick Start offers **Whiteboard** on its Popular shelf, so a whiteboard can be added to any document in the same two
   clicks as an ordinary tab.
-- **No theme.** A whiteboard has no theme; like every template now, picking
-  it goes straight to the settings step in the New Document wizard and lands
-  at once in Quick Start.
+- **No theme step.** Like every template now, picking the Whiteboard
+  template goes straight to the settings step in the New Document wizard and
+  lands at once in Quick Start; the tab looks the same in either mode
+  ([Appearance](#appearance)).
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one whiteboard tab, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
@@ -68,12 +69,13 @@ centred across the **top** of the canvas by default (see
   they are about the document, not about drawing.
 - **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
   it is how a shape, line or text box gets another colour or width once
-  drawn, since the pens colour only their own strokes. A whiteboard has no
-  theme, so its **Stroke** and **Text colour** rows offer the **whiteboard's
-  colours**, the same choices as Marker colour: **Ink** first, then the seven
-  stock colours (stored by name, adaptive per board), then the tab's custom
-  colours section when there is one. Ink clears the element's own colour, so
-  it draws in the board's ink. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
+  drawn, since the pens colour only their own strokes. In Draw mode its
+  **Stroke** and **Text colour** rows offer the **stock colours**, the same
+  choices as Marker colour: **Ink** first, then the seven hued colours (each
+  stored by name, drawn in its version for the canvas), then the tab's custom
+  colours section when there is one. Ink is stored by name like the others; a
+  line with no colour of its own wears its theme default, so no choice is
+  marked for it. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
   Medium, Large) rounds the selected rectangles, which the menu does not
   offer on a whiteboard ([Corner radius](../008-canvas/corner-radius.md)).
   A restyle on a whiteboard never feeds the style memory diagram tabs use; the
@@ -409,8 +411,10 @@ The shapes group learns and keeps the shapes a user reaches for.
 
 - **A pen is a separate tool: pens do not set the colour of the other
   tools.** A shape, line or arrow from the Shapes flyout (or its key), a
-  sticky and a text box are drawn in the board's ink at their default width,
-  whichever pen was last in hand. A shape has no fill.
+  sticky and a text box are drawn in Ink at their default width, whichever
+  pen was last in hand: a shape, line, arrow or path is written with an Ink
+  outline by name and no fill ([Appearance](#appearance)); a text box has no
+  colour of its own, which is Ink.
 - It previews that way while it is dragged out: solid, in the ink, unfilled.
   **A line or an arrow previews as exactly the one that lands**, from the
   first pixel of the drag: its real stroke width, colour and dash (its
@@ -626,44 +630,53 @@ The eraser offers **both** modes, switched in its flyout:
 
 ## Board background
 
-- **Plain**, **Dots** or **Grid**, chosen per whiteboard from the dock's
-  **Settings** flyout and stored on the tab as its `backgroundPattern` (`blank`,
-  `grid` and `graph`: the canvas's own dot grid and graph paper), so every
-  participant sees the same board and older readers render it too. A new
-  whiteboard starts on **Grid** (`graph`), from the template, a new tab or
-  Quick Start; a whiteboard that already has a background keeps it.
-- The pattern follows the appearance's board colours and scales with zoom, as
-  the canvas grid does on diagram tabs.
+- **Plain**, **Dots** or **Grid** (the canvas's `blank`, `grid` and `graph`
+  patterns: a plain canvas, its dot grid and graph paper), chosen from the
+  dock's **Settings** flyout. The choice is **the person's own**, kept in the
+  synced preferences as `drawPattern`
+  ([User preferences](../007-editor/user-preferences.md)) and **Grid** until
+  chosen. It is never stored on the tab, so choosing it changes nothing for
+  anyone else, and it is the pattern of every tab that person works on in Draw
+  mode ([One look](../007-editor/editor-modes.md#one-look)).
+- In Diagram mode the tab's own stored pattern shows again, shared by
+  everyone. Exports, thumbnails and api or MCP images always use the tab's
+  stored pattern.
+- The pattern is painted in the canvas's pattern colour and scales with zoom,
+  as the canvas grid does in Diagram mode.
 
 ## Appearance
 
-A whiteboard has **no theme picker**. It always uses the **Default theme**,
-which already follows the reader's light or dark appearance
-([Appearance](../004-interface-design/appearance.md)):
+Draw mode has **one look with Diagram mode**
+([One look](../007-editor/editor-modes.md#one-look)): the tab's theme, its
+canvas colour and its elements look the same in either mode and to every
+collaborator. A mode changes what is written into new content and the
+pattern behind it, never the colour of what is already there.
 
-- **Light:** a **whiteboard**: an off-white board with a **black marker** as
-  the ink colour.
-- **Dark:** the editor's own **dark canvas** (the Default theme's dark
-  half, the blue-slate the dark chrome is made of) with a soft off-white ink.
-  Not a literal green chalkboard: the board belongs to the app it sits in.
-- Only colours change. Pens behave identically in both; **Marker 1** and
-  any unpainted element simply render in the appearance's ink colour. The
-  Markers 2 and 3 keep the colour they drew with.
-- The board and ink colours are two named tokens of the Default theme's
-  whiteboard variant (`WHITEBOARD_BOARD`, `WHITEBOARD_INK`, one value per
-  appearance), tuned with the operator; the light and dark pairs must meet
-  WCAG 2.2 AA contrast for ink on board (at least 4.5:1). A third token,
-  `WHITEBOARD_PATTERN`, paints the dots and grid lines, faint against the
-  board.
-- **Values:** light board `#fbfaf7` with ink `#1c1917`; dark board `#0d121a`
-  (`DARK_CANVAS_BACKGROUND_COLOR`) with ink `#e2e8f0`, its dots and grid the
-  dark canvas's own pattern colour (`DARK_CANVAS_PATTERN_COLOR`).
-- Nothing is written onto elements: the ink is a **display projection**. An
-  unpainted stroke, text, shape or line is drawn in the ink colour while it
-  sits on a whiteboard, and in the ordinary default colours anywhere else.
-  Unpainted shapes are drawn without a fill, as marker on a board.
-- A document's theme applies to its diagram tabs only; a whiteboard tab in a
-  themed document still shows the whiteboard look.
+- **The canvas** is the tab's own: its theme's canvas, or the custom
+  background colour when one is set. On the Default theme, which follows the
+  reader's light or dark appearance
+  ([Appearance](../004-interface-design/appearance.md)), that is an
+  **off-white** board (`#fbfaf7`) in light and the editor's own **dark
+  canvas** (`#0d121a`, `DARK_CANVAS_BACKGROUND_COLOR`) in dark: the board
+  belongs to the app it sits in, not a literal green chalkboard.
+- **Ink** is the drawing colour, the same on every theme: `#1c1917` on a
+  light canvas, `#e2e8f0` on a dark one (`PEN_INK`), at least 4.5:1 against
+  either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like the
+  seven hued stock colours.
+- **Marker 1** draws in Ink, and so does any pen stroke or text box with no
+  colour of its own, in both modes. Markers 2 and 3 keep the colour they drew
+  with.
+- **What Draw mode makes is written in Ink.** A shape, line, arrow or path
+  from the dock (and a shape or line a stroke is recognised as) is stored
+  with an Ink outline by name and no fill (a shape's label in Ink too), so it
+  looks the same in Diagram mode.
+- **Stock colours are drawn for the canvas.** Every colour stored by name is
+  drawn in its version for the canvas it sits on: the light version on a
+  light canvas, the dark version on a dark one. On the Default theme that is
+  the reader's appearance; on a theme with a fixed canvas, that canvas. The
+  dock's and the quick style panel's swatches show the same versions.
+- **The accent** of the editor's chrome follows the tab's theme, as in
+  Diagram mode.
 
 ## Snap colours
 
