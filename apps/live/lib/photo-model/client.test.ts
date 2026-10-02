@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ModelCues } from '@livediagram/sticky-vision';
+import type { ModelCues, ModelNote } from '@livediagram/sticky-vision';
 import { createBoundaryClient } from './client';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 
@@ -31,6 +31,15 @@ class FakeWorker {
 
 const image = { width: 2, height: 1, data: new Uint8ClampedArray(8) };
 const cues: ModelCues = { width: 2, height: 1, notes: [], background: new Uint8Array(2) };
+const note: ModelNote = {
+  x: 0,
+  y: 0,
+  w: 1,
+  h: 1,
+  core: { x: 0, y: 0, w: 1, h: 1 },
+  corePixels: 1,
+  confidence: 0.9,
+};
 
 function setup() {
   const worker = new FakeWorker();
@@ -115,6 +124,25 @@ describe('createBoundaryClient', () => {
     });
     client.warm();
     await expect(client.cuesFor(image)).resolves.toEqual({ ok: false, reason: 'no-worker' });
+  });
+
+  it('traces the worker readying and reading on the page, where the debug flag is', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { worker, client } = setup();
+    const pending = client.cuesFor(image);
+    worker.answer({ type: 'ready', backend: 'wasm' });
+    worker.answer({
+      type: 'cues',
+      id: worker.lastId(),
+      backend: 'wasm',
+      cues: { ...cues, notes: [note] },
+      ms: 7,
+    });
+    await pending;
+    expect(info.mock.calls.map(([line]) => line)).toEqual([
+      '[photo-model] ready on wasm',
+      '[photo-model] 1 notes on wasm in 7 ms',
+    ]);
   });
 
   it('logs every failure with its reason', async () => {

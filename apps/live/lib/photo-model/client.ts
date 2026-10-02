@@ -1,3 +1,4 @@
+import { debugLog } from '@/lib/debug-log';
 import type { BoundaryFailure, BoundaryOutcome, WorkerRequest, WorkerResponse } from './protocol';
 
 // The page's side of the boundary model (docs/specs/021-event-storming/event-storming.md Phase 9).
@@ -12,6 +13,9 @@ import type { BoundaryFailure, BoundaryOutcome, WorkerRequest, WorkerResponse } 
 // reason (never a rejection) and the caller runs the classical detector alone.
 // A runtime that could not load stays failed for the page's life rather than
 // being fetched again on every photo.
+//
+// The worker's trace lines are written here, as its answers arrive: a worker
+// has no localStorage, so it cannot read the debug flag itself.
 
 // J4 measured a cold single-thread WASM run (load, compile, predict) under a
 // second on a desktop CPU; eight times that covers a slow laptop, and the
@@ -42,7 +46,10 @@ export function createBoundaryClient(createWorker: () => Worker): BoundaryClient
   };
 
   const onMessage = (message: WorkerResponse) => {
-    if (message.type === 'ready') return;
+    if (message.type === 'ready') {
+      debugLog(`[photo-model] ready on ${message.backend}`);
+      return;
+    }
     if (message.type === 'failed') {
       console.warn(
         `[photo-model] ${message.reason}; the classical detector runs alone`,
@@ -53,6 +60,9 @@ export function createBoundaryClient(createWorker: () => Worker): BoundaryClient
       pending.delete(message.id);
       return;
     }
+    debugLog(
+      `[photo-model] ${message.cues.notes.length} notes on ${message.backend} in ${message.ms} ms`,
+    );
     pending.get(message.id)?.({ ok: true, backend: message.backend, cues: message.cues });
     pending.delete(message.id);
   };
