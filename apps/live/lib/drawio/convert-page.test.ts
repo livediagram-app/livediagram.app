@@ -407,9 +407,29 @@ describe('notes and the text laid on them', () => {
     });
   });
 
-  it('gives text laid over a filled shape the ink that reads on that fill', () => {
+  it('makes the text laid on an empty note the words of that note', () => {
     const { page } = convert(
       vertex('n', 'shape=note;fillColor=#f5f5f5;', 'width="120" height="60"', 'parent="1"') +
+        vertex(
+          't',
+          'text;html=1;align=left;',
+          'x="10" y="10" width="100" height="40"',
+          'parent="1" value="&lt;u&gt;Event&lt;/u&gt;&lt;br&gt;viewed"',
+        ),
+    );
+    expect(page.elements).toHaveLength(1);
+    expect(page.elements[0]).toMatchObject({
+      type: 'sticky',
+      label: 'Event\nviewed',
+      richText: [{ text: 'Event', underline: true }, { text: '\nviewed' }],
+      textAlignX: 'left',
+      textColor: '#0f172a',
+    });
+  });
+
+  it('gives text laid over a filled shape the ink that reads on that fill', () => {
+    const { page } = convert(
+      vertex('n', 'fillColor=#fff2cc;', 'width="120" height="60"', 'parent="1"') +
         vertex(
           't',
           'text;html=1;',

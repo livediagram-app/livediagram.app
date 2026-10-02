@@ -505,9 +505,11 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
 7. Pass 2 (`createEdgeBuilder`): arrows, built in their queued paint positions, then any shapes riding
    on them (12.14); then `finish` places the ends on arrows (12.7).
 8. Truncation: output beyond `MAX_ELEMENTS_PER_TAB` dropped, `content-truncated` += dropped.
-   Before it, `inkOverFills(elements)`: each `text` without `textColor` and with a label takes
-   `inkOnFill(fill)` of the last boxed element before it in paint order whose box contains its box
-   and whose fill is a hex colour (a sticky without one counts as its default paper).
+   Before it, `inkOverFills(elements)` (`ink-over.ts`): for each labelled `text`, its holder is the
+   last non-text boxed element before it in paint order whose box contains its box. A `sticky` holder
+   with no label takes the text's `label`, `richText`, `text*` and `font*` fields (its `textColor`
+   only when the text has one), the text is dropped and arrow ends pinned to it move to the sticky.
+   Any other holder with a hex fill gives a text without `textColor` `inkOnFill(fill)`.
 9. **Scale** (`scalePage(elements, scale)`): about the page origin, multiply boxed `x`, `y`, `width`,
    `height`, lane `headerSize`, table `rowHeights` / `colWidths`, arrow `curvePoints`, `curveOffset`, free
    endpoints and `labelOffset.offset`; `labelMaxWidth` is already in livediagram px. Stroke widths,

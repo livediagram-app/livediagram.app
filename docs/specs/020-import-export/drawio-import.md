@@ -306,9 +306,11 @@ When the cell has no label, the box is labelled with the stencil's readable name
   table cell) with a fill of its own takes the ink that reads on that fill: dark on a light fill, white
   on a dark one. draw.io's default label ink is black on paper, and the theme's text colour pairs with
   the theme's fill, not with a fill the author picked.
-  The same holds for a text drawn over a filled shape (a title laid on a note, a label in a group): a
-  `text` with no colour of its own whose box lies wholly on a shape painted before it takes the ink
-  that reads on that shape's fill, the nearest such shape below it deciding.
+  The same holds for a text drawn over a filled shape (a label in a group): a `text` with no colour of
+  its own whose box lies wholly on a shape painted before it takes the ink that reads on that shape's
+  fill, the nearest such shape below it deciding. A text lying wholly on an empty note becomes that
+  note's own words, with its formatting and alignment, since a note without words shows its "Note" hint;
+  a connection to the text lands on the note.
 - **Notes keep a sticky's colours.** A `note` comes in as the sticky colour nearest its fill, with
   that colour's ink: a tinted note the tinted sticky nearest its hue (draw.io's pale yellow on Classic,
   its pale blue on Sky), a grey or white one the neutral sticky nearest its lightness, so a pale note
