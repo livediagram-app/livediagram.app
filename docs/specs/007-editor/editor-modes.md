@@ -143,6 +143,10 @@ element in the same colour.
   mode **hugs its text** (`autoWidth`) in both modes and for everyone; one
   made in Diagram mode does not. A rule about input (what a click picks,
   which keys do what) follows the person's current mode.
+- **Entering Draw mode**, by opening a tab or by switching, puts the active
+  pen in hand on an empty tab and Select on a tab with content.
+- **No further cue:** the dock (in place of the palette) and the switch's
+  own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode.
 
