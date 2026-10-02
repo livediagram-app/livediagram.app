@@ -38,6 +38,12 @@ describe('SidebarGroup', () => {
     expect(screen.getByRole('heading').className).toBe(titled);
   });
 
+  it('keeps no strip above the first group under separators, its title only for screen readers', () => {
+    group('separators', true);
+    const heading = screen.getByRole('heading', { name: 'Spaces' });
+    expect(heading.className).toMatch(/\bsr-only\b/);
+  });
+
   it('draws no hairline above the first group', () => {
     group('separators', true);
     expect(document.querySelector('[data-sidebar-separator]')).toBeNull();
