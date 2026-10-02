@@ -9,6 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/document';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
 // divider where it meets the body.
@@ -49,7 +50,6 @@ export function LaneGutter({
   alignY,
   width,
   height,
-  zoom,
   onCommitSize,
   onSnapSeam,
   elementId,
@@ -70,7 +70,6 @@ export function LaneGutter({
   width: number;
   height: number;
   // Canvas scale, so a pixel of pointer travel is a pixel of gutter.
-  zoom: number;
   // Commit on release. Absent (read-only, exports, the minimap) leaves the
   // seam inert and undraggable, which is what those surfaces want.
   onCommitSize?: (px: number) => void;
@@ -87,6 +86,7 @@ export function LaneGutter({
   elementX: number;
   elementY: number;
 }) {
+  const zoom = useCanvasZoom();
   // The gutter FOLLOWS the title. Pinning it left while the text moved right
   // left the strip sitting behind nothing and the title floating over the
   // work — the tinted band is the title's backdrop, so it goes where the

@@ -2,6 +2,7 @@
 
 import { PAGE_HEADING_MAX, type ShapeElement } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // A Page's fixed masthead (docs/specs/009-elements/page-element.md): a heading and a subtitle above the body,
 // separated by a hairline rule.
@@ -24,14 +25,13 @@ export function PageMasthead({
   readOnly,
   onSetHeading,
   fontFamily,
-  zoom,
 }: {
   element: ShapeElement;
   readOnly: boolean;
   onSetHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   fontFamily: string | undefined;
-  zoom: number;
 }) {
+  const zoom = useCanvasZoom();
   return (
     <div
       // Not pointer-events-none as a whole: the two lines are editable. The

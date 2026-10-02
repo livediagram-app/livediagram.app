@@ -7,6 +7,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 /**
  * Whether the element is picked by its drawn outline right now: a shape of an
@@ -29,13 +30,12 @@ export function outlineHit(
 // svg steps back out over it to lie on the element's own box.
 export function ShapeHitOutline({
   element,
-  zoom,
   borderPx,
 }: {
   element: ShapeElement;
-  zoom: number;
   borderPx: number;
 }) {
+  const zoom = useCanvasZoom();
   const outline = shapeHitOutline(element);
   const { line, fills } = useMemo(
     () => ({

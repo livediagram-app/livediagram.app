@@ -10,6 +10,9 @@ import {
   DEFAULT_BORDER_STYLE,
   type FreehandElement,
 } from '@livediagram/document';
+import type { SVGProps } from 'react';
+import { strokeHitWidth } from '@/lib/whiteboard-tool';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so
 // the window dots stay round, the nav icons keep their stroke weight,
@@ -24,7 +27,7 @@ import {
 // Every size and glyph comes from the shared BROWSER_CHROME table
 // (@livediagram/document shape-geometry.ts), which the headless export
 // lays out the same way, so an exported browser matches this strip.
-export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: number }) {
+export function BrowserChrome({ stroke }: { stroke: string }) {
   const c = BROWSER_CHROME;
   const dot = { width: c.dotPx, height: c.dotPx, backgroundColor: stroke };
   return (
@@ -97,18 +100,38 @@ export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: n
 export const FREEHAND_SVG_CLASS =
   'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
 
+// The invisible line that catches pointers on a stroke (docs/specs/023-whiteboard/whiteboard.md
+// "Selecting"): STROKE_HIT_SCREEN_PX either side of a line `penWidth` canvas px wide, at any zoom. It is
+// the one zoom-reading part of a stroke, so a zoom re-renders it and not the ink
+// (docs/specs/008-canvas/canvas-performance.md). `trim` takes a width the line already covers.
+export function StrokeHitPath({
+  penWidth,
+  trim = 0,
+  ...path
+}: { penWidth: number; trim?: number } & Omit<SVGProps<SVGPathElement>, 'strokeWidth' | 'stroke'>) {
+  const zoom = useCanvasZoom();
+  return (
+    <path
+      data-stroke-hit=""
+      stroke="transparent"
+      strokeWidth={Math.max(0, strokeHitWidth(penWidth, zoom) - trim)}
+      {...path}
+    />
+  );
+}
+
 export function FreehandSvg({
   element,
   fill,
   stroke,
-  hitWidth,
+  hitPenWidth,
 }: {
   element: FreehandElement;
   fill: string;
   stroke: string;
-  // Set when only the drawn line picks the stroke (a whiteboard pen stroke not
-  // yet selected): an invisible line this wide, in canvas px, catches pointers.
-  hitWidth?: number;
+  // Set when only the drawn line picks the stroke (a whiteboard pen stroke not yet selected): the
+  // line's width in canvas px, which StrokeHitPath grows into the band that catches pointers.
+  hitPenWidth?: number;
 }) {
   // Map normalised points to the 100x100 viewBox before threading
   // them through the smoothing helper. `points.length < 2` collapses
@@ -125,15 +148,14 @@ export function FreehandSvg({
     return (
       <svg className={FREEHAND_SVG_CLASS} viewBox={viewBox} preserveAspectRatio="none" aria-hidden>
         <path d={outline} fill={stroke} stroke="none" />
-        {hitWidth !== undefined ? (
+        {hitPenWidth !== undefined ? (
           // Only the drawn line picks the stroke (docs/specs/023-whiteboard/whiteboard.md "Selecting"):
           // the outline, grown by the margin either side, catches pointers.
-          <path
-            data-stroke-hit=""
+          <StrokeHitPath
+            penWidth={hitPenWidth}
+            trim={element.penWidth ?? 0}
             d={outline}
             fill="transparent"
-            stroke="transparent"
-            strokeWidth={Math.max(0, hitWidth - (element.penWidth ?? 0))}
             strokeLinejoin="round"
             style={{ pointerEvents: 'all' }}
           />
@@ -187,13 +209,11 @@ export function FreehandSvg({
           vectorEffect="non-scaling-stroke"
         />
       ) : null}
-      {d && hitWidth !== undefined ? (
-        <path
-          data-stroke-hit=""
+      {d && hitPenWidth !== undefined ? (
+        <StrokeHitPath
+          penWidth={hitPenWidth}
           d={d}
           fill="none"
-          stroke="transparent"
-          strokeWidth={hitWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{ pointerEvents: 'stroke' }}

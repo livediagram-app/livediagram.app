@@ -8,6 +8,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { ShapeHitOutline, outlineHit } from './ShapeHitOutline';
+import { CanvasZoomProvider } from './CanvasZoomContext';
 
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
@@ -24,7 +25,7 @@ const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
 // docs/specs/023-whiteboard/whiteboard.md "Selecting": a shape is picked by its drawn outline.
 describe('ShapeHitOutline', () => {
   it('lays the outline over the whole box in canvas px, pointer-transparent itself', () => {
-    const { container } = render(<ShapeHitOutline element={shape()} zoom={1} borderPx={0} />);
+    const { container } = render(<ShapeHitOutline element={shape()} borderPx={0} />);
     const svg = container.querySelector('svg')!;
     expect(svg.getAttribute('viewBox')).toBe('0 0 200 100');
     expect(svg.getAttribute('class')).toContain('pointer-events-none');
@@ -35,9 +36,11 @@ describe('ShapeHitOutline', () => {
   it('catches pointers 6 screen px either side of the drawn line, at any zoom', () => {
     const el = shape();
     const at = (zoom: number) =>
-      render(<ShapeHitOutline element={el} zoom={zoom} borderPx={0} />).container.querySelector(
-        '[data-shape-hit="line"]',
-      )!;
+      render(
+        <CanvasZoomProvider zoom={zoom}>
+          <ShapeHitOutline element={el} borderPx={0} />
+        </CanvasZoomProvider>,
+      ).container.querySelector('[data-shape-hit="line"]')!;
     const line = at(1);
     expect(line.getAttribute('d')).toBe(hitOutlinePathData(shapeHitOutline(el).lines));
     expect(line.getAttribute('fill')).toBe('none');
@@ -48,13 +51,13 @@ describe('ShapeHitOutline', () => {
   });
 
   it('adds no fill region to an unfilled shape', () => {
-    const { container } = render(<ShapeHitOutline element={shape()} zoom={1} borderPx={0} />);
+    const { container } = render(<ShapeHitOutline element={shape()} borderPx={0} />);
     expect(container.querySelector('[data-shape-hit="fill"]')).toBeNull();
   });
 
   it('catches pointers anywhere on a visible fill', () => {
     const { container } = render(
-      <ShapeHitOutline element={shape({ fillColor: '#fde68a' })} zoom={1} borderPx={0} />,
+      <ShapeHitOutline element={shape({ fillColor: '#fde68a' })} borderPx={0} />,
     );
     const fill = container.querySelector('[data-shape-hit="fill"]')!;
     expect(fill.getAttribute('fill')).toBe('transparent');
@@ -63,7 +66,7 @@ describe('ShapeHitOutline', () => {
 
   it('sits over the border box of a CSS-drawn shape, not inside its border', () => {
     const { container } = render(
-      <ShapeHitOutline element={shape({ shape: 'square' })} zoom={1} borderPx={2} />,
+      <ShapeHitOutline element={shape({ shape: 'square' })} borderPx={2} />,
     );
     const svg = container.querySelector('svg')!;
     expect(svg.style.left).toBe('-2px');

@@ -41,9 +41,6 @@ export function renderLabel(
   onCommitLabel: (label: string, runs: TextRun[]) => void,
   onCancelEdit: () => void,
   editCursorAtEnd: boolean,
-  // Canvas zoom, so the floating edit toolbar counter-scales to a constant
-  // on-screen size inside the world transform.
-  zoom: number,
   fontFamily?: string,
   // Whole-element alignment setter surfaced in the edit toolbar (docs/specs/008-canvas/canvas-and-palette.md).
   // Operates on the current selection = the editing element.
@@ -139,7 +136,6 @@ export function renderLabel(
         multiline={isSticky}
         uppercase={caps}
         cursorAtEnd={editCursorAtEnd}
-        zoom={zoom}
         textClassName={textClass}
         onCommit={onCommitLabel}
         onCancel={onCancelEdit}

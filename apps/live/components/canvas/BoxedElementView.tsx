@@ -1,6 +1,5 @@
 import { memo, useRef, useState } from 'react';
-import { ICON_STROKE_PX_SMALL } from '@livediagram/icons';
-import { Tooltip, Glyph } from '@livediagram/ui';
+import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
@@ -75,7 +74,6 @@ function BoxedElementViewImpl({
   isPaintMode,
   showHandles,
   showAnchors,
-  zoom,
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
@@ -331,7 +329,6 @@ function BoxedElementViewImpl({
     (next, runs) => onCommitLabel(element.id, next, runs),
     onCancelEdit,
     editCursorAtEnd,
-    zoom,
     fontFamily,
     onSetTextAlign,
     // Inline (flex-child) editor whenever the label shares its box with a
@@ -498,7 +495,6 @@ function BoxedElementViewImpl({
           headerSize={element.headerSize}
           width={element.width}
           height={element.height}
-          zoom={zoom}
           onCommitSize={onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined}
           onSnapSeam={onSnapSeam}
           elementId={element.id}
@@ -525,7 +521,6 @@ function BoxedElementViewImpl({
       {element.type === 'shape' && element.shape === 'browser' ? (
         <BrowserChrome
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-          zoom={zoom}
         />
       ) : null}
 
@@ -537,7 +532,6 @@ function BoxedElementViewImpl({
         isEditing={isEditing}
         isSelected={isSelected}
         readOnly={readOnly}
-        zoom={zoom}
         fontFamily={fontFamily}
         activeMode={activeMode}
         collab={collab}
@@ -583,7 +577,6 @@ function BoxedElementViewImpl({
       {shapeHit ? (
         <ShapeHitOutline
           element={element}
-          zoom={zoom}
           borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
         />
       ) : null}
@@ -606,11 +599,9 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
-      {isLocked ? <LockBadge zoom={zoom} /> : null}
+      {isLocked ? <LockBadge /> : null}
 
-      {remoteSelectors.length > 0 ? (
-        <RemoteSelectorsStrip zoom={zoom} selectors={remoteSelectors} />
-      ) : null}
+      {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
@@ -619,7 +610,6 @@ function BoxedElementViewImpl({
       hasOpenAction ||
       (element.note && onOpenNote && !isAnnotation) ? (
         <BadgeStrip
-          zoom={zoom}
           linked={linked}
           linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}
           commentCount={commentCount}
@@ -663,41 +653,13 @@ function BoxedElementViewImpl({
         votableInVote={votableInVote}
         voteReviewActive={voteReviewActive}
         isVoteFocus={isVoteFocus}
-        zoom={zoom}
         onRetractVote={onRetractVote}
         onCastVote={onCastVote}
       />
 
-      {/* Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): a dashed accent frame just outside
-          the paper, in the alignment guides' own language, saying "this one
-          came from the photo and has not been accepted yet". Drawn rather
-          than tinted, because a workshop note's FILL is its meaning. */}
-      {photoDraft ? (
-        <span
-          aria-hidden
-          data-photo-draft=""
-          className="pointer-events-none absolute rounded-[3px] border-2 border-dashed border-brand-500 dark:border-brand-300"
-          style={{ inset: -6 / zoom, borderWidth: Math.max(1, 2 / zoom) }}
-        />
-      ) : null}
-      {/* …and the counterpart on a note the photo matched: it is already here,
-          so nothing is being added for it. */}
-      {photoMatched ? (
-        <Tooltip label={photoMatchedLabel(photoReadAs)}>
-          <span
-            data-photo-matched=""
-            role="img"
-            aria-label={photoMatchedLabel(photoReadAs)}
-            className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
-            style={{ width: 18 / zoom, height: 18 / zoom }}
-          >
-            {/* Sized in canvas px so it reads 12px on screen at any zoom; Glyph's stroke is on-screen px. */}
-            <Glyph size={12 / zoom} units={24} weight={ICON_STROKE_PX_SMALL}>
-              <path d="M5 13l4 4L19 7" />
-            </Glyph>
-          </span>
-        </Tooltip>
-      ) : null}
+      {/* The photo import's marks (photo-badges.tsx). */}
+      {photoDraft ? <PhotoDraftRing /> : null}
+      {photoMatched ? <PhotoMatchedBadge readAs={photoReadAs} /> : null}
 
       {/* Selection chrome (resize / edge-grip handles), portalled into the
           grips layer above every element — see SelectionChromeLayer for the
@@ -705,7 +667,6 @@ function BoxedElementViewImpl({
       <SelectionChromeLayer
         elementId={element.id}
         box={element}
-        zoom={zoom}
         rotation={rotation}
         shiftX={insertShiftX}
         showHandles={showHandles}
@@ -733,8 +694,3 @@ function BoxedElementViewImpl({
 // changed), every other prop is a primitive or an id-bearing
 // callback that the parent keeps stable.
 export const BoxedElementView = memo(BoxedElementViewImpl);
-
-// The badge on a note a wall photo matched: already on the board.
-function photoMatchedLabel(readAs: string | undefined): string {
-  return readAs ? `Already here, read as ${readAs}` : 'Already here';
-}

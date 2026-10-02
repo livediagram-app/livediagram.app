@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
   isAnimatedPattern,
@@ -40,6 +40,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
+import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
@@ -359,6 +360,12 @@ export function Canvas(props: CanvasProps) {
     }
     return byChair;
   }, [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color]);
+  // Stable while nobody sits or stands, so the element views' memo holds
+  // (docs/specs/008-canvas/canvas-performance.md); it changes exactly when a chair must re-render.
+  const sittersOf = useCallback(
+    (elementId: string) => chairSitters.get(elementId) ?? [],
+    [chairSitters],
+  );
   // Somebody pushed us (docs/specs/008-canvas/avatar-mode.md): slide along their direction, once per push.
   // Keyed on the sequence number, not the vector, so two identical shoves in a
   // row both land.
@@ -704,44 +711,48 @@ export function Canvas(props: CanvasProps) {
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
         <CanvasStillProvider still={isWhiteboardTab({ kind: tabKind })}>
-          <MindGrowProvider value={mindGrow}>
-            <CanvasElementsLayer
-              {...props}
-              elements={pathTool.elements}
-              // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-              // so the prop from the host is overridden with the local resolver.
-              onEnterPortal={resolvePortal}
-              onFireReaction={props.onFireReaction}
-              reactionBursts={props.reactionBursts}
-              onReactionBurstDone={props.onReactionBurstDone}
-              // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-              // lives, rather than threaded from the page.
-              chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
-              // Pressing a Selection Mode button that hands out Avatar mode drops
-              // the character at THAT button (see avatarSpawn), not the viewport
-              // centre: you pressed a thing on the canvas, so the character should
-              // appear where you pressed it.
-              onPressModeButton={pressModeButton}
-              onPressFocusButton={props.onPressFocusButton}
-              hasArrows={hasArrows}
-              arrowLabels={arrowLabels}
-              showHandles={showHandles}
-              showAnchorsFor={showAnchorsFor}
-              badgeColor={badgeColor}
-              selectionBounds={selectionBounds}
-              showPlus={showPlus}
-              showUnionResize={showUnionResize}
-              unionResizeBounds={unionResizeBounds}
-              unionResizePrimaryId={unionResizePrimaryId}
-              isPaintMode={isPaintMode}
-              handleArrowSelect={handleArrowSelect}
-              handleElementClick={handleElementClick}
-              handleElementContextSelect={handleElementContextSelect}
-              quickRingOpen={quickRingOpen}
-              setQuickRingOpen={setQuickRingOpen}
-              drawDrag={drawDrag}
-            />
-          </MindGrowProvider>
+          {/* The zoom reaches only the counter-scaled parts of each element
+              (docs/specs/008-canvas/canvas-performance.md). */}
+          <CanvasZoomProvider zoom={viewportZoom}>
+            <MindGrowProvider value={mindGrow}>
+              <CanvasElementsLayer
+                {...props}
+                elements={pathTool.elements}
+                // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                // so the prop from the host is overridden with the local resolver.
+                onEnterPortal={resolvePortal}
+                onFireReaction={props.onFireReaction}
+                reactionBursts={props.reactionBursts}
+                onReactionBurstDone={props.onReactionBurstDone}
+                // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                // lives, rather than threaded from the page.
+                chairSitters={sittersOf}
+                // Pressing a Selection Mode button that hands out Avatar mode drops
+                // the character at THAT button (see avatarSpawn), not the viewport
+                // centre: you pressed a thing on the canvas, so the character should
+                // appear where you pressed it.
+                onPressModeButton={pressModeButton}
+                onPressFocusButton={props.onPressFocusButton}
+                hasArrows={hasArrows}
+                arrowLabels={arrowLabels}
+                showHandles={showHandles}
+                showAnchorsFor={showAnchorsFor}
+                badgeColor={badgeColor}
+                selectionBounds={selectionBounds}
+                showPlus={showPlus}
+                showUnionResize={showUnionResize}
+                unionResizeBounds={unionResizeBounds}
+                unionResizePrimaryId={unionResizePrimaryId}
+                isPaintMode={isPaintMode}
+                handleArrowSelect={handleArrowSelect}
+                handleElementClick={handleElementClick}
+                handleElementContextSelect={handleElementContextSelect}
+                quickRingOpen={quickRingOpen}
+                setQuickRingOpen={setQuickRingOpen}
+                drawDrag={drawDrag}
+              />
+            </MindGrowProvider>
+          </CanvasZoomProvider>
         </CanvasStillProvider>
         {/* The whiteboard pen's stroke being drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so

@@ -4,6 +4,7 @@ import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { GlyphDisc } from '@livediagram/ui';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Callout (docs/specs/009-elements/web-components-and-no-groups.md): the card is the ordinary bordered box; inside it, an
 // accent badge (an "i", or the element's inline icon when one is dropped on
@@ -14,10 +15,10 @@ export function CalloutFace({
   accent,
   textColor,
   fontFamily,
-  zoom,
   editable,
   onSetHeading,
 }: WebFaceProps) {
+  const zoom = useCanvasZoom();
   const l = calloutLayout(element.width, element.height);
   const d = l.badge.r * 2;
   return (

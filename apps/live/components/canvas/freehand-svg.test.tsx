@@ -57,7 +57,7 @@ describe('FreehandSvg', () => {
     // docs/specs/023-whiteboard/whiteboard.md "Selecting": a pen stroke is picked by its line, not its box.
     const el = stroke({ penWidth: 1.5 });
     const { container } = render(
-      <FreehandSvg element={el} fill="none" stroke="#000" hitWidth={13.5} />,
+      <FreehandSvg element={el} fill="none" stroke="#000" hitPenWidth={1.5} />,
     );
     const hit = container.querySelector('[data-stroke-hit]')!;
     // The outline, grown by the margin either side (13.5 - the 1.5 px line).
