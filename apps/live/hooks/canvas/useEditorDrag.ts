@@ -56,6 +56,7 @@ import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@/lib/debug-log';
 
 // Screen-pixel distance the pointer must travel before a body drag
 // actually starts moving the element. Below this a press (even one that
@@ -462,7 +463,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         if (travelled < DRAG_ENGAGE_PX) return;
         dragEngagedRef.current = true;
         if (drag.kind === 'arrow-bend') {
-          console.debug('[arrow-bend]', drag.arrowId, drag.plan.kind);
+          debugLog('[arrow-bend]', drag.arrowId, drag.plan.kind);
           track('Element', 'Changed', 'ArrowBend');
         }
       }

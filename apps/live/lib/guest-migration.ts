@@ -1,5 +1,6 @@
 import { apiMigrateGuestData } from './api-client';
 import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from './local-identity';
+import { debugLog } from '@/lib/debug-log';
 
 // Guest → account migration (docs/specs/014-identity/auth-and-guest-access.md).
 // Owner data waits for it: until it settles, the guest's documents still
@@ -31,7 +32,7 @@ export function settleGuestMigration(clerkUserId: string): Promise<void> {
     (res) => {
       if (res) {
         clearGuestSelfId();
-        console.info('[guest-migration] moved guest data into the account', res);
+        debugLog('[guest-migration] moved guest data into the account', res);
       } else {
         console.warn('[guest-migration] refused; the guest id stays for the next load');
       }

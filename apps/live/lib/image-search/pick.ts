@@ -6,6 +6,7 @@
 import type { ImportImageFailure, ImportImageOutcome, ImportImageSource } from '../import-images';
 import type { PickedImage } from '../upload-image';
 import { creditFor, galleryNameFor, type OpenverseImage } from './openverse';
+import { debugLog } from '@/lib/debug-log';
 
 export type PickFailure = ImportImageFailure | 'download-failed';
 
@@ -45,7 +46,7 @@ export async function storeSearchResult(
   onFallback: (reason: string) => void = () => {},
 ): Promise<PickOutcome> {
   const fallBack = (reason: string) => {
-    console.info('[image-search] thumbnail fallback', `reason=${reason}`);
+    debugLog('[image-search] thumbnail fallback', `reason=${reason}`);
     onFallback(reason);
   };
   const name = galleryNameFor(result);

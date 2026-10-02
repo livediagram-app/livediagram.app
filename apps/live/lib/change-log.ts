@@ -10,6 +10,7 @@ import { MAX_CHANGE_LOG_ENTRY_BYTES, type ChangeLogEntry } from '@livediagram/ap
 import type { Element } from '@livediagram/document';
 import { summarizeChange, type EditedPair } from './change-summaries';
 import type { ChangeLogKind } from './api-client';
+import { debugLog } from '@/lib/debug-log';
 
 // What the diff function returns. The caller wraps this with the
 // participant + document identifiers before POSTing.
@@ -156,7 +157,7 @@ export function applyRevert(
 export function fitChangeLogEntry(entry: ChangeLogEntry): ChangeLogEntry {
   const bytes = new TextEncoder().encode(JSON.stringify(entry)).length;
   if (bytes <= MAX_CHANGE_LOG_ENTRY_BYTES) return entry;
-  console.info('[activity-log] summary entry', { id: entry.id, kind: entry.kind, bytes });
+  debugLog('[activity-log] summary entry', { id: entry.id, kind: entry.kind, bytes });
   return { ...entry, elementIds: [], beforeState: {}, afterState: {} };
 }
 

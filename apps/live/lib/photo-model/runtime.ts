@@ -1,6 +1,7 @@
 import { cropFromStride, padToStride, rgbOf } from '@livediagram/sticky-model';
 import type { BoundaryBackend, BoundaryFailure } from './protocol';
 import modelJson from './weights/model.json';
+import { debugLog } from '@/lib/debug-log';
 
 // The boundary model's runtime, inside the worker (docs/specs/021-event-storming/event-storming.md Phase 9): the
 // TensorFlow.js core, its layers API and ONE backend, all imported on demand so
@@ -57,13 +58,13 @@ async function startWebGpu(tf: Tf): Promise<boolean> {
     // A browser can expose WebGPU and still have no adapter (headless, a
     // blocklisted driver); asking first spares it the backend's download.
     if (!(await gpu.requestAdapter())) {
-      console.info('[photo-model] no WebGPU adapter, trying WASM');
+      debugLog('[photo-model] no WebGPU adapter, trying WASM');
       return false;
     }
     await import('@tensorflow/tfjs-backend-webgpu');
     return (await tf.setBackend('webgpu')) && (await tf.ready(), true);
   } catch (err) {
-    console.info('[photo-model] WebGPU unavailable, trying WASM', String(err));
+    debugLog('[photo-model] WebGPU unavailable, trying WASM', String(err));
     return false;
   }
 }
@@ -76,7 +77,7 @@ async function startWasm(tf: Tf): Promise<boolean> {
     wasm.setWasmPaths(WASM_URLS);
     return (await tf.setBackend('wasm')) && (await tf.ready(), true);
   } catch (err) {
-    console.info('[photo-model] WASM unavailable', String(err));
+    debugLog('[photo-model] WASM unavailable', String(err));
     return false;
   }
 }

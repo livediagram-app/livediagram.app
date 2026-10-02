@@ -11,6 +11,8 @@
 // Counted from presses rather than the browser's `dblclick`, which is
 // unreliable on touch and targets whatever sits under the second click.
 
+import { debugLog } from '@/lib/debug-log';
+
 /** Milliseconds between two presses that still count as one double-press. The
  *  platform default sits around 500ms; a touch below that keeps a deliberate
  *  double-tap comfortable without pairing two unrelated clicks. */
@@ -58,7 +60,7 @@ export function createPressLedger() {
     press(p: ElementPress): PressVerdict {
       const verdict = judge(p);
       last = verdict.pairs ? null : p;
-      if (verdict.pairs) console.debug('[double-press]', p.id, verdict.echo ? 'echo' : 'pair');
+      if (verdict.pairs) debugLog('[double-press]', p.id, verdict.echo ? 'echo' : 'pair');
       return verdict;
     },
     peek: judge,

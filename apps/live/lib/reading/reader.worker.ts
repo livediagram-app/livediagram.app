@@ -6,6 +6,7 @@ import type {
   ReaderRequest,
   ReaderResponse,
 } from './reader-protocol';
+import { debugLog } from '@/lib/debug-log';
 
 // The in-browser reader's worker (docs/specs/021-event-storming/event-storming.md Phase 9). The model reads one crop
 // at a time — a full generation each, hundreds on a big wall — and on the
@@ -55,14 +56,14 @@ function pick(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<void
 function load(): Promise<LoadedReader> {
   loading ??= (async () => {
     const detail = backendInUse === 'wasm' ? (whyProcessor ?? 'forced') : gpuF16 ? 'f16' : 'fp32';
-    console.info(`[reader] loading on ${backendInUse} (${detail})`);
+    debugLog(`[reader] loading on ${backendInUse} (${detail})`);
     return loadReader(
       (download) => scope.postMessage({ type: 'download', download }),
       backendInUse,
       { f16: gpuF16 },
     );
   })().then((loaded) => {
-    console.info(`[reader] ready on ${loaded.backend}`);
+    debugLog(`[reader] ready on ${loaded.backend}`);
     return loaded;
   });
   return loading;
@@ -112,6 +113,6 @@ scope.addEventListener('message', async ({ data: request }) => {
   }
   cancelled.delete(request.id);
   const seconds = ((performance.now() - started) / 1000).toFixed(1);
-  console.info(`[reader] ${request.crops.length} crops on ${loaded.backend} in ${seconds} s`);
+  debugLog(`[reader] ${request.crops.length} crops on ${loaded.backend} in ${seconds} s`);
   scope.postMessage({ type: 'done', id: request.id });
 });

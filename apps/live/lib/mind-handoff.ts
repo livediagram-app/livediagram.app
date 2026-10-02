@@ -28,6 +28,8 @@
 // editor, and the capture has to be in place synchronously, before the very
 // next keydown, which no render cycle guarantees.
 
+import { debugLog } from '@/lib/debug-log';
+
 /** How a segment of typed text was left. */
 export type HandoffEnd = 'child' | 'sibling' | 'escape';
 
@@ -134,7 +136,7 @@ export function beginMindHandoff(id: string, actions: HandoffActions): void {
   const timer = window.setTimeout(() => {
     if (pending !== p) return;
     release(p);
-    console.debug(
+    debugLog(
       `[mind-handoff] unclaimed id=${p.id ?? 'carrying'} timeout=${MIND_HANDOFF_TIMEOUT_MS}`,
     );
     settleUnclaimed(p);
@@ -145,7 +147,7 @@ export function beginMindHandoff(id: string, actions: HandoffActions): void {
     window.clearTimeout(timer);
   };
   pending = p;
-  console.debug(
+  debugLog(
     `[mind-handoff] begin id=${id} carried=${segments.length > 1 || segments[0]!.text !== ''}`,
   );
 }
@@ -167,7 +169,7 @@ export function claimMindHandoff(
   const [first, ...rest] = p.segments;
   const text = first?.text ?? '';
   const end = first?.end;
-  console.debug(
+  debugLog(
     `[mind-handoff] claim id=${id} chars=${text.length} end=${end ?? 'none'} queued=${rest.length}`,
   );
   if (end === 'child' || end === 'sibling') {

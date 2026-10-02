@@ -17,6 +17,7 @@ import type {
   ImportImageSource,
   PreparedImportImage,
 } from './types';
+import { debugLog } from '@/lib/debug-log';
 
 export type ImportImageLog = (fingerprint: string, outcome: string, detail?: unknown) => void;
 
@@ -34,7 +35,7 @@ export type ImportImageSessionDeps = {
 };
 
 const defaultLog: ImportImageLog = (fingerprint, outcome, detail) =>
-  console.info(fingerprint, outcome, detail);
+  debugLog(fingerprint, outcome, detail);
 
 export function createImportImageSession(deps: ImportImageSessionDeps): ImportImageSession {
   const log = deps.log ?? defaultLog;

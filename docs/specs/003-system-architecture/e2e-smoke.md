@@ -134,7 +134,7 @@ model fetches of the photo tests). A test that takes `pageErrors` ends with
 The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
 context before any page loads, so the production build the suite drives writes its trace lines
 ([Console logging](console-logging.md)) and a spec may wait for one (`[drive-mirror] pass-end`).
-A spec that opens its own context with `browser.newContext()` sets it with
+A spec that opens its own context with `browser.newContext()` sets it there with
 `enableDebugLogs(context)`.
 
 ## What the suite asserts

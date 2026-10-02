@@ -9,6 +9,7 @@ import { runningStaleBuild } from './server-release';
 import { createNavigationIntents, recoverFromChunkError, type ChunkRecovery } from './stale-chunks';
 import { track } from './telemetry';
 import { hasUnsavedWork } from './unsaved-work';
+import { debugLog } from '@/lib/debug-log';
 
 export type NavigationDeps = {
   win: Window;
@@ -93,7 +94,7 @@ export function fullPageLoad(
 export async function navigateTo(url: string, replace: boolean, deps: NavigationDeps) {
   navigationIntents.note(url, deps.now());
   if (deps.isStale() && (await fullPageLoad(url, replace, deps)) === 'reloaded') {
-    console.info('[stale-build] newer build live; loaded in full', { url });
+    debugLog('[stale-build] newer build live; loaded in full', { url });
     return;
   }
   deps.navigateClient(url, replace);
@@ -135,7 +136,7 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
     event.stopPropagation();
     void fullPageLoad(destination, false, deps).then((outcome) => {
       if (outcome === 'unsaved') deps.navigateClient(destination, false);
-      else console.info('[stale-build] newer build live; loaded in full', { url: destination });
+      else debugLog('[stale-build] newer build live; loaded in full', { url: destination });
     });
   };
 
@@ -147,7 +148,7 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
     event.stopImmediatePropagation();
     void fullPageLoad(destination, true, deps).then((outcome) => {
       if (outcome === 'reloaded') {
-        console.info('[stale-build] newer build live; loaded in full', { url: destination });
+        debugLog('[stale-build] newer build live; loaded in full', { url: destination });
         return;
       }
       // Unsaved work: hand the back or forward to the client router after all.

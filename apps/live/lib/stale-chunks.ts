@@ -5,6 +5,7 @@
 // window, so a genuinely broken deploy shows its error rather than reloading forever, and never
 // over unsaved editor changes. Pure but for the dependencies passed in.
 import { reloadWhenSaved } from './reload-when-saved';
+import { debugLog } from '@/lib/debug-log';
 
 /** One recovery reload per destination within this window; a second failure shows the error. */
 export const STALE_CHUNK_RELOAD_WINDOW_MS = 60_000;
@@ -104,7 +105,7 @@ export async function recoverFromChunkError(
     });
     return 'gave-up';
   }
-  console.info('[stale-chunks] a chunk from an earlier build is gone; loading the page in full', {
+  debugLog('[stale-chunks] a chunk from an earlier build is gone; loading the page in full', {
     destination,
   });
   const outcome = await reloadWhenSaved({
