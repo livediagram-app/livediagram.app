@@ -18,6 +18,7 @@ import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
+import { API_BASE } from './base';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
 // apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
 import {
@@ -41,7 +42,8 @@ import {
 // participant's id — the API uses it as the document-owner filter and
 // for create-time `owner_id` — unless a Clerk token provider is wired
 // up (see below), in which case a Bearer token replaces it.
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+// Where the api lives (lib/api/base.ts).
+export { API_BASE };
 
 // Hard cap on how long the Explorer's document-list spinner spins before
 // we give up and show whatever we have. Both mount paths that load the
