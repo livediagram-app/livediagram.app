@@ -21,7 +21,7 @@ import {
 import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
-  boardTypeOfTemplate,
+  templateFamilyOf,
   templateCategory,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -190,7 +190,7 @@ export function registerTools(server: McpServer, env: Env): void {
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
-        '"Generated" folder (or files it in the user\'s default folder for how that document opens, ' +
+        '"Generated" folder (or files it in the user\'s default folder for what that document is made as, ' +
         'when they have set one), and returns the link, the folder, and an inline PNG of the first tab.',
       inputSchema: createDocumentShape,
       outputSchema: createDocumentOutput,
@@ -250,7 +250,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // real folder to create / place it in.
       // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
       // server files the document in the user's default folder for it, when they have one.
-      const intent = creationIntentOf(tabs[0], boardTypeOfTemplate(firstTemplate));
+      const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
       const { document: created } = await apiJson<{ document?: LiveDoc }>(
         env,
         token,

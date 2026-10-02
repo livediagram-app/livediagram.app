@@ -55,16 +55,18 @@ describe('create_document intent', () => {
   it('sends a diagram for elements', async () => {
     const { run, posted } = harness(undefined);
     await run([elements]);
-    expect(posted[0]!.intent).toEqual({ mode: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
   });
 
   it.each([
-    ['retrospective', { mode: 'diagram', boardType: 'retrospective' }],
-    ['four-ls', { mode: 'diagram', boardType: 'retrospective' }],
-    ['kanban', { mode: 'diagram', boardType: 'kanban' }],
-    ['event-storming', { mode: 'diagram', boardType: 'event-storming' }],
-    ['whiteboard', { mode: 'draw' }],
-    ['flowchart', { mode: 'diagram' }],
+    ['retrospective', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['four-ls', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['kanban', { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' }],
+    ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
+    ['incident-postmortem', { mode: 'diagram', tabKind: 'diagram' }],
+    ['lean-coffee', { mode: 'diagram', tabKind: 'diagram' }],
+    ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
+    ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
@@ -74,7 +76,7 @@ describe('create_document intent', () => {
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
     await run([elements, { name: 'Board', template: 'kanban' }]);
-    expect(posted[0]!.intent).toEqual({ mode: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
   });
 });
 
