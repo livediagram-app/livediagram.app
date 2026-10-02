@@ -156,7 +156,7 @@ segmented pill of **icons only** instead of the dropdown chip, so switching is o
   **Shift+D** ("Draw: pens, the eraser and shape recognition · Shift+D"), and the segment keeps the mode's name as
   its accessible name.
 - Semantics: a `radiogroup` named "Editor mode" of `radio` segments with a roving focus; arrow keys move and select.
-- Fixed width, so switching power user mode on or off swaps the control without moving the tabs beyond it.
+- Fixed width, so switching between modes never moves anything beside it.
 - Telemetry is the switch's existing `Editor / Changed / Mode*` event.
 
 ## Discovery: the offer
