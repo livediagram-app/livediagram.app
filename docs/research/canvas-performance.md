@@ -99,6 +99,24 @@ is 1,000 elements over four screens by three: denser than the staging board abov
 - The Quick Style panel's placement re-ran every frame at rest (its `ResizeObserver` re-observed
   each pass and re-notified itself): about 600 passes per 5 s idle, each a document-wide query and a
   forced layout. Fixed in #277; frames painted in the same scripted pan went from 179 to 343.
+- Selection chrome measured itself every drag frame, and so did the canvas guide overlays (#280).
+- The Map rebuilt the whole board's markup on every drag frame (#282).
+- Six unstable props and the zoom re-rendered every element view on any editor render (#283).
+- Every arrow tested every element for its route-behind holes and re-rendered on any element
+  change (#285).
+
+The staging board before and after all of it, deployed, at 4× CPU, same scripted gestures (the
+first gesture read without the profiler start, see below):
+
+| Gesture (4× CPU) | Before: long tasks, longest, script | After: long tasks, longest, script |
+| ---------------- | ----------------------------------- | ---------------------------------- |
+| Drag one shape   | 30, 225 ms, 5.3 s                   | 4, 168 ms, 1.5 s                   |
+| Pan (wheel)      | 9, 269 ms, 1.1 s                    | 2, 197 ms, 0.34 s                  |
+| Zoom             | 4, 195 ms, 0.67 s                   | 6, 249 ms, 0.51 s                  |
+| Marquee          | 2, 278 ms, 0.86 s                   | 3, 219 ms, 0.22 s                  |
+
+The budget is still out of reach on both boards; the next measures are in "Not tried" and the
+spec's "Later".
 
 ## Not tried
 

@@ -75,9 +75,11 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 
 ## Measuring
 
-- **Render-count tests in the unit suite** pin the structural rules deterministically: a pan
-  renders no element view, a one-element drag renders only its neighbourhood, a still canvas
-  schedules no frames, the Map redraws once per gesture.
+- **Counts, not timings, pin the structural rules** deterministically. In the unit suite: an
+  editor render that changes nothing renders no element view, a zoom renders only counter-scaled
+  parts, a one-element move renders only it and the arrows whose geometry it changed, and the Map
+  holds its drawing through a gesture. In a real browser, in the end-to-end suite: a still board
+  with a selection showing asks for no animation frames.
 - **A performance probe** (`pnpm perf:canvas`) builds the reference board, runs each gesture under
   a trace at 4× throttle and prints the budget table with pass or fail per row. It also runs by
   hand, against any build.
