@@ -23,7 +23,8 @@ jobs:
   probe:
     name: Reference board
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The probe takes about 17 minutes on a hosted runner; room for the build and the report.
+    timeout-minutes: 60
     # The e2e image: Chromium and its libraries, the locked Playwright version (checked below).
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble

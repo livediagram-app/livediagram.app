@@ -93,6 +93,8 @@ export default defineConfig({
             name: 'perf',
             use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
             testMatch: /perf\/.*\.perf\.ts/,
+            // One long measurement: a retry would only run it all again (and double the time).
+            retries: 0,
           },
         ]
       : []),

@@ -292,7 +292,8 @@ async function measureZoom(
 }
 
 test('canvas performance budget', async ({ browser, baseURL, page }) => {
-  test.setTimeout(15 * 60_000);
+  // A CI runner at 4x CPU takes about 17 minutes; a laptop about 4.
+  test.setTimeout(40 * 60_000);
   mkdirSync(`${OUT}/traces`, { recursive: true });
   const owner = await mintSignedGuest(page.request);
   const measurements: Measurement[] = [];
