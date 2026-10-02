@@ -14,7 +14,7 @@
 
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
-import type { BoardType } from './placement-defaults';
+import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -71,6 +71,17 @@ export type LiveDoc = {
   // hiding the badge in that case.
   ownerName: string | null;
   ownerColor: string | null;
+} & RecordedIntent;
+
+// The creation intent recorded on a document when it was created, written once by the create and
+// never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
+// is unknown (made before intents were recorded, or by a create without one), never Diagram, and
+// the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
+// `templateFamily` means made from no family.
+export type RecordedIntent = {
+  opensIn: EditorMode | null;
+  tabKind: CreationTabKind | null;
+  templateFamily: TemplateFamily | null;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -86,18 +97,12 @@ export type DocumentSummary = {
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md) — see LiveDoc.source.
   source: DocumentSource | null;
-  // The creation intent recorded when it was created (docs/specs/013-workspace/default-folders.md
-  // "Recorded intent"): the editor mode it opens in and, for a board, its board type. A null
-  // `opensIn` is unknown (made before intents were recorded, or by a create without one), never
-  // Diagram; with a known `opensIn`, a null `boardType` means not a board.
-  opensIn: EditorMode | null;
-  boardType: BoardType | null;
   savedAt: number;
   createdAt: number;
   // Nothing drawn: the first tab has no elements, or there is no tab
   // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
   empty: boolean;
-};
+} & RecordedIntent;
 
 // A document's shared tabs: how many of its tabs are also linked into another
 // document, and how many other documents hold them. What the delete and Take

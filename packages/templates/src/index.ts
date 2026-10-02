@@ -6,4 +6,4 @@ export * from './templates';
 export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate } from './build-template';
-export { boardTypeOfTemplate } from './template-board-types';
+export { templateFamilyOf } from './template-families';

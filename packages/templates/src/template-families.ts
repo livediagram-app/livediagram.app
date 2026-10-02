@@ -1,11 +1,13 @@
-// The board type each template makes (docs/specs/013-workspace/default-folders.md "Creation
-// intent"): the one map that routes a new retrospective, Kanban or event-storming board to its default
-// folder. A Record over TemplateKind, so a new template kind does not compile until it is mapped.
+// The template family each template belongs to (docs/specs/013-workspace/default-folders.md
+// "Creation intent"): the one map that routes a new retrospective or Kanban board to its default
+// folder. A family is a set of ordinary diagram templates, never a tab kind: the event-storming
+// template makes a tab of its own kind, read from the tab, so it has no family here. A Record over
+// TemplateKind, so a new template kind does not compile until it is mapped.
 
-import type { BoardType } from '@livediagram/api-schema';
+import type { TemplateFamily } from '@livediagram/api-schema';
 import type { TemplateKind } from './templates';
 
-const TEMPLATE_BOARD_TYPE: Record<TemplateKind, BoardType | null> = {
+const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   blank: null,
   mindmap: null,
   'mindmap-tree': null,
@@ -55,7 +57,7 @@ const TEMPLATE_BOARD_TYPE: Record<TemplateKind, BoardType | null> = {
   'uml-class': null,
   'state-machine': null,
   'floor-plan': null,
-  'event-storming': 'event-storming',
+  'event-storming': null,
   'start-stop-continue': 'retrospective',
   'mad-sad-glad': 'retrospective',
   'four-ls': 'retrospective',
@@ -71,7 +73,7 @@ const TEMPLATE_BOARD_TYPE: Record<TemplateKind, BoardType | null> = {
   whiteboard: null,
 };
 
-/** The board type a document made from this template is; null for no template or no board. */
-export function boardTypeOfTemplate(kind: TemplateKind | null): BoardType | null {
-  return kind === null ? null : TEMPLATE_BOARD_TYPE[kind];
+/** The family a document made from this template belongs to; null for no template or no family. */
+export function templateFamilyOf(kind: TemplateKind | null): TemplateFamily | null {
+  return kind === null ? null : TEMPLATE_FAMILY[kind];
 }
