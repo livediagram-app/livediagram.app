@@ -181,6 +181,14 @@ Treat them as part of the change, not an afterthought:
 
 Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
 
+## Domain language
+
+See [Domain language](docs/specs/003-system-architecture/domain-language.md).
+
+- **Mode** is how a tab is worked on (Diagram, Draw); per person, never a type of document or tab.
+- **Kind** is what a tab is; only Event Storming differs from the general diagram tab.
+- **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
+
 ## Repo layout
 
 ```
