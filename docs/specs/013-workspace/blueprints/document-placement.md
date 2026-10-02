@@ -45,12 +45,12 @@ concept: cloud or this browser).
 
 `resolvePlacement(requested, caller, lookups)` is a pure sequence over injected lookups:
 
-1. **Team.** `requested.teamId === null` → space `personal`. Otherwise `judgeTeam(teamId, caller.verifiedUserId,
-joined)`: no verified id → `team_forbidden` (the lookup is not made); `joined === false` → `team_forbidden`;
-   else space `team`.
-2. **Folder steps**, first non-null wins: `explicitFolder` (null when `requested.folderId === null`; else
-   `judgeFolder`), then `spaceRoot` (always `{ folderId: null, via: 'root' }`). A default-folder step slots in
-   between them.
+1. **Team.** `requested.teamId === null` → space `personal`. Otherwise
+   `judgeTeam(caller.verifiedUserId, joined)`: no verified id → `team_forbidden` (the membership lookup is not
+   made); `joined === false` → `team_forbidden`; else space `team`.
+2. **Folder steps** (`FOLDER_STEPS`), first non-null wins: `explicitFolder` (null when
+   `requested.folderId === null`; else `judgeFolder`). When none answers, `spaceRoot` does (`folderId: null`,
+   `via: 'root'`). A default-folder step is appended to `FOLDER_STEPS` after `explicitFolder`.
 3. `judgeFolder(folder, space, caller, joinedFolderTeam)`:
    - `folder === null` → `folder_not_found`.
    - Same space (`folder.teamId === space.teamId`): team → in place; personal → in place when
@@ -130,7 +130,7 @@ No new request on the happy path (one fewer: the follow-up PUT is gone); no layo
 | `placement: rejected reason=<code> scope=<personal/team>`                          | api, warn         |
 | `placement: skipped reason=existing`                                               | api, info         |
 | `[offline-sync] placement refused reason=<code>, filed in Unsorted`                | editor, warn      |
-| `[new] create failed code=<code/none>`                                             | editor, debug log |
+| `[new] create failed action=<retry/choose>`                                        | editor, debug log |
 | `Http<status>.CreateDocument.<Code>`, e.g. `Http404.CreateDocument.FolderNotFound` | editor telemetry  |
 
 ## Testing
@@ -146,6 +146,7 @@ No new request on the happy path (one fewer: the follow-up PUT is gone); no layo
 | Team duplicate is one create                                    | `apps/live/lib/duplicate-document.test.ts`                            |
 | Sync refile                                                     | `apps/live/lib/offline/offline-convert.test.ts`                       |
 | OpenAPI parity                                                  | `apps/api/src/openapi/*.test.ts`                                      |
+| Signed-in /new into a team folder; the refusal card             | `apps/live/e2e/clerk-stub/create-placement.spec.ts`                   |
 
 ## Constants and configuration
 
