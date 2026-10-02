@@ -11,7 +11,7 @@ import {
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
 
 // The whiteboard tile and the `?browse=` collections on the template shelf
-// (docs/specs/023-whiteboard/whiteboard.md "Creating one", docs/specs/007-editor/new-document-route.md).
+// (docs/specs/023-draw-mode/draw-mode.md "Creating one", docs/specs/007-editor/new-document-route.md).
 
 globalThis.ResizeObserver ??= class {
   observe() {}
@@ -55,7 +55,7 @@ function Shelf({
 
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!;
 
-// Whiteboard is not a category (docs/specs/023-whiteboard/whiteboard.md "Creating one"): it is a
+// Whiteboard is not a category (docs/specs/023-draw-mode/draw-mode.md "Creating one"): it is a
 // Popular card, never a category tile or on a category shelf.
 describe('the whiteboard', () => {
   it('is a card on Popular, not a category tile', () => {

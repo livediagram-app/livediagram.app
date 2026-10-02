@@ -19,7 +19,7 @@ import {
 } from './quick-style-whiteboard';
 import { INK_CHOICE, type PenPalette } from './quick-style-pen';
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a whiteboard has no theme,
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a whiteboard has no theme,
 // so its Stroke and Text colour rows offer the whiteboard's colours (Ink, the seven stock colours,
 // the tab's custom colours), as Marker colour does; Background keeps its fills, "no fill" first.
 const INK = '#1c1917';

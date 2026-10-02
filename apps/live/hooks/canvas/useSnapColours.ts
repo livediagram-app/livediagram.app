@@ -1,6 +1,6 @@
 'use client';
 
-// Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): the board's custom colours
+// Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): the board's custom colours
 // that can become stock colours, and the snap itself, as one commit (one undo step).
 
 import { useMemo } from 'react';

@@ -22,10 +22,10 @@ export type RichTextEditorProps = {
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: LabelPadding;
-  // A Shift-resized text box's scale on its text (docs/specs/023-whiteboard/whiteboard.md). Absent = 1.
+  // A Shift-resized text box's scale on its text (docs/specs/023-draw-mode/draw-mode.md). Absent = 1.
   textScale?: number;
   // Called with the editor node on every change to its text (and once on opening), so a whiteboard
-  // text box can grow with what is typed (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+  // text box can grow with what is typed (docs/specs/023-draw-mode/draw-mode.md "Text boxes").
   onLiveText?: (editor: HTMLElement) => void;
   fontFamily?: string;
   multiline: boolean;

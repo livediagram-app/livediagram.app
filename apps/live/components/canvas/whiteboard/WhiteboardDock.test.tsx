@@ -145,7 +145,7 @@ describe('WhiteboardDock drawing tools', () => {
   });
 
   it('draws a marker holding the ink in the ink, glyph and name alike', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": any marker may take the ink.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": any marker may take the ink.
     const pens = DEFAULT_WHITEBOARD_PREFS.pens.map((p) =>
       p.id === 'second' ? { ...p, colour: null } : p,
     );
@@ -179,7 +179,7 @@ describe('WhiteboardDock drawing tools', () => {
       model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'second' } }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
-    // The colour picker (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): the eight stock colours.
+    // The colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the eight stock colours.
     expect(screen.getByTestId('stock-colours').querySelectorAll('button')).toHaveLength(8);
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { colour: 'violet' });
@@ -338,7 +338,7 @@ describe('WhiteboardDock settings', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Where the dock sits".
+// docs/specs/023-draw-mode/draw-mode.md "Where the dock sits".
 describe('WhiteboardDock position', () => {
   const dock = () => document.querySelector<HTMLElement>('[data-whiteboard-dock]')!;
   const SEVEN = ['arrow', 'rectangle', 'ellipse', 'diamond', 'cylinder', 'line', 'star'] as const;

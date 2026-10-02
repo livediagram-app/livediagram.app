@@ -347,7 +347,7 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
       return 'transparent';
     case 'image':
       return 'transparent';
-    // A path is plain ink, unfilled until a fill is chosen (docs/specs/023-whiteboard/path-tool.md "Style").
+    // A path is plain ink, unfilled until a fill is chosen (docs/specs/023-draw-mode/path-tool.md "Style").
     case 'path':
       return 'transparent';
     case 'freehand':

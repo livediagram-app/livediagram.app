@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createText, type TextElement } from '@livediagram/document';
 import { labelRuns, measureDrawnText, measureTextHug } from './text-hug-measure';
 
-// The DOM measure behind a whiteboard text box's hug (docs/specs/023-whiteboard/whiteboard.md
+// The DOM measure behind a whiteboard text box's hug (docs/specs/023-draw-mode/draw-mode.md
 // "Text boxes"). jsdom lays nothing out, so these pin what the measurer lays in and how it is
 // sized; the real numbers are proven in a browser.
 const measurer = () => document.querySelector<HTMLElement>('[data-text-hug-measurer]')!;

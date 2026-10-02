@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createLiveStroke } from './live-stroke';
 
-// The stroke being drawn with a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens";
+// The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
 // blueprint whiteboard-round-one "Pen ink").
 
 describe('createLiveStroke', () => {
@@ -62,7 +62,7 @@ describe('createLiveStroke', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Shift while reshaping.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Shift while reshaping.
 describe('createLiveStroke, constrained', () => {
   const circle = {
     kind: 'circle' as const,
@@ -147,7 +147,7 @@ describe('createLiveStroke, constrained', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Alt (or the chip) breaks out.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (or the chip) breaks out.
 describe('createLiveStroke, broken out of a shape', () => {
   const circle = {
     kind: 'circle' as const,

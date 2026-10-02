@@ -30,7 +30,7 @@ export type PathDraftView = {
   zoom: number;
 };
 
-// The path being drawn (docs/specs/023-whiteboard/path-tool.md "Drawing"; blueprint path-tool
+// The path being drawn (docs/specs/023-draw-mode/path-tool.md "Drawing"; blueprint path-tool
 // "Rendering"), inside the canvas's transformed layer after the elements: the path itself is a
 // PathSvg laid out exactly as the element it lands as, so release changes no pixel; the rubber
 // band shares its stroke; nodes, the active node's handles and the rings sit on top, sized in

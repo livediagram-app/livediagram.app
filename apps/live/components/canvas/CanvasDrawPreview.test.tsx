@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { CanvasDrawPreview } from './CanvasDrawPreview';
 
-// docs/specs/023-whiteboard/whiteboard.md "Pens": what you see while drawing is what lands.
+// docs/specs/023-draw-mode/draw-mode.md "Pens": what you see while drawing is what lands.
 const wrapper = document.createElement('div');
 const base = {
   drawDrag: null,
@@ -43,7 +43,7 @@ describe('CanvasDrawPreview on a whiteboard', () => {
   });
 
   it('leaves a line or an arrow to the canvas layer: nothing in the overlay', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Shapes": the arrow renderer draws the one that lands
+    // docs/specs/023-draw-mode/draw-mode.md "Shapes": the arrow renderer draws the one that lands
     // (DrawnArrowPreview); no stand-in line here, on any tab.
     for (const board of [true, undefined] as const) {
       const { container, unmount } = render(

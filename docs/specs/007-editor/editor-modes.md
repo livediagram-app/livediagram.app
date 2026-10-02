@@ -8,13 +8,13 @@ where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term             | Means                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **tab kind**     | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                 |
-| **editor mode**  | How a general tab is **worked on** right now: `diagram` or `draw` (`EditorMode`).                                        |
-| **Diagram mode** | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                  |
-| **Draw mode**    | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-whiteboard/whiteboard.md)). |
-| **mode switch**  | The control beside the page switcher that changes the editor mode.                                                       |
+| Term             | Means                                                                                                                  |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**     | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                               |
+| **editor mode**  | How a general tab is **worked on** right now: `diagram` or `draw` (`EditorMode`).                                      |
+| **Diagram mode** | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                |
+| **Draw mode**    | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)). |
+| **mode switch**  | The control beside the page switcher that changes the editor mode.                                                     |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
@@ -141,7 +141,7 @@ element in the same colour.
 - **Draw mode** is what the whiteboard was: the dock with its pens, shapes,
   history and settings; the whiteboard's keyboard shortcuts; pen versus touch;
   picking by the drawn line; strokes that stay open; nothing animating in; no guides for pens; shape recognition and the two
-  erasers ([Draw mode](../023-whiteboard/whiteboard.md)).
+  erasers ([Draw mode](../023-draw-mode/draw-mode.md)).
 - **What a mode writes, stays.** A rule that shapes content is stored on the
   element when it is made, never read from the mode: a text box made in Draw
   mode **hugs its text** in both modes and for everyone; one made in Diagram
@@ -178,7 +178,7 @@ element in the same colour.
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw`, fired by Opens in.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,
-  [Draw mode](../023-whiteboard/whiteboard.md#telemetry-telemetry--public-transparency-dashboard)).
+  [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
   It was named `Whiteboard`; the stored history is rewritten to `Draw` so the
   dashboard's lines continue.
 
@@ -198,6 +198,6 @@ element in the same colour.
 
 ## References
 
-[Document](../006-document/document.md), [Draw mode](../023-whiteboard/whiteboard.md),
+[Document](../006-document/document.md), [Draw mode](../023-draw-mode/draw-mode.md),
 [Event storming](../021-event-storming/event-storming.md),
 [Toolbar layout](toolbar-layout.md), [Zen mode](zen-mode.md).

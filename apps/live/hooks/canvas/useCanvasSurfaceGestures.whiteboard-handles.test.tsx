@@ -10,7 +10,7 @@ import {
 import { useCanvasSurfaceGestures } from './useCanvasSurfaceGestures';
 
 // On a whiteboard, Shift + press drags a selection box, but a resize handle keeps its own Shift
-// behaviour (docs/specs/023-whiteboard/whiteboard.md "Selecting"), which is keeping the aspect
+// behaviour (docs/specs/023-draw-mode/draw-mode.md "Selecting"), which is keeping the aspect
 // ratio (docs/specs/008-canvas/canvas-and-palette.md "Resize"). Every resize handle, corner, edge
 // and multi-selection alike, must reach its resize with Shift held.
 

@@ -1,6 +1,6 @@
 'use client';
 
-// The whiteboard's floating dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
+// The whiteboard's floating dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
 // four groups side by side, in place of the palette: Drawing tools, Shapes, History and Settings.
 // Each group is its own toolbar with one Tab stop. It sits at the top centre, or the bottom centre
 // by choice ("Where the dock sits"). Flyouts open on the board side of it, one at a time, so nothing

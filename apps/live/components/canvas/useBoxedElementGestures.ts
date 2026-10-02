@@ -107,7 +107,7 @@ export function useBoxedElementGestures({
     });
     if (verdict.pairs) {
       // A path opens its edit mode on the pair itself: a double-tap brings no reliable dblclick
-      // (docs/specs/023-whiteboard/path-tool.md "Editing").
+      // (docs/specs/023-draw-mode/path-tool.md "Editing").
       if (element.type === 'path') onBeginEdit(element.id);
       // A double-click's first click deselected the only selected element; its
       // second selects it again, as the editor opens.

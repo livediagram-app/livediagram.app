@@ -1,6 +1,6 @@
 # Whiteboard, round one: blueprint
 
-Derived from [Whiteboard](../whiteboard.md), with [Event storming](../../021-event-storming/event-storming.md)
+Derived from [Draw mode](../draw-mode.md), with [Event storming](../../021-event-storming/event-storming.md)
 as the tab-kind precedent, [Highlighter](../../008-canvas/highlighter.md) for the held-tool pattern,
 [Eraser panel](../../008-canvas/eraser-panel.md) for the erase gesture and
 [Two pens instead of a pen and a mode](../../008-canvas/two-pens.md) for recognition. The spec decides;
@@ -270,7 +270,7 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
 
 ### Marker colours
 
-Spec: whiteboard.md "The colour picker". Pure data in `packages/document/src/pen-colours.ts` (a leaf
+Spec: draw-mode.md "The colour picker". Pure data in `packages/document/src/pen-colours.ts` (a leaf
 module: no value imports).
 
 - Stock colours: Ink (`null`, `WHITEBOARD_INK`), then `PEN_COLOURS`, seven `{ id, label, hue,

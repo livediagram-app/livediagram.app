@@ -1,4 +1,4 @@
-// The curve maths behind the path element (docs/specs/023-whiteboard/path-tool.md "The path
+// The curve maths behind the path element (docs/specs/023-draw-mode/path-tool.md "The path
 // element"): pure functions over anchors in canvas px. A segment is the cubic Bézier between two
 // consecutive nodes through their facing handles; with neither handle it is a straight line.
 import type { PathHandleMode } from './element-types';
@@ -215,7 +215,7 @@ export function bendSegment(seg: PathSegment, t: number, target: Point): { c1: P
 }
 
 /**
- * Handles for a node turned smooth (docs/specs/023-whiteboard/path-tool.md "Editing"): along the
+ * Handles for a node turned smooth (docs/specs/023-draw-mode/path-tool.md "Editing"): along the
  * line between its neighbours, `(next − prev) / 6` either side (Catmull-Rom's tangent, equal
  * lengths); an open end points a third of the way to its one neighbour.
  */

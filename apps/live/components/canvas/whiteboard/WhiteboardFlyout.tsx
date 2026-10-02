@@ -6,7 +6,7 @@ import { Tooltip } from '@livediagram/ui';
 const VIEWPORT_MARGIN_PX = 12;
 
 // A dock button's settings, opened on the board side of the dock (below a dock at the top, above
-// one at the bottom) so the dock itself never moves (docs/specs/023-whiteboard/whiteboard.md "What a
+// one at the bottom) so the dock itself never moves (docs/specs/023-draw-mode/draw-mode.md "What a
 // whiteboard shows", "Where the dock sits"). Focus moves into it on
 // open; Escape closes it and hands focus back to its opener; a press outside
 // closes it without stealing focus.

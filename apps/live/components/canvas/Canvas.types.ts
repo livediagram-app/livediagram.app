@@ -80,7 +80,7 @@ export type CanvasProps = {
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
   // The whiteboard dock's model and the board's ink for this appearance
-  // (docs/specs/023-whiteboard/whiteboard.md), present on a whiteboard tab.
+  // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
   whiteboardInk?: string;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
@@ -415,7 +415,7 @@ export type CanvasProps = {
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn or continued path lands, an
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn or continued path lands, an
   // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
   // drawn shows the style it will land with.
   onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
@@ -426,7 +426,7 @@ export type CanvasProps = {
   ) => void;
   onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
   // The line or arrow a draw would land if released now, as the canvas would show it
-  // (docs/specs/023-whiteboard/whiteboard.md "Shapes"), drawn in place of a stand-in while the drag
+  // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
   // is in flight. From lib/drawn-arrow-preview.
   previewDrawnArrow?: (
     intent: Extract<PendingDraw, { type: 'arrow' }>,
@@ -615,7 +615,7 @@ export type CanvasProps = {
   // select/drag) and hands the screen coords here to start an erase
   // gesture; the gesture's move/release are tracked by useCanvasEraser.
   // `frame`: where the canvas sits on screen at the press (the whiteboard's
-  // geometric erase, docs/specs/023-whiteboard/whiteboard.md).
+  // geometric erase, docs/specs/023-draw-mode/draw-mode.md).
   onEraseStart?: (
     clientX: number,
     clientY: number,

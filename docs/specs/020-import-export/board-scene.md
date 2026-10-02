@@ -13,7 +13,7 @@ is a change here, never a parser-local workaround.
 Content that lands on a whiteboard looks and behaves as if it had been drawn
 there: marker strokes with pressure, ink and stock colours that follow light
 and dark boards, text boxes that hug their text, stickies, shapes, lines,
-arrows, images and frames. See [Whiteboard](../023-whiteboard/whiteboard.md)
+arrows, images and frames. See [Draw mode](../023-draw-mode/draw-mode.md)
 "Imported and pasted content".
 
 ## Where it lives
@@ -83,7 +83,7 @@ Each scene colour resolves to one of three things, in this order:
    same on both boards (Excalidraw's grey `#868e96`, pastels, browns).
 
 "Nearest stock colour" means the whiteboard's one definition, the one
-[Snap colours](../023-whiteboard/whiteboard.md) uses. The two rules differ on
+[Snap colours](../023-draw-mode/draw-mode.md) uses. The two rules differ on
 purpose: the snap is **always nearest** (a grey becomes Ink, a pastel its
 hue's stock colour), the import **keeps the exact hex unless the colour is
 clearly a stock colour**, so a board arrives as it was drawn and its custom

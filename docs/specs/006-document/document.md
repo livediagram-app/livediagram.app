@@ -16,7 +16,7 @@ which fixes what that tab is. A general tab is worked on in one of two
 | **diagram**              | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
 | **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)).     |
 | **editor mode**          | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
-| **whiteboard**           | The activity of Draw mode ([Draw mode](../023-whiteboard/whiteboard.md)); not a tab kind.        |
+| **whiteboard**           | The activity of Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)); not a tab kind.          |
 
 - As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
   where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).

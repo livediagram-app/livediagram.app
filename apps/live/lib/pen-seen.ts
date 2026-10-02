@@ -1,5 +1,5 @@
 // Whether a `pen` pointer has been used in this page session
-// (docs/specs/023-whiteboard/whiteboard.md "Touch and pen input"). Module memory on purpose: the rule
+// (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"). Module memory on purpose: the rule
 // resets on reload, as Microsoft Whiteboard's does.
 let seen = false;
 

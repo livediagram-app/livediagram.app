@@ -1,4 +1,4 @@
-// The whiteboard pen's ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): perfect-freehand
+// The whiteboard pen's ink (docs/specs/023-draw-mode/draw-mode.md "Pens"): perfect-freehand
 // (MIT) with pressure, drawn the way Excalidraw draws freedraw. A stroke is its raw points, a
 // pressure per point when the pen reported one, its pen width and its streamline; one pure
 // function turns that into a filled outline, for the stroke being drawn, the stroke that lands and

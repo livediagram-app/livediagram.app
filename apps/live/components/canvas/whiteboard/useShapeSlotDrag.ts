@@ -1,6 +1,6 @@
 'use client';
 
-// Dragging a shape onto the pinned side, or off it (docs/specs/023-whiteboard/whiteboard.md "Shape
+// Dragging a shape onto the pinned side, or off it (docs/specs/023-draw-mode/draw-mode.md "Shape
 // slots"): a slot or search result from the Shapes flyout, or a pinned shape on the bar. A press
 // becomes a drag after SHAPE_SLOT_DRAG_PX, so a press still picks. The bar is measured once, when
 // the drag starts; the pure rules (lib/whiteboard-shape-slots) say where it lands. Escape or a

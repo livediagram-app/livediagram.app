@@ -1,6 +1,6 @@
-// Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): every custom colour of a
+// Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): every custom colour of a
 // board held in a field that has a stock counterpart becomes its nearest stock colour (or the ink),
-// so it adapts to light and dark boards. Pure; the field table (docs/specs/023-whiteboard/
+// so it adapts to light and dark boards. Pure; the field table (docs/specs/023-draw-mode/
 // blueprints/snap-colours.md) says which kinds and fields take part.
 import type { Element } from './index';
 import { isCustomPenColour, nearestPenColour } from './pen-colours';

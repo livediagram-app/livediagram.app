@@ -1,4 +1,4 @@
-// The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "Shape slots",
+// The whiteboard dock's synced preferences (docs/specs/023-draw-mode/draw-mode.md "Shape slots",
 // "Where the dock sits"): the pinned shape kinds and the pick counts behind the Shapes flyout's
 // slots, where the dock sits, and Draw mode's pattern. They live in the
 // user's preferences blob (lib/user-preferences.ts), so they follow a signed-in user across devices

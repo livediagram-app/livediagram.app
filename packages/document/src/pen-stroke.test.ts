@@ -17,7 +17,7 @@ import {
   type PenStroke,
 } from './index';
 
-// The whiteboard pen's ink (docs/specs/023-whiteboard/whiteboard.md "Pens"): perfect-freehand with
+// The whiteboard pen's ink (docs/specs/023-draw-mode/draw-mode.md "Pens"): perfect-freehand with
 // pressure, the way Excalidraw draws freedraw. One pure function draws the stroke being drawn and
 // the stroke that lands, on the canvas and in the export.
 
@@ -128,7 +128,7 @@ describe('penStrokePath', () => {
   });
 });
 
-// Ink the smoothing has settled never moves while drawing (docs/specs/023-whiteboard/whiteboard.md
+// Ink the smoothing has settled never moves while drawing (docs/specs/023-draw-mode/draw-mode.md
 // "Pens"): the tip is the stretch from the last streamlined point to the pointer, with its end cap;
 // every outline point farther from it than the stroke's widest radius is exactly where it was.
 describe('settled ink', () => {

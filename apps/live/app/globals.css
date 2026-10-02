@@ -800,9 +800,9 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
 }
 
-/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-whiteboard/whiteboard.md "Pens"):
+/* A whiteboard pen in hand draws wherever it presses (docs/specs/023-draw-mode/draw-mode.md "Pens"):
    elements, handles and labels under it keep the pen cursor instead of their own. A path in its
-   edit mode owns the cursor the same way (docs/specs/023-whiteboard/path-tool.md "Cursors in edit
+   edit mode owns the cursor the same way (docs/specs/023-draw-mode/path-tool.md "Cursors in edit
    mode"): no label, element or overlay underneath lends its own, a text cursor least of all. */
 [data-pen-in-hand] *,
 [data-path-cursor] * {

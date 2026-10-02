@@ -1,4 +1,4 @@
-// The quick style panel for a whiteboard tool in hand (docs/specs/023-whiteboard/whiteboard.md "The
+// The quick style panel for a whiteboard tool in hand (docs/specs/023-draw-mode/draw-mode.md "The
 // quick style panel stays"): with a shape, line, arrow or text tool armed and nothing selected, the
 // panel styles what that tool draws next. It shows a stand-in element, the one the tool would draw
 // plain, dressed by the board's style memory; a choice is remembered for the tool's kind.

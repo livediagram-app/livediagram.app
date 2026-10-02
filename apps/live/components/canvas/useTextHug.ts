@@ -1,5 +1,5 @@
-// A text box that fits or wraps, hugging its text while it is typed into (docs/specs/023-whiteboard/
-// whiteboard.md "Text boxes"). The editor reports its live content; this measures it and holds
+// A text box that fits or wraps, hugging its text while it is typed into (docs/specs/023-draw-mode/
+// draw-mode.md "Text boxes"). The editor reports its live content; this measures it and holds
 // the box they need, which the element view draws in place of the stored size until the edit
 // commits. The size is local to the view and never written per keystroke: the commit writes the
 // label and its hugged size together, as one step (useSelectionEditing.commitLabel).

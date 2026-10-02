@@ -74,7 +74,7 @@ export function makeCommitFreehand({
 }) {
   // Canvas-driven commit for the pen gesture. A whiteboard pen's raw samples land as they
   // are, with their pressures and streamline (`ink`), and draw as the same perfect-freehand
-  // outline the stroke showed while drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"),
+  // outline the stroke showed while drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"),
   // so release reshapes nothing. The diagram pencil and the highlighter hand over raw pointer
   // samples in canvas coords, which get:
   //   1. Ramer-Douglas-Peucker simplification with a tolerance
@@ -92,7 +92,7 @@ export function makeCommitFreehand({
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, ink?: PenInk) => {
     // Disarm on a gesture too short to be a stroke — unless the marker is
     // HELD, where a stray tap must not silently put the tool down.
-    // A whiteboard pen is held too (docs/specs/023-whiteboard/whiteboard.md "Pens").
+    // A whiteboard pen is held too (docs/specs/023-draw-mode/draw-mode.md "Pens").
     const whiteboardPen =
       pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
     const disarm = () => {
@@ -245,7 +245,7 @@ export type PenInk = Pick<FreehandElement, 'streamline'> & {
   keepInk?: true;
 };
 
-// What a whiteboard pen stroke becomes (docs/specs/023-whiteboard/whiteboard.md "Pens", "Shape
+// What a whiteboard pen stroke becomes (docs/specs/023-draw-mode/draw-mode.md "Pens", "Shape
 // recognition"): with recognition on, a stroke that reads as a shape is the
 // clean shape, unfilled, in the pen's colour and nearest weight; otherwise an
 // OPEN stroke (a written "o" is ink, not a filled shape) carrying the pen's

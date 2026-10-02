@@ -1,7 +1,7 @@
 # Board scene: blueprint
 
 Derived from [Board scene](../board-scene.md), with the element-model delta it needs from
-[Whiteboard](../../023-whiteboard/whiteboard.md) "Imported and pasted content". The spec's mapping
+[Draw mode](../../023-draw-mode/draw-mode.md) "Imported and pasted content". The spec's mapping
 table is not restated; this file fixes the modules, types, constants, algorithms, wiring and tests.
 Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) (rows `B1` onwards).
 

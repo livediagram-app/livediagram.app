@@ -16,7 +16,7 @@ import { WhiteboardPenPreview } from './WhiteboardPenPreview';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// The whiteboard pen's in-flight preview (docs/specs/023-whiteboard/whiteboard.md "Pens"): drawn
+// The whiteboard pen's in-flight preview (docs/specs/023-draw-mode/draw-mode.md "Pens"): drawn
 // inside the canvas's own transformed layer as exactly the stroke it lands as (the same box, svg
 // and filled perfect-freehand outline), so the same layer rasterises both. The landed stroke's
 // packed points are within STROKE_POINT_MAX_ERROR of the box of the raw samples the preview draws
@@ -134,7 +134,7 @@ describe('WhiteboardPenPreview', () => {
     );
   });
 
-  describe('the recognition preview (docs/specs/023-whiteboard/whiteboard.md "Shape recognition")', () => {
+  describe('the recognition preview (docs/specs/023-draw-mode/draw-mode.md "Shape recognition")', () => {
     const square: { x: number; y: number }[] = [];
     for (let i = 0; i <= 20; i++) square.push({ x: i * 10, y: 0 });
     for (let i = 1; i <= 20; i++) square.push({ x: 200, y: i * 10 });
@@ -175,7 +175,7 @@ describe('WhiteboardPenPreview', () => {
     });
   });
 
-  // docs/specs/023-whiteboard/whiteboard.md "Shape recognition": the chip on a touch screen.
+  // docs/specs/023-draw-mode/draw-mode.md "Shape recognition": the chip on a touch screen.
   describe('the chip', () => {
     const square: { x: number; y: number }[] = [];
     for (let i = 0; i <= 20; i++) square.push({ x: i * 10, y: 0 });

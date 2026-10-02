@@ -1,5 +1,5 @@
 // Landed text boxes hug their text in our fonts (docs/specs/020-import-export/board-scene.md "In
-// the editor"; docs/specs/023-whiteboard/whiteboard.md "Text boxes"): a source measured its text in
+// the editor"; docs/specs/023-draw-mode/draw-mode.md "Text boxes"): a source measured its text in
 // its own font, so each box is re-hugged with the measurer the canvas uses, once its face loads.
 import type { Element, TextElement } from '@livediagram/document';
 import { hugsText, hugTextSize, type MeasureTextBlock } from '@/lib/text-hug';

@@ -22,7 +22,7 @@ const bareTheme = {} as unknown as ThemeDefinition;
 const tab = (overrides: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [], ...overrides }) as unknown as Tab;
 
-// docs/specs/023-whiteboard/whiteboard.md "Shapes": the preview and the commit build one arrow.
+// docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview and the commit build one arrow.
 describe('buildDressedDrawnArrow', () => {
   const thick = <T extends Element>(el: T): T => ({
     ...el,
@@ -88,7 +88,7 @@ describe('buildDrawnArrow', () => {
   });
 
   it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
-    // docs/specs/023-whiteboard/whiteboard.md: unpainted, so it takes the board's ink.
+    // docs/specs/023-draw-mode/draw-mode.md: unpainted, so it takes the board's ink.
     const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
     expect(arrow.arrowEnds).toBe('to');
     expect(arrow.strokeColor).toBeUndefined();
@@ -142,7 +142,7 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  // docs/specs/023-whiteboard/whiteboard.md "Text boxes": in Draw mode a text box hugs its text.
+  // docs/specs/023-draw-mode/draw-mode.md "Text boxes": in Draw mode a text box hugs its text.
   it('places a Draw mode text box empty, caret-sized, at the click', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab(), true);
     // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.

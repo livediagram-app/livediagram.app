@@ -1,6 +1,6 @@
 # Text boxes: blueprint
 
-Derived from [Whiteboard](../whiteboard.md) "Text boxes". The spec decides; this file adds
+Derived from [Draw mode](../draw-mode.md) "Text boxes". The spec decides; this file adds
 engineering precision. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `Tn`.
 

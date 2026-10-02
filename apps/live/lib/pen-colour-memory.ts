@@ -1,4 +1,4 @@
-// Your colours (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): the custom colours a
+// Your colours (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the custom colours a
 // user has used with the markers, up to eight, newest first; using one moves it to the front. They
 // live in the user's synced preferences (lib/user-preferences.ts), read through here, never
 // directly: a stored value is only trusted once parsed.

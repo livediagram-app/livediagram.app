@@ -146,7 +146,7 @@ export type EditorKeyboardShortcutsDeps = {
   // Cmd/Ctrl+. opens the global search panel. Allowed for view-role
   // too (search only navigates, never mutates).
   onOpenSearch: () => void;
-  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the dock's tools,
+  // On a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the dock's tools,
   // which then own the plain keys. Null on every other tab.
   whiteboard: {
     pickSelect: () => void;
@@ -326,7 +326,7 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   return false;
 }
 
-// A whiteboard's plain keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the dock's
+// A whiteboard's plain keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the dock's
 // tools, and only these. V is view-safe; the pens and the eraser mutate.
 export const WHITEBOARD_VIEW_KEYS: Record<string, ShortcutAction> = {
   v: (l) => l.whiteboard?.pickSelect(),
@@ -338,7 +338,7 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   '1': (l) => l.whiteboard?.pickPen('main'),
   '2': (l) => l.whiteboard?.pickPen('second'),
   '3': (l) => l.whiteboard?.pickPen('third'),
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md): P, which is the pencil on a diagram tab.
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): P, which is the pencil on a diagram tab.
   p: (l) => l.whiteboard?.pickPath(),
   e: (l) => l.whiteboard?.pickEraser(),
   n: (l) => l.whiteboard?.pickSticky(),

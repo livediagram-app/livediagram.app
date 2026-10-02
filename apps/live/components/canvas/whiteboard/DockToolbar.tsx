@@ -1,6 +1,6 @@
 'use client';
 
-// One group of the whiteboard dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
+// One group of the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
 // its own pill and its own toolbar for assistive technology, one Tab stop, the arrow keys walking
 // its buttons (the WAI-ARIA toolbar pattern). Buttons are fixed-size, so nothing moves under the
 // pointer when a tool is picked.
@@ -90,7 +90,7 @@ export type DockButtonProps = {
   controls?: { id: string; expanded: boolean };
   // Nothing to do (Undo with no history): stays focusable, as a toolbar's items do.
   unavailable?: boolean;
-  // The key that picks this tool (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+  // The key that picks this tool (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
   shortcut?: string;
   // A right-click (or the context-menu key) on the button.
   onContext?: (el: HTMLElement) => void;

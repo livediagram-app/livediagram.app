@@ -7,7 +7,7 @@ type Point = { x: number; y: number };
 export const PATH_NODE_RADIUS_PX = 4;
 export const PATH_HANDLE_RADIUS_PX = 3.5;
 
-// The path overlays' place in the canvas stack (docs/specs/023-whiteboard/path-tool.md "Editing"): above
+// The path overlays' place in the canvas stack (docs/specs/023-draw-mode/path-tool.md "Editing"): above
 // every element, the selection chrome (30) and a label lifted to be typed (10) included, whatever
 // the path's own order, layer or fill.
 export const PATH_OVERLAY_Z = 40;

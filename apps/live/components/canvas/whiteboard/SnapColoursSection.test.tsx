@@ -11,7 +11,7 @@ const api = (over: Partial<SnapColoursApi> = {}): SnapColoursApi => ({
   ...over,
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Snap colours".
+// docs/specs/023-draw-mode/draw-mode.md "Snap colours".
 describe('SnapColoursSection', () => {
   it('is not there while the board has no custom colours to snap', () => {
     const { container } = render(<SnapColoursSection snap={api({ colours: [] })} />);

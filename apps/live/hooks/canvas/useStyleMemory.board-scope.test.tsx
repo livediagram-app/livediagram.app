@@ -13,7 +13,7 @@ import { boardShape, whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
 import { useStyleMemory } from './useStyleMemory';
 
-// docs/specs/023-whiteboard/whiteboard.md "Shapes": a whiteboard keeps its own style memory, so a
+// docs/specs/023-draw-mode/draw-mode.md "Shapes": a whiteboard keeps its own style memory, so a
 // board's styles never dress a diagram's next shape, nor a diagram's a board's, for any shape kind,
 // tool style or restyle, in the same document or another. The real memory and the real panel,
 // rendered together as the editor renders them, across tab and document switches.

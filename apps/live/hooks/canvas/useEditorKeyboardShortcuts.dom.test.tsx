@@ -100,7 +100,7 @@ describe('onShortcutUsed', () => {
   });
 });
 
-describe('whiteboard keys (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts")', () => {
+describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts")', () => {
   const board = () => {
     const wb = {
       pickSelect: vi.fn(),

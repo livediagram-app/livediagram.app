@@ -8,7 +8,7 @@ import {
   penCursorSvg,
 } from './whiteboard-pen-cursor';
 
-// docs/specs/023-whiteboard/whiteboard.md "Pens": the pen cursor, Dot or Crosshair + nib.
+// docs/specs/023-draw-mode/draw-mode.md "Pens": the pen cursor, Dot or Crosshair + nib.
 describe('penCursor', () => {
   it('offers the crosshair with a nib first, the default, then the dot', () => {
     expect(PEN_CURSOR_VARIANTS).toEqual(['nib-crosshair', 'dot']);

@@ -4,7 +4,7 @@ import { PEN_INK } from '@livediagram/document';
 import { buildDressedDrawnArrow } from './draw-commit';
 import { drawnArrowAsShown } from './drawn-arrow-preview';
 
-// docs/specs/023-whiteboard/whiteboard.md "Shapes": the preview is the arrow the release lands, as
+// docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview is the arrow the release lands, as
 // the canvas shows it (Draw mode's Ink, by name, in its version for the canvas).
 
 const theme = { elementStroke: '#123456' } as unknown as ThemeDefinition;

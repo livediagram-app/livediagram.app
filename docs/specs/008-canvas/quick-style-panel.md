@@ -265,7 +265,7 @@ over, never refused, so they never hide the panel from the rest.
   nothing is highlighted: a mixed row claiming one value would be a lie.
 - **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the seven hued
   colours and the tab's custom colours, as Marker colour offers them
-  ([Draw mode](../023-whiteboard/whiteboard.md) "The quick style panel stays"); a stock colour,
+  ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
   Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
   A line with no colour of its own wears its theme default and marks none. Background keeps the
   theme's fills.
@@ -273,7 +273,7 @@ over, never refused, so they never hide the panel from the rest.
   choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
   canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
 - **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
-  its marker strokes ([Whiteboard](../023-whiteboard/whiteboard.md) "The quick style panel
+  its marker strokes ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel
   stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
   style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
   strokes; the others never touch a stroke.

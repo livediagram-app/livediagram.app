@@ -40,7 +40,7 @@ export function useStyleMemory({
   documentId: string | null;
   theme: ThemeDefinition;
   // The active tab is a whiteboard: it records and applies its own memory
-  // (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays").
+  // (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays").
   board?: boolean;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});

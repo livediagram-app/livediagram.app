@@ -1,6 +1,6 @@
 'use client';
 
-// The dock's Drawing tools group (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"):
+// The dock's Drawing tools group (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
 // Select, Markers 1 to 3, Text, Path tool and Eraser; the sticky note is a shape (the Shapes group).
 // A pen or the eraser already in hand opens its flyout.
 
@@ -31,13 +31,13 @@ export function DrawingToolsGroup({
   pickAndClose: (pick: () => void) => void;
 }) {
   const { tool, prefs } = model;
-  // A named colour in its version for this board (docs/specs/023-whiteboard/whiteboard.md).
+  // A named colour in its version for this board (docs/specs/023-draw-mode/draw-mode.md).
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const expanded = (kind: string) => fly.flyout?.kind === kind;
   return (
     <DockToolbar label="Drawing tools" group="drawing">
-      {/* In a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing") Select shows the
+      {/* In a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing") Select shows the
           path glyph, and pressing it leaves the mode. */}
       <DockButton
         itemKey="select"
@@ -81,7 +81,7 @@ export function DrawingToolsGroup({
         pressed={tool === 'text'}
         onPress={() => pickAndClose(model.pickText)}
       />
-      {/* The Path tool (docs/specs/023-whiteboard/path-tool.md), in the Shape Pen's own icon. */}
+      {/* The Path tool (docs/specs/023-draw-mode/path-tool.md), in the Shape Pen's own icon. */}
       <DockButton
         itemKey="path"
         label="Path tool"

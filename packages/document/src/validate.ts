@@ -61,11 +61,11 @@ import { parseStrokePoints } from './stroke-points';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
-// A path (docs/specs/023-whiteboard/path-tool.md): a drawn one rarely passes 50 nodes.
+// A path (docs/specs/023-draw-mode/path-tool.md): a drawn one rarely passes 50 nodes.
 export const MAX_PATH_NODES = 5_000;
 // A normalised path coordinate: handles may reach beyond the box, never absurdly far.
 export const PATH_COORD_MAX = 1e6;
-// A Shift-resized text box's scale on its label (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+// A Shift-resized text box's scale on its label (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
@@ -245,9 +245,9 @@ export function isValidElement(el: unknown): el is Element {
   if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
   if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
   if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
-  // A marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"): one of the 60.
+  // A marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): one of the 60.
   if (el.penColour !== undefined && !isPenColourName(el.penColour)) return false;
-  // A text box's or shape label's stock colour (docs/specs/023-whiteboard/whiteboard.md "Imported
+  // A text box's or shape label's stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported
   // and pasted content"): one of the names too.
   if (el.penTextColour !== undefined && !isPenColourName(el.penTextColour)) return false;
 
@@ -571,7 +571,7 @@ function isPathPoint(p: unknown): boolean {
   );
 }
 
-// A path (docs/specs/023-whiteboard/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
+// A path (docs/specs/023-draw-mode/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
 // known mode with optional handles; a closed pair needs a handle to be more than a line.
 function isValidPath(el: Record<string, unknown>): boolean {
   if (typeof el.closed !== 'boolean' || !boundedArray(el.nodes, MAX_PATH_NODES)) return false;

@@ -50,7 +50,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
     // A whiteboard's eraser is a held tool too: Escape puts it down
-    // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
     const whiteboardEraser = liveRef.current.whiteboard !== null && canvasTool === 'eraser';
     if (
       formatSourceId === null &&
@@ -329,7 +329,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       }
 
       // A whiteboard's keys are its dock's, and only these
-      // (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): the diagram tab's element and
+      // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
       // mode keys have no palette to mirror there.
       if (live.whiteboard) {
         const action =

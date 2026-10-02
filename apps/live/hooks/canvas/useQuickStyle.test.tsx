@@ -15,7 +15,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the pen rows style the
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the pen rows style the
 // selected strokes as one commit, or the pen in hand when nothing is selected.
 const stroke = {
   ...createFreehand(
@@ -75,7 +75,7 @@ describe('useQuickStyle pen rows', () => {
   });
 
   it('offers the tab\u2019s custom colours, and remembers a custom restyle in Your colours', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": the second section.
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the second section.
     const { result, elements, colours } = setup(['s1']);
     expect(result.current.view?.pen?.colour.custom).toEqual([]);
     act(() => result.current.setPenColour('teal'));

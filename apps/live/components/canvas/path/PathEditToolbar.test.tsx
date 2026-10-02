@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { PathEditToolbar, type PathToolbarView } from './PathEditToolbar';
 
-// The edit toolbar (docs/specs/023-whiteboard/path-tool.md "Editing").
+// The edit toolbar (docs/specs/023-draw-mode/path-tool.md "Editing").
 
 afterEach(cleanup);
 

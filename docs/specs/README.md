@@ -30,7 +30,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, pasting from Excalidraw, imported images, board scenes and board imports from Miro or Microsoft Whiteboard, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of Personal Space
-- ./023-whiteboard/README.md - when working on Draw mode (the whiteboard): its pens, dock, snap colours and path tool
+- ./023-draw-mode/README.md - when working on Draw mode: its pens, dock, snap colours, text boxes and path tool
 
 ## Workflow
 

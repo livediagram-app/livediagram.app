@@ -149,7 +149,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // elements default to the FRONT of z-order (see addBoxed).
     // A shape drawn in Draw mode starts as plain ink, unfilled (a pen never colours
     // it), then wears the style chosen for its tool, which Draw mode keeps
-    // apart from Diagram mode's (docs/specs/023-whiteboard/whiteboard.md "Shapes").
+    // apart from Diagram mode's (docs/specs/023-draw-mode/draw-mode.md "Shapes").
     const whiteboard = drawMode;
     const dress = <T extends Element>(el: T): T =>
       styleNewElement(whiteboard ? boardShape(el) : el);

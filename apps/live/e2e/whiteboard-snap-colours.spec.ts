@@ -10,7 +10,7 @@ import {
   type Seed,
 } from './fixtures';
 
-// Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): a synthesised board with
+// Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): a synthesised board with
 // custom-coloured marker strokes, a shape and an arrow, beside a stock stroke and a highlighter
 // that must stay as they are. The Settings flyout offers the snap, it lands as one undo step, and
 // the strokes then draw in each board's own version of their stock colour.
@@ -104,7 +104,7 @@ async function openSettings(page: Page) {
   return page.locator('#whiteboard-flyout-settings');
 }
 
-// The dock at the top (the default) or the bottom (docs/specs/023-whiteboard/whiteboard.md "Where
+// The dock at the top (the default) or the bottom (docs/specs/023-draw-mode/draw-mode.md "Where
 // the dock sits"), chosen before the editor loads, as the synced preference stores it.
 async function placeDock(page: Page, position: 'top' | 'bottom') {
   await page.addInitScript(

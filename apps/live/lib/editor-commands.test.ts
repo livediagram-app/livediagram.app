@@ -390,7 +390,7 @@ describe('the photo-import command', () => {
   });
 });
 
-describe('tool commands on a whiteboard (docs/specs/023-whiteboard/whiteboard.md)', () => {
+describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)', () => {
   it('offers neither the highlighter nor the format painter', () => {
     const onBoard = ids({ ...base, whiteboard: true });
     expect(onBoard).not.toContain('tool:highlighter');

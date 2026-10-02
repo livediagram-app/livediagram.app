@@ -39,7 +39,7 @@ type TopCenterChromeProps = Pick<
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
-  // A whiteboard's dock at the top (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits"):
+  // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
   dockOnTop?: boolean;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and

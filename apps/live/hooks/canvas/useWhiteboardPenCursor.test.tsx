@@ -24,7 +24,7 @@ describe('useWhiteboardPenCursor', () => {
   });
 
   it('draws a stock colour in its version for the board, and the ink when a marker holds it', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker"; jsdom resolves the light board.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker"; jsdom resolves the light board.
     const named = renderHook(() => useWhiteboardPenCursor({ ...pen, colour: 'teal' }, 'dot', 1));
     expect(decodeURIComponent(named.result.current!)).toContain(
       `fill='${penColourHex('teal', 'light')}'`,

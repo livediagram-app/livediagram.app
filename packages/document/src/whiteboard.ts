@@ -1,4 +1,4 @@
-// Draw mode (docs/specs/023-whiteboard/whiteboard.md): the canvases its stock colours are tuned
+// Draw mode (docs/specs/023-draw-mode/draw-mode.md): the canvases its stock colours are tuned
 // for, its Plain / Dots / Grid backgrounds and its pens' weights. Pure data and pure functions; the
 // editor owns the dock and the device-local pens. There is one look in both editor modes
 // (docs/specs/007-editor/editor-modes.md "One look"): Draw mode writes its colours onto what it
@@ -30,7 +30,7 @@ export const WHITEBOARD_BACKGROUNDS: readonly {
   { id: 'grid', label: 'Grid', pattern: 'graph' },
 ];
 
-// A new whiteboard starts on Grid (docs/specs/023-whiteboard/whiteboard.md "Board background"),
+// A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background"),
 // written onto the tab when it is made (templateCanvasOverrides), so it never changes later.
 export const WHITEBOARD_DEFAULT_PATTERN: BackgroundPattern = 'graph';
 

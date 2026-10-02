@@ -36,7 +36,7 @@ describe('settings catalogue', () => {
   });
 
   it('offers the Draw mode dock position under Editor, in its own Draw mode section', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": top by default, bottom by choice;
+    // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
     // the section says Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
     const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
     const row = editor.rows.find((r) => r.key === 'whiteboardDockPosition');

@@ -360,7 +360,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
       {
-        // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": only Draw mode has a dock,
+        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
         // so only Draw mode moves with this. Named Draw mode in the interface
         // (docs/specs/007-editor/editor-modes.md "Naming in the interface").
         kind: 'choice',

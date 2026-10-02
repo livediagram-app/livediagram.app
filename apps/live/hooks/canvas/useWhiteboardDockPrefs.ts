@@ -1,6 +1,6 @@
 'use client';
 
-// The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "Shape slots",
+// The whiteboard dock's synced preferences (docs/specs/023-draw-mode/draw-mode.md "Shape slots",
 // "Where the dock sits"), and Draw mode's pattern (docs/specs/007-editor/editor-modes.md "One look"):
 // the pinned shapes, the pick counts, the dock's position and the person's pattern, written the way the other synced preferences are (the same owner, guest or signed in). The logic is pure, in
 // lib/whiteboard-dock-prefs and lib/whiteboard-shape-slots.

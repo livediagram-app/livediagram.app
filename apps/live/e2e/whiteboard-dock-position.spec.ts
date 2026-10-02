@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, settledBox, test } from './fixtures';
 
-// Where the whiteboard dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits"):
+// Where the whiteboard dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
 // the top by default, the bottom by choice in Settings, Editor, Whiteboard; flyouts open on the
 // board side, and top corner panels give way to a top dock.
 

@@ -89,7 +89,7 @@ export function PanIcon({ size = 14 }: IconSizeProps = {}) {
 }
 
 // The Shape Pen (docs/specs/008-canvas/two-pens.md): its palette tile and the whiteboard dock's Path
-// tool (docs/specs/023-whiteboard/path-tool.md "Where it lives") wear this one icon, each at its size.
+// tool (docs/specs/023-draw-mode/path-tool.md "Where it lives") wear this one icon, each at its size.
 export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
@@ -98,7 +98,7 @@ export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-// Edit points (docs/specs/023-whiteboard/path-tool.md "Editing"): a curve through a corner node
+// Edit points (docs/specs/023-draw-mode/path-tool.md "Editing"): a curve through a corner node
 // (square, selected) and another, with one handle. On the selection toolbar and on the dock's
 // Select while a path is in its edit mode.
 export function EditPointsIcon({ size = 14 }: IconSizeProps = {}) {

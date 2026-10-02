@@ -53,7 +53,7 @@ export function TopCenterStack({
   children: ReactNode;
   // A bar across the top of the canvas owns top-3, so the stack starts under it instead of on top
   // of it: the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md, 46 px), or a
-  // whiteboard's dock at the top (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits",
+  // whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits",
   // 54 px).
   below?: 'toolbar' | 'dock';
 }) {

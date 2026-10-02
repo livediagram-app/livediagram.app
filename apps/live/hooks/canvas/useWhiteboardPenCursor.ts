@@ -1,6 +1,6 @@
 'use client';
 
-// The canvas cursor for a whiteboard pen in hand (docs/specs/023-whiteboard/whiteboard.md "Pens"): the
+// The canvas cursor for a whiteboard pen in hand (docs/specs/023-draw-mode/draw-mode.md "Pens"): the
 // look chosen in the dock's More flyout, in the pen's colour (the main pen: the board's ink), drawn
 // for the board's appearance. Null for anything else, which keeps its draw-intent cursor.
 
@@ -20,7 +20,7 @@ export function useWhiteboardPenCursor(
   const appearance = useCanvasSurface();
   const pen =
     pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
-  // A named colour in its version for this board (docs/specs/023-whiteboard/whiteboard.md).
+  // A named colour in its version for this board (docs/specs/023-draw-mode/draw-mode.md).
   const colour = pen ? penColourCss(pen.colour, appearance, WHITEBOARD_INK[appearance]) : null;
   const strokePx = pen ? pen.width * zoom : 0;
   return useMemo(

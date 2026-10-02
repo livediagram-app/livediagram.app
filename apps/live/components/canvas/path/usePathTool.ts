@@ -36,7 +36,7 @@ export const PATH_DRAFT_ID = 'path-draft';
 
 const identity = <T>(el: T): T => el;
 
-// The Path tool on the canvas (docs/specs/023-whiteboard/path-tool.md): composes the drawing
+// The Path tool on the canvas (docs/specs/023-draw-mode/path-tool.md): composes the drawing
 // gesture and the edit mode for Canvas, which wires in four things with the smallest edit to
 // itself: the press intercepts, the elements it shows (a path being continued is drawn by the
 // draft, a path being edited shows the gesture's anchors), and the two layers it draws in the
@@ -230,9 +230,9 @@ export function usePathTool({
 
   return {
     toolbar,
-    // Undo and Redo while a path is being drawn (docs/specs/023-whiteboard/path-tool.md "Drawing").
+    // Undo and Redo while a path is being drawn (docs/specs/023-draw-mode/path-tool.md "Drawing").
     history: draw.history,
-    // The cursor a path in its edit mode owns (docs/specs/023-whiteboard/path-tool.md "Cursors in edit mode").
+    // The cursor a path in its edit mode owns (docs/specs/023-draw-mode/path-tool.md "Cursors in edit mode").
     cursor: edit.cursor ?? (draw.editPointer ? 'default' : null),
     beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
     beginEditPress: (e: React.PointerEvent) => !onToolbar(e) && edit.beginEditPress(e),

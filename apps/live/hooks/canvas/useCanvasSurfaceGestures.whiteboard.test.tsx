@@ -6,7 +6,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { penSeen, resetPenSeenForTests } from '@/lib/pen-seen';
 import { useCanvasSurfaceGestures } from './useCanvasSurfaceGestures';
 
-// docs/specs/023-whiteboard/whiteboard.md "Touch and pen input".
+// docs/specs/023-draw-mode/draw-mode.md "Touch and pen input".
 const PEN: PendingDraw = {
   type: 'freehand',
   variant: 'whiteboard',

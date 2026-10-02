@@ -55,7 +55,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Renamed',
   'Document·Reverted',
   'Document·Shared',
-  // Draw mode (docs/specs/023-whiteboard/whiteboard.md): a Whiteboard tab created (Template /
+  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a Whiteboard tab created (Template /
   // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
   'Draw·Changed',
   'Draw·Created',

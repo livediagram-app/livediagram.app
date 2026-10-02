@@ -86,7 +86,7 @@ export function describeMany(elements: Element[]): string {
 // 'Arrow "yes"'. Unlike describeOne this always leads with the kind,
 // so a screen-reader user hears WHAT the thing is before its text.
 export function elementAriaLabel(el: Element): string {
-  // A path is read by its points (docs/specs/023-whiteboard/path-tool.md "Accessibility").
+  // A path is read by its points (docs/specs/023-draw-mode/path-tool.md "Accessibility").
   if (el.type === 'path') {
     return `${el.closed ? 'Closed path' : 'Path'}, ${el.nodes.length} points`;
   }

@@ -9,7 +9,7 @@ import { useWhiteboardPenGesture } from './useWhiteboardPenGesture';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// The whiteboard pen gesture (docs/specs/023-whiteboard/whiteboard.md "Pens", "Touch and pen input";
+// The whiteboard pen gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen input";
 // blueprint whiteboard-round-one "Pen ink").
 
 const PEN: PendingDraw = {
@@ -171,7 +171,7 @@ describe('useWhiteboardPenGesture', () => {
     expect(debug).toHaveBeenCalledWith('[whiteboard] stroke pen samples=3 pressure=yes');
   });
 
-  // docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Shift while reshaping.
+  // docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Shift while reshaping.
   describe('with Shift while reshaping a locked shape', () => {
     const circle = {
       kind: 'circle' as const,
@@ -264,7 +264,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Alt (Option) flips the stroke.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (Option) flips the stroke.
 describe('useWhiteboardPenGesture, with Alt', () => {
   /** A key event as the browser sends it; `defaultPrevented` says whether the page kept it. */
   const key = (type: 'keydown' | 'keyup', k = 'Alt', repeat = false) =>

@@ -3,7 +3,7 @@ import { defaultScheme } from '@livediagram/document';
 import { toolCaption, toolPhantom } from './quick-style-tool';
 import { whiteboardShapeIntent } from './whiteboard-tool';
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": with a shape, line, arrow or
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": with a shape, line, arrow or
 // text tool in hand, the panel styles what that tool draws next.
 const theme = defaultScheme('light');
 
@@ -39,7 +39,7 @@ describe('toolCaption', () => {
   });
 });
 
-describe('the Path tool (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+describe('the Path tool (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
   it('styles the next path: a closed stand-in in Ink, unfilled, so a fill can be chosen too', () => {
     const el = toolPhantom({ type: 'path' }, theme)!;
     expect(el).toMatchObject({

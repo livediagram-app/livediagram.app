@@ -5,7 +5,7 @@ import { track } from './telemetry';
 
 vi.mock('./telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Alt (Option), or the chip on a
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (Option), or the chip on a
 // touch screen, flips the stroke being drawn between ink and the shape it reads as.
 type P = { x: number; y: number };
 const square = (): P[] => {

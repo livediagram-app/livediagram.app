@@ -169,7 +169,7 @@ describe('open path ends and continuing', () => {
   });
 });
 
-describe('pressing placed nodes while drawing (docs/specs/023-whiteboard/path-tool.md "Editing while drawing")', () => {
+describe('pressing placed nodes while drawing (docs/specs/023-draw-mode/path-tool.md "Editing while drawing")', () => {
   const draft = draftOf([corner(0, 0), corner(100, 0), corner(100, 100)], 0);
 
   it('takes a placed node that is neither the first nor the last', () => {

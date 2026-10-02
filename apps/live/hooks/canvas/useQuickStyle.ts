@@ -114,7 +114,7 @@ export function useQuickStyle(deps: {
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
-  // In Draw mode (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays") the
+  // In Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays") the
   // defaults read as the board's ink, and the style memory is Draw mode's own
   // (useStyleMemory's board scope), never Diagram mode's.
   const whiteboard = deps.drawMode;

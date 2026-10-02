@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-// A delayed close for a hover-opened flyout (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard
+// A delayed close for a hover-opened flyout (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
 // shows"): `schedule` closes after `ms` unless `cancel` runs first, so the
 // pointer can cross the gap between a button and its flyout without losing it.
 export function useHoverClose(ms: number): {

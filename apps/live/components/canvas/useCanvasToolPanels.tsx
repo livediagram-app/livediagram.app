@@ -93,7 +93,7 @@ export function useCanvasToolPanels({
     readOnly,
   } = props;
   // Draw mode keeps its eraser and highlighter settings in the dock's flyouts
-  // and has no format painter (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
+  // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
 
   const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>

@@ -26,7 +26,7 @@ type CanvasDrawPreviewProps = {
   wrapperRef: RefObject<HTMLDivElement | null>;
   // The view the wrapper sits in (useCanvasClientOrigin).
   viewKey: string;
-  // The board's ink on a whiteboard (docs/specs/023-whiteboard/whiteboard.md), what the main pen
+  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
 };
@@ -48,7 +48,7 @@ export function CanvasDrawPreview({
   viewKey,
   whiteboardInk,
 }: CanvasDrawPreviewProps) {
-  // A whiteboard shape or line previews as it will land (docs/specs/023-whiteboard/whiteboard.md
+  // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
   // "Shapes"): in the board's ink, solid, unfilled.
   const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
   // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
@@ -59,7 +59,7 @@ export function CanvasDrawPreview({
     penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
   // A line or an arrow previews as the element it lands, in the canvas layer
-  // (DrawnArrowPreview, docs/specs/023-whiteboard/whiteboard.md "Shapes"), not here.
+  // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
   const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);

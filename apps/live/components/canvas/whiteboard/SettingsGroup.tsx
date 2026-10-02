@@ -1,6 +1,6 @@
 'use client';
 
-// The dock's Settings group (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): the
+// The dock's Settings group (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): the
 // cog on its own, last. It opens the Settings flyout on a press only, never on hover.
 
 import { DockButton, DockToolbar } from './DockToolbar';

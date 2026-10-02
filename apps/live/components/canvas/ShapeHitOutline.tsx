@@ -21,7 +21,7 @@ export function outlineHit(
 }
 
 // A whiteboard shape not yet selected is picked by its drawn outline, not its box
-// (docs/specs/023-whiteboard/whiteboard.md "Selecting"): its wrapper lets pointers
+// (docs/specs/023-draw-mode/draw-mode.md "Selecting"): its wrapper lets pointers
 // through, and this invisible copy of the outline (shape-hit.ts, the eraser's same
 // geometry) catches them 6 screen px either side of the line, plus anywhere on a
 // visible fill. It rides inside the wrapper, so it turns with the shape.

@@ -108,7 +108,7 @@ describe('useRecognitionPreview', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Alt (or the chip) flips the stroke.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Alt (or the chip) flips the stroke.
 describe('useRecognitionPreview, flipped', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -180,7 +180,7 @@ describe('useRecognitionPreview, flipped', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": the chip on a touch screen.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": the chip on a touch screen.
 describe('useRecognitionPreview, the chip', () => {
   beforeEach(() => {
     vi.useFakeTimers();

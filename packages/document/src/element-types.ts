@@ -152,11 +152,11 @@ export type ShapeElement = {
   font?: string;
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   textColor?: string;
-  // A whiteboard stock colour for the label's text (docs/specs/023-whiteboard/whiteboard.md
+  // A whiteboard stock colour for the label's text (docs/specs/023-draw-mode/draw-mode.md
   // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
   // `textColor` is unset.
   penTextColour?: PenColourName;
@@ -472,7 +472,7 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the text (docs/specs/023-whiteboard/whiteboard.md "Imported and
+  // A whiteboard stock colour for the text (docs/specs/023-draw-mode/draw-mode.md "Imported and
   // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
   penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
@@ -529,7 +529,7 @@ export type TextElement = {
   // editor modes and for everyone.
   sizing?: TextSizing;
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
-  // (docs/specs/023-whiteboard/whiteboard.md "Text boxes"). Absent = 1.
+  // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
   textScale?: number;
 };
 
@@ -715,7 +715,7 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
-  // A whiteboard stock colour for the note's text (docs/specs/023-whiteboard/whiteboard.md
+  // A whiteboard stock colour for the note's text (docs/specs/023-draw-mode/draw-mode.md
   // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
   penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
@@ -904,11 +904,11 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-whiteboard/whiteboard.md
+  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
   // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
   // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
   streamline?: number;
-  // A whiteboard marker's named colour (docs/specs/023-whiteboard/whiteboard.md "The colour picker"):
+  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
   // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
   penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
@@ -975,7 +975,7 @@ export type FreehandElement = {
 
 // --- Paths -----------------------------------------------------------------
 
-// A path's node (docs/specs/023-whiteboard/path-tool.md "The path element"): corner (no handles, or
+// A path's node (docs/specs/023-draw-mode/path-tool.md "The path element"): corner (no handles, or
 // independent ones), mirrored (collinear, equal length) or aligned (collinear, own lengths).
 export type PathHandleMode = 'corner' | 'mirrored' | 'aligned';
 
@@ -991,7 +991,7 @@ export type PathNode = PathPoint & {
   handleOut?: PathPoint;
 };
 
-// The Path tool's element (docs/specs/023-whiteboard/path-tool.md): an ordered list of nodes joined
+// The Path tool's element (docs/specs/023-draw-mode/path-tool.md): an ordered list of nodes joined
 // by cubic Béziers, open or closed, editable point by point. The box wraps the drawn curve. Styled
 // like a shape: stroke, fill (drawn only when closed), border width and style. A path takes no
 // typed label; the label fields stay declared for the union code paths, as on a freehand.
@@ -1008,7 +1008,7 @@ export type PathElement = {
   closed: boolean;
   fillColor?: string;
   strokeColor?: string;
-  // A whiteboard stock colour (docs/specs/023-whiteboard/whiteboard.md "Imported and pasted
+  // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted
   // content"): drawn in the version tuned for the viewer's board when `strokeColor` is unset.
   penColour?: PenColourName;
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.

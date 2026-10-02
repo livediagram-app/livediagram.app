@@ -30,7 +30,7 @@ import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
 
-/** What the Path tool hands the editor when a path lands (docs/specs/023-whiteboard/path-tool.md). */
+/** What the Path tool hands the editor when a path lands (docs/specs/023-draw-mode/path-tool.md). */
 export type PathCommit = {
   anchors: PathAnchor[];
   closed: boolean;
@@ -57,7 +57,7 @@ type Drag = {
 
 const EMPTY: ReadonlySet<string> = new Set();
 
-// The Path tool's drawing gesture (docs/specs/023-whiteboard/path-tool.md "Drawing"; blueprint
+// The Path tool's drawing gesture (docs/specs/023-draw-mode/path-tool.md "Drawing"; blueprint
 // path-tool "Drawing"). Canvas composes `beginPathPress` in front of the other draw gestures, so
 // every press it claims places, shapes, closes or finishes a path; the steps themselves are the
 // pure ones in lib/path-draw. The draft lives here until it lands through `onCommitPath`.
@@ -91,7 +91,7 @@ export function usePathDrawGesture({
     // The nodes undone while drawing belong to this draft only.
     if (next === null) setRedo([]);
   };
-  // Nodes undone while drawing (docs/specs/023-whiteboard/path-tool.md "Drawing"), last undone
+  // Nodes undone while drawing (docs/specs/023-draw-mode/path-tool.md "Drawing"), last undone
   // last: redo puts them back in order until a new node is placed.
   const redoRef = useRef<PathAnchor[]>([]);
   const [redoCount, setRedoCount] = useState(0);

@@ -399,7 +399,7 @@ function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, Sha
   return floor;
 }
 
-// How a resize frame's hugging text boxes are sized (docs/specs/023-whiteboard/whiteboard.md "Text
+// How a resize frame's hugging text boxes are sized (docs/specs/023-draw-mode/draw-mode.md "Text
 // boxes"): the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
 // measure. Given only for a single element; it applies to a text box that fits or wraps.
 export type TextHugResize = {

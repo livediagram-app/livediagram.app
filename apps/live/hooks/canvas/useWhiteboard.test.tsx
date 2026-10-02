@@ -267,7 +267,7 @@ describe('pen changes', () => {
   });
 
   it('remembers a custom colour in Your colours, synced, and nothing for a stock colour', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker".
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker".
     const { hook } = setup(board());
     act(() => hook.result.current.updatePen('second', { colour: 'teal' }));
     act(() => hook.result.current.updatePen('third', { colour: '#FF6B00' }));

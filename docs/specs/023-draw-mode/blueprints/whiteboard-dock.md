@@ -1,6 +1,6 @@
 # Whiteboard dock: blueprint
 
-Derived from [Whiteboard](../whiteboard.md) "What a whiteboard shows", "Where the dock sits" and
+Derived from [Draw mode](../draw-mode.md) "What a whiteboard shows", "Where the dock sits" and
 "Shape slots". The dock's tools, pens, eraser and backgrounds are in
 [whiteboard-round-one](whiteboard-round-one.md); this file owns the dock's layout (four groups,
 top or bottom), the Shapes flyout with its search and the shape slots. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)

@@ -1,7 +1,7 @@
 // Outline polylines from drawn SVG paths: the cloud's bumps and the
 // document's wavy edge for anchors (docs/specs/008-canvas/arrow-anchors.md
 // "Anchor geometry"), and every drawn part of a shape for the whiteboard's
-// outline hit (docs/specs/023-whiteboard/whiteboard.md "Selecting"). Only the
+// outline hit (docs/specs/023-draw-mode/draw-mode.md "Selecting"). Only the
 // absolute commands the shape-geometry table uses are read (M, L, C, A, Z);
 // anything else returns null and the caller keeps the box.
 

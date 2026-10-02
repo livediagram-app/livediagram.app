@@ -27,7 +27,7 @@ const BUTTON =
 const CHECKED =
   'bg-brand-50 text-brand-700 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15 dark:text-brand-200';
 
-// A path's edit toolbar (docs/specs/023-whiteboard/path-tool.md "Editing"; blueprint path-tool "Edit
+// A path's edit toolbar (docs/specs/023-draw-mode/path-tool.md "Editing"; blueprint path-tool "Edit
 // mode"): everything edit mode does by key, as buttons, so a finger reaches it too. It floats in
 // the canvas's transformed layer like the selection toolbar, counter-scaled to a constant size;
 // `data-canvas-toolbar` keeps its presses away from the edit gesture.

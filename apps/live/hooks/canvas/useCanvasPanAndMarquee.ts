@@ -42,7 +42,7 @@ type MarqueeState = {
   startY: number;
   currentX: number;
   currentY: number;
-  // Shift with Select on a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Selecting"): the box adds
+  // Shift with Select on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Selecting"): the box adds
   // to the selection, and a click toggles `clickTarget` (the element pressed) instead of deselecting.
   additive?: boolean;
   clickTarget?: string | null;

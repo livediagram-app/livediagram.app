@@ -22,7 +22,7 @@ const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   ...over,
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Selecting": a shape is picked by its drawn outline.
+// docs/specs/023-draw-mode/draw-mode.md "Selecting": a shape is picked by its drawn outline.
 describe('ShapeHitOutline', () => {
   it('lays the outline over the whole box in canvas px, pointer-transparent itself', () => {
     const { container } = render(<ShapeHitOutline element={shape()} borderPx={0} />);

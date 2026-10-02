@@ -1,4 +1,4 @@
-// The quick style panel in Draw mode (docs/specs/023-whiteboard/whiteboard.md "The quick style panel
+// The quick style panel in Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel
 // stays"). Its Stroke and Text colour rows offer the stock colours, as Marker colour does: Ink and
 // the seven hued colours (each stored by name and drawn in its version for the canvas,
 // docs/specs/007-editor/editor-modes.md "One look"), then the tab's custom colours. Background keeps

@@ -789,7 +789,7 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'whiteboard':
-      // A whiteboard (docs/specs/023-whiteboard/whiteboard.md): a plain board with a marker scribble,
+      // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): a plain board with a marker scribble,
       // a red underline and a sticky. Hover story: a blue pen writes a new line.
       return (
         <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>

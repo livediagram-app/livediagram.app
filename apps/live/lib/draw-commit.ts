@@ -150,7 +150,7 @@ export function buildDrawnArrow(
   endY: number,
   elements: Element[],
   theme: ThemeDefinition,
-  // The whiteboard's Line / Arrow shapes (docs/specs/023-whiteboard/whiteboard.md): their heads, and
+  // The whiteboard's Line / Arrow shapes (docs/specs/023-draw-mode/draw-mode.md): their heads, and
   // no colour so the board's ink shows.
   opts: { ends?: ArrowEnds; unpainted?: boolean } = {},
 ): ArrowElement {
@@ -175,7 +175,7 @@ export function buildDrawnArrow(
   };
 }
 
-// The arrow a draw gesture lands, dressed as it lands (docs/specs/023-whiteboard/whiteboard.md
+// The arrow a draw gesture lands, dressed as it lands (docs/specs/023-draw-mode/draw-mode.md
 // "Shapes"): unpainted on a whiteboard so the board's ink shows, then in its tool's remembered
 // style. The live preview and the commit both build it here, so what the drag shows is what the
 // release lands, down to the stroke width and the arrowhead.
@@ -298,7 +298,7 @@ export function buildDrawnBoxed(
   });
   // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
   const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
-  // A text box placed in Draw mode hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text
+  // A text box placed in Draw mode hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text
   // boxes"): it lands empty, one line tall, caret-sized at a click or at the dragged width.
   const hugged =
     base.type === 'text' && drawMode

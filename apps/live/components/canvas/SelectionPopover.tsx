@@ -35,7 +35,7 @@ type SelectionPopoverProps = {
   // True when the element already has text: the button reads "Edit text";
   // false = "Add text". Defaults to edit for older callers.
   hasText?: boolean;
-  // Open a path's edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"): a path only.
+  // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
   // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
   // The same actions as Tab / Enter and the "+" ring, given a one-click home

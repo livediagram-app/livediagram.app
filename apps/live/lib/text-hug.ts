@@ -1,4 +1,4 @@
-// A text box that fits or wraps hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes",
+// A text box that fits or wraps hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes",
 // docs/specs/007-editor/editor-modes.md "A text box's sizing"), in either editor mode:
 // the box is the text's own line box plus a little padding, never a default size. This module
 // is the pure geometry: what the box is for a measured block of text, where a click or a drag

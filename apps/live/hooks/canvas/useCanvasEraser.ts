@@ -86,7 +86,7 @@ type EraserDeps = {
   ) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Eraser"): a stroke is touched where its INK
+  // On a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Eraser"): a stroke is touched where its INK
   // is, and Partial cuts strokes instead of removing them. Null elsewhere.
   whiteboard?: { mode: WhiteboardEraserMode } | null;
 };
@@ -135,7 +135,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     const r = screenRadius / frame.zoom;
     const isProtected = (el: Element) =>
       el.locked === true || depsRef.current.layerInertIds.has(el.id);
-    // A path goes whole in either mode (docs/specs/023-whiteboard/path-tool.md "Selecting and erasing").
+    // A path goes whole in either mode (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing").
     let changed = false;
     for (const id of pathsTouched(activeTab.elements, from, at, r, isProtected)) {
       if (erasedRef.current.has(id)) continue;

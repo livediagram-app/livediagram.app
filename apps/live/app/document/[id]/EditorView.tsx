@@ -224,7 +224,7 @@ export function EditorView() {
     !showSignInBanner &&
     !templateGridOpen &&
     !pendingDraw &&
-    // Draw mode's dock is its own hint (docs/specs/023-whiteboard/whiteboard.md).
+    // Draw mode's dock is its own hint (docs/specs/023-draw-mode/draw-mode.md).
     !drawMode &&
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.

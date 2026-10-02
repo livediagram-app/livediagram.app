@@ -2338,7 +2338,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
   });
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md): a drawn path, a continued one, an edit.
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
     editsBlocked: createBlocked,
     commit,
@@ -2442,7 +2442,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   });
 
-  // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"): one commit, one undo step.
+  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): one commit, one undo step.
   const snapColours = useSnapColours({
     elements: activeTab.elements,
     inertIds: layerInertIds,
@@ -2450,7 +2450,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
   });
 
-  // The whiteboard dock (docs/specs/023-whiteboard/whiteboard.md): device-local pens, recognition and
+  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
   // eraser mode, and the dock presses turned into ordinary editor calls.
   const whiteboardDock = useWhiteboard({
     activeTab,
@@ -3059,7 +3059,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onOpenSearch: () => dialogs.setSearchOpen(true),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
-    // A whiteboard's keys are its dock's (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts").
+    // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
     whiteboard: whiteboardDock.whiteboard
       ? {
           pickSelect: whiteboardDock.pickSelect,

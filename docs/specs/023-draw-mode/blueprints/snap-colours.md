@@ -1,6 +1,6 @@
 # Snap colours: blueprint
 
-Derived from [Whiteboard](../whiteboard.md) "Snap colours" (and the Settings bullet of "What a
+Derived from [Draw mode](../draw-mode.md) "Snap colours" (and the Settings bullet of "What a
 whiteboard shows"). Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) as `Sn`.
 

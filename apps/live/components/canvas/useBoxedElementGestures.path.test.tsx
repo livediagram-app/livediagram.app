@@ -5,7 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPath } from '@livediagram/document';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
-// docs/specs/023-whiteboard/path-tool.md "Editing": a double-tap (two presses the ledger pairs) opens
+// docs/specs/023-draw-mode/path-tool.md "Editing": a double-tap (two presses the ledger pairs) opens
 // a path's edit mode, since a touch screen's own dblclick is unreliable.
 describe('a double press on a path', () => {
   it('opens its edit mode', () => {

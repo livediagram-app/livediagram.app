@@ -73,7 +73,7 @@ describe('useEditModeContextMenu', () => {
   });
 });
 
-describe('a path in its edit mode (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+describe('a path in its edit mode (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
   it('never opens the element menu: its edit mode is its points, with its own toolbar', () => {
     const path = {
       id: 'p1',
@@ -100,7 +100,7 @@ describe('a path in its edit mode (docs/specs/023-whiteboard/path-tool.md "Editi
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a whiteboard text box starts caret-sized and
+// docs/specs/023-draw-mode/draw-mode.md "Text boxes": a whiteboard text box starts caret-sized and
 // grows with the words, so a menu opened at its corner would sit on the line being typed.
 describe('a whiteboard text box being typed into', () => {
   const text = { id: 't1', type: 'text', x: 0, y: 0, width: 8, height: 22 } as Element;

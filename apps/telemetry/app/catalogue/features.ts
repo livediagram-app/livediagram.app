@@ -210,7 +210,7 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Draw mode (docs/specs/023-whiteboard/whiteboard.md): Whiteboard tabs made, and which of the dock's
+// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
 // choices people reach for. Headed by the boards made; the rest are settings.
 export const WHITEBOARDS_CREATED = chart(
   'Draw',

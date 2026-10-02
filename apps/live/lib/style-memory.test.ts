@@ -95,7 +95,7 @@ describe('recordStyleEdit', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a board remembers a stock
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a board remembers a stock
 // colour by name, so the next shape adapts per board too.
 describe('whiteboard stock colours in memory', () => {
   it('remembers a named colour and drops the hex it replaced', () => {
@@ -258,7 +258,7 @@ describe('text elements', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": a whiteboard keeps its own
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a whiteboard keeps its own
 // memory, so a board's styles never dress a diagram tab's next shape, nor the other way round.
 describe('the board scope', () => {
   it('keys a whiteboard element apart from a diagram one', () => {
@@ -285,7 +285,7 @@ describe('the board scope', () => {
   });
 });
 
-describe('a path (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
+describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
   const path = createPath(
     [
       { x: 0, y: 0, mode: 'corner' },

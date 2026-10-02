@@ -18,7 +18,7 @@ type WhiteboardPenPreviewProps = {
   zoom: number;
 };
 
-// What a whiteboard pen shows while it draws (docs/specs/023-whiteboard/whiteboard.md "Pens",
+// What a whiteboard pen shows while it draws (docs/specs/023-draw-mode/draw-mode.md "Pens",
 // "Shape recognition"), rendered INSIDE the canvas's transformed layer beside the committed
 // elements, in canvas px: the live ink, laid out as the stroke it lands as, and, with recognition
 // on and the pen held still (or Alt pressed), the shape the stroke reads as in its place, and on a

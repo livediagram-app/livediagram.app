@@ -1,4 +1,4 @@
-// Shape recognition on a whiteboard (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"):
+// Shape recognition on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"):
 // the one test a stroke passes to become a clean shape, shared by the preview shown while the pen
 // holds still and the commit on release, so the preview is exactly what lands.
 import {
@@ -41,7 +41,7 @@ export function stillSince(
   return true;
 }
 
-// Once a shape shows, the pen keeps shaping it (docs/specs/023-whiteboard/whiteboard.md "Shape
+// Once a shape shows, the pen keeps shaping it (docs/specs/023-draw-mode/draw-mode.md "Shape
 // recognition"): dragging on moves the part of the shape the pen rested near, by as much as the
 // pen has moved since, and keeps the rest. A line moves its nearer end; a box moves its nearer
 // corner and keeps the opposite one, flipping cleanly past it. `ratio` (Shift held, see
@@ -84,7 +84,7 @@ export function adjustRecognised(
 }
 
 // The ratios Shift snaps a recognised rectangle to, width over height: a square, a landscape 5:3
-// and a portrait 3:5 (docs/specs/023-whiteboard/whiteboard.md "Shape recognition"). Every other
+// and a portrait 3:5 (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"). Every other
 // boxed shape keeps 1:1 (a true circle).
 export const SHIFT_RECTANGLE_RATIOS = [1, 5 / 3, 3 / 5] as const;
 

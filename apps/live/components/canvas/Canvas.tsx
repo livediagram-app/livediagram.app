@@ -504,7 +504,7 @@ export function Canvas(props: CanvasProps) {
       viewportZoom,
       onCommitPolygon,
     });
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md), in front of both: see usePathTool.
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md), in front of both: see usePathTool.
   const pathTool = usePathTool({
     pendingDraw,
     canvasTool,
@@ -677,7 +677,7 @@ export function Canvas(props: CanvasProps) {
         // (flicker) with the coplanar contents above them.
         data-iso={canvasTool === 'isometric' ? '' : undefined}
         // A whiteboard pen draws wherever it presses, so nothing under it swaps
-        // the pen cursor for its own (globals.css, docs/specs/023-whiteboard/whiteboard.md "Pens").
+        // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
         data-pen-in-hand={
           (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
           pendingDraw?.type === 'path'
@@ -759,7 +759,7 @@ export function Canvas(props: CanvasProps) {
             </MindGrowProvider>
           </CanvasZoomProvider>
         </CanvasStillProvider>
-        {/* The whiteboard pen's stroke being drawn (docs/specs/023-whiteboard/whiteboard.md "Pens"):
+        {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
         {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
@@ -770,7 +770,7 @@ export function Canvas(props: CanvasProps) {
             zoom={viewportZoom}
           />
         ) : null}
-        {/* The path being drawn (docs/specs/023-whiteboard/path-tool.md), in the same layer. */}
+        {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
         {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
         {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
@@ -853,7 +853,7 @@ export function Canvas(props: CanvasProps) {
       {canvasTool === 'eraser' ? (
         <EraserBrushRing
           pos={eraserPos}
-          // A whiteboard's brush is fixed per mode (docs/specs/023-whiteboard/whiteboard.md "Eraser").
+          // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
           radius={
             props.whiteboardDock
               ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
@@ -889,7 +889,7 @@ export function Canvas(props: CanvasProps) {
       <CanvasChrome
         {...props}
         // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
-        // nodes, not the board (docs/specs/023-whiteboard/path-tool.md "Drawing").
+        // nodes, not the board (docs/specs/023-draw-mode/path-tool.md "Drawing").
         {...(pathTool.history
           ? {
               canUndo: pathTool.history.canUndo,

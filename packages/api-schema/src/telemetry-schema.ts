@@ -121,7 +121,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted document is the
   // question; never a document or team name.
   'Trash',
-  // Draw mode (docs/specs/023-whiteboard/whiteboard.md), named 'Whiteboard' until its stored
+  // Draw mode (docs/specs/023-draw-mode/draw-mode.md), named 'Whiteboard' until its stored
   // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
   // 'Template' | 'NewTab' | 'Import'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
   // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |

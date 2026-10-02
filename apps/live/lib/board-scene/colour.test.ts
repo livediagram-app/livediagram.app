@@ -73,7 +73,7 @@ describe('resolveSceneColour', () => {
 // One nearest stock colour (penColourAtHue), two rules over it: the snap is "always nearest", the
 // import "keep the exact hex unless clearly a stock colour". Every colour of the real Excalidraw
 // palette, side by side (docs/specs/020-import-export/board-scene.md "Colours",
-// docs/specs/023-whiteboard/blueprints/snap-colours.md).
+// docs/specs/023-draw-mode/blueprints/snap-colours.md).
 describe('the import rule beside the snap rule', () => {
   const resolve = createColourResolver();
   const importOf = (hex: string) => {

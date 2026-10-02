@@ -287,7 +287,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('offers the whiteboard’s colours on Stroke and Text colour, with the tab’s custom colours', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays".
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays".
     const palette = { ...PALETTE, custom: ['#868e96'] };
     const board = {
       value: 'blue' as const,
@@ -342,7 +342,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('offers the eight stock colours, and Custom colours only when the tab uses some', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays": quick choices only.
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only.
     const { unmount } = render(
       <QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" />,
     );

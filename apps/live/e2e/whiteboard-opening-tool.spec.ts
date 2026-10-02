@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
 
-// The tool a whiteboard opens with (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard
+// The tool a whiteboard opens with (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
 // shows"): an empty board puts the active pen in hand, a board with content opens on Select.
 // Dark mode; synthesised board.
 

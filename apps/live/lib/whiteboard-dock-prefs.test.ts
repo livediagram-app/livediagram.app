@@ -85,7 +85,7 @@ describe('withWhiteboardDockPrefs', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Where the dock sits".
+// docs/specs/023-draw-mode/draw-mode.md "Where the dock sits".
 describe('the dock position', () => {
   it('offers the top and the bottom, top first', () => {
     expect(WHITEBOARD_DOCK_POSITIONS).toEqual(['top', 'bottom']);

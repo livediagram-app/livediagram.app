@@ -1,6 +1,6 @@
 'use client';
 
-// The whiteboard dock's state and actions (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard
+// The whiteboard dock's state and actions (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
 // shows"). The dock tool in hand is DERIVED from the editor's canvas tool and
 // armed intent (activeWhiteboardTool), so the dock can never disagree with the
 // canvas; this hook owns only the device-local prefs (pens, recognition,
@@ -51,11 +51,11 @@ type Deps = {
   selectCanvasTool: (tool: CanvasTool) => void;
   beginDraw: (intent: PendingDraw) => void;
   cancelDraw: () => void;
-  // A path is open in its edit mode (docs/specs/023-whiteboard/path-tool.md "Editing"), and how to
+  // A path is open in its edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"), and how to
   // leave it: the dock presses Select with a path glyph meanwhile.
   pathEditing: boolean;
   leavePathEdit: () => void;
-  // Snap colours (docs/specs/023-whiteboard/whiteboard.md "Snap colours"), for the Settings flyout.
+  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"), for the Settings flyout.
   snapColours: SnapColoursApi;
 } & WhiteboardDockPrefsDeps;
 
@@ -85,7 +85,7 @@ export function useWhiteboard(deps: Deps) {
   const dockPrefs = useWhiteboardDockPrefs(deps);
   // Your colours ("The colour picker"), synced too.
   const colourMemory = usePenColourMemory(deps);
-  // S (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): each press raises this, and
+  // S (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): each press raises this, and
   // the dock, which owns its flyouts, opens the Shapes flyout in answer.
   const [shapesRequest, setShapesRequest] = useState(0);
   // Read lazily from this browser (readLocalStorageSafe copes with no storage).
@@ -168,7 +168,7 @@ export function useWhiteboard(deps: Deps) {
     if (patch.width !== undefined) track('Draw', 'Changed', 'PenWidth');
   };
 
-  // Right-click on a pen: back to how it started, colour and width (docs/specs/023-whiteboard/whiteboard.md "Pens").
+  // Right-click on a pen: back to how it started, colour and width (docs/specs/023-draw-mode/draw-mode.md "Pens").
   const resetPen = (id: WhiteboardPenId) => {
     const preset = DEFAULT_WHITEBOARD_PREFS.pens.find((p) => p.id === id);
     const pen = prefs.pens.find((p) => p.id === id);
@@ -179,7 +179,7 @@ export function useWhiteboard(deps: Deps) {
     track('Draw', 'Changed', 'PenReset');
   };
 
-  // The Path tool (docs/specs/023-whiteboard/path-tool.md): held like a pen until another tool is picked.
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): held like a pen until another tool is picked.
   const pickPath = () => {
     setCanvasTool('select');
     beginDraw({ type: 'path' });
@@ -203,7 +203,7 @@ export function useWhiteboard(deps: Deps) {
   };
 
   // Any catalogue shape, from the Shapes flyout, a slot, More shapes or a key. Plain: a pen never
-  // colours another tool (docs/specs/023-whiteboard/whiteboard.md "Shapes"). Every pick counts
+  // colours another tool (docs/specs/023-draw-mode/draw-mode.md "Shapes"). Every pick counts
   // towards the Shapes flyout's slots ("Shape slots").
   const pickShape = (key: WhiteboardShapeKey) => {
     const entry = whiteboardShapeEntry(key);
@@ -258,7 +258,7 @@ export function useWhiteboard(deps: Deps) {
     colourMemory,
     pickEraser,
     setEraserMode,
-    // The sticky note is a shape (docs/specs/023-whiteboard/whiteboard.md "Shape slots"): N counts
+    // The sticky note is a shape (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): N counts
     // as a pick, like the shape keys.
     pickSticky: () => pickShape('sticky'),
     pickText: () => pickIntent({ type: 'text' }),
@@ -271,7 +271,7 @@ export function useWhiteboard(deps: Deps) {
     pinnedShapes: dockPrefs.pinned,
     slotShapes: dockPrefs.slots,
     applySlotOutcome: dockPrefs.applySlotOutcome,
-    // Where the dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits").
+    // Where the dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
     position: dockPrefs.position,
     pickPath,
     pathEditing,

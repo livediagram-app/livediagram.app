@@ -243,7 +243,7 @@ describe('boxed element degradation', () => {
     );
   });
 
-  it('exports a path as a line sampled along its curve (docs/specs/023-whiteboard/path-tool.md)', () => {
+  it('exports a path as a line sampled along its curve (docs/specs/023-draw-mode/path-tool.md)', () => {
     const path = createPath(
       [
         { x: 0, y: 0, mode: 'corner', handleOut: { x: 0, y: -40 } },

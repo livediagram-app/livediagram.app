@@ -8,7 +8,7 @@ import {
   stillSince,
 } from './recognition-preview';
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": holding the pen still shows the shape
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": holding the pen still shows the shape
 // that release would land.
 const square = (): { x: number; y: number }[] => {
   const pts: { x: number; y: number }[] = [];
@@ -57,7 +57,7 @@ describe('stillSince', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": once shown, dragging on resizes.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": once shown, dragging on resizes.
 describe('adjustRecognised', () => {
   const box = {
     kind: 'square' as const,
@@ -94,7 +94,7 @@ describe('adjustRecognised', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": Shift while reshaping makes it perfect.
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": Shift while reshaping makes it perfect.
 describe('adjustRecognised, held to a ratio (Shift)', () => {
   const box = {
     kind: 'circle' as const,
@@ -185,7 +185,7 @@ describe('adjustRecognised, held to a ratio (Shift)', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Shape recognition": a rectangle snaps to the nearest of
+// docs/specs/023-draw-mode/draw-mode.md "Shape recognition": a rectangle snaps to the nearest of
 // 1:1, 5:3 and 3:5 by the logarithm of width over height; every other box keeps 1:1.
 describe('shiftRatio', () => {
   const of = (

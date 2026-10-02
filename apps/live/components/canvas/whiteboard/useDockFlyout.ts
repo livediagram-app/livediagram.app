@@ -1,6 +1,6 @@
 'use client';
 
-// The dock's one open flyout (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): which
+// The dock's one open flyout (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): which
 // it is, where it sits, whether the pointer opened it, and the delayed close of a hover-opened one.
 // Only one flyout is open at a time, whichever group its opener is in.
 

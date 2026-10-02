@@ -1,6 +1,6 @@
 'use client';
 
-// Where a path lands in the document (docs/specs/023-whiteboard/path-tool.md; blueprint path-tool
+// Where a path lands in the document (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
 // "Drawing" and "Edit mode"): a drawn path, a continued one, and every edit-mode gesture, each one
 // `commit`, so each is one undo step.
 import {

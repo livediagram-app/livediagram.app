@@ -149,7 +149,7 @@ describe('TEMPLATES catalogue', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
-      // docs/specs/023-whiteboard/whiteboard.md); every other kind seeds content. Either way the
+      // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
       const empty = kind === 'blank' || kind === 'whiteboard';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);

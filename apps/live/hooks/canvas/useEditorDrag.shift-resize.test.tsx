@@ -212,7 +212,7 @@ describe('Shift pressed or released mid-drag', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Text boxes": Shift keeps a hugging text box's
+// docs/specs/023-draw-mode/draw-mode.md "Text boxes": Shift keeps a hugging text box's
 // ratio by scaling its text with the box; the height hugs the scaled text.
 // Keyed on the box's sizing, never the editor mode (docs/specs/007-editor/editor-modes.md "A text
 // box's sizing"); the drag machine has no mode at all.

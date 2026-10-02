@@ -91,7 +91,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a whiteboard pen stroke\u2019s packed pressures and streamline, rejects junk', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Pens": a pressure per point, 0 to 1, packed.
+    // docs/specs/023-draw-mode/draw-mode.md "Pens": a pressure per point, 0 to 1, packed.
     const points = [
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -104,7 +104,7 @@ describe('isValidElement', () => {
   });
 
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "The colour picker": stored by name.
+    // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
     const packedPoints = encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
@@ -134,7 +134,7 @@ describe('isValidElement', () => {
     }
   });
 
-  // docs/specs/023-whiteboard/whiteboard.md "Imported and pasted content": a text box's and a
+  // docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content": a text box's and a
   // shape label's stock colour, stored by name.
   it('accepts a named text colour and rejects anything else in its place', () => {
     const text = { id: 't', type: 'text', label: 'Hi', ...box };
@@ -266,7 +266,7 @@ describe('image credit (docs/specs/009-elements/image-search.md)', () => {
   });
 });
 
-describe('path validation (docs/specs/023-whiteboard/path-tool.md)', () => {
+describe('path validation (docs/specs/023-draw-mode/path-tool.md)', () => {
   const node = (nx: number, ny: number) => ({ nx, ny, mode: 'corner' });
   const path = (extra: Record<string, unknown> = {}) => ({
     id: 'p',

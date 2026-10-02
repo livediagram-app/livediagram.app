@@ -11,7 +11,7 @@ import { useWhiteboard } from './useWhiteboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/023-whiteboard/whiteboard.md "Shapes": a whiteboard keeps its own styles, so its
+// docs/specs/023-draw-mode/draw-mode.md "Shapes": a whiteboard keeps its own styles, so its
 // tools never reach a diagram tab. A shape, line or arrow armed from the dock is the board's tool,
 // previewed in the board's ink and named as the board names it; leaving the board puts it down,
 // as it puts a pen down, so a diagram never previews or names its next shape the board's way.

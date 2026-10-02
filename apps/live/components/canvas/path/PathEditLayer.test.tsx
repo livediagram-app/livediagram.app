@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { PathEditLayer } from './PathEditLayer';
 import { PathDraftLayer } from './PathDraftLayer';
 
-// docs/specs/023-whiteboard/path-tool.md "Editing": corner nodes draw as squares, smooth ones as circles.
+// docs/specs/023-draw-mode/path-tool.md "Editing": corner nodes draw as squares, smooth ones as circles.
 describe('PathEditLayer', () => {
   it('draws a corner node as a square and a smooth one as a circle, filling the selected', () => {
     const { container } = render(
@@ -41,7 +41,7 @@ describe('PathEditLayer', () => {
   });
 });
 
-describe('the path overlays stay on top (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+describe('the path overlays stay on top (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
   it('stack above every element, a label being typed included', () => {
     const { container } = render(
       <PathEditLayer

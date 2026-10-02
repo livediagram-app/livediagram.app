@@ -1,6 +1,6 @@
 'use client';
 
-// The dock's History group (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows"): Undo
+// The dock's History group (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): Undo
 // and Redo, the same actions as the corner cluster and the keyboard, on every layout. With nothing
 // to undo or redo a button is unavailable but stays in the toolbar's arrow-key order.
 

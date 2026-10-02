@@ -237,7 +237,7 @@ describe('describeVariant — element shadows (docs/specs/008-canvas/element-sha
   });
 });
 
-describe('editingLook (docs/specs/023-whiteboard/path-tool.md "Editing")', () => {
+describe('editingLook (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
   it('raises a label being typed and shows the text cursor on it', () => {
     expect(editingLook({ type: 'shape' }, true)).toEqual({ raise: true, textCursor: true });
     expect(editingLook({ type: 'shape' }, false)).toEqual({ raise: false, textCursor: false });

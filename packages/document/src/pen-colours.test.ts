@@ -20,7 +20,7 @@ import {
   readablePenColour,
 } from './index';
 
-// docs/specs/023-whiteboard/whiteboard.md "The colour picker": Ink and seven stock colours, each
+// docs/specs/023-draw-mode/draw-mode.md "The colour picker": Ink and seven stock colours, each
 // stored by name and drawn in the version tuned for the board it is shown on.
 describe('pen stock colours', () => {
   it('names seven colours after the ink: Blue, Red, Orange, Green, Teal, Violet, Pink', () => {
@@ -94,7 +94,7 @@ describe('pen stock colours', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Snap colours": a neutral custom colour becomes the ink,
+// docs/specs/023-draw-mode/draw-mode.md "Snap colours": a neutral custom colour becomes the ink,
 // any other the stock colour nearest in hue.
 describe('nearestPenColour', () => {
   it('reads a colour in OKLCH', () => {

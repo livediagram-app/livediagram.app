@@ -1,4 +1,4 @@
-// Stroke geometry for the whiteboard eraser (docs/specs/023-whiteboard/whiteboard.md "Eraser"): whether a
+// Stroke geometry for the whiteboard eraser (docs/specs/023-draw-mode/draw-mode.md "Eraser"): whether a
 // brush swept along a segment touches a stroke's INK (not its bounding box),
 // and the pieces of a stroke that survive a Partial erase. Pure; canvas coords.
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from './border-style';
@@ -165,7 +165,7 @@ export function insidePolygon(p: Point, pts: readonly Point[]): boolean {
 }
 
 /**
- * True when a brush swept from `a` to `b` touches a path (docs/specs/023-whiteboard/path-tool.md
+ * True when a brush swept from `a` to `b` touches a path (docs/specs/023-draw-mode/path-tool.md
  * "Selecting and erasing"): its drawn line, and the inside of a closed path with a fill.
  */
 export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number): boolean {

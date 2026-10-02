@@ -596,7 +596,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         );
       })}
 
-      {/* The line or arrow being drawn (docs/specs/023-whiteboard/whiteboard.md "Shapes"): the
+      {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}
       {drawDrag && props.pendingDraw?.type === 'arrow' && props.previewDrawnArrow ? (
         <DrawnArrowPreview

@@ -482,7 +482,7 @@ export function useCanvasChromePanels({
     ) : null;
 
   const paletteEl =
-    // Draw mode draws from its dock, not the palette (docs/specs/023-whiteboard/whiteboard.md).
+    // Draw mode draws from its dock, not the palette (docs/specs/023-draw-mode/draw-mode.md).
     chromeHidden || readOnly || toolbarActive || props.editorMode === 'draw' ? null : (
       <CommandPalette
         position={paletteWiring.position}
