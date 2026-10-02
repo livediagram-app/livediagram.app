@@ -7,7 +7,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorModeSwitch } from './EditorModeSwitch';
-import type { EditorMode } from './editor-mode-copy';
+import type { EditorMode } from '@livediagram/document';
 import type { ModeSwitchVariant } from './mode-switch-variant';
 
 afterEach(cleanup);

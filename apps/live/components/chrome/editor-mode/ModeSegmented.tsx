@@ -1,13 +1,12 @@
 import { useRef, type KeyboardEvent } from 'react';
+import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
 import { HoverCard } from '@livediagram/ui';
 import {
   EDITOR_MODE_DESCRIPTION,
   EDITOR_MODE_ICON,
   EDITOR_MODE_LABEL,
-  EDITOR_MODES,
   MODE_SWITCH_FOCUS,
   otherEditorMode,
-  type EditorMode,
   type EditorModeSwitchProps,
 } from './editor-mode-copy';
 

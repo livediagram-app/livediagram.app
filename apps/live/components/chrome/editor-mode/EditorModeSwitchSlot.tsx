@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { isEventStormingTab, type Tab } from '@livediagram/document';
+import {
+  DEFAULT_EDITOR_MODE,
+  editorModeSwitchable,
+  type EditorMode,
+  type Tab,
+} from '@livediagram/document';
 import { EditorModeSwitch } from './EditorModeSwitch';
-import type { EditorMode } from './editor-mode-copy';
 import { useModeSwitchVariant } from './mode-switch-variant';
 
 // The tab bar's mode switch slot (docs/specs/007-editor/editor-modes.md "The mode
@@ -12,11 +16,11 @@ import { useModeSwitchVariant } from './mode-switch-variant';
 // `?modeSwitch=`; the per-person, per-tab editor mode replaces the state.
 export function EditorModeSwitchSlot({ activeTab }: { activeTab: Tab | undefined }) {
   const variant = useModeSwitchVariant();
-  const [mode, setMode] = useState<EditorMode>('diagram');
+  const [mode, setMode] = useState<EditorMode>(DEFAULT_EDITOR_MODE);
   return (
     <EditorModeSwitch
       variant={variant}
-      hidden={isEventStormingTab(activeTab)}
+      hidden={!editorModeSwitchable(activeTab)}
       mode={mode}
       onChange={setMode}
     />

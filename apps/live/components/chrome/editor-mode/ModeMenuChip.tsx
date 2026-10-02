@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { EDITOR_MODES } from '@livediagram/document';
 import { CheckIcon, ChevronDownIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
   EDITOR_MODE_DESCRIPTION,
   EDITOR_MODE_ICON,
   EDITOR_MODE_LABEL,
-  EDITOR_MODES,
   MODE_SWITCH_FOCUS,
   type EditorModeSwitchProps,
 } from './editor-mode-copy';

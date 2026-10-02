@@ -1,11 +1,9 @@
 import type { ComponentType } from 'react';
+import type { EditorMode } from '@livediagram/document';
 import { FlowchartIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
 
-// The two editor modes a general tab is worked on in (docs/specs/007-editor/editor-modes.md),
-// with the words and glyphs every variant of the mode switch shows for them.
-export type EditorMode = 'diagram' | 'draw';
-
-export const EDITOR_MODES: readonly EditorMode[] = ['diagram', 'draw'];
+// The words and glyphs every variant of the mode switch shows for the two
+// editor modes (docs/specs/007-editor/editor-modes.md).
 
 export const EDITOR_MODE_LABEL: Record<EditorMode, string> = {
   diagram: 'Diagram',
