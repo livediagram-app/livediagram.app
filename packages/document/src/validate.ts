@@ -252,6 +252,18 @@ export function isValidElement(el: unknown): el is Element {
   if (el.penTextColour !== undefined && !isPenColourName(el.penTextColour)) return false;
 
   if (t === 'arrow') {
+    // An import's exact end and its own label width (docs/specs/008-canvas/arrow-anchors.md "Exact
+    // ends", arrow-labels.md "Width and wrapping").
+    if (el.exactEnd !== undefined && typeof el.exactEnd !== 'boolean') return false;
+    if (
+      el.labelMaxWidth !== undefined &&
+      !(
+        typeof el.labelMaxWidth === 'number' &&
+        Number.isFinite(el.labelMaxWidth) &&
+        el.labelMaxWidth > 0
+      )
+    )
+      return false;
     return isValidEndpoint(el.from) && isValidEndpoint(el.to);
   }
 
@@ -260,6 +272,8 @@ export function isValidElement(el: unknown): el is Element {
 
   if (t === 'shape') {
     if (!isNonEmptyStr(el.shape)) return false;
+    // A lane title reads across or upright (docs/specs/009-elements/lane.md "Upright titles").
+    if (el.titleOrientation !== undefined && el.titleOrientation !== 'upright') return false;
     // Bound the optional data arrays (charts / rail) if present.
     if (el.railLabels !== undefined && !boundedArray(el.railLabels, MAX_DATA_ARRAY)) return false;
     if (el.lineCategories !== undefined && !boundedArray(el.lineCategories, MAX_DATA_ARRAY))

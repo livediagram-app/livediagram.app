@@ -45,10 +45,22 @@ export type DrawioGraph = {
   layerIds: string[];
   background?: string;
   backgroundImage: boolean;
+  /** The page's grid size (draw.io's loop router reads it); 10, draw.io's default, when unset. */
+  gridSize: number;
 };
+
+/** draw.io's default grid size (`mxGraph.gridSize`). */
+export const DRAWIO_DEFAULT_GRID_SIZE = 10;
 
 // Wrapper attributes that are not custom properties.
 const WRAPPER_KEYS = new Set(['id', 'label', 'link', 'tooltip', 'placeholders']);
+// Ids other tools write to trace their own objects through a conversion into draw.io: not the
+// author's properties, so they fill placeholders but never become note lines.
+export const DRAWIO_PROVENANCE_ATTRIBUTES: ReadonlySet<string> = new Set([
+  'lucidchartObjectId',
+  'visioObjectId',
+  'gliffyId',
+]);
 
 const num = (el: Element, name: string): number => {
   const n = Number(el.getAttribute(name) ?? 0);
@@ -104,15 +116,16 @@ function readCell(el: Element): DrawioCell | null {
   const id = (wrapper ?? cellEl).getAttribute('id') ?? '';
   const isEdge = cellEl.getAttribute('edge') === '1';
   const style = parseStyle(cellEl.getAttribute('style') ?? '', isEdge);
-  const props: [string, string][] = wrapper
+  const attributes: [string, string][] = wrapper
     ? Array.from(wrapper.attributes)
         .filter((a) => !WRAPPER_KEYS.has(a.name))
         .map((a) => [a.name, a.value])
     : [];
+  const props = attributes.filter(([name]) => !DRAWIO_PROVENANCE_ATTRIBUTES.has(name));
   let value = wrapper
     ? (wrapper.getAttribute('label') ?? '')
     : (cellEl.getAttribute('value') ?? '');
-  if (wrapper?.getAttribute('placeholders') === '1') value = fillPlaceholders(value, props);
+  if (wrapper?.getAttribute('placeholders') === '1') value = fillPlaceholders(value, attributes);
   const link = wrapper?.getAttribute('link') || undefined;
   const tooltip = wrapper?.getAttribute('tooltip') || undefined;
   const geometry = readGeometry(cellEl);
@@ -138,8 +151,18 @@ function readCell(el: Element): DrawioCell | null {
 
 export function readGraph(model: Element | null): DrawioGraph {
   const cells = new Map<string, DrawioCell>();
-  const graph: DrawioGraph = { cells, rootId: '0', layerIds: [], backgroundImage: false };
+  const graph: DrawioGraph = {
+    cells,
+    rootId: '0',
+    layerIds: [],
+    backgroundImage: false,
+    gridSize: DRAWIO_DEFAULT_GRID_SIZE,
+  };
   if (!model) return graph;
+  const gridSize = Number(model.getAttribute('gridSize'));
+  if (model.hasAttribute('gridSize') && Number.isFinite(gridSize) && gridSize > 0) {
+    graph.gridSize = gridSize;
+  }
 
   const bg = readColour(model.getAttribute('background') ?? undefined);
   if (bg.kind === 'hex') graph.background = bg.value;

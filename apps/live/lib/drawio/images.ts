@@ -44,7 +44,7 @@ export function normaliseDataUrl(url: string): string {
  * same picture twice shares one key, so it is stored once.
  */
 export function requestDataUrlImage(
-  ctx: { images: ImportImageRequest[]; imageKeys: Map<string, string> },
+  ctx: { images: ImportImageRequest[]; imageKeys: Map<string, string>; scale?: number },
   elementId: string,
   source: string,
   hint: { width: number; height: number },
@@ -55,5 +55,12 @@ export function requestDataUrlImage(
     key = `drawio-image-${ctx.imageKeys.size + 1}`;
     ctx.imageKeys.set(dataUrl, key);
   }
-  ctx.images.push({ elementId, key, source: { kind: 'data-url', dataUrl }, hint });
+  // The picture is stored at the size the element will have once the page is scaled.
+  const k = ctx.scale ?? 1;
+  ctx.images.push({
+    elementId,
+    key,
+    source: { kind: 'data-url', dataUrl },
+    hint: { width: hint.width * k, height: hint.height * k },
+  });
 }

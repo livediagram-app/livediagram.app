@@ -73,3 +73,20 @@ const HTML_FONT_PX = [10, 13, 16, 18, 24, 32, 48];
 export function htmlFontSizePx(n: number): number | undefined {
   return Number.isInteger(n) && n >= 1 && n <= 7 ? HTML_FONT_PX[n - 1] : undefined;
 }
+
+/**
+ * Mean advance per em of a reference text (`The quick brown fox jumps over the lazy dog 0123456789`)
+ * in the canvas label face (the system UI stack at weight 500), measured in Chromium on Linux. The
+ * importer measures text with it rather than in the browser, so an import is the same everywhere.
+ * Safe range: 0.45 to 0.52.
+ */
+export const LABEL_EM_ADVANCE = 0.4785;
+/** The same for draw.io's Helvetica (Arial and Liberation Sans are metric-compatible) at 400. */
+export const HELVETICA_EM_ADVANCE = 0.4746;
+/** The canvas label's line height, as a multiple of its size (17.5 px at 14 px). */
+export const LABEL_LINE_HEIGHT = 1.25;
+/** draw.io's label line height (`mxConstants.LINE_HEIGHT`). */
+export const DRAWIO_LINE_HEIGHT = 1.2;
+
+/** About how wide `chars` characters set in the canvas label face at `px`. */
+export const labelTextWidth = (chars: number, px: number): number => chars * LABEL_EM_ADVANCE * px;

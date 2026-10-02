@@ -185,6 +185,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled whether a selected arrow routes behind the boxes it passes.',
   'Element|Changed|ArrowExactStart':
     'Someone set an arrow to start exactly at the anchor it is connected to, or back to fanning out.',
+  'Element|Changed|LaneUprightTitle':
+    'Someone turned a lane title upright in its side strip, or back to reading across.',
   'Element|Changed|ArrowStyle':
     "Someone changed a selected arrow's shape, such as straight, curved, or elbowed.",
   'Element|Changed|ArrowThickness': "Someone changed a selected arrow's line thickness.",

@@ -22,15 +22,15 @@ const NAMED_STYLES: Record<string, Pairs> = {
   },
   swimlane: { shape: 'swimlane', fontStyle: '1', startSize: '23' },
   group: { verticalAlign: 'top', fillColor: 'none', strokeColor: 'none' },
-  ellipse: { shape: 'ellipse' },
-  rhombus: { shape: 'rhombus' },
-  triangle: { shape: 'triangle' },
+  ellipse: { shape: 'ellipse', perimeter: 'ellipsePerimeter' },
+  rhombus: { shape: 'rhombus', perimeter: 'rhombusPerimeter' },
+  triangle: { shape: 'triangle', perimeter: 'trianglePerimeter' },
   line: { shape: 'line', strokeWidth: '4' },
   image: { shape: 'image', verticalLabelPosition: 'bottom', verticalAlign: 'top' },
   arrow: { shape: 'arrow' },
 };
 
-const VERTEX_DEFAULTS: Pairs = { fontSize: '12' };
+const VERTEX_DEFAULTS: Pairs = { fontSize: '12', perimeter: 'rectanglePerimeter' };
 const EDGE_DEFAULTS: Pairs = { endArrow: 'classic', fontSize: '11' };
 
 // Named styles that are not shapes: they style a label or a group and leave

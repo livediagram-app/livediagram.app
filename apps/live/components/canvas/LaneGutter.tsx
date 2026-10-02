@@ -46,6 +46,7 @@ export function LaneGutter({
   stroke,
   headerFill,
   headerSize,
+  titleOrientation,
   alignX,
   alignY,
   width,
@@ -64,6 +65,8 @@ export function LaneGutter({
   // Thickness in element-space px, from dragging the seam. Unset uses the
   // default for this orientation.
   headerSize?: number;
+  // An upright title's strip is one line thick by default (docs/specs/009-elements/lane.md).
+  titleOrientation?: 'upright';
   alignX: TextAlignX;
   alignY: TextAlignY;
   // The lane's own size, to clamp the seam against.
@@ -110,7 +113,8 @@ export function LaneGutter({
     setDragSize(px);
   };
   const size =
-    dragSize ?? laneSizeOfElement({ textAlignX: alignX, textAlignY: alignY, headerSize });
+    dragSize ??
+    laneSizeOfElement({ textAlignX: alignX, textAlignY: alignY, headerSize, titleOrientation });
   const maxSize = Math.max(MIN_GUTTER_PX, (band ? height : width) - MIN_GUTTER_PX);
 
   // Only an edge-hugging gutter inherits the lane's corner radius; a centred

@@ -32,6 +32,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
+import { repinnedArrow } from './arrow-repin';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
 
 // Every arrow drag kind. `boxed` is handled before this module is reached,
@@ -211,7 +212,7 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
   if (arrowConnected) onArrowConnected();
   tick((els) =>
     els.map((el) =>
-      el.id === drag.arrowId && el.type === 'arrow' ? { ...el, [drag.end]: endpoint } : el,
+      el.id === drag.arrowId && el.type === 'arrow' ? repinnedArrow(el, drag.end, endpoint) : el,
     ),
   );
 }

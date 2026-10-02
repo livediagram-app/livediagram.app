@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
+import { PADDING_PX, labelFontPx } from '@livediagram/document';
 import { ReportTally } from './notes';
+import { LABEL_LINE_HEIGHT } from './text-size';
 import { readGraph } from './cells';
 import { parseStyle } from './style';
-import { model } from './test-support';
+import { model, vertex } from './test-support';
 import {
   boxedProps,
   dashStyle,
@@ -44,7 +46,14 @@ describe('dashStyle', () => {
   it('reads dashed and dotted patterns', () => {
     expect(dashStyle(parseStyle('', false))).toBeUndefined();
     expect(dashStyle(parseStyle('dashed=1;', false))).toBe('dashed');
-    expect(dashStyle(parseStyle('dashed=1;dashPattern=8 8;', false))).toBe('dotted');
+    expect(dashStyle(parseStyle('dashed=1;dashPattern=8 8;', false))).toBe('dashed');
+    expect(
+      dashStyle(parseStyle('dashed=1;fixDash=1;dashPattern=8 8;strokeWidth=2.3;', false)),
+    ).toBe('dashed');
+    expect(
+      dashStyle(parseStyle('dashed=1;fixDash=1;dashPattern=1 2;strokeWidth=2.3;', false)),
+    ).toBe('dotted');
+    expect(dashStyle(parseStyle('dashed=1;dashPattern=1 1;strokeWidth=3;', false))).toBe('dotted');
     expect(dashStyle(parseStyle('dashed=1;dashPattern=1 4;', false))).toBe('dotted');
     expect(dashStyle(parseStyle('dashed=1;dashPattern=12 4;', false))).toBe('dashed');
   });
@@ -91,7 +100,8 @@ describe('boxedProps', () => {
       cell(
         'fillColor=#DAE8FC;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;opacity=60;rotation=375;shadow=1;locked=1;',
       ),
-      ctx(),
+      // Over another shape, so its opacity stays (a lone one is blended over the paper).
+      { ...ctx(), overlaps: () => true },
     );
     expect(p).toEqual({
       fillColor: '#dae8fc',
@@ -110,6 +120,19 @@ describe('boxedProps', () => {
     expect(boxedProps(cell('fillColor=none;strokeColor=none;'), ctx())).toEqual({
       fillColor: 'transparent',
       strokeWidth: 'none',
+    });
+  });
+
+  it('reads a fill and a stroke at no opacity as none, and casts no shadow from nothing', () => {
+    expect(
+      boxedProps(
+        cell('fillColor=#ffffff;fillOpacity=0;strokeColor=#5e5e5e;strokeOpacity=0;shadow=1;'),
+        ctx(),
+      ),
+    ).toEqual({ fillColor: 'transparent', strokeWidth: 'none' });
+    expect(boxedProps(cell('fillColor=#dae8fc;fillOpacity=0;shadow=1;'), ctx())).toMatchObject({
+      fillColor: 'transparent',
+      shadow: { offsetX: 2 },
     });
   });
 
@@ -136,10 +159,24 @@ describe('inkOnFill', () => {
 describe('textProps', () => {
   const opts = { scale: 'label' as const, rich: true, outsideMovesIn: true };
 
+  it('cuts a clipped label to the lines its box holds, and counts it', () => {
+    const c = ctx();
+    const value =
+      '9:00&lt;br&gt;10:00&lt;br&gt;11:00&lt;br&gt;12:00&lt;br&gt;&lt;b&gt;13:00&lt;/b&gt;';
+    const fits = Math.floor((60 - 2 * PADDING_PX.sm) / (labelFontPx('sm') * LABEL_LINE_HEIGHT));
+    const t = textProps(cell('html=1;overflow=hidden;', value), c, { ...opts, boxHeight: 60 });
+    expect(t.label!.split('\n')).toHaveLength(fits);
+    expect(t.label).toBe(['9:00', '10:00', '11:00', '12:00'].slice(0, fits).join('\n'));
+    expect(c.tally.notes()).toEqual([{ kind: 'text-truncated', count: 1 }]);
+    // A label that fits, or one draw.io lets overflow, keeps every line.
+    const all = textProps(cell('html=1;', value), ctx(), { ...opts, boxHeight: 60 });
+    expect(all.label!.split('\n')).toHaveLength(5);
+  });
+
   it('maps text, font style bits, colour, size, font and alignment', () => {
     const t = textProps(
       cell(
-        'fontStyle=7;fontColor=#333333;fontSize=28;fontFamily=Courier New;align=left;verticalAlign=top;',
+        'fontStyle=7;fontColor=#b85450;fontSize=28;fontFamily=Courier New;align=left;verticalAlign=top;',
         'Hi',
       ),
       ctx(),
@@ -150,7 +187,7 @@ describe('textProps', () => {
       textBold: true,
       textItalic: true,
       textUnderline: true,
-      textColor: '#333333',
+      textColor: '#b85450',
       textSize: 'lg',
       font: 'roboto-mono',
       textAlignX: 'left',
@@ -226,6 +263,21 @@ describe('textProps', () => {
       textSize: 'sm',
       textAlignX: 'center',
       textAlignY: 'middle',
+    });
+  });
+});
+
+describe('textProps, paper ink', () => {
+  it('leaves near-black label ink to the theme, or to the ink that reads on its fill', () => {
+    const graph = readGraph(
+      model(vertex('v', 'fontColor=#000000;', 'width="10" height="10"', 'parent="1" value="Hi"')),
+    );
+    const cell = graph.cells.get('v')!;
+    const ctx = { tally: new ReportTally(), pageIdToTab: new Map() };
+    const opts = { scale: 'label', rich: true, outsideMovesIn: true } as const;
+    expect(textProps(cell, ctx, opts)).not.toHaveProperty('textColor');
+    expect(textProps(cell, ctx, { ...opts, onFill: '#fff2cc' })).toMatchObject({
+      textColor: '#1e293b',
     });
   });
 });

@@ -3,12 +3,14 @@
 // stroke, corners, opacity, rotation, shadow, lock, link, note, and the text.
 
 import {
-  ARROWHEAD_SIZE_PX,
+  arrowheadLengthPx,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   FONTS,
   isLightColor,
+  labelFontPx,
   normalizeRuns,
+  PADDING_PX,
   type ArrowheadSize,
   type BorderRadius,
   type BorderStroke,
@@ -21,12 +23,13 @@ import {
 } from '@livediagram/document';
 import type { ReportTally } from './notes';
 import type { DrawioCell } from './cells';
-import { readColour } from './colour';
-import { readLabel } from './label';
+import { readFill, readInk, type DrawioColour } from './colour';
+import { cellLabel } from './label';
 import { DRAWIO_DEFAULT_ARC_SIZE, DRAWIO_SHADOW } from './limits';
 import { nearest } from './nearest';
 import {
   belowExtraSmall,
+  LABEL_LINE_HEIGHT,
   elementTextSize,
   labelIsExtraSmall,
   runTextSize,
@@ -38,6 +41,10 @@ export type ConvertContext = {
   tally: ReportTally;
   /** draw.io page id → the livediagram tab it became. */
   pageIdToTab: ReadonlyMap<string, string>;
+  /** Whether a cell overlaps another vertex (D41); absent means it overlaps nothing. */
+  overlaps?: (cellId: string) => boolean;
+  /** The page scale (spec "The page scale"); worked out per page when absent. */
+  scale?: number;
 };
 
 const STROKES: readonly BorderStroke[] = ['thin', 'medium', 'thick', 'extra-thick'];
@@ -49,6 +56,9 @@ export function strokePreset(px: number | undefined): BorderStroke {
   return nearest(BORDER_STROKE_PX, STROKES, px);
 }
 
+// A dash at most this many stroke widths long reads as a dot (D38).
+export const DRAWIO_DOT_MAX_STROKES = 2;
+
 /** `dashed` / `dashPattern` as a line style; undefined when solid. */
 export function dashStyle(style: DrawioStyle): BorderStyle | undefined {
   if (!style.flag('dashed')) return undefined;
@@ -58,7 +68,12 @@ export function dashStyle(style: DrawioStyle): BorderStyle | undefined {
     .map(Number)
     .filter((n) => Number.isFinite(n) && n > 0);
   if (pattern.length >= 2) {
-    const dotted = pattern.every((n, i) => i % 2 === 1 || n <= (pattern[i + 1] ?? n));
+    // draw.io scales the pattern by the stroke width unless `fixDash=1` keeps it in px.
+    const width = style.num('strokeWidth') ?? 1;
+    const unit = style.flag('fixDash') ? 1 : width;
+    const dotted = pattern.every(
+      (n, i) => i % 2 === 1 || n * unit <= DRAWIO_DOT_MAX_STROKES * width,
+    );
     if (dotted) return 'dotted';
   }
   return 'dashed';
@@ -76,8 +91,20 @@ export function radiusPreset(style: DrawioStyle, width: number, height: number):
   return nearest(BORDER_RADIUS_PX, RADII, radius);
 }
 
-export function arrowheadSizePreset(px: number): ArrowheadSize {
-  return nearest(ARROWHEAD_SIZE_PX, ['small', 'medium', 'large', 'extra-large'] as const, px);
+const HEAD_SIZES = ['small', 'medium', 'large', 'extra-large'] as const;
+
+/**
+ * The head preset nearest the length draw.io draws (its marker size plus the stroke width), on the
+ * canvas's own head length for this stroke; ties to the smaller.
+ */
+export function arrowheadSizePreset(markerSize: number, strokeWidth: number): ArrowheadSize {
+  const target = markerSize + strokeWidth;
+  let best: ArrowheadSize = HEAD_SIZES[0];
+  for (const size of HEAD_SIZES) {
+    const gap = Math.abs(arrowheadLengthPx(size, strokeWidth) - target);
+    if (gap < Math.abs(arrowheadLengthPx(best, strokeWidth) - target)) best = size;
+  }
+  return best;
 }
 
 const SKETCHY = ['comic', 'architects daughter', 'xkcd', 'caveat', 'indie flower'];
@@ -126,26 +153,49 @@ export function noteOf(cell: DrawioCell): string | undefined {
   return lines.length > 0 ? lines.join('\n') : undefined;
 }
 
+/** `hex` seen at `alpha` over white paper, as one opaque colour. */
+export function overPaper(hex: string, alpha: number): string {
+  const long = hex.length === 4 ? `#${[...hex.slice(1)].map((d) => d + d).join('')}` : hex;
+  const channel = (i: number) =>
+    Math.round(parseInt(long.slice(i, i + 2), 16) * alpha + 255 * (1 - alpha))
+      .toString(16)
+      .padStart(2, '0');
+  return `#${channel(1)}${channel(3)}${channel(5)}`;
+}
+
 /** Fields every boxed element takes from its cell. */
 export function boxedProps(cell: DrawioCell, ctx: ConvertContext) {
   const s = cell.style;
-  const fill = readColour(s.str('fillColor'));
-  const stroke = readColour(s.str('strokeColor'));
-  const opacity = s.num('opacity');
+  // A fill or stroke at no opacity is none, whatever its colour (spec "Opacity over paper").
+  const fill: DrawioColour =
+    s.num('fillOpacity') === 0 ? { kind: 'none' } : readFill(s.str('fillColor'));
+  const stroke: DrawioColour =
+    s.num('strokeOpacity') === 0 ? { kind: 'none' } : readInk(s.str('strokeColor'));
+  const translucency = Math.min(s.num('opacity') ?? 100, s.num('fillOpacity') ?? 100);
+  // Over draw.io's white paper a translucent fill reads as the blend; that blend comes in opaque
+  // unless the shape overlaps something, where seeing through it matters (spec "Opacity over paper").
+  const blend =
+    translucency < 100 && fill.kind === 'hex' && !(ctx.overlaps?.(cell.id) ?? false)
+      ? overPaper(fill.value, Math.max(0, translucency) / 100)
+      : undefined;
+  const opacity = blend === undefined ? s.num('opacity') : undefined;
   const rotation = (((s.num('rotation') ?? 0) % 360) + 360) % 360;
   const link = elementLink(cell.link, ctx);
   const note = noteOf(cell);
   const strokeWidth = stroke.kind === 'none' ? 'none' : strokePreset(s.num('strokeWidth'));
   const strokeStyle = dashStyle(s);
   return {
-    ...(fill.kind === 'hex' ? { fillColor: fill.value } : {}),
+    ...(fill.kind === 'hex' ? { fillColor: blend ?? fill.value } : {}),
     ...(fill.kind === 'none' ? { fillColor: 'transparent' } : {}),
     ...(stroke.kind === 'hex' ? { strokeColor: stroke.value } : {}),
     strokeWidth,
     ...(strokeStyle ? { strokeStyle } : {}),
     ...(opacity !== undefined && opacity < 100 ? { opacity: Math.max(0, opacity) / 100 } : {}),
     ...(rotation !== 0 ? { rotation } : {}),
-    ...(s.flag('shadow') ? { shadow: DRAWIO_SHADOW } : {}),
+    // Nothing to cast a shadow from: draw.io draws none.
+    ...(s.flag('shadow') && !(fill.kind === 'none' && stroke.kind === 'none')
+      ? { shadow: DRAWIO_SHADOW }
+      : {}),
     ...(s.flag('locked') ? { locked: true } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
@@ -175,7 +225,26 @@ export type TextOptions = {
   rich: boolean;
   /** Whether a label draw.io draws outside the box is moved in (and counted). */
   outsideMovesIn: boolean;
+  /** The box's height in draw.io units, where a clipped label (`overflow`) is cut to fit. */
+  boxHeight?: number;
 };
+
+// The first `n` lines of runs, as a label cut to its box keeps them.
+function firstLines(runs: TextRun[], n: number): TextRun[] {
+  const out: TextRun[] = [];
+  let breaks = 0;
+  for (const run of runs) {
+    const parts = run.text.split('\n');
+    const kept: string[] = [];
+    for (const [i, part] of parts.entries()) {
+      if (i > 0 && ++breaks >= n) break;
+      kept.push(part);
+    }
+    out.push({ ...run, text: kept.join('\n') });
+    if (breaks >= n) break;
+  }
+  return normalizeRuns(out.filter((r) => r.text !== ''));
+}
 
 export type TextFields = {
   label?: string;
@@ -197,7 +266,7 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
   const basePx = s.num('fontSize') ?? 12;
   // Text under what the extra-small run size shows, anywhere in the label (spec "Text size").
   let belowXs = belowExtraSmall(basePx);
-  const read = readLabel(cell.value, cell.html, (px) => {
+  const read = cellLabel(cell, (px) => {
     if (belowExtraSmall(px)) belowXs = true;
     return runTextSize(px, basePx, options.scale);
   });
@@ -210,8 +279,26 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
       )
     : read.runs;
   if (options.rich && plain !== '' && belowXs) ctx.tally.add('text-below-xs');
+  // A label draw.io clips to its shape keeps the lines its box holds (spec "Clipped labels").
+  const textSize = elementTextSize(basePx, options.scale);
+  const overflow = s.str('overflow');
+  const lineCount = plain.split('\n').length;
+  const fits =
+    options.boxHeight !== undefined && (overflow === 'hidden' || overflow === 'fill')
+      ? Math.max(
+          1,
+          Math.floor(
+            (options.boxHeight * (ctx.scale ?? 1) - 2 * PADDING_PX.sm) /
+              (labelFontPx(textSize, options.scale === 'note') * LABEL_LINE_HEIGHT),
+          ),
+        )
+      : lineCount;
+  const cut = fits < lineCount;
+  if (cut) ctx.tally.add('text-truncated');
+  const shownPlain = cut ? plain.split('\n').slice(0, fits).join('\n') : plain;
+  const shownRuns = cut && runs ? firstLines(runs, fits) : runs;
   const fontStyle = s.num('fontStyle') ?? 0;
-  const color = readColour(s.str('fontColor'));
+  const color = readInk(s.str('fontColor'));
   const font = fontIdFor(s.str('fontFamily'));
   let alignX = ALIGN_X[s.str('align') ?? 'center'] ?? 'center';
   let alignY = ALIGN_Y[s.str('verticalAlign') ?? 'middle'] ?? 'middle';
@@ -224,8 +311,8 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
     if (outside && plain !== '') ctx.tally.add('label-moved');
   }
   return {
-    ...(plain !== '' ? { label: plain } : {}),
-    ...(options.rich && runs ? { richText: runs } : {}),
+    ...(shownPlain !== '' ? { label: shownPlain } : {}),
+    ...(options.rich && shownRuns ? { richText: shownRuns } : {}),
     ...(fontStyle & 1 ? { textBold: true } : {}),
     ...(fontStyle & 2 ? { textItalic: true } : {}),
     ...(fontStyle & 4 ? { textUnderline: true } : {}),
@@ -235,7 +322,7 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
       : inkOnFill(options.onFill) && plain !== ''
         ? { textColor: inkOnFill(options.onFill) }
         : {}),
-    textSize: elementTextSize(basePx, options.scale),
+    textSize,
     ...(font ? { font } : {}),
     textAlignX: alignX,
     textAlignY: alignY,

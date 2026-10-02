@@ -356,6 +356,8 @@ export type EditorContextMenuProps = {
   // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
+  // A lane title turned upright in its side strip (docs/specs/009-elements/lane.md "Upright titles").
+  onSetLaneUprightTitle: (upright: boolean) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): the Collaborate category's Assign Action

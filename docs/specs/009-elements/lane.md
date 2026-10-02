@@ -108,3 +108,26 @@ what I arranged" problem [The mind node](mind-node.md) avoids for mind nodes.
 Their borders no longer double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
+
+## Upright titles
+
+A swimlane drawn as a stack of wide rows often reads its titles **upright**, turned a quarter to
+read from bottom to top in a thin strip down the leading edge, as draw.io, Visio and BPMN tools draw
+them. The strip then only has to hold one line across its thickness, so the rows keep their width
+for the work.
+
+- `titleOrientation: 'upright'` turns the title; absent means across, as every lane drawn so far.
+- An upright title reads from bottom to top, centred along its strip by default; its alignment
+  along the strip follows the vertical pin (top, middle, bottom), so the gutter rule above still
+  places the strip by the horizontal pin.
+- The strip is `LANE_BAND_PX` (64) thick by default, the same one-line band a column's header uses,
+  and the seam drag sizes it like any gutter (`headerSize`).
+- Only a strip down a side turns its title: a band across the top or bottom always reads across, so
+  turning a column's header has no effect and the toggle is not offered there.
+- A title longer than the strip is tall wraps across the strip's thickness; what does not fit is
+  clipped. The strip's padding is at most the small padding, so a one-line strip keeps its line.
+- The context menu's Text section carries **Upright title** for a lane with a side strip; one commit,
+  one undo step.
+- Export (SVG, PNG, PDF) draws the turned title exactly as the canvas does; screen readers read the
+  title as text, unaffected by its turn.
+- The [draw.io import](../020-import-export/drawio-import.md) uses it for every `horizontal=0` lane.

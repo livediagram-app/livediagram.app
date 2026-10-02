@@ -47,6 +47,23 @@ async function storedTabs(page: Page) {
   });
 }
 
+// Every stored tab's elements, as the api holds them.
+async function storedElements(page: Page) {
+  return page.evaluate(async () => {
+    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+    const id = location.pathname.split('/').filter(Boolean).pop()!;
+    const headers = { 'X-Owner-Id': owner };
+    const stored = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const summaries: { id: string; name: string }[] = stored.document?.tabs ?? [];
+    return Promise.all(
+      summaries.map(async (t) => {
+        const got = await (await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })).json();
+        return { name: t.name, elements: (got.tab?.elements ?? []) as unknown[] };
+      }),
+    );
+  });
+}
+
 test('a multi-page draw.io file becomes a tab per page, with a summary', async ({
   page,
   pageErrors,
@@ -141,6 +158,80 @@ for (const file of [
     expectNoPageErrors(pageErrors);
   });
 }
+
+// docs/specs/020-import-export/drawio-import.md "Edges": draw.io's own routes. routes.drawio holds
+// the route cases (trunks, floating ends, routers, curves, edges on edges); the arrows the api stored
+// keep draw.io's shared ends, cross what they cross, attach to other arrows and keep loose ends.
+test('a draw.io file keeps its routes: shared ends, curves, ends on arrows', async ({
+  page,
+  pageErrors,
+}) => {
+  await startBlankDocument(page);
+  await dismissQuickTour(page);
+  await importFile(page, 'routes.drawio');
+  // A clean import closes the dialog; one that changed anything summarises.
+  const summary = page.getByTestId('import-image-report');
+  await expect
+    .poll(async () => (await summary.isVisible()) || (await page.getByRole('dialog').count()) === 0)
+    .toBe(true);
+  if (await summary.isVisible()) await page.getByRole('button', { name: 'Done' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  const pages = ['Trunks', 'Floating ends', 'Waypoints and routers', 'Curves', 'Edges on edges'];
+  for (const name of pages) {
+    await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+  }
+  await page.waitForTimeout(600); // the fit animation settles
+  await shot(page, 'routes.drawio-1-trunks');
+
+  type Stored = Record<string, unknown> & { id: string; type: string };
+  await expect
+    .poll(async () => (await storedElements(page)).map((t) => t.name), { timeout: 15_000 })
+    .toEqual(pages);
+  const stored = await storedElements(page);
+  const arrowsOf = (name: string) =>
+    (stored.find((t) => t.name === name)!.elements as Stored[]).filter((e) => e.type === 'arrow');
+
+  // Every imported arrow draws over what it crosses; pinned ends meet exactly, never fanned.
+  for (const name of pages) {
+    for (const arrow of arrowsOf(name)) {
+      expect(arrow.routeBehind).toBe(false);
+      if ((arrow.from as { kind: string }).kind === 'pinned') expect(arrow.exactStart).toBe(true);
+      if ((arrow.to as { kind: string }).kind === 'pinned') expect(arrow.exactEnd).toBe(true);
+    }
+  }
+  // The gateway's seven arrows leave from two points: one trunk each way.
+  const gateway = arrowsOf('Trunks').filter((a) => (a.strokeColor as string) === '#3399ff');
+  expect(gateway).toHaveLength(7);
+  const starts = new Set(gateway.map((a) => JSON.stringify(a.from)));
+  expect(starts.size).toBe(2);
+
+  // A one-corner curve is draw.io's own bow; a two-corner one runs through sampled points.
+  const curves = arrowsOf('Curves').filter((a) => a.arrowStyle === 'curved');
+  expect(curves.some((a) => a.curveOffset !== undefined)).toBe(true);
+  expect(curves.some((a) => Array.isArray(a.curvePoints))).toBe(true);
+
+  // An edge ending on an edge ends on its arrow; a legend edge keeps both loose ends.
+  const edges = arrowsOf('Edges on edges');
+  const onArrow = edges.find((a) => (a.to as { kind: string }).kind === 'on-arrow')!;
+  expect(edges.map((a) => a.id)).toContain((onArrow.to as { arrowId: string }).arrowId);
+  expect(
+    edges.some(
+      (a) =>
+        (a.from as { kind: string }).kind === 'free' && (a.to as { kind: string }).kind === 'free',
+    ),
+  ).toBe(true);
+  // Text draw.io sizes to itself comes in sized to its text.
+  const tag = (stored.find((t) => t.name === 'Edges on edges')!.elements as Stored[]).find(
+    (e) => e.label === 'Tap',
+  )!;
+  expect(tag.width as number).toBeGreaterThan(20);
+
+  await page.getByText('Curves', { exact: true }).first().click();
+  await page.waitForTimeout(600);
+  await shot(page, 'routes.drawio-2-curves');
+  expectNoPageErrors(pageErrors);
+});
 
 // docs/specs/020-import-export/drawio-import.md "Import as new documents": files saved to Google
 // Drive (no extension, compressed pages) and JSON exports, picked in the Explorer, each a document.

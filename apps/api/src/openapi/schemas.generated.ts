@@ -565,6 +565,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "exactEnd": {
+        "type": "boolean"
+      },
       "exactStart": {
         "type": "boolean"
       },
@@ -591,6 +594,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "labelFill": {
         "type": "string"
+      },
+      "labelMaxWidth": {
+        "type": "number"
       },
       "labelOffset": {
         "additionalProperties": false,
@@ -4511,6 +4517,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "themeLockFill": {
         "type": "boolean"
+      },
+      "titleOrientation": {
+        "const": "upright",
+        "type": "string"
       },
       "type": {
         "const": "shape",

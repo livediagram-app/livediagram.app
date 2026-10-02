@@ -136,6 +136,10 @@ export type ArrowElement = {
   // "Converging-fan rendering"): its start is left out of the fan that spreads arrows sharing an
   // anchor. Absent = fanned, the default.
   exactStart?: boolean;
+  // End exactly at the anchor it is pinned to, out of that anchor's fan (docs/specs/008-canvas/arrow-anchors.md
+  // "Exact ends"). Imports set it where the source draws ends meeting on one trunk; re-pinning the end
+  // by hand clears it. Absent = fanned.
+  exactEnd?: boolean;
   // Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes or a travelling dot
   // along the path to show flow direction. Undefined = static.
   flow?: ArrowFlow;
@@ -188,6 +192,9 @@ export type ArrowElement = {
   // with the arrow because it's parameterised against the line, not
   // stored as absolute coords.
   labelOffset?: { t: number; offset: number };
+  // The label's own wrap width in px, replacing the direction caps (docs/specs/008-canvas/arrow-labels.md
+  // "Width and wrapping"). Imports set it so a caption keeps its source lines.
+  labelMaxWidth?: number;
   // Optional label-text formatting, mirroring the boxed-element fields so
   // an arrow's label can be sized / styled / coloured / fonted from the
   // Selected Element panel's Text accordion. All optional: absent → the

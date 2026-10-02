@@ -109,6 +109,18 @@ describe('renderElementsToSvg', () => {
       expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
     });
 
+    it('fills a hollow head with the tab paper, so it reads hollow on a dark canvas', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('a'),
+          shape('b', { x: 200 }),
+          pinnedArrow('r', 'a', 'b', { arrowheadShape: 'triangle-hollow', strokeColor: '#cbd5e1' }),
+        ]),
+        { background: '#0d121a' },
+      );
+      expect(svg).toMatch(/<polygon points="[^"]+" fill="#0d121a" stroke="#cbd5e1"/);
+    });
+
     it('renders the open-V (line) head as an unfilled polyline', () => {
       const svg = render({ arrowheadShape: 'line' });
       expect(svg).toMatch(new RegExp(`<polyline points="[^"]+" fill="none" stroke="${INK}"`));
@@ -850,6 +862,15 @@ describe('chrome the canvas draws on a box', () => {
     expect(washed).toContain('opacity="0.1"');
     const painted = renderElementsToSvg(tab([laneAt({ headerFill: '#fecdd3' })]));
     expect(painted).toContain('fill="#fecdd3"');
+  });
+
+  it('turns an upright lane title into its one-line strip', () => {
+    const svg = renderElementsToSvg(
+      tab([laneAt({ label: 'Approvals', titleOrientation: 'upright', x: 0, y: 0 })]),
+    );
+    // The strip is one line thick, and the title turns a quarter about the strip's bottom-left.
+    expect(svg).toContain('width="64"');
+    expect(svg).toMatch(/<g transform="rotate\(-90 0 200\)">[^]*Approvals/);
   });
 
   it('gives a browser frame its window chrome', () => {

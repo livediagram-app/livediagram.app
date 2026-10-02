@@ -13,19 +13,15 @@ import {
   type Element,
   type Layer,
 } from '@livediagram/document';
-import {
-  absoluteRect,
-  originOf,
-  type DrawioCell,
-  type DrawioGraph,
-  type Pt,
-  type Rect,
-} from './cells';
+import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './cells';
 import { buildEntity, buildLane, buildTable } from './containers';
-import { buildArrow, type EndTarget } from './edges';
-import { readLabel } from './label';
-import { classifyVertex, isBoxedText } from './shapes';
-import { buildVertex, type PageContext } from './vertices';
+import { createEdgeBuilder, type EdgeSlot } from './edge-pass';
+import { cellLabel } from './label';
+import { classifyVertex } from './shapes';
+import { overlapTest } from './overlap';
+import { pageScale, scalePage } from './scale';
+import { autoTextRect, isAutoSized } from './text-box';
+import { buildImageCaption, buildVertex, type PageContext } from './vertices';
 
 export type ConvertedPage = {
   elements: Element[];
@@ -33,7 +29,7 @@ export type ConvertedPage = {
   backgroundColor?: string;
 };
 
-type Slot = Element | { edge: DrawioCell; layerId: string | undefined };
+type Slot = Element | EdgeSlot;
 
 const clampRect = (r: Rect): Rect => ({
   x: r.x,
@@ -42,10 +38,12 @@ const clampRect = (r: Rect): Rect => ({
   height: Math.max(1, r.height),
 });
 
-const isLabelCell = (c: DrawioCell) =>
-  c.vertex && (c.style.has('edgeLabel') || (c.style.has('text') && !isBoxedText(c.style)));
-
-export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage {
+export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPage {
+  const ctx: PageContext = {
+    ...input,
+    overlaps: overlapTest(graph),
+    scale: input.scale ?? pageScale(graph),
+  };
   const cells = graph.cells;
   if (graph.backgroundImage) ctx.tally.add('image-unavailable');
   const cellToElement = new Map<string, BoxedElement>();
@@ -85,7 +83,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     const cell = cells.get(cellId)!;
     const id = i === 0 ? DEFAULT_LAYER_ID : `layer:${mint()}`;
     layerIdOf.set(cellId, id);
-    const name = readLabel(cell.value, cell.html).plain;
+    const name = cellLabel(cell).plain;
     layers.push({
       id,
       name: name || (i === 0 ? DEFAULT_LAYER_NAME : `Layer ${i + 1}`),
@@ -122,8 +120,13 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
       forward.set(id, '');
       return;
     }
-    const rect = clampRect(rawRect);
     const cls = classifyVertex(cell, graph);
+    // Text draw.io sizes to itself comes in sized to its text (blueprint step 15.3).
+    const rect = clampRect(
+      cls.kind === 'text' && isAutoSized(rawRect)
+        ? autoTextRect(cell, rawRect, ctx.scale ?? 1)
+        : rawRect,
+    );
     const elementId = mint();
 
     if (cls.kind === 'group') {
@@ -134,7 +137,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     }
 
     let built: BoxedElement | null;
-    if (cls.kind === 'lane') built = buildLane(cell, rect, graph, ctx, elementId);
+    if (cls.kind === 'lane') built = buildLane(cell, rect, ctx, elementId);
     else if (cls.kind === 'entity') built = buildEntity(cell, rect, graph, ctx, elementId);
     else if (cls.kind === 'table') {
       const { title, table } = buildTable(cell, rect, graph, ctx, {
@@ -156,6 +159,10 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     if (!built) return;
     place(built, layerId);
     cellToElement.set(id, built);
+    if (cls.kind === 'image') {
+      const caption = buildImageCaption(cell, rect, ctx, mint());
+      if (caption) place(caption, layerId);
+    }
 
     if (cls.kind === 'entity' || cls.kind === 'table') {
       forwardSubtree(id, id);
@@ -173,89 +180,26 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
   }
 
   // Pass 2: edges, in their paint positions.
-  const resolve = (cellId: string | undefined, fallback: Pt | undefined): EndTarget | null => {
-    if (!cellId) return null;
-    let id = cellId;
-    for (let hops = 0; forward.has(id) && hops < cells.size; hops++) {
-      const next = forward.get(id)!;
-      if (next === '') break;
-      id = next;
-    }
-    const element = cellToElement.get(id);
-    if (element) return { kind: 'element', element };
-    const cell = cells.get(id);
-    if (cell?.edge) return { kind: 'point', at: edgeMidpoint(cell), loosened: true };
-    const rect = absoluteRect(graph, id);
-    const at = rect ? { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 } : fallback;
-    return { kind: 'point', at: at ?? { x: 0, y: 0 }, loosened: true };
-  };
-
-  const edgeMidpoint = (edge: DrawioCell): Pt => {
-    const ends = [edge.source, edge.target]
-      .map((id) => (id ? cellToElement.get(id) : undefined))
-      .filter((e): e is BoxedElement => !!e)
-      .map((e) => ({ x: e.x + e.width / 2, y: e.y + e.height / 2 }));
-    const origin = originOf(graph, edge.parentId);
-    const pts = ends.length === 2 ? ends : (edge.geometry?.points ?? []).map((p) => add(p, origin));
-    if (pts.length === 0) return origin;
-    return {
-      x: pts.reduce((a, p) => a + p.x, 0) / pts.length,
-      y: pts.reduce((a, p) => a + p.y, 0) / pts.length,
-    };
-  };
-
-  const elements: Element[] = [];
+  const edges = createEdgeBuilder({
+    graph,
+    ctx,
+    cellToElement,
+    forward,
+    slots: slots.filter((slot): slot is EdgeSlot => 'edge' in slot),
+    mint,
+    clampRect,
+  });
+  let elements: Element[] = [];
   for (const slot of slots) {
     if (!('edge' in slot)) {
       elements.push(slot);
       continue;
     }
-    const edge = slot.edge;
-    const origin = originOf(graph, edge.parentId);
-    const geo = edge.geometry;
-    const sourcePoint = geo?.sourcePoint ? add(geo.sourcePoint, origin) : undefined;
-    const targetPoint = geo?.targetPoint ? add(geo.targetPoint, origin) : undefined;
-    const source = resolve(edge.source, sourcePoint) ?? {
-      kind: 'point' as const,
-      at: sourcePoint ?? origin,
-      loosened: false,
-    };
-    const target = resolve(edge.target, targetPoint) ?? {
-      kind: 'point' as const,
-      at: targetPoint ?? origin,
-      loosened: false,
-    };
-    const childCells = edge.children.map((id) => cells.get(id)!).filter((c) => c.visible);
-    const arrow = buildArrow(
-      {
-        cell: edge,
-        source,
-        target,
-        waypoints: (geo?.points ?? []).map((p) => add(p, origin)),
-        labels: childCells.filter(isLabelCell),
-      },
-      ctx,
-      mint(),
-    );
-    elements.push(layered && slot.layerId ? { ...arrow, layerId: slot.layerId } : arrow);
-    // A shape riding on the edge (not a label): placed at its spot along the
-    // straight line between the ends.
-    for (const child of childCells.filter((c) => !isLabelCell(c) && c.vertex && c.geometry)) {
-      const from = source.kind === 'element' ? centreOf(source.element) : source.at;
-      const to = target.kind === 'element' ? centreOf(target.element) : target.at;
-      const t = (child.geometry!.x + 1) / 2;
-      const at = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
-      const rect = clampRect({
-        x: at.x - child.geometry!.width / 2 + (child.geometry!.offset?.x ?? 0),
-        y: at.y - child.geometry!.height / 2 + child.geometry!.y + (child.geometry!.offset?.y ?? 0),
-        width: child.geometry!.width,
-        height: child.geometry!.height,
-      });
-      const el = buildVertex(child, rect, classifyVertex(child, graph), ctx, mint());
-      if (el)
-        elements.push(layered && slot.layerId ? ({ ...el, layerId: slot.layerId } as Element) : el);
+    for (const el of edges.build(slot)) {
+      elements.push(layered && slot.layerId ? ({ ...el, layerId: slot.layerId } as Element) : el);
     }
   }
+  elements = edges.finish(elements);
 
   if (elements.length > MAX_ELEMENTS_PER_TAB) {
     ctx.tally.add('content-truncated', elements.length - MAX_ELEMENTS_PER_TAB);
@@ -263,7 +207,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
   }
 
   return {
-    elements,
+    elements: scalePage(elements, ctx.scale ?? 1),
     ...(layered ? { layers } : {}),
     // White is draw.io's default paper, so it stays unset and the theme decides.
     ...(graph.background && !WHITE.has(graph.background)
@@ -273,8 +217,6 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
 }
 
 const WHITE = new Set(['#fff', '#ffffff', '#ffffffff']);
-const add = (p: Pt, o: Pt): Pt => ({ x: p.x + o.x, y: p.y + o.y });
-const centreOf = (el: BoxedElement): Pt => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
 
 // Forward every descendant of a collapsed container to it, visited or not.
 function forwardSubtreeAll(

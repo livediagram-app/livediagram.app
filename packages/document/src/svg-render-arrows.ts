@@ -18,6 +18,7 @@ import {
   type ArrowheadShape,
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
@@ -67,6 +68,8 @@ export function svgArrowhead(
   // into generic filled triangles. Defaults match the canvas defaults.
   shape: ArrowheadShape = 'triangle',
   sizePx: number = ARROWHEAD_SIZE_PX.medium,
+  // What a hollow head is filled with: the paper beneath, as on the canvas.
+  paper = '#ffffff',
 ): string {
   const angle = Math.atan2(to.y - from.y, to.x - from.x);
   // The legacy export drew an 8px triangle for the 6px (medium) marker
@@ -76,7 +79,7 @@ export function svgArrowhead(
   const uy = Math.sin(angle);
   const fill = xmlEscape(color);
   // Hollow variants paint white over the line beneath; `line` is an open V.
-  const hollow = ` fill="#ffffff" stroke="${fill}" stroke-width="1.5" stroke-linejoin="round"`;
+  const hollow = ` fill="${xmlEscape(paper)}" stroke="${fill}" stroke-width="1.5" stroke-linejoin="round"`;
   const pt = (x: number, y: number) => `${r2(x)},${r2(y)}`;
   const tip = pt(to.x, to.y);
   const wingA = pt(
@@ -139,6 +142,9 @@ export function svgArrow(
   // that leaves hidden layers out must not break a line around a box that
   // isn't in the picture. Defaults to every element.
   occluders: Iterable<Element> = elements,
+  // The paper a hollow head is filled with; the surface's default canvas colour unless the caller
+  // knows the tab's own background.
+  paper: string = surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR,
 ): string {
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
@@ -188,9 +194,9 @@ export function svgArrow(
   const headShape = arrowheadShapeOf(arrow);
   const headSize = ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
   if (ends === 'to' || ends === 'both')
-    parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize));
+    parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize, paper));
   if (ends === 'from' || ends === 'both')
-    parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize));
+    parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize, paper));
   const layout = labels.layouts.get(arrow.id);
   if (layout) {
     // The caption as it is actually styled (docs/specs/008-canvas/arrow-labels.md): laid out by the

@@ -10,7 +10,6 @@ export type ImportNoteKind =
   | 'arrowhead-approximated'
   | 'connection-loosened'
   | 'label-moved'
-  | 'lane-title-turned'
   | 'group-flattened'
   | 'hidden-skipped'
   | 'collapsed-skipped'
@@ -30,7 +29,6 @@ export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'arrowhead-approximated',
   'connection-loosened',
   'label-moved',
-  'lane-title-turned',
   'group-flattened',
   'hidden-skipped',
   'collapsed-skipped',

@@ -45,6 +45,18 @@ describe('readGraph', () => {
     expect(g.cells.get('o')!.value).toBe('Obj');
   });
 
+  it('keeps tracing ids other tools wrote out of the properties, but fills placeholders from them', () => {
+    const g = readGraph(
+      model(
+        '<UserObject label="#%lucidchartObjectId%" lucidchartObjectId="k3xQ1" owner="Ops" placeholders="1" id="u">' +
+          '<mxCell style="" vertex="1" parent="1"><mxGeometry width="10" height="10" as="geometry"/></mxCell></UserObject>',
+      ),
+    );
+    const u = g.cells.get('u')!;
+    expect(u.value).toBe('#k3xQ1');
+    expect(u.props).toEqual([['owner', 'Ops']]);
+  });
+
   it('reads edges, their ends, waypoints and loose points', () => {
     const g = readGraph(
       model(

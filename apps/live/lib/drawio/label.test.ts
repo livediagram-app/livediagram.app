@@ -35,8 +35,17 @@ describe('readLabel, html', () => {
     ]);
   });
 
+  it('breaks lines at line feeds, as draw.io draws them (nl2Br)', () => {
+    expect(readLabel('Internal\n\nKeep separated', true).plain).toBe('Internal\n\nKeep separated');
+    expect(readLabel('<div>a\nb</div>', true).plain).toBe('a\nb');
+  });
+
+  it('collapses line feeds like a browser when nl2Br is off', () => {
+    expect(readLabel('a\nb', true, undefined, false).plain).toBe('a b');
+  });
+
   it('breaks lines at blocks and collapses whitespace like a browser', () => {
-    expect(readLabel('<div>  a \n  b </div><div>c</div>', true).plain).toBe('a b\nc');
+    expect(readLabel('<div>  a   b </div><div>c</div>', true).plain).toBe('a b\nc');
     expect(readLabel('<p>a</p><br><br><br><p>b</p>', true).plain).toBe('a\n\nb');
     expect(readLabel('a&nbsp;&nbsp;b', true).plain).toBe('a  b');
     expect(readLabel('<br>top<br><br>', true).plain).toBe('top');

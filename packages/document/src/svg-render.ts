@@ -357,7 +357,12 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
             label.valign,
             label.fontFamily,
           );
-  return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${labelStr}</g>`;
+  // An upright lane title turns about its frame's corner (docs/specs/009-elements/lane.md).
+  const turned =
+    labelStr && label?.turnAbout
+      ? `<g transform="rotate(-90 ${r2(label.turnAbout.x)} ${r2(label.turnAbout.y)})">${labelStr}</g>`
+      : labelStr;
+  return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${turned}</g>`;
 }
 
 // The <style> block declaring the webfonts an export actually used
@@ -482,7 +487,7 @@ export function renderElementsToSvg(
   for (const band of layerBands(tab.elements, tab.layers)) {
     const inner = band.elements.map((el) =>
       el.type === 'arrow'
-        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible)
+        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg)
         : svgBoxed(el, {
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,

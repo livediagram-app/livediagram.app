@@ -16,12 +16,8 @@ export const DRAWIO_DEFAULT_ARC_SIZE = 10;
 export const DRAWIO_SHADOW: ElementShadow = { offsetX: 2, offsetY: 3, blur: 3, opacity: 0.25 };
 /** Height one caption line adds to an icon's box (D23). */
 export const DRAWIO_CAPTION_LINE_PX = 18;
-/** Width one caption character adds to an icon's box, sideways captions (D23). */
-export const DRAWIO_CAPTION_CHAR_PX = 7;
 /** Room a caption's box keeps around its text, both sides together (D23). */
 export const DRAWIO_CAPTION_PADDING_PX = 16;
-/** How far from the middle an edge label must sit to keep its place (D24). */
-export const DRAWIO_LABEL_CENTRE_EPSILON = 0.05;
 /** Unmatched stencil names the summary lists (D25). */
 export const DRAWIO_REPORT_NAMES_MAX = 5;
 /**
@@ -37,3 +33,5 @@ export const DRAWIO_TAB_FILE_ACCEPT =
 export const DRAWIO_JSON_LOOSE_EDGE_PX = 80;
 /** Items read from one library; the rest are counted (spec "Shape libraries": the first 1 000). */
 export const DRAWIO_MAX_LIBRARY_ITEMS = 1000;
+/** draw.io's head size when an edge names none (`mxConstants.DEFAULT_MARKERSIZE`). */
+export const DRAWIO_DEFAULT_MARKER_SIZE = 6;

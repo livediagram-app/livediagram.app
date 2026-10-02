@@ -5,7 +5,7 @@
 
 import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@livediagram/document';
 import { htmlFontSizePx } from './text-size';
-import { hexOf } from './colour';
+import { hexInk } from './colour';
 
 export type DrawioLabel = { plain: string; runs?: TextRun[] };
 
@@ -45,7 +45,7 @@ function formatOf(el: Element, inherited: Format): Format {
   if (/^h[1-3]$/.test(tag)) f.heading = Number(tag[1]) as RunHeading;
   if (/^h[4-6]$/.test(tag)) f.bold = true;
   if (tag === 'font') {
-    const color = hexOf(el.getAttribute('color') ?? undefined);
+    const color = hexInk(el.getAttribute('color') ?? undefined);
     if (color) f.color = color;
     const px = htmlFontSizePx(Number(el.getAttribute('size')));
     if (px !== undefined) f.px = px;
@@ -62,7 +62,7 @@ function formatOf(el: Element, inherited: Format): Format {
     const decoration = `${style.textDecoration} ${style.textDecorationLine}`;
     if (decoration.includes('underline')) f.underline = true;
     if (decoration.includes('line-through')) f.strikethrough = true;
-    const color = hexOf(style.color || undefined);
+    const color = hexInk(style.color || undefined);
     if (color) f.color = color;
     const px = /^([\d.]+)px$/.exec(style.fontSize ?? '')?.[1];
     if (px !== undefined && Number(px) > 0) f.px = Number(px);
@@ -74,11 +74,21 @@ function formatOf(el: Element, inherited: Format): Format {
 // empty-line collapsing can work on text without losing the formatting.
 type Glyph = { ch: string; f: Format };
 
-export function readLabel(value: string, html: boolean, sizeOf?: RunSizeOf): DrawioLabel {
+/**
+ * A cell value as text and runs. `nl2Br` is draw.io's own switch (on unless the style says `nl2Br=0`):
+ * a line feed in an HTML label draws as a line break.
+ */
+export function readLabel(
+  value: string,
+  html: boolean,
+  sizeOf?: RunSizeOf,
+  nl2Br = true,
+): DrawioLabel {
   if (!html) return { plain: value.replace(/\r\n?/g, '\n') };
   if (value.trim() === '') return { plain: '' };
 
-  const body = new DOMParser().parseFromString(value, 'text/html').body;
+  const source = nl2Br ? value.replace(/\r\n?|\n/g, '<br>') : value;
+  const body = new DOMParser().parseFromString(source, 'text/html').body;
   const out: Glyph[] = [];
   const endsWithBreak = () => out.length === 0 || out[out.length - 1]!.ch === '\n';
   const push = (text: string, f: Format) => {
@@ -149,3 +159,9 @@ export function readLabel(value: string, html: boolean, sizeOf?: RunSizeOf): Dra
   const formatted = normalised.some((r) => Object.keys(r).length > 1);
   return formatted ? { plain, runs: normalised } : { plain };
 }
+
+/** A cell's label as draw.io draws it: its value, HTML or not, line feeds per its `nl2Br`. */
+export const cellLabel = (
+  cell: { value: string; html: boolean; style: { str(key: string): string | undefined } },
+  sizeOf?: RunSizeOf,
+): DrawioLabel => readLabel(cell.value, cell.html, sizeOf, cell.style.str('nl2Br') !== '0');
