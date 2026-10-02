@@ -523,6 +523,8 @@ These differ from draw.io for every file and are not worth a line each time:
 - Rounded corners on connector bends; jump-overs (`jumpStyle`); edge `labelBackgroundColor` (captions
   keep livediagram's knockout, so labels draw.io stacks on one spot, the lower hidden by the upper's
   background, both show).
+- Arrows show through a lane's title strip that draw.io paints solid white: the strip follows the
+  theme as a see-through tint (operator decision).
 - An arrow from a UML actor leaves at the anchor nearest draw.io's end of the route, and the actor's
   anchors sit on the figure (its arm tips at the sides), so a level route from an actor can gain a
   small step halfway along.
