@@ -2,16 +2,14 @@
 // the editor"; docs/specs/023-whiteboard/whiteboard.md "Text boxes"): a source measured its text in
 // its own font, so each box is re-hugged with the measurer the canvas uses, once its face loads.
 import type { Element, TextElement } from '@livediagram/document';
-import { hugTextSize, type MeasureTextBlock } from '@/lib/text-hug';
+import { hugsText, hugTextSize, type MeasureTextBlock } from '@/lib/text-hug';
 
-/** Every text box sized to hug its text; everything else as it is. */
+/** Every text box that fits or wraps sized to hug its text; everything else as it is. */
 export function hugLandedText(
   elements: readonly Element[],
   measure: (el: TextElement) => MeasureTextBlock,
 ): Element[] {
-  return elements.map((el) =>
-    el.type === 'text' ? { ...el, ...hugTextSize(el, measure(el)) } : el,
-  );
+  return elements.map((el) => (hugsText(el) ? { ...el, ...hugTextSize(el, measure(el)) } : el));
 }
 
 /** The distinct font ids the text boxes draw in (the tab's for those with none). */

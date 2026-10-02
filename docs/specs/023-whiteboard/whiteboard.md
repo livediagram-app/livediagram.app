@@ -465,22 +465,29 @@ The shapes group learns and keeps the shapes a user reaches for.
 
 ## Text boxes
 
-A text box on a whiteboard **hugs its text**: its box, and so its selection
+A text box made in Draw mode **hugs its text**: its box, and so its selection
 ring and handles, sit just around the words, with only enough padding to grab
-and read it comfortably.
+and read it comfortably. Hugging is stored on the text box as its **sizing**
+([A text box's sizing](../007-editor/editor-modes.md)), so the box hugs in
+both editor modes and for everyone; a text box made in Diagram mode is a fixed
+box and does not.
 
 - **Padding:** 4 canvas px left and right, 2 px top and bottom, around the
   text's own line box. Nothing else is added: no default width or height.
-- **Click to place:** the box starts as the width of the caret plus its
-  padding, one line tall, and **grows as you type**, widening with the text
-  on one line (Enter starts a new line; the box grows down), and shrinks back
-  as text is deleted. It wraps only once it reaches 480 canvas px wide.
-- **Drag to size:** dragging out a text box sets its **width**; the text
-  wraps inside it and the **height always hugs** the lines.
-- **Resizing** a text box with a side or corner handle sets its width the
-  same way; its height stays hugging the text. With Shift (the aspect ratio
-  rule) the box keeps its ratio by scaling the text size with it instead.
-- An empty text box left by clicking away is removed, as today.
+- **Click to place** (sizing `fit`): the box starts as the width of the caret
+  plus its padding, one line tall, and **grows as you type**, widening with the
+  text on one line (Enter starts a new line; the box grows down), and shrinks
+  back as text is deleted. It wraps only once it reaches 480 canvas px wide.
+- **Drag to size** (sizing `wrap`): dragging out a text box sets its
+  **width**; the text wraps inside it and the **height always hugs** the lines.
+- **Resizing** a hugging text box with a side or corner handle sets its width
+  the same way, so it wraps from then on; its height stays hugging the text.
+  The top and bottom handles leave its sizing alone. With Shift (the aspect
+  ratio rule) the text size scales with the box instead (`textScale`). This
+  holds in Diagram mode too: a hugging box keeps hugging.
+- An empty hugging text box left by clicking away is removed.
+- A text box on a whiteboard saved before editor modes hugs as it did: one
+  placed with a click fits its words, any other wraps at its width.
 - Existing text boxes keep their size until edited or resized; then they hug.
 - Notes (stickies) keep their fixed note size.
 

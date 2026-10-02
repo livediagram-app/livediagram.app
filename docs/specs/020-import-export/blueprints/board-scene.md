@@ -233,7 +233,7 @@ borderStrokeOf`, `strokeStyle` from `dash`. A duplicated closing point is droppe
   arrows drawn as curves". `rotationDeg` turns every point about the points' bounds centre first.
   `strokeWidth: arrowWidthPx`, `strokeStyle`, line colour; `label` text and, for a non-ink label
   colour, the text role.
-- **text** → `TextElement`: `x, y, width, height`, `autoWidth` as given, `textBoxFields`.
+- **text** → `TextElement`: `x, y, width, height`, `sizing` as given (`fit` | `wrap`), `textBoxFields`.
 - **sticky** → `StickyElement`: box, `resolveStickyFill(fill)`, `labelFields(text)` with the
   preset's text colour unless the text names its own non-ink colour.
 - **image** → `ImageElement` `imageId: null`, box, `objectFit: 'cover'` when `crop`; one
@@ -255,7 +255,7 @@ The existing converter's rules, expressed on scene items. Line and text colours 
 `diagramColourHex(colour, ctx)`: `'ink'` and near-black ink (the ink rule) unset, so the theme's ink
 shows; every other hex as given, never a stock name; an unreadable one counted and unset. Fills
 verbatim; `fillColor: 'transparent'` when unfilled; widths by the diagram buckets;
-text by the diagram text buckets (no `textScale`, no `autoWidth`); ink → a pencil freehand (no
+text by the diagram text buckets (no `textScale`, no `sizing`); ink → a pencil freehand (no
 `penWidth`), closed when the parser says so; a two-point unheaded polyline → arrow `arrowEnds:
 'none'`; three or more → freehand `straightEdges: true`; connectors as above with `strokeWidth:
 widthPx` verbatim; shapes, stickies (fill verbatim), images and frames as above.

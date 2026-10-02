@@ -34,10 +34,13 @@ function text(patch: Partial<TextElement> = {}): TextElement {
 }
 
 describe('hugsText', () => {
-  it('holds for a text box on a whiteboard only', () => {
-    expect(hugsText(text(), true)).toBe(true);
-    expect(hugsText(text(), false)).toBe(false);
-    expect(hugsText({ ...text(), type: 'sticky' } as never, true)).toBe(false);
+  // docs/specs/007-editor/editor-modes.md "A text box's sizing": keyed on the element, in both
+  // editor modes, never on the mode.
+  it('holds for a text box that fits or wraps, and never for a fixed box', () => {
+    expect(hugsText(text({ sizing: 'fit' }))).toBe(true);
+    expect(hugsText(text({ sizing: 'wrap' }))).toBe(true);
+    expect(hugsText(text())).toBe(false);
+    expect(hugsText({ ...text(), type: 'sticky', sizing: 'fit' } as never)).toBe(false);
   });
 });
 
@@ -66,19 +69,19 @@ describe('textHugFontPx', () => {
 
 describe('hugTextSize', () => {
   it('fits an auto-width box to its text plus the padding', () => {
-    const el = text({ autoWidth: true, label: 'Hello' }); // 5 x 7 = 35 wide, 17.5 tall
+    const el = text({ sizing: 'fit', label: 'Hello' }); // 5 x 7 = 35 wide, 17.5 tall
     expect(hugTextSize(el, fakeMeasure(el))).toEqual({ width: 43, height: 22 });
   });
 
   it('wraps an auto-width box at the wrap width', () => {
-    const el = text({ autoWidth: true, label: 'x'.repeat(100) }); // 700 natural
+    const el = text({ sizing: 'fit', label: 'x'.repeat(100) }); // 700 natural
     const size = hugTextSize(el, fakeMeasure(el));
     expect(size.width).toBe(TEXT_HUG_MAX_WIDTH);
     expect(size.height).toBe(Math.ceil(2 * 17.5) + 4);
   });
 
   it('keeps a set width and hugs the height', () => {
-    const el = text({ width: 28, label: 'Hello' }); // 20 px of text area, 35 of text
+    const el = text({ sizing: 'wrap', width: 28, label: 'Hello' }); // 20 px of text area, 35 of text
     expect(hugTextSize(el, fakeMeasure(el))).toEqual({ width: 28, height: 35 + 4 });
   });
 });
@@ -86,22 +89,22 @@ describe('hugTextSize', () => {
 describe('placedTextBox', () => {
   const drag = { x: 10, y: 20, width: 200, height: 90 };
 
-  it('puts a click-placed box empty, auto width, with the caret at the click', () => {
+  it('puts a click-placed box empty, fitting its words, with the caret at the click', () => {
     const box = placedTextBox(text({ textSize: 'sm' }), true, { x: 100, y: 50 }, drag);
-    expect(box).toEqual({ label: '', autoWidth: true, x: 96, y: 39, width: 8, height: 22 });
+    expect(box).toEqual({ label: '', sizing: 'fit', x: 96, y: 39, width: 8, height: 22 });
   });
 
-  it('takes the dragged width and one line of height from a drag', () => {
+  it('takes the dragged width, wrapping, and one line of height from a drag', () => {
     const box = placedTextBox(text({ textSize: 'sm' }), false, { x: 10, y: 20 }, drag);
-    expect(box).toEqual({ label: '', x: 10, y: 20, width: 200, height: 22 });
+    expect(box).toEqual({ label: '', sizing: 'wrap', x: 10, y: 20, width: 200, height: 22 });
   });
 });
 
 describe('hugResizedText', () => {
   const measure = fakeMeasure;
 
-  it('sets the width from a side handle, drops the auto width, and hugs the height', () => {
-    const el = text({ autoWidth: true, x: 0, y: 0, width: 43, height: 22, label: 'x'.repeat(10) });
+  it('sets the width from a side handle, so the box wraps, and hugs the height', () => {
+    const el = text({ sizing: 'fit', x: 0, y: 0, width: 43, height: 22, label: 'x'.repeat(10) });
     const out = hugResizedText(
       el,
       { x: 0, y: 0, width: 43, height: 22 },
@@ -109,8 +112,7 @@ describe('hugResizedText', () => {
       false,
       measure,
     );
-    expect(out.autoWidth).toBeUndefined();
-    expect('autoWidth' in out).toBe(false);
+    expect(out.sizing).toBe('wrap');
     // 70 px of text in a 35 px text area: two lines.
     expect(out).toMatchObject({ x: 0, y: 0, width: 43, height: 35 + 4 });
   });
@@ -128,8 +130,8 @@ describe('hugResizedText', () => {
     expect(out).toMatchObject({ width: 144, height: 57, y: 122 - 57 });
   });
 
-  it('leaves the width, and an auto width, to the top and bottom handles', () => {
-    const el = text({ autoWidth: true, width: 43, height: 22, label: 'Hello' });
+  it('leaves the width, and a fit to the words, to the top and bottom handles', () => {
+    const el = text({ sizing: 'fit', width: 43, height: 22, label: 'Hello' });
     const out = hugResizedText(
       el,
       { x: 0, y: 0, width: 43, height: 80 },
@@ -137,7 +139,7 @@ describe('hugResizedText', () => {
       false,
       measure,
     );
-    expect(out).toMatchObject({ autoWidth: true, width: 43, height: 22 });
+    expect(out).toMatchObject({ sizing: 'fit', width: 43, height: 22 });
   });
 
   it('scales the text with the box under Shift, keeping its lines', () => {
@@ -186,8 +188,8 @@ describe('hugResizedText', () => {
     expect(small.textScale).toBe(TEXT_SCALE_MIN);
   });
 
-  it('keeps an auto width under Shift', () => {
-    const el = text({ autoWidth: true, width: 43, height: 22, label: 'Hello' });
+  it('keeps a fit to the words under Shift', () => {
+    const el = text({ sizing: 'fit', width: 43, height: 22, label: 'Hello' });
     const out = hugResizedText(
       el,
       { x: 0, y: 0, width: 78, height: 40 },
@@ -195,7 +197,7 @@ describe('hugResizedText', () => {
       true,
       measure,
     );
-    expect(out.autoWidth).toBe(true);
+    expect(out.sizing).toBe('fit');
   });
 });
 
@@ -206,7 +208,7 @@ describe('hugCommittedText', () => {
   });
 
   it('sizes a committed text box to hug its text', () => {
-    const el = text({ autoWidth: true, width: 8, height: 22, label: 'Hello' });
+    const el = text({ sizing: 'fit', width: 8, height: 22, label: 'Hello' });
     expect(hugCommittedText(el, fakeMeasure)).toMatchObject({
       label: 'Hello',
       width: 43,
@@ -215,7 +217,7 @@ describe('hugCommittedText', () => {
   });
 
   it('keeps an existing set width and hugs the height', () => {
-    const el = text({ width: 220, height: 64, label: 'Hello' });
+    const el = text({ sizing: 'wrap', width: 220, height: 64, label: 'Hello' });
     expect(hugCommittedText(el, fakeMeasure)).toMatchObject({ width: 220, height: 22 });
   });
 });

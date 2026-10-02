@@ -2590,7 +2590,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectionPrimary,
     selectedId,
     activeTab,
-    drawMode,
     activeId,
     editsBlocked,
     // Every style setter the context menu reaches records into style memory.
@@ -2877,7 +2876,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginArrowLabelDrag,
   } = useEditorDrag({
     activeTab,
-    drawMode,
     layerInertIds,
     zoomRef,
     selectedId,

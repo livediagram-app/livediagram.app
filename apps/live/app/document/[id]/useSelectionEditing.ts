@@ -44,8 +44,8 @@ export function useSelectionEditing(opts: {
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): text hugs, and plain
-  // keys belong to the dock.
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
+  // the dock.
   drawMode: boolean;
   commit: (updater: (els: Element[]) => Element[]) => void;
   // Non-history tab mutator: the first-label tab auto-rename rides the
@@ -157,12 +157,12 @@ export function useSelectionEditing(opts: {
     // plain JSON. `label` stays the plain-text mirror either way.
     const richText = runs ? normalizeRuns(runs) : undefined;
     const keepRich = hasRichFormatting(richText);
-    // In Draw mode a text box hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
-    // the commit sizes it to the committed text in the same step, and removes it when left empty.
-    const whiteboard = opts.drawMode;
+    // A text box that fits or wraps hugs its text, in either editor mode (docs/specs/007-editor/
+    // editor-modes.md "A text box's sizing"): the commit sizes it to the committed text in the
+    // same step, and removes it when left empty.
     const measure = measureDrawnText(activeTab.font);
     const target = activeTab.elements.find((el) => el.id === elementId);
-    const removesEmpty = !!target && hugsText(target, whiteboard) && label.trim() === '';
+    const removesEmpty = !!target && hugsText(target) && label.trim() === '';
     commit((els) =>
       els.flatMap((el): Element[] => {
         if (el.id !== elementId) return [el];
@@ -172,7 +172,7 @@ export function useSelectionEditing(opts: {
         if (isBoxed(el)) {
           const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
           const next = keepRich ? { ...base, label, richText } : { ...base, label };
-          if (!hugsText(next, whiteboard)) return [next];
+          if (!hugsText(next)) return [next];
           // An edit that changed nothing leaves the box as it was, so an existing box keeps its
           // size until it is edited.
           const unchanged =

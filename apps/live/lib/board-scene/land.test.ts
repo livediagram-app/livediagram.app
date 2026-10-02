@@ -61,7 +61,7 @@ describe('landBoardScene', () => {
         y: 90,
         width: 40,
         height: 20,
-        autoWidth: true,
+        sizing: 'fit',
         text: sceneText('Hi'),
       },
     ]);
@@ -103,7 +103,7 @@ describe('landBoardScene', () => {
         y: 0,
         width: 10,
         height: 10,
-        autoWidth: true,
+        sizing: 'fit',
         text: sceneText(' '),
       },
       rect('ok'),

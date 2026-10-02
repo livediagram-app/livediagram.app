@@ -79,13 +79,12 @@ const KINDS: [string, () => Element][] = [
   ['avatar component', () => createComponent('avatar', 200, 100, COLOURS)],
 ];
 
-function harness(element: Element, kind: TabKind = 'diagram', drawMode = false) {
+function harness(element: Element, kind: TabKind = 'diagram') {
   let elements: Element[] = [element];
   const deps = {
     get activeTab() {
       return { id: 't', name: 'Tab', kind, elements } as Tab;
     },
-    drawMode,
     zoomRef: { current: 1 },
     selectedId: element.id,
     setSelectedId: vi.fn(),
@@ -185,15 +184,11 @@ describe('Shift resize, every boxed kind', () => {
   });
 });
 
-describe('Shift resize, every tab kind and editor mode', () => {
-  it.each([
-    ['a diagram tab', 'diagram', false],
-    ['a tab in Draw mode', 'diagram', true],
-    ['an event-storming board', 'event-storming', false],
-  ] as const)('keeps the ratio on %s', (_, kind, drawMode) => {
+describe('Shift resize, every tab kind', () => {
+  it.each(['diagram', 'event-storming'] as const)('keeps the ratio on a %s tab', (kind) => {
     syncFrames();
     const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
-    const h = harness(el, kind, drawMode);
+    const h = harness(el, kind);
     h.press('resize-ne');
     move(10, -80, true);
     expect(ratio(h.current())).toBeCloseTo(2, 6);
@@ -217,13 +212,15 @@ describe('Shift pressed or released mid-drag', () => {
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Text boxes": in Draw mode Shift keeps a text box's
+// docs/specs/023-whiteboard/whiteboard.md "Text boxes": Shift keeps a hugging text box's
 // ratio by scaling its text with the box; the height hugs the scaled text.
-describe('Shift resize of a text box in Draw mode', () => {
+// Keyed on the box's sizing, never the editor mode (docs/specs/007-editor/editor-modes.md "A text
+// box's sizing"); the drag machine has no mode at all.
+describe('Shift resize of a hugging text box', () => {
   const hello = () => ({
     ...createText(0, 0),
     label: 'Hello',
-    autoWidth: true,
+    sizing: 'fit' as const,
     textSize: 'sm' as const,
     width: 58,
     height: 22,
@@ -235,7 +232,7 @@ describe('Shift resize of a text box in Draw mode', () => {
     'keeps the text block’s ratio from %s, scaling the text',
     (mode) => {
       syncFrames();
-      const h = harness(hello(), 'diagram', true);
+      const h = harness(hello());
       const before = textRatio(h.current());
       h.press(mode);
       move(58, mode === 'resize-ne' ? -10 : 10, true);
@@ -248,9 +245,9 @@ describe('Shift resize of a text box in Draw mode', () => {
     },
   );
 
-  it('keeps the box’s ratio, text unscaled, in Diagram mode', () => {
+  it('keeps a fixed text box’s own ratio, its text unscaled', () => {
     syncFrames();
-    const h = harness(hello(), 'diagram', false);
+    const h = harness({ ...hello(), sizing: undefined });
     h.press('resize-se');
     move(58, 10, true);
     const after = h.current() as ReturnType<typeof hello> & { textScale?: number };

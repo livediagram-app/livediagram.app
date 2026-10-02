@@ -89,7 +89,7 @@ describe('the diagram profile', () => {
         y: 0,
         width: 100,
         height: 25,
-        autoWidth: true,
+        sizing: 'fit',
         text: sceneText('Note', {
           fontPx: 16,
           family: 'mono',
@@ -107,7 +107,7 @@ describe('the diagram profile', () => {
       textAlignX: 'center',
     });
     expect(t!.textScale).toBeUndefined();
-    expect(t!.autoWidth).toBeUndefined();
+    expect(t!.sizing).toBeUndefined();
   });
 
   it('maps opacity, rotation, lock, link, dash and width buckets', () => {

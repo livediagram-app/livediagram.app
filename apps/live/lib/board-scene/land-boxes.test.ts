@@ -109,21 +109,21 @@ describe('landText', () => {
         key: 't',
         kind: 'text',
         ...box,
-        autoWidth: true,
+        sizing: 'fit',
         text: label({ fontPx: 28, alignX: 'left', alignY: 'top' }),
       },
       'id',
       createLandContext(),
     )!;
     expect(isValidElement(el)).toBe(true);
-    expect(el).toMatchObject({ type: 'text', autoWidth: true, label: 'Label', textSize: 'lg' });
+    expect(el).toMatchObject({ type: 'text', sizing: 'fit', label: 'Label', textSize: 'lg' });
     expect(32 * el.textScale!).toBeCloseTo(28, 6);
   });
 
   it('skips empty text', () => {
     expect(
       landText(
-        { key: 't', kind: 'text', ...box, autoWidth: false, text: label({ text: '  ' }) },
+        { key: 't', kind: 'text', ...box, sizing: 'wrap', text: label({ text: '  ' }) },
         'id',
         createLandContext(),
       ),

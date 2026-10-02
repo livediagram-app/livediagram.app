@@ -146,13 +146,12 @@ describe('buildDrawnBoxed', () => {
   it('places a Draw mode text box empty, caret-sized, at the click', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab(), true);
     // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
-    expect(out).toMatchObject({ label: '', autoWidth: true, x: 496, y: 289, width: 8, height: 22 });
+    expect(out).toMatchObject({ label: '', sizing: 'fit', x: 496, y: 289, width: 8, height: 22 });
   });
 
   it('sets a dragged Draw mode text box to the dragged width and one line', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 100, 50, 340, 200, null, tab(), true);
-    expect(out).toMatchObject({ label: '', x: 100, y: 50, width: 240, height: 22 });
-    expect('autoWidth' in out).toBe(false);
+    expect(out).toMatchObject({ label: '', sizing: 'wrap', x: 100, y: 50, width: 240, height: 22 });
   });
 
   it('keeps a Diagram mode text box at its default size, whatever the tab opens in', () => {
@@ -166,6 +165,7 @@ describe('buildDrawnBoxed', () => {
       tab({ opensIn: 'draw' }),
     );
     expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
+    expect(out).not.toHaveProperty('sizing');
   });
 
   it('centres the factory-default size on a tap', () => {

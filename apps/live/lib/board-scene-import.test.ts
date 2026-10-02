@@ -19,7 +19,7 @@ const textItem = (text: string): SceneItem => ({
   y: 0,
   width: 100,
   height: 20,
-  autoWidth: false,
+  sizing: 'wrap',
   text: { text: text || ' x', fontPx: 22, family: 'sans', colour: 'ink' },
 });
 

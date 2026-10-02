@@ -100,7 +100,7 @@ describe('useBoardSceneInsert', () => {
       y: 0,
       width: 300,
       height: 20,
-      autoWidth: true,
+      sizing: 'fit',
       text: sceneText('Hi'),
     };
     const board = setup();

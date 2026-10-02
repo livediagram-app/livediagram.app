@@ -659,7 +659,7 @@ describe('Excalidraw import on a whiteboard', () => {
     const r = build(copy(), 'whiteboard');
     if (!r.ok) throw new Error(r.error);
     const text = r.elements[5] as TextElement;
-    expect(text).toMatchObject({ type: 'text', label: 'Tools', font: 'caveat', autoWidth: true });
+    expect(text).toMatchObject({ type: 'text', label: 'Tools', font: 'caveat', sizing: 'fit' });
     expect(r.report.degraded).toContainEqual({ rule: 'Groups were dropped', count: 1 });
     expect(r.report.landed).toEqual({ shape: 2, connector: 1, ink: 1, sticky: 1, text: 1 });
     expect(r.backgroundPattern).toBeUndefined();

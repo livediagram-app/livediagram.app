@@ -20,9 +20,6 @@ export type EditorDragDeps = {
   // The tab whose elements are being dragged. We read its elements
   // array on every move and write back through `tick` / `commit`.
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): a lone text box hugs
-  // its text through a resize.
-  drawMode: boolean;
   // Current viewport zoom, kept in a ref so the move handler can
   // invert it without forcing the effect to re-attach when zoom
   // changes mid-drag.

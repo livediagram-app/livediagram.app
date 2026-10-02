@@ -115,7 +115,7 @@ colours can be snapped afterwards, in one press, if wanted.
 ## Text
 
 - A **text item** lands as a whiteboard text box: its width per the source
-  (an auto-sized source text widens with its words, `autoWidth`), its height
+  (an auto-sized source text widens with its words, sizing `fit`; any other wraps at its width, `wrap`), its height
   hugging its lines once laid out in our fonts (see "In the editor").
 - **Font size** survives exactly: the nearest size preset (Small, Medium,
   Large) by ratio, times a text scale for the rest, within the text box's

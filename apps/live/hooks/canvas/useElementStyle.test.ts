@@ -27,7 +27,6 @@ function harness(elements: Element[], selection: Set<string>) {
       selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,
       selectedId: null, // multi-select: no single id
       activeTab: committed,
-      drawMode: false,
       activeId: 'tab1',
       editsBlocked: false,
       commit: (map) => {

@@ -1,4 +1,5 @@
-// A whiteboard text box hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes"):
+// A text box that fits or wraps hugs its text (docs/specs/023-whiteboard/whiteboard.md "Text boxes",
+// docs/specs/007-editor/editor-modes.md "A text box's sizing"), in either editor mode:
 // the box is the text's own line box plus a little padding, never a default size. This module
 // is the pure geometry: what the box is for a measured block of text, where a click or a drag
 // puts a new one, and what a resize handle does to it. The measuring itself is the DOM's
@@ -28,9 +29,10 @@ export type BlockSize = { width: number; height: number };
 // its natural width, capped at `width`. Returns the block's own size, padding excluded.
 export type MeasureTextBlock = (width: number, fixed: boolean) => BlockSize;
 
-// Whether this element hugs its text: a text box, on a whiteboard.
-export function hugsText(el: Element, whiteboard: boolean): el is TextElement {
-  return whiteboard && el.type === 'text';
+// Whether this element hugs its text: a text box whose sizing fits or wraps. Read off the element,
+// never the editor mode, so every viewer draws the same box.
+export function hugsText(el: Element): el is TextElement {
+  return el.type === 'text' && el.sizing !== undefined;
 }
 
 // The padding around the text: the element's own preset when it has one, else the hug padding.
@@ -48,18 +50,18 @@ export function textHugPaddingCss(el: TextElement): string {
   return `${pad.y}px ${pad.x}px`;
 }
 
-// The label px a hugging text box draws at: its size preset (a whiteboard draws 'scale' at the
+// The label px a hugging text box draws at: its size preset (a hugging box draws 'scale' at the
 // preset's fixed px rather than fitting it to the box) times its Shift-resize scale.
 export function textHugFontPx(el: TextElement): number {
   return LABEL_FONT_PX[el.textSize ?? 'scale'] * (el.textScale ?? 1);
 }
 
-// The box that hugs the measured text. An auto-width box takes the text's width (up to the wrap
+// The box that hugs the measured text. A 'fit' box takes the text's width (up to the wrap
 // width); a set-width box keeps its width. The height always hugs. Whole px, rounded up, so the
 // text never wraps a word early.
 export function hugTextSize(el: TextElement, measure: MeasureTextBlock): BlockSize {
   const pad = textHugPadding(el);
-  if (el.autoWidth) {
+  if (el.sizing === 'fit') {
     const block = measure(TEXT_HUG_MAX_WIDTH - 2 * pad.x, false);
     return {
       width: Math.ceil(block.width) + 2 * pad.x,
@@ -80,7 +82,7 @@ export function hugCommittedText(
   return { ...el, ...hugTextSize(el, measure(el)) };
 }
 
-// A new whiteboard text box, empty and about to be typed into. A click puts the caret at the
+// A new Draw mode text box, empty and about to be typed into. A click puts the caret at the
 // click (the box's left edge a padding to its left, its one line centred on it) and the box
 // widens with the text. A drag sets the width from the dragged box; the height is one line.
 export function placedTextBox(
@@ -88,26 +90,27 @@ export function placedTextBox(
   tap: boolean,
   start: { x: number; y: number },
   drag: ShapeBounds,
-): Pick<TextElement, 'x' | 'y' | 'width' | 'height' | 'label' | 'autoWidth'> {
+): Pick<TextElement, 'x' | 'y' | 'width' | 'height' | 'label' | 'sizing'> {
   const pad = textHugPadding(el);
   const height = Math.ceil(textHugFontPx(el) * TEXT_HUG_LEADING) + 2 * pad.y;
   if (tap) {
     return {
       label: '',
-      autoWidth: true,
+      sizing: 'fit',
       x: start.x - pad.x,
       y: start.y - height / 2,
       width: 2 * pad.x,
       height,
     };
   }
-  return { label: '', x: drag.x, y: drag.y, width: drag.width, height };
+  return { label: '', sizing: 'wrap', x: drag.x, y: drag.y, width: drag.width, height };
 }
 
 // One frame of a handle resize on a hugging text box. `next` is the frame's resolved bounds
 // (snapped, and ratio-kept under Shift); `current` is the element as the previous frame left it.
 //
-// - A plain resize sets the width (so it is no longer auto); the text rewraps and the height hugs.
+// - A plain resize from a side sets the width (so the box wraps); the text rewraps and the height
+//   hugs.
 //   The top and bottom handles set nothing: the height is the text's.
 // - Shift keeps the ratio by scaling the text with the box: the scale follows the text area's
 //   width, and the height hugs the scaled text.
@@ -140,9 +143,7 @@ export function hugResizedText(
   }
   let sized = current;
   if (handle.includes('e') || handle.includes('w')) {
-    const { autoWidth: _auto, ...fixed } = current;
-    void _auto;
-    sized = { ...fixed, x: next.x, width: next.width };
+    sized = { ...current, sizing: 'wrap', x: next.x, width: next.width };
   }
   const { height } = hugTextSize(sized, measure(sized));
   return { ...sized, y: fromTop ? current.y + current.height - height : current.y, height };

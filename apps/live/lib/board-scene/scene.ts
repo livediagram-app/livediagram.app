@@ -6,6 +6,8 @@
 // is the rendered font size. Colours are light-reference: what the line looks like on a light
 // board. 'ink' names the board's own adaptive ink.
 
+import type { TextSizing } from '@livediagram/document';
+
 export type SceneAppearance = 'light' | 'dark';
 
 /** A point in canvas px; `p` is the pen pressure there, 0 to 1. */
@@ -109,7 +111,9 @@ export type SceneTextItem = Base & {
   y: number;
   width: number;
   height: number;
-  autoWidth: boolean;
+  // How the landed box sizes itself (TextElement.sizing): 'fit' to its words, or 'wrap' at its
+  // width; the source's auto-sizing says which.
+  sizing: TextSizing;
   text: SceneText;
 };
 

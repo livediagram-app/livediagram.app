@@ -67,7 +67,7 @@ const BOARD = [
     y: 280,
     width: 200,
     height: 30,
-    autoWidth: true,
+    sizing: 'fit',
     label: 'Retro notes',
     font: 'caveat',
     textSize: 'md',

@@ -140,7 +140,7 @@ export function excalidrawToBoardScene(envelope: ExcalidrawEnvelope): BoardScene
         ...common,
         kind: 'text',
         ...boxOf(el),
-        autoWidth: el.autoResize !== false,
+        sizing: el.autoResize !== false ? 'fit' : 'wrap',
         text: sceneTextOf(el, notes),
       });
     } else if (type === 'freedraw') {

@@ -16,7 +16,7 @@ import {
   type EsTimeline,
   type TextElement,
 } from '@livediagram/document';
-import { hugResizedText, type MeasureTextBlock } from '@/lib/text-hug';
+import { hugResizedText, hugsText, type MeasureTextBlock } from '@/lib/text-hug';
 import type { LanePreview } from '@/lib/lane-preview';
 import {
   ALIGN_SNAP_THRESHOLD,
@@ -401,22 +401,22 @@ function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, Sha
 
 // How a resize frame's hugging text boxes are sized (docs/specs/023-whiteboard/whiteboard.md "Text
 // boxes"): the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
-// measure. Given only for a single element on a whiteboard.
+// measure. Given only for a single element; it applies to a text box that fits or wraps.
 export type TextHugResize = {
   mode: DragMode;
   constrain: boolean;
   measure: (el: TextElement) => MeasureTextBlock;
 };
 
-// One element through a resolved resize frame. A whiteboard text box hugs its text (its width
-// from the frame, its height the text's, or under Shift its text scaled with the box); a rotated
-// one, and every other element, takes the frame's bounds as they are.
+// One element through a resolved resize frame. A text box that fits or wraps (hugsText, in either
+// editor mode) hugs its text: its width from the frame, its height the text's, or under Shift its
+// text scaled with the box. A rotated one, and every other element, takes the frame's bounds.
 export function resizedElement(
   el: BoxedElement,
   next: ShapeBounds,
   hug: TextHugResize | null,
 ): BoxedElement {
-  if (hug && hug.mode !== 'move' && el.type === 'text' && !el.rotation) {
+  if (hug && hug.mode !== 'move' && hugsText(el) && !el.rotation) {
     return hugResizedText(el, next, hug.mode, hug.constrain, hug.measure);
   }
   return { ...el, ...next };

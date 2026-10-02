@@ -45,7 +45,6 @@ function harness(
     get activeTab() {
       return { id: 't', name: 'Tab', elements } as Tab;
     },
-    drawMode: false,
 
     zoomRef: { current: opts.zoom ?? 1 },
     selectedId: 'drag',
