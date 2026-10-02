@@ -47,6 +47,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/import-selection.ts`                       | `toggled`, `toggledAll`: what a list has ticked                                                                                  |
 | `app/explorer/import-sources.tsx`               | The `drawio` source in the Explorer's Import from group                                                                          |
 | `scripts/drawio-verify.mts`                     | Real files through the importer, aggregates only (never content)                                                                 |
+| `scripts/drawio-compare.mts`                    | Real files beside draw.io's own render, page by page, written outside the repo                                                   |
 | `components/dialogs/ImportTabDialog.tsx`        | The draw.io card; routes a reported outcome to the summary                                                                       |
 | `components/dialogs/TextImportPanel.tsx`        | `onDone(outcome)`                                                                                                                |
 | `lib/drawio/__fixtures__/`                      | The corpus and its generator                                                                                                     |
