@@ -249,6 +249,15 @@ export const EDITOR_MODE_SWITCHES = chart(
   { types: ['ModeDiagram', 'ModeDraw'] },
 );
 
+// The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
+export const TAB_OPENS_IN = chart(
+  'Tab',
+  'Changed',
+  'Opening Modes Set',
+  'A tab set to open in Diagram mode or Draw mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw'] },
+);
+
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Whiteboards',
@@ -257,6 +266,7 @@ export const WHITEBOARDS: MetricStack = {
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
+    TAB_OPENS_IN,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

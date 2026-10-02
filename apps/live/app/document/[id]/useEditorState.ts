@@ -44,6 +44,7 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
+import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
@@ -1618,6 +1619,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     changeLogRef,
   });
+  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in.
+  const tabOpensIn = useTabOpensIn({ tabs, canEdit: !isReadOnly, commitTabs, emitTabMeta });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -3071,6 +3074,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
+    // The tab menu's Opens in choice for a tab, absent where it is not offered.
+    opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
