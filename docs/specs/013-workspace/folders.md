@@ -169,17 +169,25 @@ All endpoints continue the existing `X-Owner-Id` convention.
 
 A document is placed by the write that creates it. `POST /api/documents` carries the
 **placement** beside `id` and `name`: `teamId` (absent or null = Personal Space, a string =
-that team's library) and `folderId` (absent or null = the root of that space, its Unsorted;
-a string = that folder). There is no second placement request after a create, so a document
-never exists, even for a moment, in a place the caller did not ask for.
+that team's library) and `folderId` (a string = that folder; `null` = the root of that space,
+its Unsorted, chosen on purpose; absent = no folder chosen). There is no second placement request
+after a create, so a document never exists, even for a moment, in a place the caller did not ask
+for.
 
-- **Resolution order.** The space first, then the folder: an explicit folder, else the person's
-  [default folder](default-folders.md) for the create's `intent`, else the space's root. The
-  resolver (`apps/api/src/placement/`) is an ordered list of folder steps (`explicitFolder`,
-  `defaultFolder`), the root answering when none does.
-- **Defaults.** Only a create that carries an `intent` and names neither a team nor a folder
-  consults the defaults: the root of My documents is not an explicit place. A dangling default is
-  skipped, never a rejection ([Default folders](default-folders.md#dangling-defaults)).
+- **Chosen or not.** A placement is **chosen** when the body names a team or carries the
+  `folderId` key at all, `null` included. `folderId: null` with no team is the **explicit root**
+  of My documents. A body with neither is **no choice**: the document lands at the root of My
+  documents unless a [default folder](default-folders.md) answers for its `intent`. A `teamId: null`
+  alone is no choice, like an absent one.
+
+- **Resolution order.** The space first, then the folder: a chosen placement (a folder, or a
+  space's root chosen on purpose), else the person's [default folder](default-folders.md) for the
+  create's `intent`, else the root of My documents. The resolver (`apps/api/src/placement/`) is an
+  ordered list of folder steps (`explicitFolder`, `defaultFolder`), the root answering when none
+  does.
+- **Defaults.** Only a create that carries an `intent` and whose placement is no choice consults
+  the defaults. A dangling default is skipped, never a rejection
+  ([Default folders](default-folders.md#dangling-defaults)).
 - **Team space.** Only a **verified account id** (a Clerk session or an API token) may place
   into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
   header never counts. A guest, an invited-but-not-joined member, or an unknown team is
@@ -195,13 +203,13 @@ never exists, even for a moment, in a place the caller did not ask for.
 - **Named rejections, never a fallback.** An invalid placement refuses the whole create
   before anything is written: the document is not filed somewhere else instead.
 
-  | Rejection               | Status | When                                                               |
-  | ----------------------- | ------ | ------------------------------------------------------------------ |
-  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string        |
-  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined         |
-  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller                   |
-  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space          |
-  | `intent_invalid`        | 400    | `intent` is present but not `{ mode, boardType? }` of known values |
+  | Rejection               | Status | When                                                                              |
+  | ----------------------- | ------ | --------------------------------------------------------------------------------- |
+  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string                       |
+  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined                        |
+  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller                                  |
+  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space                         |
+  | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind?, templateFamily? }` of known values |
 
 - **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
   row; the caller is the owner, in a team as in Personal Space.
@@ -213,7 +221,9 @@ never exists, even for a moment, in a place the caller did not ask for.
   audience is the team ([Timeline](timeline.md)); there is no separate "Shared with a Team"
   event, because the document was never personal.
 - **Observability.** Every decision logs one line with the `placement:` fingerprint:
-  `placement: resolved scope=personal|team folder=set|root via=explicit|default|root` (with
+  `placement: resolved scope=personal|team folder=set|root via=explicit|default|root` (`explicit`
+  for any chosen placement, a chosen root included; `root` only when nothing was chosen and no
+  default answered; with
   `key=<key>` when a default decided), `placement: default-skipped key=<key> reason=<reason>`,
   `placement: rejected reason=<code> scope=personal|team`, and
   `placement: skipped reason=existing` for a re-commit.

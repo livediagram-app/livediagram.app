@@ -1,52 +1,61 @@
 # Default folders
 
 Status: the server side is shipped (storage, the API, resolution on create, the intent every create
-caller sends); the surfaces that set, show and clear a default come later.
+caller sends, the intent recorded on the document); the surfaces that set, show and clear a default
+come later.
 
 ## What
 
 A **default folder** is where a person's new documents land when they create one without choosing
-a place. A person keeps one default per **default key**, and the key is chosen by what the new
-document opens as: a document that opens in Diagram mode can land in "Diagrams", one that opens in
-Draw mode in "Sketches", and a retrospective in "Retros". Defaults belong to the person, not to a
-folder or a team: two teammates may send the same new documents to different places.
+a place. A person keeps one default per **default key**, and the key is chosen by how the new
+document opens and what it is made as: a document that opens in Diagram mode can land in "Diagrams",
+one that opens in Draw mode in "Sketches", and a retrospective in "Retros". Defaults belong to the
+person, not to a folder or a team: two teammates may send the same new documents to different places.
 
 ## Domain language
 
-| Term                 | Means                                                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                                           |
-| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                                   |
-| **creation intent**  | How a new document opens, captured once when it is created: the editor mode it opens in and, for a board, its board type. |
-| **opens in**         | The editor mode a document's first tab opens in (`EditorMode`). Never a type of document or tab.                          |
-| **board type**       | The kind of board a new document is, when it is one: `event-storming`, `retrospective` or `kanban` (`BoardType`).         |
-| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.                          |
+| Term                 | Means                                                                                                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                            |
+| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                    |
+| **creation intent**  | What a new document is made as, captured once when it is created: opens in, tab kind and template family.  |
+| **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                          |
+| **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab, or a specific kind such as `event-storming`. |
+| **template family**  | The family of templates the document was made from, when it has one: `retrospective` or `kanban`.          |
+| **explicit root**    | The root of My documents, chosen on purpose (the placement picker's root tile): a place like any other.    |
+| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.           |
 
-"Default" on its own is ambiguous here (default theme, default text size, the Default template); in
-specs and code say **default folder** or **placement default**.
+- "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
+  specs and code say **default folder** or **placement default**.
+- A mode and a template family are never a "type": say **opens in** for a mode and **template
+  family** for a family. "Board type" is not a term here: of the boards in the list, only the
+  event-storming board is a tab kind of its own; a retrospective and a Kanban board are general
+  diagram tabs made from a template family.
 
 ## Default keys
 
 The list a person sets defaults from is titled **New documents that open as**, and holds, in this
 order:
 
-| Entry                 | Key                    |
-| --------------------- | ---------------------- |
-| Diagrams              | `mode:diagram`         |
-| Whiteboards           | `mode:draw`            |
-| Event Storming boards | `board:event-storming` |
-| Retrospectives        | `board:retrospective`  |
-| Kanban boards         | `board:kanban`         |
+| Entry                 | Key                      |
+| --------------------- | ------------------------ |
+| Diagrams              | `mode:diagram`           |
+| Whiteboards           | `mode:draw`              |
+| Event Storming boards | `kind:event-storming`    |
+| Retrospectives        | `template:retrospective` |
+| Kanban boards         | `template:kanban`        |
 
-- A key is `<dimension>:<value>`. The dimensions, most specific first, are `board` (the board
-  type) and `mode` (the editor mode the first tab opens in).
-- The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`). A key outside it is refused when set
-  and ignored when read.
-- The mode keys are **generated from the editor modes** (`EDITOR_MODES` in `@livediagram/document`):
-  one `mode:<mode>` key per mode, in the modes' order. A new editor mode gains its default key, and
-  its entry in the list, with no other change.
-- The board types are a **closed list** (`BOARD_TYPES`): `event-storming`, `retrospective`,
-  `kanban`. Every other document has no board type and is routed by its mode alone.
+- A key is `<dimension>:<value>`. The dimensions, most specific first, are `kind` (the tab kind),
+  `template` (the template family) and `mode` (opens in).
+- The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`), generated from three closed lists. A key
+  outside it is refused when set and ignored when read.
+  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@livediagram/document`), one
+    `mode:<mode>` per mode in the modes' order: a new editor mode gains its key, and its entry in
+    the list, with no other change.
+  - **Kind keys** come from the specific tab kinds a document can be created with: every creatable
+    tab kind but the general `diagram` tab, today `event-storming`.
+  - **Template keys** come from the template families (`TEMPLATE_FAMILIES`): `retrospective`,
+    `kanban`.
 
 ## Creation intent
 
@@ -55,67 +64,94 @@ order:
   - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode,
     including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-whiteboard/whiteboard.md));
     `diagram` otherwise, including a document with no tab and an event-storming board.
-  - `boardType`, when the document is a board:
-    - `event-storming` when the first tab is an
-      [event-storming board](../021-event-storming/event-storming.md) (its kind is
-      `event-storming`), or the document is made from the Event storming template;
-    - `retrospective` or `kanban` by the **template** the document is made from. One exhaustive
-      map from every template to its board type, or none, decides it
-      (`boardTypeOfTemplate` in `@livediagram/templates`): every retrospective format is a
-      retrospective, the Kanban template a Kanban board, every other template no board. A new
-      template is not complete until it is mapped.
-    - absent otherwise: an import, a blank document, any other template.
-- **Sent on the create** as `intent: { mode, boardType? }` beside the placement
+  - `tabKind`: `event-storming` when the first tab is an
+    [event-storming board](../021-event-storming/event-storming.md), read the way the document model
+    reads a tab's kind; `diagram` otherwise (a legacy whiteboard tab included). Absent on the wire
+    reads as `diagram`.
+  - `templateFamily`: by the **template** the document is made from. One exhaustive map from every
+    template to its family, or none, decides it (`templateFamilyOf` in `@livediagram/templates`):
+    every retrospective format (Retrospective, Start / Stop / Continue, Mad / Sad / Glad, 4Ls,
+    Sailboat) is `retrospective`, the Kanban template `kanban`, every other template none, the
+    Incident postmortem and Lean coffee included. A new template is not complete until it is
+    mapped. Absent for an import, a blank document, or a template with no family.
+- **Sent on the create** as `intent: { mode, tabKind?, templateFamily? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).
-- **Who sends it:** every create that makes something new. The New Document wizard and its
-  bypasses (Quick Start, `/new?blank=1`, `/new?template=`), imports into the account (board and
-  draw.io imports, Google Drive **Import a copy**) and the MCP `create_document` tool, which sends
-  the intent of the first tab it built and the template it used (`mode:diagram` unless its input
-  makes a whiteboard or a board).
-- **Who does not:** a create that keeps a place the document already has. Duplicate keeps the
-  source's place, an Offline Mode sync keeps the folder it had in the browser, a Google Drive copy
-  of a mirrored file follows the mirror, a Drive restore puts back what it restores. A create
-  without an intent never consults defaults.
-- An intent that is present but malformed (no known `mode`, or a `boardType` outside the list)
-  refuses the create, `intent_invalid` (400), before anything is written.
+- **Who sends it:**
+  - every create that makes something new: the New Document wizard and its bypasses (Quick Start,
+    `/new?blank=1`, `/new?template=`), imports into the account (board and draw.io imports, Google
+    Drive **Import a copy**) and the MCP `create_document` tool, which sends the intent of the first
+    tab it built and the template it used;
+  - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
+    placement, so it is recorded and never routed ([Duplicate](#duplicate)).
+- **Who does not:** a create that keeps a place the document already has and has no recorded intent
+  to carry. An Offline Mode sync keeps the folder it had in the browser and records unknown; a
+  Google Drive copy of a mirrored file follows the mirror; a Drive restore puts back what it
+  restores. A create without an intent never consults defaults.
+- An intent that is present but malformed (no known `mode`, a `tabKind` or `templateFamily` outside
+  its list) refuses the create, `intent_invalid` (400), before anything is written.
 
 ## Recorded intent
 
 The creation intent is also **written on the document**, by the same insert that creates it, and
 never re-derived or rewritten afterwards:
 
-| Column       | Summary field | Holds                                          |
-| ------------ | ------------- | ---------------------------------------------- |
-| `opens_in`   | `opensIn`     | The editor mode the document opens in, or null |
-| `board_type` | `boardType`   | Its board type, or null                        |
+| Column            | Field            | Holds                                          |
+| ----------------- | ---------------- | ---------------------------------------------- |
+| `opens_in`        | `opensIn`        | The editor mode the document opens in, or null |
+| `tab_kind`        | `tabKind`        | The first tab's kind at creation, or null      |
+| `template_family` | `templateFamily` | The template family it was made from, or null  |
 
 - **Null `opensIn` means unknown**, never Diagram: the document was made before intents were
-  recorded, or by a create that carries none (Duplicate, an Offline Mode sync, a Drive mirror copy,
-  an API script). Its `boardType` is then unknown too.
-- **A known `opensIn` with a null `boardType` means not a board.** Only a recorded intent can say
-  that; an unknown one says nothing.
-- A copy made by `POST /api/documents/:id/copy` carries the source's recorded values; they are a
-  fact about the content, not derived again.
-- A stored value outside the editor modes or the board types (one since retired) reads as null.
+  recorded, or by a create that carries none (an Offline Mode sync, a Drive mirror copy, an API
+  script, the Duplicate of a document whose own intent is unknown). Its `tabKind` and
+  `templateFamily` are then unknown too.
+- **With a known `opensIn`**, `tabKind` is always known, and a null `templateFamily` means made from
+  no family.
+- The first tab's kind is a column of its own because the document has no other honest record of
+  it: tabs are reordered, removed and shared between documents after creation.
+- The fields are on both the document summary and the document.
+- A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
+  does: they are a fact about the content, not derived again.
+- A stored value outside its list (one since retired) reads as null.
 - They feed the Explorer's filters: an **Opens in** chip (one option per editor mode) and a
-  **Board** chip (one option per board type). A document with an unknown value matches no option of
-  that chip; it shows whenever the chip is not set. Copy says "opens in", never "type", for a mode.
+  **Board** chip whose options are the list's board entries, read from two dimensions: Event
+  Storming boards (`tabKind`), Retrospectives and Kanban boards (`templateFamily`). A document with
+  an unknown value matches no option of that chip; it shows whenever the chip is not set. Copy says
+  "opens in" for a mode and never "type".
+
+## Duplicate
+
+- A Duplicate lands **beside its source**: the source's own team and folder, sent as an explicit
+  placement, the root of My documents included (as an explicit root). When the server refuses that
+  place (a team the person is not in, someone else's personal folder), the Duplicate is filed at the
+  explicit root of My documents instead, saying so in its log.
+- It records the **source's recorded intent** (`opensIn`, `tabKind`, `templateFamily`), unchanged;
+  an unknown one stays unknown.
+- It is **never routed by a default**: its placement is always explicit.
+- The server copy (`POST /api/documents/:id/copy`) agrees: it carries the same three values, and
+  files the copy at the root of the copier's My documents, a place it chooses, never a default.
 
 ## Precedence
 
 A create's place is decided in this order; the first that answers wins:
 
-1. **Explicit placement**: a folder, or a team (its root included), the person is inside or picked.
-2. **Board default**: the default for `board:<boardType>`, when the document is a board.
-3. **Mode default**: the default for `mode:<mode>`.
-4. **The root of My documents** (Personal Space's Unsorted).
+1. **Explicit placement**: a folder, a team (its root included), or the explicit root of My
+   documents.
+2. **Kind default**: the default for `kind:<tabKind>`, when the first tab is a specific kind.
+3. **Template default**: the default for `template:<templateFamily>`, when the document has one.
+4. **Mode default**: the default for `mode:<mode>`.
+5. **The root of My documents** (Personal Space's Unsorted).
 
-- **The root of My documents is not explicit.** A create with no `teamId` and no `folderId` (absent
-  or null) that carries an intent consults the defaults. A caller that means the root itself, and
-  not the default, sends no intent.
-- The **wizard** resolves the default itself, from the same key order, pre-selects it in its
-  placement picker and sends it as an explicit placement. Instant-create paths send no placement
-  and the intent, and the **server** resolves the default.
+- **An absent placement is no choice.** A create whose body names no `folderId` (the key absent) and
+  no team, and that carries an intent, consults the defaults.
+- **An explicit root is a choice.** `folderId: null`, present in the body, is the root of the chosen
+  space, chosen on purpose; with no team it is the explicit root of My documents, and it always wins
+  over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
+- **The wizard** sends the placement the person saw or picked: the Settings step's picker (its
+  root tile, "Here", included) or a `/new?folder=` / `?team=` context is explicit. A create made
+  without the picker ever being shown (Quick Start, "Start blank" from the template step, a bypass
+  link without context) sends no placement. Once the wizard pre-selects the resolved default
+  client-side, it sends that as an explicit placement.
 - A re-commit of an id the person already owns keeps its stored place; defaults are not consulted.
 
 ## What a default may point at
@@ -178,27 +214,29 @@ A create's place is decided in this order; the first that answers wins:
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultBoardEventStorming` /
-  `DefaultBoardRetrospective` / `DefaultBoardKanban`, fired by the surface that sets a default,
-  before the write.
-- `Folder` · `Cleared` · the same types, fired by the surface that clears one, before the write.
-- The type is closed: one value per key, derived from it (`placementDefaultTelemetryType`), never a folder name
-  or id.
+- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultKindEventStorming` /
+  `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
+  default, before the write.
+- `Folder` · `Cleared` · the same values, fired by the surface that clears one, before the write.
+- The value is closed: one per key, derived from it (`placementDefaultTelemetryType`), never a
+  folder name or id.
 
 ## Observability
 
 - `placement: resolved scope=<personal|team> folder=set via=default key=<key>` when a default
-  decides a create.
+  decides a create; `via=explicit` for a chosen place, the explicit root included.
 - `placement: default-skipped key=<key> reason=<folder_missing|folder_not_visible|team_not_joined>`
   for every dangling default passed over.
 - `placement-defaults: set key=<key> scope=<personal|team>`,
   `placement-defaults: cleared key=<key>` and `placement-defaults: rejected reason=<code>` on the
   routes.
+- `[duplicate] placement refused reason=<code>, filed at the root` when a Duplicate cannot sit
+  beside its source.
 
 ## Non-goals
 
 - A default for a space's root, per device, or per template (templates route only through their
-  board type).
+  family).
 - Defaults for Offline Mode documents: a document made in the browser is filed where it is made.
 - Moving existing documents when a default changes.
 

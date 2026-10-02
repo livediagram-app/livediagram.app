@@ -620,7 +620,7 @@ follow-up placement request, so a document asked for in a team can never be left
 by a request that failed quietly.
 
 The create also carries the new document's creation `intent` (its first tab's editor mode
-and, for a board, its board type), so a create with no place chosen lands in the person's
+its first tab's kind and its template family), so a create with no place chosen lands in the person's
 [default folder](../013-workspace/default-folders.md) for it, resolved by the server.
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
