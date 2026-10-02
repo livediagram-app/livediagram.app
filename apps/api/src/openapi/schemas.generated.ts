@@ -2490,6 +2490,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "const": "unseen_folder",
     "type": "string"
   },
+  "EditorMode": {
+    "enum": [
+      "diagram",
+      "draw"
+    ],
+    "type": "string"
+  },
   "Element": {
     "anyOf": [
       {
@@ -3030,6 +3037,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "subtitle"
     ],
     "type": "object"
+  },
+  "HuedPenColourName": {
+    "description": "The seven hued stock colours, each tuned per board.",
+    "enum": [
+      "blue",
+      "red",
+      "orange",
+      "green",
+      "teal",
+      "violet",
+      "pink"
+    ],
+    "type": "string"
   },
   "IconAnimation": {
     "enum": [
@@ -3833,16 +3853,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "PenColourName": {
-    "enum": [
-      "blue",
-      "red",
-      "orange",
-      "green",
-      "teal",
-      "violet",
-      "pink"
-    ],
-    "type": "string"
+    "anyOf": [
+      {
+        "const": "ink",
+        "type": "string"
+      },
+      {
+        "$ref": "#/components/schemas/HuedPenColourName"
+      }
+    ]
   },
   "PickerSource": {
     "enum": [
@@ -5036,6 +5055,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "opensIn": {
+        "$ref": "#/components/schemas/EditorMode"
+      },
       "patternColor": {
         "type": "string"
       },
@@ -5065,8 +5087,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming",
-      "whiteboard"
+      "event-storming"
     ],
     "type": "string"
   },

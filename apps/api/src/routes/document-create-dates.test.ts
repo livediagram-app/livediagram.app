@@ -20,7 +20,7 @@ describe('POST /documents with its own dates', () => {
           name: 'Whiteboard, 14 Aug 2020',
           createdAt,
           savedAt,
-          tabs: [{ id: 't1', name: 'Whiteboard', kind: 'whiteboard', elements: [] }],
+          tabs: [{ id: 't1', name: 'Whiteboard', opensIn: 'draw', elements: [] }],
         },
       }),
     );
