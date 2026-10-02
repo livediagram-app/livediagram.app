@@ -96,6 +96,21 @@ test.describe('explorer sidebar', () => {
     expectNoPageErrors(pageErrors);
   });
 
+  test('opens a folder menu from the keyboard', async ({ page, pageErrors, baseURL }) => {
+    const owner = crypto.randomUUID();
+    await darkVisitor(page, owner);
+    await seedFolder(page, owner, new URL(baseURL!).origin, 'Projects');
+    await openExplorer(page);
+    const projects = row(page, 'Projects');
+    await expect(projects).toBeVisible();
+    await projects.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(page.getByRole('menu')).toBeVisible();
+    // Only the folder's own menu opens, never an ancestor's.
+    await expect(page.getByRole('menu')).toHaveCount(1);
+    expectNoPageErrors(pageErrors);
+  });
+
   test('shows This browser while it holds a document', async ({ page, pageErrors }) => {
     await darkVisitor(page, crypto.randomUUID());
     // Seeded through the store the app upgrades on load (e2e/legacy-offline-store.spec.ts).
