@@ -10,6 +10,7 @@ import {
   resolveEditorMode,
   subscribeEditorModes,
 } from './editor-mode-store';
+import { storageEvent } from '@/lib/testing/storage-event';
 
 const general = { id: 't1', kind: 'diagram' as const };
 const drawTab = { id: 't2', kind: 'diagram' as const, opensIn: 'draw' as const };
@@ -108,7 +109,7 @@ describe('remembered modes', () => {
     const unsubscribe = subscribeEditorModes(listener);
     expect(readRememberedMode('t5')).toBeNull();
     localStorage.setItem(editorModeKey('t5'), 'draw');
-    window.dispatchEvent(new StorageEvent('storage', { key: editorModeKey('t5') }));
+    window.dispatchEvent(storageEvent({ key: editorModeKey('t5'), newValue: 'draw' }));
     expect(listener).toHaveBeenCalledTimes(1);
     expect(readRememberedMode('t5')).toBe('draw');
     unsubscribe();
