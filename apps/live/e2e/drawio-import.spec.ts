@@ -1,3 +1,4 @@
+import { deflateRawSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
@@ -29,17 +30,17 @@ async function importFile(page: Page, file: string) {
   await (await chooser).setFiles(join(FIXTURES, file));
 }
 
-// The saved diagram, read back through the api the way the editor stores it.
+// The saved document, read back through the api the way the editor stores it.
 async function storedTabs(page: Page) {
   return page.evaluate(async () => {
     const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
     const id = location.pathname.split('/').filter(Boolean).pop()!;
     const headers = { 'X-Owner-Id': owner };
-    const diagram = await (await fetch(`/api/diagrams/${id}`, { headers })).json();
-    const summaries: { id: string; name: string }[] = diagram.diagram?.tabs ?? [];
+    const stored = await (await fetch(`/api/documents/${id}`, { headers })).json();
+    const summaries: { id: string; name: string }[] = stored.document?.tabs ?? [];
     return Promise.all(
       summaries.map(async (t) => {
-        const got = await (await fetch(`/api/diagrams/${id}/tabs/${t.id}`, { headers })).json();
+        const got = await (await fetch(`/api/documents/${id}/tabs/${t.id}`, { headers })).json();
         return { name: t.name, elements: (got.tab?.elements ?? []).length as number };
       }),
     );
@@ -140,3 +141,87 @@ for (const file of [
     expectNoPageErrors(pageErrors);
   });
 }
+
+// docs/specs/020-import-export/drawio-import.md "Import as new documents": files saved to Google
+// Drive (no extension, compressed pages) and JSON exports, picked in the Explorer, each a document.
+test.describe('importing draw.io files from the Explorer', () => {
+  test.use({ viewport: { width: 1400, height: 900 } });
+
+  const compress = (xml: string) =>
+    deflateRawSync(Buffer.from(encodeURIComponent(xml), 'latin1')).toString('base64');
+  const page1 = (label: string) =>
+    `<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="a" value="${label}" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="160" height="60" as="geometry"/></mxCell></root></mxGraphModel>`;
+  const driveSave = `<mxfile host="app.diagrams.net" modified="2026-03-12T10:00:00.000Z" name="Ignored">${[
+    'Context',
+    'Containers',
+    'Deploy',
+  ]
+    .map((p) => `<diagram id="${p}" name="${p}">${compress(page1(p))}</diagram>`)
+    .join('')}</mxfile>`;
+  const jsonExport = JSON.stringify({
+    version: '31.7.0',
+    pages: [
+      {
+        id: 'p1',
+        name: 'Flow',
+        cells: [
+          { id: '1', type: 'layer', parent: '0' },
+          { id: 'a', type: 'node', parent: '1', label: 'Start' },
+          { id: 'b', type: 'node', parent: '1', label: 'Finish<br>line', html: 1 },
+          { id: 'e', type: 'edge', parent: '1', source: 'a', target: 'b' },
+        ],
+      },
+    ],
+  });
+
+  test('each diagram becomes its own document, after the list', async ({ page, pageErrors }) => {
+    await startBlankDocument(page);
+    await dismissQuickTour(page);
+    await page.goto('/explorer/recent');
+    await page
+      .getByRole('toolbar', { name: 'Import from' })
+      .getByRole('button', { name: 'Import from draw.io' })
+      .click();
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Choose files', exact: true }).click();
+    await (
+      await chooser
+    ).setFiles([
+      { name: 'Platform', mimeType: '', buffer: Buffer.from(driveSave) },
+      { name: 'Signup flow.json', mimeType: 'application/json', buffer: Buffer.from(jsonExport) },
+      { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('not a diagram') },
+    ]);
+    const list = page.getByRole('group', { name: 'Files to import' });
+    await expect(list).toContainText('Platform');
+    await expect(list).toContainText('Edited 12 Mar 2026 · 3 pages');
+    await expect(list).toContainText('Signup flow');
+    await expect(page.getByRole('dialog').getByRole('alert')).toContainText('will be left out');
+    await shot(page, 'explorer-1-list');
+    await page.getByRole('button', { name: 'Import 2 files' }).click();
+
+    const report = page.getByTestId('import-image-report');
+    await expect(report).toContainText(
+      "Positions and styles weren't in the file; the layout is automatic",
+    );
+    await expect(report).toContainText('notes.txt');
+    const documents = page.getByTestId('import-documents');
+    await expect(documents).toContainText('Platform');
+    await expect(documents).toContainText('Signup flow');
+    await shot(page, 'explorer-2-report');
+
+    // The Drive save opens as one document with a diagram tab per page.
+    await documents.getByRole('link', { name: 'Platform' }).click();
+    await expect
+      .poll(() => storedTabs(page), { timeout: 15_000 })
+      .toEqual([
+        { name: 'Context', elements: 1 },
+        { name: 'Containers', elements: 1 },
+        { name: 'Deploy', elements: 1 },
+      ]);
+    await page.locator('[data-canvas-a11y-root]').waitFor();
+    await expect(page.getByText('Containers', { exact: true }).first()).toBeVisible();
+    await page.waitForTimeout(600); // the fit animation settles
+    await shot(page, 'explorer-3-document');
+    expectNoPageErrors(pageErrors);
+  });
+});

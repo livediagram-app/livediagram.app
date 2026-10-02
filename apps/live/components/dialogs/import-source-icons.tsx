@@ -59,3 +59,28 @@ export function ExcalidrawSourceIcon() {
     </svg>
   );
 }
+
+/**
+ * draw.io's button: an original glyph (a box joined by an elbow connector to a decision diamond on
+ * a deep orange tile), not draw.io's logo; the repo ships no vendor trademark marks
+ * (docs/specs/004-interface-design/iconography.md).
+ */
+export function DrawioSourceIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden focusable="false">
+      <rect x="1" y="1" width="18" height="18" rx="4" fill="#c2410c" />
+      <rect
+        x="3.8"
+        y="4.2"
+        width="6.4"
+        height="4.2"
+        rx="0.8"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.3"
+      />
+      <path d="M7 8.4v4.4h3.4" fill="none" stroke="#fff" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M13.4 10.2l2.6 2.6-2.6 2.6-2.6-2.6z" fill="#fff" />
+    </svg>
+  );
+}

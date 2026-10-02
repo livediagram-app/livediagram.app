@@ -39,3 +39,15 @@ describe('the Excalidraw source', () => {
     expect(result.current.dialogs).not.toBeNull();
   });
 });
+
+describe('the draw.io source', () => {
+  it('opens its own dialog from its button', () => {
+    const { result, rerender } = renderHook(() =>
+      useExplorerImport({ ownerId: 'owner', folderId: null, onDocumentsCreated: vi.fn() }),
+    );
+    render(<>{result.current.toolbar}</>);
+    fireEvent.click(screen.getByRole('button', { name: 'Import from draw.io' }));
+    rerender();
+    expect(result.current.dialogs).not.toBeNull();
+  });
+});

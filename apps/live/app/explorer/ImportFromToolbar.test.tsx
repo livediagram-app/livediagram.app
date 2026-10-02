@@ -15,12 +15,15 @@ describe('ImportFromToolbar', () => {
     expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
       'Import from Microsoft Whiteboard',
       'Import from Excalidraw',
+      'Import from draw.io',
     ]);
     expect(toolbar.textContent).toContain('Import from');
     fireEvent.click(buttons[0]!);
     expect(onImport).toHaveBeenCalledWith('microsoft-whiteboard');
     fireEvent.click(buttons[1]!);
     expect(onImport).toHaveBeenCalledWith('excalidraw');
+    fireEvent.click(buttons[2]!);
+    expect(onImport).toHaveBeenCalledWith('drawio');
   });
 
   it('moves focus between sources with the arrow keys', () => {

@@ -408,7 +408,7 @@ a rule with its count, changes first and things left out after, then how the ima
 | `auto-layout`             | Positions and styles weren't in the file; the layout is automatic (pages)       | changed  |
 | `hidden-skipped`          | Hidden items were left out                                                      | left out |
 | `collapsed-skipped`       | Items inside collapsed containers were left out                                 | left out |
-| `library-item-unreadable` | Shapes that couldn't be read were left out (libraries)                          | left out |
+| `library-item-unreadable` | Library shapes that couldn't be read were left out                              | left out |
 | `content-truncated`       | Pages or items beyond the import limits were left out                           | left out |
 
 When the report has a rule, or met any image, the Import dialog does not close: it shows the report,

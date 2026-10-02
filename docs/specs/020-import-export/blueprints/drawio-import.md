@@ -488,11 +488,17 @@ picture repeated across pages is stored once. This runs before the one `commitTa
 
 - `IMPORT_SOURCES` gains `{ id: 'drawio', name: 'draw.io', icon: <DrawioSourceIcon /> }` after
   Excalidraw; `useExplorerImport` maps it to `useDrawioImportLauncher(importDocuments)`.
-- The flow mirrors the Microsoft Whiteboard panel: pick (files: `multiple`, no `accept`
-  filter (Drive saves have no extension); a folder: `webkitdirectory`; drop: files and folders through `readDrop`)
-  → reading → list (one row per diagram and library, ticked; one readable file skips the list) →
-  importing ("Importing 3 of 12…", then images) → the shared report (`ImportImageReport`, documents
-  and libraries as links, failures listed).
+- The flow mirrors the Microsoft Whiteboard panel, on the same shared `ImportDropZone` and
+  `ImportChecklist`: pick (files: `multiple`, no `accept` filter, as Drive saves have no
+  extension; a folder: `pickExport('folder')`; drop: files and folders through `readDrop`, each
+  named after its path by `filesOfPick`) → "Reading files…" → list (legend "Files to import"; one row
+  per diagram, "Edited 12 Mar 2026 · 3 pages", and per library, "Shape library · 14 shapes", all
+  ticked; "1 file isn't draw.io's or couldn't be read, and will be left out."; button "Import 3
+  files"; one readable file and nothing left out skips the list) → importing ("Importing 3 of 12…",
+  then "Importing images 3 of 12…") → the shared report (`ImportImageReport`, documents as links,
+  failures listed). One `track('Tab', 'Imported', 'Drawio')` per document made.
+- `DrawioSourceIcon` (`import-source-icons.tsx`): an original glyph, a box joined by an elbow
+  connector to a decision diamond, white on `#c2410c` (5.2:1).
 
 ## Interfaces and contracts
 
@@ -811,7 +817,7 @@ Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-
 | The Explorer flow and panel                                                                                                  | `useDrawioFileImport.test.ts`, `DrawioImportPanel.test.tsx`         |
 | Dialog routing (close vs summary)                                                                                            | `ImportTabDialog.test.tsx`                                          |
 
-End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-stack.mjs`) picks each fixture form through the Import dialog, checks the summary, the tabs and what the api stored, and that one undo removes the new tabs; `DRAWIO_SHOTS=<dir>` also saves screenshots.
+End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-stack.mjs`) picks each fixture form through the Import dialog, checks the summary, the tabs and what the api stored, and that one undo removes the new tabs. Its Explorer case picks a synthesised Drive save (no extension, three compressed pages), a JSON export and a text file through Import from draw.io, checks the list, the report and the stored tabs of the new document. `DRAWIO_SHOTS=<dir>` also saves screenshots.
 
 ## Constants and configuration
 
