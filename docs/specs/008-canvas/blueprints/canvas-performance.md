@@ -180,6 +180,10 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
   diagram), hover (40 moves). Each runs under a `devtools.timeline` trace and an in-page frame
   recorder.
+- The probe never sends `Profiler.start`: the trace categories are `devtools.timeline` and
+  `disabled-by-default-devtools.timeline` only. Starting V8's profiler makes source positions
+  available for every compiled function in one main-thread task (about 1.1 s at 4× on a
+  658-element board), which would land in the first gesture's window.
 - `evaluateBudget(measurements)` maps them onto `BUDGET_ROWS`; `budgetTable(rows)` renders
   markdown. Written to `test-results/perf/canvas-perf.md` and `.json`; traces to
   `test-results/perf/traces/`.
@@ -340,6 +344,7 @@ export function budgetTable(rows: readonly BudgetRow[]): string;
 | Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                   |
 | Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                  |
 | Budget evaluation and table                      | `budget.test.ts`                                                                                                           |
+| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                            |
 | The budget holds                                 | The nightly probe                                                                                                          |
 
 ## Constants and configuration
