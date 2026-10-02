@@ -13,6 +13,10 @@ resulting rules live in [Canvas performance](../specs/008-canvas/canvas-performa
   stand in for an ordinary laptop.
 - Scripted gestures (30 pointer moves 16 ms apart for a drag, 30 wheel ticks for a pan), each under a
   `devtools.timeline` trace and a sampled CPU profile mapped back through the source maps.
+- Starting the CPU profiler costs one main-thread task of about 1.1 s at 4× on this page, whatever
+  the page is doing (see [The first selection click](#the-first-selection-click)). Timings are
+  read from a trace taken without the profiler, or after it has been started once outside any
+  measured gesture.
 
 ## What the page is
 
@@ -47,8 +51,33 @@ Where a drag's time goes (inclusive, of 6.9 s sampled):
 Where a pan's time goes: every `BoxedElementView` re-renders on each wheel tick (0.28 s), though a
 pan changes no element; a viewport-dependent prop or context reaches them.
 
-A single selection click ran one 794 ms task that was almost all native time with little app code;
-the cause is unconfirmed (first-interaction compile work is a candidate) and needs its own trace.
+### The first selection click
+
+The first selection click looked like one 0.8 to 1.1 s task of native time with little app code.
+It was the probe, not the click: the task is `Profiler.start` itself, which landed in the first
+gesture's window because the probe started the profiler per gesture.
+
+- Starting V8's CPU profiler logs every compiled function and makes its source positions available
+  (`ProfilingScope` → `LogCompiledFunctions(ensure_source_positions_available = true)` in
+  `src/profiler/cpu-profiler.cc`). V8 keeps source positions lazily, so each script is parsed
+  again: 4,669 `V8.CollectSourcePositions` and 95 `V8.ParseProgram` events, 1.13 s at 4×,
+  in one task with no `EventDispatch` in it. A sampled profile shows it as `(program)`.
+- The positions stay collected, so a second start pays only for functions compiled since; hence
+  "later clicks are cheaper".
+- Traced with an idle 800 ms window first, the idle window carries the 1.13 s task and the click
+  after it none of that work.
+
+The click itself, at 4× with no tracing (in-page `longtask` and `event` timing, two runs):
+
+| Click            | Longest task | Event duration |
+| ---------------- | ------------ | -------------- |
+| First selection  | 77 to 85 ms  | 96 to 112 ms   |
+| Second selection | 59 ms        | 80 to 88 ms    |
+| Third selection  | 54 to 57 ms  | 72 ms          |
+
+A local export of `main` matches: a 76 ms first click, and a 0.79 to 0.80 s profiler start in
+whichever window holds it. The first click is within the 100 ms selection budget; it is about 25 ms dearer than later ones,
+partly first-run compilation of the selection chrome (134 `V8.CompileCode`, 13 ms).
 
 ## Fixed already
 

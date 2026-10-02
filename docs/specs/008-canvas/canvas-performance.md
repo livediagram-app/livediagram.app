@@ -81,6 +81,9 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 - **A performance probe** (`pnpm perf:canvas`) builds the reference board, runs each gesture under
   a trace at 4× throttle and prints the budget table with pass or fail per row. It also runs by
   hand, against any build.
+- **Timings come from the trace, never from inside a profiler start.** Starting the CPU profiler
+  costs a one-off task of about a second on a large page, so the probe reads budgets from a trace
+  taken without it; a profile wanted for attribution starts once, outside every measured gesture.
 - **It runs nightly on its own**, in a scheduled workflow, against the head of `main`; a night with
   no new commit on `main` since the last run is skipped, so it spends no CI minutes on an unchanged
   build. Each run writes the budget table to the job summary and keeps the raw traces as an
