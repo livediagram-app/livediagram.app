@@ -16,9 +16,11 @@ export const LOCAL_ONLY_LABEL = 'Local only';
 export const LOCAL_ONLY_DESCRIPTION =
   "Lives only in this browser. Clearing this browser's site data deletes it.";
 
-// Amber, the offline tone: the words meet 4.5:1 on the fill, the ring 3:1 against the row.
-const PILL =
-  'optical-edges inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-1.5 py-px text-[10px] font-semibold leading-4 text-amber-800 ring-1 ring-amber-600 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400';
+// Amber, the offline tone: the words meet 4.5:1 on the fill, the ring 3:1 against the row. Shared
+// with the editor header's Local only badge.
+export const LOCAL_ONLY_TONE =
+  'bg-amber-50 text-amber-800 ring-1 ring-amber-600 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400';
+const PILL = `optical-edges inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 ${LOCAL_ONLY_TONE}`;
 
 export function LocalOnlyPill({
   asLabel = false,

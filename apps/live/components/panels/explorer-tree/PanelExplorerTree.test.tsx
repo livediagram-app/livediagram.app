@@ -142,6 +142,13 @@ describe('PanelExplorerTree', () => {
     expect(assign.mock.calls).toEqual([['/explorer/timeline'], ['/explorer/trash']]);
   });
 
+  it('sends Shared with me to its Explorer page when nothing is shared', () => {
+    render(<Harness />);
+    expect(item('Shared with me').hasAttribute('aria-expanded')).toBe(false);
+    activate('Shared with me');
+    expect(assign.mock.calls).toEqual([['/explorer/shared']]);
+  });
+
   it('opens Shared with me in place when something is shared', () => {
     const shared = [
       { id: 's1', name: 'Their board', shareCode: 'abc', role: 'view', savedAt: 1 },

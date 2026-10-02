@@ -41,9 +41,10 @@ on the `nav`.
 | `apps/live/app/explorer/sidebar/library-pages.ts`                  | `LIBRARY_PAGES`, shared by the sidebar and the panel                                                                                             |
 | `apps/live/app/explorer/view-titles.ts`                            | `VIEW_TITLES`, `viewDocumentTitle`: every view named by its row                                                                                  |
 | `apps/live/lib/document-space.ts`                                  | `isLocalOnly`, `documentSpace` (`mine` / `team` / `shared`)                                                                                      |
-| `apps/live/components/primitives/LocalOnlyPill.tsx`                | `LocalOnlyPill`, `LOCAL_ONLY_LABEL`, `LOCAL_ONLY_DESCRIPTION`                                                                                    |
+| `apps/live/components/primitives/LocalOnlyPill.tsx`                | `LocalOnlyPill`, `LOCAL_ONLY_LABEL`, `LOCAL_ONLY_DESCRIPTION`, `LOCAL_ONLY_TONE`                                                                 |
 | `apps/live/lib/search.ts`                                          | A document result carries `localOnly`; `SearchPanel.tsx` shows the pill as a label                                                               |
 | `apps/live/components/panels/TrashPane.tsx`                        | This browser's Trash rows carry the pill                                                                                                         |
+| `apps/live/components/chrome/SharedBadge.tsx`                      | The editor header's Local only state: the pill's label, sentence (`aria-describedby`), tone and glyph                                            |
 | `apps/live/components/primitives/explorer-icons.tsx`               | `HomeIcon` (lucide `house`), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`) |
 | `apps/live/components/primitives/EllipsisTriggerButton.tsx`        | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop                                                                            |
 
@@ -95,7 +96,7 @@ name of the view (`kind: 'offline'`), whose row reads "This browser".
    folder, and the single leaf otherwise; each static page's `metadata.title` is `viewDocumentTitle(kind)`.
 9. **Panel** (`PanelExplorerTree`): rows with documents toggle on activation (Shared with me, My documents, Unsorted,
    Generated, folders, teams, This browser; a team or Shared with me with nothing in it goes to its page); Home,
-   Activity, Library pages and Trash call `openExplorerPage` (`window.location.assign(explorerPathFor(node))`). The open
+   Activity, Library pages and Trash, and Shared with me or a team with nothing in it, call `openExplorerPage` (`window.location.assign(explorerPathFor(node))`). The open
    document's row is `aria-selected`. Keys `space:my-documents`, `space:unsorted`, `space:generated`,
    `overview:shared`, `more:this-browser`, `more:library`, folder and team ids, all false at first. Activations
    call `trackSidebar(row, 'panel')` (`ExplorerPanel.<Row>`).
@@ -202,21 +203,21 @@ creation).
 
 ## Testing
 
-| Rule                                                 | Test                                                                                                                                                                                   |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Group order and row order                            | `sidebar-structure.test.ts`                                                                                                                                                            |
-| Guest vs signed in (teams, New team, nudge, Invites) | `sidebar-structure.test.ts`                                                                                                                                                            |
-| This browser hidden when empty, kept while selected  | `sidebar-structure.test.ts`                                                                                                                                                            |
-| Titles vs separators per mode                        | `sidebar-structure.test.ts`, `SidebarGroup.test.tsx`                                                                                                                                   |
-| Initial expansion and Library views                  | `sidebar-structure.test.ts`, `useSidebarExpansion.test.tsx`                                                                                                                            |
-| Preferences unread while hydrating                   | `useHydrated.test.tsx`, `e2e/explorer-sidebar.spec.ts` (no hydration error under Minimal chrome)                                                                                       |
-| Telemetry values charted and explained               | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                                                                                                                |
-| Gutter on every row; ARIA attributes                 | `SidebarRow.test.tsx`                                                                                                                                                                  |
-| Keyboard model and roving tab stop                   | `useTreeNavigation.test.tsx`                                                                                                                                                           |
-| Panel rows, in-place opening, navigation, separators | `PanelExplorerTree.test.tsx`, `PanelFolderItem.test.tsx`, `panel-tree-model.test.ts`                                                                                                   |
-| Page titles follow the rows                          | `view-titles.test.ts`                                                                                                                                                                  |
-| Local only: space, pill, rows, search, Trash         | `document-space.test.ts`, `LocalOnlyPill.test.tsx`, `explorer-route-document-row.test.tsx`, `document-badges.test.tsx`, `search.test.ts`, `SearchPanel.test.tsx`, `TrashPane.test.tsx` |
-| Real browser: groups, keyboard, drawer               | `e2e/explorer-sidebar.spec.ts` (page and editor panel), `e2e/clerk-stub/explorer-sidebar.spec.ts`                                                                                      |
+| Rule                                                 | Test                                                                                                                                                                                                           |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Group order and row order                            | `sidebar-structure.test.ts`                                                                                                                                                                                    |
+| Guest vs signed in (teams, New team, nudge, Invites) | `sidebar-structure.test.ts`                                                                                                                                                                                    |
+| This browser hidden when empty, kept while selected  | `sidebar-structure.test.ts`                                                                                                                                                                                    |
+| Titles vs separators per mode                        | `sidebar-structure.test.ts`, `SidebarGroup.test.tsx`                                                                                                                                                           |
+| Initial expansion and Library views                  | `sidebar-structure.test.ts`, `useSidebarExpansion.test.tsx`                                                                                                                                                    |
+| Preferences unread while hydrating                   | `useHydrated.test.tsx`, `e2e/explorer-sidebar.spec.ts` (no hydration error under Minimal chrome)                                                                                                               |
+| Telemetry values charted and explained               | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                                                                                                                                        |
+| Gutter on every row; ARIA attributes                 | `SidebarRow.test.tsx`                                                                                                                                                                                          |
+| Keyboard model and roving tab stop                   | `useTreeNavigation.test.tsx`                                                                                                                                                                                   |
+| Panel rows, in-place opening, navigation, separators | `PanelExplorerTree.test.tsx`, `PanelFolderItem.test.tsx`, `panel-tree-model.test.ts`                                                                                                                           |
+| Page titles follow the rows                          | `view-titles.test.ts`                                                                                                                                                                                          |
+| Local only: space, pill, rows, search, Trash         | `document-space.test.ts`, `LocalOnlyPill.test.tsx`, `explorer-route-document-row.test.tsx`, `document-badges.test.tsx`, `search.test.ts`, `SearchPanel.test.tsx`, `TrashPane.test.tsx`, `SharedBadge.test.tsx` |
+| Real browser: groups, keyboard, drawer               | `e2e/explorer-sidebar.spec.ts` (page and editor panel), `e2e/clerk-stub/explorer-sidebar.spec.ts`                                                                                                              |
 
 ## Constants and configuration
 
