@@ -62,7 +62,7 @@ Scope, by file:
 | Ink              | `PEN_INK` / `WHITEBOARD_INK`, by name `'ink'`    | The drawing colour; unpainted strokes and text draw in it     |
 | Background       | `WhiteboardBackground` (`plain/dots/grid`)       | The person's Draw pattern, the synced `drawPattern`           |
 | Pen              | `WhiteboardPen`                                  | Main, second or third: id, colour (`null` = ink), width in px |
-| Pen width        | `WhiteboardPenWidth` (`fine/medium/bold`)        | 1, 1.5, 2.5 px, recorded as `penWidth`; stored by name        |
+| Pen width        | `WHITEBOARD_PEN_WIDTHS` (`fine/medium/bold`)     | 1, 1.5, 2.5 px, recorded as `penWidth`; stored by name        |
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'`   | The held pen, with its colour, width and recognition          |
 | Dock             | `WhiteboardDock`                                 | Top- or bottom-centre tool groups (whiteboard-dock.md)        |
 | Dock tool        | `WhiteboardTool`                                 | `select/pen/eraser/sticky/text/shape`                         |

@@ -6,6 +6,8 @@ type Point = { x: number; y: number };
 // divided by the zoom, so they keep their size at any zoom.
 export const PATH_NODE_RADIUS_PX = 4;
 export const PATH_HANDLE_RADIUS_PX = 3.5;
+// The close / continue ring around the node a click would act on, in screen px.
+export const PATH_RING_PX = 8;
 
 // The path overlays' place in the canvas stack (docs/specs/023-draw-mode/path-tool.md "Editing"): above
 // every element, the selection chrome (30) and a label lifted to be typed (10) included, whatever

@@ -122,7 +122,7 @@ export type PathElement = {
   `c2 = handleIn(j) ?? p3`, `straight` when neither handle exists.
 - `pathD(anchors, closed, fmt = identity)`: `M p0` then per segment `L p3` (straight) or
   `C c1 c2 p3`; `Z` when closed. No anchors: `''`.
-- `cubicAt(seg, t)`, `cubicBounds(seg)`: the extremes from the roots of the derivative per axis
+- `cubicAt(seg, t)`; `pathBounds` takes each segment's extremes from the roots of the derivative per axis
   (quadratic in `t`, roots in (0, 1)), plus `p0`, `p3`. `pathBounds` is their union.
 - `pathGeometry(anchors, closed)`: the box is `pathBounds`; a dimension under 1 grows to 1 about its
   centre (a straight horizontal or vertical path). Nodes and handles normalise against it. No
@@ -452,7 +452,7 @@ numbers only).
 
 ## Performance and limits
 
-- A render: `pathD` is O(nodes). `cubicBounds` is O(nodes) with a closed-form quadratic per axis.
+- A render: `pathD` is O(nodes). `pathBounds` is O(nodes) with a closed-form quadratic per axis.
 - A draft move: one state update per animation frame; the preview is one svg.
 - Edit hit test per press: O(nodes · 36) for the segment search; 5 000 nodes is under 2 ms.
 - `MAX_PATH_NODES = 5 000`; a drawn path rarely exceeds 50.

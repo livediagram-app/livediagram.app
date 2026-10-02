@@ -9,7 +9,13 @@ import {
   type PathElement,
 } from '@livediagram/document';
 import { PathSvg } from './PathSvg';
-import { NodeMarker, HandleMarker, OVERLAY_SVG_CLASS, PATH_OVERLAY_Z } from './path-markers';
+import {
+  NodeMarker,
+  HandleMarker,
+  OVERLAY_SVG_CLASS,
+  PATH_OVERLAY_Z,
+  PATH_RING_PX,
+} from './path-markers';
 import type { PathRing } from './usePathDrawGesture';
 
 type Point = { x: number; y: number };
@@ -103,7 +109,7 @@ export function PathDraftLayer({
             data-path-ring={ring.kind}
             cx={ring.point.x}
             cy={ring.point.y}
-            r={8 / zoom}
+            r={PATH_RING_PX / zoom}
             strokeWidth={1.5 / zoom}
             className={
               ring.kind === 'close'
