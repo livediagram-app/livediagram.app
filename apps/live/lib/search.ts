@@ -26,7 +26,9 @@ const SETTINGS_LIMIT = 6;
 // Internal-only input shapes for the by-name match inputs. Several
 // share the same {id, name} shape but stay distinct so a future
 // schema change to one doesn't silently propagate to the others.
-type SearchInputDocument = { id: string; name: string };
+// `localOnly`: saved only in this browser (Offline Mode); the result carries the Local only pill
+// (docs/specs/006-document/offline-mode.md#local-only-pill).
+type SearchInputDocument = { id: string; name: string; localOnly?: boolean };
 type SearchInputFolder = { id: string; name: string };
 // "Shared with You" rows carry their still-live share code so picking
 // one can navigate to the visitor URL (the only path a non-owner can
@@ -42,6 +44,7 @@ type DocumentItem = {
   id: string;
   name: string;
   team?: { id: string; name: string };
+  localOnly?: boolean;
 };
 // `team` set = a team-library folder (docs/specs/013-workspace/team-shared-documents.md): the panel renders an
 // "in <team>" suffix and picking it lands on the team page with that
@@ -288,6 +291,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
         kind: 'document',
         id: d.id,
         name: d.name || 'Untitled document',
+        ...(d.localOnly ? { localOnly: true } : {}),
       })),
     });
   }

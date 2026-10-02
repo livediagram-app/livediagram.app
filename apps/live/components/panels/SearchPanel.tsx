@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
 import { SearchIcon, useEscape } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
@@ -27,7 +28,7 @@ import { SearchResultIcon } from './search-panel-icons';
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
 
-type SearchPanelDocument = { id: string; name: string };
+type SearchPanelDocument = { id: string; name: string; localOnly?: boolean };
 type SearchPanelFolder = { id: string; name: string };
 type SearchPanelShared = { id: string; name: string; shareCode: string };
 type SearchPanelTeam = { id: string; name: string };
@@ -318,6 +319,10 @@ export function SearchPanel({
                         <span className="min-w-0 flex-1 truncate">
                           {item.kind === 'element' ? item.label : item.name}
                         </span>
+                        {/* A plain label: a link cannot sit inside this result button. */}
+                        {item.kind === 'document' && item.localOnly ? (
+                          <LocalOnlyPill asLabel />
+                        ) : null}
                         {item.kind === 'element' ? (
                           <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                             on {item.tabName}

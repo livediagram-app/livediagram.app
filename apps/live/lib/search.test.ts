@@ -44,6 +44,22 @@ describe('buildSearchResults', () => {
     { id: 'f2', name: 'Personal' },
   ];
 
+  it('marks a document saved only in this browser as Local only (docs/specs/006-document/offline-mode.md#local-only-pill)', () => {
+    const out = buildSearchResults({
+      query: 'notes',
+      documents: [
+        { id: 'l1', name: 'Workshop notes', localOnly: true },
+        { id: 'c1', name: 'Cloud notes' },
+      ],
+      folders: [],
+    });
+    const items = out.find((g) => g.key === 'documents')!.items;
+    expect(items.map((i) => (i.kind === 'document' ? i.localOnly === true : null))).toEqual([
+      true,
+      false,
+    ]);
+  });
+
   it('orders groups: documents, folders, tabs, elements', () => {
     const out = buildSearchResults({
       query: '',
