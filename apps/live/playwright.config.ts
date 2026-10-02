@@ -54,7 +54,7 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       // The Drive and signed-in suites need their own builds and stacks; see below.
-      testIgnore: [/drive-(mirror|shots)\.spec\.ts/, /clerk-stub\//],
+      testIgnore: [/drive-(mirror|shots)\.spec\.ts/, /clerk-stub\//, /perf\//],
     },
     // Opt-in (pnpm --filter @livediagram/live test:e2e:drive): the Google Drive
     // mirror against the fake Google, signed in through the test-only auth
@@ -81,6 +81,18 @@ export default defineConfig({
             name: 'clerk-stub',
             use: { ...devices['Desktop Chrome'] },
             testMatch: /clerk-stub\/.*\.spec\.ts/,
+          },
+        ]
+      : []),
+    // Opt-in (E2E_PERF=1, pnpm perf:canvas): the canvas performance probe
+    // (docs/specs/008-canvas/canvas-performance.md "Measuring"). Reports against the budget and never
+    // fails on a miss; it runs nightly (canvas-perf.yml), not on every push.
+    ...(process.env.E2E_PERF === '1'
+      ? [
+          {
+            name: 'perf',
+            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
+            testMatch: /perf\/.*\.perf\.ts/,
           },
         ]
       : []),

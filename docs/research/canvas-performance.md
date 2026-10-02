@@ -79,6 +79,21 @@ A local export of `main` matches: a 76 ms first click, and a 0.79 to 0.80 s prof
 whichever window holds it. The first click is within the 100 ms selection budget; it is about 25 ms dearer than later ones,
 partly first-run compilation of the selection chrome (134 `V8.CompileCode`, 13 ms).
 
+## The reference board, first run
+
+Measured 2026-10-02 with the probe (`pnpm perf:canvas`) on the e2e stack, at `main` after the
+gesture store, the Map, element view stability and the element grid had landed. The reference board
+is 1,000 elements over four screens by three: denser than the staging board above.
+
+- Within budget: opening (1.8 s whiteboard, 2.7 s diagram) and a still canvas (0 ms of
+  main-thread work at fit).
+- Over budget nearly everywhere else, at both zooms: select and deselect run single tasks of
+  270 to 700 ms, a drag's longest task is 340 to 1,000 ms with median frames of 50 to 117 ms, and
+  pan, zoom, marquee, stroke and hover each run tasks of 100 to 980 ms.
+- At 100% the view holds a few hundred elements, so the spec's "Later" items (culling off-screen
+  elements, containment) are now worth weighing; at fit, every element is on screen and only
+  per-element cost helps.
+
 ## Fixed already
 
 - The Quick Style panel's placement re-ran every frame at rest (its `ResizeObserver` re-observed

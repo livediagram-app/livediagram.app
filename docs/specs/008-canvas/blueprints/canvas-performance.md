@@ -23,9 +23,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`          | Takes `suspended`; never measures while suspended                                 |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | `toolbarsStale` includes `selectionMoving`                                        |
 | `apps/live/hooks/canvas/useCanvasLongTaskLog.ts` (planned) | The `[canvas-perf] long task` debug log                                           |
-| `apps/live/e2e/perf/reference-board.ts` (planned)          | `buildReferenceBoard(seed, count)`                                                |
-| `apps/live/e2e/perf/budget.ts` (planned)                   | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                             |
-| `apps/live/e2e/perf/canvas.perf.ts` (planned)              | The probe: seeds, runs each gesture under a trace, writes the report              |
+| `apps/live/e2e/perf/reference-board.ts`          | `buildReferenceBoard(seed, count)`                                                |
+| `apps/live/e2e/perf/budget.ts`                   | `BUDGET_ROWS`, `evaluateBudget`, `budgetTable` (pure)                             |
+| `apps/live/e2e/perf/canvas.perf.ts`              | The probe: seeds, runs each gesture under a trace, writes the report              |
 | `.github/workflows/canvas-perf.yml`                        | The nightly run and the budget issue                                              |
 
 ## Domain and naming
@@ -177,10 +177,19 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### The probe
 
-- A Playwright project `perf` (`testMatch: /e2e\/perf\/.*\.perf\.ts/`), excluded from
-  `chromium`; `pnpm perf:canvas` runs it against the e2e stack.
-- It seeds one document with two tabs (`kind: 'whiteboard'`, `kind: 'diagram'`), each the
-  reference board, through the api.
+- A Playwright project `perf` (`testMatch: /perf\/.*\.perf\.ts/`), opt-in with `E2E_PERF=1` and
+  ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
+  (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
+  live app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
+- It seeds one document per tab kind (`whiteboard`, `diagram`), each the reference board, through
+  the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
+- Each zoom starts from Shift+1 (fit, centring the board); 100% then presses Mod+0 (a bare `0` is
+  the eraser). A screenshot per tab and zoom goes with the report. After an undo the probe waits
+  1 s, so its commit lands outside the next gesture's window.
+- Timings are the renderer main thread's `RunTask` durations (`trace-tasks.ts`); compositor and
+  raster threads are not counted. A drag's median frame comes from an in-page
+  `requestAnimationFrame` recorder; the idle row runs without it. Measured values are shown
+  rounded up.
 - For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at 4, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
   deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
