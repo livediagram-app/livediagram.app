@@ -19,11 +19,12 @@ import { migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/do
 // the renderer's box-with-label fallback.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
 import {
-  getFirstTabData,
-  getTabData,
+  getTabBody,
   getThumbRenderedAt,
   markThumbRendered,
+  stampTabElementCount,
   thumbnailKey,
+  type StoredTabBody,
 } from './db';
 import type { DocumentDTO, Env } from './types';
 
@@ -85,7 +86,7 @@ export async function getDocumentThumbnailSvg(
     if (cached) return await cached.text();
   }
 
-  const svg = await renderFirstTab(env, liveDoc);
+  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts);
   if (svg == null) return null;
 
   // Best effort: a write failure (R2 hiccup) must not fail the read —
@@ -124,33 +125,49 @@ export async function getDocumentTabImageSvg(
   // Gate on the same optional R2 binding as the cached path, so the
   // whole live-image feature is uniformly off on a binding-less deploy.
   if (!env.IMAGES) return null;
-  const data = await getTabData(env, liveDoc.id, tabId);
-  return renderTabDataToSvg(env, liveDoc, data);
+  return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId));
 }
 
-// Render the document's first tab to SVG, or null when the tab is
-// missing, unparseable, or has no elements (an empty canvas has no
-// meaningful thumbnail — the row shows its icon instead).
-async function renderFirstTab(env: Env, liveDoc: ThumbnailSubject): Promise<string | null> {
-  return renderTabDataToSvg(env, liveDoc, await getFirstTabData(env, liveDoc.id));
+// The lazy backfill of tabs.element_count (migration 0059): a tab stored before the count existed gets it
+// from the parse a render does anyway, so the lists know an old empty document after one ask. Best effort:
+// a failed stamp leaves the count unknown, which only means the row asks again.
+function stampUnknownCount(
+  env: Env,
+  body: StoredTabBody,
+  count: number,
+  opts: ThumbnailOptions,
+): Promise<void> | undefined {
+  if (body.elementCount !== null) return undefined;
+  const stamp = stampTabElementCount(env, body.id, count).catch((error: unknown) => {
+    console.warn('[thumbnail] count stamp failed', { tabId: body.id, error: String(error) });
+  });
+  if (opts.defer) {
+    opts.defer(stamp);
+    return undefined;
+  }
+  return stamp;
 }
 
-// Turn a raw `tabs.data` body into an SVG, shared by the first-tab
-// snapshot and the per-tab live image. Null when the data is absent,
-// unparseable, or has no elements.
-async function renderTabDataToSvg(
+// Turn a stored tab body into an SVG, shared by the first-tab snapshot and
+// the per-tab live image. Null when the body is absent, unparseable, or
+// has no elements (an empty canvas has no meaningful thumbnail; the row
+// shows its icon instead).
+async function renderTabBodyToSvg(
   env: Env,
   liveDoc: ThumbnailSubject,
-  data: string | null,
+  body: StoredTabBody | null,
+  opts: ThumbnailOptions = {},
 ): Promise<string | null> {
-  if (!data) return null;
+  if (!body) return null;
   let parsed: Partial<Tab>;
   try {
-    parsed = JSON.parse(data) as Partial<Tab>;
+    parsed = JSON.parse(body.data) as Partial<Tab>;
   } catch {
     return null;
   }
-  if (!Array.isArray(parsed.elements) || parsed.elements.length === 0) return null;
+  if (!Array.isArray(parsed.elements)) return null;
+  await stampUnknownCount(env, body, parsed.elements.length, opts);
+  if (parsed.elements.length === 0) return null;
   // `tabs.data` is the tab body minus id + name (see db/tabs.ts
   // upsertTab); re-attach them so the value is a complete Tab. The
   // renderer only reads `elements` + `backgroundColor`, both already in

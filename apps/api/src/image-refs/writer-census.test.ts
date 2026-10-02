@@ -18,8 +18,9 @@ const WRITES_TABS =
 // file -> number of statements writing `tabs`, each one proven in
 // db/image-refs-writers.test.ts.
 const KNOWN_WRITERS: Record<string, number> = {
-  // upsertTab, seedTabs, deleteTabRow, swapTabData
-  'api/src/db/tabs.ts': 4,
+  // upsertTab, seedTabs, deleteTabRow, swapTabData; and stampTabElementCount, which writes only
+  // element_count, never `data`, so it has no image reference to keep.
+  'api/src/db/tabs.ts': 5,
   // copyDocument
   'api/src/db/documents.ts': 1,
   // documentRemovalStatements
@@ -33,9 +34,6 @@ const KNOWN_MIGRATION_WRITERS: string[] = [
   // Rewrites element links to another document ({"kind":"diagram","documentId":…} to
   // {"kind":"document","documentId":…}); no image reference changes, so the index stays exact.
   '0055_documents.sql',
-  // Backfills tabs.element_count and adds the triggers that keep it; `data` is never written, so no
-  // image reference changes and the index stays exact.
-  '0059_tab_element_count.sql',
 ];
 
 function sourceFiles(dir: string): string[] {

@@ -402,14 +402,20 @@ export async function copyDocument(
   // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-document/tab-document-many-to-many.md)
   // are deliberate: edits to the copy stay isolated from the source.
   const tabRows = await env.DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, t.data
+    `SELECT t.id, t.name, dt.order_index, t.data, t.element_count
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC`,
   )
     .bind(...(onlyTabId === null ? [sourceId] : [sourceId, onlyTabId]))
-    .all<{ id: string; name: string; order_index: number; data: string }>();
+    .all<{
+      id: string;
+      name: string;
+      order_index: number;
+      data: string;
+      element_count: number | null;
+    }>();
   // Mint every fresh tab id up front so a tab / element link on one tab
   // can be re-pointed at its sibling's copy (the Explorer duplicate does
   // the same walk through the shared remapTabLinks). Without it the copy's
@@ -423,12 +429,10 @@ export async function copyDocument(
     const freshTabId = tabIdMap.get(row.id)!;
     const data = remapTabDataLinks(row.data, tabIdMap);
     return [
-      env.DB.prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)`).bind(
-        freshTabId,
-        row.name,
-        data,
-        now,
-      ),
+      // Link remapping rewrites ids inside elements, never their number, so the count carries over.
+      env.DB.prepare(
+        `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, ?, ?, ?, ?)`,
+      ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,

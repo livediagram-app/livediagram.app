@@ -1,13 +1,13 @@
 // Which listed documents are empty (docs/specs/006-document/document-snapshots.md, "An empty document
-// is never asked for"), against the real migrations: the lists read the first tab's element count, kept
-// by the tabs triggers on every write, so an Explorer of blank documents requests no thumbnail.
+// is never asked for"), against the real migrations: the lists read the first tab's element count, which
+// every tab write binds from the tab it already holds, so an Explorer of blank documents requests no thumbnail.
 
 import type { Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { applyMigration, sqliteD1 } from '../test-sqlite-d1';
-import { listDocumentsByOwner, listDocumentsByTeam } from './documents';
+import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';
 import { listSharedWith } from './shared';
-import { seedTabs, swapTabData, upsertTab } from './tabs';
+import { seedTabs, stampTabElementCount, swapTabData, upsertTab } from './tabs';
 
 const OWNER = 'owner-1';
 const VISITOR = 'visitor-1';
@@ -59,16 +59,27 @@ describe('a document list says which documents are empty', () => {
     await upsertTab(env, 'doc', tab('t1', [rect('a')]), 0);
     expect((await emptiness(env)).doc).toBe(false);
     const { data } = sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get() as { data: string };
-    expect(await swapTabData(env, 'doc', 't1', data, JSON.stringify({ elements: [] }))).toBe(true);
+    expect(await swapTabData(env, 'doc', 't1', data, JSON.stringify({ elements: [] }), 0)).toBe(
+      true,
+    );
     expect((await emptiness(env)).doc).toBe(true);
   });
 
-  it('reads a tab body it cannot count as not empty, so its row still asks', async () => {
-    const { env, addDocument, sql } = setUp();
-    addDocument('odd');
-    await seedTabs(env, 'odd', [tab('t-odd', [])]);
-    sql.exec("UPDATE tabs SET data = 'not json' WHERE id = 't-odd'");
-    expect((await emptiness(env)).odd).toBe(false);
+  it('carries the count onto a copy', async () => {
+    const { env, addDocument } = setUp();
+    addDocument('source');
+    await seedTabs(env, 'source', [tab('t-src', [rect('a')])]);
+    await copyDocument(env, 'source', 'copy', OWNER, 'copy');
+    expect((await emptiness(env)).copy).toBe(false);
+  });
+
+  it('keeps the count in the write itself: no trigger re-parses the body', () => {
+    const { sql } = setUp();
+    expect(
+      sql
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'tabs'")
+        .all(),
+    ).toEqual([]);
   });
 
   it('says the same on the team library', async () => {
@@ -105,8 +116,8 @@ describe('a document list says which documents are empty', () => {
   });
 });
 
-describe('migration 0059 backfills the element counts', () => {
-  it('counts every tab already stored, and leaves an uncountable one unknown', async () => {
+describe('migration 0059 adds the count without reading a body', () => {
+  it('leaves every stored tab unknown, which reads as not empty until it is stamped', async () => {
     const { env, sql } = sqliteD1({}, { before: '0059' });
     sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
               VALUES ('old-blank', '${OWNER}', 'a', 0, 1, 1), ('old-drawn', '${OWNER}', 'b', 0, 1, 1),
@@ -118,15 +129,28 @@ describe('migration 0059 backfills the element counts', () => {
               VALUES ('old-blank', 'ob', 0, 1), ('old-drawn', 'od', 0, 1), ('old-odd', 'oo', 0, 1)`);
     applyMigration(sql, '0059');
     const counts = sql.prepare('SELECT id, element_count FROM tabs ORDER BY id').all();
-    expect(counts).toEqual([
-      { id: 'ob', element_count: 0 },
-      { id: 'od', element_count: 2 },
+    expect(counts.map((c) => ({ ...c }))).toEqual([
+      { id: 'ob', element_count: null },
+      { id: 'od', element_count: null },
       { id: 'oo', element_count: null },
     ]);
     expect(await emptiness(env)).toEqual({
-      'old-blank': true,
+      'old-blank': false,
       'old-drawn': false,
       'old-odd': false,
     });
+    // The thumbnail route, having parsed the first tab, stamps what it found.
+    await stampTabElementCount(env, 'ob', 0);
+    expect((await emptiness(env))['old-blank']).toBe(true);
+  });
+});
+
+describe('stampTabElementCount', () => {
+  it('fills an unknown count, and never overwrites a known one', async () => {
+    const { env, addDocument, sql } = setUp();
+    addDocument('doc');
+    await seedTabs(env, 'doc', [tab('t1', [rect('a')])]);
+    await stampTabElementCount(env, 't1', 0);
+    expect(sql.prepare("SELECT element_count c FROM tabs WHERE id = 't1'").get()).toEqual({ c: 1 });
   });
 });
