@@ -8,6 +8,7 @@ import {
   editorModeSwitchable,
   hasBoardLook,
   isEditorMode,
+  nextEditorMode,
   opensInOf,
 } from './editor-mode';
 import type { Tab } from './index';
@@ -97,5 +98,25 @@ describe('setTabOpensIn', () => {
   it('never gives an event-storming board an opening mode', () => {
     const es = { ...general, kind: 'event-storming' as const };
     expect(setTabOpensIn(es, 'draw')).toBe(es);
+  });
+});
+
+// Shift+D and the switch's arrows walk the catalogue (docs/specs/007-editor/editor-modes.md).
+describe('nextEditorMode', () => {
+  it('moves forward through the catalogue, wrapping at the end', () => {
+    expect(nextEditorMode('diagram')).toBe('draw');
+    expect(nextEditorMode('draw')).toBe('diagram');
+  });
+
+  it('moves backward with a negative step, wrapping at the start', () => {
+    expect(nextEditorMode('diagram', -1)).toBe('draw');
+    expect(nextEditorMode('draw', -1)).toBe('diagram');
+  });
+
+  it('visits every mode once in a full cycle', () => {
+    const seen = EDITOR_MODES.map((_, i) =>
+      EDITOR_MODES.slice(0, i).reduce((m) => nextEditorMode(m), DEFAULT_EDITOR_MODE),
+    );
+    expect(new Set(seen).size).toBe(EDITOR_MODES.length);
   });
 });

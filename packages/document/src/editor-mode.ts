@@ -28,6 +28,12 @@ export function editorModeDescription(mode: EditorMode): string {
 
 export const DEFAULT_EDITOR_MODE: EditorMode = 'diagram';
 
+/** The mode `step` places along the catalogue from `mode`, wrapping at either end. */
+export function nextEditorMode(mode: EditorMode, step: 1 | -1 = 1): EditorMode {
+  const count = EDITOR_MODES.length;
+  return EDITOR_MODES[(EDITOR_MODES.indexOf(mode) + step + count) % count]!;
+}
+
 export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }

@@ -106,6 +106,9 @@ export type EditorKeyboardShortcutsDeps = {
   // Shift+1: fit all content on the active tab to the viewport. A pure
   // view action (allowed for view-role).
   onFitToScreen: () => void;
+  // Shift+D: move to the next editor mode (docs/specs/007-editor/editor-modes.md). Null where
+  // the mode switch is not offered (view role, event-storming boards).
+  onCycleEditorMode: (() => void) | null;
   // Escape with a live selection and no transient mode to cancel clears
   // the selection (single + multi). Mirrors clicking empty canvas.
   onDeselect: () => void;

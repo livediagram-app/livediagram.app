@@ -44,6 +44,8 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
+import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
+import { announce } from '@/lib/announcer';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -3038,6 +3040,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
+    onCycleEditorMode: editorModeShortcut(editorMode, announce),
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
