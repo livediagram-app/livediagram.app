@@ -490,7 +490,11 @@ popover is clipped no matter its z-index.
   header carries one too (§2.3).
 - **Empty (all filtered out)**: "No events match these filters", with a
   Clear filters action. Distinct copy from the new-user case, so the
-  user isn't told they have no history when they do.
+  user isn't told they have no history when they do. The filters run on
+  the loaded pages only, so while the read still returns a cursor the
+  copy is "No matches in the events loaded so far" instead, and Show
+  more (§2.3) stays under it: claiming nothing matches while older
+  pages are unread is the same lie in a smaller voice.
 - **Failed**: "Couldn't load your timeline", with a Try again action.
   **A read that failed must never render as an empty feed.** The first
   version of this surface mapped every failure — offline, an expired
