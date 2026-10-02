@@ -1,34 +1,37 @@
-# Whiteboard
+# Draw mode (the whiteboard)
 
-A **whiteboard** is a kind of tab built for plain, freehand whiteboarding:
-pick up a pen and draw, with the simplicity of Microsoft Whiteboard. It sits
-beside diagram tabs in the same document, and it is where imported Microsoft
-Whiteboard boards open ([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
+**Draw mode** is the [editor mode](../007-editor/editor-modes.md) built for
+plain, freehand whiteboarding: pick up a pen and draw, with the simplicity of
+Microsoft Whiteboard. Any general tab can be switched into it from the mode
+switch beside the page switcher, and back to Diagram mode, and it is where
+imported Microsoft Whiteboard boards open
+([Microsoft Whiteboard import](../020-import-export/whiteboard-import.md)).
 
-A whiteboard is an ordinary tab carrying `kind: 'whiteboard'` (`TabKind`,
-`packages/document/src/tab-kind.ts`), in the same way an event-storming board
-carries `kind: 'event-storming'` ([Event storming](../021-event-storming/event-storming.md)).
-The kind tunes **presentation**; it does not fork the document model. Strokes
-are `freehand` elements, notes are stickies, text is `text`, shapes are shapes.
-So realtime, comments, layers, export, share links, Offline Mode and the
-[Google Drive mirror](../022-drive-mirror/drive-mirror.md) work on a
-whiteboard without whiteboard-specific code.
+Whiteboarding is a mode, not a tab kind: there is no `kind: 'whiteboard'`.
+A stored tab that carries it reads as a general tab that opens in Draw mode
+([Existing whiteboards](../007-editor/editor-modes.md#existing-whiteboards)).
+The mode tunes **tools and rules**; it does not fork the document model.
+Strokes are `freehand` elements, notes are stickies, text is `text`, shapes
+are shapes. So realtime, comments, layers, export, share links, Offline Mode
+and the [Google Drive mirror](../022-drive-mirror/drive-mirror.md) work in Draw
+mode without Draw-specific code.
+
+In the rest of this spec, **a whiteboard** means a general tab in Draw mode.
 
 The feature is built and then tuned in rounds with the operator. This spec
-states what a whiteboard is; values that only use can settle (exact colours,
+states what Draw mode is; values that only use can settle (exact colours,
 pen widths, dock spacing) are named constants, tuned in place.
 
-## Why a tab kind
+## Why a mode
 
-- **Mixable.** A workshop often needs a free sketch next to a tidy diagram.
-  Making the whiteboard a tab, not a whole-document type, lets one document hold
-  both, and a tab can be added, reordered, grouped into tab folders and shared
-  like any other.
-- **No second editor.** Every editor feature reads the same elements, so a
-  whiteboard inherits fixes and features for free and nothing drifts.
-- **Total union.** `TabKind` becomes `'diagram' | 'event-storming' |
-'whiteboard'`; `tabKindOf` reads `'whiteboard'` explicitly and everything else
-  keeps reading as before, so tabs written before the kind existed are unchanged.
+- **Mixable.** A workshop often needs a free sketch next to a tidy diagram,
+  often on the same canvas. A mode lets one tab hold both, and lets a person
+  move between drawing and diagramming without a new tab.
+- **No second editor.** Every editor feature reads the same elements, so Draw
+  mode inherits fixes and features for free and nothing drifts.
+- **Kinds stay rare.** A tab kind is kept for a very specific use with its own
+  notation, as event storming has; whiteboarding needs only other tools in
+  focus.
 
 ## Creating one
 
@@ -47,9 +50,8 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one whiteboard tab, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
-- A tab's kind is fixed at creation. Converting a diagram tab into a
-  whiteboard (or back) is not offered: the two present the same elements very
-  differently, and a silent switch would surprise.
+- **Any tab:** the mode switch beside the page switcher turns any general
+  tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
@@ -805,14 +807,12 @@ The whiteboard is built in rounds and tuned with the operator between them.
 ## Non-goals
 
 - Themes on whiteboards beyond the Default theme's two halves.
-- Converting an existing tab between kinds.
 - Microsoft Whiteboard extras (reactions, ruler, templates gallery, ink
   beautification) until use asks for them.
 
 ## References
 
-[Event storming](../021-event-storming/event-storming.md) (the tab-kind
-precedent), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)
+[Editor modes](../007-editor/editor-modes.md), [Event storming](../021-event-storming/event-storming.md) (a tab kind, for contrast), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)
 (shape recogniser),
 [Eraser panel](../008-canvas/eraser-panel.md),
 [Appearance](../004-interface-design/appearance.md),

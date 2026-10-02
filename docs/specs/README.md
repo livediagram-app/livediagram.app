@@ -14,7 +14,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
 - ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, layers, storage, snapshots, offline documents, stroke points
-- ./007-editor/README.md - when working on the live editor shell: routes, preferences, power user mode, panels, tours, AI, command palette
+- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, preferences, power user mode, panels, tours, AI, command palette
 - ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, tool panels and the Quick Style Panel
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, favourites, icon and sticker catalogues, presets
@@ -30,7 +30,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, pasting from Excalidraw, imported images, board scenes and board imports from Miro or Microsoft Whiteboard, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of Personal Space
-- ./023-whiteboard/README.md - when working on the whiteboard tab kind: its pens, dock, snap colours and path tool
+- ./023-whiteboard/README.md - when working on Draw mode (the whiteboard): its pens, dock, snap colours and path tool
 
 ## Workflow
 

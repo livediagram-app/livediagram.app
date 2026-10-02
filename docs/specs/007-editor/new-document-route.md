@@ -671,8 +671,8 @@ theme for a new tab.
 - `/new?template=kanban` → no wizard; a Kanban diagram created and the
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` → the plain wizard.
-- `/new?template=whiteboard` → no wizard; a whiteboard document created and
-  the editor loads with the Ink pen in hand.
+- `/new?template=whiteboard` → no wizard; a document created whose tab opens
+  in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
 - `/new?browse=brainstorm` → the wizard, its template step showing the
   Brainstorm collection.
 - `/new?browse=not-a-collection` → the plain wizard.

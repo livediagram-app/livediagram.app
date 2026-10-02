@@ -3,22 +3,25 @@
 A **document** is the top-level container a person creates, names, shares,
 files in a folder and deletes. It holds an ordered set of tabs, optionally
 grouped into [tab folders](tab-folders.md). Every tab has a **tab kind**,
-which fixes how that tab is drawn on and presented.
+which fixes what that tab is. A general tab is worked on in one of two
+[editor modes](../007-editor/editor-modes.md), Diagram or Draw.
 
 ## Domain language
 
-| Term                     | Means                                                                                        |
-| ------------------------ | -------------------------------------------------------------------------------------------- |
-| **document**             | The top-level container: its name, owner, location, share links and tabs.                    |
-| **tab**                  | One page of a document, with its own canvas, layers and elements.                            |
-| **tab kind**             | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                          |
-| **diagram**              | The tab kind for structured diagrams: shapes, arrows, icons, templates.                      |
-| **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)). |
-| **whiteboard**           | The tab kind for freehand whiteboarding ([Whiteboard](../023-whiteboard/whiteboard.md)).     |
+| Term                     | Means                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------ |
+| **document**             | The top-level container: its name, owner, location, share links and tabs.                        |
+| **tab**                  | One page of a document, with its own canvas, layers and elements.                                |
+| **tab kind**             | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                              |
+| **diagram**              | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
+| **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)).     |
+| **editor mode**          | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
+| **whiteboard**           | The activity of Draw mode ([Draw mode](../023-whiteboard/whiteboard.md)); not a tab kind.        |
 
 - As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
   where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
 - "Board" on its own is not a term; say event-storming board or whiteboard.
+- A tab kind is reserved for a very specific use; anything a mode can serve stays a general tab.
 - Specs, UI copy and code name the container a document.
 
 ## Choosing the word in prose
