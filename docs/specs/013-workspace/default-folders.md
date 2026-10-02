@@ -113,11 +113,11 @@ never re-derived or rewritten afterwards:
 - A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
   does: they are a fact about the content, not derived again.
 - A stored value outside its list (one since retired) reads as null.
-- They feed the Explorer's filters: an **Opens in** chip (one option per editor mode) and a
-  **Board** chip whose options are the list's board entries, read from two dimensions: Event
-  Storming boards (`tabKind`), Retrospectives and Kanban boards (`templateFamily`). A document with
-  an unknown value matches no option of that chip; it shows whenever the chip is not set. Copy says
-  "opens in" for a mode and never "type".
+- They feed the Explorer's filters ([Explorer filters](explorer-filters.md)), one chip per dimension: **Opens
+  in** (`opensIn`, one option per editor mode), **Kind** (`tabKind`: Event Storming boards) and **Template**
+  (`templateFamily`: Retrospectives, Kanban boards). A document with an unknown value matches no option of a chip;
+  it shows whenever that chip is not set. Copy says "opens in" for a mode and never "type"
+  ([Domain language](../003-system-architecture/domain-language.md)).
 
 ## Duplicate
 
