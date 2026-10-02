@@ -1,19 +1,23 @@
 import type { ComponentType } from 'react';
-import type { EditorMode } from '@livediagram/document';
+import {
+  EDITOR_MODES,
+  editorModeDescription,
+  editorModeLabel,
+  type EditorMode,
+} from '@livediagram/document';
 import { FlowchartIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
 
 // The words and glyphs every variant of the mode switch shows for the two
 // editor modes (docs/specs/007-editor/editor-modes.md).
 
-export const EDITOR_MODE_LABEL: Record<EditorMode, string> = {
-  diagram: 'Diagram',
-  draw: 'Draw',
-};
+// The words come from the document's one mode catalogue (EDITOR_MODE_CATALOGUE).
+export const EDITOR_MODE_LABEL = Object.fromEntries(
+  EDITOR_MODES.map((m) => [m, editorModeLabel(m)]),
+) as Record<EditorMode, string>;
 
-export const EDITOR_MODE_DESCRIPTION: Record<EditorMode, string> = {
-  diagram: 'Shapes, arrows, the palette and snapping.',
-  draw: 'Pens, the eraser and shape recognition.',
-};
+export const EDITOR_MODE_DESCRIPTION = Object.fromEntries(
+  EDITOR_MODES.map((m) => [m, editorModeDescription(m)]),
+) as Record<EditorMode, string>;
 
 export const EDITOR_MODE_ICON: Record<EditorMode, ComponentType<IconProps>> = {
   diagram: FlowchartIcon,
