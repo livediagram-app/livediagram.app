@@ -39,6 +39,16 @@ describe('classifyVertex', () => {
     expect(classify('shape=umlLifeline;')).toMatchObject({ shape: 'square', approximated: true });
   });
 
+  it('draws the flowchart or and summing function as approximated circles', () => {
+    for (const name of ['or', 'summing_function']) {
+      expect(classify(`shape=mxgraph.flowchart.${name};`)).toEqual({
+        kind: 'shape',
+        shape: 'circle',
+        approximated: true,
+      });
+    }
+  });
+
   it('recognises text, notes, lines, frames and images', () => {
     expect(classify('text;html=1;')).toEqual({ kind: 'text', approximated: false });
     expect(classify('edgeLabel;html=1;')).toEqual({ kind: 'text', approximated: false });
@@ -173,6 +183,14 @@ describe('classifyVertex, marks and braces', () => {
       tech: false,
     });
     expect(classify('shape=mxgraph.basic.tick;')).toMatchObject({ kind: 'icon', iconId: 'check' });
+  });
+
+  it('maps UML’s destroy cross to the cross icon', () => {
+    expect(classify('shape=umlDestroy;strokeWidth=3;strokeColor=#FF1212;')).toMatchObject({
+      kind: 'icon',
+      iconId: 'x',
+      tech: false,
+    });
   });
 
   it('draws an end state as the circle it is', () => {

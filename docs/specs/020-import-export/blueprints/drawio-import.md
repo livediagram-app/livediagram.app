@@ -450,7 +450,7 @@ units until step 15.9), plus `DRAWIO_CAPTION_PADDING_PX`. An image's caption is 
 caption band `captionBox` gives (the band only, below or beside the picture, which keeps its
 rect), centred, after the image; the image keeps `alt`.
 
-Marks: `mxgraph.basic.x` → line-art `x`, `mxgraph.basic.tick` → `check`, `strokeColor` (else
+Marks: `mxgraph.basic.x` and `umlDestroy` → line-art `x`, `mxgraph.basic.tick` → `check`, `strokeColor` (else
 `fillColor`) hex as the icon's stroke, `icon-substituted` += 1. `endState` → `circle`, `fillColor`
 (default `#000000` → `paperColour`), `strokeColor` the ring, `strokeWidth: 'thick'`. `curlyBracket`
 → a headless `arrow` along the brace's spine (vertical through the box's middle, or horizontal

@@ -146,11 +146,12 @@ const NETWORK: Record<string, string> = {
   wireless_hub: 'wifi',
 };
 
-// ---- Marks (mxgraph.basic.*), line-art icons -------------------------------------
+// ---- Marks (mxgraph.basic.*, UML's destroy cross), line-art icons -------------------------
 
 const MARKS: Record<string, string> = {
   'mxgraph.basic.x': 'x',
   'mxgraph.basic.tick': 'check',
+  umlDestroy: 'x',
 };
 
 /** A stencil (the resolved shape name plus the style's icon keys) to its icon. */
