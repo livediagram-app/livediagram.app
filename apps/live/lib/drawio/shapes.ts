@@ -5,7 +5,8 @@
 
 import type { ShapeKind } from '@livediagram/document';
 import type { DrawioCell, DrawioGraph } from './cells';
-import { shapeName } from './style';
+import { readColour } from './colour';
+import { shapeName, type DrawioStyle } from './style';
 import { azureImageIcon, readableStencilName, stencilIcon, type IconMatch } from './stencils';
 
 export type VertexClass =
@@ -153,7 +154,7 @@ export function classifyVertex(cell: DrawioCell, graph: DrawioGraph): VertexClas
   if (name === '' && style.has('group') && cell.value.trim() === '' && cell.children.length > 0) {
     return { kind: 'group' };
   }
-  if (name === '' && (style.has('text') || style.has('edgeLabel'))) {
+  if (name === '' && (style.has('edgeLabel') || (style.has('text') && !isBoxedText(style)))) {
     return { kind: 'text', approximated: false };
   }
   if (name === f('annotation_1') || name === f('annotation_2')) {
@@ -205,4 +206,16 @@ export function shapeTurn(cell: DrawioCell, shape: ShapeKind): ShapeTurn {
   }
   const turned = direction !== 'east' || cell.style.flag('flipH') || cell.style.flag('flipV');
   return { rotation: 0, swap: false, approximated: turned && !SYMMETRIC.has(shape) };
+}
+
+/**
+ * A `text` cell that draws its own box: a fill or a stroke of its own over the `text` style's
+ * none. draw.io draws it as a box, so it imports as a square (an edge label stays a label).
+ */
+export function isBoxedText(style: DrawioStyle): boolean {
+  if (!style.has('text')) return false;
+  return (
+    readColour(style.str('fillColor')).kind === 'hex' ||
+    readColour(style.str('strokeColor')).kind === 'hex'
+  );
 }

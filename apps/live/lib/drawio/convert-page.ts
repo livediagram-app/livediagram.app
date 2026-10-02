@@ -24,7 +24,7 @@ import {
 import { buildEntity, buildLane, buildTable } from './containers';
 import { buildArrow, type EndTarget } from './edges';
 import { readLabel } from './label';
-import { classifyVertex } from './shapes';
+import { classifyVertex, isBoxedText } from './shapes';
 import { buildVertex, type PageContext } from './vertices';
 
 export type ConvertedPage = {
@@ -43,7 +43,7 @@ const clampRect = (r: Rect): Rect => ({
 });
 
 const isLabelCell = (c: DrawioCell) =>
-  c.vertex && (c.style.has('edgeLabel') || c.style.has('text'));
+  c.vertex && (c.style.has('edgeLabel') || (c.style.has('text') && !isBoxedText(c.style)));
 
 export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage {
   const cells = graph.cells;

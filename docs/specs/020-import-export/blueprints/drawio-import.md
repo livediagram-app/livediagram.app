@@ -204,8 +204,9 @@ In order, first match wins:
 5. `mxgraph.aws4.group` / `groupCenter` / a `mxgraph.gcp2.*` whose name ends `group` or
    `container` → `frame`, approximated.
 6. The named-style `group` with no `shape`, empty value, and children → `group` (dropped).
-7. The shape table (spec "Vertices: shapes") by exact name → `{ shape, fidelity }`; `text`,
-   `edgeLabel` → `text`; `note` → `sticky`; `line` → `line`; `umlFrame` → `frame`.
+7. The shape table (spec "Vertices: shapes") by exact name → `{ shape, fidelity }`; `text`
+   (unless `isBoxedText`: a hex `fillColor` or `strokeColor` of its own → the plain rectangle,
+   `square`; also never a container's label), `edgeLabel` → `text`; `note` → `sticky`; `line` → `line`; `umlFrame` → `frame`.
 8. Otherwise → `unmatched` with `name = shapeName` (`stencil(...)` names reduce to `custom stencil`).
 
 `triangle`'s rotation: `direction` `east` (default) 90, `south` 180, `west` 270, `north` 0; a 90 or 270

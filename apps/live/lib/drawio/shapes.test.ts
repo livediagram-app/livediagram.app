@@ -48,6 +48,23 @@ describe('classifyVertex', () => {
     expect(classify('shape=image;image=data:image/png,AAA;')).toEqual({ kind: 'image' });
   });
 
+  it('makes a text cell that draws its own box a square, as draw.io draws it', () => {
+    const square = { kind: 'shape', shape: 'square', approximated: false };
+    expect(classify('text;html=1;strokeColor=#23445d;fillColor=#bac8d3;rounded=1;')).toEqual(
+      square,
+    );
+    expect(classify('text;html=1;strokeColor=none;fillColor=#FFFFCC;')).toEqual(square);
+    expect(classify('text;html=1;strokeColor=#333333;')).toEqual(square);
+    // Its own defaults (no stroke, no fill), or explicitly none: still a text.
+    expect(classify('text;html=1;')).toEqual({ kind: 'text', approximated: false });
+    expect(classify('text;strokeColor=none;fillColor=none;')).toEqual({
+      kind: 'text',
+      approximated: false,
+    });
+    // An edge label is always a label.
+    expect(classify('edgeLabel;fillColor=#ffffff;')).toEqual({ kind: 'text', approximated: false });
+  });
+
   it('matches vendor stencils to icons', () => {
     expect(classify('shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;')).toEqual({
       kind: 'icon',
