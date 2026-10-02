@@ -13,8 +13,10 @@ describe('tabKindOf', () => {
     expect(tabKindOf(tab({ kind: 'event-storming' }))).toBe('event-storming');
   });
 
-  it('reads a whiteboard', () => {
-    expect(tabKindOf(tab({ kind: 'whiteboard' }))).toBe('whiteboard');
+  // Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
+  // 'whiteboard' is migrated on read (./legacy-whiteboard-tab); a reader alone sees a general tab.
+  it('reads the former whiteboard kind as an ordinary diagram', () => {
+    expect(tabKindOf({ kind: 'whiteboard' })).toBe('diagram');
   });
 
   it('reads an unknown kind as an ordinary diagram', () => {
@@ -33,11 +35,6 @@ describe('stampTabKind', () => {
 
   it('leaves a specialised kind alone', () => {
     expect(stampTabKind(tab({ kind: 'event-storming' })).kind).toBe('event-storming');
-  });
-
-  it('leaves a whiteboard alone', () => {
-    const wb = tab({ kind: 'whiteboard' });
-    expect(stampTabKind(wb)).toBe(wb);
   });
 
   it('returns the SAME object when nothing needs stamping', () => {

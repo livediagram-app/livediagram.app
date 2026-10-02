@@ -17,10 +17,22 @@ export const PEN_COLOURS = [
   { id: 'violet', label: 'Violet', hue: 295, chroma: 0.19 },
   { id: 'pink', label: 'Pink', hue: 350, chroma: 0.18 },
 ] as const;
-export type PenColourName = (typeof PEN_COLOURS)[number]['id'];
+/** The seven hued stock colours, each tuned per board. */
+export type HuedPenColourName = (typeof PEN_COLOURS)[number]['id'];
 
-/** The seven named stock colours, in the pickers' order after Ink. */
-export const PEN_COLOUR_NAMES: readonly PenColourName[] = PEN_COLOURS.map((c) => c.id);
+// Ink by name (docs/specs/007-editor/editor-modes.md "One look"): the board's own drawing colour,
+// a stock colour like the seven, drawn in PEN_INK for each appearance.
+export const INK_PEN_COLOUR = 'ink';
+export type PenColourName = typeof INK_PEN_COLOUR | HuedPenColourName;
+
+/** The seven hued stock colours, in the pickers' order after Ink. */
+export const PEN_COLOUR_NAMES: readonly HuedPenColourName[] = PEN_COLOURS.map((c) => c.id);
+
+// The ink per appearance (WHITEBOARD_INK): at least 4.5:1 on its board.
+export const PEN_INK: Readonly<Record<Appearance, string>> = {
+  light: '#1c1917',
+  dark: '#e2e8f0',
+};
 
 // The contrast each stock colour's version aims for on its board: over the 4.5:1 the spec asks, so
 // the light board's version is clearly darker than the dark board's.
@@ -39,7 +51,7 @@ export const PEN_BOARDS: Readonly<Record<Appearance, string>> = {
 const L_STEP = 0.0045;
 const L_STEPS = 200;
 
-const NAMES = new Set<string>(PEN_COLOUR_NAMES);
+const NAMES = new Set<string>([INK_PEN_COLOUR, ...PEN_COLOUR_NAMES]);
 
 export function isPenColourName(v: unknown): v is PenColourName {
   return typeof v === 'string' && NAMES.has(v);
@@ -47,6 +59,7 @@ export function isPenColourName(v: unknown): v is PenColourName {
 
 /** "Blue": the swatch's tooltip and accessible name. */
 export function penColourLabel(name: PenColourName): string {
+  if (name === INK_PEN_COLOUR) return 'Ink';
   return PEN_COLOURS.find((c) => c.id === name)!.label;
 }
 
@@ -143,20 +156,20 @@ function tune(colour: (typeof PEN_COLOURS)[number], board: Appearance): string {
   return toHex(best!);
 }
 
-const TABLE: Readonly<Record<Appearance, Readonly<Record<PenColourName, string>>>> = {
+const TABLE: Readonly<Record<Appearance, Readonly<Record<HuedPenColourName, string>>>> = {
   light: Object.fromEntries(PEN_COLOURS.map((c) => [c.id, tune(c, 'light')])) as Record<
-    PenColourName,
+    HuedPenColourName,
     string
   >,
   dark: Object.fromEntries(PEN_COLOURS.map((c) => [c.id, tune(c, 'dark')])) as Record<
-    PenColourName,
+    HuedPenColourName,
     string
   >,
 };
 
 /** The `#rrggbb` a named colour is drawn in on a board. */
 export function penColourHex(name: PenColourName, board: Appearance): string {
-  return TABLE[board][name];
+  return name === INK_PEN_COLOUR ? PEN_INK[board] : TABLE[board][name];
 }
 
 /**
@@ -195,14 +208,14 @@ export const PEN_NEUTRAL_CHROMA = 0.05;
 export type SnapTarget = PenColourName | 'ink';
 
 /** How far a hue (degrees) is from a stock colour's, round the circle: 0 to 180. */
-export function penColourHueDistance(hue: number, name: PenColourName): number {
+export function penColourHueDistance(hue: number, name: HuedPenColourName): number {
   const d = Math.abs((((hue - PEN_COLOURS.find((c) => c.id === name)!.hue) % 360) + 360) % 360);
   return Math.min(d, 360 - d);
 }
 
 /** The stock colour nearest a hue (degrees, round the circle); a tie goes to the earlier one. */
-export function penColourAtHue(hue: number): PenColourName {
-  let best: PenColourName = PEN_COLOURS[0].id;
+export function penColourAtHue(hue: number): HuedPenColourName {
+  let best: HuedPenColourName = PEN_COLOURS[0].id;
   let bestDist = Infinity;
   for (const c of PEN_COLOURS) {
     const dist = penColourHueDistance(hue, c.id);

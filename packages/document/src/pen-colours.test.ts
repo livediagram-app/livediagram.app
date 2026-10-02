@@ -59,7 +59,6 @@ describe('pen stock colours', () => {
   it('reads names and custom colours', () => {
     expect(isPenColourName('blue')).toBe(true);
     expect(isPenColourName('blue-3')).toBe(false);
-    expect(isPenColourName('ink')).toBe(false);
     expect(isPenColourName('#1d7afc')).toBe(false);
     expect(isCustomPenColour('#ff6b00')).toBe(true);
     expect(isCustomPenColour('blue')).toBe(false);
@@ -70,6 +69,17 @@ describe('pen stock colours', () => {
     expect(penColourCss('blue', 'dark', '#000')).toBe(penColourHex('blue', 'dark'));
     expect(penColourCss('#ff6b00', 'dark', '#000')).toBe('#ff6b00');
     expect(penColourCss(null, 'dark', '#e2e8f0')).toBe('#e2e8f0');
+  });
+
+  // Ink is a stock colour too (docs/specs/007-editor/editor-modes.md "One look"): stored by name, drawn
+  // in the board's ink for each appearance, never one of the seven hued picks.
+  it("stores Ink by name and draws it in each board's ink", () => {
+    expect(isPenColourName('ink')).toBe(true);
+    expect(PEN_COLOUR_NAMES).not.toContain('ink');
+    expect(penColourLabel('ink')).toBe('Ink');
+    expect(penColourHex('ink', 'light')).toBe(WHITEBOARD_INK.light);
+    expect(penColourHex('ink', 'dark')).toBe(WHITEBOARD_INK.dark);
+    expect(penColourCss('ink', 'dark', '#000')).toBe(WHITEBOARD_INK.dark);
   });
 
   it('says which board a custom colour is hard to see on, and offers a nearby readable one', () => {

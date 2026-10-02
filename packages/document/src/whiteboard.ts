@@ -1,15 +1,11 @@
-// The whiteboard tab kind (docs/specs/023-whiteboard/whiteboard.md): its look and the display
+// Draw mode's board (docs/specs/023-whiteboard/whiteboard.md): its look and the display
 // projection that gives unpainted elements the board's ink. Pure data and pure
 // functions; the editor owns the dock and the device-local pens.
 import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
 import { DARK_CANVAS_BACKGROUND_COLOR, DARK_CANVAS_PATTERN_COLOR } from './canvas-colors';
-import { penColourHex, type PenColourName } from './pen-colours';
+import { PEN_INK, penColourHex, type PenColourName } from './pen-colours';
 import type { Appearance } from './themes';
 import type { BackgroundPattern, Element } from './index';
-
-export function isWhiteboardTab(tab: { kind?: string } | undefined): boolean {
-  return tab?.kind === 'whiteboard';
-}
 
 // The whiteboard variant of the Default theme: an off-white whiteboard in
 // light; in dark the editor's own dark canvas, so the board belongs to the app
@@ -18,10 +14,7 @@ export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>> = {
   light: '#fbfaf7',
   dark: DARK_CANVAS_BACKGROUND_COLOR,
 };
-export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = {
-  light: '#1c1917',
-  dark: '#e2e8f0',
-};
+export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = PEN_INK;
 // The dots and grid lines: a faint mix of ink over board.
 export const WHITEBOARD_PATTERN: Readonly<Record<Appearance, string>> = {
   light: '#d6d3cb',
@@ -56,7 +49,12 @@ export function whiteboardBackgroundOf(
 }
 
 // Shapes a whiteboard draws as marker outlines. Everything else keeps its own look.
-const INKED_SHAPES = new Set(['square', 'circle', 'triangle', 'diamond']);
+export const WHITEBOARD_INKED_SHAPES: ReadonlySet<string> = new Set([
+  'square',
+  'circle',
+  'triangle',
+  'diamond',
+]);
 
 // Display-only: the colours an unpainted element shows on a whiteboard. Nothing
 // is written back, so the same element reads in the viewer's own ink and in the
@@ -81,7 +79,7 @@ export function inkWhiteboardElement<T extends Element>(el: T, ink: string): T {
     case 'text':
       return el.textColor !== undefined ? el : { ...el, textColor: ink };
     case 'shape':
-      if (!INKED_SHAPES.has(el.shape)) return el;
+      if (!WHITEBOARD_INKED_SHAPES.has(el.shape)) return el;
       if (el.strokeColor !== undefined && el.fillColor !== undefined && el.textColor !== undefined)
         return el;
       return {

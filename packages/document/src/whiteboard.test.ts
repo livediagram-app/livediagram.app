@@ -18,7 +18,6 @@ import {
   WHITEBOARD_UNSET_PATTERN,
   WHITEBOARD_PATTERN,
   inkWhiteboardElement,
-  isWhiteboardTab,
   projectWhiteboardElement,
   nearestBorderStroke,
   whiteboardBackgroundOf,
@@ -52,15 +51,6 @@ const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   width: 10,
   height: 10,
   ...over,
-});
-
-describe('isWhiteboardTab', () => {
-  it('recognises the whiteboard kind and nothing else', () => {
-    expect(isWhiteboardTab({ kind: 'whiteboard' })).toBe(true);
-    expect(isWhiteboardTab({ kind: 'event-storming' })).toBe(false);
-    expect(isWhiteboardTab({})).toBe(false);
-    expect(isWhiteboardTab(undefined)).toBe(false);
-  });
 });
 
 describe('whiteboard tokens', () => {

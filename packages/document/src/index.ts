@@ -12,6 +12,7 @@
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
+import type { EditorMode } from './editor-mode';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -277,6 +278,10 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
+  // The editor mode a general tab OPENS in (docs/specs/007-editor/editor-modes.md "Where the mode
+  // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
+  // (read via `opensInOf`); switching never changes it.
+  opensIn?: EditorMode;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
@@ -351,6 +356,8 @@ export type Tab = {
 
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
+export * from './editor-mode';
+export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {

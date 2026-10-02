@@ -141,7 +141,9 @@ describe('isValidElement', () => {
     const shape = { id: 's', type: 'shape', shape: 'square', label: 'Hi', ...box };
     for (const el of [text, shape]) {
       expect(isValidElement({ ...el, penTextColour: 'green' })).toBe(true);
-      expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(false);
+      // Ink is a stock colour by name (docs/specs/007-editor/editor-modes.md "One look").
+      expect(isValidElement({ ...el, penTextColour: 'ink' })).toBe(true);
+      expect(isValidElement({ ...el, penTextColour: 'chalk' })).toBe(false);
       expect(isValidElement({ ...el, penTextColour: '#2f9e44' })).toBe(false);
       expect(isValidElement({ ...el, penTextColour: 3 })).toBe(false);
     }

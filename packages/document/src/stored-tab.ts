@@ -3,6 +3,7 @@
 // offline store's tab load and a file import all run this, so a new migration
 // is added once and reaches every entry point.
 import { upgradeLegacyLinks } from './legacy-links';
+import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateStoredElements } from './stored-elements';
 import type { Element, Tab } from './index';
@@ -10,7 +11,8 @@ import type { Element, Tab } from './index';
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
-  const schemed = migrateRetiredScheme(tab);
+  // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
+  const schemed = migrateRetiredScheme(migrateWhiteboardKind(tab));
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.
   const elements = upgradeLegacyLinks(migrateStoredElements(schemed.elements));
