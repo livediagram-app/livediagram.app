@@ -738,12 +738,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/live-app.md#role-pill).
-  const { viewPreview, canToggleRole, toggleViewPreview } = useViewPreview(sessionRole, () => {
-    setSelectedId(null);
-    setMultiSelectedIds(new Set());
-    setEditingId(null);
-  });
-  const isReadOnly = sessionRole === 'view' || viewPreview;
+  const { viewPreview, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
+    sessionRole,
+    () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+    },
+  );
+  const isReadOnly = !canEdit;
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
@@ -1092,7 +1095,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is.
-  const editorMode = useEditorMode(activeTab, { canEdit: !isReadOnly });
+  const editorMode = useEditorMode(activeTab, { canEdit });
   const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);

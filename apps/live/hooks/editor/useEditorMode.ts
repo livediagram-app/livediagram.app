@@ -1,7 +1,9 @@
 // The editor mode a person works in on a tab (docs/specs/007-editor/editor-modes.md).
 //
 // Contract:
-// - `useEditorMode(tab, { canEdit })` returns `{ mode, setMode, canSwitch }` for that tab.
+// - `useEditorMode(tab, { canEdit })` returns `{ mode, setMode, canSwitch, canEdit }` for that tab.
+//   `canEdit` comes from the editor's one answer (useViewPreview) and is handed back, so the switch
+//   reads the very value the editor resolved with.
 // - `mode` is the person's remembered choice for the tab, else the mode the tab opened in on
 //   this page (usePinTabOpening), else the tab's opening mode (`tab.opensIn`), else 'diagram'. Event-storming boards are always 'diagram'. A visitor who
 //   cannot edit (`canEdit: false`, the view role) always gets the opening mode.
@@ -28,6 +30,7 @@ export type EditorModeState = {
   mode: EditorMode;
   setMode: (next: EditorMode) => void;
   canSwitch: boolean;
+  canEdit: boolean;
 };
 
 const nothingStored = () => '|';
@@ -59,7 +62,7 @@ export function useEditorMode(
     },
     [canSwitch, tabId, mode],
   );
-  return { mode, setMode, canSwitch };
+  return { mode, setMode, canSwitch, canEdit };
 }
 
 // Pins the mode a tab opened in, once its content has loaded (before then a placeholder carries no

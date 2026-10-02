@@ -427,6 +427,7 @@ export function EditorView() {
                   selfId={selfParticipant.id}
                   voteSelfId={voteSelfId}
                   selfRole={sessionRole}
+                  editorMode={ctx.editorMode}
                   onOpenSettings={() => {
                     // Preferences are user-scoped, not document-scoped, so
                     // view-role visitors can still flip them for their own

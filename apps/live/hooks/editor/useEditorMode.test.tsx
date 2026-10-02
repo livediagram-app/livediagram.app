@@ -34,6 +34,7 @@ describe('useEditorMode', () => {
     const { result } = renderHook(() => useEditorMode(tab, { canEdit: true }));
     expect(result.current.mode).toBe('draw');
     expect(result.current.canSwitch).toBe(true);
+    expect(result.current.canEdit).toBe(true);
   });
 
   it('switches, remembers the choice for that tab and shares it with every caller', () => {
@@ -72,7 +73,7 @@ describe('useEditorMode', () => {
     const tab = { id: tabId(), opensIn: 'draw' as const };
     localStorage.setItem(`livediagram:v2:editor-mode:${tab.id}`, 'diagram');
     const { result } = renderHook(() => useEditorMode(tab, { canEdit: false }));
-    expect(result.current).toMatchObject({ mode: 'draw', canSwitch: false });
+    expect(result.current).toMatchObject({ mode: 'draw', canSwitch: false, canEdit: false });
     act(() => result.current.setMode('diagram'));
     expect(result.current.mode).toBe('draw');
     expect(events).toEqual([]);

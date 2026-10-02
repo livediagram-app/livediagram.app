@@ -4,7 +4,12 @@ import { editorModeShortcut } from './editor-mode-shortcut';
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): next mode, announced politely.
 describe('editorModeShortcut', () => {
-  const state = (mode: EditorMode, canSwitch = true) => ({ mode, canSwitch, setMode: vi.fn() });
+  const state = (mode: EditorMode, canSwitch = true) => ({
+    mode,
+    canSwitch,
+    canEdit: true,
+    setMode: vi.fn(),
+  });
 
   it('offers nothing where the switch is not offered', () => {
     expect(editorModeShortcut(state('diagram', false), vi.fn())).toBeNull();

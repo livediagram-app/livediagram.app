@@ -14,6 +14,7 @@ import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { EditorModeSwitchSlot } from '@/components/chrome/editor-mode/EditorModeSwitchSlot';
+import type { EditorModeState } from '@/hooks/editor/useEditorMode';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
@@ -144,6 +145,8 @@ type TabBarProps = {
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
   voteSelfId?: string;
   selfRole: 'edit' | 'view';
+  // The editor's resolved editor mode on the active tab (useEditorMode), shown by the mode switch.
+  editorMode: EditorModeState;
   // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
   // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
   // Optional: a surface with no room behind it leaves the avatars as plain
@@ -199,6 +202,7 @@ export function TabBar({
   selfId,
   voteSelfId,
   selfRole,
+  editorMode,
   followingId,
   onOpenCollaborators,
   onOpenSettings,
@@ -344,11 +348,7 @@ export function TabBar({
         className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
-        <EditorModeSwitchSlot
-          activeTab={activeTab}
-          canEdit={selfRole === 'edit'}
-          powerUser={powerUser}
-        />
+        <EditorModeSwitchSlot editorMode={editorMode} powerUser={powerUser} />
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
