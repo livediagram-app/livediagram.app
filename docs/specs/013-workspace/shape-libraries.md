@@ -76,6 +76,10 @@ Named constants, checked by the api and before any upload by the client:
 - **Placing an item** works like pasting: a click places it at the centre of the view, a drag at the
   drop point; its elements get fresh ids (connections follow), land in **one undo step**, and are
   **selected**.
+- **Consecutive clicks never cover one another.** A click whose shape would land on a shape placed
+  from My shapes earlier, still where it landed, goes 24 px to the right of it instead (the paste
+  offset, as a gap), centred on its row; a run of clicks lines up left to right. A drag lands exactly
+  where it is dropped.
 - Tiles are buttons in a list per section: reachable by Tab, activated by Enter or Space (placing at
   the view's centre), named "Insert <title> from <library>" for screen readers.
 - The palette, and with it My shapes, is not offered on a read-only tab (a view-role share) or a
