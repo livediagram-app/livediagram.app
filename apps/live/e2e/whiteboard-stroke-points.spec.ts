@@ -206,7 +206,7 @@ test('a peer’s pen stroke reaches the owner live, packed', async ({ page, brow
     data: {
       id,
       name: 'Board',
-      tabs: [{ id: tabId, name: 'Board', kind: 'whiteboard', elements: [] }],
+      tabs: [{ id: tabId, name: 'Board', opensIn: 'draw', elements: [] }],
     },
   });
   expect(seeded.ok()).toBe(true);

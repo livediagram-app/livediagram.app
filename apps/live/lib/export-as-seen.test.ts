@@ -22,15 +22,15 @@ const path = createPath(
 );
 
 describe('tabAsSeen', () => {
-  it('draws a whiteboard on its board, its unpainted elements in its ink', () => {
-    const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements: [path] } as Tab;
-    const seen = tabAsSeen(tab, 'dark');
+  it('draws a tab in Draw mode on its board, its unpainted elements in its ink', () => {
+    const tab = { id: 't', name: 'Board', opensIn: 'draw', elements: [path] } as Tab;
+    const seen = tabAsSeen(tab, 'draw', 'dark');
     expect(seen.backgroundColor).toBe(WHITEBOARD_BOARD.dark);
     expect(seen.elements[0]).toMatchObject({
       strokeColor: WHITEBOARD_INK.dark,
       fillColor: 'transparent',
     });
-    expect(tabAsSeen(tab, 'light').elements[0]!.strokeColor).toBe(WHITEBOARD_INK.light);
+    expect(tabAsSeen(tab, 'draw', 'light').elements[0]!.strokeColor).toBe(WHITEBOARD_INK.light);
   });
 
   it('exports a named marker colour in its version for the appearance', () => {
@@ -46,9 +46,13 @@ describe('tabAsSeen', () => {
       penWidth: 1.5,
       penColour: 'red' as const,
     };
-    const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements: [stroke] } as Tab;
-    expect(tabAsSeen(tab, 'light').elements[0]!.strokeColor).toBe(penColourHex('red', 'light'));
-    expect(tabAsSeen(tab, 'dark').elements[0]!.strokeColor).toBe(penColourHex('red', 'dark'));
+    const tab = { id: 't', name: 'Board', opensIn: 'draw', elements: [stroke] } as Tab;
+    expect(tabAsSeen(tab, 'draw', 'light').elements[0]!.strokeColor).toBe(
+      penColourHex('red', 'light'),
+    );
+    expect(tabAsSeen(tab, 'draw', 'dark').elements[0]!.strokeColor).toBe(
+      penColourHex('red', 'dark'),
+    );
   });
 
   it('exports a named text colour and a named path colour in their version for the appearance', () => {
@@ -65,9 +69,9 @@ describe('tabAsSeen', () => {
       penTextColour: 'green' as const,
     };
     const named = { ...path, penColour: 'violet' as const };
-    const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements: [text, named] } as Tab;
+    const tab = { id: 't', name: 'Board', opensIn: 'draw', elements: [text, named] } as Tab;
     for (const board of ['light', 'dark'] as const) {
-      const seen = tabAsSeen(tab, board);
+      const seen = tabAsSeen(tab, 'draw', board);
       expect(seen.elements[0]!.textColor).toBe(penColourHex('green', board));
       expect(seen.elements[1]!.strokeColor).toBe(penColourHex('violet', board));
       const svg = renderTabToSvg(seen);
@@ -76,9 +80,9 @@ describe('tabAsSeen', () => {
     }
   });
 
-  it('leaves a diagram tab’s elements as they are', () => {
+  it('leaves the elements as they are in Diagram mode, whatever the tab opens in', () => {
     const square = createShape('square', 0, 0);
-    const tab = { id: 't', name: 'Tab', kind: 'diagram', elements: [square] } as Tab;
-    expect(tabAsSeen(tab, 'dark').elements[0]).toBe(square);
+    const tab = { id: 't', name: 'Tab', opensIn: 'draw', elements: [square] } as Tab;
+    expect(tabAsSeen(tab, 'diagram', 'dark').elements[0]).toBe(square);
   });
 });

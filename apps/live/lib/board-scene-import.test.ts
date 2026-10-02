@@ -164,7 +164,7 @@ describe('importBoardsAsDocuments', () => {
       ...seams,
     });
     expect(made[0]!.folderId).toBeUndefined();
-    expect(made[0]!.tabs[0]).toMatchObject({ kind: 'whiteboard' });
+    expect(made[0]!.tabs[0]).toMatchObject({ opensIn: 'draw' });
   });
 });
 

@@ -19,6 +19,7 @@ import {
   subscribeEditorModes,
   type EditorModeTab,
 } from '@/lib/editor-mode-store';
+import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export type EditorModeState = {
@@ -45,7 +46,7 @@ export function useEditorMode(
       if (!canSwitch || !tabId || next === mode) return;
       if (next === 'draw') track('Editor', 'Changed', 'ModeDraw');
       else track('Editor', 'Changed', 'ModeDiagram');
-      console.info('[editor-mode] switched', { from: mode, to: next });
+      debugLog('[editor-mode] switched', { from: mode, to: next });
       rememberMode(tabId, next);
     },
     [canSwitch, tabId, mode],

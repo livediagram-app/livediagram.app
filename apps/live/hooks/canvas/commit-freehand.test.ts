@@ -13,7 +13,7 @@ import { makeCommitFreehand } from './commit-freehand';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-const board: Tab = { id: 't', name: 'Board', kind: 'whiteboard', elements: [] } as Tab;
+const board: Tab = { id: 't', name: 'Board', opensIn: 'draw', elements: [] } as Tab;
 
 function setup(pendingDraw: PendingDraw) {
   let elements: Element[] = [];

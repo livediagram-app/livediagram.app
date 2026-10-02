@@ -19,7 +19,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab, isWhiteboardTab } from '@livediagram/document';
+import { isEventStormingTab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
@@ -716,7 +716,7 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        <CanvasStillProvider still={isWhiteboardTab({ kind: tabKind })}>
+        <CanvasStillProvider still={props.editorMode === 'draw'}>
           {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
           <CanvasZoomProvider zoom={viewportZoom}>

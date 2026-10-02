@@ -18,6 +18,7 @@ import type {
   BackgroundPattern,
   DistributionGuide,
   TabKind,
+  EditorMode,
   Element,
   Layer,
   IconPosition,
@@ -75,6 +76,9 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
+  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
+  editorMode?: EditorMode;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-whiteboard/whiteboard.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;

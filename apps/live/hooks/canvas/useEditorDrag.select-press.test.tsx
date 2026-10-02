@@ -20,6 +20,7 @@ function harness(multi: string[]) {
   const ids: Record<string, string> = { a: a.id, b: b.id, c: c.id };
   const deps = {
     activeTab: { id: 't', name: 'Tab', kind: 'diagram', elements } as Tab,
+    drawMode: false,
     zoomRef: { current: 1 },
     selectedId: null,
     setSelectedId,

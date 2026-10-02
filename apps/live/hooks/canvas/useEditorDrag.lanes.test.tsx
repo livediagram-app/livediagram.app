@@ -56,6 +56,8 @@ function harness(
         elements,
       } as Tab;
     },
+    drawMode: false,
+
     zoomRef: { current: 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),

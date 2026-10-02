@@ -9,7 +9,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import {
-  isWhiteboardTab,
   WHITEBOARD_BACKGROUNDS,
   WHITEBOARD_UNSET_PATTERN,
   type BackgroundPattern,
@@ -44,6 +43,9 @@ import type { SnapColoursApi } from './useSnapColours';
 
 type Deps = {
   activeTab: Tab;
+  // The viewer works on the tab in Draw mode (docs/specs/007-editor/editor-modes.md): the dock,
+  // its pens and its rules are in focus.
+  drawMode: boolean;
   canvasTool: CanvasTool;
   pendingDraw: PendingDraw | null;
   // True when this viewer cannot add to the tab (read-only, locked, loading).
@@ -74,6 +76,7 @@ const BACKGROUND_TOKEN = {
 export function useWhiteboard(deps: Deps) {
   const {
     activeTab,
+    drawMode: whiteboard,
     canvasTool,
     pendingDraw,
     editsBlocked,
@@ -92,7 +95,6 @@ export function useWhiteboard(deps: Deps) {
   // S (docs/specs/023-whiteboard/whiteboard.md "Keyboard shortcuts"): each press raises this, and
   // the dock, which owns its flyouts, opens the Shapes flyout in answer.
   const [shapesRequest, setShapesRequest] = useState(0);
-  const whiteboard = isWhiteboardTab(activeTab);
   // Read lazily from this browser (readLocalStorageSafe copes with no storage).
   const [prefs, setPrefsState] = useState<WhiteboardPrefs>(loadWhiteboardPrefs);
   const setPrefs = (next: WhiteboardPrefs) => {
@@ -108,32 +110,39 @@ export function useWhiteboard(deps: Deps) {
     beginDraw(whiteboardPenIntent(pen, next.recognise));
   };
 
-  // Entering an empty whiteboard puts the active pen in hand (D2): "pick up a
-  // pen and draw". A board with content opens on Select. Only when nothing
+  // Entering Draw mode on an empty tab puts the active pen in hand (D2): "pick up a
+  // pen and draw". A tab with content opens on Select. Only when nothing
   // else is held, so a mode the user chose survives.
-  // Leaving one puts a whiteboard pen down, so it cannot leak onto a diagram tab.
-  // "Entering" is a new active tab, or the open tab becoming a whiteboard
-  // (Quick Start on a fresh tab).
+  // "Entering" is a new active tab in Draw mode, or the open tab switched into it.
+  // Leaving a mode puts its tool down (docs/specs/007-editor/editor-modes.md "What a mode brings
+  // into focus"): a pen, the eraser or an armed shape never carries over into the other mode.
   const seenRef = useRef<string | null>(null);
+  const modeRef = useRef<boolean | null>(null);
   useEffect(() => {
     const key = `${activeTab.id}:${whiteboard}`;
     const entered = seenRef.current !== key;
     seenRef.current = key;
+    const switched = modeRef.current !== null && modeRef.current !== whiteboard;
+    modeRef.current = whiteboard;
+    const eraserCarried = switched && canvasTool === 'eraser';
     if (!whiteboard) {
-      // A whiteboard pen, the Path tool or a dock shape is put down: none exists on a diagram
-      // tab, and a dock shape would preview and be named the board's way there.
+      // A whiteboard pen, the Path tool or a dock shape is put down: none exists in Diagram
+      // mode, and a dock shape would preview and be named the board's way there.
       if (isWhiteboardOnlyIntent(pendingDraw)) cancelDraw();
+      if (eraserCarried) setCanvasTool('select');
       return;
     }
-    if (!entered || editsBlocked || pendingDraw) return;
-    // A whiteboard has no highlighter or format painter: one carried over from
-    // a diagram tab is put down, and the pen picked up in its place.
-    const heldElsewhere = canvasTool === 'highlighter' || canvasTool === 'format';
+    // A shape armed from the palette is Diagram mode's own: switching into Draw puts it down.
+    const shapeCarried = switched && !!pendingDraw && !isWhiteboardOnlyIntent(pendingDraw);
+    if (shapeCarried) cancelDraw();
+    // Draw mode has no highlighter or format painter, and the eraser does not come across a
+    // switch: each is put down, and the pen picked up in its place.
+    const heldElsewhere = canvasTool === 'highlighter' || canvasTool === 'format' || eraserCarried;
+    if (!entered) return;
+    if (heldElsewhere) setCanvasTool('select');
+    if (editsBlocked || (pendingDraw && !shapeCarried)) return;
     if (canvasTool !== 'select' && canvasTool !== 'pan' && !heldElsewhere) return;
-    if (activeTab.elements.length > 0) {
-      if (heldElsewhere) setCanvasTool('select');
-      return;
-    }
+    if (activeTab.elements.length > 0) return;
     armPen(prefs);
     // Runs on a tab change only; the rest is read at that moment.
     // eslint-disable-next-line react-hooks/exhaustive-deps

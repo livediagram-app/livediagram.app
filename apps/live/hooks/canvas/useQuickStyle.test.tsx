@@ -35,7 +35,7 @@ function setup(
   initial: Element[] = [stroke],
 ) {
   let elements: Element[] = initial;
-  const tab = { id: 't', name: 'Board', kind: 'whiteboard', elements } as unknown as Tab;
+  const tab = { id: 't', name: 'Board', opensIn: 'draw', elements } as unknown as Tab;
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
   });
@@ -44,6 +44,7 @@ function setup(
   const { result } = renderHook(() =>
     useQuickStyle({
       activeTab: tab,
+      drawMode: true,
       theme: defaultScheme('light'),
       selectionIds: new Set(selection),
       editsBlocked: false,

@@ -16,12 +16,13 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // previewed in the board's ink and named as the board names it; leaving the board puts it down,
 // as it puts a pen down, so a diagram never previews or names its next shape the board's way.
 
-const board: Tab = { id: 'wb', name: 'Board', kind: 'whiteboard', elements: [] } as unknown as Tab;
+const board: Tab = { id: 'wb', name: 'Board', opensIn: 'draw', elements: [] } as unknown as Tab;
 const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] } as unknown as Tab;
 
 function setup(tab: Tab, pendingDraw: PendingDraw | null) {
   const deps = {
     activeTab: tab,
+    drawMode: tab.opensIn === 'draw',
     canvasTool: 'select' as const,
     pendingDraw,
     editsBlocked: false,
@@ -61,7 +62,7 @@ describe('a whiteboard tool on a diagram tab', () => {
   ])('puts the board’s %s down on leaving the board', (_, intent) => {
     const { deps, hook } = setup(board, intent);
     expect(deps.cancelDraw).not.toHaveBeenCalled();
-    hook.rerender({ ...deps, activeTab: diagram });
+    hook.rerender({ ...deps, activeTab: diagram, drawMode: false });
     expect(deps.cancelDraw).toHaveBeenCalledTimes(1);
   });
 

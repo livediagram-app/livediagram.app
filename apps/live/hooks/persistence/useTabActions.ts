@@ -33,6 +33,8 @@ import type { useToast } from '@/hooks/ui/useToast';
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
+  // The viewer works on the active tab in Draw mode (docs/specs/007-editor/editor-modes.md).
+  drawMode: boolean;
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
@@ -165,6 +167,7 @@ export function useTabActions(deps: TabActionsDeps) {
   const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
     tabs,
     activeId,
+    drawMode: deps.drawMode,
     ownerId,
     documentId,
     replaceActiveTabContent,

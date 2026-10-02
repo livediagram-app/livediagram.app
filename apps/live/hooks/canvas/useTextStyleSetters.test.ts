@@ -15,8 +15,8 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
   },
 }));
 
-// A text box whose edits land through the setters, on a whiteboard or a diagram tab.
-function setup(kind: Tab['kind'], el: TextElement) {
+// A text box whose edits land through the setters, in Draw mode (true) or Diagram mode (false).
+function setup(drawMode: boolean, el: TextElement) {
   let els: Element[] = [el];
   const commit = (map: (els: Element[]) => Element[]) => {
     els = map(els);
@@ -26,7 +26,8 @@ function setup(kind: Tab['kind'], el: TextElement) {
       currentSelectionIds: () => new Set([el.id]),
       selectionPrimary: () => els[0]!,
       commit,
-      activeTab: { kind, font: undefined } as unknown as Tab,
+      activeTab: { font: undefined } as unknown as Tab,
+      drawMode,
     }),
   );
   return { setters: result.current, current: () => els[0] as TextElement };
@@ -46,7 +47,7 @@ const hello = (patch: Partial<TextElement> = {}): TextElement => ({
 // change to how the text is drawn.
 describe('useTextStyleSetters on a whiteboard text box', () => {
   it('re-hugs the box when the text size changes, and drops a Shift scale', () => {
-    const { setters, current } = setup('whiteboard', hello({ textScale: 2 }));
+    const { setters, current } = setup(true, hello({ textScale: 2 }));
     setters.setTextSizeSelected('md');
     // 5 characters at 22 px: 78.57 wide, rounded up, plus 8; 27.5 tall, rounded up, plus 4.
     expect(current()).toMatchObject({ textSize: 'md', width: 87, height: 32 });
@@ -54,19 +55,19 @@ describe('useTextStyleSetters on a whiteboard text box', () => {
   });
 
   it('re-hugs the box when bold is toggled', () => {
-    const { setters, current } = setup('whiteboard', hello());
+    const { setters, current } = setup(true, hello());
     setters.toggleTextStyleSelected('textBold');
     expect(current()).toMatchObject({ textBold: true, width: 68, height: 22 });
   });
 
   it('re-hugs the box when the font changes', () => {
-    const { setters, current } = setup('whiteboard', hello({ width: 200 }));
+    const { setters, current } = setup(true, hello({ width: 200 }));
     setters.setFontSelected('caveat');
     expect(current()).toMatchObject({ font: 'caveat', width: 58 });
   });
 
-  it('leaves a diagram tab text box its size', () => {
-    const { setters, current } = setup(undefined, hello({ width: 220, height: 64 }));
+  it('leaves a Diagram mode text box its size', () => {
+    const { setters, current } = setup(false, hello({ width: 220, height: 64 }));
     setters.setTextSizeSelected('lg');
     expect(current()).toMatchObject({ textSize: 'lg', width: 220, height: 64 });
   });

@@ -42,7 +42,8 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, isWhiteboardTab } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID } from '@livediagram/document';
+import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1086,6 +1087,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
+  // tool and rule gate keys on it, never on what the tab is.
+  const editorMode = useEditorMode(activeTab, { canEdit: !isReadOnly });
+  const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
@@ -1710,7 +1715,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const styleMemory = useStyleMemory({
     documentId,
     theme: activeTheme,
-    board: isWhiteboardTab(activeTab),
+    board: drawMode,
   });
   const liveActiveElements = () =>
     (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
@@ -1973,6 +1978,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useTabActions({
     tabs,
     activeId,
+    drawMode,
     documentList,
     ownerId: selfParticipant.id,
     documentId,
@@ -2313,6 +2319,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasTool,
     setCanvasTool,
     activeTab,
+    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -2437,6 +2444,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // eraser mode, and the dock presses turned into ordinary editor calls.
   const whiteboardDock = useWhiteboard({
     activeTab,
+    drawMode,
     canvasTool,
     pendingDraw,
     editsBlocked: createBlocked,
@@ -2573,6 +2581,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectionPrimary,
     selectedId,
     activeTab,
+    drawMode,
     activeId,
     editsBlocked,
     // Every style setter the context menu reaches records into style memory.
@@ -2598,6 +2607,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   const quickStyle = useQuickStyle({
     activeTab,
+    drawMode,
     theme: activeTheme,
     selectionIds: quickSelectionIds,
     editsBlocked,
@@ -2764,6 +2774,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     documentName,
     tabs,
     activeTab,
+    drawMode,
     commit,
     tickTabs,
     applyFormatFromSource,
@@ -2857,6 +2868,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginArrowLabelDrag,
   } = useEditorDrag({
     activeTab,
+    drawMode,
     layerInertIds,
     zoomRef,
     selectedId,
@@ -2927,6 +2939,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // "In the editor"): one commit at the pointer, selected, with its notice.
   const boardSceneInsert = useBoardSceneInsert({
     activeTab,
+    drawMode,
     editsBlocked,
     commit,
     setSelectedId,
@@ -3054,6 +3067,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // The person's editor mode on the active tab, for the mode switch and the canvas.
+    editorMode,
     whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).

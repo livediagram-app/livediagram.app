@@ -4,12 +4,7 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import {
-  canvasSurface,
-  DEFAULT_BUTTON_MODE,
-  isWhiteboardTab,
-  WHITEBOARD_INK,
-} from '@livediagram/document';
+import { canvasSurface, DEFAULT_BUTTON_MODE, WHITEBOARD_INK } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
@@ -359,7 +354,11 @@ export function EditorCanvasHost() {
     zenMode,
     whiteboardDock,
     drag,
+    editorMode,
   } = useEditorContext();
+  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
+  // rules into focus; the board look keys on it through hasBoardLook.
+  const drawMode = editorMode.mode === 'draw';
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
   // owner's libraries, then placed at the drop point.
   const { libraries } = useShapeLibraries();
@@ -429,7 +428,7 @@ export function EditorCanvasHost() {
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
   };
-  const backdrop = resolveTabBackdrop(activeTab, appearance);
+  const backdrop = resolveTabBackdrop(activeTab, editorMode.mode, appearance);
   // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
@@ -458,7 +457,7 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
-    whiteboard: isWhiteboardTab(activeTab),
+    whiteboard: drawMode,
     setContextMenu,
   });
 
@@ -554,13 +553,14 @@ export function EditorCanvasHost() {
         elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
+        editorMode={editorMode.mode}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={WHITEBOARD_INK[appearance]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
           drawnArrowAsShown(intent, startX, startY, endX, endY, {
             elements: activeTab.elements,
             theme: getTheme(activeTab.theme),
-            whiteboard: isWhiteboardTab(activeTab),
+            whiteboard: drawMode,
             styleNewElement,
             ink: WHITEBOARD_INK[appearance],
           })

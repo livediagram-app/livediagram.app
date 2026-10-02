@@ -46,7 +46,15 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
     data: {
       id,
       name: `Reference board (${tab})`,
-      tabs: [{ id: crypto.randomUUID(), name: 'Board', kind: tab, elements }],
+      // The whiteboard series is a general tab opening in Draw mode (docs/specs/007-editor/editor-modes.md).
+      tabs: [
+        {
+          id: crypto.randomUUID(),
+          name: 'Board',
+          ...(tab === 'whiteboard' ? { opensIn: 'draw' } : {}),
+          elements,
+        },
+      ],
     },
   });
   expect(res.ok(), `seeding the ${tab} board`).toBe(true);

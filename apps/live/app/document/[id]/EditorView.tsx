@@ -1,6 +1,6 @@
 'use client';
 
-import { isWhiteboardTab, truncateName } from '@livediagram/document';
+import { hasBoardLook, truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
@@ -193,9 +193,11 @@ export function EditorView() {
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  // A whiteboard has no theme (docs/specs/023-whiteboard/whiteboard.md "Appearance"): Default chrome.
-  const whiteboard = isWhiteboardTab(activeTab);
-  useEditorAccent(whiteboard ? undefined : activeTab.theme);
+  // The board look has no theme (docs/specs/023-whiteboard/whiteboard.md "Appearance"): Default
+  // chrome. Both follow the viewer's editor mode (docs/specs/007-editor/editor-modes.md).
+  const drawMode = ctx.editorMode.mode === 'draw';
+  const boardLook = hasBoardLook(ctx.editorMode.mode);
+  useEditorAccent(boardLook ? undefined : activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
@@ -221,8 +223,8 @@ export function EditorView() {
     !showSignInBanner &&
     !templateGridOpen &&
     !pendingDraw &&
-    // A whiteboard's dock is its own hint (docs/specs/023-whiteboard/whiteboard.md).
-    !whiteboard &&
+    // Draw mode's dock is its own hint (docs/specs/023-whiteboard/whiteboard.md).
+    !drawMode &&
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
@@ -230,7 +232,7 @@ export function EditorView() {
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
   const draftView = usePhotoDraftView();
-  const backdrop = resolveTabBackdrop(activeTab, appearance);
+  const backdrop = resolveTabBackdrop(activeTab, ctx.editorMode.mode, appearance);
   const shiftSelectedKind = !shiftSelected
     ? null
     : shiftSelected.type === 'arrow'
@@ -549,7 +551,7 @@ export function EditorView() {
             {zenMode ||
             embedMode ||
             minimalChrome ||
-            whiteboard ||
+            boardLook ||
             showSignInBanner ||
             showEmptyCanvasBanner ? null : (
               <ThemeModeBanner themeId={activeTab.theme} />

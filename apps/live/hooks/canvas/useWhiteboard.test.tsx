@@ -16,7 +16,7 @@ import {
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const board = (id = 'wb', over: Partial<Tab> = {}): Tab =>
-  ({ id, name: 'Board', kind: 'whiteboard', elements: [], ...over }) as Tab;
+  ({ id, name: 'Board', opensIn: 'draw', elements: [], ...over }) as Tab;
 const stroke = {
   id: 's1',
   type: 'freehand',
@@ -29,6 +29,7 @@ const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] }
 function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 'select' as const) {
   const deps = {
     activeTab: tab,
+    drawMode: tab.opensIn === 'draw',
     canvasTool: canvasTool as 'select' | 'eraser',
     pendingDraw,
     editsBlocked: false,
@@ -81,12 +82,43 @@ describe('useWhiteboard', () => {
     });
   });
 
-  it('puts the pen in hand when the open tab becomes a whiteboard (Quick Start)', () => {
+  it('puts the pen in hand when the open tab switches into Draw (or Quick Start makes a board)', () => {
     const blank = { id: 't2', name: 'Tab 2', kind: 'diagram', elements: [] } as Tab;
     const { deps, hook } = setup(blank);
     expect(deps.beginDraw).not.toHaveBeenCalled();
-    hook.rerender({ ...deps, activeTab: { ...blank, kind: 'whiteboard' } });
+    hook.rerender({ ...deps, drawMode: true });
     expect(deps.beginDraw).toHaveBeenCalledTimes(1);
+  });
+
+  // docs/specs/007-editor/editor-modes.md "What a mode brings into focus": leaving a mode puts its
+  // tool down; a pen, the eraser or an armed shape never carries over into the other mode.
+  it('puts the eraser down when switching out of Draw', () => {
+    const { deps, hook } = setup(board('wb', { elements: [stroke] }), null, 'eraser' as never);
+    hook.rerender({ ...deps, drawMode: false });
+    expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
+  });
+
+  it('puts the eraser down and the pen in hand when switching an empty tab into Draw', () => {
+    const blank = { id: 't3', name: 'Tab 3', kind: 'diagram', elements: [] } as Tab;
+    const { deps, hook } = setup(blank, null, 'eraser' as never);
+    hook.rerender({ ...deps, drawMode: true });
+    expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
+    expect(deps.beginDraw).toHaveBeenCalledTimes(1);
+  });
+
+  it('puts a palette shape down when switching into Draw, for Select on a tab with content', () => {
+    const tab = { id: 't4', name: 'Tab 4', kind: 'diagram', elements: [stroke] } as Tab;
+    const { deps, hook } = setup(tab, { type: 'shape', kind: 'square' });
+    expect(deps.cancelDraw).not.toHaveBeenCalled();
+    hook.rerender({ ...deps, drawMode: true });
+    expect(deps.cancelDraw).toHaveBeenCalledTimes(1);
+    expect(deps.beginDraw).not.toHaveBeenCalled();
+  });
+
+  it('keeps the eraser in hand moving between two tabs in Draw mode', () => {
+    const { deps, hook } = setup(board('a', { elements: [stroke] }), null, 'eraser' as never);
+    hook.rerender({ ...deps, activeTab: board('b', { elements: [stroke] }) });
+    expect(deps.setCanvasTool).not.toHaveBeenCalled();
   });
 
   it('leaves a held mode alone when a whiteboard opens', () => {

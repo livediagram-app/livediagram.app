@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
   defaultScheme,
-  isWhiteboardTab,
+  opensInOf,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -20,7 +20,7 @@ import { useStyleMemory } from './useStyleMemory';
 
 const theme = defaultScheme('light');
 const diagram = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] } as unknown as Tab;
-const board = { id: 'wb', name: 'Board', kind: 'whiteboard', elements: [] } as unknown as Tab;
+const board = { id: 'wb', name: 'Board', opensIn: 'draw', elements: [] } as unknown as Tab;
 const rectangle = whiteboardShapeIntent('rectangle');
 
 type Props = { documentId: string; tab: Tab; intent: PendingDraw | null };
@@ -28,9 +28,12 @@ type Props = { documentId: string; tab: Tab; intent: PendingDraw | null };
 function setup(initial: Props) {
   return renderHook(
     ({ documentId, tab, intent }: Props) => {
-      const memory = useStyleMemory({ documentId, theme, board: isWhiteboardTab(tab) });
+      // The viewer's editor mode, as the editor resolves it: here the tab's opening mode.
+      const drawMode = opensInOf(tab) === 'draw';
+      const memory = useStyleMemory({ documentId, theme, board: drawMode });
       const quick = useQuickStyle({
         activeTab: tab,
+        drawMode,
         theme,
         selectionIds: new Set(),
         editsBlocked: false,

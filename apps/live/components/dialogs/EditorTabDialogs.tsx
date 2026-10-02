@@ -56,6 +56,7 @@ export function EditorTabDialogs() {
     rescopeShareLink,
     setDocumentSharePassword,
     setShareDialogOpen,
+    editorMode,
   } = useEditorContext();
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
@@ -77,12 +78,15 @@ export function EditorTabDialogs() {
           // takes the resolved backdrop rather than the stored one — and, from
           // it, the ink for every element that carries no colours of its own (a
           // whiteboard's board ink included, lib/export-as-seen).
-          tab={tabAsSeen({
-            ...activeTab,
-            ...(exportScope === 'selection'
-              ? { elements: activeTab.elements.filter((el) => multiSelectedIds.has(el.id)) }
-              : {}),
-          })}
+          tab={tabAsSeen(
+            {
+              ...activeTab,
+              ...(exportScope === 'selection'
+                ? { elements: activeTab.elements.filter((el) => multiSelectedIds.has(el.id)) }
+                : {}),
+            },
+            editorMode.mode,
+          )}
           scope={exportScope}
           documentName={documentName}
           imageContext={imageContext}

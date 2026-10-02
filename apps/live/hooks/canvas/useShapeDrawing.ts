@@ -18,7 +18,7 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useRef, useState } from 'react';
-import { createFreehand, isWhiteboardTab, type Element, type Tab } from '@livediagram/document';
+import { createFreehand, type Element, type Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -48,6 +48,9 @@ type ShapeDrawingDeps = {
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): what is drawn is
+  // written the Draw way (unpainted ink, no fill, hugging text, a sticky open for typing).
+  drawMode: boolean;
   // Every draw lands through the functional `commit` (live elements +
   // activity-log emit): the commit closure is frozen for the whole
   // gesture, so a wholesale write of gesture-start elements would
@@ -73,6 +76,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     canvasTool,
     setCanvasTool,
     activeTab,
+    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -143,10 +147,10 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
-    // A whiteboard shape starts as plain ink, unfilled (a pen never colours
-    // it), then wears the style chosen for its tool, which the board keeps
-    // apart from its diagram tabs' (docs/specs/023-whiteboard/whiteboard.md "Shapes").
-    const whiteboard = isWhiteboardTab(activeTab);
+    // A shape drawn in Draw mode starts as plain ink, unfilled (a pen never colours
+    // it), then wears the style chosen for its tool, which Draw mode keeps
+    // apart from Diagram mode's (docs/specs/023-whiteboard/whiteboard.md "Shapes").
+    const whiteboard = drawMode;
     const dress = <T extends Element>(el: T): T =>
       styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
@@ -188,7 +192,16 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       return;
     }
     const sized = dress(
-      buildDrawnBoxed(intent, startX, startY, endX, endY, inheritSizeRef.current, activeTab),
+      buildDrawnBoxed(
+        intent,
+        startX,
+        startY,
+        endX,
+        endY,
+        inheritSizeRef.current,
+        activeTab,
+        drawMode,
+      ),
     );
     // Frames don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every frame painted

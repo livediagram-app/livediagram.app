@@ -40,6 +40,7 @@ function setup(active: Partial<Tab> = {}, over: Partial<BoardSceneImportDeps> = 
   const deps: BoardSceneImportDeps = {
     tabs: [{ id: 'a', name: 'A', elements: [], ...active } as Tab],
     activeId: 'a',
+    drawMode: false,
     ownerId: 'o',
     documentId: 'doc-1',
     replaceActiveTabContent: (t) => calls.replaced.push(t),
@@ -79,7 +80,7 @@ describe('importScenesAsNewDocuments', () => {
     expect(retro!.tabs).toHaveLength(1);
     expect(retro!.tabs[0]).toMatchObject({
       name: 'Whiteboard',
-      kind: 'whiteboard',
+      opensIn: 'draw',
       backgroundPattern: 'blank',
       templateChosen: true,
     });
@@ -177,12 +178,12 @@ describe('importSceneIntoActiveTab', () => {
     expect(calls.replaced[0]!.elements[0]).toMatchObject({ fillColor: 'transparent' });
   });
 
-  it('keeps a whiteboard’s own pattern unless the scene names one', async () => {
-    const board = setup({ kind: 'whiteboard', backgroundPattern: 'grid' });
+  it('keeps the tab’s own pattern in Draw mode unless the scene names one', async () => {
+    const board = setup({ backgroundPattern: 'grid' }, { drawMode: true });
     await board.api.importSceneIntoActiveTab(boardScene([square]));
     expect(board.calls.replaced[0]!.backgroundPattern).toBeUndefined();
     expect(board.calls.replaced[0]!.elements[0]).not.toHaveProperty('fillColor');
-    const named = setup({ kind: 'whiteboard' });
+    const named = setup({}, { drawMode: true });
     await named.api.importSceneIntoActiveTab(
       boardScene([square], { background: { pattern: 'dots' } }),
     );

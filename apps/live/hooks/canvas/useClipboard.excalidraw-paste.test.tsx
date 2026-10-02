@@ -31,7 +31,7 @@ function harness(
     editingId?: string | null;
     isReadOnly?: boolean;
     withInsert?: boolean;
-    kind?: Tab['kind'];
+    opensIn?: Tab['opensIn'];
   } = {},
 ) {
   let elements: Element[] = [];
@@ -47,7 +47,7 @@ function harness(
       multiSelectedIds: new Set(),
       editingId: options.editingId ?? null,
       setEditingId,
-      activeTab: { id: 't', name: 'Board', kind: options.kind, elements } as Tab,
+      activeTab: { id: 't', name: 'Board', opensIn: options.opensIn, elements } as Tab,
       commit: (m) => {
         elements = m(elements);
       },
@@ -101,10 +101,10 @@ afterEach(() => {
 });
 
 describe('pasting an Excalidraw copy on the canvas', () => {
-  it.each([['whiteboard' as const], [undefined]])(
-    'hands the scene to the board-scene insert (tab kind %s)',
-    async (kind) => {
-      const h = harness({ kind });
+  it.each([['draw' as const], [undefined]])(
+    'hands the scene to the board-scene insert (tab opening in %s)',
+    async (opensIn) => {
+      const h = harness({ opensIn });
       const event = paste(document.body, { 'text/plain': copy() });
       expect(event.defaultPrevented).toBe(true);
       await vi.waitFor(() => expect(h.insertBoardScene).toHaveBeenCalledTimes(1));

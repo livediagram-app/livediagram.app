@@ -70,12 +70,13 @@ const KINDS: [string, () => Element][] = [
   ['avatar component', () => createComponent('avatar', 200, 100, COLOURS)],
 ];
 
-function harness(element: Element, kind: TabKind = 'diagram') {
+function harness(element: Element, kind: TabKind = 'diagram', drawMode = false) {
   let elements: Element[] = [element];
   const deps = {
     get activeTab() {
       return { id: 't', name: 'Tab', kind, elements } as Tab;
     },
+    drawMode,
     zoomRef: { current: 1 },
     selectedId: element.id,
     setSelectedId: vi.fn(),
@@ -175,19 +176,20 @@ describe('Shift resize, every boxed kind', () => {
   });
 });
 
-describe('Shift resize, every tab kind', () => {
-  it.each(['diagram', 'whiteboard', 'event-storming'] as const)(
-    'keeps the ratio on a %s tab',
-    (kind) => {
-      syncFrames();
-      const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
-      const h = harness(el, kind);
-      h.press('resize-ne');
-      move(10, -80, true);
-      expect(ratio(h.current())).toBeCloseTo(2, 6);
-      release();
-    },
-  );
+describe('Shift resize, every tab kind and editor mode', () => {
+  it.each([
+    ['a diagram tab', 'diagram', false],
+    ['a tab in Draw mode', 'diagram', true],
+    ['an event-storming board', 'event-storming', false],
+  ] as const)('keeps the ratio on %s', (_, kind, drawMode) => {
+    syncFrames();
+    const el = { ...createShape('square', 0, 0), width: 200, height: 100 };
+    const h = harness(el, kind, drawMode);
+    h.press('resize-ne');
+    move(10, -80, true);
+    expect(ratio(h.current())).toBeCloseTo(2, 6);
+    release();
+  });
 });
 
 describe('Shift pressed or released mid-drag', () => {

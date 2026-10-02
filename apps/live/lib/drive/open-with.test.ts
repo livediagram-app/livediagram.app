@@ -163,7 +163,7 @@ describe('a mirrored whiteboard', () => {
     };
     const content = documentToEnvelopeText(
       { id: 'd1', name: 'Board', presentation: null },
-      [{ id: 't1', name: 'Board', kind: 'whiteboard', elements: [stroke] }],
+      [{ id: 't1', name: 'Board', opensIn: 'draw', elements: [stroke] }],
       1,
     );
     const id = await importOpenWithCopy(

@@ -48,10 +48,9 @@ describe('getTheme under an appearance', () => {
 });
 
 describe('resolveTabBackdrop', () => {
-  it('paints a whiteboard board in both appearances, ignoring the stored theme', () => {
+  it('paints the board in Draw mode in both appearances, ignoring the stored theme', () => {
     // docs/specs/023-whiteboard/whiteboard.md "Appearance": the board ignores any stored theme or colour.
     const t = tab({
-      kind: 'whiteboard',
       theme: 'midnight',
       backgroundColor: '#fde68a',
       patternColor: '#f59e0b',
@@ -59,32 +58,39 @@ describe('resolveTabBackdrop', () => {
       backgroundOpacity: 0.4,
     });
     setAppearance('light');
-    expect(resolveTabBackdrop(t)).toEqual({
+    expect(resolveTabBackdrop(t, 'draw')).toEqual({
       backgroundColor: WHITEBOARD_BOARD.light,
       patternColor: WHITEBOARD_PATTERN.light,
       backgroundPattern: 'graph',
       backgroundOpacity: 1,
     });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t)).toMatchObject({
+    expect(resolveTabBackdrop(t, 'draw')).toMatchObject({
       backgroundColor: WHITEBOARD_BOARD.dark,
       patternColor: WHITEBOARD_PATTERN.dark,
     });
   });
 
-  it('keeps a whiteboard stored without a pattern on Plain, as it always showed', () => {
-    expect(resolveTabBackdrop(tab({ kind: 'whiteboard' })).backgroundPattern).toBe('blank');
+  it('keeps a tab stored without a pattern on Plain in Draw mode, as a board always showed', () => {
+    expect(resolveTabBackdrop(tab(), 'draw').backgroundPattern).toBe('blank');
+  });
+
+  // docs/specs/007-editor/editor-modes.md: the look follows the viewer's editor mode, never what
+  // the tab opens in.
+  it('paints a tab that opens in Draw as itself for a viewer in Diagram mode', () => {
+    const t = tab({ opensIn: 'draw', theme: 'slate', backgroundColor: '#fdf2f8' });
+    expect(resolveTabBackdrop(t, 'diagram').backgroundColor).toBe('#fdf2f8');
   });
 
   it('paints a Default tab in the viewer’s appearance', () => {
     const t = tab({ theme: 'brand', backgroundColor: '#ffffff', patternColor: '#cbd5e1' });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t)).toMatchObject({
+    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
       backgroundColor: '#0d121a',
       patternColor: '#1c2735',
     });
     setAppearance('light');
-    expect(resolveTabBackdrop(t)).toMatchObject({
+    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
       backgroundColor: '#ffffff',
       patternColor: '#cbd5e1',
     });
@@ -96,12 +102,12 @@ describe('resolveTabBackdrop', () => {
     // point of merging the two schemes is lost.
     const t = tab({ theme: 'brand', backgroundColor: '#0d121a', patternColor: '#1c2735' });
     setAppearance('light');
-    expect(resolveTabBackdrop(t).backgroundColor).toBe('#ffffff');
+    expect(resolveTabBackdrop(t, 'diagram').backgroundColor).toBe('#ffffff');
   });
 
   it('paints an unthemed tab as Default', () => {
     setAppearance('dark');
-    expect(resolveTabBackdrop(tab()).backgroundColor).toBe('#0d121a');
+    expect(resolveTabBackdrop(tab(), 'diagram').backgroundColor).toBe('#0d121a');
   });
 
   it('never overrides a hand-picked canvas colour', () => {
@@ -109,7 +115,7 @@ describe('resolveTabBackdrop', () => {
     // chrome, in both directions.
     const t = tab({ theme: 'brand', backgroundColor: '#fde68a', patternColor: '#f59e0b' });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t)).toMatchObject({
+    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
       backgroundColor: '#fde68a',
       patternColor: '#f59e0b',
     });
@@ -126,7 +132,7 @@ describe('resolveTabBackdrop', () => {
       backgroundOpacity: 0.8,
     });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t)).toMatchObject({
+    expect(resolveTabBackdrop(t, 'diagram')).toMatchObject({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.8,
     });
@@ -135,7 +141,7 @@ describe('resolveTabBackdrop', () => {
   it('leaves a tab on any other scheme untouched', () => {
     const t = tab({ theme: 'slate', backgroundColor: '#fdf2f8', patternColor: '#fbcfe8' });
     setAppearance('dark');
-    expect(resolveTabBackdrop(t).backgroundColor).toBe('#fdf2f8');
+    expect(resolveTabBackdrop(t, 'diagram').backgroundColor).toBe('#fdf2f8');
   });
 });
 
@@ -143,7 +149,7 @@ describe('Default never bakes a colour onto an element', () => {
   it('adds an element with no colours of its own, in either appearance', () => {
     for (const appearance of ['light', 'dark'] as const) {
       setAppearance(appearance);
-      const t = resolveTabBackdrop(tab({ theme: 'brand' }));
+      const t = resolveTabBackdrop(tab({ theme: 'brand' }), 'diagram');
       const colours = deriveNewBoxedColours(createShape('square', 0, 0), {
         backgroundColor: t.backgroundColor,
         patternColor: t.patternColor,

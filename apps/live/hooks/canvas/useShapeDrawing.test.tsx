@@ -24,6 +24,7 @@ function setup() {
         canvasTool: tool,
         setCanvasTool: vi.fn(),
         activeTab: { id: 't1', name: 'Tab', elements: [] } as unknown as Tab,
+        drawMode: false,
         commit: vi.fn(),
         setSelectedId,
         setMultiSelectedIds,

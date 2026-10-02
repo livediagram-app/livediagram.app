@@ -14,7 +14,8 @@ import {
   deriveShapeColours,
   deriveTextColorForBg,
   isDefaultSchemeBackdrop,
-  isWhiteboardTab,
+  hasBoardLook,
+  type EditorMode,
   schemeBackdrop,
   WHITEBOARD_BOARD,
   WHITEBOARD_UNSET_PATTERN,
@@ -111,14 +112,15 @@ export function resolveTabBackdrop(
   tab: Pick<
     Tab,
     'theme' | 'backgroundColor' | 'backgroundPattern' | 'patternColor' | 'backgroundOpacity'
-  > &
-    Partial<Pick<Tab, 'kind'>>,
+  >,
+  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md), which decides the look.
+  mode: EditorMode,
   appearance: Appearance = getResolvedAppearance(),
 ): ResolvedBackdrop {
-  // A whiteboard (docs/specs/023-whiteboard/whiteboard.md "Appearance") has no theme: it is always the
-  // Default scheme's board for the viewer's appearance. Only its pattern
-  // (Plain / Dots / Grid) is the board's own.
-  if (isWhiteboardTab(tab)) {
+  // The board look (docs/specs/023-whiteboard/whiteboard.md "Appearance") has no theme: it is
+  // always the Default scheme's board for the viewer's appearance. Only its pattern
+  // (Plain / Dots / Grid) is the tab's own.
+  if (hasBoardLook(mode)) {
     return {
       backgroundColor: WHITEBOARD_BOARD[appearance],
       patternColor: WHITEBOARD_PATTERN[appearance],

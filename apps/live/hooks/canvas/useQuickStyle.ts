@@ -17,7 +17,7 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { isPenColourName, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { isPenColourName, WHITEBOARD_INK } from '@livediagram/document';
 import {
   applyBoardStroke,
   applyBoardTextColour,
@@ -85,6 +85,8 @@ export type QuickStyleApi = {
 
 export function useQuickStyle(deps: {
   activeTab: Tab;
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): the board rows show.
+  drawMode: boolean;
   theme: ThemeDefinition;
   selectionIds: ReadonlySet<string>;
   editsBlocked: boolean;
@@ -111,10 +113,10 @@ export function useQuickStyle(deps: {
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
-  // On a whiteboard (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays") the
-  // defaults read as the board's ink, and the style memory is the board's own
-  // (useStyleMemory's board scope), never a diagram tab's.
-  const whiteboard = isWhiteboardTab(activeTab);
+  // In Draw mode (docs/specs/023-whiteboard/whiteboard.md "The quick style panel stays") the
+  // defaults read as the board's ink, and the style memory is Draw mode's own
+  // (useStyleMemory's board scope), never Diagram mode's.
+  const whiteboard = deps.drawMode;
   const { appearance } = useAppearance();
   const ink = WHITEBOARD_INK[appearance];
   const held = deps.pen?.held ?? null;

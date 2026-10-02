@@ -1,6 +1,5 @@
 import {
   isBoxed,
-  isWhiteboardTab,
   type Element,
   type Tab,
   type TextAlignX,
@@ -15,9 +14,11 @@ type TextStyleSetterDeps = {
   currentSelectionIds: () => Set<string>;
   selectionPrimary: () => Element | null;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // The tab being edited: on a whiteboard a text box hugs its text through every change to how
-  // it is drawn (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
-  activeTab: Pick<Tab, 'kind' | 'font'>;
+  // The tab being edited, for its font.
+  activeTab: Pick<Tab, 'font'>;
+  // In Draw mode (docs/specs/007-editor/editor-modes.md) a text box hugs its text through every
+  // change to how it is drawn (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+  drawMode: boolean;
 };
 
 // The selection-wide label text setters (size / font / alignment + the
@@ -30,11 +31,12 @@ export function useTextStyleSetters({
   selectionPrimary,
   commit,
   activeTab,
+  drawMode,
 }: TextStyleSetterDeps) {
-  // A text-metrics change, committed with every whiteboard text box it touched re-hugged to its
+  // A text-metrics change, committed with every Draw mode text box it touched re-hugged to its
   // text in the same step.
   const commitHugging = (ids: Set<string>, map: (els: Element[]) => Element[]) => {
-    const whiteboard = isWhiteboardTab(activeTab);
+    const whiteboard = drawMode;
     const measure = measureDrawnText(activeTab.font);
     commit((els) =>
       map(els).map((el) =>

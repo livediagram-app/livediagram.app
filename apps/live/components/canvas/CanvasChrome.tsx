@@ -1,4 +1,4 @@
-import { ES_LANES, isWhiteboardTab } from '@livediagram/document';
+import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -306,9 +306,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: always, on a phone.
   const toolbarActive = toolbarLayout === true;
-  // A whiteboard trades the palette, the strip and the theme controls for its
+  // Draw mode trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-whiteboard/whiteboard.md "What a whiteboard shows").
-  const whiteboard = isWhiteboardTab({ kind: props.tabKind });
+  const whiteboard = props.editorMode === 'draw';
   // The strip only renders for an editor (not read-only) with the chrome up,
   // and never on a whiteboard.
   const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;

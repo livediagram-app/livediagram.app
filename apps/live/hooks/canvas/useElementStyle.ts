@@ -52,6 +52,8 @@ type EditorElementStyleDeps = {
   selectedId: string | null;
   // The active tab — read for its theme (resetColors) and id.
   activeTab: Tab;
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): text hugs.
+  drawMode: boolean;
   activeId: string;
   // True when edits are disallowed (read-only role / locked tab). The
   // colour + opacity setters no-op when set.
@@ -170,7 +172,13 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setTextAlignSelected,
     setLaneUprightTitleSelected,
     toggleTextStyleSelected,
-  } = useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit, activeTab });
+  } = useTextStyleSetters({
+    currentSelectionIds,
+    selectionPrimary,
+    commit,
+    activeTab,
+    drawMode: deps.drawMode,
+  });
 
   // The debounced colour / opacity policy + Reset-to-theme — see
   // useColorStyleSetters (the fifth setter sibling).
