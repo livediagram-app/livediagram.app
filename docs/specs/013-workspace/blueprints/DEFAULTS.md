@@ -31,3 +31,17 @@ One row per default applied where a spec is silent or qualitative.
 | D25 | default-folders    | Whether an empty-string or unparsable PUT body is a folder             | No: `default_folder_invalid`, as for a missing `folderId`                                    |
 | D27 | default-folders    | Where the editor-mode enum lives before the editor-modes branch merges | `packages/document/src/editor-mode.ts`, the path and names that branch owns                  |
 | D28 | default-folders    | How a stored mode, tab kind or template family outside its list reads  | As null (unknown), so a retired value never reaches a client as a live option                |
+| D41 | explorer-filters   | Which words can be reported as a bad token                             | Only token-shaped words, `^[A-Za-z][A-Za-z-]*:`; `10:30` is plain text, unreported           |
+| D42 | explorer-filters   | How text compares with a name                                          | Each word a substring of the name, both folded: NFD, combining marks stripped, lower case    |
+| D43 | explorer-filters   | Where an over-long lens is cut                                         | At the last whitespace within 512 characters; one over-long word is cut at 512               |
+| D44 | explorer-filters   | What "Last 12 months" counts back to                                   | The same local date and time 12 calendar months before now                                   |
+| D45 | explorer-filters   | Which space a document in this browser is in                           | `mine`: it is the reader's own                                                               |
+| D46 | explorer-filters   | The order of space suggestions                                         | My documents, Shared with me, then teams by name A to Z                                      |
+| D47 | explorer-filters   | Which values a typed value start offers                                | Those whose value or label starts with it, case-insensitive                                  |
+| D48 | explorer-filters   | Spacing and caret after an accepted value                              | One space after the token, caret after it; the field's other spacing collapses to one space  |
+| D49 | explorer-filters   | When the result count is announced                                     | 400 ms after the last change (`LENS_SETTLE_MS`)                                              |
+| D50 | explorer-filters   | Whether the field grows when pills overflow                            | No: one line high, pills and text scroll sideways, so nothing below shifts                   |
+| D51 | explorer-filters   | A caret outside the input                                              | Clamped to `[0, input.length]`                                                               |
+| D52 | explorer-filters   | How many suggestions show at once                                      | 8 (`LENS_MAX_SUGGESTIONS`)                                                                   |
+| D53 | explorer-filters   | Whether a team id keeps its case                                       | Yes, and compares exactly: keys and fixed values are lower-cased, minted ids are not         |
+| D54 | explorer-filters   | Where a chip writes a token when the string has none                   | First, before the text words: the canonical place for tokens                                 |
