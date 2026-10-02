@@ -27,6 +27,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/e2e/perf/budget.ts`                            | `evaluateBudget`, `budgetTable` and the budget constants (pure)                     |
 | `apps/live/e2e/perf/budget-report.ts`                     | `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue |
 | `apps/live/e2e/perf/nightly.mjs`                          | The nightly run's I/O: `previous` and `report`                                      |
+| `apps/live/e2e/perf/calibrate.ts`                         | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`    |
 | `apps/live/e2e/perf/trace-tasks.ts`                       | `mainThreadTasks`: the renderer main thread's task durations from a trace           |
 | `apps/live/e2e/perf/canvas.perf.ts`                       | The probe: seeds, runs each gesture under a trace, writes the report                |
 | `.github/workflows/canvas-perf.yml`                       | The nightly run and the budget issue                                                |
@@ -196,7 +197,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   raster threads are not counted. A drag's median frame comes from an in-page
   `requestAnimationFrame` recorder; the idle row runs without it. Measured values are shown
   rounded up.
-- For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at 4, it runs:
+- Before anything else it calibrates (`calibrate.ts`): `benchmarkInPage` (a fixed DOM, layout, JS
+  and JSON workload, its median of seven runs) on five fresh blank pages, unthrottled; the fastest
+  is the machine's speed (D70). `calibratedThrottle(benchMs)` gives
+  `rate = TARGET_SLOWDOWN × REFERENCE_BENCH_MS / benchMs`, or `1` with `slowerThanTarget` when that
+  is under 1. The report opens with the throttle, the benchmark and the reference;
+  `calibration.json` keeps them.
+- For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at the calibrated
+  rate, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
   deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
   diagram), hover (40 moves). Each runs under a `devtools.timeline` trace and an in-page frame
@@ -411,23 +419,24 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 
 ## Constants and configuration
 
-| Constant                             | Value        | Provenance                                         | Safe range        |
-| ------------------------------------ | ------------ | -------------------------------------------------- | ----------------- |
-| `WHEEL_SETTLE_MS`                    | 150          | D62                                                | 100–300           |
-| `MAP_REDRAW_MIN_MS`                  | 250          | Spec                                               | Spec-fixed        |
-| `ELEMENT_GRID_CELL`                  | 256          | D63                                                | 128–1024          |
-| `ELEMENT_GRID_MAX_CELLS`             | 64           | D64                                                | 16–1024           |
-| `REFERENCE_SEED`                     | 1            | D65                                                | Any integer       |
-| `REFERENCE_COUNT`                    | 1000         | Spec                                               | Spec-fixed        |
-| `REFERENCE_AREA`                     | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed        |
-| `THROTTLE` (`canvas.perf.ts`)        | 4            | Spec                                               | Spec-fixed        |
-| `LONG_TASK_MS`                       | 50           | Spec                                               | Spec-fixed        |
-| `DRAG_MEDIAN_FRAME_MS`               | 33           | Spec                                               | Spec-fixed        |
-| `SELECT_TASK_MS`                     | 100          | Spec                                               | Spec-fixed        |
-| `OPEN_INTERACTIVE_MS`                | 3000         | Spec                                               | Spec-fixed        |
-| `IDLE_WORK_MS`                       | 5            | D66                                                | 0–16              |
-| `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                | Any off-peak time |
-| `retention-days` (`canvas-perf.yml`) | 14           | Spec                                               | Spec-fixed        |
+| Constant                             | Value        | Provenance                                         | Safe range                       |
+| ------------------------------------ | ------------ | -------------------------------------------------- | -------------------------------- |
+| `WHEEL_SETTLE_MS`                    | 150          | D62                                                | 100–300                          |
+| `MAP_REDRAW_MIN_MS`                  | 250          | Spec                                               | Spec-fixed                       |
+| `ELEMENT_GRID_CELL`                  | 256          | D63                                                | 128–1024                         |
+| `ELEMENT_GRID_MAX_CELLS`             | 64           | D64                                                | 16–1024                          |
+| `REFERENCE_SEED`                     | 1            | D65                                                | Any integer                      |
+| `REFERENCE_COUNT`                    | 1000         | Spec                                               | Spec-fixed                       |
+| `REFERENCE_AREA`                     | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed                       |
+| `TARGET_SLOWDOWN`                    | 4            | Spec                                               | Spec-fixed                       |
+| `REFERENCE_BENCH_MS`                 | 13.6         | Measured on the reference machine, quiet (D70)     | Re-measured only with the budget |
+| `LONG_TASK_MS`                       | 50           | Spec                                               | Spec-fixed                       |
+| `DRAG_MEDIAN_FRAME_MS`               | 33           | Spec                                               | Spec-fixed                       |
+| `SELECT_TASK_MS`                     | 100          | Spec                                               | Spec-fixed                       |
+| `OPEN_INTERACTIVE_MS`                | 3000         | Spec                                               | Spec-fixed                       |
+| `IDLE_WORK_MS`                       | 5            | D66                                                | 0–16                             |
+| `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                | Any off-peak time                |
+| `retention-days` (`canvas-perf.yml`) | 14           | Spec                                               | Spec-fixed                       |
 
 ## Defaults ledger
 

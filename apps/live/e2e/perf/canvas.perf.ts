@@ -9,18 +9,25 @@ import {
   ownerHeaders,
   test,
 } from '../fixtures';
+import {
+  REFERENCE_BENCH_MS,
+  TARGET_SLOWDOWN,
+  benchmarkInPage,
+  calibratedThrottle,
+  type Calibration,
+} from './calibrate';
 import { budgetTable, evaluateBudget, type Gesture, type Measurement } from './budget';
 import { buildReferenceBoard } from './reference-board';
 import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
 // The canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring";
 // docs/instructions/trace-a-canvas-gesture.md): the reference board on a whiteboard and a diagram, at
-// fit and at 100%, every gesture traced at 4x CPU, judged against the budget. It reports and never
+// fit and at 100%, every gesture traced with the CPU slowed to the reference speed (calibrate.ts),
+// judged against the budget. It reports and never
 // fails on a budget miss; a harness error (seeding, the stack, a missing element) does fail it.
 // Run with `pnpm --filter @livediagram/live perf:canvas`.
 
 const OUT = 'test-results/perf';
-const THROTTLE = 4;
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const VIEW = { width: 1440, height: 900 };
@@ -46,7 +53,21 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
   return id;
 }
 
-async function openBoard(browser: Browser, owner: string, id: string) {
+// The machine's speed: the fastest of five fresh blank pages' benchmark medians, unthrottled.
+// Interference (other processes, a busy core, the first page's warm-up) only ever slows a run, so the
+// fastest is the machine's own speed.
+async function benchmark(browser: Browser): Promise<number> {
+  const runs: number[] = [];
+  for (let i = 0; i < 5; i++) {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    runs.push(await page.evaluate(benchmarkInPage));
+    await page.close();
+  }
+  return Math.min(...runs);
+}
+
+async function openBoard(browser: Browser, owner: string, id: string, throttle: number) {
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark' });
   await ctx.addInitScript(
     ({ o, sig }) => {
@@ -65,7 +86,7 @@ async function openBoard(browser: Browser, owner: string, id: string) {
   );
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
   await page.goto(`/document/${id}`);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 60_000 });
   await page.locator('[data-element-id="ref-0"]').first().waitFor({ timeout: 60_000 });
@@ -292,14 +313,23 @@ async function measureZoom(
 }
 
 test('canvas performance budget', async ({ browser, baseURL, page }) => {
-  // A CI runner at 4x CPU takes about 17 minutes; a laptop about 4.
+  // A hosted runner takes about 17 minutes; a fast desktop about 4.
   test.setTimeout(40 * 60_000);
   mkdirSync(`${OUT}/traces`, { recursive: true });
+  const benchMs = await benchmark(browser);
+  const calibration: Calibration = calibratedThrottle(benchMs);
+  const speed =
+    `Throttled ${calibration.rate.toFixed(2)}× (benchmark ${benchMs.toFixed(1)} ms; the reference, ` +
+    `${REFERENCE_BENCH_MS} ms, throttled ${TARGET_SLOWDOWN}×)` +
+    (calibration.slowerThanTarget
+      ? ': this machine is slower than the reference speed, so these numbers read harsher than the budget.'
+      : '.');
+  process.stdout.write(`[canvas-perf] ${speed}\n`);
   const owner = await mintSignedGuest(page.request);
   const measurements: Measurement[] = [];
   for (const tab of ['whiteboard', 'diagram'] as const) {
     const id = await seed(page, baseURL!, owner, tab);
-    const board = await openBoard(browser, owner, id);
+    const board = await openBoard(browser, owner, id, calibration.rate);
     measurements.push({
       tab,
       zoom: 'fit',
@@ -314,8 +344,9 @@ test('canvas performance budget', async ({ browser, baseURL, page }) => {
   const rows = evaluateBudget(measurements);
   const table = budgetTable(rows);
   writeFileSync(`${OUT}/canvas-perf.json`, JSON.stringify(rows, null, 2));
-  writeFileSync(`${OUT}/canvas-perf.md`, `${table}\n`);
+  writeFileSync(`${OUT}/canvas-perf.md`, `${speed}\n\n${table}\n`);
+  writeFileSync(`${OUT}/calibration.json`, JSON.stringify({ benchMs, ...calibration }, null, 2));
   process.stdout.write(
-    `\n${table}\n\n${rows.filter((r) => !r.pass).length} of ${rows.length} rows over budget\n`,
+    `\n${speed}\n\n${table}\n\n${rows.filter((r) => !r.pass).length} of ${rows.length} rows over budget\n`,
   );
 });
