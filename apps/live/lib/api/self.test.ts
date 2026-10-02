@@ -45,3 +45,45 @@ describe('the participant the page already knows', () => {
     expect(calls.filter((c) => c.startsWith('GET'))).toHaveLength(1);
   });
 });
+
+// docs/specs/015-api/api.md: the api answers the caller's own absent profile with { participant: null },
+// which it can only tell when the load says who is asking.
+describe('loading your own profile before you have saved one', () => {
+  let requests: { url: string; headers: Headers }[];
+
+  beforeEach(() => {
+    requests = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string, init?: RequestInit) => {
+        requests.push({ url: String(url), headers: new Headers(init?.headers) });
+        return Promise.resolve(
+          new Response(JSON.stringify({ participant: null }), { status: 200 }),
+        );
+      }),
+    );
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('asks as yourself and reads no profile as null', async () => {
+    expect(await apiLoadSelf('p-fresh')).toBeNull();
+    expect(requests).toHaveLength(1);
+    expect(requests[0]!.headers.get('X-Owner-Id')).toBe('p-fresh');
+  });
+
+  it('still loads a signed-in profile, anonymously, while the session token is unavailable', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const participant = { id: 'user_ann', name: 'Ann', color: '#f00', createdAt: 1 };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string, init?: RequestInit) => {
+        requests.push({ url: String(url), headers: new Headers(init?.headers) });
+        return Promise.resolve(new Response(JSON.stringify({ participant }), { status: 200 }));
+      }),
+    );
+    expect((await apiLoadSelf('user_ann'))?.name).toBe('Ann');
+    expect(requests[0]!.headers.get('X-Owner-Id')).toBeNull();
+    expect(requests[0]!.headers.get('Authorization')).toBeNull();
+  });
+});
