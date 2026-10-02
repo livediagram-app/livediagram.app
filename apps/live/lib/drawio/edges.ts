@@ -120,7 +120,7 @@ function endpoint(
   style: DrawioStyle,
   prefix: 'exit' | 'entry',
   toward: Pt,
-  angled: boolean,
+  routed: boolean,
   ctx: PageContext,
 ): Endpoint {
   if (end.kind === 'point') {
@@ -138,7 +138,7 @@ function endpoint(
   const exit = boxExit(el, toward);
   // An orthogonal route leaves square to the side it crosses: that side's middle.
   const anchor =
-    angled && offeredAnchors(el).includes(exit.side) ? exit.side : nearestAnchor(el, exit.at);
+    routed && offeredAnchors(el).includes(exit.side) ? exit.side : nearestAnchor(el, exit.at);
   return { kind: 'pinned', elementId: el.id, anchor };
 }
 
@@ -171,20 +171,19 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
   const { cell, source, target, waypoints } = input;
   const s = cell.style;
   const edgeStyle = s.str('edgeStyle') ?? '';
-  const route: ArrowStyle = DRAWIO_ANGLED_EDGE_STYLES.has(edgeStyle)
-    ? 'angled'
-    : s.flag('curved')
-      ? 'curved'
-      : 'straight';
+  // A routed edge leaves and enters through side middles. `curved=1` wins over the router:
+  // draw.io smooths the routed path into a curve.
+  const routed = DRAWIO_ANGLED_EDGE_STYLES.has(edgeStyle);
+  const route: ArrowStyle = s.flag('curved') ? 'curved' : routed ? 'angled' : 'straight';
   const angled = route === 'angled';
 
-  const from = endpoint(source, s, 'exit', waypoints[0] ?? referenceOf(target), angled, ctx);
+  const from = endpoint(source, s, 'exit', waypoints[0] ?? referenceOf(target), routed, ctx);
   const to = endpoint(
     target,
     s,
     'entry',
     waypoints[waypoints.length - 1] ?? referenceOf(source),
-    angled,
+    routed,
     ctx,
   );
 

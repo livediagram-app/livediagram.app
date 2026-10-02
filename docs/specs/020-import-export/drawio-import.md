@@ -307,7 +307,8 @@ When the cell has no label, the box is labelled with the stencil's readable name
   element. An end with no cell, or an end on another edge, is a free end at its geometry point;
   one that had a cell but has nowhere to pin is counted (`connection-loosened`).
 - **Route.** `edgeStyle=orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`,
-  `segmentEdgeStyle`, `isometricEdgeStyle` and the other routers are `angled`; `curved=1` is `curved`;
+  `segmentEdgeStyle`, `isometricEdgeStyle` and the other routers are `angled`; `curved=1` is `curved`, over a router too
+  (draw.io smooths the routed path, which still leaves and enters through the side middles);
   no edge style is `straight`. Waypoints become `curvePoints`: through them as given for a curved
   edge; as a polyline for a straight edge (an `angled` arrow through its points, which is how
   livediagram draws a bent straight line); with right-angle corners added between them for an

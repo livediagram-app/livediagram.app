@@ -90,6 +90,13 @@ describe('edge routes', () => {
     ]);
   });
 
+  it('draws a routed edge that draw.io smooths as a curve, leaving through the side middles', () => {
+    const { arrow } = convert(boxA + boxB + edge('edgeStyle=orthogonalEdgeStyle;curved=1;'));
+    expect(arrow.arrowStyle).toBe('curved');
+    expect(arrow.from).toMatchObject({ anchor: 's' });
+    expect(arrow.to).toMatchObject({ anchor: 'n' });
+  });
+
   it('draws a bent straight edge as a polyline and a curved one through its points', () => {
     const pts = '<Array as="points"><mxPoint x="50" y="200"/></Array>';
     expect(convert(boxA + boxB + edge('html=1;', pts)).arrow).toMatchObject({

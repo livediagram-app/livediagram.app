@@ -298,8 +298,9 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    edge parent's origin), and `connection-loosened` += 1. Empty id → free at the geometry point.
 2. An end whose cell is an edge → free at that edge's midpoint (the mean of its two ends' element
    centres, else of its waypoints), `connection-loosened` += 1.
-3. **Route.** `edgeStyle` in `DRAWIO_ANGLED_EDGE_STYLES` → `angled`; `curved=1` → `curved`; else
-   `straight`. Waypoints (absolute: points + the edge parent's origin):
+3. **Route.** `curved=1` → `curved` (over a router too); else `edgeStyle` in
+   `DRAWIO_ANGLED_EDGE_STYLES` → `angled`; else `straight`. Pinned ends take the side middles
+   whenever the edge has a router (`routed`), curved or not. Waypoints (absolute: points + the edge parent's origin):
    - none: `angled` / `curved` / `straight` with no `curvePoints`;
    - `curved`: `curvePoints` = the waypoints;
    - `straight`: `arrowStyle: 'angled'` and `curvePoints` = the waypoints;
