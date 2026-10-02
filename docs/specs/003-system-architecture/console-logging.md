@@ -22,11 +22,8 @@ that matters.
 
 No file in `apps/live` calls `console.info`, `console.log` or `console.debug` directly; a unit
 test holds that line (only `debug-log.ts` itself may). An inline boot script, which runs before any
-module can load (the stale-page guard), embeds the same rule: `INLINE_DEBUG_LOG_SOURCE` in `debug-log.ts`, a
-static source (nothing is written into it), makes its `trace` function from settings handed over as
-data (`inlineDebugLogConfig(scope)`: the scope, whether the build is quiet, the flag key), which the
-script reads from `data-*` attributes on its own element. Neither the logger's source nor the
-guard's is ever built from values. A Node script
+module can load (the stale-page guard), writes no trace lines: its two lines are warnings, and its
+source is static, never built from values. A Node script
 under `apps/live` (a fixture generator) writes its own output with `process.stdout.write`.
 
 ## Workers

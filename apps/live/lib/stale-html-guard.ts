@@ -10,9 +10,8 @@
 // A string in a plain module (not 'use client', nothing browser-only imported), as the other boot
 // scripts are: the layout is a server component. ES5-safe and self-contained; every global is
 // reached by name (window, document, location, sessionStorage, performance, fetch, Date, console,
-// and localStorage for the debug flag), so a test can run it against stubs. Its trace line goes
-// through the console convention's inline rule (debug-log.ts, inlineDebugLogSource): quiet in a
-// production console unless the debug flag asks (docs/specs/003-system-architecture/console-logging.md).
+// console), so a test can run it against stubs. Both of its lines are warnings, always shown: a reload
+// is a recovery worth seeing (docs/specs/003-system-architecture/console-logging.md).
 import { BUILD_ID_HEADER } from '@livediagram/api-schema';
 import { API_BASE } from './api/base';
 import {
@@ -21,10 +20,6 @@ import {
   RELOAD_GUARD_WINDOW_MS,
   claimReloadIn,
 } from './reload-guard';
-import { INLINE_DEBUG_LOG_SOURCE, inlineDebugLogConfig } from './debug-log';
-
-const trace = inlineDebugLogConfig('stale-html');
-
 /**
  * The guard's settings, as `data-*` attributes for its own <script> element (the layout spreads
  * them on). The script reads them back through `document.currentScript.dataset`: no value is ever
@@ -36,24 +31,20 @@ export const STALE_HTML_GUARD_ATTRIBUTES: Readonly<Record<string, string>> = {
   'data-api': API_BASE,
   'data-build-header': BUILD_ID_HEADER,
   'data-app-flag': APP_RECOVERY_FLAG,
-  'data-trace-scope': trace.scope,
-  'data-trace-quiet': trace.quiet,
-  'data-trace-flag-key': trace.flagKey,
 };
 
-// Static source: two functions' own code (the shared reload claim and the inline logger) and fixed
+// Static source: one function's own code (the shared reload claim) and fixed
 // text; every setting comes from the element's data. Without its data it does nothing at all.
 export const STALE_HTML_GUARD_SCRIPT = `(function(){
 var c=document.currentScript&&document.currentScript.dataset;if(!c||!c.reloadKey)return;
 var KEY=c.reloadKey,WINDOW=Number(c.reloadWindow),API=c.api,HEADER=c.buildHeader,APP=c.appFlag;
 var claim=${claimReloadIn.toString()};
-var trace=(${INLINE_DEBUG_LOG_SOURCE})({scope:c.traceScope,quiet:c.traceQuiet,flagKey:c.traceFlagKey});
 function isAsset(u){return typeof u==='string'&&u.indexOf('/_next/static/')!==-1;}
 var reloading=false;
 function reloadOnce(reason,detail){
 if(reloading)return;
 if(!claim(sessionStorage,KEY,location.pathname+location.search,Date.now(),WINDOW)){console.warn('[stale-html] already reloaded this page; leaving it',detail);return;}
-reloading=true;trace('[stale-html] '+reason+'; reloading',detail);location.reload();}
+reloading=true;console.warn('[stale-html] '+reason+'; reloading',detail);location.reload();}
 window.addEventListener('error',function(e){if(window[APP])return;var t=e&&e.target;if(!t||!t.tagName)return;
 var tag=String(t.tagName).toUpperCase(),url=tag==='SCRIPT'?t.src:tag==='LINK'?t.href:null;
 if(isAsset(url))reloadOnce('a build asset failed to load',url);},true);
