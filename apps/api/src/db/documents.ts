@@ -10,6 +10,7 @@ import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements } from './collab-index';
 import { imageRefAddStatements } from './image-refs';
 import { documentRemovalStatements } from './document-removal';
+import { firstTabCountSql, isEmptyCount } from './tabs';
 
 type DocumentRow = {
   id: string;
@@ -30,7 +31,7 @@ type DocumentRow = {
   share_code: string | null;
 };
 
-type SummaryRow = DocumentRow;
+type SummaryRow = DocumentRow & { first_tab_count: number | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
@@ -90,7 +91,7 @@ const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -178,6 +179,7 @@ function rowToSummary(row: SummaryRow): DocumentSummary {
     source: (row.source as DocumentSummary['source']) ?? null,
     savedAt: row.saved_at,
     createdAt: row.created_at,
+    empty: isEmptyCount(row.first_tab_count),
   };
 }
 

@@ -110,9 +110,13 @@ document renders lazily.
   dashed sketch at once, captioned "Nothing drawn yet" where there is room,
   and makes no request, so an Explorer of new or blank documents fires no
   404s. The list knows without reading any tab body: each tab row keeps its
-  element count (`tabs.element_count`), written with the tab by every tab
-  write and backfilled once by migration; a list reads the first tab's count.
-  A count not yet known (`null`) reads as not empty, so the row asks as before.
+  element count (`tabs.element_count`), kept by database triggers on every
+  tab write and backfilled once by migration; a list reads the first tab's
+  count (a tab-scoped share reads its own tab's). A count not known (`null`,
+  a body that is not a JSON object with an `elements` array) reads as not
+  empty, so the row asks as before. The editor's own row follows its saves:
+  after an autosave it says `empty` from the first tab when that tab is
+  loaded, and keeps what the list said when it is not.
 - Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
   shows the still, dashed sketch, captioned "Nothing drawn yet" where there
   is room. The no-snapshot 404 (past the access gate)

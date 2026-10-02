@@ -45,6 +45,24 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
 // no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
+// The `empty` column of a document list (docs/specs/006-document/document-snapshots.md): the element
+// count of the document's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
+// count the tabs triggers keep (migration 0059), never a tab body. NULL = no tab, -1 = uncountable.
+export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | null = null): string {
+  const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
+  return `(SELECT COALESCE(t.element_count, -1)
+             FROM document_tabs dt
+             JOIN tabs t ON t.id = dt.tab_id
+            WHERE dt.document_id = ${documentIdSql}${scope}
+            ORDER BY dt.order_index ASC
+            LIMIT 1) AS first_tab_count`;
+}
+
+// No tab, or a counted tab with no elements. An uncountable body is not empty: its thumbnail is asked for.
+export function isEmptyCount(firstTabCount: number | null | undefined): boolean {
+  return firstTabCount == null || firstTabCount === 0;
+}
+
 export async function getFirstTabData(env: Env, documentId: string): Promise<string | null> {
   const row = await env.DB.prepare(
     `SELECT t.data

@@ -88,11 +88,12 @@ export function useTeamLibrariesSweep(
               teamId: team.id,
               teamName: team.name,
             })),
-            documents: lib.documents.map((d) => ({
+            documents: lib.documents.map((d): TeamDocumentRow => ({
               id: d.id,
               name: d.name,
               folderId: d.folderId,
               savedAt: d.savedAt,
+              empty: d.empty,
               shareCode: d.shareCode,
               ownerId: d.ownerId,
               team: { id: team.id, name: team.name },

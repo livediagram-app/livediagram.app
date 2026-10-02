@@ -73,6 +73,7 @@ export function DocumentRow(props: DocumentEntryProps) {
           ownerId={ownerId}
           documentId={liveDoc.id}
           version={liveDoc.savedAt}
+          empty={liveDoc.empty}
           shareCode={liveDoc.shared?.shareCode}
           offline={liveDoc.ownerId === OFFLINE_OWNER_ID}
         />

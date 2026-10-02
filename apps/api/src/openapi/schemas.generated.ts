@@ -2235,6 +2235,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
+      "empty": {
+        "type": "boolean"
+      },
       "folderId": {
         "type": [
           "string",
@@ -2289,7 +2292,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "teamId",
       "source",
       "savedAt",
-      "createdAt"
+      "createdAt",
+      "empty"
     ],
     "type": "object"
   },
@@ -4686,6 +4690,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SharedWithItem": {
     "additionalProperties": false,
     "properties": {
+      "empty": {
+        "type": "boolean"
+      },
       "id": {
         "type": "string"
       },
@@ -4728,7 +4735,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shareCode",
       "tabId",
       "ownerName",
-      "ownerColor"
+      "ownerColor",
+      "empty"
     ],
     "type": "object"
   },

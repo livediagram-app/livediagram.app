@@ -87,6 +87,9 @@ export type DocumentSummary = {
   source: DocumentSource | null;
   savedAt: number;
   createdAt: number;
+  // Nothing drawn: the first tab has no elements, or there is no tab
+  // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
+  empty: boolean;
 };
 
 // A document's shared tabs: how many of its tabs are also linked into another
@@ -124,6 +127,8 @@ export type SharedWithItem = {
   // the UI shows an "Unknown owner" placeholder.
   ownerName: string | null;
   ownerColor: string | null;
+  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see DocumentSummary.empty.
+  empty: boolean;
 };
 
 // ---------------------------------------------------------------------

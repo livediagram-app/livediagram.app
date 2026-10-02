@@ -185,6 +185,7 @@ export function SharedRow({
           ownerId={ownerId}
           documentId={item.id}
           version={item.savedAt}
+          empty={item.empty}
           shareCode={item.shareCode}
         />
         <span className="min-w-0 flex-1">

@@ -41,6 +41,7 @@ export function FolderPreview({
               ownerId={ownerId}
               documentId={tile.document.id}
               version={tile.document.savedAt}
+              empty={tile.document.empty}
               shareCode={tile.document.shared?.shareCode}
               offline={tile.document.ownerId === OFFLINE_OWNER_ID}
               className="h-full w-full"

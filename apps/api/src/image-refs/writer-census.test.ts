@@ -33,6 +33,9 @@ const KNOWN_MIGRATION_WRITERS: string[] = [
   // Rewrites element links to another document ({"kind":"diagram","documentId":…} to
   // {"kind":"document","documentId":…}); no image reference changes, so the index stays exact.
   '0055_documents.sql',
+  // Backfills tabs.element_count and adds the triggers that keep it; `data` is never written, so no
+  // image reference changes and the index stays exact.
+  '0059_tab_element_count.sql',
 ];
 
 function sourceFiles(dir: string): string[] {

@@ -36,6 +36,7 @@ type State = { status: 'idle' } | ThumbnailEntry;
 // A fetch's outcome, tagged with the inputs it was fetched for.
 type Loaded = ThumbnailEntry & { key: string };
 const IDLE: State = { status: 'idle' };
+const UNDRAWN: State = { status: 'broken' };
 
 const DEFAULT_BOX =
   'h-7 w-9 rounded border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40';
@@ -46,6 +47,7 @@ export function DocumentThumbnail({
   version,
   shareCode,
   offline = false,
+  empty = false,
   className = DEFAULT_BOX,
 }: {
   // Viewer identity for the authenticated fetch. Null while a guest id
@@ -61,6 +63,9 @@ export function DocumentThumbnail({
   // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document has no server snapshot, so
   // show a fixed offline illustration instead of fetching a thumbnail.
   offline?: boolean;
+  // The list says nothing is drawn (docs/specs/006-document/document-snapshots.md): there is no snapshot to
+  // ask for, so show the undrawn sketch at once and send no request.
+  empty?: boolean;
   // Container sizing/appearance. Defaults to the compact row box; a card
   // passes a larger box (e.g. a full-width 16:9 area).
   className?: string;
@@ -78,8 +83,11 @@ export function DocumentThumbnail({
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   // Our own outcome first, else one the cache already holds for these
   // inputs (fetched by an earlier mount or another thumbnail).
-  const state: State =
-    loaded?.key === fetchKey ? loaded : (ownerId && peekThumbnail(fetchKey)) || IDLE;
+  const state: State = empty
+    ? UNDRAWN
+    : loaded?.key === fetchKey
+      ? loaded
+      : (ownerId && peekThumbnail(fetchKey)) || IDLE;
 
   // Loader to picture is a crossfade, not a cut. The <img> stays invisible
   // until the browser has DECODED it (onLoad), so there is never a blank
@@ -106,7 +114,7 @@ export function DocumentThumbnail({
   // Defer the fetch until the row/card is near the viewport.
   useEffect(() => {
     const el = ref.current;
-    if (offline || !el || visible) return;
+    if (offline || empty || !el || visible) return;
     const obs = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -118,10 +126,10 @@ export function DocumentThumbnail({
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [offline, visible]);
+  }, [offline, empty, visible]);
 
   useEffect(() => {
-    if (offline || !visible || !ownerId || peekThumbnail(fetchKey)) return;
+    if (offline || empty || !visible || !ownerId || peekThumbnail(fetchKey)) return;
     let cancelled = false;
     // The cache owns the blob URL (and revokes it on eviction), so there is
     // nothing to release when this thumbnail unmounts.
@@ -135,7 +143,7 @@ export function DocumentThumbnail({
     return () => {
       cancelled = true;
     };
-  }, [offline, visible, ownerId, documentId, version, shareCode, fetchKey]);
+  }, [offline, empty, visible, ownerId, documentId, version, shareCode, fetchKey]);
 
   // Offline Mode (docs/specs/006-document/offline-mode.md): a fixed illustration, no fetch, no snapshot.
   if (offline) {
