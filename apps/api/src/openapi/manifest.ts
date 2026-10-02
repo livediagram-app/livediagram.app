@@ -877,9 +877,13 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'participants',
     tag: 'Participants',
     summary:
-      "Get a participant's display name and colour; their published picture only for a signed-in caller.",
+      "Get a participant's display name and colour; their published picture only for a signed-in caller. Your own id before you have saved a profile answers { participant: null }.",
     auth: 'public',
-    responseSchema: wrap('participant', 'ParticipantRecord'),
+    responseSchema: {
+      type: 'object',
+      properties: { participant: { oneOf: [ref('ParticipantRecord'), { type: 'null' }] } },
+      required: ['participant'],
+    },
     statuses: [200, 404],
   },
   {

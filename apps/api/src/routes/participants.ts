@@ -35,7 +35,16 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   const id = segments[2]!;
   if (request.method === 'GET') {
     const p = await getParticipant(env, id);
-    if (!p) return notFound();
+    if (!p) {
+      // Your own profile, not saved yet (a fresh visitor): expected state, so a 200 with no
+      // participant rather than a 404 every browser logs as an error (docs/specs/015-api/api.md).
+      // Says nothing a 404 would not: the id is absent either way.
+      if (ctx.resolveOwner() === id) {
+        console.info('[participants] self_absent');
+        return json({ participant: null });
+      }
+      return notFound();
+    }
     return json({ participant: { ...p, pictureUrl: ctx.verifiedUserId ? p.pictureUrl : null } });
   }
   if (request.method === 'PUT') {
