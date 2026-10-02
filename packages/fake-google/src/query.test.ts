@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { compileQuery, type QueryFile } from './query';
 
 const file = (over: Partial<QueryFile> = {}): QueryFile => ({
@@ -11,12 +12,15 @@ const file = (over: Partial<QueryFile> = {}): QueryFile => ({
 
 describe('compileQuery', () => {
   it('splits clauses in linear time, whatever the spacing', () => {
-    const start = performance.now();
-    expect(() => compileQuery(`trashed = false${' '.repeat(200_000)}x`)).toThrow();
-    expect(
-      compileQuery(`trashed = false${' '.repeat(50_000)}AND${' '.repeat(50_000)}trashed = false`),
-    ).toBeTypeOf('function');
-    expect(performance.now() - start).toBeLessThan(100);
+    let compiled: unknown;
+    const spent = cpuMsOf(() => {
+      expect(() => compileQuery(`trashed = false${' '.repeat(200_000)}x`)).toThrow();
+      compiled = compileQuery(
+        `trashed = false${' '.repeat(50_000)}AND${' '.repeat(50_000)}trashed = false`,
+      );
+    });
+    expect(compiled).toBeTypeOf('function');
+    expect(spent).toBeLessThan(100);
   });
 
   it('matches every supported clause, joined by and', () => {

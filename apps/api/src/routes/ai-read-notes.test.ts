@@ -26,6 +26,7 @@ beforeEach(() => {
   globalThis.fetch = providerSays({ texts: [] });
 });
 afterEach(() => {
+  vi.useRealTimers();
   globalThis.fetch = originalFetch;
   vi.restoreAllMocks();
 });
@@ -228,13 +229,19 @@ describe('when the provider answers', () => {
   });
 
   it('502 on a provider failure, a throw, or unparseable content', async () => {
+    // The provider call retries once after a pause; fake timers skip the wait.
+    vi.useFakeTimers();
+    const settled = async (pending: Promise<Response>) => {
+      await vi.runAllTimersAsync();
+      return pending;
+    };
     globalThis.fetch = vi.fn(async () => new Response('no', { status: 500 })) as typeof fetch;
-    expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
+    expect((await settled(handleAiReadNotes(makeCtx()))).status).toBe(502);
 
     globalThis.fetch = vi.fn(async () => {
       throw new Error('network');
     }) as typeof fetch;
-    expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
+    expect((await settled(handleAiReadNotes(makeCtx()))).status).toBe(502);
 
     globalThis.fetch = vi.fn(
       async () =>

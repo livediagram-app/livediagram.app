@@ -103,18 +103,19 @@ const SOURCES = [
   ...sourceFiles(`${REPO}packages/ui/src`),
 ];
 
+// Parsed once, here at collection time, and shared by every rule below: re-parsing ~900 files
+// inside a test spent seconds of its timeout on a busy CI runner.
+const PARSED = SOURCES.map((path) =>
+  ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true),
+);
+
 /**
  * Every class-bearing string in a file: each string literal on its own, and each template
  * literal as a whole (its static chunks joined, with an interpolated identifier kept by name,
  * so `${SOLID_BRAND_DARK}` counts as the pairing it stands for).
  */
-function classStrings(path: string): { path: string; text: string }[] {
-  const source = ts.createSourceFile(
-    path,
-    readFileSync(path, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  );
+function classStrings(source: ts.SourceFile): { path: string; text: string }[] {
+  const path = source.fileName;
   const out: { path: string; text: string }[] = [];
   const visit = (node: ts.Node): void => {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
@@ -133,7 +134,7 @@ function classStrings(path: string): { path: string; text: string }[] {
   return out.map((s) => ({ ...s, path: relative(REPO, s.path) }));
 }
 
-const STRINGS = SOURCES.flatMap(classStrings);
+const STRINGS = PARSED.flatMap(classStrings);
 const tokens = (text: string) => text.split(/\s+/).filter(Boolean);
 const PAIRING = /^(SOLID_BRAND_DARK|SOLID_BRAND_DARK_CONTROL|dark:bg-brand-600)$/;
 
@@ -170,14 +171,15 @@ describe('brand-coloured text in dark mode', () => {
 describe('white text on an identity colour', () => {
   it('never sits on an inline runtime background, which the dark shade could not override', () => {
     const offenders: string[] = [];
-    for (const path of SOURCES.filter((p) => p.endsWith('.tsx'))) {
-      const sf = ts.createSourceFile(
-        path,
-        readFileSync(path, 'utf8'),
-        ts.ScriptTarget.Latest,
-        true,
-        ts.ScriptKind.TSX,
-      );
+    // An offender carries both tokens, so a file missing either has none to walk.
+    const candidates = PARSED.filter(
+      (sf) =>
+        sf.fileName.endsWith('.tsx') &&
+        sf.text.includes('backgroundColor') &&
+        sf.text.includes('text-white'),
+    );
+    for (const sf of candidates) {
+      const path = sf.fileName;
       const visit = (node: ts.Node): void => {
         if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
           const attr = (name: string) =>

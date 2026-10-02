@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { chatCompletions, chatCompletionsUrl, providerOf } from './ai-client';
 import { GOOGLE_BASE_URL } from './ai-provider';
 import type { Env } from './types';
@@ -9,6 +10,7 @@ import type { Env } from './types';
 
 const originalFetch = globalThis.fetch;
 afterEach(() => {
+  vi.useRealTimers();
   globalThis.fetch = originalFetch;
 });
 
@@ -68,7 +70,10 @@ describe('one retry on a provider spike', () => {
         : new Response('{"ok":true}', { status: 200 });
     }) as typeof fetch;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const res = await chatCompletions(provider, {});
+    vi.useFakeTimers();
+    const pending = chatCompletions(provider, {});
+    await vi.runAllTimersAsync();
+    const res = await pending;
     expect(calls).toBe(2);
     expect(res.status).toBe(200);
   });
@@ -80,7 +85,10 @@ describe('one retry on a provider spike', () => {
       return new Response('busy', { status: 503 });
     }) as typeof fetch;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect((await chatCompletions(provider, {})).status).toBe(503);
+    vi.useFakeTimers();
+    const pending = chatCompletions(provider, {});
+    await vi.runAllTimersAsync();
+    expect((await pending).status).toBe(503);
     expect(calls).toBe(2);
   });
 
@@ -131,8 +139,11 @@ describe('the base URL is trimmed without a regex', () => {
   it('does not degrade on a pathological run of slashes', () => {
     // The regex this replaced backtracked polynomially here
     // (CodeQL js/polynomial-redos), and a base URL is operator configuration.
-    const started = performance.now();
-    expect(chatCompletionsUrl('https://x'.padEnd(50_000, '/'))).toBe('https://x/chat/completions');
-    expect(performance.now() - started).toBeLessThan(50);
+    let url = '';
+    const spent = cpuMsOf(() => {
+      url = chatCompletionsUrl('https://x'.padEnd(50_000, '/'));
+    });
+    expect(url).toBe('https://x/chat/completions');
+    expect(spent).toBeLessThan(50);
   });
 });
