@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/live/lib/path-edit.ts`                                | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
 | `apps/live/lib/path-edit-keys.ts`                           | `pathEditKey`: what one key does in edit mode                                                                                     |
 | `apps/live/lib/whiteboard-erase.ts`                         | `pathsTouched`: the eraser takes a path whole                                                                                     |
-| `apps/live/lib/export-as-seen.ts`                           | `tabAsSeen`: an export draws a whiteboard in its own ink                                                                          |
+| `apps/live/lib/export-as-seen.ts`                           | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
 | `apps/live/lib/draw-mode.ts`                                | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
 | `apps/live/lib/whiteboard-tool.ts`                          | `WhiteboardTool` gains `path`                                                                                                     |
 | `apps/live/lib/quick-style.ts`, `quick-style-tool.ts`       | A path is a quick-style target; "Next path" phantom                                                                               |
@@ -341,9 +341,9 @@ With the Path tool in hand, the draft is editable (as in Figma):
 
 ### Style
 
-- Created unpainted: `strokeColor` and `fillColor` absent, so a whiteboard draws it in the ink
-  (`inkWhiteboardElement`: `strokeColor ?? ink`, `fillColor ?? 'transparent'`) and a diagram tab in
-  `defaultStrokeColor`, unfilled (`defaultFillColor` = `transparent` for a path).
+- Created in Ink by name, unfilled: `boardShape(createPath(...))` writes `penColour: 'ink'` and
+  `fillColor: 'transparent'` (the Path tool is a Draw mode tool), then the remembered Draw style; it
+  looks the same in Diagram mode ([One look](../../007-editor/editor-modes.md#one-look)).
 - Quick style: `isQuickStyleTarget` includes an unlocked path. Sections: stroke, width, style (solid,
   dashed, dotted) always; background when `closed`. Apply and clear as for a shape.
 - Style memory kind `path` (`board:path` on a whiteboard), fields `strokeColor`, `strokeSwatch`,
@@ -398,7 +398,7 @@ export function openPathAt(anchors: readonly PathAnchor[], i: number): PathAncho
 export function dragNodes(base, moving, pressed, delta: Point, shift: boolean, snapRadius: number): { anchors: PathAnchor[]; guides: PathGuides | null };
 export function pathEditKey(key: { key: string; shiftKey: boolean; mod: boolean }, anchors, closed, selected): PathKeyOutcome;
 export function toLocal(el, p: Point): Point; export function toWorld(el, p: Point): Point;
-export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab;
+export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab; // the tab's Diagram backdrop, stock colours resolved
 export function editingLook(element: { type: string }, isEditing: boolean): { raise: boolean; textCursor: boolean };
 // CanvasProps
 onCommitPath: (draft: { anchors: PathAnchor[]; closed: boolean; continuing: { id: string } | null }) => void;

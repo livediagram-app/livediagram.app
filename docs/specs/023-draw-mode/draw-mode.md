@@ -37,7 +37,7 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 - **New Document wizard:** a **Whiteboard** template (a `TemplateKind` with a
   blank builder and a preview tile, `packages/templates`), producing a document
-  with one whiteboard tab. It is a card on the **Popular** shelf, third (after Blank Canvas and
+  with one tab that opens in Draw mode. It is a card on the **Popular** shelf, third (after Blank Canvas and
   Mind map), described **"Free drawing without distractions"**. It is not a category: a
   different activity from the diagram templates, so it is never a category tile or on a
   category shelf.
@@ -49,7 +49,7 @@ pen widths, dock spacing) are named constants, tuned in place.
   lands at once in Quick Start; the tab looks the same in either mode
   ([Appearance](#appearance)).
 - **Import:** a Microsoft Whiteboard import makes each board its own new
-  document with one whiteboard tab, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
+  document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
 - **Any tab:** the mode switch beside the page switcher turns any general
   tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
@@ -60,7 +60,7 @@ A whiteboard trades the editor's full chrome for one **floating dock**,
 centred across the **top** of the canvas by default (see
 [Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
 
-- **Hidden on a whiteboard tab:** the palette (floating and the Toolbar
+- **Hidden in Draw mode:** the palette (floating and the Toolbar
   layout's strip), the format painter, the highlighter (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
@@ -78,7 +78,7 @@ centred across the **top** of the canvas by default (see
   marked for it. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
   Medium, Large) rounds the selected rectangles, which the menu does not
   offer on a whiteboard ([Corner radius](../008-canvas/corner-radius.md)).
-  A restyle on a whiteboard never feeds the style memory diagram tabs use; the
+  A restyle on a whiteboard never feeds the style memory Diagram mode uses; the
   board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
   Bold). The quick style panel is **quick choices only**: no colour picker in
@@ -160,8 +160,8 @@ centred across the **top** of the canvas by default (see
   [Snap colours](#snap-colours)). Text and
   the Path tool are always in the drawing tools bar; nothing hides them.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
-  none, search does not offer it (nor the format painter), and one held on a
-  diagram tab is put down on arriving at a whiteboard.
+  none, search does not offer it (nor the format painter), and one held in
+  Diagram mode is put down on entering Draw mode.
 - The dock never moves when a tool is picked: flyouts open on the board side
   of it (**below** a dock at the top, **above** one at the bottom), and each
   group's own width is fixed per breakpoint, so nothing shifts under the
@@ -176,7 +176,7 @@ centred across the **top** of the canvas by default (see
 ## Where the dock sits
 
 - **Top by default**, centred across the top of the canvas, where the
-  Toolbar layout's strip sits on a diagram tab
+  Toolbar layout's strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
 - **Bottom by choice**: Settings, **Editor**, a **Draw mode** section with
@@ -186,7 +186,7 @@ centred across the **top** of the canvas by default (see
 - **Stored per user** in the synced preferences
   ([User preferences](../007-editor/user-preferences.md)) as
   `whiteboardDockPosition`; unset, or any value but `bottom`, is the top. A
-  change applies at once, on every whiteboard tab.
+  change applies at once, on every tab in Draw mode.
 - **At the top:**
   - it keeps clear of the Explorer's menu button in the top-left corner: on
     a phone or a tablet it starts to the button's right, so a tablet in
@@ -392,7 +392,7 @@ The shapes group learns and keeps the shapes a user reaches for.
   is drawn, and no snapping of the first point to a neighbour. Guides and
   snapping stay for shapes and lines from the Shapes flyout.
 - **Strokes stay open.** A whiteboard stroke that ends near its start is not
-  closed and filled, as a pencil sketch on a diagram tab is: an "o" written on
+  closed and filled, as a pencil sketch in Diagram mode is: an "o" written on
   a board is ink, not a shape.
 - Pens are the user's, not the board's: they persist **device-locally** in
   `localStorage` (`livediagram:v2:whiteboard-pens`), like the other tool
@@ -424,17 +424,16 @@ The shapes group learns and keeps the shapes a user reaches for.
   hand** (nothing selected) the panel styles what it draws next, captioned
   "Next rectangle", "Next arrow", "Next text box"; a choice there changes
   nothing on the board and dresses every later mark of that kind. Restyling
-  a drawn shape teaches its kind the same way, as on a diagram tab. Clear
+  a drawn shape teaches its kind the same way, as in Diagram mode. Clear
   styles with a tool in hand puts its kind back to plain ink. Line and arrow
   share one remembered style, as all arrows do.
-- A whiteboard keeps **its own style memory**, apart from its document's
-  diagram tabs: whiteboarding is a different activity, so a board's styles
-  never dress a diagram's next shape, nor a diagram's a board's, for any
-  shape kind, tool style or restyle, in the same document or another.
-  Leaving a whiteboard puts its shape, line or arrow tool down, as it puts a
-  pen down, so a diagram tab never previews or names its next shape the
-  board's way; the panel's "Next rectangle" always shows the style of the
-  board in front of you.
+- Draw mode keeps **its own style memory**, apart from Diagram mode's:
+  whiteboarding is a different activity, so Draw mode's styles never dress a
+  Diagram mode shape, nor Diagram mode's a Draw mode one, for any shape kind,
+  tool style or restyle, in the same document or another. Leaving Draw mode
+  puts its shape, line or arrow tool down, as it puts a pen down, so Diagram
+  mode never previews or names its next shape the Draw way; the panel's
+  "Next rectangle" always shows the style of the mode you are in.
 - A **recognised** shape (see [Shape recognition](#shape-recognition)) is
   different: it is a pen stroke tidied up, so it keeps that pen's colour and
   weight.
@@ -529,7 +528,7 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
 ## Nothing animates in
 
 A whiteboard is still: a stroke, shape, sticky or text box appears exactly as
-drawn, with none of the pop-in a new element gets on a diagram tab. It is
+drawn, with none of the pop-in a new element gets in Diagram mode. It is
 still an element, selectable and movable like any other. An animation the
 author sets on an element on purpose still plays.
 
@@ -727,7 +726,7 @@ light and dark boards like everything drawn with the stock colours.
 ## Keyboard shortcuts
 
 On a whiteboard the plain-key shortcuts are the dock's, and only these
-(the diagram tab's other element and mode keys, the laser on K and so on, do
+(Diagram mode's other element and mode keys, the laser on K and so on, do
 not apply: a whiteboard has no palette to mirror):
 
 | Key    | Tool                                                    |
@@ -809,13 +808,14 @@ and dark and snapping custom colours. Registered per
 
 ## Rounds
 
-The whiteboard is built in rounds and tuned with the operator between them.
+Draw mode is built in rounds and tuned with the operator between them.
 
-- **Round one** (built, being tuned): the kind, the template and Quick Start
-  entry, the dock with every tool above, pen versus touch, the light and dark
-  board looks, the backgrounds, telemetry and the help article. Opening an empty
-  whiteboard, or turning a fresh tab into one, puts the active pen in hand; a
-  board with content opens on Select.
+- **Round one** (built, being tuned): the mode and its switch
+  ([Editor modes](../007-editor/editor-modes.md)), the template and Quick Start
+  entry, the dock with every tool above, pen versus touch, the one look,
+  the backgrounds, telemetry and the help article. Entering Draw mode on an
+  empty tab, by opening it or by switching, puts the active pen in hand; a
+  tab with content opens on Select.
   The dock sits at the top, or at the bottom by choice
   ([Where the dock sits](#where-the-dock-sits)).
 - **Still ahead:** the trimmed element menu (colour, width, delete, stacking,

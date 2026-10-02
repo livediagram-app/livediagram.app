@@ -1,14 +1,13 @@
-# Whiteboard blueprint defaults
+# Draw mode blueprint defaults
 
 One row per default applied where a spec is silent or qualitative.
 
 | #   | Blueprint            | Spec silence                                                         | Default applied                                                                                                                                   |
 | --- | -------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | whiteboard-round-one | Which template category Whiteboard belongs to                        | `design`, nominal: the picker shows Whiteboard only as a quick-pick, as it does Blank                                                             |
-| D2  | whiteboard-round-one | Which tool is in hand when a whiteboard opens                        | Select with content; the active pen on an empty board, when editable and no other intent or mode is held                                          |
+| D2  | whiteboard-round-one | Which tool is in hand entering Draw mode                             | Select with content; the active pen on an empty board, when editable and no other intent or mode is held                                          |
 | D3  | whiteboard-round-one | Where a split stroke's label, link, note and comments go             | The longest piece                                                                                                                                 |
 | D4  | whiteboard-round-one | Which tools the "touch pans once a pen is seen" rule covers          | Every inking tool: the pens and the eraser                                                                                                        |
-| D5  | whiteboard-round-one | The dots and grid colour                                             | A faint mix of ink over board, `#d6d3cb`, in light (dark: the spec)                                                                               |
 | D6  | whiteboard-round-one | The eraser's brush size on a whiteboard                              | Stroke 10 px, Partial 16 px (screen)                                                                                                              |
 | D7  | whiteboard-round-one | How finely Partial cuts a stroke                                     | Densify to half the brush radius (at least 1 px); 12 bisection steps per crossing                                                                 |
 | D8  | whiteboard-round-one | Whether the eraser mode persists                                     | Yes, device-locally with the pens and recognition                                                                                                 |
@@ -56,7 +55,7 @@ One row per default applied where a spec is silent or qualitative.
 | P18 | path-tool            | What a click on a placed node other than the last does while drawing | Nothing (a drag moves it): a node is never placed on top of a node                                                                                |
 | P19 | path-tool            | How a just-finished path can be "edited at once"                     | It lands selected, the Path tool still in hand: Edit points and Enter open it; the next path's first node deselects it                            |
 | P20 | path-tool            | How the keyboard reaches the edit toolbar                            | Tab past the last node moves on into the toolbar, whose buttons keep Tab, Enter and Space; Escape still leaves                                    |
-| T1  | text-boxes           | How an existing text box without an auto width hugs                  | It keeps its width; the height hugs its text on the next edit, style change or resize                                                             |
+| T1  | text-boxes           | How an existing `wrap` text box hugs                                 | It keeps its width; the height hugs its text on the next edit, style change or resize                                                             |
 | T2  | text-boxes           | The hug padding when the text box has a padding preset               | The preset, on every side; unset is 4 px left and right, 2 px top and bottom                                                                      |
 | T3  | text-boxes           | Whether a rotated box, or one in a multi-selection resize, hugs      | No: the resize frame's bounds, as on any tab; the next edit re-hugs it                                                                            |
 | T4  | text-boxes           | Whether the element menu opens beside a text box being typed into    | Not on a whiteboard: the box starts caret-sized and grows into where the menu would open                                                          |

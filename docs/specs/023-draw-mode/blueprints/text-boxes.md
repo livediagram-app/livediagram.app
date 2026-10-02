@@ -23,10 +23,10 @@ Scope, by file:
 | `apps/live/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                    |
 | `apps/live/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                     |
 | `apps/live/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
-| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a whiteboard text box through `placedTextBox`                   |
+| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                    |
 | `apps/live/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                 |
 | `apps/live/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                        |
-| `apps/live/hooks/canvas/useEditorDrag.ts`               | A lone whiteboard text box resizes through `resizedElement`                              |
+| `apps/live/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                 |
 | `apps/live/hooks/canvas/useTextStyleSetters.ts`         | Size, font, bold, italic, underline, strikethrough re-hug; a picked size drops the scale |
 | `apps/live/hooks/canvas/useElementStyle.ts`             | Passes `activeTab` to the text setters                                                   |
 | `apps/live/hooks/canvas/useEditModeContextMenu.ts`      | No element menu beside a whiteboard text box being typed into (T4)                       |
@@ -36,7 +36,7 @@ Scope, by file:
 
 | Term             | Identifier                 | Meaning                                                                                                                 |
 | ---------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Hugging text box | `hugsText(el, whiteboard)` | A `text` element on a whiteboard                                                                                        |
+| Hugging text box | `hugsText(el)`             | A `text` element whose `sizing` is set, in either mode                                                                  |
 | Sizing           | `TextElement.sizing`       | `fit`: the width follows the text up to the wrap width; `wrap`: the width is set; absent: a fixed box that does not hug |
 | Text scale       | `TextElement.textScale`    | Multiplier on the label px, from a Shift resize; absent: 1                                                              |
 | Hug padding      | `textHugPadding(el)`       | `{ x: 4, y: 2 }`, or the element's padding preset on every side (T2)                                                    |
@@ -118,7 +118,7 @@ drops `textScale` on a text box (any tab).
 
 ```ts
 export type MeasureTextBlock = (width: number, fixed: boolean) => BlockSize;
-export function hugsText(el: Element, whiteboard: boolean): el is TextElement;
+export function hugsText(el: Element): el is TextElement;
 export function hugTextSize(el: TextElement, measure: MeasureTextBlock): BlockSize;
 export function placedTextBox(
   el,
@@ -150,8 +150,9 @@ export function resizedElement(
 
 ## Data and persistence
 
-- `sizing?: TextSizing` (`fit` | `wrap`), `textScale?: number` on `TextElement`: optional, absent on every existing
-  document, so no migration. An existing box keeps its stored size until an edit changes its
+- `sizing?: TextSizing` (`fit` | `wrap`), `textScale?: number` on `TextElement`: optional. A stored
+  `autoWidth: true` reads as `fit` and a migrated whiteboard's other text boxes as `wrap` (the
+  editor-modes blueprint). An existing box keeps its stored size until an edit changes its
   label, a style change re-hugs it or a handle resizes it; with `wrap` it keeps its width
   and its height hugs (T1).
 - `validate.ts` refuses a `sizing` other than `fit` or `wrap` and a `textScale` outside `[0.1, 40]`.
@@ -161,7 +162,8 @@ export function resizedElement(
 - Empty or whitespace-only on commit: removed (above). Undo brings the empty box back, one step.
 - A word longer than the wrap width breaks inside the word (`overflow-wrap: break-word`).
 - Rotated box, multi-selection resize: the frame's bounds as on any tab (T3).
-- Diagram tab: no hug anywhere (`hugsText` is false).
+- A fixed box (no `sizing`, made in Diagram mode): no hug anywhere (`hugsText` is false), in
+  either mode; a hugging box keeps hugging in Diagram mode too.
 - An explicit padding preset: that padding on every side (T2).
 
 ## Security and trust
