@@ -35,12 +35,16 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the whiteboard dock position under Editor, in its own Whiteboard section', () => {
-    // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": top by default, bottom by choice.
+  it('offers the Draw mode dock position under Editor, in its own Draw mode section', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Where the dock sits": top by default, bottom by choice;
+    // the section says Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
     const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
     const row = editor.rows.find((r) => r.key === 'whiteboardDockPosition');
     if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
-    expect(row.section).toBe('Whiteboard');
+    expect(row.section).toBe('Draw mode');
+    expect(row.keywords).toContain('draw mode');
+    expect(row.keywords).toContain('whiteboard');
+    expect(row.helpArticle).toBe('drawMode');
     expect(row.label).toBe('Dock Position');
     expect(row.options.map((o) => [o.id, o.label])).toEqual([
       ['top', 'Top'],

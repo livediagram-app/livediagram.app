@@ -335,7 +335,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A board on its stand with a marker scribble.
-  whiteboards: (
+  'draw-mode': (
     <Glyph>
       <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
       <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />

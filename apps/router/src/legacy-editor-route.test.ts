@@ -80,6 +80,8 @@ describe('legacyHelpRedirect', () => {
         '/help/getting-started/sharing-your-document/',
       ],
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
+      // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
+      ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(new URL(`https://livediagram.app${from}`))!;
@@ -93,6 +95,7 @@ describe('legacyHelpRedirect', () => {
       '/help/getting-started/your-first-diagram/',
       '/help/account-and-data/exporting-diagrams/',
       '/help/tabs/add-to-document/',
+      '/help/canvas/draw-mode/',
     ]) {
       expect(legacyHelpRedirect(new URL(`https://livediagram.app${path}`)), path).toBeNull();
     }

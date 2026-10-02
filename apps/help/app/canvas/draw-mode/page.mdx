@@ -1,0 +1,131 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Draw mode',
+  description:
+    'Switch any tab into Draw mode to sketch by hand: a dock of pens, two erasers, stickies, text and every palette shape, on the same canvas as your diagram.',
+  path: '/help/canvas/draw-mode/',
+});
+
+<ArticleLayout
+  title="Draw mode"
+  description="Freehand whiteboarding on any tab: pick up a pen and draw."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+**Draw mode** is a way of working on a tab, made for sketching by hand. Every tab can be worked on in two modes: **Diagram**, with the palette, shapes, arrows and templates, and **Draw**, with pens, erasers and a dock of tools. Switching never changes what is on the tab: a stroke you draw in Draw mode is still there in Diagram mode, and a shape placed in Diagram mode is still there in Draw mode, in the same colours. So a workshop can keep a free sketch next to a tidy diagram on the same canvas. Everything else works as always: sharing, live collaboration, comments, layers, undo and export.
+
+## Switching modes
+
+- **The switch** sits beside the tabs at the bottom of the editor: choose **Diagram** or **Draw**. Switching is instant, keeps your selection and leaves the view where it is.
+- **Shift+D** switches too, from anywhere on the canvas, and screen readers announce the mode you are now in. It follows the character-key shortcuts setting.
+- **Your mode is yours.** It is remembered for you, for each tab, in this browser. Someone else on the same tab can work in the other mode at the same time; your switch changes nothing for them.
+- **Opens in:** each tab opens in one mode for anyone who has not switched on it yet. To change it, open the tab menu (the **…** on the tab), choose **Opens in**, then **Diagram** or **Draw**. This sets it for everyone, but it does not switch anyone, you included.
+- People who can only view a tab see it in the mode it opens in, without the switch. Event storming boards have their own tools and no switch.
+
+## Starting a drawing
+
+- **A new document:** in the New Document wizard, pick **Whiteboard** on the **Popular** shelf, beside Blank Canvas and Mind map. The wizard goes straight on to where the document lives, and the tab opens in Draw mode.
+- **A new tab:** press **+** in the tab bar, then pick **Whiteboard** on Quick Start's **Popular** shelf.
+- **Any tab:** switch it to **Draw**.
+
+Already drew it in Excalidraw? Copy it there and paste it onto a tab in Draw mode: it lands as pen strokes, text boxes, shapes and sticky notes, in colours that follow the board. See [Paste from Excalidraw](/help/tabs/import-tabs/#paste-from-excalidraw).
+
+## The dock
+
+Instead of the palette, Draw mode has a dock across the top of the canvas, in four groups from left to right: the **drawing tools**, the **shapes**, **Undo** and **Redo**, and **Settings**. Prefer it at the bottom, closer to hand when drawing on a tablet? Open **Settings**, choose **Editor**, and set **Dock Position** under **Draw mode** to **Bottom**. The choice follows your account to every tab you draw on. The drawing tools:
+
+1. **Select** (key **V**), to pick up, move and resize what you have drawn.
+2. **Three markers**: **Marker 1**, **Marker 2** and **Marker 3** (keys **1**, **2** and **3**). Press a marker to pick it up; press the marker already in your hand to change its **width** (Fine, Medium or Bold). Marker 1 always draws in **Ink**; Markers 2 and 3 start blue and red and can also change **colour**, so they can be any two colours you like. Their colour picker offers eight colours: **Ink** (the default), Blue, Red, Orange, Green, Teal, Violet and Pink. Below them, **Your colours** keeps the last eight custom colours you used, and **+** opens a custom picker: drag in the square and along the hue slider, type a hex code, or pick a colour from the screen with the eyedropper where your browser has one, then press **Use**. If a custom colour would be hard to see on a light or a dark canvas, a warning says so and offers a nearby colour that reads well on both. To remove one of Your colours, right-click it (or press and hold it on a touch screen, or press **Shift+F10**) and choose **Remove**; strokes already drawn in it keep it. Right-click a marker to reset it to how it started. With a marker in your hand, the style panel on the left shows its colour and width too. Your markers are yours: they are remembered in this browser, not saved with the document.
+3. **Text** (**T**): press, then click or drag on the board.
+4. **The Path tool** (**P**, see below).
+5. **Eraser** (key **E**, see below).
+
+The shapes:
+
+1. **Your pinned shapes**: at first an arrow and a rectangle (see [Your shapes](#your-shapes)), then a line. A pinned shape with a key (**A**, **R**, **O**, **D**, **C**, **L**, **N**) shows it on its button.
+2. **Shapes** (key **S**): point at it, press it or press **S**. A search box at the top is ready for typing at once, above six shapes in two rows: on top the three you picked most recently, below the three you pick most. Point at a shape to see its name. Type to find any shape the palette has, by name or by what it is for (database, decision, phone), and the six best matches take their place. Move through them with the arrow keys and press **Enter**, or click one; **Escape** closes it. Once you type, it stays open until you pick, press Escape or click elsewhere.
+
+The **sticky note** is one of the shapes: search for it in Shapes ("sticky", "note" or "post-it"), pin it like any shape, or press **N** from anywhere to place one.
+
+Shapes, lines, arrows and paths are drawn in Ink with no fill, whichever pen you last used, and stay that way when you switch to Diagram mode: the pens colour only their own strokes. To change a shape's colour or width, select it and use the style panel on the left; a selected marker stroke gets its **Marker colour** and **Marker width** there as well: the same eight colours as the markers, and, when custom colours are used on this tab, a second row with them, the most recently drawn first.
+
+**Undo** and **Redo** come next, as well as in the bottom-right corner, and last the **Settings** cog (press it to open it): your **Background**, the pen's **Cursor** (Crosshair + nib, the default, or Dot) and **Drawing** (Basic or Shape recognition), then **Colours** while the tab has custom colours (see [Snap colours](#snap-colours)).
+
+Pick a shape, line, arrow or text tool and the style panel shows what it will draw next ("Next rectangle"): choose a colour or width there and every rectangle after it follows. Draw mode remembers its own styles, apart from Diagram mode.
+
+To select a pen stroke, click its line; clicking elsewhere in its box selects what is underneath, or nothing. Hold **Shift** with Select to drag a selection box from anywhere, even over a shape, adding what it encloses to the selection; **Shift-click** a mark to add it or take it out. With a pen in your hand the cursor stays a pen everywhere, because the pen always draws.
+
+What you draw shows in the pen's colour and width as you draw it, smoothed as it goes, and nothing animates in: a mark lands exactly as you drew it. With a pen (stylus) the line follows your pressure: press lightly for a finer line, harder for a bolder one, with the chosen width in between. With a mouse or a finger it keeps the chosen width all along. A pen stays in your hand after each stroke, so you can keep writing. Press **Select** or **Escape** to put it down. Switching an empty tab to Draw mode puts your last pen in your hand straight away; a tab that already has something on it opens on **Select**, so you can look around first. Switching back to Diagram mode puts the pen down.
+
+The dock works from the keyboard too. Every tool has a key (shown on its button) that picks it from anywhere on the board, and **Escape** puts the tool down again (unless you are typing into a note or text box); the other single-letter shortcuts of Diagram mode do nothing here. To reach the dock itself, Tab to it, move along it with the **arrow keys**, and press **Enter** or **Space**. In the colour picker the arrow keys move along a row of colours, and **Enter** picks one. Escape closes a marker's colour and width options and takes you back to the dock. Each group is one Tab stop, so Tab moves from one group to the next.
+
+## Your shapes
+
+The left of the shapes bar holds your **pinned** shapes: at first an arrow and a rectangle. The Shapes button opens the rest: on top the three shapes you picked most recently, below the three you pick most, leaving out what is pinned (a shape that is both shows only below, so it stays put). Picks count from the slots, the search, your pinned shapes and the shape keys. The slots settle between picks, never while Shapes is open.
+
+- **Pin a shape** by dragging it from the Shapes flyout (a slot or a search result) onto the left of the shapes bar, where you drop it; a marker shows where it will land. Up to seven can be pinned. With seven, dropping one onto a pinned shape swaps them; dropping it anywhere else says "Seven shapes are pinned. Drag one out to swap."
+- **Reorder** your pinned shapes by dragging them along the bar.
+- **Unpin** by dragging a pinned shape past the line, or off the bar. It is not forgotten: if you use it a lot it shows in the Shapes flyout's two rows straight away, and it is always a search away. Unpin them all and the bar stays that way.
+- Without dragging: right-click a shape, hold a finger on it, or press **Shift+F10** (in the search box, for the shape you have reached), then choose **Pin to dock** or **Unpin**.
+
+Your pinned shapes and picks follow you to your other devices when you are signed in; without an account they stay in this browser.
+
+## The Path tool
+
+The **Path tool** (key **P**, the pen-nib button) draws clean, editable curves, like the pen tool in Figma or Illustrator.
+
+- Click to place a **corner** point; press and drag to pull out a **curve**. Hold **Alt** (Option) while dragging to break the curve into a sharp turn, **Shift** to keep to 45°, and **Space** to move the point you are placing.
+- Click the **first point** to close the path, or drag there to shape the closing curve. Press **Enter**, **Escape** or double-click to finish an open path. **Backspace** removes the last point.
+- Click the **end of an open path** to carry on drawing it.
+- While drawing, drag a point you placed to move it, **Alt**-click it to turn it sharp or smooth, or hold **Ctrl** (**Cmd** on a Mac) to drag any point or handle without placing a new one.
+- The tool stays in your hand, and the path you just drew stays selected, so **Enter** or **Edit points** edits it at once.
+
+### Editing a path
+
+Double-click (or double-tap) a path, select it and press **Enter**, or press **Edit points** on its toolbar. Corner points show as squares, smooth ones as circles.
+
+- Click a point to select it (**Shift** adds more), or drag a box around several. Drag points to move them, or nudge them with the arrow keys (**Shift** for 10 px). A dragged point snaps into line with the others.
+- Drag a handle to reshape the curve; **Alt**-drag breaks the pair.
+- Double-click (double-tap) or **Alt**-click a point to switch it between sharp and smooth.
+- Click the line to add a point without changing the curve; drag the line to bend it.
+- The **Edit path** toolbar sets the selected points to **Corner**, **Mirrored** or **Aligned**, deletes them (**Delete**), closes (**J**) or opens the path, and **Done** (**Escape**) finishes. On a touch screen, hold a finger on a point to select it and bring the toolbar to it.
+- Every change is one undo, and undo keeps you editing. Click away or press **Escape** to finish.
+
+Style a path like a shape from the style panel: its line colour, width and dashes, and a fill once it is closed. The eraser removes a path whole, and exports draw it exactly as on the board.
+
+## Pen, finger and mouse
+
+- A **pen** (stylus) always draws.
+- A **mouse** draws with a left drag. Middle-drag or hold **Space** to pan, as on any tab.
+- A **finger** draws until you use a pen. After that, on the same device, one finger **pans** instead, so a palm resting on the screen never leaves a mark. Reload the page to go back.
+- **Two fingers** always pan and pinch to zoom. A stroke the second finger interrupts is thrown away rather than left half-drawn.
+
+## The two erasers
+
+Press the eraser again to switch its mode:
+
+- **Stroke** removes a whole stroke you touch. Only the ink counts: erasing beside a long stroke leaves it alone.
+- **Partial** rubs out only the part of a stroke under the eraser, leaving the pieces either side. Stickies, text and shapes are never cut.
+
+Each sweep of the eraser is one undo. Locked elements, and elements on a hidden or locked [layer](/help/canvas/layers/), are never erased.
+
+## Shape recognition
+
+Under **Settings** (the cog), **Drawing** switches between **Basic** and **Shape recognition**. With it on, a roughly drawn circle, rectangle, triangle, diamond or line becomes the clean shape when you lift the pen, in the pen's colour and weight. Hold the pen still for half a second before lifting it to see the shape first. From then on it stays a shape: keep dragging to resize it (a line's end, or a shape's corner, follows your pen), and lift to place it. With it off, which is the default, strokes stay exactly as drawn. Either way, press **Alt** (**Option** on a Mac) while drawing to flip the stroke under your pen: it becomes the clean shape at once, or, if a shape has already snapped, goes back to the ink you drew and carries on; on a touch screen, tap the **Make shape** or **Keep drawing** chip that appears beside the pen when you hold it still. The setting is remembered in this browser, and Undo removes a recognised shape.
+
+## Backgrounds
+
+Under **Settings**, choose **Plain**, **Dots** or **Grid**. The choice is yours: it shows behind every tab you work on in Draw mode, starts on **Grid**, and follows your account. It never changes the tab, so nobody else's view changes, and in Diagram mode the tab's own background shows again. Exports always use the tab's own background.
+
+## Light and dark
+
+Draw mode looks like the rest of the tab: the same theme and canvas colour as Diagram mode. On the Default theme the canvas is an off-white board in light mode and the editor's own dark canvas in dark mode. **Ink** is dark on a light canvas and light on a dark one, so **Marker 1**, and any stroke or text you draw without choosing a colour, reads clearly for everyone. The stock colours of Markers 2 and 3 adapt the same way: each has a darker version for a light canvas and a lighter one for a dark canvas, so a blue stroke reads clearly in both modes, for everyone, on screen and in exports. A custom colour is the same everywhere.
+
+## Snap colours
+
+Custom colours stay exactly as they were drawn, pasted or imported, so they do not adapt between light and dark canvases. While a tab has any, **Settings** (the cog) shows a **Colours** section naming how many, with **Snap to stock colours**. Press it to turn every custom colour of a marker stroke, shape outline, line or arrow into the nearest stock colour: greys, black and white become Ink, and every other colour the stock colour closest in hue (a magenta becomes Pink, a brown Orange). Fills, text colours and highlighter strokes stay as they are, and so do locked elements and anything on a hidden or locked [layer](/help/canvas/layers/). It is one undo.
+
+</ArticleLayout>

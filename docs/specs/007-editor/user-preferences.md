@@ -514,7 +514,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
-  middle-mouse pan, then a **Whiteboard** section: dock position, Top or
+  middle-mouse pan, then a **Draw mode** section: dock position, Top or
   Bottom, then a **Power User** section: power user mode, and
   Minimal chrome while the mode is on), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as

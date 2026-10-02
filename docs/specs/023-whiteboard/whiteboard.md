@@ -179,11 +179,10 @@ centred across the **top** of the canvas by default (see
   Toolbar layout's strip sits on a diagram tab
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
-- **Bottom by choice**: Settings, **Editor**, a **Whiteboard** section with
+- **Bottom by choice**: Settings, **Editor**, a **Draw mode** section with
   one row, **Dock Position** (**Top** / **Bottom**). The bottom is closer to
-  hand when drawing on a tablet and leaves the top of the board free. Only a
-  whiteboard has a dock, so no other tab has this setting and nothing else
-  moves with it.
+  hand when drawing on a tablet and leaves the top of the board free. Only
+  Draw mode has a dock, so nothing in Diagram mode moves with it.
 - **Stored per user** in the synced preferences
   ([User preferences](../007-editor/user-preferences.md)) as
   `whiteboardDockPosition`; unset, or any value but `bottom`, is the top. A
@@ -795,8 +794,10 @@ through the ordinary `Element` / `Added` events.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-One article, **Whiteboards**: creating one, the dock, pens, pen versus touch,
-the two erasers, shape recognition, backgrounds and snapping custom colours. Registered per
+One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
+redirects to it): switching modes (the switch beside the tabs, Shift+D, Opens in), starting a
+drawing, the dock, pens, pen versus touch, the two erasers, shape recognition, backgrounds, light
+and dark and snapping custom colours. Registered per
 [Register a help article](../../instructions/register-a-help-article.md).
 
 ## Rounds

@@ -13,8 +13,9 @@ export function legacyEditorRedirect(url: URL): Response | null {
   return Response.redirect(next.toString(), 308);
 }
 
-// Help articles about the container moved when it became a document; the old addresses are
-// links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
+// Renamed help articles: the ones about the container moved when it became a document, and
+// Whiteboards became Draw mode. The old addresses are links people have already shared
+// (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
@@ -22,6 +23,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'search-panel/the-search-panel/search-diagrams': 'search-panel/the-search-panel/search-documents',
   'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
   'developers/working-with-diagrams': 'developers/working-with-documents',
+  'canvas/whiteboards': 'canvas/draw-mode',
 };
 
 export function legacyHelpRedirect(url: URL): Response | null {

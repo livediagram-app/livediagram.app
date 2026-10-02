@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/live/lib/whiteboard-prefs.ts`                               | Pens, widths, colours, recognition, eraser mode; parse / load / save      |
 | `apps/live/lib/whiteboard-tool.ts`                                | Active-tool derivation, pen intent, shapes, pointer routing               |
 | `apps/live/lib/pen-seen.ts`                                       | Session-scoped "a pen has been used" flag                                 |
-| `apps/live/lib/whiteboard-ink.ts`                                 | `createInkProjector`: the ink projection over a list, cached per element  |
+| `apps/live/lib/stock-colour-projector.ts`                         | `createStockColourProjector`: stock colours by name over a list, cached   |
 | `apps/live/lib/whiteboard-erase.ts`                               | `strokesTouched`, `shapesTouched`, `partialEraseStep`: one eraser step    |
 | `packages/document/src/shape-hit.ts`                              | A shape's hit outline: `shapeHitOutline`, `shapeTouchesBrush`             |
 | `packages/document/src/svg-path-outline.ts`                       | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
@@ -50,7 +50,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
 | `apps/live/components/canvas/useCanvasDrawGesture.ts`             | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
 | `apps/live/components/palette/TemplatePicker*.tsx`                | Whiteboard quick-pick; no theme step                                      |
-| `apps/help/app/canvas/whiteboards/page.mdx`                       | Help article, registered in `packages/help-registry`                      |
+| `apps/help/app/canvas/draw-mode/page.mdx`                         | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
 
@@ -937,7 +937,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen ink: width at pressure, outline, centre line                               | `packages/document/src/pen-stroke.test.ts`                                               |
 | Eight stock colours, each version 4.5:1 or more, darker on the light board     | `packages/document/src/pen-colours.test.ts`                                              |
 | `penColour` validated; projected per board; kept by erase pieces               | `validate.test.ts`, `whiteboard.test.ts`, `whiteboard-stroke.test.ts`                    |
-| Canvas and export draw the named colour for the appearance                     | `apps/live/lib/whiteboard-ink.test.ts`, `export-as-seen.test.ts`                         |
+| Canvas and export draw the named colour for the canvas                         | `apps/live/lib/stock-colour-projector.test.ts`, `export-as-seen.test.ts`                 |
 | Marker prefs: ink for any marker, names, custom hex, old colours read as names | `apps/live/lib/whiteboard-prefs.test.ts`                                                 |
 | Commit records a name or a hex                                                 | `apps/live/hooks/canvas/commit-freehand.test.ts`                                         |
 | Your colours newest first, eight, Remove, synced                               | `pen-colour-memory.test.ts`, `useWhiteboard.test.tsx`                                    |
@@ -969,7 +969,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Backdrop on a whiteboard                                                       | `apps/live/lib/default-scheme.test.ts`                                                   |
 | Dock a11y, keyboard, flyouts                                                   | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                         |
 | Dock state, entering, telemetry                                                | `apps/live/hooks/canvas/useWhiteboard.test.tsx`, `e2e/whiteboard-opening-tool.spec.ts`   |
-| Ink projection cache                                                           | `apps/live/lib/whiteboard-ink.test.ts`                                                   |
+| Stock colour projection cache                                                  | `apps/live/lib/stock-colour-projector.test.ts`                                           |
 | Eraser steps                                                                   | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
 | Shape outline: kinds, fill, radius, rotation, sweep                            | `packages/document/src/shape-hit.test.ts`, `svg-path-outline.test.ts`                    |
 | Unselected whiteboard shape picked by its outline, 6 px a side                 | `apps/live/components/canvas/ShapeHitOutline.test.tsx`                                   |
