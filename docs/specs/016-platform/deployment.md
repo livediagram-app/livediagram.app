@@ -47,6 +47,8 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 `.github/workflows/codeql.yml` runs CodeQL (advanced setup) on every PR, every push to `main`, and weekly. A single `Analyze` job scans both `actions` and `javascript-typescript`, so it shows as one check. The repository's CodeQL default setup stays disabled: GitHub rejects advanced-setup uploads while it is on. GitHub Code Quality remains a separate, GitHub-managed check.
 
+`.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
+
 `.github/workflows/mcp-registry.yml` publishes the root `server.json` to the official MCP Registry when that file changes on `main`, or on manual dispatch. It authenticates with GitHub OIDC, so it needs no secret. See [MCP server §4.16](../015-api/mcp-server.md#416-registry-listing).
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Most workspaces are opted in (`pnpm turbo run test --dry` lists them); a workspace mirrors the pattern when it adds its first test.
