@@ -61,7 +61,7 @@ export function DocumentRow({
   favourite?: boolean;
   onToggleFavourite?: () => void;
   // Set true on rows the user can drag into folders. The actual
-  // drop handling lives on FolderNode + UnsortedNode; this row just
+  // drop handling lives on the panel tree's folder and Unsorted rows; this row just
   // sets the custom MIME data so a drop target knows what was
   // dragged.
   draggable?: boolean;

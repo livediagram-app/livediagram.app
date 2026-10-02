@@ -18,7 +18,7 @@ export const LOCAL_ONLY_DESCRIPTION =
 
 // Amber, the offline tone: the words meet 4.5:1 on the fill, the ring 3:1 against the row.
 const PILL =
-  'inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-1.5 py-px text-[10px] font-semibold leading-4 text-amber-800 ring-1 ring-amber-600 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400';
+  'optical-edges inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-1.5 py-px text-[10px] font-semibold leading-4 text-amber-800 ring-1 ring-amber-600 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400';
 
 export function LocalOnlyPill({
   asLabel = false,
@@ -33,7 +33,7 @@ export function LocalOnlyPill({
   const face = (
     <>
       <ThisBrowserIcon size={10} />
-      <span>{LOCAL_ONLY_LABEL}</span>
+      <span className="text-optical-line">{LOCAL_ONLY_LABEL}</span>
     </>
   );
   if (asLabel) {
