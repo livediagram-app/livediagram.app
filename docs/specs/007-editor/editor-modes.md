@@ -140,9 +140,17 @@ element in the same colour.
   erasers ([Draw mode](../023-whiteboard/whiteboard.md)).
 - **What a mode writes, stays.** A rule that shapes content is stored on the
   element when it is made, never read from the mode: a text box made in Draw
-  mode **hugs its text** (`autoWidth`) in both modes and for everyone; one
-  made in Diagram mode does not. A rule about input (what a click picks,
-  which keys do what) follows the person's current mode.
+  mode **hugs its text** in both modes and for everyone; one made in Diagram
+  mode does not. A rule about input (what a click picks, which keys do what)
+  follows the person's current mode.
+- **A text box's sizing** is one field, `TextElement.sizing`:
+  - `'fit'`: the width follows the words up to the wrap width, and the height
+    hugs the lines (a text box clicked into place in Draw mode);
+  - `'wrap'`: the width is set, and the height hugs the lines (dragged out or
+    resized in Draw mode);
+  - absent: a fixed box, its text wrapping inside it (Diagram mode).
+  - It replaces `autoWidth`: `autoWidth: true` becomes `'fit'`; text on a
+    migrated whiteboard without it becomes `'wrap'`, as it hugged there.
 - **Entering Draw mode**, by opening a tab or by switching, puts the active
   pen in hand on an empty tab and Select on a tab with content.
 - **No further cue:** the dock (in place of the palette) and the switch's
