@@ -55,6 +55,7 @@ export const HELP_ARTICLES = {
   markdownImport: 'tools/markdown-import',
   microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
   drawioImport: 'explorer/drawio-import',
+  shapeLibraries: 'explorer/shape-libraries',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
@@ -208,6 +209,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   microsoftWhiteboardImport: {
     title: 'Learn about Microsoft Whiteboard import',
     description: 'What a board export is and how each board becomes a document.',
+  },
+  shapeLibraries: {
+    title: 'Learn about shape libraries',
+    description: 'How libraries are made, placed from My shapes, and managed.',
   },
   drawioImport: {
     title: 'Learn about draw.io import',

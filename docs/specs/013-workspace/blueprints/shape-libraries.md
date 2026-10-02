@@ -23,8 +23,8 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 | `apps/live/components/palette/PaletteMyShapesTab.tsx`      | The My shapes category body: search, sections, tiles                                                         |
 | `apps/live/components/palette/LibraryShapeTile.tsx`        | One tile: thumbnail or title, click, keyboard, drag                                                          |
 | `apps/live/hooks/canvas/useLibraryShapeInsert.ts`          | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                       |
-| `page.tsx` in apps/live/app/explorer/shape-libraries       | The route                                                                                                    |
-| `ShapeLibrariesPane.tsx` in apps/live/components/panels    | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                   |
+| `apps/live/app/explorer/shape-libraries/page.tsx`          | The route                                                                                                    |
+| `apps/live/components/panels/ShapeLibrariesPane.tsx`       | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                   |
 
 ## Domain and naming
 
