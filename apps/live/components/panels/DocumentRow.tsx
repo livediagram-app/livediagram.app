@@ -10,6 +10,7 @@ import { DocumentActionsMenu } from '@/app/explorer/document-row-shared';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DOCUMENT_DRAG_MIME } from './explorer-drag-mime';
+import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
 
 export function DocumentRow({
   item,
@@ -112,7 +113,12 @@ export function DocumentRow({
             className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-100"
           />
         ) : (
-          <span className="min-w-0 truncate">{item.name}</span>
+          <span className="flex min-w-0 items-center gap-1">
+            <span className="min-w-0 truncate">{item.name}</span>
+            {/* A label, not a link: this row's open button holds it
+                (docs/specs/006-document/offline-mode.md#local-only-pill). */}
+            {offline ? <LocalOnlyPill asLabel /> : null}
+          </span>
         )}
         <span
           className={

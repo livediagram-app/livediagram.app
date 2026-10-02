@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useId, type HTMLAttributes, type ReactNode } from 'react';
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { TreeChevronIcon } from '@/components/primitives/explorer-icons';
 
@@ -28,6 +28,10 @@ export function SidebarRow({
   trailing,
   renaming = false,
   onContextMenu,
+  description,
+  rowProps,
+  highlighted = false,
+  className,
   children,
 }: {
   icon: ReactNode;
@@ -47,8 +51,17 @@ export function SidebarRow({
   // the field's, not a navigation.
   renaming?: boolean;
   onContextMenu?: (e: React.MouseEvent) => void;
+  // A sentence a screen reader hears after the name (the Local only pill's meaning).
+  description?: string;
+  // Extra handlers on the row's own line: a drag source, a drop target.
+  rowProps?: HTMLAttributes<HTMLDivElement>;
+  // Ringed while something is dragged over it.
+  highlighted?: boolean;
+  // Classes on the treeitem itself (the panel's slide-out when a row is deleted).
+  className?: string;
   children?: ReactNode;
 }) {
+  const descriptionId = useId();
   return (
     <li
       role="treeitem"
@@ -56,9 +69,10 @@ export function SidebarRow({
       aria-level={depth + 1}
       aria-selected={selected}
       aria-expanded={expandable ? expanded : undefined}
+      aria-describedby={description ? descriptionId : undefined}
       data-tree-label={textLabel}
       tabIndex={-1}
-      className="outline-none"
+      className={`outline-none${className ? ` ${className}` : ''}`}
       onContextMenu={
         onContextMenu
           ? (e) => {
@@ -69,9 +83,17 @@ export function SidebarRow({
           : undefined
       }
     >
+      {description ? (
+        <span id={descriptionId} className="sr-only">
+          {description}
+        </span>
+      ) : null}
       <div
         data-tree-row
+        {...rowProps}
         className={`group flex items-center gap-1 rounded-md px-1 [li:focus-visible>&]:ring-2 [li:focus-visible>&]:ring-brand-500 ${
+          highlighted ? 'ring-2 ring-brand-400 ' : ''
+        }${
           selected
             ? 'bg-brand-50 dark:bg-brand-500/15'
             : 'hover:bg-slate-100 dark:hover:bg-slate-700'

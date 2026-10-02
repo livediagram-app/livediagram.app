@@ -1,41 +1,17 @@
 'use client';
 
-import {
-  ImageIcon,
-  LibraryIcon,
-  PaletteIcon,
-  ShapesIcon,
-  ThisBrowserIcon,
-  TrashIcon,
-} from '@/components/primitives/explorer-icons';
+import { LibraryIcon, ThisBrowserIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
-import type { SelectedNode } from '../views';
 import {
   LIBRARY_EXPAND_KEY,
   SIDEBAR_LABELS,
   type SidebarDivider,
   type SidebarRowKind,
 } from './sidebar-structure';
-import { trackSidebar, type SidebarTelemetryRow } from './sidebar-telemetry';
+import { trackSidebar } from './sidebar-telemetry';
+import { LIBRARY_PAGES } from './library-pages';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
-
-// The Library's pages, in order.
-const LIBRARY_PAGES = [
-  { kind: 'gallery', label: SIDEBAR_LABELS.gallery, Icon: ImageIcon, row: 'ImageGallery' },
-  { kind: 'themes', label: SIDEBAR_LABELS.themes, Icon: PaletteIcon, row: 'Themes' },
-  {
-    kind: 'shape-libraries',
-    label: SIDEBAR_LABELS.shapeLibraries,
-    Icon: ShapesIcon,
-    row: 'ShapeLibraries',
-  },
-] as const satisfies readonly {
-  kind: SelectedNode['kind'];
-  label: string;
-  Icon: unknown;
-  row: SidebarTelemetryRow;
-}[];
 
 // More (docs/specs/013-workspace/explorer-structure.md): This browser (offline documents,
 // docs/specs/006-document/offline-mode.md), Library, and Trash

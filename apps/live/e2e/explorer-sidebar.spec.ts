@@ -181,3 +181,53 @@ test.describe('explorer sidebar', () => {
     expectNoPageErrors(pageErrors);
   });
 });
+
+// The editor's floating Explorer panel builds the same groups
+// (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel).
+test.describe('editor Explorer panel', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+  });
+
+  test('shows Overview, Spaces and More and opens documents in place', async ({
+    page,
+    pageErrors,
+    baseURL,
+  }) => {
+    const owner = crypto.randomUUID();
+    const origin = new URL(baseURL!).origin;
+    await darkVisitor(page, owner);
+    await page.addInitScript(() => localStorage.setItem('livediagram:v2:tour-seen', '1'));
+    const id = crypto.randomUUID();
+    const make = async (docId: string, name: string) => {
+      const res = await page.request.post(`${apiBase}/documents`, {
+        headers: { 'X-Owner-Id': owner, Origin: origin },
+        data: { id: docId, name, tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }] },
+      });
+      expect(res.ok()).toBe(true);
+    };
+    await make(id, 'Open one');
+    await make(crypto.randomUUID(), 'Another');
+    await page.goto(`/document/${id}`);
+    const panel = page.getByRole('navigation', { name: 'Explorer' });
+    await expect(panel.getByRole('treeitem', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
+    await expect(panel.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
+    // Compact on open; the keyboard opens My documents and walks into its documents.
+    const myDocuments = panel.getByRole('treeitem', { name: 'My documents' });
+    await expect(myDocuments).toHaveAttribute('aria-expanded', 'false');
+    await myDocuments.focus();
+    await page.keyboard.press('Enter');
+    await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('ArrowDown');
+    await expect(panel.getByRole('treeitem', { name: /^Unsorted/ })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(panel.getByRole('treeitem', { name: 'Another' })).toBeVisible();
+    await expect(panel.getByRole('treeitem', { name: 'Open one' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(page).toHaveURL(new RegExp(`/document/${id}`));
+    expectNoPageErrors(pageErrors);
+  });
+});

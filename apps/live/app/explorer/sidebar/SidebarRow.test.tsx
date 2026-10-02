@@ -123,3 +123,22 @@ describe('SidebarRow', () => {
     expect(outer).not.toHaveBeenCalled();
   });
 });
+
+describe('SidebarRow extras', () => {
+  it('describes itself to assistive technology when given a sentence', () => {
+    row({ description: 'Lives only in this browser.' });
+    const item = screen.getByRole('treeitem');
+    const id = item.getAttribute('aria-describedby');
+    expect(document.getElementById(id!)?.textContent).toBe('Lives only in this browser.');
+  });
+
+  it('spreads drag handlers onto its own line and rings while highlighted', () => {
+    const onDragStart = vi.fn();
+    row({ rowProps: { draggable: true, onDragStart }, highlighted: true });
+    const line = screen.getByRole('treeitem').querySelector('[data-tree-row]') as HTMLElement;
+    expect(line.getAttribute('draggable')).toBe('true');
+    expect(line.className).toMatch(/ring-brand-400/);
+    fireEvent.dragStart(line);
+    expect(onDragStart).toHaveBeenCalledTimes(1);
+  });
+});

@@ -62,7 +62,7 @@ test.describe('whiteboard dock position', () => {
     await openWhiteboard(page, { width: 1024, height: 768 });
     const box = (await dock(page).boundingBox())!;
     const explorer = (await page
-      .getByRole('tablist', { name: 'Explorer sections' })
+      .getByRole('navigation', { name: 'Explorer' })
       .locator('xpath=ancestor::*[@data-floating-panel][1]')
       .boundingBox())!;
     expect(explorer.y).toBeGreaterThanOrEqual(box.y + box.height);

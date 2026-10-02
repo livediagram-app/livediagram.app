@@ -63,12 +63,16 @@ const APPEARANCE_LABELS = tokensAfter(
   '};',
 );
 
-// The Explorer sidebar row kinds: `Sidebar.<Row>` per SidebarTelemetryRow member.
-const SIDEBAR_ROWS = tokensAfter(
+// The Explorer sidebar row kinds: `Sidebar.<Row>` on the page and `ExplorerPanel.<Row>` in the
+// editor's panel, per SidebarTelemetryRow member.
+const SIDEBAR_ROW_KINDS = tokensAfter(
   read('live/app/explorer/sidebar/sidebar-telemetry.ts'),
   'export type SidebarTelemetryRow',
   ';',
-).map((row) => `Sidebar.${row}`);
+);
+const SIDEBAR_ROWS = ['Sidebar', 'ExplorerPanel'].flatMap((prefix) =>
+  SIDEBAR_ROW_KINDS.map((row) => `${prefix}.${row}`),
+);
 
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
 const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');

@@ -91,6 +91,9 @@ describe('eventExplanation', () => {
     expect(eventExplanation('UI', 'Selected', 'Sidebar.SharedWithMe')).toBe(
       "Someone picked the shared with me row in the Explorer's sidebar.",
     );
+    expect(eventExplanation('UI', 'Selected', 'ExplorerPanel.MyDocuments')).toBe(
+      "Someone picked the my documents row in the editor's Explorer panel.",
+    );
     expect(eventExplanation('UI', 'Selected', 'SignInBannerExplorer')).toBe(
       EXACT['UI|Selected|SignInBannerExplorer'],
     );

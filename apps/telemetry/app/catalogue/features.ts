@@ -449,14 +449,18 @@ export const ASSIGNED_ACTIONS: MetricStack = {
   headline: ACTIONS_ASSIGNED,
 };
 
-// The Explorer sidebar (docs/specs/013-workspace/explorer-structure.md): UI·Selected·Sidebar.<Row>,
-// one per row activated, by which kind of row (never a name).
+// The Explorer sidebar and the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md):
+// UI·Selected·Sidebar.<Row> / ExplorerPanel.<Row>, one per row activated, by kind (never a name).
 export const EXPLORER_SIDEBAR_PICKS = chart(
   'UI',
   'Selected',
   'Explorer Sidebar Picks',
-  'A row picked in the Explorer sidebar: Home, Activity, a space or folder, This browser, the Library pages, or Trash.',
-  { typeIn: (type) => (type ?? '').startsWith('Sidebar.'), rising: 'neutral' },
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Activity, a space or folder, This browser, the Library pages, or Trash.",
+  {
+    typeIn: (type) =>
+      (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
+    rising: 'neutral',
+  },
 );
 
 export const ORGANISATION: MetricStack = {

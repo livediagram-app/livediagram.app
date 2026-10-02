@@ -22,6 +22,7 @@ export function eventExplanation(category: string, action: string, type: string 
 }
 
 const SIDEBAR_PREFIX = 'Sidebar.';
+const PANEL_PREFIX = 'ExplorerPanel.';
 
 function pattern(category: string, action: string, type: string): string | null {
   switch (`${category}|${action}`) {
@@ -58,8 +59,10 @@ function pattern(category: string, action: string, type: string): string | null 
       return `Someone picked ${withArticle(words(type))} result from the editor's search.`;
     // The Explorer sidebar (docs/specs/013-workspace/explorer-structure.md): which row.
     case 'UI|Selected':
-      return type.startsWith(SIDEBAR_PREFIX)
-        ? `Someone picked the ${words(type.slice(SIDEBAR_PREFIX.length))} row in the Explorer's sidebar.`
+      if (type.startsWith(SIDEBAR_PREFIX))
+        return `Someone picked the ${words(type.slice(SIDEBAR_PREFIX.length))} row in the Explorer's sidebar.`;
+      return type.startsWith(PANEL_PREFIX)
+        ? `Someone picked the ${words(type.slice(PANEL_PREFIX.length))} row in the editor's Explorer panel.`
         : null;
     case 'UI|Opened':
       return isArticleSlug(type)
