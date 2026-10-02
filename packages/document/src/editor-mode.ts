@@ -60,8 +60,8 @@ export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: 
   return { ...tab, opensIn: mode };
 }
 
-// The one gate every LOOK decision (the board backdrop, the ink projection, the theme being set
-// aside) reads, keyed on the viewer's effective editor mode.
+// The one gate the look reads, keyed on the viewer's effective editor mode: in Draw mode the
+// canvas pattern is the person's own (resolveViewBackdrop); everything else looks the same in both.
 export function hasBoardLook(mode: EditorMode): boolean {
   return mode === 'draw';
 }
