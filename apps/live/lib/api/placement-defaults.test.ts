@@ -39,9 +39,9 @@ describe('placement default calls', () => {
   });
 
   it('sets a default with the key encoded in the path', async () => {
-    await apiSetPlacementDefault('owner-1', 'board:retrospective', 'f-retros');
+    await apiSetPlacementDefault('owner-1', 'template:retrospective', 'f-retros');
     expect(calls[0]).toMatchObject({ method: 'PUT', body: { folderId: 'f-retros' } });
-    expect(calls[0]!.url).toMatch(/\/placement-defaults\/board%3Aretrospective$/);
+    expect(calls[0]!.url).toMatch(/\/placement-defaults\/template%3Aretrospective$/);
   });
 
   it('clears a default', async () => {

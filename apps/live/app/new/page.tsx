@@ -38,7 +38,7 @@ import {
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import {
-  boardTypeOfTemplate,
+  templateFamilyOf,
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -367,12 +367,14 @@ export default function NewDocumentPage() {
           id: documentId,
           name: documentName,
           tabs: [tab],
-          teamId: settings.teamId ?? null,
-          folderId: settings.folderId ?? null,
+          // Passed through as given: absent is no choice (a default folder may answer), a null
+          // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
+          teamId: settings.teamId,
+          folderId: settings.folderId,
           // What it opens as, captured now and never re-derived
           // (docs/specs/013-workspace/default-folders.md): with no place chosen, the server files it
           // in the person's default folder for it.
-          intent: creationIntentOf(tab, boardTypeOfTemplate(templateKind)),
+          intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
         });
       }
     } catch (err) {
@@ -435,8 +437,10 @@ export default function NewDocumentPage() {
     const params = new URLSearchParams(window.location.search);
     void commitNewDocument(kind, '', 'brand', {
       saveLocation: DEFAULT_SAVE_LOCATION,
-      folderId: params.get('folder'),
-      teamId: params.get('team'),
+      // A missing param is no choice, not the root: a bypass link without context leaves room for a
+      // default folder (docs/specs/013-workspace/default-folders.md "Precedence").
+      folderId: params.get('folder') ?? undefined,
+      teamId: params.get('team') ?? undefined,
     });
   });
   useEffect(() => {

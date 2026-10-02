@@ -35,7 +35,7 @@ const envelope = (kind?: string): DocumentEnvelope => ({
 describe('importDocumentCopy', () => {
   it("sends Import a copy with its first tab's intent", async () => {
     await createApiLivediagramPort('owner-1').importDocumentCopy(envelope('whiteboard'));
-    expect(createBodies[0]).toMatchObject({ intent: { mode: 'draw' } });
+    expect(createBodies[0]).toMatchObject({ intent: { mode: 'draw', tabKind: 'diagram' } });
     expect(createBodies[0]).not.toHaveProperty('folderId');
   });
 
@@ -46,5 +46,6 @@ describe('importDocumentCopy', () => {
       folderId: null,
     });
     expect(createBodies[0]).not.toHaveProperty('intent');
+    expect(createBodies[0]).toHaveProperty('folderId', null);
   });
 });

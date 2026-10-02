@@ -146,6 +146,7 @@ export async function apiCreateDocument(
     name: string;
     tabs?: Tab[];
     teamId?: string | null;
+    // A folder; `null` = the root of the space, chosen on purpose; `undefined` = no choice.
     folderId?: string | null;
     // What the new document opens as (docs/specs/013-workspace/default-folders.md): with no place
     // chosen, the server files it in the person's default folder for it. Left out by a create that
@@ -170,7 +171,9 @@ export async function apiCreateDocument(
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
       ...(d.teamId ? { teamId: d.teamId } : {}),
-      ...(d.folderId ? { folderId: d.folderId } : {}),
+      // `null` is the space's root chosen on purpose; absent is no choice, where a default folder
+      // may answer (docs/specs/013-workspace/folders.md "Placement on create").
+      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
       ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),

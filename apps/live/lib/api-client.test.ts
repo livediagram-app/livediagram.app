@@ -507,13 +507,19 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
   });
 
   it('leaves placement out when none is chosen', async () => {
-    const body = await sentBody({ id: 'd1', name: 'N', teamId: null, folderId: null });
+    const body = await sentBody({ id: 'd1', name: 'N' });
     expect(body).not.toHaveProperty('teamId');
     expect(body).not.toHaveProperty('folderId');
   });
 
+  it('sends a null folder as the root chosen on purpose (docs/specs/013-workspace/default-folders.md)', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N', teamId: null, folderId: null });
+    expect(body).not.toHaveProperty('teamId');
+    expect(body).toHaveProperty('folderId', null);
+  });
+
   it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = { mode: 'diagram', boardType: 'kanban' } as const;
+    const intent = { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' } as const;
     const body = await sentBody({ id: 'd1', name: 'N', intent });
     expect(body.intent).toEqual(intent);
   });

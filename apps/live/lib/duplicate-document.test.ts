@@ -10,6 +10,7 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiCreateDocument, apiLoadDocument, apiLoadTab } from './api-client';
+import { ApiError } from './api/core';
 import { duplicateDocument } from './duplicate-document';
 
 const mLoadDocument = vi.mocked(apiLoadDocument);
@@ -136,19 +137,87 @@ describe('duplicateDocument', () => {
   });
 });
 
-describe('duplicateDocument placement (docs/specs/013-workspace/team-shared-documents.md)', () => {
-  it('creates the copy in the given team folder in the one create', async () => {
-    mLoadDocument.mockResolvedValue(sourceDocument([{ id: 't1' }]));
+// Duplicate (docs/specs/013-workspace/default-folders.md "Duplicate"): beside its source, always an
+// explicit placement, recording the source's recorded intent unchanged, never routed by a default.
+describe('duplicateDocument placement and recorded intent', () => {
+  const placed = (over: Record<string, unknown>) =>
+    ({
+      ...sourceDocument([{ id: 't1' }]),
+      teamId: null,
+      folderId: null,
+      opensIn: null,
+      tabKind: null,
+      templateFamily: null,
+      ...over,
+    }) as Awaited<ReturnType<typeof apiLoadDocument>>;
+
+  beforeEach(() => {
     mLoadTab.mockResolvedValue(tab('t1'));
+  });
+
+  it('creates the copy in the given team folder in the one create', async () => {
+    mLoadDocument.mockResolvedValue(placed({}));
     await duplicateDocument('owner', 'src', { teamId: 'team-1', folderId: 'tf1' });
     expect(mCreate).toHaveBeenCalledTimes(1);
     expect(mCreate.mock.calls[0]![1]).toMatchObject({ teamId: 'team-1', folderId: 'tf1' });
   });
 
-  it('creates a personal copy at the root when no placement is given', async () => {
-    mLoadDocument.mockResolvedValue(sourceDocument([{ id: 't1' }]));
-    mLoadTab.mockResolvedValue(tab('t1'));
+  it('files the copy beside its source when no placement is given', async () => {
+    mLoadDocument.mockResolvedValue(placed({ folderId: 'f-plans' }));
     await duplicateDocument('owner', 'src');
-    expect(mCreate.mock.calls[0]![1]).not.toHaveProperty('teamId');
+    expect(mCreate.mock.calls[0]![1]).toMatchObject({ teamId: null, folderId: 'f-plans' });
+  });
+
+  it('sends a source at the root as the explicit root, so no default routes it', async () => {
+    mLoadDocument.mockResolvedValue(placed({}));
+    await duplicateDocument('owner', 'src');
+    expect(mCreate.mock.calls[0]![1]).toHaveProperty('folderId', null);
+  });
+
+  it("records the source's recorded intent, unchanged", async () => {
+    mLoadDocument.mockResolvedValue(
+      placed({ opensIn: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }),
+    );
+    await duplicateDocument('owner', 'src');
+    expect(mCreate.mock.calls[0]![1].intent).toEqual({
+      mode: 'diagram',
+      tabKind: 'diagram',
+      templateFamily: 'retrospective',
+    });
+  });
+
+  it('records an event-storming source with no family', async () => {
+    mLoadDocument.mockResolvedValue(placed({ opensIn: 'diagram', tabKind: 'event-storming' }));
+    await duplicateDocument('owner', 'src');
+    expect(mCreate.mock.calls[0]![1].intent).toEqual({
+      mode: 'diagram',
+      tabKind: 'event-storming',
+    });
+  });
+
+  it('sends no intent for a source whose intent is unknown', async () => {
+    mLoadDocument.mockResolvedValue(placed({}));
+    await duplicateDocument('owner', 'src');
+    expect(mCreate.mock.calls[0]![1]).not.toHaveProperty('intent');
+  });
+
+  it("files the copy at the explicit root when its source's place is refused", async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    mLoadDocument.mockResolvedValue(placed({ teamId: 'team-x' }));
+    mCreate.mockRejectedValueOnce(new ApiError('create document', 403, 'team_forbidden'));
+    expect(await duplicateDocument('owner', 'src')).toBeDefined();
+    expect(mCreate).toHaveBeenCalledTimes(2);
+    expect(mCreate.mock.calls[1]![1]).toMatchObject({ teamId: null, folderId: null });
+    expect(warn).toHaveBeenCalledWith(
+      '[duplicate] placement refused reason=team_forbidden, filed at the root',
+    );
+    warn.mockRestore();
+  });
+
+  it('gives up on any other failure', async () => {
+    mLoadDocument.mockResolvedValue(placed({}));
+    mCreate.mockRejectedValueOnce(new ApiError('create document', 500, null));
+    expect(await duplicateDocument('owner', 'src')).toBeUndefined();
+    expect(mCreate).toHaveBeenCalledTimes(1);
   });
 });

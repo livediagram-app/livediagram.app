@@ -229,7 +229,10 @@ describe('importDocuments', () => {
       offline: false,
       createDocument: async (doc) => void made.push(doc),
     });
-    expect(made.map((d) => d.intent)).toEqual([{ mode: 'draw' }, { mode: 'diagram' }]);
+    expect(made.map((d) => d.intent)).toEqual([
+      { mode: 'draw', tabKind: 'diagram' },
+      { mode: 'diagram', tabKind: 'diagram' },
+    ]);
   });
 
   it('leaves out a page too large to store, names it, and lands the rest', async () => {

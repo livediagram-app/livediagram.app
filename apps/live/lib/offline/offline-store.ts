@@ -11,7 +11,13 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import { upgradeStores } from './legacy-offline-store';
-import type { ChangeLogEntry, LiveDoc, DocumentSummary, TabSummary } from '@livediagram/api-schema';
+import type {
+  ChangeLogEntry,
+  LiveDoc,
+  DocumentSummary,
+  RecordedIntent,
+  TabSummary,
+} from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { DocumentTrashedError } from '../document-trashed';
@@ -75,6 +81,10 @@ export function tabToSummary(
   return summary;
 }
 
+// No creation intent is recorded in the browser: unknown, never Diagram
+// (docs/specs/013-workspace/default-folders.md "Recorded intent").
+const UNKNOWN_INTENT: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
+
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
 // provenance, no owner join) — offline documents are private by construction.
@@ -94,6 +104,7 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     createdAt: rec.createdAt,
     ownerName: null,
     ownerColor: null,
+    ...UNKNOWN_INTENT,
   };
 }
 
@@ -108,10 +119,7 @@ function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     folderId: rec.folderId,
     teamId: null,
     source: null,
-    // No creation intent is recorded in the browser: unknown (docs/specs/013-workspace/
-    // default-folders.md "Recorded intent").
-    opensIn: null,
-    boardType: null,
+    ...UNKNOWN_INTENT,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
     empty: (rec.tabs[0]?.elements.length ?? 0) === 0,
