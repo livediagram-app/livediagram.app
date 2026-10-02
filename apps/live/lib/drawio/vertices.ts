@@ -5,7 +5,10 @@
 
 import {
   ICON_SIZE_PX,
+  ACTOR_FIGURE_HEIGHT,
+  ACTOR_VIEWBOX,
   PADDING_PX,
+  actorNameRoom,
   labelFontPx,
   type ArrowElement,
   type Element,
@@ -20,6 +23,8 @@ import type { ImportImageRequest } from '@/lib/import-images';
 import type { DrawioCell, Rect } from './cells';
 import { requestDataUrlImage } from './images';
 import { cellLabel } from './label';
+import { hexOf } from './colour';
+import { noteStickyColours } from './sticky-colour';
 import { DRAWIO_CAPTION_LINE_PX, DRAWIO_CAPTION_PADDING_PX } from './limits';
 import { shapeTurn, type VertexClass } from './shapes';
 import { shapeName } from './style';
@@ -66,7 +71,7 @@ function buildShape(
     outsideMovesIn: !actorCaption,
     boxHeight: box.height,
   });
-  const caption = actorCaption ? captionBox(cell, box, text.label, text.textSize, ctx) : null;
+  const caption = actorCaption ? actorCaptionBox(cell, box, text, ctx) : null;
   return {
     id,
     type: 'shape',
@@ -101,16 +106,23 @@ function buildText(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): 
   };
 }
 
+// A note keeps a sticky's colours: its fill (before the paper rule) as the nearest sticky preset,
+// with that preset's ink unless the label has a colour of its own (blueprint step 10.13).
 function buildSticky(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): StickyElement {
-  const { fillColor, strokeColor, opacity, rotation, shadow, locked, link, note } = boxedProps(
-    cell,
-    ctx,
-  );
+  const { strokeColor, opacity, rotation, shadow, locked, link, note } = boxedProps(cell, ctx);
+  const own = hexOf(cell.style.str('fillColor'));
+  const preset = own ? noteStickyColours(own) : null;
+  const text = textProps(cell, ctx, {
+    scale: 'note',
+    rich: true,
+    outsideMovesIn: true,
+    boxHeight: rect.height,
+  });
   return {
     id,
     type: 'sticky',
     ...rect,
-    ...(fillColor ? { fillColor } : {}),
+    ...(preset ? { fillColor: preset.fillColor } : {}),
     ...(strokeColor ? { strokeColor } : {}),
     ...(opacity !== undefined ? { opacity } : {}),
     ...(rotation !== undefined ? { rotation } : {}),
@@ -118,12 +130,8 @@ function buildSticky(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string)
     ...(locked ? { locked } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
-    ...textProps(cell, ctx, {
-      scale: 'note',
-      rich: true,
-      outsideMovesIn: true,
-      boxHeight: rect.height,
-    }),
+    ...text,
+    ...(preset && !text.textColor ? { textColor: preset.textColor } : {}),
   };
 }
 
@@ -279,6 +287,35 @@ function captionBox(
     box.width = wide;
   }
   return { box, textAlignX: 'center', textAlignY: vside === 'top' ? 'top' : 'bottom' };
+}
+
+// An actor's name under its figure: the box grows by the room the canvas gives a name
+// (`actorNameRoom`, in canvas px over the page scale) and is at least the figure's width, so the
+// figure (fitted clear of the name, actor-figure.ts) keeps draw.io's height. A name above the figure
+// keeps the generic caption box: the canvas only gives a name room below.
+function actorCaptionBox(
+  cell: DrawioCell,
+  rect: Rect,
+  text: { label?: string; textSize?: TextSize },
+  ctx: PageContext,
+): CaptionBox {
+  if (cell.style.str('verticalLabelPosition') === 'top' || !text.label) {
+    return captionBox(cell, rect, text.label, text.textSize, ctx);
+  }
+  const scale = ctx.scale ?? 1;
+  const height =
+    rect.height + actorNameRoom({ label: text.label, textSize: text.textSize }) / scale;
+  const figure = (rect.height * ACTOR_VIEWBOX.width) / ACTOR_FIGURE_HEIGHT;
+  const width = Math.max(
+    rect.width,
+    figure,
+    captionWidth(text.label.split('\n'), text.textSize, scale),
+  );
+  return {
+    box: { x: rect.x + (rect.width - width) / 2, y: rect.y, width, height },
+    textAlignX: 'center',
+    textAlignY: 'bottom',
+  };
 }
 
 function buildIcon(

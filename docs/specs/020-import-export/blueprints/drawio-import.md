@@ -293,6 +293,11 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
     on its `headerFill`, entity, table, table cell `bg`) carries a hex fill and the label has no
     `fontColor`, `textColor` = `#1e293b` on a fill `isLightColor` calls light, else `#ffffff` (D29).
     A label that is empty gets none.
+13. Sticky colours (`noteStickyColours`, `sticky-colour.ts`): a `note`'s hex `fillColor` (before the
+    paper rule); chroma at least `STICKY_TINT_MIN_CHROMA` → the tinted preset (not slate, paper,
+    charcoal or ink) nearest its hue, else the neutral preset nearest its lightness; `fillColor` = that
+    preset's fill; `textColor` = its text
+    unless the label has a `fontColor` that stays under step 10.10. No fill keeps the sticky default.
 
 `fontIdFor(family)`: lower-case the first family in the list, trimmed of quotes; a `FONTS` id or
 label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-mono`; `comic`,
@@ -447,7 +452,10 @@ carries `image=` → `image-unavailable` += 1. A page with `backgroundImage` →
   `captionWidth(lines)` when that is wider.
 
 Icons and images (with an outside label) always use it; an `actor` shape with `verticalLabelPosition` `top` / `bottom` uses
-it too and does not count `label-moved`. `captionWidth(lines)` is the longest line's characters ×
+it too and does not count `label-moved`. An actor's box grows by `lines × labelLineHeightPx(size) / scale +
+2 · PADDING_PX.sm / scale` instead of `DRAWIO_CAPTION_LINE_PX` per line, and is at least the figure's
+width (`height × ACTOR_VIEWBOX.width / ACTOR_FIGURE_HEIGHT`) wide, so the top-aligned figure keeps
+draw.io's height and the name its band. `captionWidth(lines)` is the longest line's characters ×
 `LABEL_EM_ADVANCE` × the caption preset's px, divided by the page scale (the box is in draw.io
 units until step 15.9), plus `DRAWIO_CAPTION_PADDING_PX`. An image's caption is a `text` element (`buildImageCaption`) in the
 caption band `captionBox` gives (the band only, below or beside the picture, which keeps its
@@ -497,6 +505,9 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
 7. Pass 2 (`createEdgeBuilder`): arrows, built in their queued paint positions, then any shapes riding
    on them (12.14); then `finish` places the ends on arrows (12.7).
 8. Truncation: output beyond `MAX_ELEMENTS_PER_TAB` dropped, `content-truncated` += dropped.
+   Before it, `inkOverFills(elements)`: each `text` without `textColor` and with a label takes
+   `inkOnFill(fill)` of the last boxed element before it in paint order whose box contains its box
+   and whose fill is a hex colour (a sticky without one counts as its default paper).
 9. **Scale** (`scalePage(elements, scale)`): about the page origin, multiply boxed `x`, `y`, `width`,
    `height`, lane `headerSize`, table `rowHeights` / `colWidths`, arrow `curvePoints`, `curveOffset`, free
    endpoints and `labelOffset.offset`; `labelMaxWidth` is already in livediagram px. Stroke widths,
@@ -1022,6 +1033,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `LABEL_LINE_HEIGHT`                             | 1.25                                                                                                                                                        | The canvas label line height (17.5 px at 14 px)                                                                                               |
 | `LABEL_EM_ADVANCE`                              | 0.4785                                                                                                                                                      | Mean advance per em of the reference text in the canvas label face (system UI stack, weight 500), measured in Chromium on Linux; 0.45 to 0.52 |
 | `HELVETICA_EM_ADVANCE`                          | 0.4746                                                                                                                                                      | The same for Helvetica / Arial / Liberation Sans (metric-compatible) at 400                                                                   |
+| `STICKY_TINT_MIN_CHROMA`                        | 0.02 (OKLCH)                                                                                                                                                | D45: draw.io's palest swatch (#e1d5e7, 0.028) still reads tinted; 0.015 to 0.03                                                               |
 | `DRAWIO_DEFAULT_MARKER_SIZE`                    | 6                                                                                                                                                           | `mxConstants.DEFAULT_MARKERSIZE`                                                                                                              |
 | `DRAWIO_DEFAULT_GRID_SIZE`                      | 10                                                                                                                                                          | `mxGraph.gridSize`, when the model names none                                                                                                 |
 | `DRAWIO_AXIS_TOLERANCE_PX`                      | 1                                                                                                                                                           | draw.io paints a corner within a pixel of the one before as a lean (`mxShape.getWaypoints`); 0.5 to 2                                         |

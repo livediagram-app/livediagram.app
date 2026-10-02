@@ -191,8 +191,8 @@ describe('uml.drawio', () => {
     // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
     const shopper = byLabel(page, 'Shopper') as ShapeElement;
     expect(shopper).toMatchObject({ shape: 'actor', textAlignY: 'bottom' });
-    // Grown a line down and widened about its centre to hold the name on one line.
-    const k = shopper.height / 78;
+    // Grown down by the name's room and widened about its centre to hold it on one line.
+    const k = scaleOf(page, 'Order', 180);
     expect(shopper.y).toBeCloseTo(320 * k, 3);
     expect(shopper.x + shopper.width / 2).toBeCloseTo(735 * k, 3);
     expect(shopper.width).toBeGreaterThan(30 * k);
@@ -235,7 +235,8 @@ describe('uml.drawio', () => {
     expect(places.to).toMatchObject({ elementId: order.id });
     expect(byLabel(page, 'Totals include VAT.')).toMatchObject({
       type: 'sticky',
-      fillColor: '#fff2cc',
+      // draw.io's default note yellow, as the nearest sticky colour.
+      fillColor: '#fde68a',
     });
     expect(byLabel(page, 'checkout')).toMatchObject({ shape: 'frame' });
   });

@@ -1,4 +1,5 @@
 import {
+  actorFigureRect,
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
@@ -204,6 +205,7 @@ export function ShapeContentRouter({
       // wrapper. svgHandlesAnim above suppresses the wrapper class so these
       // don't double up.
       animation={svgAnim}
+      figure={element.shape === 'actor' ? actorFigureRect(element) : undefined}
     />
   ) : null;
 }

@@ -6,6 +6,7 @@
 // `meet` for the proportional actor), so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
+import { actorFigureRect } from './actor-figure';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { pathAnchors } from './path-element';
 import { pathD } from './path-geometry';
@@ -127,11 +128,14 @@ export function svgShapeSilhouette(
   // A stroke-inside silhouette lands in the box inset by half the stroke, so
   // its outline stays inside the box like the canvas overlay's.
   const inset = geometry.strokeInside ? strokeWidth / 2 : 0;
+  // An actor's figure has its own rect, clear of its name (actor-figure.ts).
+  const area =
+    el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: el.width, height: el.height };
   const fit = boxFit(geometry, {
-    x: el.x + inset,
-    y: el.y + inset,
-    width: Math.max(0, el.width - 2 * inset),
-    height: Math.max(0, el.height - 2 * inset),
+    x: el.x + area.x + inset,
+    y: el.y + area.y + inset,
+    width: Math.max(0, area.width - 2 * inset),
+    height: Math.max(0, area.height - 2 * inset),
   });
   return `<g data-silhouette="${el.shape}">${geometry.parts
     .map((part) => svgShapePart(fitShapePart(part, fit), fill, stroke, strokeWidth, dash))

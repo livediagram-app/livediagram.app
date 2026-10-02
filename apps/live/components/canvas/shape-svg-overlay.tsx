@@ -98,6 +98,7 @@ export function ShapeSvgOverlay({
   strokeDasharray,
   aspect = 1.6,
   animation,
+  figure,
 }: {
   shape: ShapeKind;
   fill: string;
@@ -123,6 +124,9 @@ export function ShapeSvgOverlay({
   // and stay on the wrapper. Undefined for the draw-preview and unanimated
   // elements.
   animation?: ShapeSvgAnimation;
+  // An actor's figure rect in element px (actor-figure.ts in @livediagram/document), clear of its
+  // name; absent fills the box.
+  figure?: { x: number; y: number; width: number; height: number };
 }) {
   // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
   // useShapeSvgAnimation.
@@ -191,7 +195,13 @@ export function ShapeSvgOverlay({
       className={svgClassName}
       viewBox={geometry?.viewBox ?? '0 0 100 100'}
       preserveAspectRatio={geometry?.preserveAspectRatio ?? 'none'}
-      style={geometry?.strokeInside ? strokeInsideBox(strokeWidth) : undefined}
+      style={
+        figure
+          ? { left: figure.x, top: figure.y, width: figure.width, height: figure.height }
+          : geometry?.strokeInside
+            ? strokeInsideBox(strokeWidth)
+            : undefined
+      }
       aria-hidden
     >
       {gradientDefs}
