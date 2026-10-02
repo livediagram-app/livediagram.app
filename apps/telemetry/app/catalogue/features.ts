@@ -449,10 +449,21 @@ export const ASSIGNED_ACTIONS: MetricStack = {
   headline: ACTIONS_ASSIGNED,
 };
 
+// The Explorer sidebar (docs/specs/013-workspace/explorer-structure.md): UI·Selected·Sidebar.<Row>,
+// one per row activated, by which kind of row (never a name).
+export const EXPLORER_SIDEBAR_PICKS = chart(
+  'UI',
+  'Selected',
+  'Explorer Sidebar Picks',
+  'A row picked in the Explorer sidebar: Home, Activity, a space or folder, This browser, the Library pages, or Trash.',
+  { typeIn: (type) => (type ?? '').startsWith('Sidebar.'), rising: 'neutral' },
+);
+
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
-  blurb: 'Folders made and nested, tab folders, and tabs and documents filed.',
+  blurb:
+    'Folders made and nested, tab folders, tabs and documents filed, and the Explorer sidebar.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -462,6 +473,7 @@ export const ORGANISATION: MetricStack = {
     FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,
+    EXPLORER_SIDEBAR_PICKS,
   ],
 };
 

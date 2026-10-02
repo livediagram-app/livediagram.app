@@ -63,6 +63,13 @@ const APPEARANCE_LABELS = tokensAfter(
   '};',
 );
 
+// The Explorer sidebar row kinds: `Sidebar.<Row>` per SidebarTelemetryRow member.
+const SIDEBAR_ROWS = tokensAfter(
+  read('live/app/explorer/sidebar/sidebar-telemetry.ts'),
+  'export type SidebarTelemetryRow',
+  ';',
+).map((row) => `Sidebar.${row}`);
+
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
 const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
 
@@ -198,6 +205,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // the inbound change types and the Open with outcomes, read from their unions.
   'apps/live/lib/drive/browser-engine.ts Drive·Applied': { values: DRIVE_INBOUND_TYPES },
