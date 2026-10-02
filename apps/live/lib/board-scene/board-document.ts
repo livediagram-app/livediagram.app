@@ -31,7 +31,10 @@ export type BoardDocumentDates = {
  * the api applies (documentDates): both when both hold, the created one alone when only it does,
  * none otherwise.
  */
-export function boardDocumentDates(scene: BoardScene, now: number): BoardDocumentDates {
+export function boardDocumentDates(
+  scene: Pick<BoardScene, 'createdAt' | 'modifiedAt'>,
+  now: number,
+): BoardDocumentDates {
   const created = parse(scene.createdAt);
   const modified = parse(scene.modifiedAt);
   if (created === undefined) {

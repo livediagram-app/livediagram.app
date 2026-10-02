@@ -4038,6 +4038,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "RunSize": {
     "enum": [
+      "xs",
       "sm",
       "md",
       "lg"

@@ -2,10 +2,14 @@
 // id re-mint imported elements go through, the single-undo-step content
 // replace, and the format-dispatched importer (JSON / DSL / Markdown)
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
-// Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md).
+// Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md, and
+// draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
+// become new tabs).
 
 import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
+import type { DrawioInput } from '@/lib/drawio/import';
+import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -32,7 +36,7 @@ export const remintElementIds = (elements: Element[]): Element[] => {
   return remapElementRefs(next, idMap);
 };
 
-export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
+export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio';
 export type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 const EXCALIDRAW_TELEMETRY_TYPE = {
@@ -43,6 +47,14 @@ const EXCALIDRAW_TELEMETRY_TYPE = {
 
 type TabImportDeps = {
   tabs: Tab[];
+  // A fresh tab for each further page of a multi-page draw.io import, marked loaded once
+  // committed so the per-tab loader does not fetch it (useTabActions).
+  createTab: (name: string) => Tab;
+  markTabLoaded: (id: string) => void;
+  // Who stores a draw.io file's embedded images, and whether this document is an Offline Mode
+  // one that embeds them instead (docs/specs/020-import-export/import-image-pipeline.md).
+  ownerId: string;
+  documentId: string | null;
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -58,6 +70,10 @@ type TabImportDeps = {
 
 export function useTabImport({
   tabs,
+  createTab,
+  markTabLoaded,
+  ownerId,
+  documentId,
   activeId,
   commitTabs,
   setSelectedId,
@@ -116,6 +132,54 @@ export function useTabImport({
     return outcome;
   };
 
+  // draw.io (docs/specs/020-import-export/drawio-import.md): the first page replaces the active
+  // tab, every further page becomes a new tab after it, all in ONE commit so a single undo takes
+  // the whole import back. Embedded images go through the import image pipeline BEFORE the tabs
+  // change, for the same reason, in one pass across every page.
+  const importDrawioInput = async (
+    input: DrawioInput,
+    onProgress?: ImportProgressListener,
+  ): Promise<ImportOutcome> => {
+    const [{ importDrawio }, { applyDrawioPages }, { attachDrawioImages }, { drawioOutcome }] =
+      await Promise.all([
+        import('@/lib/drawio/import'),
+        import('./drawio-apply'),
+        import('@/lib/drawio/images'),
+        import('@/lib/drawio/report'),
+      ]);
+    const result = await importDrawio(input, {
+      tabIdForPage: (index) => (index === 0 ? activeId : crypto.randomUUID()),
+    });
+    if (!result.ok) return { status: 'error', error: result.error };
+    const { pages, images } = await attachDrawioImages(
+      result.pages,
+      result.images,
+      async (elements, requests) => {
+        const [{ attachImportImages }, { createBrowserImportImageSession }] = await Promise.all([
+          import('@/lib/import-images'),
+          import('@/lib/import-images/browser'),
+        ]);
+        const session = createBrowserImportImageSession({ ownerId, documentId });
+        return attachImportImages(elements, requests, session, onProgress);
+      },
+    );
+    setImportError(null);
+    commitTabs((ts) => applyDrawioPages(ts, activeId, pages, createTab));
+    for (const page of pages.slice(1)) markTabLoaded(page.tabId);
+    setSelectedId(null);
+    setEditingId(null);
+    setFormatSourceId(null);
+    if ((pages[0]?.elements.length ?? 0) > 0) requestFit();
+    track('Tab', 'Imported', 'Drawio');
+    debugLog('[drawio-import] applied', {
+      pages: result.report.pages,
+      elements: result.report.elements,
+      notes: Object.fromEntries(result.report.notes.map((n) => [n.kind, n.count])),
+      ...(images ? { images } : {}),
+    });
+    return drawioOutcome(result.report, pages, images);
+  };
+
   const importTextIntoActiveTab = async (
     format: ImportFormat,
     text: string,
@@ -126,6 +190,7 @@ export function useTabImport({
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
+    if (format === 'drawio') return importDrawioInput({ kind: 'text', text }, onProgress);
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
@@ -189,10 +254,19 @@ export function useTabImport({
           ? '.mmd,.mermaid,.txt,text/plain'
           : format === 'excalidraw'
             ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
-            : '.json,application/json';
+            : format === 'drawio'
+              ? DRAWIO_TAB_FILE_ACCEPT
+              : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
+    // A .drawio.png is binary, so draw.io reads the bytes.
+    if (format === 'drawio') {
+      return importDrawioInput(
+        { kind: 'bytes', bytes: new Uint8Array(await picked.file.arrayBuffer()) },
+        onProgress,
+      );
+    }
     // An Excalidraw PNG export is binary, so that format reads the bytes.
     if (format === 'excalidraw') {
       return importExcalidraw(new Uint8Array(await picked.file.arrayBuffer()), onProgress);

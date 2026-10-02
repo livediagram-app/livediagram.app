@@ -9,9 +9,8 @@ import type { ImportImageProgress } from '@/lib/import-images';
 import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
 import { DialogHeader } from './DialogHeader';
+import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { Glyph } from '@livediagram/ui';
-
-type Format = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -45,7 +44,7 @@ const FORMATS: {
   // format whose mapping isn't obvious from the placeholder alone. It rides
   // on the format rather than the picker screen so it appears once the
   // reader has actually chosen that format and the answer is relevant.
-  note?: { article: 'markdownImport'; label: string };
+  note?: { article: 'markdownImport' | 'importTabs'; label: string };
 }[] = [
   {
     key: 'json',
@@ -75,6 +74,15 @@ const FORMATS: {
     description:
       'A .excalidraw scene, or a PNG / SVG exported with the scene. Keeps shapes, labels, connections, drawings, and images.',
     placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
+  },
+  {
+    key: 'drawio',
+    title: 'draw.io',
+    description:
+      'A .drawio file, or a PNG / SVG with the diagram inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further page.',
+    placeholder:
+      '<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>',
+    note: { article: 'importTabs', label: 'See what carries over from draw.io' },
   },
 ];
 
@@ -225,7 +233,9 @@ function FormatIcon({ kind }: { kind: Format }) {
         ? 'md'
         : kind === 'excalidraw'
           ? 'excali'
-          : 'json';
+          : kind === 'drawio'
+            ? 'drawio'
+            : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

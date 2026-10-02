@@ -200,6 +200,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'linking-tabs': '#10b981',
   'add-to-document': '#6366f1',
   'import-tabs': '#0891b2',
+  'drawio-import': '#ea580c',
   'microsoft-whiteboard-import': '#0d9488',
   'export-tabs': '#0284c7',
   'tab-cleanup': '#2563eb',

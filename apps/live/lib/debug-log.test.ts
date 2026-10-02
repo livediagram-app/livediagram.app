@@ -77,3 +77,6 @@ describe('the console convention', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+// An inline boot script (stale-html-guard.ts) cannot import this module; it embeds the same rule as
+// one static source, its settings handed over as data.

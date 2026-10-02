@@ -362,12 +362,13 @@ export function ImportMenu() {
       <Menu x={14} y={36} w={120} items={['Import', 'Export']} active={0} />
       <Menu
         x={148}
-        y={48}
-        w={188}
-        items={['JSON  (.livediagram-tab.json)', 'Markdown  (outline)']}
-        active={0}
+        y={44}
+        w={150}
+        rowH={20}
+        items={['JSON', 'Mermaid', 'Markdown', 'Excalidraw', 'draw.io']}
+        active={4}
       />
-      <Arrow from={[134, 60]} to={[148, 70]} tone="muted" head={false} width={1.5} />
+      <Arrow from={[134, 60]} to={[148, 60]} tone="muted" head={false} width={1.5} />
     </Scene>
   );
 }

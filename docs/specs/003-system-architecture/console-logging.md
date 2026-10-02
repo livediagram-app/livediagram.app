@@ -21,7 +21,10 @@ that matters.
 - **Errors** (`console.error`): always shown.
 
 No file in `apps/live` calls `console.info`, `console.log` or `console.debug` directly; a unit
-test holds that line (only `debug-log.ts` itself may).
+test holds that line (only `debug-log.ts` itself may). An inline boot script, which runs before any
+module can load (the stale-page guard), writes no trace lines: its two lines are warnings, and its
+source is static, never built from values. A Node script
+under `apps/live` (a fixture generator) writes its own output with `process.stdout.write`.
 
 ## Workers
 

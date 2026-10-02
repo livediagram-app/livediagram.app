@@ -4,7 +4,7 @@
 // tables + per-run style resolution without an import cycle through
 // element-labels.tsx (which imports the editor).
 
-import { LABEL_FONT_PX, NOTE_FONT_PX } from '@livediagram/document';
+import { LABEL_FONT_PX, NOTE_FONT_PX, RUN_XS_PX } from '@livediagram/document';
 import type {
   BoxedElement,
   RunSize,
@@ -53,8 +53,10 @@ export const FIXED_FONT_PX: Record<
 export const MULTI_FONT_PX: Record<import('@livediagram/document').TextSize, number> = NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
-// so a run's size override reads consistently against its neighbours.
+// so a run's size override reads consistently against its neighbours; xs is RUN_XS_PX on every
+// scale (docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs").
 export const MULTI_RUN_PX: Record<RunSize, number> = {
+  xs: RUN_XS_PX,
   sm: MULTI_FONT_PX.sm,
   md: MULTI_FONT_PX.md,
   lg: MULTI_FONT_PX.lg,
@@ -70,7 +72,12 @@ export function labelBasePx(multiline: boolean, textSize: TextSize): number {
 // The px a run's own size override draws at, scaled with the label.
 export function labelRunPx(multiline: boolean, scale = 1): Record<RunSize, number> {
   const table = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
-  return { sm: table.sm * scale, md: table.md * scale, lg: table.lg * scale };
+  return {
+    xs: RUN_XS_PX * scale,
+    sm: table.sm * scale,
+    md: table.md * scale,
+    lg: table.lg * scale,
+  };
 }
 
 // A label's inset: px on every side, or a CSS padding (a whiteboard text box's 2px 4px).

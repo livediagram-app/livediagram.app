@@ -18,7 +18,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-07-14');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-09-27');
 
 type ComparisonRow = {
   label: string;
@@ -390,6 +390,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Templates and themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
+      'Bring your diagrams with you: .drawio files import page by page, with a report of anything that changed.',
       'Charts, icons, freehand sketching, comments and a present mode, all built in.',
       'Free, MIT-licensed, and self-hostable on your own Cloudflare account.',
     ],
@@ -429,7 +430,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my .drawio files?',
-        a: 'No, there is no .drawio/.xml importer. Mermaid flowcharts do round-trip: if you can express the diagram as Mermaid text (or have an AI assistant do it), livediagram imports it as a fully editable, themed diagram.',
+        a: 'Yes. Import a .drawio or .xml file, or a PNG or SVG exported from draw.io with the diagram included, and each page becomes a tab: shapes, text, colours, connections, swimlanes, class boxes, tables and layers come across. Vendor stencils map to matching technology icons where there is a clear match; anything without a match comes in as a labelled box, and the import tells you exactly what changed on the way in.',
       },
       {
         q: 'Does livediagram have AWS, UML, or network shape libraries?',

@@ -173,7 +173,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 15,
+    articleCount: 16,
     kind: 'feature',
   },
   {
@@ -1283,9 +1283,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene or PNG / SVG export into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
+      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1353,6 +1353,16 @@ export const articles: Article[] = [
     title: 'Explorer Page',
     description: 'The full-page library: the sidebar sections, list view, and folders.',
     keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'drawio-import',
+    title: 'Importing draw.io files',
+    description:
+      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own document with a tab per page.',
+    keywords:
+      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

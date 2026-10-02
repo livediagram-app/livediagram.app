@@ -520,6 +520,20 @@ describe('renderElementsToSvg', () => {
       expect(lineStarts.length).toBeGreaterThan(0);
     });
 
+    it('draws an extra-small run at 10 px, as the canvas does', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('xs', {
+            width: 200,
+            height: 80,
+            label: 'Title note',
+            richText: [{ text: 'Title ' }, { text: 'note', size: 'xs' }],
+          }),
+        ]),
+      );
+      expect(svg).toMatch(/font-size="10"[^>]*>\s?note</);
+    });
+
     it('stacks a wrapped bottom caption upward into the box', () => {
       // A long caption on a bottom-aligned icon element: the block's LAST
       // line sits at the bottom anchor, so the first line's y moves UP —

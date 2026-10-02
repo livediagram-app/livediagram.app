@@ -313,7 +313,8 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 - List (several boards): a checkbox per board, label the document name, secondary line "Edited 12 Mar 2026
   · 140 items"; a "Select all" checkbox; primary button "Import 12 boards" (count follows the
   ticks; disabled at 0), "Back"; under the list, "2 boards couldn't be read and will be left out."
-  when listing failed for some.
+  when listing failed for some. The drop zone and the list are the shared `ImportDropZone` and
+  `ImportChecklist` (`components/dialogs/`), which the Excalidraw and draw.io imports use too.
 - Progress (`role="status"`): "Importing board 3 of 12…" ("Importing board…" for one), then
   "Importing images 3 of 12…".
 - Result: the panel's own report (the shared `ImportImageReport`: landed counts, notes, image

@@ -146,6 +146,10 @@ export function useTabActions(deps: TabActionsDeps) {
   // cross-document link below.
   const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
     tabs,
+    createTab,
+    markTabLoaded,
+    ownerId,
+    documentId,
     activeId,
     commitTabs,
     setSelectedId,
