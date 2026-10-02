@@ -7,10 +7,7 @@ import {
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   FONTS,
-  LABEL_FONT_PX,
   isLightColor,
-  NOTE_FONT_PX,
-  arrowLabelFontSize,
   type ArrowheadSize,
   type BorderRadius,
   type BorderStroke,
@@ -26,6 +23,8 @@ import type { DrawioCell } from './cells';
 import { readColour } from './colour';
 import { readLabel } from './label';
 import { DRAWIO_DEFAULT_ARC_SIZE, DRAWIO_SHADOW } from './limits';
+import { nearest } from './nearest';
+import { elementTextSize, runTextSize, type TextScale } from './text-size';
 import type { DrawioStyle } from './style';
 
 export type ConvertContext = {
@@ -33,15 +32,6 @@ export type ConvertContext = {
   /** draw.io page id → the livediagram tab it became. */
   pageIdToTab: ReadonlyMap<string, string>;
 };
-
-/** Nearest entry of a px table; ties go to the earlier (smaller) entry. */
-function nearest<K extends string>(table: Record<K, number>, keys: readonly K[], px: number): K {
-  let best = keys[0]!;
-  for (const k of keys) {
-    if (Math.abs(table[k] - px) < Math.abs(table[best] - px)) best = k;
-  }
-  return best;
-}
 
 const STROKES: readonly BorderStroke[] = ['thin', 'medium', 'thick', 'extra-thick'];
 
@@ -77,20 +67,6 @@ export function radiusPreset(style: DrawioStyle, width: number, height: number):
   const radius = style.flag('absoluteArcSize') ? arc : (arc / 100) * shorter;
   if (radius >= shorter / 2) return 'full';
   return nearest(BORDER_RADIUS_PX, RADII, radius);
-}
-
-export type TextScale = 'label' | 'note' | 'arrow';
-const SIZES: readonly TextSize[] = ['sm', 'md', 'lg'];
-const ARROW_PX = {
-  sm: arrowLabelFontSize('sm'),
-  md: arrowLabelFontSize('md'),
-  lg: arrowLabelFontSize('lg'),
-};
-
-/** A draw.io font size as the preset nearest on the element's own scale (D26). */
-export function fontSizePreset(px: number, scale: TextScale): TextSize {
-  const table = scale === 'note' ? NOTE_FONT_PX : scale === 'arrow' ? ARROW_PX : LABEL_FONT_PX;
-  return nearest(table as Record<TextSize, number>, SIZES, px);
 }
 
 export function arrowheadSizePreset(px: number): ArrowheadSize {
@@ -211,7 +187,10 @@ export type TextFields = {
 /** The label and its styling. */
 export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOptions): TextFields {
   const s = cell.style;
-  const { plain, runs } = readLabel(cell.value, cell.html);
+  const basePx = s.num('fontSize') ?? 12;
+  const { plain, runs } = readLabel(cell.value, cell.html, (px) =>
+    runTextSize(px, basePx, options.scale),
+  );
   const fontStyle = s.num('fontStyle') ?? 0;
   const color = readColour(s.str('fontColor'));
   const font = fontIdFor(s.str('fontFamily'));
@@ -237,7 +216,7 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
       : inkOnFill(options.onFill) && plain !== ''
         ? { textColor: inkOnFill(options.onFill) }
         : {}),
-    textSize: fontSizePreset(s.num('fontSize') ?? 12, options.scale),
+    textSize: elementTextSize(basePx, options.scale),
     ...(font ? { font } : {}),
     textAlignX: alignX,
     textAlignY: alignY,

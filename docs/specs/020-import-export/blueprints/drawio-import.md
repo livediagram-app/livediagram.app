@@ -20,6 +20,8 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/drawio/stencils.ts`                        | Pure data: stencil and library-image names to icon ids                                                                           |
 | `lib/drawio/shapes.ts`                          | `classifyVertex`: the shape mapping table                                                                                        |
 | `lib/drawio/vertex-props.ts`                    | `boxedProps`, `textProps`: the property maps shared by every vertex                                                              |
+| `lib/drawio/text-size.ts`                       | `elementTextSize`, `runTextSize`, `htmlFontSizePx`: every font size the importer sets                                            |
+| `lib/drawio/nearest.ts`                         | `nearest`: the nearest preset to a px value                                                                                      |
 | `lib/drawio/vertices.ts`                        | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                                   |
 | `lib/drawio/containers.ts`                      | `buildLane`, `buildEntity`, `buildTable`                                                                                         |
 | `lib/drawio/edges.ts`                           | `buildArrow`: endpoints, route, heads, labels                                                                                    |
@@ -187,14 +189,16 @@ lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything
    the edge-label position (step 10.7). `originOf(parentId)` is `(0, 0)` for a layer or the root,
    else `absoluteRect(parentId)`'s top-left.
 
-### 8. Label (`readLabel(value, html, baseFontPx)`)
+### 8. Label (`readLabel(value, html, sizeOf?)`)
 
 - Not `html`: `{ plain: value }` (newlines kept, `\r\n` normalised to `\n`).
 - `html`: parse with `DOMParser('text/html')`; walk `body` depth-first carrying a format:
   - `b`, `strong`, `font-weight` ≥ 600 or `bold` → bold; `i`, `em`, `font-style: italic` → italic;
     `u`, `text-decoration` containing `underline` → underline; `s`, `strike`, `del`,
     `line-through` → strikethrough; `font color`, CSS `color` → `readColour`, hex only → color;
-    `a href` with `http:`, `https:`, `mailto:` → link; `h1`..`h3` → heading 1..3 (`h4`..`h6` bold).
+    `a href` with `http:`, `https:`, `mailto:` → link; `h1`..`h3` → heading 1..3 (`h4`..`h6` bold);
+    CSS `font-size: <n>px` and `font size="1"`..`"7"` (`htmlFontSizePx`: 10, 13, 16, 18, 24, 32,
+    48 px) → a span px, made a run `size` by `sizeOf` (step 10) at the end; no `sizeOf`, no sizes.
   - `br` → `\n`. Block elements (`div`, `p`, `li`, `h1`..`h6`, `tr`, `blockquote`, `pre`) start on a
     new line when text precedes them. `li` inside `ul` prefixes `• `, inside `ol` `n. `. `td` / `th`
     after the first in a row prefix a tab.
@@ -245,9 +249,11 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
    empty.
 10. Text: `readLabel`; `label = plain` (omitted when empty); `richText = runs` when the kind carries
     rich text (shape, text, sticky). `fontStyle` bits → `textBold` / `textItalic` / `textUnderline` /
-    `textStrikethrough`. `fontColor` hex → `textColor`. `fontSize` → nearest preset on the scale
+    `textStrikethrough`. `fontColor` hex → `textColor`. `fontSize` → `elementTextSize` (`text-size.ts`): nearest preset on the scale
     (`LABEL_FONT_PX` for shapes and text, `NOTE_FONT_PX` for stickies, `arrowLabelFontSize` for
-    arrows), over `sm`, `md`, `lg` only, ties to the smaller. `fontFamily` → `fontIdFor(family)`.
+    arrows), over `sm`, `md`, `lg` only, ties to the smaller. A span's px → `runTextSize(px,
+fontSize, scale)`: the nearest preset, omitted when it equals the element's; a span below the
+    smallest preset lands on it (the one place a smaller size or a report rule would go). `fontFamily` → `fontIdFor(family)`.
     `align` → `textAlignX`; `verticalAlign` → `textAlignY` (`middle` kept as `middle`).
 11. Label outside: `labelPosition` `left` / `right` or `verticalLabelPosition` `top` / `bottom` on a
     kind that is not an icon or an actor with its name above or below: alignment set towards that

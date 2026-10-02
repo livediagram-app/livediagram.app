@@ -289,7 +289,8 @@ When the cell has no label, the box is labelled with the stencil's readable name
   `textUnderline` / `textStrikethrough`.
 - `fontSize` (px) to the `textSize` preset whose rendered size is nearest on the element's own scale
   (shape labels, sticky notes and arrow captions each have one), so a 12 px draw.io label is `sm`, not
-  the 22 px default.
+  the 22 px default. A larger span inside an HTML label (`font-size`, `<font size>`) keeps its size
+  as a run size; a span smaller than livediagram's smallest size takes that smallest size.
 - `fontFamily` to a livediagram font where the name matches one (`Courier New` and monospace faces to
   `roboto-mono`, sketch faces to `caveat`, a family we ship by name to itself); anything else, and
   Helvetica, the default, is left unset.

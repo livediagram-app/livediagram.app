@@ -3,12 +3,17 @@
 // inert document (no scripts, no loads), and only text plus a closed set of
 // formats is read out of it.
 
-import { normalizeRuns, type RunHeading, type TextRun } from '@livediagram/document';
+import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@livediagram/document';
+import { htmlFontSizePx } from './text-size';
 import { hexOf } from './colour';
 
 export type DrawioLabel = { plain: string; runs?: TextRun[] };
 
-type Format = Omit<TextRun, 'text'>;
+// A run's format while walking; `px` is the span's font size, mapped to a run size at the end.
+type Format = Omit<TextRun, 'text' | 'size'> & { px?: number };
+
+/** A span's px as a run size, or undefined to inherit the label's. */
+export type RunSizeOf = (px: number) => RunSize | undefined;
 
 const BLOCKS = new Set([
   'div',
@@ -42,6 +47,8 @@ function formatOf(el: Element, inherited: Format): Format {
   if (tag === 'font') {
     const color = hexOf(el.getAttribute('color') ?? undefined);
     if (color) f.color = color;
+    const px = htmlFontSizePx(Number(el.getAttribute('size')));
+    if (px !== undefined) f.px = px;
   }
   if (tag === 'a') {
     const href = el.getAttribute('href')?.trim() ?? '';
@@ -57,6 +64,8 @@ function formatOf(el: Element, inherited: Format): Format {
     if (decoration.includes('line-through')) f.strikethrough = true;
     const color = hexOf(style.color || undefined);
     if (color) f.color = color;
+    const px = /^([\d.]+)px$/.exec(style.fontSize ?? '')?.[1];
+    if (px !== undefined && Number(px) > 0) f.px = Number(px);
   }
   return f;
 }
@@ -65,7 +74,7 @@ function formatOf(el: Element, inherited: Format): Format {
 // empty-line collapsing can work on text without losing the formatting.
 type Glyph = { ch: string; f: Format };
 
-export function readLabel(value: string, html: boolean): DrawioLabel {
+export function readLabel(value: string, html: boolean, sizeOf?: RunSizeOf): DrawioLabel {
   if (!html) return { plain: value.replace(/\r\n?/g, '\n') };
   if (value.trim() === '') return { plain: '' };
 
@@ -129,7 +138,11 @@ export function readLabel(value: string, html: boolean): DrawioLabel {
   const runs: TextRun[] = [];
   kept.forEach((line, i) => {
     if (i > 0) runs.push({ text: '\n' });
-    for (const g of line) runs.push({ text: g.ch, ...g.f });
+    for (const g of line) {
+      const { px, ...format } = g.f;
+      const size = px !== undefined ? sizeOf?.(px) : undefined;
+      runs.push({ text: g.ch, ...format, ...(size ? { size } : {}) });
+    }
   });
   const normalised = normalizeRuns(runs);
   const plain = normalised.map((r) => r.text).join('');

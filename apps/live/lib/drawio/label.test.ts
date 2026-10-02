@@ -80,3 +80,20 @@ describe('readLabel, html', () => {
     expect(readLabel('', true)).toEqual({ plain: '' });
   });
 });
+
+describe('readLabel span sizes', () => {
+  const sizeOf = (px: number) => (px >= 18 ? ('md' as const) : undefined);
+  it('reads CSS and <font size> spans through the size mapping it is given', () => {
+    expect(
+      readLabel(
+        'Title<br><span style="font-size: 22px">Big</span> <font size="1">small</font>',
+        true,
+        sizeOf,
+      ).runs,
+    ).toEqual([{ text: 'Title\n' }, { text: 'Big', size: 'md' }, { text: ' small' }]);
+  });
+
+  it('reads no sizes without a mapping', () => {
+    expect(readLabel('<span style="font-size: 22px">Big</span>', true)).toEqual({ plain: 'Big' });
+  });
+});

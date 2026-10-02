@@ -9,7 +9,6 @@ import {
   dashStyle,
   elementLink,
   fontIdFor,
-  fontSizePreset,
   inkOnFill,
   radiusPreset,
   strokePreset,
@@ -60,18 +59,6 @@ describe('radiusPreset', () => {
     expect(
       radiusPreset(parseStyle('rounded=1;absoluteArcSize=1;arcSize=24;', false), 120, 60),
     ).toBe('lg');
-  });
-});
-
-describe('fontSizePreset', () => {
-  it('picks the nearest preset on the element scale', () => {
-    expect(fontSizePreset(12, 'label')).toBe('sm');
-    expect(fontSizePreset(20, 'label')).toBe('md');
-    expect(fontSizePreset(28, 'label')).toBe('lg');
-    expect(fontSizePreset(18, 'label')).toBe('sm');
-    expect(fontSizePreset(14, 'note')).toBe('sm');
-    expect(fontSizePreset(11, 'arrow')).toBe('sm');
-    expect(fontSizePreset(20, 'arrow')).toBe('lg');
   });
 });
 
