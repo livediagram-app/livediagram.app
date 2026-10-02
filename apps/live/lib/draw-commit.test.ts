@@ -31,7 +31,8 @@ describe('buildDressedDrawnArrow', () => {
   });
   const board = { elements: [] as Element[], theme: themed, whiteboard: true };
 
-  it('is the drawn arrow in its tool style, unpainted on a whiteboard', () => {
+  // Written in Ink by name (docs/specs/007-editor/editor-modes.md "One look").
+  it('is the drawn arrow in its tool style, in Ink in Draw mode', () => {
     const out = buildDressedDrawnArrow(
       { type: 'arrow', ends: 'to', board: true },
       10,
@@ -46,7 +47,7 @@ describe('buildDressedDrawnArrow', () => {
       ends: 'to',
       unpainted: true,
     });
-    expect(rest).toEqual({ ...raw, strokeWidth: 6, arrowheadSize: 'large' });
+    expect(rest).toEqual({ ...raw, penColour: 'ink', strokeWidth: 6, arrowheadSize: 'large' });
     expect(out.strokeColor).toBeUndefined();
   });
 

@@ -1,29 +1,25 @@
-// Draw mode's board (docs/specs/023-whiteboard/whiteboard.md): its look and the display
-// projection that gives unpainted elements the board's ink. Pure data and pure
-// functions; the editor owns the dock and the device-local pens.
+// Draw mode (docs/specs/023-whiteboard/whiteboard.md): the canvases its stock colours are tuned
+// for, its Plain / Dots / Grid backgrounds and its pens' weights. Pure data and pure functions; the
+// editor owns the dock and the device-local pens. There is one look in both editor modes
+// (docs/specs/007-editor/editor-modes.md "One look"): Draw mode writes its colours onto what it
+// makes, and every renderer resolves stock colours by name (./stock-colours).
 import { BORDER_STROKE_PX, type BorderStroke } from './border-style';
-import { DARK_CANVAS_BACKGROUND_COLOR, DARK_CANVAS_PATTERN_COLOR } from './canvas-colors';
-import { PEN_INK, penColourHex, type PenColourName } from './pen-colours';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
+import { PEN_INK } from './pen-colours';
 import type { Appearance } from './themes';
-import type { BackgroundPattern, Element } from './index';
+import type { BackgroundPattern } from './index';
 
-// The whiteboard variant of the Default theme: an off-white whiteboard in
-// light; in dark the editor's own dark canvas, so the board belongs to the app
-// rather than imitating a green chalkboard. Ink on board stays >= 4.5:1.
+// The Default theme's canvas per appearance: the off-white in light, the editor's own dark canvas
+// in dark. The stock colours are tuned against these; Ink on them stays >= 4.5:1.
 export const WHITEBOARD_BOARD: Readonly<Record<Appearance, string>> = {
-  light: '#fbfaf7',
+  light: DEFAULT_BACKGROUND_COLOR,
   dark: DARK_CANVAS_BACKGROUND_COLOR,
 };
 export const WHITEBOARD_INK: Readonly<Record<Appearance, string>> = PEN_INK;
-// The dots and grid lines: a faint mix of ink over board.
-export const WHITEBOARD_PATTERN: Readonly<Record<Appearance, string>> = {
-  light: '#d6d3cb',
-  dark: DARK_CANVAS_PATTERN_COLOR,
-};
-
 export type WhiteboardBackground = 'plain' | 'dots' | 'grid';
 
-// Stored as the tab's ordinary `backgroundPattern`, so every reader renders it.
+// Draw mode's Background row: each choice is a canvas pattern, the person's own in Draw mode
+// (docs/specs/007-editor/editor-modes.md "One look").
 export const WHITEBOARD_BACKGROUNDS: readonly {
   id: WhiteboardBackground;
   label: string;
@@ -48,72 +44,14 @@ export function whiteboardBackgroundOf(
   return WHITEBOARD_BACKGROUNDS.find((b) => b.pattern === pattern)?.id ?? 'plain';
 }
 
-// Shapes a whiteboard draws as marker outlines. Everything else keeps its own look.
+// The shapes a whiteboard once drew as marker outlines on display; ./legacy-whiteboard-tab writes
+// that look onto them when a stored whiteboard tab is read.
 export const WHITEBOARD_INKED_SHAPES: ReadonlySet<string> = new Set([
   'square',
   'circle',
   'triangle',
   'diamond',
 ]);
-
-// Display-only: the colours an unpainted element shows on a whiteboard. Nothing
-// is written back, so the same element reads in the viewer's own ink and in the
-// ordinary defaults anywhere else. Returns `el` itself when nothing changes.
-export function inkWhiteboardElement<T extends Element>(el: T, ink: string): T {
-  switch (el.type) {
-    case 'freehand':
-      if (el.pen === 'highlighter') return el;
-      if (el.strokeColor !== undefined && el.fillColor !== undefined) return el;
-      return {
-        ...el,
-        strokeColor: el.strokeColor ?? ink,
-        fillColor: el.fillColor ?? 'transparent',
-      };
-    case 'path':
-      if (el.strokeColor !== undefined && el.fillColor !== undefined) return el;
-      return {
-        ...el,
-        strokeColor: el.strokeColor ?? ink,
-        fillColor: el.fillColor ?? 'transparent',
-      };
-    case 'text':
-      return el.textColor !== undefined ? el : { ...el, textColor: ink };
-    case 'shape':
-      if (!WHITEBOARD_INKED_SHAPES.has(el.shape)) return el;
-      if (el.strokeColor !== undefined && el.fillColor !== undefined && el.textColor !== undefined)
-        return el;
-      return {
-        ...el,
-        strokeColor: el.strokeColor ?? ink,
-        fillColor: el.fillColor ?? 'transparent',
-        textColor: el.textColor ?? ink,
-      };
-    case 'arrow':
-      return el.strokeColor !== undefined ? el : { ...el, strokeColor: ink };
-    default:
-      return el;
-  }
-}
-
-// What an element shows on a whiteboard for the viewer's board: a marker's named colour in the
-// version tuned for that board (docs/specs/023-whiteboard/whiteboard.md "The colour picker"), when no
-// explicit stroke colour overrides it, then the board's ink for anything unpainted. Display-only,
-// and `el` itself when nothing changes.
-export function projectWhiteboardElement<T extends Element>(el: T, board: Appearance): T {
-  const named = el as { penColour?: PenColourName; strokeColor?: string };
-  const stroked =
-    named.penColour !== undefined && named.strokeColor === undefined
-      ? { ...el, strokeColor: penColourHex(named.penColour, board) }
-      : el;
-  // A text box's or shape label's named text colour (docs/specs/023-whiteboard/whiteboard.md
-  // "Imported and pasted content"), likewise under an explicit `textColor`.
-  const text = stroked as { penTextColour?: PenColourName; textColor?: string };
-  const coloured =
-    text.penTextColour !== undefined && text.textColor === undefined
-      ? { ...stroked, textColor: penColourHex(text.penTextColour, board) }
-      : stroked;
-  return inkWhiteboardElement(coloured, WHITEBOARD_INK[board]);
-}
 
 const BORDER_STROKES = Object.entries(BORDER_STROKE_PX) as [BorderStroke, number][];
 

@@ -1,4 +1,9 @@
-import { inkWhiteboardElement, type ArrowElement, type Element } from '@livediagram/document';
+import {
+  resolveStockColours,
+  type ArrowElement,
+  type CanvasSurface,
+  type Element,
+} from '@livediagram/document';
 import type { ThemeDefinition } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { buildDressedDrawnArrow } from '@/lib/draw-commit';
@@ -8,8 +13,8 @@ import { buildDressedDrawnArrow } from '@/lib/draw-commit';
 export const DRAWN_ARROW_PREVIEW_ID = 'drawn-arrow-preview';
 
 // The line or arrow a draw gesture would land if released now, as the canvas would then show it
-// (docs/specs/023-whiteboard/whiteboard.md "Shapes"): the commit's own builder and dressing, then,
-// on a whiteboard, the viewer's ink, which the canvas lays over every unpainted element.
+// (docs/specs/023-whiteboard/whiteboard.md "Shapes"): the commit's own builder and dressing, its
+// stock colours (Draw mode's Ink) drawn in their version for the canvas, as the canvas draws them.
 export function drawnArrowAsShown(
   intent: Extract<PendingDraw, { type: 'arrow' }>,
   startX: number,
@@ -21,7 +26,7 @@ export function drawnArrowAsShown(
     theme: ThemeDefinition;
     whiteboard: boolean;
     styleNewElement: <T extends Element>(el: T) => T;
-    ink: string;
+    surface: CanvasSurface;
   },
 ): ArrowElement {
   const landed = buildDressedDrawnArrow(
@@ -33,6 +38,5 @@ export function drawnArrowAsShown(
     board,
     board.styleNewElement,
   );
-  const shown = board.whiteboard ? inkWhiteboardElement(landed, board.ink) : landed;
-  return { ...shown, id: DRAWN_ARROW_PREVIEW_ID };
+  return { ...resolveStockColours(landed, board.surface), id: DRAWN_ARROW_PREVIEW_ID };
 }

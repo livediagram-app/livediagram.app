@@ -127,7 +127,7 @@ describe('useQuickStyle on a mixed whiteboard selection', () => {
     const [s, q, n] = elements();
     expect(s).toBe(stroke);
     expect(n).toBe(sticky);
-    expect((q as { penColour?: string }).penColour).toBeUndefined();
+    expect((q as { penColour?: string }).penColour).toBe('ink');
   });
 
   it('stores a stock colour by name and moves a custom one to the front of Your colours', () => {

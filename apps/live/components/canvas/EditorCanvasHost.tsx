@@ -4,7 +4,7 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BUTTON_MODE, WHITEBOARD_INK } from '@livediagram/document';
+import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
@@ -439,10 +439,8 @@ export function EditorCanvasHost() {
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
-  const canvasElements = projectStockColours(
-    presentingElements ?? activeTab.elements,
-    canvasSurface(backdrop.backgroundColor),
-  );
+  const surface = canvasSurface(backdrop.backgroundColor);
+  const canvasElements = projectStockColours(presentingElements ?? activeTab.elements, surface);
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
@@ -561,14 +559,14 @@ export function EditorCanvasHost() {
         tabKind={activeTab.kind}
         editorMode={editorMode.mode}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
-        whiteboardInk={WHITEBOARD_INK[appearance]}
+        whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
           drawnArrowAsShown(intent, startX, startY, endX, endY, {
             elements: activeTab.elements,
             theme: getTheme(activeTab.theme),
             whiteboard: drawMode,
             styleNewElement,
-            ink: WHITEBOARD_INK[appearance],
+            surface,
           })
         }
         layerInertIds={layerInertIds}

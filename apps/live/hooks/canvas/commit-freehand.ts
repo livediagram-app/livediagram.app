@@ -1,6 +1,7 @@
 import {
   createFreehand,
   createShape,
+  INK_PEN_COLOUR,
   isPenColourName,
   nearestBorderStroke,
   recogniseShape,
@@ -276,6 +277,9 @@ function whiteboardStroke(
   const detected =
     ink?.snapped ?? (pen.recognise && !ink?.keepInk ? recogniseBoardStroke(stroke) : null);
   if (detected) {
+    // A recognised shape or line is written in its pen's colour, the main pen's Ink by name
+    // (docs/specs/007-editor/editor-modes.md "One look"), so it is Ink in Diagram mode too.
+    const lined = penColourFields(pen.colour ?? INK_PEN_COLOUR);
     track('Element', 'Added', detected.kind === 'line' ? 'Arrow' : titleCaseType(detected.kind));
     if (detected.kind === 'line') {
       const from = detected.from ?? points[0]!;
@@ -287,7 +291,7 @@ function whiteboardStroke(
         to: { kind: 'free', ...to },
         arrowEnds: 'none',
         strokeWidth: pen.width,
-        ...colour,
+        ...lined,
       };
     }
     return {
@@ -298,7 +302,7 @@ function whiteboardStroke(
       height: Math.max(16, detected.bbox.height),
       fillColor: 'transparent',
       strokeWidth: nearestBorderStroke(pen.width),
-      ...colour,
+      ...lined,
     };
   }
   track('Element', 'Added', 'Freehand');

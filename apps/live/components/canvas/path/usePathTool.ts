@@ -5,7 +5,7 @@ import {
   continuedPath,
   defaultFillColor,
   defaultStrokeColor,
-  inkWhiteboardElement,
+  resolveStockColours,
   pathAnchors,
   pathGeometry,
   reshapePath,
@@ -24,6 +24,7 @@ import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
 import { debugLog } from '@/lib/debug-log';
+import { boardShape } from '@/lib/whiteboard-tool';
 
 // A press on a toolbar floating over the canvas (the selection toolbar, the edit toolbar) is a
 // button press, never a node.
@@ -48,7 +49,6 @@ export function usePathTool({
   wrapperRef,
   viewportZoom,
   activeTabId,
-  whiteboardInk,
   editingId,
   selectedId,
   multiSelectCount,
@@ -67,8 +67,6 @@ export function usePathTool({
   wrapperRef: RefObject<HTMLDivElement | null>;
   viewportZoom: number;
   activeTabId?: string;
-  // The board's ink on a whiteboard (undefined elsewhere): an unpainted path draws in it.
-  whiteboardInk?: string;
   editingId: string | null;
   selectedId: string | null;
   multiSelectCount: number;
@@ -143,14 +141,17 @@ export function usePathTool({
     const base =
       original?.type === 'path'
         ? continuedPath(original, draft.anchors, false)
-        : onDressPath<PathElement>({
-            id: PATH_DRAFT_ID,
-            type: 'path',
-            ...pathGeometry(draft.anchors, false),
-            closed: false,
-          });
-    return whiteboardInk ? inkWhiteboardElement(base, whiteboardInk) : base;
-  }, [draft, continuingId, elements, onDressPath, whiteboardInk]);
+        : onDressPath<PathElement>(
+            boardShape({
+              id: PATH_DRAFT_ID,
+              type: 'path',
+              ...pathGeometry(draft.anchors, false),
+              closed: false,
+            }),
+          );
+    // As it will land (usePathCommits): Ink by name, drawn in its version for this canvas.
+    return resolveStockColours(base, surface);
+  }, [draft, continuingId, elements, onDressPath, surface]);
 
   const editDraft = edit.draft;
   const editingPathId = editing?.id ?? null;

@@ -124,6 +124,6 @@ describe('style memory across a diagram tab and a whiteboard tab', () => {
     // Another document, its whiteboard open, the rectangle still in hand.
     view.rerender({ documentId: 'second', tab: board, intent: rectangle });
     expect(view.result.current.quick.view?.sections.boardStroke?.value).toBe('ink');
-    expect(nextSquare(view.result.current.memory, true).penColour).toBeUndefined();
+    expect(nextSquare(view.result.current.memory, true).penColour).toBe('ink');
   });
 });

@@ -513,7 +513,6 @@ export function Canvas(props: CanvasProps) {
     wrapperRef,
     viewportZoom,
     activeTabId: props.activeTabId,
-    whiteboardInk: props.whiteboardDock ? props.whiteboardInk : undefined,
     editingId,
     selectedId,
     multiSelectCount: multiSelectedIds.size,

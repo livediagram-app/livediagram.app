@@ -40,11 +40,15 @@ describe('toolCaption', () => {
 });
 
 describe('the Path tool (docs/specs/023-whiteboard/path-tool.md "Style")', () => {
-  it('styles the next path: an unpainted closed stand-in, so a fill can be chosen too', () => {
+  it('styles the next path: a closed stand-in in Ink, unfilled, so a fill can be chosen too', () => {
     const el = toolPhantom({ type: 'path' }, theme)!;
-    expect(el).toMatchObject({ type: 'path', closed: true });
+    expect(el).toMatchObject({
+      type: 'path',
+      closed: true,
+      penColour: 'ink',
+      fillColor: 'transparent',
+    });
     expect('strokeColor' in el).toBe(false);
-    expect('fillColor' in el).toBe(false);
     expect(toolCaption({ type: 'path' })).toBe('Next path');
   });
 });

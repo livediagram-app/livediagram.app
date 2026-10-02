@@ -3,7 +3,7 @@
 // armed intent so the two can never disagree, plus the intents the dock arms
 // and the pen-versus-touch routing rule.
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
-import type { Element } from '@livediagram/document';
+import { INK_PEN_COLOUR, type Element } from '@livediagram/document';
 import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen } from './whiteboard-prefs';
 
@@ -70,11 +70,26 @@ export function whiteboardShapeIntent(id: WhiteboardShapeId): PendingDraw {
   return { ...shape.intent, board: true } as PendingDraw;
 }
 
-// A whiteboard shape as committed: unfilled, and otherwise unpainted, so it is
-// drawn in the board's ink at its default width until the quick style panel
-// says otherwise.
+// A shape, line, arrow or path as Draw mode writes it (docs/specs/007-editor/editor-modes.md "One
+// look"): an Ink outline (and label) stored by name and no fill, written on the element so it looks
+// the same in Diagram mode and to every collaborator, at its default width until the quick style
+// panel says otherwise. Notes and text boxes keep their own colours.
 export function boardShape<T extends Element>(el: T): T {
-  return el.type === 'shape' ? { ...el, fillColor: 'transparent' } : el;
+  switch (el.type) {
+    case 'shape':
+      return {
+        ...el,
+        penColour: INK_PEN_COLOUR,
+        penTextColour: INK_PEN_COLOUR,
+        fillColor: 'transparent',
+      };
+    case 'path':
+      return { ...el, penColour: INK_PEN_COLOUR, fillColor: 'transparent' };
+    case 'arrow':
+      return { ...el, penColour: INK_PEN_COLOUR };
+    default:
+      return el;
+  }
 }
 
 // On a whiteboard only a note or a text box turns a keypress into typing

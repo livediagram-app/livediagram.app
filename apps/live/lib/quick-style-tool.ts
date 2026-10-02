@@ -23,11 +23,13 @@ const PATH_PHANTOM = [
 export function toolPhantom(intent: PendingDraw, theme: ThemeDefinition): Element | null {
   if (intent.type === 'shape') return boardShape(createShape(intent.kind, 0, 0));
   if (intent.type === 'arrow') {
-    return buildDrawnArrow(0, 0, 120, 0, [], theme, { ends: intent.ends, unpainted: true });
+    return boardShape(
+      buildDrawnArrow(0, 0, 120, 0, [], theme, { ends: intent.ends, unpainted: true }),
+    );
   }
   if (intent.type === 'text') return createText(0, 0);
   // A closed stand-in, so the panel offers the fill a path takes once it closes (blueprint P11).
-  if (intent.type === 'path') return createPath(PATH_PHANTOM, true);
+  if (intent.type === 'path') return boardShape(createPath(PATH_PHANTOM, true));
   return null;
 }
 
