@@ -620,3 +620,7 @@ export {
   type DocumentPlacement,
   type PlacementRejection,
 } from './placement';
+
+// Default folders: the keys in force and the creation intent a create carries
+// (docs/specs/013-workspace/default-folders.md).
+export * from './placement-defaults';

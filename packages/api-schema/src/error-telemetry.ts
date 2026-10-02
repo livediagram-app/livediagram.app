@@ -120,6 +120,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'oauth',
   'account',
   'favourites',
+  'placement-defaults',
   'trash',
   'timeline',
   'activity',

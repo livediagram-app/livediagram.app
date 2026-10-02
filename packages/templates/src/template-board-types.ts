@@ -1,0 +1,77 @@
+// The board type each template makes (docs/specs/013-workspace/default-folders.md "Creation
+// intent"): the one map that routes a new retrospective, Kanban or event-storming board to its default
+// folder. A Record over TemplateKind, so a new template kind does not compile until it is mapped.
+
+import type { BoardType } from '@livediagram/api-schema';
+import type { TemplateKind } from './templates';
+
+const TEMPLATE_BOARD_TYPE: Record<TemplateKind, BoardType | null> = {
+  blank: null,
+  mindmap: null,
+  'mindmap-tree': null,
+  'mindmap-bubble': null,
+  orgchart: null,
+  retrospective: 'retrospective',
+  flowchart: null,
+  swimlane: null,
+  'decision-tree': null,
+  'approval-workflow': null,
+  'data-flow': null,
+  kanban: 'kanban',
+  swot: null,
+  timeline: null,
+  'milestone-timeline': null,
+  'milestone-timeline-vertical': null,
+  venn: null,
+  journey: null,
+  fishbone: null,
+  pyramid: null,
+  'mobile-wireframe': null,
+  'laptop-wireframe': null,
+  'slide-deck': null,
+  flywheel: null,
+  'logo-design': null,
+  gantt: null,
+  'live-card': null,
+  'comparison-table': null,
+  'system-architecture': null,
+  'er-diagram': null,
+  'sequence-diagram': null,
+  'prioritization-matrix': null,
+  roadmap: null,
+  'raci-matrix': null,
+  'user-story-map': null,
+  'affinity-map': null,
+  'lean-coffee': null,
+  'town-hall': null,
+  'business-model-canvas': null,
+  'empathy-map': null,
+  funnel: null,
+  'okr-tree': null,
+  sitemap: null,
+  'browser-wireframe': null,
+  storyboard: null,
+  'cloud-architecture': null,
+  'uml-class': null,
+  'state-machine': null,
+  'floor-plan': null,
+  'event-storming': 'event-storming',
+  'start-stop-continue': 'retrospective',
+  'mad-sad-glad': 'retrospective',
+  'four-ls': 'retrospective',
+  sailboat: 'retrospective',
+  'incident-postmortem': null,
+  'opportunity-solution-tree': null,
+  'crazy-eights': null,
+  'stakeholder-map': null,
+  'risk-matrix': null,
+  'user-persona': null,
+  'meeting-agenda': null,
+  'objectives-planner': null,
+  whiteboard: null,
+};
+
+/** The board type a document made from this template is; null for no template or no board. */
+export function boardTypeOfTemplate(kind: TemplateKind | null): BoardType | null {
+  return kind === null ? null : TEMPLATE_BOARD_TYPE[kind];
+}
