@@ -50,7 +50,7 @@ One file or one pasted text. The importer sniffs the content, never the file nam
 | `.drawio.png`                    | the PNG signature                                       | a `tEXt` or `zTXt` chunk keyed `mxfile` or `mxGraphModel`, URI-decoded; `zTXt` is zlib inflated |
 | pasted XML                       | as for the file forms above                             | as above                                                                                        |
 | JSON export                      | a JSON object with `version` and a `pages` array        | see "The JSON export" below                                                                     |
-| shape library (`mxlibrary`)      | root element `mxlibrary` holding a JSON array           | not a diagram: left out for now (see "Shape libraries" below)                                   |
+| shape library (`mxlibrary`)      | root element `mxlibrary` holding a JSON array           | not a diagram: it becomes a shape library (see "Shape libraries" below)                         |
 
 A PNG or SVG without an embedded diagram is refused with a message saying so ("This PNG has no draw.io
 diagram inside. In draw.io, export as PNG with 'Include a copy of my diagram' ticked."). Refusals are
@@ -92,12 +92,11 @@ converts through the same mapping, so a library shape arrives as the elements dr
 An item that cannot be read is left out and counted; a library none of whose items can be read is
 refused ("None of this library's shapes could be read."). A library keeps its first 1 000 items.
 
-Libraries are read and recognised, but not yet kept: [Shape libraries](../013-workspace/shape-libraries.md)
-(each library its own named library, palette **My shapes**) is specified and not built. Until it is,
-the Explorer's import lists a library file as left out, named in the report with "Shape libraries are
-coming soon.", never as an error, and imports the diagrams beside it; a pick of only libraries ends on
-the report. The tab Import dialog refuses one with "This is a draw.io shape library, not a diagram.
-Shape libraries are coming soon."
+Each imported library becomes **its own named shape library** of the person importing it, as
+[Shape libraries](../013-workspace/shape-libraries.md) defines (palette **My shapes**, the Explorer's
+**Shape libraries** page): named after the file, never merged with another library. The tab Import
+dialog does not take libraries; pasted or picked there, one is refused with "This is a draw.io shape
+library. Import it with Import from draw.io on the Explorer page to add it to My shapes."
 
 ## Pages become tabs
 
@@ -366,14 +365,14 @@ The Explorer page header's **Import from** group ([Folders](../013-workspace/fol
 - **Diagrams**: each draw.io file becomes **its own new document**, its pages as **diagram tabs** in
   page order (named after the pages), through the shared new-document target ([Board import](board-import.md)
   "new-document"), filed where New document files.
-- **Libraries**: left out, named in the report as coming soon (above).
+- **Libraries**: each library file becomes its own shape library (above).
 - **Everything else** (an image without a diagram, a text file, a folder's stray files) is listed as
   skipped with its reason, never fatal.
-- **The list**: one row per diagram with a checkbox, all ticked, under the name it will get, with its
-  date and size ("Edited 12 Mar 2026 · 3 pages"), and a line saying how many files will be left out.
-  A single diagram with nothing left out imports straight away. Then "Importing 3 of 12…", then the
-  shared report: what landed, every rule, the new documents as links, the files left out with their
-  reasons.
+- **The list**: one row per diagram or library with a checkbox, all ticked, under the name it will
+  get, with its date and size ("Edited 12 Mar 2026 · 3 pages", "Shape library · 14 shapes"), and a
+  line saying how many files will be left out. A single readable file with nothing left out imports
+  straight away. Then "Importing 3 of 12…", then the shared report: what landed, every rule, the new
+  documents and libraries as links, the files left out with their reasons.
 
 **Names.** The file name without its extension (`.drawio`, `.xml`, `.json`, `.drawio.svg`,
 `.drawio.png`, `.svg`, `.png`). When that name is generic (empty, or draw.io's `Untitled Diagram`,
@@ -460,7 +459,8 @@ These differ from draw.io for every file and are not worth a line each time:
 - **Telemetry** ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
   `track('Tab', 'Imported', 'Drawio')`, once per tab import and once per document the Explorer
   import makes (as Microsoft Whiteboard counts once per board), the existing pair and no schema
-  change; the shared new-document target adds `Document · Created`.
+  change; the shared new-document target adds `Document · Created`. A library's telemetry is
+  [Shape libraries](../013-workspace/shape-libraries.md)'.
 - **Help centre.** The Importing a Tab article lists draw.io, what maps and what the report means, and
   a draw.io import article in the Explorer category covers files, folders, Drive saves, JSON
   exports and libraries; registry keywords gain `drawio draw.io diagrams.net`.
