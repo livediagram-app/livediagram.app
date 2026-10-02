@@ -188,7 +188,7 @@ describe('GET /documents/:id/thumbnail (docs/specs/006-document/document-snapsho
       makeCtx('GET', '/api/documents/d1/thumbnail', { owner: 'intruder' }),
     );
     expect(res.status).toBe(404);
-    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(res.headers.get('Cache-Control')).toBe('no-cache');
   });
 });
 

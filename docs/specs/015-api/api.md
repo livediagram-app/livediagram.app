@@ -257,11 +257,14 @@ Local `wrangler dev` does not enforce it, so the api enforces it itself:
 
 ## Caching
 
-Every JSON answer is the caller's live state, so it goes out `Cache-Control: no-store` unless its
-route chooses a policy of its own (the OpenAPI document, the public telemetry summary). Without it
-a browser may keep an answer the server has since changed: Chromium holds a `410` with no explicit
-expiry indefinitely, so a share-link visitor who once saw a document deleted would keep seeing it
-after the owner restored it. Images and SVG snapshots set their own policies.
+Every JSON answer is the caller's live state, so it goes out `Cache-Control: no-cache` unless its
+route chooses a policy of its own (the OpenAPI document, the public telemetry summary): a browser
+may store it but asks the server again before reusing it. Without it a browser may reuse an answer
+the server has since changed: Chromium holds a `410` with no explicit expiry indefinitely, so a
+share-link visitor who once saw a document deleted would keep seeing it after the owner restored
+it. Not `no-store`: the browser's cache drains a stored answer's body, and without it an answer
+whose caller never reads the body holds its request open. Images and SVG snapshots set their own
+policies.
 
 ## Rate limiting
 
