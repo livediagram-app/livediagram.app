@@ -19,14 +19,23 @@ describe('SidebarGroup', () => {
   it('opens with its visible title when titles are shown', () => {
     group('titles');
     const title = screen.getByRole('heading', { name: 'Spaces' });
-    expect(title.className).not.toMatch(/\bsr-only\b/);
+    expect(title.querySelector('.sr-only')).toBeNull();
     expect(document.querySelector('[data-sidebar-separator]')).toBeNull();
   });
 
   it('shows a hairline instead of the title when separators are shown', () => {
     group('separators');
     expect(document.querySelector('[data-sidebar-separator]')).not.toBeNull();
-    expect(screen.getByRole('heading', { name: 'Spaces' }).className).toMatch(/\bsr-only\b/);
+    const hidden = screen.getByRole('heading', { name: 'Spaces' }).querySelector('.sr-only');
+    expect(hidden?.textContent).toBe('Spaces');
+  });
+
+  it('keeps the same heading box in both modes, so nothing moves', () => {
+    group('titles');
+    const titled = screen.getByRole('heading').className;
+    cleanup();
+    group('separators');
+    expect(screen.getByRole('heading').className).toBe(titled);
   });
 
   it('draws no hairline above the first group', () => {
