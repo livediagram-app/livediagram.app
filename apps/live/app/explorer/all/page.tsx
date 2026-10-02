@@ -5,7 +5,7 @@ import { ExplorerPane } from '../ExplorerPane';
 // The layout's ExplorerShell provides the chrome + state; this page
 // only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: 'Personal Space | livediagram',
+  title: 'My documents | livediagram',
 };
 
 export default function Page() {

@@ -150,7 +150,7 @@ describe('DocumentSyncMark', () => {
 describe('isMirrorable', () => {
   const doc = (over: Partial<PaneDocument>) =>
     ({ id: 'd', name: 'Plan', ownerId: 'me', savedAt: 1, ...over }) as PaneDocument;
-  it("is the user's own Personal Space document, saved in the cloud", () => {
+  it("is the user's own document in My documents, saved in the cloud", () => {
     expect(isMirrorable(doc({}))).toBe(true);
     expect(isMirrorable(doc({ shareCode: 'abc' }))).toBe(true);
   });

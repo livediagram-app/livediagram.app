@@ -295,7 +295,7 @@ export function TeamSharedDocuments({
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (docs/specs/013-workspace/folders.md). With
           `moveDests` (the explorer page supplies it) a DOCUMENT move offers
-          every space — Personal Space plus each team — so a team document can be
+          every space — My documents plus each team — so a team document can be
           re-homed back to the personal tree or on to another team from
           right here; the space overview + back bar come with it. This
           team's own folders come from the live lib (fresher than the
@@ -359,7 +359,7 @@ export function TeamSharedDocuments({
               void lib.moveDocument(moveTarget.id, dest.folderId);
               return;
             }
-            // Leaving this team (to Personal Space or another team): route via the
+            // Leaving this team (to My documents or another team): route via the
             // explorer's placement-aware mover, then refresh this library so
             // the row disappears once the move lands.
             void Promise.resolve(onMoveDocumentTo?.(moveTarget.id, dest)).then(() => lib.refresh());

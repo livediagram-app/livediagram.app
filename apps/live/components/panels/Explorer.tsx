@@ -240,7 +240,7 @@ function ExplorerImpl({
                         : undefined
                     }
                     // Change Folder for a team document (docs/specs/013-workspace/team-shared-documents.md): opens the
-                    // move picker on this team's tree, with Personal Space + the
+                    // move picker on this team's tree, with My documents + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDocumentTo.
                     onMoveRequest={
@@ -268,10 +268,10 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* Recent / Personal Space / Teams as a single tab bar (was three
+        {/* Recent / My documents / Teams as a single tab bar (was three
             stacked accordions) so only one list takes vertical space.
             Shared-with-you documents interleave into Recent (matching the
-            /explorer page); Personal Space holds the folder tree + Unsorted
+            /explorer page); My documents holds the folder tree + Unsorted
             (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-documents.md). The card owns
             its own tab state and hides itself when no section has
             anything to show — see ExplorerSections. */}
@@ -323,7 +323,7 @@ function ExplorerImpl({
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDocumentTo wired (signed-in sessions with teams), the picker
-          offers every space — Personal Space plus each team — so a team document
+          offers every space — My documents plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDocumentToFolder path. */}

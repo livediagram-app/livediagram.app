@@ -108,7 +108,7 @@ export class OpenWithImportError extends Error {
 }
 
 // **Import a copy** (or, for a copy of a mirrored file, **Import as new
-// document**): a new Personal Space document from the file's contents.
+// document**): a new document in My documents from the file's contents.
 export async function importOpenWithCopy(
   deps: { drive: DriveClient; port: CopyPort; host: string },
   state: OpenWithState,

@@ -56,7 +56,7 @@ export type DriveMirrorStatus = {
   rootName: string | null;
   // The root folder's Drive file id, for Open folder; null until known.
   rootFolderId: string | null;
-  // Every mirrored (Personal Space) document: the savedAt last uploaded to
+  // Every mirrored (My documents) document: the savedAt last uploaded to
   // Drive, or null while it has never been. A document not listed is not
   // mirrored (a team, shared or offline document) or is newer than the last
   // pass. Null until a pass has finished, so nothing is guessed on arrival.
@@ -653,7 +653,7 @@ export class DriveMirrorEngine {
   // ---- adoption --------------------------------------------------------------
 
   // The user picked the folder livediagram could not see: make the matching
-  // Personal Space folder under its nearest mirrored ancestor, and move the
+  // folder in My documents under its nearest mirrored ancestor, and move the
   // noticed item into it (docs/specs/022-drive-mirror/drive-mirror.md, "Adopting a folder").
   async adoptFolder(kind: DriveItemKind, ldId: string, pickedFolderId: string): Promise<void> {
     const { deps } = this;

@@ -366,7 +366,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   ).toBeNull();
 
   // Show the folder to livediagram (the Picker picks it): adopted, and the
-  // document moves into the new Personal Space folder.
+  // document moves into the new folder in My documents.
   google.fake.grantAccess(USER, hidden);
   await page.evaluate(
     (id) => ((window as unknown as { __e2ePickFolder: string }).__e2ePickFolder = id),

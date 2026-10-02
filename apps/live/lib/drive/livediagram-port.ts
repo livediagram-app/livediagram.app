@@ -1,6 +1,6 @@
 // What the Drive mirror needs from livediagram itself
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "LivediagramPort"):
-// Personal Space reads, the ordinary writes an inbound change goes through
+// My documents reads, the ordinary writes an inbound change goes through
 // (so authorisation, the change log and realtime rooms behave exactly as if
 // the user had done it here), and the mirror's own rows. The engine only ever
 // sees this interface; tests give it an in-memory livediagram.
@@ -60,7 +60,7 @@ export type MirrorFolder = { id: string; name: string; parentId: string | null; 
 export type MirrorTrashed = { id: string; name: string; trashedAt: number };
 
 export interface LivediagramPort {
-  // Personal Space: live cloud documents (never team, shared or offline ones).
+  // My documents: live cloud documents (never team, shared or offline ones).
   listPersonalDocuments(): Promise<MirrorDocument[]>;
   listPersonalFolders(): Promise<MirrorFolder[]>;
   listPersonalTrash(): Promise<MirrorTrashed[]>;
@@ -80,7 +80,7 @@ export interface LivediagramPort {
   renameFolder(id: string, name: string): Promise<void>;
   moveFolder(id: string, parentId: string | null): Promise<void>;
   deleteFolder(id: string): Promise<void>;
-  // A new Personal Space document from an envelope; returns its id. `target`
+  // A new document in My documents from an envelope; returns its id. `target`
   // pins the id, name and folder (a copy opened with livediagram).
   importDocumentCopy(envelope: DocumentEnvelope, target?: CopyTarget): Promise<string>;
 

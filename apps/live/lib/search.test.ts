@@ -274,7 +274,7 @@ describe('buildSearchResults — shared documents + teams (docs/specs/008-canvas
 });
 
 describe('buildSearchResults — team library (docs/specs/013-workspace/team-shared-documents.md)', () => {
-  it('keeps personal folders in "Personal Space" and team folders/documents in "Teams"', () => {
+  it('keeps personal folders in "My documents" and team folders/documents in "Teams"', () => {
     const out = buildSearchResults({
       query: 'q3',
       documents: [],
@@ -285,10 +285,10 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
       ],
       teamDocuments: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
-    // Personal Space (personal folder) + Teams (team folder + team document).
+    // My documents (personal folder) + Teams (team folder + team document).
     expect(out.map((g) => g.key)).toEqual(['folders', 'teams']);
     const personalSpace = out.find((g) => g.key === 'folders')!;
-    expect(personalSpace.label).toBe('Personal Space');
+    expect(personalSpace.label).toBe('My documents');
     expect(personalSpace.items).toEqual([{ kind: 'folder', id: 'pf', name: 'Q3 planning' }]);
     const teamsGroup = out.find((g) => g.key === 'teams')!;
     expect(teamsGroup.items).toEqual([

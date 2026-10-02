@@ -1,5 +1,5 @@
 // One pass's view of both sides (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
-// "Passes"): Personal Space as livediagram holds it, and the mirror's item
+// "Passes"): My documents as livediagram holds it, and the mirror's item
 // rows, indexed the ways the planners look them up.
 
 import type { DriveItem, DriveItemKind } from '@livediagram/api-schema';

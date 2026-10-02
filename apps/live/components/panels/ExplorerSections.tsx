@@ -14,6 +14,7 @@ import {
 import { ExplorerTabBar, type ExplorerTab } from '@/components/panels/ExplorerTabBar';
 import { TeamNode } from '@/components/panels/explorer-team-views';
 import { SYNTHETIC_FOLDERS } from '@/app/explorer/synthetic-folders';
+import { SIDEBAR_LABELS } from '@/app/explorer/sidebar/sidebar-structure';
 import type { PanelFolderTree } from './FolderNode';
 import type { PanelRowActions } from './PanelDocumentRows';
 import { TreeNodeHeader } from './TreeNodeHeader';
@@ -21,7 +22,7 @@ import type { useExplorerViewModel } from './useExplorerViewModel';
 
 type ExplorerViewModel = ReturnType<typeof useExplorerViewModel>;
 
-// The Explorer panel's tabbed sections card (Recent / Personal Space / Teams),
+// The Explorer panel's tabbed sections card (Recent / My documents / Teams),
 // lifted out of Explorer: the tab-bar state (pick + collapse), the
 // which-tab-earns-a-slot guards, and the three section lists. Explorer
 // keeps the data + row handlers and passes them in; the card owns only
@@ -100,7 +101,7 @@ export function ExplorerSections({
   onMoveTeamDocumentRequest?: (documentId: string, teamId: string) => void;
   onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
 }) {
-  // The three sections (Recent / Personal Space / Teams) are a single tab bar
+  // The three sections (Recent / My documents / Teams) are a single tab bar
   // instead of three stacked accordions, so only one list takes
   // vertical space at a time. `selectedTab` is the user's pick; the
   // section actually rendered falls back to the first available tab
@@ -121,7 +122,7 @@ export function ExplorerSections({
   const sectionTabs: ExplorerTab[] = [];
   if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
   if (!(liveDocs.length === 0 && folders.length === 0))
-    sectionTabs.push({ id: 'work', label: 'Personal' });
+    sectionTabs.push({ id: 'work', label: SIDEBAR_LABELS.myDocuments });
   if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
   // Resolve the rendered tab: the user's pick when still available,
   // else the first available section (null only on a blank account,
