@@ -129,6 +129,9 @@ export const TELEMETRY_CATEGORIES = [
   // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Whiteboard',
+  // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw', fired before the mode applies.
+  'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
   // 'Broker' | 'Browser'), 'Changed'·'NeedsReconnect' (Google stopped

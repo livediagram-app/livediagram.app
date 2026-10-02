@@ -14,6 +14,9 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Editor|Changed|ModeDiagram':
+    'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
+  'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
   'Whiteboard|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Whiteboard|Created|NewTab':
@@ -905,6 +908,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
   'Whiteboard|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
   'Whiteboard|Selected':
     'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',

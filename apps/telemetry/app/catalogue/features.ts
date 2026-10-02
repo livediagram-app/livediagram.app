@@ -240,12 +240,27 @@ export const WHITEBOARD_RECOGNITION = chart(
   'Shape recognition switched on or off on a whiteboard.',
 );
 
+// Editor modes (docs/specs/007-editor/editor-modes.md): switches between Diagram and Draw.
+export const EDITOR_MODE_SWITCHES = chart(
+  'Editor',
+  'Changed',
+  'Editor Mode Switches',
+  'A tab switched to Diagram mode or Draw mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw'] },
+);
+
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Whiteboards',
   blurb:
     'Whiteboard tabs made, and the pens, erasers, backgrounds and recognition people use on them.',
-  members: [WHITEBOARDS_CREATED, WHITEBOARD_PENS, WHITEBOARD_SETTINGS, WHITEBOARD_RECOGNITION],
+  members: [
+    WHITEBOARDS_CREATED,
+    EDITOR_MODE_SWITCHES,
+    WHITEBOARD_PENS,
+    WHITEBOARD_SETTINGS,
+    WHITEBOARD_RECOGNITION,
+  ],
   headline: WHITEBOARDS_CREATED,
 };
 

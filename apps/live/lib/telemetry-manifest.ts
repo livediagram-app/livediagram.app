@@ -63,6 +63,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Drive·Linked',
   'Drive·Opened',
   'Drive·Unlinked',
+  // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
+  'Editor·Changed',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',

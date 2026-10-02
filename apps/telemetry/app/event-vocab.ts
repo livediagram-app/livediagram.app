@@ -56,6 +56,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
+  Editor:
+    'Editor modes: a person switching a tab between Diagram mode (shapes, arrows and the palette) and Draw mode (freehand pens). Only the mode, never the tab or what is on it.',
   Whiteboard:
     'Whiteboard tabs, drawn on with a dock of pens: a whiteboard created (from the New Document wizard or as a new tab), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
   Error:
@@ -110,6 +112,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.
   Whiteboard: '#78716c',
+  // Deep violet: the mode switch, apart from Whiteboard's stone beside it.
+  Editor: '#6d28d9',
 };
 export const categoryColor = (c: string, appearance: Appearance = 'light') =>
   forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);
