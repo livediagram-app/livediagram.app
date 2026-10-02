@@ -8,43 +8,48 @@ as `Dn`.
 
 Scope, by file:
 
-| File                                                      | Role                                                                                  |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/placement-defaults.ts`           | Keys, board types, intent, `creationIntentOf`, `readCreationIntent`, telemetry types  |
-| `packages/templates/src/template-board-types.ts`          | `boardTypeOfTemplate`: the one exhaustive template to board type map                  |
-| `apps/api/migrations/0061_placement_defaults.sql`         | The `placement_defaults` table (`D17`)                                                |
-| `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`               |
-| `apps/api/src/db/account.ts`                              | Account deletion and owner migration statements                                       |
-| `apps/api/src/placement/placement-types.ts`               | `PlacementCaller`, `PlacementFolder`, `PlacementLookups`, `PlacementOutcome`, steps   |
-| `apps/api/src/placement/default-folder.ts`                | `judgeDefaultFolder`, `joinedFolderTeam`, the `defaultFolder` step                    |
-| `apps/api/src/placement/resolve-placement.ts`             | `FOLDER_STEPS = [explicitFolder, defaultFolder]`; `resolvePlacement(…, intent)`       |
-| `apps/api/src/placement/placement-lookups.ts`             | `getPlacementDefaults(ownerId)` beside the membership and folder reads                |
-| `apps/api/src/placement/placement-log.ts`                 | The `placement:` and `placement-defaults:` fingerprints                               |
-| `apps/api/src/placement/placement-response.ts`            | `intentRejected()`                                                                    |
-| `apps/api/src/routes/placement-defaults.ts`               | `GET` / `PUT` / `DELETE /api/placement-defaults[/:key]`                               |
-| `apps/api/src/routes/documents.ts`                        | `POST /api/documents` reads `intent`, passes it to the resolver                       |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`             | Dispatch case; owner-scoped segment                                                   |
-| `packages/api-schema/src/error-telemetry.ts`              | `placement-defaults` in `API_ROUTE_RESOURCES`                                         |
-| `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `intent`                                          |
-| `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`      |
-| `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `intent`                                                    |
-| `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's board type |
-| `apps/live/lib/board-scene-import.ts`                     | Every imported document sends its first tab's intent                                  |
-| `apps/live/lib/drive/livediagram-port.ts`                 | `importDocumentCopy` sends an intent only with no target (Import a copy)              |
-| `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                   |
+| File                                                      | Role                                                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/placement-defaults.ts`           | Keys, board types, intent, `creationIntentOf`, `readCreationIntent`, telemetry types     |
+| `packages/document/src/editor-mode.ts`                    | `EDITOR_MODES` (`as const`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`) |
+| `apps/api/migrations/0062_document_creation_intent.sql`   | `documents.opens_in`, `documents.board_type`                                             |
+| `apps/api/src/document-intent-row.ts`                     | `readOpensIn`, `readBoardType`: stored text to the enums, else null                      |
+| `apps/api/src/db/documents.ts`                            | The create insert writes both; summaries read them; the copy carries them                |
+| `packages/templates/src/template-board-types.ts`          | `boardTypeOfTemplate`: the one exhaustive template to board type map                     |
+| `apps/api/migrations/0061_placement_defaults.sql`         | The `placement_defaults` table (`D17`)                                                   |
+| `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`                  |
+| `apps/api/src/db/account.ts`                              | Account deletion and owner migration statements                                          |
+| `apps/api/src/placement/placement-types.ts`               | `PlacementCaller`, `PlacementFolder`, `PlacementLookups`, `PlacementOutcome`, steps      |
+| `apps/api/src/placement/default-folder.ts`                | `judgeDefaultFolder`, `joinedFolderTeam`, the `defaultFolder` step                       |
+| `apps/api/src/placement/resolve-placement.ts`             | `FOLDER_STEPS = [explicitFolder, defaultFolder]`; `resolvePlacement(…, intent)`          |
+| `apps/api/src/placement/placement-lookups.ts`             | `getPlacementDefaults(ownerId)` beside the membership and folder reads                   |
+| `apps/api/src/placement/placement-log.ts`                 | The `placement:` and `placement-defaults:` fingerprints                                  |
+| `apps/api/src/placement/placement-response.ts`            | `intentRejected()`                                                                       |
+| `apps/api/src/routes/placement-defaults.ts`               | `GET` / `PUT` / `DELETE /api/placement-defaults[/:key]`                                  |
+| `apps/api/src/routes/documents.ts`                        | `POST /api/documents` reads `intent`, passes it to the resolver                          |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`             | Dispatch case; owner-scoped segment                                                      |
+| `packages/api-schema/src/error-telemetry.ts`              | `placement-defaults` in `API_ROUTE_RESOURCES`                                            |
+| `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `intent`                                             |
+| `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`         |
+| `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `intent`                                                       |
+| `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's board type    |
+| `apps/live/lib/board-scene-import.ts`                     | Every imported document sends its first tab's intent                                     |
+| `apps/live/lib/drive/livediagram-port.ts`                 | `importDocumentCopy` sends an intent only with no target (Import a copy)                 |
+| `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                      |
 
 ## Domain and naming
 
-| Term             | Identifier                                                                 | Meaning                                                     |
-| ---------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Default folder   | `PlacementDefault` `{ key, folderId }`, row of `placement_defaults`        | One person's folder for one key                             |
-| Default key      | `PlacementDefaultKey`, `PLACEMENT_DEFAULT_KEYS`, column `default_key`      | `<dimension>:<value>`, closed list of five                  |
-| Dimension        | `DEFAULT_KEY_DIMENSIONS = ['board', 'mode']`                               | Most specific first; the precedence between keys            |
-| Creation intent  | `CreationIntent` `{ mode: CreationMode, boardType?: BoardType }`           | What a new document opens as; body field `intent`           |
-| Editor mode      | `CreationMode`, `CREATION_MODES = ['diagram', 'draw']`                     | The mode the first tab opens in                             |
-| Board type       | `BoardType`, `BOARD_TYPES = ['event-storming', 'retrospective', 'kanban']` | The kind of board a new document is, when it is one         |
-| Dangling default | `DefaultSkipReason`                                                        | `folder_missing` / `folder_not_visible` / `team_not_joined` |
-| Via              | `via: 'default'`, log `via=default key=<key>`                              | The default step decided                                    |
+| Term             | Identifier                                                                                 | Meaning                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Default folder   | `PlacementDefault` `{ key, folderId }`, row of `placement_defaults`                        | One person's folder for one key                             |
+| Default key      | `PlacementDefaultKey`, `PLACEMENT_DEFAULT_KEYS`, column `default_key`                      | `<dimension>:<value>`, closed list of five                  |
+| Dimension        | `DEFAULT_KEY_DIMENSIONS = ['board', 'mode']`                                               | Most specific first; the precedence between keys            |
+| Creation intent  | `CreationIntent` `{ mode: EditorMode, boardType?: BoardType }`                             | How a new document opens; body field `intent`               |
+| Opens in         | `EditorMode`, `EDITOR_MODES` (`@livediagram/document`); column `opens_in`, field `opensIn` | The editor mode the first tab opens in; never a "type"      |
+| Recorded intent  | columns `opens_in`, `board_type`; `DocumentSummary.opensIn` / `.boardType`                 | The intent the create insert wrote; null = unknown          |
+| Board type       | `BoardType`, `BOARD_TYPES = ['event-storming', 'retrospective', 'kanban']`                 | The kind of board a new document is, when it is one         |
+| Dangling default | `DefaultSkipReason`                                                                        | `folder_missing` / `folder_not_visible` / `team_not_joined` |
+| Via              | `via: 'default'`, log `via=default key=<key>`                                              | The default step decided                                    |
 
 Banned: "fallback" for a skipped default (it falls through to the next level), "preference" for a
 default folder (the preferences blob is a different store), "kind" for a board type (a tab kind is one
@@ -78,6 +83,10 @@ not mapped fails the typecheck. Its non-null rows:
 
 Every other template kind maps to null, `incident-postmortem` and `lean-coffee` included (`D26`).
 
+`PLACEMENT_DEFAULT_KEYS` is one `mode:<mode>` key per `EDITOR_MODES` entry, then one
+`board:<type>` key per `BOARD_TYPES` entry, both generated: a new editor mode adds its key, its
+telemetry type and its place in the list with no other code change.
+
 `defaultKeysFor(intent)` maps each dimension of `DEFAULT_KEY_DIMENSIONS`, in order, to
 `<dimension>:<value>` when the intent has that value, keeping only listed keys: `['board:<type>',
 'mode:<mode>']` for a board, `['mode:<mode>']` otherwise.
@@ -104,6 +113,21 @@ Invariants: a skip never rejects; a default never answers for a request naming a
 Route order in `POST /api/documents`: body id/name → dates → `parsePlacement` → **`readCreationIntent`**
 (`intent_invalid`) → tabs → clash → … → resolve (genuine create only) → insert. A re-commit logs
 `placement: skipped reason=existing` and never reads defaults.
+
+## Recorded intent
+
+- Migration 0062: `ALTER TABLE documents ADD COLUMN opens_in TEXT` and `ADD COLUMN board_type TEXT`,
+  both nullable, no default, no backfill: every existing row reads null (unknown).
+- `upsertDocumentMeta` takes `opensIn` / `boardType` and writes them in the INSERT only; the
+  `ON CONFLICT` update never sets them, so a re-commit or rename leaves them as created.
+- `POST /api/documents` passes `intent.mode` / `intent.boardType ?? null` when an intent is present,
+  else null and null.
+- `copyDocument` inserts `opens_in` / `board_type` read from the source row in the same statement
+  (`INSERT … SELECT`), never recomputed.
+- `DOCUMENT_SUMMARY_COLS` gains both columns; `rowToSummary` maps them through `readOpensIn` /
+  `readBoardType` (`D28`), so `DocumentSummary` always carries `opensIn: EditorMode | null` and
+  `boardType: BoardType | null`. An Offline Mode summary carries null and null.
+- `LiveDoc` is unchanged: the editor reads the opening mode from the tab.
 
 ## Interfaces and contracts
 
@@ -208,40 +232,42 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 
 ## Testing
 
-| Rule                                                                 | Test                                                                                       |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Keys, intent derivation and parsing, key order, telemetry types      | `packages/api-schema/src/placement-defaults.test.ts`                                       |
-| Template to board type map                                           | `apps/live/lib/template-board-types.test.ts`                                               |
-| Default step: gate, board before mode, skips, team and personal      | `apps/api/src/placement/resolve-placement.test.ts`                                         |
-| Routes: every answer and rejection, encoded keys, logs (real SQLite) | `apps/api/src/routes/placement-defaults.test.ts`                                           |
-| Create lands in the default; precedence; dangling; intent_invalid    | `apps/api/src/routes/document-create-default-folder.test.ts`                               |
-| Store order, replace, clear; sign-up keeps the account's row         | `apps/api/src/db/placement-defaults.test.ts`                                               |
-| Deletion and migration of every owner-keyed column                   | `apps/api/src/db/account-owner-columns.test.ts`                                            |
-| Dispatch, route labels, OpenAPI parity                               | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                   |
-| Client functions and the create body                                 | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`         |
-| Import and Drive copy send the intent                                | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livediagram-port.test.ts` |
-| MCP create sends the intent and names the folder                     | `apps/mcp/src/tools.test.ts`                                                               |
+| Rule                                                                             | Test                                                                                             |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Keys, intent derivation and parsing, key order, telemetry types                  | `packages/api-schema/src/placement-defaults.test.ts`                                             |
+| Template to board type map                                                       | `apps/live/lib/template-board-types.test.ts`                                                     |
+| Default step: gate, board before mode, skips, team and personal                  | `apps/api/src/placement/resolve-placement.test.ts`                                               |
+| Routes: every answer and rejection, encoded keys, logs (real SQLite)             | `apps/api/src/routes/placement-defaults.test.ts`                                                 |
+| Create lands in the default; precedence; dangling; intent_invalid                | `apps/api/src/routes/document-create-default-folder.test.ts`                                     |
+| Recorded intent written once, read back, null for legacy rows, carried by a copy | `apps/api/src/routes/document-create-intent.test.ts`, `apps/api/src/document-intent-row.test.ts` |
+| Store order, replace, clear; sign-up keeps the account's row                     | `apps/api/src/db/placement-defaults.test.ts`                                                     |
+| Deletion and migration of every owner-keyed column                               | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
+| Dispatch, route labels, OpenAPI parity                                           | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                         |
+| Client functions and the create body                                             | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
+| Import and Drive copy send the intent                                            | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livediagram-port.test.ts`       |
+| MCP create sends the intent and names the folder                                 | `apps/mcp/src/tools.test.ts`                                                                     |
 
 ## Constants and configuration
 
-| Constant                 | Value                                           | Provenance                                      | Safe range                   |
-| ------------------------ | ----------------------------------------------- | ----------------------------------------------- | ---------------------------- |
-| `PLACEMENT_DEFAULT_KEYS` | The five keys, list order                       | Spec "Default keys"                             | Members of the key grammar   |
-| `DEFAULT_KEY_DIMENSIONS` | `['board', 'mode']`                             | Spec "Precedence"                               | Most specific first          |
-| `CREATION_MODES`         | `['diagram', 'draw']`                           | [Draw mode](../../023-whiteboard/whiteboard.md) | The editor modes             |
-| `BOARD_TYPES`            | `['event-storming', 'retrospective', 'kanban']` | Spec "Default keys"                             | Closed; a new one adds a key |
-| Rate limit               | `WRITE_RATE_LIMITER`                            | `apps/api/wrangler.toml`                        | Shared with every write      |
+| Constant                 | Value                                           | Provenance               | Safe range                   |
+| ------------------------ | ----------------------------------------------- | ------------------------ | ---------------------------- |
+| `PLACEMENT_DEFAULT_KEYS` | The five keys, list order                       | Spec "Default keys"      | Members of the key grammar   |
+| `DEFAULT_KEY_DIMENSIONS` | `['board', 'mode']`                             | Spec "Precedence"        | Most specific first          |
+| Mode keys                | `mode:<EditorMode>` per `EDITOR_MODES` entry    | Spec "Default keys"      | Grows with the editor modes  |
+| `BOARD_TYPES`            | `['event-storming', 'retrospective', 'kanban']` | Spec "Default keys"      | Closed; a new one adds a key |
+| Rate limit               | `WRITE_RATE_LIMITER`                            | `apps/api/wrangler.toml` | Shared with every write      |
 
 No environment variable or binding is added.
 
 ## Telemetry
 
-`PLACEMENT_DEFAULT_TELEMETRY_TYPES: Record<PlacementDefaultKey, string>` holds one closed type per key:
-`DefaultModeDiagram`, `DefaultModeDraw`, `DefaultBoardEventStorming`, `DefaultBoardRetrospective`,
-`DefaultBoardKanban`. The surfaces that set and clear defaults fire `Folder·Changed·<type>` and
+`placementDefaultTelemetryType(key)` derives one closed type per key, `Default` + each part in
+PascalCase (`DefaultModeDiagram`, `DefaultModeDraw`, `DefaultBoardEventStorming`,
+`DefaultBoardRetrospective`, `DefaultBoardKanban`), so a new editor mode gains its type with its key.
+`PLACEMENT_DEFAULT_TELEMETRY_TYPES` is the same map, built from the keys. The surfaces that set and clear defaults fire `Folder·Changed·<type>` and
 `Folder·Cleared·<type>` before the write; no surface exists yet, so no emitter and no dashboard card are
 added here.
 
 ## Defaults ledger
 
-D17 to D26 in [DEFAULTS.md](DEFAULTS.md).
+D17 to D28 in [DEFAULTS.md](DEFAULTS.md).

@@ -7,20 +7,20 @@ caller sends); the surfaces that set, show and clear a default come later.
 
 A **default folder** is where a person's new documents land when they create one without choosing
 a place. A person keeps one default per **default key**, and the key is chosen by what the new
-document opens as: a diagram can land in "Diagrams", a whiteboard in "Sketches" and a retrospective
-in "Retros". Defaults
-belong to the person, not to a folder or a team: two teammates may send the same kind of document
-to different places.
+document opens as: a document that opens in Diagram mode can land in "Diagrams", one that opens in
+Draw mode in "Sketches", and a retrospective in "Retros". Defaults belong to the person, not to a
+folder or a team: two teammates may send the same new documents to different places.
 
 ## Domain language
 
-| Term                 | Means                                                                                                             |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                                   |
-| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                           |
-| **creation intent**  | What a new document opens as, captured once when it is created: its editor mode and its board type.               |
-| **board type**       | The kind of board a new document is, when it is one: `event-storming`, `retrospective` or `kanban` (`BoardType`). |
-| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.                  |
+| Term                 | Means                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                                           |
+| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                                   |
+| **creation intent**  | How a new document opens, captured once when it is created: the editor mode it opens in and, for a board, its board type. |
+| **opens in**         | The editor mode a document's first tab opens in (`EditorMode`). Never a type of document or tab.                          |
+| **board type**       | The kind of board a new document is, when it is one: `event-storming`, `retrospective` or `kanban` (`BoardType`).         |
+| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.                          |
 
 "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
 specs and code say **default folder** or **placement default**.
@@ -42,13 +42,16 @@ order:
   type) and `mode` (the editor mode the first tab opens in).
 - The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`). A key outside it is refused when set
   and ignored when read.
+- The mode keys are **generated from the editor modes** (`EDITOR_MODES` in `@livediagram/document`):
+  one `mode:<mode>` key per mode, in the modes' order. A new editor mode gains its default key, and
+  its entry in the list, with no other change.
 - The board types are a **closed list** (`BOARD_TYPES`): `event-storming`, `retrospective`,
   `kanban`. Every other document has no board type and is routed by its mode alone.
 
 ## Creation intent
 
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
-  document, and the intent is not stored on the document.
+  document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
   - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode,
     including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-whiteboard/whiteboard.md));
     `diagram` otherwise, including a document with no tab and an event-storming board.
@@ -75,6 +78,28 @@ order:
   without an intent never consults defaults.
 - An intent that is present but malformed (no known `mode`, or a `boardType` outside the list)
   refuses the create, `intent_invalid` (400), before anything is written.
+
+## Recorded intent
+
+The creation intent is also **written on the document**, by the same insert that creates it, and
+never re-derived or rewritten afterwards:
+
+| Column       | Summary field | Holds                                          |
+| ------------ | ------------- | ---------------------------------------------- |
+| `opens_in`   | `opensIn`     | The editor mode the document opens in, or null |
+| `board_type` | `boardType`   | Its board type, or null                        |
+
+- **Null `opensIn` means unknown**, never Diagram: the document was made before intents were
+  recorded, or by a create that carries none (Duplicate, an Offline Mode sync, a Drive mirror copy,
+  an API script). Its `boardType` is then unknown too.
+- **A known `opensIn` with a null `boardType` means not a board.** Only a recorded intent can say
+  that; an unknown one says nothing.
+- A copy made by `POST /api/documents/:id/copy` carries the source's recorded values; they are a
+  fact about the content, not derived again.
+- A stored value outside the editor modes or the board types (one since retired) reads as null.
+- They feed the Explorer's filters: an **Opens in** chip (one option per editor mode) and a
+  **Board** chip (one option per board type). A document with an unknown value matches no option of
+  that chip; it shows whenever the chip is not set. Copy says "opens in", never "type", for a mode.
 
 ## Precedence
 
