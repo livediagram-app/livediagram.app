@@ -12,6 +12,7 @@ import {
   ALIGN_ITEMS,
   effectiveRunStyle,
   FIXED_FONT_PX,
+  labelRunPx,
   labelTextStyleCss,
   TEXT_ALIGN,
 } from '@/components/canvas/label-style';
@@ -130,7 +131,7 @@ export function ShapeInlineIconLayout({
     >
       {hasRichFormatting(element.richText) ? (
         element.richText!.map((run, i) => (
-          <span key={i} style={effectiveRunStyle(run, element, FIXED_FONT_PX)}>
+          <span key={i} style={effectiveRunStyle(run, element, labelRunPx(false))}>
             {run.text}
           </span>
         ))

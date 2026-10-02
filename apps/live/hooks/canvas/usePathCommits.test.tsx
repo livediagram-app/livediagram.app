@@ -9,7 +9,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const corner = (x: number, y: number): PathAnchor => ({ x, y, mode: 'corner' });
 
-beforeEach(() => vi.spyOn(console, 'debug').mockImplementation(() => {}));
+beforeEach(() => vi.spyOn(console, 'info').mockImplementation(() => {}));
 afterEach(() => {
   vi.mocked(track).mockClear();
   vi.restoreAllMocks();

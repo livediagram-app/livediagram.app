@@ -111,7 +111,7 @@ One renderer, `NoteRichText`, draws a note wherever a note is shown:
 
 It splits the runs on `\n` into lines, and paints each run as a `<span>` — or
 an `<a>` when the run carries a safe `link`. Base size is 13px; a run `size`
-maps to 11 / 13 / 16px, `heading: 1` to 17px/700 and `heading: 2` to
+maps to 10 / 11 / 13 / 16px (`xs` / `sm` / `md` / `lg`), `heading: 1` to 17px/700 and `heading: 2` to
 14.5px/600. When `noteRich` is absent it renders `note` as a single plain
 run.
 

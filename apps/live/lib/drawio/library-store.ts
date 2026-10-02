@@ -20,6 +20,7 @@ import { track } from '@/lib/telemetry';
 import type { DrawioLibraryFile } from './files';
 import { attachDrawioImages } from './images';
 import { drawioSceneReport } from './report';
+import { debugLog } from '@/lib/debug-log';
 
 /** The host's create (the provider's `createLibrary`). */
 export type CreateShapeLibrary = (input: {
@@ -87,7 +88,7 @@ export async function importShapeLibraries(
     out.scene = out.scene ? addReports(out.scene, scene) : scene;
     if (images) out.images = out.images ? addImageReports(out.images, images) : images;
     track('Element', 'Imported', 'ShapeLibrary');
-    console.info('[drawio-import] library imported', {
+    debugLog('[drawio-import] library imported', {
       items: stored.length,
       images: file.images.length,
     });

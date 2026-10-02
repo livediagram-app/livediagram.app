@@ -106,4 +106,5 @@ write('flowchart.drawio.png', pngWith(tEXt('mxfile', encodeURIComponent(flowchar
 write('swimlanes.drawio.png', pngWith(zTXt('mxfile', encodeURIComponent(swimlanes))));
 write('no-diagram.png', pngWith(null));
 
-console.info('[drawio-fixtures] generated');
+// A Node script's own output, not an app trace line (docs/specs/003-system-architecture/console-logging.md).
+process.stdout.write('[drawio-fixtures] generated\n');

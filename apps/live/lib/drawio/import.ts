@@ -20,6 +20,7 @@ import {
   DRAWIO_REPORT_NAMES_MAX,
 } from './limits';
 import { DrawioRefused, refusalMessage } from './refusals';
+import { debugLog } from '@/lib/debug-log';
 
 export type { DrawioInput } from './envelope';
 
@@ -91,7 +92,7 @@ export async function importDrawio(
         imageKeys,
       });
       pages.push({ tabId: tabIds[index]!, name: source.name, ...converted });
-      console.debug('[drawio-import] page', {
+      debugLog('[drawio-import] page', {
         index,
         cells: graph.cells.size,
         elements: converted.elements.length,
@@ -141,6 +142,6 @@ function graphPages(sources: JsonExportPage[], options: DrawioImportOptions): Dr
     elements: pages.reduce((n, p) => n + p.elements.length, 0),
     notes: tally.notes(),
   };
-  console.debug('[drawio-import] json export laid out', { pages: pages.length });
+  debugLog('[drawio-import] json export laid out', { pages: pages.length });
   return { ok: true, pages, images: [], report, meta: {} };
 }

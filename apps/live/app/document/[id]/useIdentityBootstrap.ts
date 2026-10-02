@@ -426,6 +426,8 @@ export function useIdentityBootstrap(opts: {
                       tabId: scopeTabId,
                       ownerName: fetched.ownerName ?? null,
                       ownerColor: fetched.ownerColor ?? null,
+                      // Not known from the tab summaries: ask for the thumbnail, as the server list will say.
+                      empty: false,
                     },
                     ...prev,
                   ],

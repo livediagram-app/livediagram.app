@@ -96,7 +96,7 @@ function attrsFromElement(el: HTMLElement): Omit<TextRun, 'text'> {
   if (u !== undefined) out.underline = u;
   if (s !== undefined) out.strikethrough = s;
   const size = el.getAttribute(DATA.size);
-  if (size === 'sm' || size === 'md' || size === 'lg') out.size = size as RunSize;
+  if (size === 'xs' || size === 'sm' || size === 'md' || size === 'lg') out.size = size as RunSize;
   const color = el.getAttribute(DATA.color);
   if (color) out.color = color;
   const link = el.getAttribute(DATA.link);

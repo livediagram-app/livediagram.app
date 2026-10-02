@@ -17,6 +17,7 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   owner_name: 'Ada',
   owner_color: '#ff0000',
   tab_id: null,
+  first_tab_count: 3,
   ...over,
 });
 
@@ -86,6 +87,7 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
         ownerName: 'Ada',
         ownerColor: '#ff0000',
         tabId: null,
+        empty: false,
       },
     ]);
   });

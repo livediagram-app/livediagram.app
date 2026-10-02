@@ -4,6 +4,7 @@
 // themes are never pruned.
 import { readUserPreferences, writeUserPreferences } from './user-preferences';
 import { parseSwatchOverrideStore, pruneSwatchOverrideStore } from './swatch-overrides';
+import { debugLog } from '@/lib/debug-log';
 
 const CUSTOM_PREFIX = 'custom:';
 
@@ -22,6 +23,6 @@ export function pruneCustomThemeSwatchOverrides(
   const next = { ...latest };
   if (pruned.length === 0) delete next.quickSwatchOverrides;
   else next.quickSwatchOverrides = pruned;
-  console.debug('[swatch-overrides] pruned', store.length - pruned.length);
+  debugLog('[swatch-overrides] pruned', store.length - pruned.length);
   writeUserPreferences(next, ownerId);
 }

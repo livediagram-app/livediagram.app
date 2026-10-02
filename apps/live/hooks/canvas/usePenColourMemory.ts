@@ -15,6 +15,7 @@ import {
 } from '@/lib/pen-colour-memory';
 import { readUserPreferences } from '@/lib/user-preferences';
 import type { WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
+import { debugLog } from '@/lib/debug-log';
 
 export type PenColourMemoryApi = PenColourMemory & {
   /** A colour was used: a custom one moves to the front of Your colours. */
@@ -45,7 +46,7 @@ export function usePenColourMemory({
     ...memory,
     remember: (colour) => update((m) => rememberPenColour(m, colour)),
     forget: (colour) => {
-      console.debug('[whiteboard] custom colour removed from Your colours');
+      debugLog('[whiteboard] custom colour removed from Your colours');
       update((m) => forgetPenColour(m, colour));
     },
   };

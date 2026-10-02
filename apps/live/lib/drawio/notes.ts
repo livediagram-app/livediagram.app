@@ -16,6 +16,7 @@ export type ImportNoteKind =
   | 'collapsed-skipped'
   | 'link-dropped'
   | 'text-truncated'
+  | 'text-below-xs'
   | 'auto-layout'
   | 'library-item-unreadable'
   | 'content-truncated';
@@ -35,6 +36,7 @@ export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'collapsed-skipped',
   'link-dropped',
   'text-truncated',
+  'text-below-xs',
   'auto-layout',
   'library-item-unreadable',
   'content-truncated',

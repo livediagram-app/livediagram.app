@@ -99,6 +99,7 @@ export function DocumentRow({
         ownerId={ownerId}
         documentId={item.id}
         version={item.savedAt}
+        empty={item.empty}
         shareCode={thumbnailShareCode ?? item.shareCode}
         offline={offline}
       />

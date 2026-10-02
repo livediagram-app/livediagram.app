@@ -16,6 +16,7 @@ import {
   type LandingSeams,
   type NewBoardDocument,
 } from '@/lib/board-scene-import';
+import { debugLog } from '@/lib/debug-log';
 
 export type { BoardImportProgress, NewBoardDocument } from '@/lib/board-scene-import';
 
@@ -72,7 +73,7 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
         ? { backgroundPattern: tabPatch.backgroundPattern }
         : {}),
     });
-    console.info('[board-scene] import', { boards: 1, target: 'replace-tab', failures: 0 });
+    debugLog('[board-scene] import', { boards: 1, target: 'replace-tab', failures: 0 });
     return { status: 'done', ...(images ? { images } : {}), scene: landed.report };
   };
 

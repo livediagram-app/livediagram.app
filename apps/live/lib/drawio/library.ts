@@ -23,6 +23,7 @@ import {
 } from './limits';
 import { ReportTally, type DrawioReport } from './notes';
 import { refusalMessage } from './refusals';
+import { debugLog } from '@/lib/debug-log';
 
 /** One library shape, its elements placed from its top-left corner at (0, 0). */
 export type ImportedLibraryItem = {
@@ -144,7 +145,7 @@ export async function importDrawioLibrary(input: DrawioInput): Promise<DrawioLib
       items.push({ title, width, height, elements: fromOrigin(converted.elements) });
     } catch (error) {
       tally.add('library-item-unreadable');
-      console.debug('[drawio-import] library item unreadable', { cause: String(error) });
+      debugLog('[drawio-import] library item unreadable', { cause: String(error) });
     }
   }
 
@@ -157,7 +158,7 @@ export async function importDrawioLibrary(input: DrawioInput): Promise<DrawioLib
     elements: items.reduce((n, i) => n + i.elements.length, 0),
     notes: tally.notes(),
   };
-  console.info('[drawio-import] library read', {
+  debugLog('[drawio-import] library read', {
     items: items.length,
     unreadable: raw.length - items.length,
   });

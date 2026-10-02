@@ -4,11 +4,13 @@
 // says a newer build is live, so no old chunk name is ever requested; a chunk that fails anyway
 // (the signal not heard yet) is recovered by a full page load of its destination. Every full load
 // waits for unsaved editor work first, and falls back to the client transition when it cannot.
+import { APP_RECOVERY_FLAG } from './reload-guard';
 import { reloadWhenSaved } from './reload-when-saved';
 import { runningStaleBuild } from './server-release';
 import { createNavigationIntents, recoverFromChunkError, type ChunkRecovery } from './stale-chunks';
 import { track } from './telemetry';
 import { hasUnsavedWork } from './unsaved-work';
+import { debugLog } from '@/lib/debug-log';
 
 export type NavigationDeps = {
   win: Window;
@@ -93,7 +95,7 @@ export function fullPageLoad(
 export async function navigateTo(url: string, replace: boolean, deps: NavigationDeps) {
   navigationIntents.note(url, deps.now());
   if (deps.isStale() && (await fullPageLoad(url, replace, deps)) === 'reloaded') {
-    console.info('[stale-build] newer build live; loaded in full', { url });
+    debugLog('[stale-build] newer build live; loaded in full', { url });
     return;
   }
   deps.navigateClient(url, replace);
@@ -135,7 +137,7 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
     event.stopPropagation();
     void fullPageLoad(destination, false, deps).then((outcome) => {
       if (outcome === 'unsaved') deps.navigateClient(destination, false);
-      else console.info('[stale-build] newer build live; loaded in full', { url: destination });
+      else debugLog('[stale-build] newer build live; loaded in full', { url: destination });
     });
   };
 
@@ -147,7 +149,7 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
     event.stopImmediatePropagation();
     void fullPageLoad(destination, true, deps).then((outcome) => {
       if (outcome === 'reloaded') {
-        console.info('[stale-build] newer build live; loaded in full', { url: destination });
+        debugLog('[stale-build] newer build live; loaded in full', { url: destination });
         return;
       }
       // Unsaved work: hand the back or forward to the client router after all.
@@ -163,6 +165,10 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
   const onError = (event: ErrorEvent) => void recoverInBrowser(event.error, deps);
   const onRejection = (event: PromiseRejectionEvent) => void recoverInBrowser(event.reason, deps);
 
+  // From here the app recovers chunk failures itself (waiting for unsaved work first); the pre-boot
+  // guard in the page's head stands down for them.
+  const flags = win as unknown as Record<string, unknown>;
+  flags[APP_RECOVERY_FLAG] = true;
   win.addEventListener('click', onClick, true);
   win.addEventListener('popstate', onPopState);
   win.addEventListener('error', onError);
@@ -172,5 +178,6 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
     win.removeEventListener('popstate', onPopState);
     win.removeEventListener('error', onError);
     win.removeEventListener('unhandledrejection', onRejection);
+    delete flags[APP_RECOVERY_FLAG];
   };
 }

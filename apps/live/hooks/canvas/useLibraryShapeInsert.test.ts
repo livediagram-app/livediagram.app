@@ -62,7 +62,7 @@ function setup(over: Partial<LibraryShapeInsertDeps> = {}) {
 
 beforeEach(() => {
   track.mockReset();
-  vi.spyOn(console, 'debug').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 

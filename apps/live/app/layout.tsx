@@ -13,6 +13,7 @@ import { QUIET_LANDING_BOOT_SCRIPT, QUIET_LANDING_CSS } from '@/lib/quiet-landin
 import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
 import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 import { EDITOR_BUILD_ID } from '@/lib/server-release';
+import { STALE_HTML_GUARD_SCRIPT } from '@/lib/stale-html-guard';
 import './globals.css';
 
 // The live app is the product, not a content surface. Every route
@@ -87,6 +88,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // doesn't cascade to children), so real mismatches elsewhere still warn.
     <html lang="en-GB" suppressHydrationWarning>
       <head>
+        {/* First of all: the stale HTML guard (docs/specs/016-platform/stale-builds.md "The pre-boot
+            guard"), listening before any build asset can fail to load. */}
+        <script dangerouslySetInnerHTML={{ __html: STALE_HTML_GUARD_SCRIPT }} />
         {/* The hero launch window's landing paints its blank canvas from the first frame
             (lib/quiet-landing-boot.ts). In the head, not the body: the body can paint before a
             script inside it has run. */}

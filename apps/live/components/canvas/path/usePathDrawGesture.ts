@@ -26,6 +26,7 @@ import {
   withAnchor,
   type PathDraft,
 } from '@/lib/path-draw';
+import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
 
@@ -121,7 +122,7 @@ export function usePathDrawGesture({
     endDrag();
     setDraft(null);
     if (!d || !isCommittablePath(d.anchors, closed)) {
-      if (d) console.debug('[path] refused: too few nodes');
+      if (d) debugLog('[path] refused: too few nodes');
       return;
     }
     commitRef.current({ anchors: d.anchors, closed, continuing: d.continuing });
@@ -260,7 +261,7 @@ export function usePathDrawGesture({
         const el = elements.find((x) => x.id === press.end.id);
         if (el?.type === 'path') {
           setDraft(continueDraft(el, press.end.end));
-          console.debug('[path] continued', el.id);
+          debugLog('[path] continued', el.id);
         }
         return true;
       }
@@ -353,7 +354,7 @@ export function usePathDrawGesture({
     endDrag();
     const next = removeLastPlaced(d);
     if (!next) {
-      console.debug('[path] undo: path cancelled');
+      debugLog('[path] undo: path cancelled');
       setDraft(null);
       return;
     }

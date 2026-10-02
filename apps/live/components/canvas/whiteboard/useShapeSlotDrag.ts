@@ -14,6 +14,7 @@ import {
   type SlotSource,
 } from '@/lib/whiteboard-shape-slots';
 import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
+import { debugLog } from '@/lib/debug-log';
 
 // Screen px of travel before a press becomes a drag (the spec's 6 px; wider than the chrome's
 // PRESS_DRAG_SLOP_PX so a press on a small dock button never turns into a drag by accident).
@@ -81,7 +82,7 @@ export function useShapeSlotDrag({
           return;
         }
         dragging.current = true;
-        console.debug('[whiteboard-dock] shape drag started', source);
+        debugLog('[whiteboard-dock] shape drag started', source);
         onStart?.(source);
       }
       ev.preventDefault();
@@ -98,14 +99,14 @@ export function useShapeSlotDrag({
         suppressClick.current = false;
       }, 0);
       const target = slotDropTarget(ev.clientX, ev.clientY, measured);
-      console.debug('[whiteboard-dock] shape dropped', source, target);
+      debugLog('[whiteboard-dock] shape dropped', source, target);
       onDrop(source, target);
     };
     const cancel = () => cleanup();
     const escape = (ev: KeyboardEvent) => {
       if (ev.key !== 'Escape' || !dragging.current) return;
       ev.stopPropagation();
-      console.debug('[whiteboard-dock] shape drag cancelled');
+      debugLog('[whiteboard-dock] shape drag cancelled');
       cleanup();
     };
     window.addEventListener('pointermove', move);

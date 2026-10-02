@@ -56,6 +56,7 @@ import { CanvasLoader } from '@livediagram/ui';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@/lib/debug-log';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -214,7 +215,7 @@ export default function NewDocumentPage() {
       origin: window.location.origin,
       historyLength: window.history.length,
     });
-    console.debug(`[new] back out ${target}`);
+    debugLog(`[new] back out ${target}`);
     track('UI', 'Closed', 'NewDocument');
     if (target === 'back') window.history.back();
     else window.location.assign('/');

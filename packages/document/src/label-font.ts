@@ -15,6 +15,7 @@
 //    writing, so it runs smaller at every preset.
 
 import type { TextSize } from './index';
+import type { RunSize } from './rich-text';
 
 /** A shape / text element's label. */
 export const LABEL_FONT_PX: Record<TextSize, number> = {
@@ -36,6 +37,21 @@ export const NOTE_FONT_PX: Record<TextSize, number> = {
   // measured it.
   scale: 14,
 };
+
+/**
+ * An extra-small run (docs/specs/008-canvas/canvas-and-palette.md "Extra-small runs"): 10 px on every
+ * label scale, one step below the smallest preset (14 px single-line, 12 px multi-line, 11 px in a
+ * note). The operator's choice for imported text that reads smaller than any preset, such as a
+ * draw.io subtitle at 8 px; it keeps the label's own colour, so its contrast is the label's.
+ * Safe range: 9 to 11, and always below every scale's `sm`.
+ */
+export const RUN_XS_PX = 10;
+
+/** The px a run's own size draws at, on the single-line or the multi-line scale. */
+export function runFontPx(size: RunSize, multiline = false): number {
+  if (size === 'xs') return RUN_XS_PX;
+  return (multiline ? NOTE_FONT_PX : LABEL_FONT_PX)[size];
+}
 
 /**
  * The px a label renders at.

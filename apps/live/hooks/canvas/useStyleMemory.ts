@@ -17,6 +17,7 @@ import {
   type StyleKindKey,
   type StyleMemory,
 } from '@/lib/style-memory';
+import { debugLog } from '@/lib/debug-log';
 
 export const STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250;
 
@@ -88,7 +89,7 @@ export function useStyleMemory({
   const commit = (next: StyleMemory, log: string, detail: unknown) => {
     if (next === memoryRef.current) return;
     memoryRef.current = next;
-    console.debug(`[style-memory] ${log}`, detail);
+    debugLog(`[style-memory] ${log}`, detail);
     schedule();
   };
 
@@ -102,7 +103,7 @@ export function useStyleMemory({
     styleNewElement: <T extends Element>(el: T): T => {
       if (!ensureLoaded()) return el;
       const dressed = applyStyleMemory(el, memoryRef.current, theme, board);
-      if (dressed !== el) console.debug('[style-memory] applied', styleKindOf(el, board));
+      if (dressed !== el) debugLog('[style-memory] applied', styleKindOf(el, board));
       return dressed;
     },
     forget: (kinds) => {

@@ -1144,12 +1144,22 @@ type TextRun = {
   italic?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
-  size?: 'sm' | 'md' | 'lg'; // per-run size; no 'scale'. Renders but has no setter UI today.
+  size?: 'xs' | 'sm' | 'md' | 'lg'; // per-run size; no 'scale'. Renders but has no setter UI today.
   color?: string; // hex
 };
 ```
 
 **Right-click while editing:** with the label editor open, right-clicking the element surfaces the browser's **native text context menu** (cut / copy / paste / select all) so it acts on the text being edited. The handler stops propagation so the canvas's own right-click doesn't hijack it into the tab / element menu, but deliberately does not `preventDefault`, so the native menu still opens.
+
+**Extra-small runs.** A run's `size` has one step below the element presets: `xs`, drawn at 10 px on every
+label scale (`RUN_XS_PX` in `packages/document/src/label-font.ts`), where `sm` is 14 px on a
+single-line label, 12 px on a multi-line one and 11 px in a note. It exists for imported text that
+reads smaller than any preset (a draw.io subtitle at 8 px, [draw.io import](../020-import-export/drawio-import.md));
+no control sets it today, and the element-level text size (Quick Style Panel, the Text category) stays
+`sm` / `md` / `lg` / `scale`. An `xs` run keeps the label's own text colour, so it meets the same
+contrast as the rest of the label (4.5:1 against its fill, the normal-text bar, which applies at every
+size below large text). The canvas, the SVG export and the PNG and PDF exports drawn from it render it
+at the same 10 px.
 
 An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`, `run.color ?? el.textColor`, `run.size ?? el.textSize`), so the existing whole-element controls keep working as the base layer untouched, and an explicit per-range override wins over a later whole-element toggle (same precedence as table `cellStyles`). `element.label` is always kept equal to the runs' concatenated plain text, so search, auto-rename, markdown export, and every legacy reader work unchanged. When `richText` is absent (or a single override-free run) the label renders via the legacy whole-element path; applying any per-run override opts the label out of `scale` SVG auto-fit into fixed-px rendering (mixing per-run sizes with whole-element auto-fit is contradictory). The pure runs algebra (`runsPlainText` / `normalizeRuns` / `applyFormatToRange` / `toggleFormatInRange`) lives in `packages/document/src/rich-text.ts`; the DOM ↔ offset mapping in `apps/live/components/rich-text/rich-text-dom.ts`. The field is additive + optional, so it syncs to peers + persists with no backend change, and visual exports (PNG / SVG) render the runs span-by-span on one baseline.
 

@@ -409,7 +409,7 @@ describe('WhiteboardDock position', () => {
 
 describe('WhiteboardDock position log', () => {
   it('logs the position once the dock is shown, and again when it moves', () => {
-    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
     const { view } = renderDock();
     expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'top');
     debug.mockClear();

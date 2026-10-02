@@ -181,6 +181,46 @@ describe('textProps', () => {
     expect(textProps(cell(''), ctx(), onFill).textColor).toBeUndefined();
   });
 
+  it('gives a whole label under 12 px the extra-small run size', () => {
+    const c = ctx();
+    const t = textProps(cell('fontSize=11;', 'Small'), c, opts);
+    expect(t).toMatchObject({
+      label: 'Small',
+      textSize: 'sm',
+      richText: [{ text: 'Small', size: 'xs' }],
+    });
+    expect(c.tally.notes()).toEqual([]);
+  });
+
+  it('counts a label under 10 px once, as coming in at 10 px', () => {
+    const c = ctx();
+    const t = textProps(cell('fontSize=8;html=1;', 'One&lt;br&gt;Two'), c, opts);
+    expect(t.richText).toEqual([{ text: 'One\nTwo', size: 'xs' }]);
+    expect(c.tally.notes()).toEqual([{ kind: 'text-below-xs', count: 1 }]);
+  });
+
+  it('sizes a small span in a normal label, counting it only under 10 px', () => {
+    const span = (px: number) =>
+      `Title&lt;br&gt;&lt;span style=&quot;font-size: ${px}px&quot;&gt;sub&lt;/span&gt;`;
+    const ten = ctx();
+    expect(textProps(cell('html=1;', span(10)), ten, opts).richText).toEqual([
+      { text: 'Title\n' },
+      { text: 'sub', size: 'xs' },
+    ]);
+    expect(ten.tally.notes()).toEqual([]);
+    const seven = ctx();
+    textProps(cell('html=1;', span(7)), seven, opts);
+    expect(seven.tally.notes()).toEqual([{ kind: 'text-below-xs', count: 1 }]);
+  });
+
+  it('leaves small text as it is where the kind carries no runs', () => {
+    const c = ctx();
+    const t = textProps(cell('fontSize=8;', 'Lane'), c, { ...opts, rich: false });
+    expect(t.richText).toBeUndefined();
+    expect(t.textSize).toBe('sm');
+    expect(c.tally.notes()).toEqual([]);
+  });
+
   it('defaults to draw.io 12 px, centred', () => {
     expect(textProps(cell(''), ctx(), opts)).toEqual({
       textSize: 'sm',

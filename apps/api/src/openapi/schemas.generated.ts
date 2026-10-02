@@ -5,5470 +5,6317 @@
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
-  ActivityAction: {
-    additionalProperties: false,
-    properties: {
-      assignedToMe: {
-        type: 'boolean',
+  "ActivityAction": {
+    "additionalProperties": false,
+    "properties": {
+      "assignedToMe": {
+        "type": "boolean"
       },
-      assignee: {
-        additionalProperties: false,
-        properties: {
-          name: {
-            type: ['string', 'null'],
+      "assignee": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
-          userId: {
-            type: ['string', 'null'],
-          },
+          "userId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         },
-        required: ['userId', 'name'],
-        type: 'object',
-      },
-      assigner: {
-        additionalProperties: false,
-        properties: {
-          id: {
-            type: 'string',
-          },
-          name: {
-            type: ['string', 'null'],
-          },
-        },
-        required: ['id', 'name'],
-        type: 'object',
-      },
-      createdAt: {
-        type: 'number',
-      },
-      createdByMe: {
-        type: 'boolean',
-      },
-      description: {
-        type: 'string',
-      },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
-      },
-      elementId: {
-        type: 'string',
-      },
-      elementLabel: {
-        type: 'string',
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      shareCode: {
-        type: ['string', 'null'],
-      },
-      tabId: {
-        type: 'string',
-      },
-      tabName: {
-        type: 'string',
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-      updatedAt: {
-        type: 'number',
-      },
-      via: {
-        enum: ['own', 'team', 'shared'],
-        type: 'string',
-      },
-    },
-    required: [
-      'assignedToMe',
-      'assignee',
-      'assigner',
-      'createdAt',
-      'createdByMe',
-      'description',
-      'documentId',
-      'documentName',
-      'elementId',
-      'elementLabel',
-      'id',
-      'name',
-      'shareCode',
-      'tabId',
-      'tabName',
-      'teamId',
-      'updatedAt',
-      'via',
-    ],
-    type: 'object',
-  },
-  ActivityThread: {
-    additionalProperties: false,
-    properties: {
-      commentCount: {
-        type: 'number',
-      },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
-      },
-      elementId: {
-        type: 'string',
-      },
-      elementLabel: {
-        type: 'string',
-      },
-      firstAt: {
-        type: 'number',
-      },
-      latest: {
-        additionalProperties: false,
-        properties: {
-          at: {
-            type: 'number',
-          },
-          authorColor: {
-            type: 'string',
-          },
-          authorName: {
-            type: 'string',
-          },
-          text: {
-            type: 'string',
-          },
-        },
-        required: ['text', 'authorName', 'authorColor', 'at'],
-        type: 'object',
-      },
-      mentionsYou: {
-        type: 'boolean',
-      },
-      onYourDocument: {
-        type: 'boolean',
-      },
-      shareCode: {
-        type: ['string', 'null'],
-      },
-      tabId: {
-        type: 'string',
-      },
-      tabName: {
-        type: 'string',
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-      via: {
-        enum: ['own', 'team', 'shared'],
-        type: 'string',
-      },
-      youCommented: {
-        type: 'boolean',
-      },
-    },
-    required: [
-      'commentCount',
-      'documentId',
-      'documentName',
-      'elementId',
-      'elementLabel',
-      'firstAt',
-      'latest',
-      'mentionsYou',
-      'onYourDocument',
-      'shareCode',
-      'tabId',
-      'tabName',
-      'teamId',
-      'via',
-      'youCommented',
-    ],
-    type: 'object',
-  },
-  AgendaItem: {
-    additionalProperties: false,
-    properties: {
-      label: {
-        type: 'string',
-      },
-      minutes: {
-        type: 'number',
-      },
-    },
-    required: ['label', 'minutes'],
-    type: 'object',
-  },
-  AiConversationTurn: {
-    additionalProperties: false,
-    properties: {
-      content: {
-        type: 'string',
-      },
-      role: {
-        enum: ['user', 'assistant'],
-        type: 'string',
-      },
-    },
-    required: ['role', 'content'],
-    type: 'object',
-  },
-  AiMode: {
-    enum: ['clean', 'ask'],
-    type: 'string',
-  },
-  AiRequest: {
-    additionalProperties: false,
-    properties: {
-      elements: {
-        items: {},
-        type: 'array',
-      },
-      focusIds: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      history: {
-        items: {
-          $ref: '#/components/schemas/AiConversationTurn',
-        },
-        type: 'array',
-      },
-      mode: {
-        $ref: '#/components/schemas/AiMode',
-      },
-      prompt: {
-        type: 'string',
-      },
-      tabName: {
-        type: 'string',
-      },
-    },
-    required: ['mode', 'prompt', 'elements', 'tabName'],
-    type: 'object',
-  },
-  Anchor: {
-    enum: [
-      'n',
-      'nne',
-      'ne',
-      'ene',
-      'e',
-      'ese',
-      'se',
-      'sse',
-      's',
-      'ssw',
-      'sw',
-      'wsw',
-      'w',
-      'wnw',
-      'nw',
-      'nnw',
-    ],
-    type: 'string',
-  },
-  AnimationSpeed: {
-    enum: ['slowest', 'slow', 'normal', 'fast'],
-    type: 'string',
-  },
-  AnnotationElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      font: {
-        type: 'string',
-      },
-      headerFill: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      rotation: {
-        type: 'number',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'annotation',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'type', 'x', 'y', 'width', 'height'],
-    type: 'object',
-  },
-  ApiToken: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      expiresAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      lastUsedAt: {
-        type: ['number', 'null'],
-      },
-      name: {
-        type: ['string', 'null'],
-      },
-      readOnly: {
-        type: 'boolean',
-      },
-    },
-    required: ['id', 'name', 'createdAt', 'lastUsedAt', 'expiresAt', 'readOnly'],
-    type: 'object',
-  },
-  ArrowElement: {
-    additionalProperties: false,
-    properties: {
-      arrowEnds: {
-        $ref: '#/components/schemas/ArrowEnds',
-      },
-      arrowStyle: {
-        $ref: '#/components/schemas/ArrowStyle',
-      },
-      arrowheadColor: {
-        type: 'string',
-      },
-      arrowheadShape: {
-        $ref: '#/components/schemas/ArrowheadShape',
-      },
-      arrowheadSize: {
-        $ref: '#/components/schemas/ArrowheadSize',
-      },
-      curveOffset: {
-        additionalProperties: false,
-        properties: {
-          dx: {
-            type: 'number',
-          },
-          dy: {
-            type: 'number',
-          },
-        },
-        required: ['dx', 'dy'],
-        type: 'object',
-      },
-      curvePoints: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            dx: {
-              type: 'number',
-            },
-            dy: {
-              type: 'number',
-            },
-          },
-          required: ['dx', 'dy'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-      elbowOffset: {
-        additionalProperties: false,
-        properties: {
-          dx: {
-            type: 'number',
-          },
-          dy: {
-            type: 'number',
-          },
-        },
-        required: ['dx', 'dy'],
-        type: 'object',
-      },
-      exactStart: {
-        type: 'boolean',
-      },
-      flow: {
-        $ref: '#/components/schemas/ArrowFlow',
-      },
-      flowRepeat: {
-        type: 'boolean',
-      },
-      flowSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      font: {
-        type: 'string',
-      },
-      from: {
-        $ref: '#/components/schemas/Endpoint',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      labelFill: {
-        type: 'string',
-      },
-      labelOffset: {
-        additionalProperties: false,
-        properties: {
-          offset: {
-            type: 'number',
-          },
-          t: {
-            type: 'number',
-          },
-        },
-        required: ['t', 'offset'],
-        type: 'object',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      opacity: {
-        type: 'number',
-      },
-      penColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      penTextColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      routeBehind: {
-        type: 'boolean',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      strokeStyle: {
-        $ref: '#/components/schemas/BorderStyle',
-      },
-      strokeSwatch: {
-        $ref: '#/components/schemas/QuickSwatchSlot',
-      },
-      strokeWidth: {
-        type: 'number',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      to: {
-        $ref: '#/components/schemas/Endpoint',
-      },
-      type: {
-        const: 'arrow',
-        type: 'string',
-      },
-    },
-    required: ['id', 'type', 'from', 'to'],
-    type: 'object',
-  },
-  ArrowEnds: {
-    enum: ['from', 'to', 'both', 'none'],
-    type: 'string',
-  },
-  ArrowFlow: {
-    enum: [
-      'dashes',
-      'dots',
-      'beads',
-      'pulse',
-      'grow',
-      'glow',
-      'heartbeat',
-      'breathe',
-      'shimmer',
-      'signal',
-      'draw',
-      'comet',
-      'rainbow',
-      'strobe',
-      'wind',
-    ],
-    type: 'string',
-  },
-  ArrowStyle: {
-    enum: ['straight', 'curved', 'angled'],
-    type: 'string',
-  },
-  ArrowheadShape: {
-    enum: [
-      'triangle',
-      'triangle-hollow',
-      'line',
-      'circle',
-      'circle-hollow',
-      'diamond',
-      'diamond-hollow',
-    ],
-    type: 'string',
-  },
-  ArrowheadSize: {
-    enum: ['small', 'medium', 'large', 'extra-large'],
-    type: 'string',
-  },
-  BackgroundPattern: {
-    enum: [
-      'grid',
-      'blank',
-      'lines',
-      'crosshatch',
-      'graph',
-      'confetti',
-      'stripes',
-      'diagonal',
-      'waves',
-      'bricks',
-      'isometric',
-      'hexagonal',
-      'engineering',
-      'checkerboard',
-      'flow',
-      'drift',
-      'aurora',
-      'ripple',
-      'ribbons',
-    ],
-    type: 'string',
-  },
-  BorderRadius: {
-    enum: ['none', 'sm', 'md', 'lg', 'full'],
-    type: 'string',
-  },
-  BorderStroke: {
-    enum: ['none', 'thin', 'medium', 'thick', 'extra-thick'],
-    type: 'string',
-  },
-  BorderStyle: {
-    enum: ['solid', 'dashed', 'dotted', 'dash-dot', 'long-dash', 'dash-dot-dot'],
-    type: 'string',
-  },
-  BoxedElement: {
-    anyOf: [
-      {
-        $ref: '#/components/schemas/ShapeElement',
-      },
-      {
-        $ref: '#/components/schemas/TextElement',
-      },
-      {
-        $ref: '#/components/schemas/StickyElement',
-      },
-      {
-        $ref: '#/components/schemas/ImageElement',
-      },
-      {
-        $ref: '#/components/schemas/FreehandElement',
-      },
-      {
-        $ref: '#/components/schemas/PathElement',
-      },
-      {
-        $ref: '#/components/schemas/TableElement',
-      },
-      {
-        $ref: '#/components/schemas/AnnotationElement',
-      },
-      {
-        $ref: '#/components/schemas/LinkCardElement',
-      },
-      {
-        $ref: '#/components/schemas/VideoElement',
-      },
-    ],
-  },
-  CapabilitiesResponse: {
-    additionalProperties: false,
-    properties: {
-      aiEnabled: {
-        type: 'boolean',
-      },
-      driveMode: {
-        $ref: '#/components/schemas/DriveMode',
-      },
-      emailEnabled: {
-        type: 'boolean',
-      },
-    },
-    required: ['aiEnabled'],
-    type: 'object',
-  },
-  ChairFacing: {
-    enum: ['n', 'e', 's', 'w'],
-    type: 'string',
-  },
-  ChangeLogEntry: {
-    additionalProperties: false,
-    properties: {
-      afterState: {
-        additionalProperties: {},
-        type: 'object',
-      },
-      beforeState: {
-        additionalProperties: {},
-        type: 'object',
-      },
-      createdAt: {
-        type: 'number',
-      },
-      elementIds: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      id: {
-        type: 'string',
-      },
-      kind: {
-        $ref: '#/components/schemas/ChangeLogKind',
-      },
-      participantColor: {
-        type: 'string',
-      },
-      participantId: {
-        type: 'string',
-      },
-      participantName: {
-        type: 'string',
-      },
-      summary: {
-        type: 'string',
-      },
-      tabId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: [
-      'id',
-      'tabId',
-      'participantId',
-      'participantName',
-      'participantColor',
-      'kind',
-      'summary',
-      'elementIds',
-      'beforeState',
-      'afterState',
-      'createdAt',
-    ],
-    type: 'object',
-  },
-  ChangeLogKind: {
-    enum: ['add', 'edit', 'delete', 'revert'],
-    type: 'string',
-  },
-  ChartLegendPosition: {
-    enum: ['top', 'right', 'bottom', 'left'],
-    type: 'string',
-  },
-  ChartPaletteId: {
-    enum: ['vivid', 'ocean', 'forest', 'sunset', 'berry', 'earth', 'grey', 'contrast'],
-    type: 'string',
-  },
-  ChecklistItem: {
-    additionalProperties: false,
-    properties: {
-      done: {
-        type: 'boolean',
-      },
-      text: {
-        type: 'string',
-      },
-    },
-    required: ['text', 'done'],
-    type: 'object',
-  },
-  CodeLanguage: {
-    enum: ['plain', 'ts', 'js', 'python', 'json', 'bash', 'sql', 'html', 'css', 'yaml'],
-    type: 'string',
-  },
-  CodeThemeId: {
-    enum: ['midnight', 'graphite', 'ocean', 'forest', 'plum', 'contrast', 'paper', 'parchment'],
-    type: 'string',
-  },
-  Comment: {
-    additionalProperties: false,
-    properties: {
-      authorColor: {
-        type: 'string',
-      },
-      authorId: {
-        type: 'string',
-      },
-      authorName: {
-        type: 'string',
-      },
-      createdAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      mentions: {
-        items: {
-          $ref: '#/components/schemas/CommentMention',
-        },
-        type: 'array',
-      },
-      text: {
-        type: 'string',
-      },
-    },
-    required: ['id', 'text', 'createdAt', 'authorName', 'authorColor'],
-    type: 'object',
-  },
-  CommentMention: {
-    additionalProperties: false,
-    properties: {
-      handle: {
-        type: 'string',
-      },
-      memberId: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      userId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['userId', 'name', 'handle'],
-    type: 'object',
-  },
-  CommentThread: {
-    additionalProperties: false,
-    properties: {
-      comments: {
-        items: {
-          $ref: '#/components/schemas/Comment',
-        },
-        type: 'array',
-      },
-      resolved: {
-        type: 'boolean',
-      },
-    },
-    required: ['comments', 'resolved'],
-    type: 'object',
-  },
-  CustomTheme: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      definition: {
-        $ref: '#/components/schemas/CustomThemeDefinition',
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      ownerId: {
-        type: 'string',
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'ownerId', 'name', 'definition', 'createdAt', 'updatedAt'],
-    type: 'object',
-  },
-  CustomThemeDefinition: {
-    additionalProperties: false,
-    properties: {
-      backgroundColor: {
-        type: 'string',
-      },
-      backgroundOpacity: {
-        type: 'number',
-      },
-      backgroundPattern: {
-        $ref: '#/components/schemas/BackgroundPattern',
-      },
-      elementFill: {
-        type: ['string', 'null'],
-      },
-      elementStroke: {
-        type: ['string', 'null'],
-      },
-      elementText: {
-        type: ['string', 'null'],
-      },
-      palette: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            fill: {
-              type: 'string',
-            },
-            stroke: {
-              type: 'string',
-            },
-            text: {
-              type: 'string',
-            },
-          },
-          required: ['fill', 'stroke', 'text'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-      patternColor: {
-        type: 'string',
-      },
-      rootColor: {
-        additionalProperties: false,
-        properties: {
-          fill: {
-            type: 'string',
-          },
-          stroke: {
-            type: 'string',
-          },
-          text: {
-            type: 'string',
-          },
-        },
-        required: ['fill', 'stroke', 'text'],
-        type: 'object',
-      },
-      shapeColors: {
-        additionalProperties: false,
-        properties: {
-          'action-card': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          actor: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          agenda: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          banner: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'bar-chart': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          browser: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          callout: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          chair: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          checklist: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          circle: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          cloud: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'code-block': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'comment-pin': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          cylinder: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          decision: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          diamond: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          document: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'done-check': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          entity: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          estimate: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'focus-button': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          foldable: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          frame: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          hexagon: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          icon: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'idea-box': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          lane: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          laptop: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          legend: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'line-chart': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'mind-node': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'mode-button': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          monitor: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          page: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          parallelogram: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          phone: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          picker: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'pie-chart': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          portal: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          process: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'progress-bar': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'progress-ring': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'qa-board': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          quiz: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          rating: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'reaction-pad': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          reveal: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'roll-call': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'session-button': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'site-header': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          smartwatch: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'speech-bubble': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          square: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          stadium: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          star: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'stat-row': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          sticker: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          tablet: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          temperature: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          'timeline-rail': {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          trapezoid: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-          triangle: {
-            additionalProperties: false,
-            properties: {
-              fill: {
-                type: 'string',
-              },
-              stroke: {
-                type: 'string',
-              },
-              text: {
-                type: 'string',
-              },
-            },
-            type: 'object',
-          },
-        },
-        type: 'object',
-      },
-    },
-    required: [
-      'backgroundColor',
-      'backgroundPattern',
-      'patternColor',
-      'elementFill',
-      'elementStroke',
-      'elementText',
-    ],
-    type: 'object',
-  },
-  DecisionStatus: {
-    enum: ['proposed', 'accepted', 'rejected', 'superseded'],
-    type: 'string',
-  },
-  Document: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      folderId: {
-        type: ['string', 'null'],
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      ownerColor: {
-        type: ['string', 'null'],
-      },
-      ownerId: {
-        type: 'string',
-      },
-      ownerName: {
-        type: ['string', 'null'],
-      },
-      presentation: {
-        type: ['string', 'null'],
-      },
-      savedAt: {
-        type: 'number',
-      },
-      shareCode: {
-        type: ['string', 'null'],
-      },
-      shareable: {
-        type: 'boolean',
-      },
-      source: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DocumentSource',
-          },
-          {
-            type: 'null',
-          },
+        "required": [
+          "userId",
+          "name"
         ],
+        "type": "object"
       },
-      tabs: {
-        items: {
-          $ref: '#/components/schemas/TabSummary',
+      "assigner": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         },
-        type: 'array',
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: [
-      'id',
-      'ownerId',
-      'name',
-      'tabs',
-      'shareable',
-      'shareCode',
-      'folderId',
-      'teamId',
-      'source',
-      'presentation',
-      'savedAt',
-      'createdAt',
-      'ownerName',
-      'ownerColor',
-    ],
-    type: 'object',
-  },
-  DocumentSource: {
-    enum: ['ai', 'mcp'],
-    type: 'string',
-  },
-  DocumentSummary: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      folderId: {
-        type: ['string', 'null'],
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      ownerId: {
-        type: 'string',
-      },
-      savedAt: {
-        type: 'number',
-      },
-      shareCode: {
-        type: ['string', 'null'],
-      },
-      shareable: {
-        type: 'boolean',
-      },
-      source: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DocumentSource',
-          },
-          {
-            type: 'null',
-          },
+        "required": [
+          "id",
+          "name"
         ],
+        "type": "object"
       },
-      teamId: {
-        type: ['string', 'null'],
+      "createdAt": {
+        "type": "number"
       },
-    },
-    required: [
-      'id',
-      'ownerId',
-      'name',
-      'shareable',
-      'shareCode',
-      'folderId',
-      'teamId',
-      'source',
-      'savedAt',
-      'createdAt',
-    ],
-    type: 'object',
-  },
-  DriveAccessToken: {
-    additionalProperties: false,
-    properties: {
-      accessToken: {
-        type: 'string',
+      "createdByMe": {
+        "type": "boolean"
       },
-      expiresAt: {
-        type: 'number',
+      "description": {
+        "type": "string"
       },
-    },
-    required: ['accessToken', 'expiresAt'],
-    type: 'object',
-  },
-  DriveConnection: {
-    additionalProperties: false,
-    properties: {
-      connectedAt: {
-        type: 'number',
+      "documentId": {
+        "type": "string"
       },
-      hasRefreshToken: {
-        type: 'boolean',
+      "documentName": {
+        "type": "string"
       },
-      pageToken: {
-        type: ['string', 'null'],
+      "elementId": {
+        "type": "string"
       },
-      pageTokenSavedAt: {
-        type: ['number', 'null'],
+      "elementLabel": {
+        "type": "string"
       },
-      rootFolderId: {
-        type: ['string', 'null'],
+      "id": {
+        "type": "string"
       },
-      status: {
-        $ref: '#/components/schemas/DriveConnectionStatus',
+      "name": {
+        "type": "string"
       },
-    },
-    required: [
-      'status',
-      'hasRefreshToken',
-      'rootFolderId',
-      'pageToken',
-      'pageTokenSavedAt',
-      'connectedAt',
-    ],
-    type: 'object',
-  },
-  DriveConnectionStatus: {
-    enum: ['connected', 'needs_reconnect'],
-    type: 'string',
-  },
-  DriveItem: {
-    additionalProperties: false,
-    properties: {
-      driveFileId: {
-        type: 'string',
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
-      headRevisionId: {
-        type: ['string', 'null'],
+      "tabId": {
+        "type": "string"
       },
-      kind: {
-        $ref: '#/components/schemas/DriveItemKind',
+      "tabName": {
+        "type": "string"
       },
-      ldId: {
-        type: 'string',
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
-      ldName: {
-        type: 'string',
+      "updatedAt": {
+        "type": "number"
       },
-      md5: {
-        type: ['string', 'null'],
-      },
-      mirroredSavedAt: {
-        type: ['number', 'null'],
-      },
-      name: {
-        type: 'string',
-      },
-      notice: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DriveNotice',
-          },
-          {
-            type: 'null',
-          },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
         ],
-      },
-      noticeParentId: {
-        type: ['string', 'null'],
-      },
-      parentId: {
-        type: ['string', 'null'],
-      },
-      trashed: {
-        type: 'boolean',
-      },
+        "type": "string"
+      }
     },
-    required: [
-      'kind',
-      'ldId',
-      'driveFileId',
-      'name',
-      'ldName',
-      'parentId',
-      'trashed',
-      'md5',
-      'headRevisionId',
-      'mirroredSavedAt',
-      'notice',
-      'noticeParentId',
+    "required": [
+      "assignedToMe",
+      "assignee",
+      "assigner",
+      "createdAt",
+      "createdByMe",
+      "description",
+      "documentId",
+      "documentName",
+      "elementId",
+      "elementLabel",
+      "id",
+      "name",
+      "shareCode",
+      "tabId",
+      "tabName",
+      "teamId",
+      "updatedAt",
+      "via"
     ],
-    type: 'object',
+    "type": "object"
   },
-  DriveItemKind: {
-    enum: ['document', 'folder'],
-    type: 'string',
-  },
-  DriveLease: {
-    additionalProperties: false,
-    properties: {
-      acquired: {
-        type: 'boolean',
+  "ActivityThread": {
+    "additionalProperties": false,
+    "properties": {
+      "commentCount": {
+        "type": "number"
       },
-      expiresAt: {
-        type: ['number', 'null'],
+      "documentId": {
+        "type": "string"
       },
-      holder: {
-        type: ['string', 'null'],
+      "documentName": {
+        "type": "string"
       },
+      "elementId": {
+        "type": "string"
+      },
+      "elementLabel": {
+        "type": "string"
+      },
+      "firstAt": {
+        "type": "number"
+      },
+      "latest": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "authorColor": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "authorName",
+          "authorColor",
+          "at"
+        ],
+        "type": "object"
+      },
+      "mentionsYou": {
+        "type": "boolean"
+      },
+      "onYourDocument": {
+        "type": "boolean"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      },
+      "youCommented": {
+        "type": "boolean"
+      }
     },
-    required: ['acquired', 'holder', 'expiresAt'],
-    type: 'object',
+    "required": [
+      "commentCount",
+      "documentId",
+      "documentName",
+      "elementId",
+      "elementLabel",
+      "firstAt",
+      "latest",
+      "mentionsYou",
+      "onYourDocument",
+      "shareCode",
+      "tabId",
+      "tabName",
+      "teamId",
+      "via",
+      "youCommented"
+    ],
+    "type": "object"
   },
-  DriveMode: {
-    enum: ['off', 'browser', 'broker'],
-    type: 'string',
+  "AgendaItem": {
+    "additionalProperties": false,
+    "properties": {
+      "label": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "label",
+      "minutes"
+    ],
+    "type": "object"
   },
-  DriveNotice: {
-    const: 'unseen_folder',
-    type: 'string',
+  "AiConversationTurn": {
+    "additionalProperties": false,
+    "properties": {
+      "content": {
+        "type": "string"
+      },
+      "role": {
+        "enum": [
+          "user",
+          "assistant"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "role",
+      "content"
+    ],
+    "type": "object"
   },
-  Element: {
-    anyOf: [
+  "AiMode": {
+    "enum": [
+      "clean",
+      "ask"
+    ],
+    "type": "string"
+  },
+  "AiRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "elements": {
+        "items": {},
+        "type": "array"
+      },
+      "focusIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "history": {
+        "items": {
+          "$ref": "#/components/schemas/AiConversationTurn"
+        },
+        "type": "array"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/AiMode"
+      },
+      "prompt": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "mode",
+      "prompt",
+      "elements",
+      "tabName"
+    ],
+    "type": "object"
+  },
+  "Anchor": {
+    "enum": [
+      "n",
+      "nne",
+      "ne",
+      "ene",
+      "e",
+      "ese",
+      "se",
+      "sse",
+      "s",
+      "ssw",
+      "sw",
+      "wsw",
+      "w",
+      "wnw",
+      "nw",
+      "nnw"
+    ],
+    "type": "string"
+  },
+  "AnimationSpeed": {
+    "enum": [
+      "slowest",
+      "slow",
+      "normal",
+      "fast"
+    ],
+    "type": "string"
+  },
+  "AnnotationElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "annotation",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "ApiToken": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "expiresAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "lastUsedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "readOnly": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "createdAt",
+      "lastUsedAt",
+      "expiresAt",
+      "readOnly"
+    ],
+    "type": "object"
+  },
+  "ArrowElement": {
+    "additionalProperties": false,
+    "properties": {
+      "arrowEnds": {
+        "$ref": "#/components/schemas/ArrowEnds"
+      },
+      "arrowStyle": {
+        "$ref": "#/components/schemas/ArrowStyle"
+      },
+      "arrowheadColor": {
+        "type": "string"
+      },
+      "arrowheadShape": {
+        "$ref": "#/components/schemas/ArrowheadShape"
+      },
+      "arrowheadSize": {
+        "$ref": "#/components/schemas/ArrowheadSize"
+      },
+      "curveOffset": {
+        "additionalProperties": false,
+        "properties": {
+          "dx": {
+            "type": "number"
+          },
+          "dy": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "dx",
+          "dy"
+        ],
+        "type": "object"
+      },
+      "curvePoints": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "dx": {
+              "type": "number"
+            },
+            "dy": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "dx",
+            "dy"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "elbowOffset": {
+        "additionalProperties": false,
+        "properties": {
+          "dx": {
+            "type": "number"
+          },
+          "dy": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "dx",
+          "dy"
+        ],
+        "type": "object"
+      },
+      "exactStart": {
+        "type": "boolean"
+      },
+      "flow": {
+        "$ref": "#/components/schemas/ArrowFlow"
+      },
+      "flowRepeat": {
+        "type": "boolean"
+      },
+      "flowSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "font": {
+        "type": "string"
+      },
+      "from": {
+        "$ref": "#/components/schemas/Endpoint"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "labelFill": {
+        "type": "string"
+      },
+      "labelOffset": {
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "number"
+          },
+          "t": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "t",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "routeBehind": {
+        "type": "boolean"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "type": "number"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "to": {
+        "$ref": "#/components/schemas/Endpoint"
+      },
+      "type": {
+        "const": "arrow",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "from",
+      "to"
+    ],
+    "type": "object"
+  },
+  "ArrowEnds": {
+    "enum": [
+      "from",
+      "to",
+      "both",
+      "none"
+    ],
+    "type": "string"
+  },
+  "ArrowFlow": {
+    "enum": [
+      "dashes",
+      "dots",
+      "beads",
+      "pulse",
+      "grow",
+      "glow",
+      "heartbeat",
+      "breathe",
+      "shimmer",
+      "signal",
+      "draw",
+      "comet",
+      "rainbow",
+      "strobe",
+      "wind"
+    ],
+    "type": "string"
+  },
+  "ArrowStyle": {
+    "enum": [
+      "straight",
+      "curved",
+      "angled"
+    ],
+    "type": "string"
+  },
+  "ArrowheadShape": {
+    "enum": [
+      "triangle",
+      "triangle-hollow",
+      "line",
+      "circle",
+      "circle-hollow",
+      "diamond",
+      "diamond-hollow"
+    ],
+    "type": "string"
+  },
+  "ArrowheadSize": {
+    "enum": [
+      "small",
+      "medium",
+      "large",
+      "extra-large"
+    ],
+    "type": "string"
+  },
+  "BackgroundPattern": {
+    "enum": [
+      "grid",
+      "blank",
+      "lines",
+      "crosshatch",
+      "graph",
+      "confetti",
+      "stripes",
+      "diagonal",
+      "waves",
+      "bricks",
+      "isometric",
+      "hexagonal",
+      "engineering",
+      "checkerboard",
+      "flow",
+      "drift",
+      "aurora",
+      "ripple",
+      "ribbons"
+    ],
+    "type": "string"
+  },
+  "BorderRadius": {
+    "enum": [
+      "none",
+      "sm",
+      "md",
+      "lg",
+      "full"
+    ],
+    "type": "string"
+  },
+  "BorderStroke": {
+    "enum": [
+      "none",
+      "thin",
+      "medium",
+      "thick",
+      "extra-thick"
+    ],
+    "type": "string"
+  },
+  "BorderStyle": {
+    "enum": [
+      "solid",
+      "dashed",
+      "dotted",
+      "dash-dot",
+      "long-dash",
+      "dash-dot-dot"
+    ],
+    "type": "string"
+  },
+  "BoxedElement": {
+    "anyOf": [
       {
-        $ref: '#/components/schemas/BoxedElement',
+        "$ref": "#/components/schemas/ShapeElement"
       },
       {
-        $ref: '#/components/schemas/ArrowElement',
-      },
-    ],
-  },
-  ElementAction: {
-    additionalProperties: false,
-    properties: {
-      assignee: {
-        $ref: '#/components/schemas/ElementActionAssignee',
-      },
-      assignerId: {
-        type: 'string',
-      },
-      assignerName: {
-        type: ['string', 'null'],
-      },
-      createdAt: {
-        type: 'number',
-      },
-      description: {
-        type: 'string',
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      status: {
-        enum: ['open', 'done'],
-        type: 'string',
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: [
-      'id',
-      'name',
-      'description',
-      'assignee',
-      'teamId',
-      'assignerId',
-      'assignerName',
-      'status',
-      'createdAt',
-      'updatedAt',
-    ],
-    type: 'object',
-  },
-  ElementActionAssignee: {
-    additionalProperties: false,
-    properties: {
-      memberId: {
-        type: 'string',
-      },
-      name: {
-        type: ['string', 'null'],
-      },
-      userId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['userId', 'name'],
-    type: 'object',
-  },
-  ElementAnimation: {
-    enum: [
-      'pulse',
-      'blink',
-      'glow',
-      'trace',
-      'gradient',
-      'heartbeat',
-      'breathe',
-      'shimmer',
-      'highlight',
-      'bounce',
-      'wobble',
-      'shake',
-      'jelly',
-      'float',
-      'swing',
-    ],
-    type: 'string',
-  },
-  ElementId: {
-    type: 'string',
-  },
-  ElementLink: {
-    anyOf: [
-      {
-        additionalProperties: false,
-        properties: {
-          kind: {
-            const: 'tab',
-            type: 'string',
-          },
-          tabId: {
-            $ref: '#/components/schemas/TabId',
-          },
-        },
-        required: ['kind', 'tabId'],
-        type: 'object',
+        "$ref": "#/components/schemas/TextElement"
       },
       {
-        additionalProperties: false,
-        properties: {
-          elementId: {
-            $ref: '#/components/schemas/ElementId',
-          },
-          kind: {
-            const: 'element',
-            type: 'string',
-          },
-          tabId: {
-            $ref: '#/components/schemas/TabId',
-          },
-        },
-        required: ['kind', 'tabId', 'elementId'],
-        type: 'object',
+        "$ref": "#/components/schemas/StickyElement"
       },
       {
-        additionalProperties: false,
-        properties: {
-          documentId: {
-            type: 'string',
-          },
-          kind: {
-            const: 'document',
-            type: 'string',
-          },
-          name: {
-            type: 'string',
-          },
-        },
-        required: ['kind', 'documentId', 'name'],
-        type: 'object',
+        "$ref": "#/components/schemas/ImageElement"
       },
       {
-        additionalProperties: false,
-        properties: {
-          kind: {
-            const: 'url',
-            type: 'string',
-          },
-          url: {
-            type: 'string',
-          },
-        },
-        required: ['kind', 'url'],
-        type: 'object',
-      },
-    ],
-  },
-  ElementShadow: {
-    additionalProperties: false,
-    properties: {
-      blur: {
-        type: 'number',
-      },
-      offsetX: {
-        type: 'number',
-      },
-      offsetY: {
-        type: 'number',
-      },
-      opacity: {
-        type: 'number',
-      },
-    },
-    required: ['offsetX', 'offsetY', 'blur', 'opacity'],
-    type: 'object',
-  },
-  EmbedProvider: {
-    enum: ['youtube', 'vimeo', 'loom', 'figma', 'gdocs', 'website'],
-    type: 'string',
-  },
-  Endpoint: {
-    anyOf: [
-      {
-        additionalProperties: false,
-        properties: {
-          kind: {
-            const: 'free',
-            type: 'string',
-          },
-          x: {
-            type: 'number',
-          },
-          y: {
-            type: 'number',
-          },
-        },
-        required: ['kind', 'x', 'y'],
-        type: 'object',
+        "$ref": "#/components/schemas/FreehandElement"
       },
       {
-        additionalProperties: false,
-        properties: {
-          anchor: {
-            $ref: '#/components/schemas/Anchor',
-          },
-          elementId: {
-            $ref: '#/components/schemas/ElementId',
-          },
-          kind: {
-            const: 'pinned',
-            type: 'string',
-          },
-        },
-        required: ['kind', 'elementId', 'anchor'],
-        type: 'object',
+        "$ref": "#/components/schemas/PathElement"
       },
       {
-        additionalProperties: false,
-        properties: {
-          arrowId: {
-            $ref: '#/components/schemas/ElementId',
-          },
-          kind: {
-            const: 'on-arrow',
-            type: 'string',
-          },
-          t: {
-            type: 'number',
-          },
-        },
-        required: ['kind', 'arrowId', 't'],
-        type: 'object',
+        "$ref": "#/components/schemas/TableElement"
       },
+      {
+        "$ref": "#/components/schemas/AnnotationElement"
+      },
+      {
+        "$ref": "#/components/schemas/LinkCardElement"
+      },
+      {
+        "$ref": "#/components/schemas/VideoElement"
+      }
+    ]
+  },
+  "CapabilitiesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "aiEnabled": {
+        "type": "boolean"
+      },
+      "driveMode": {
+        "$ref": "#/components/schemas/DriveMode"
+      },
+      "emailEnabled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "aiEnabled"
     ],
+    "type": "object"
   },
-  EntityField: {
-    additionalProperties: false,
-    properties: {
-      name: {
-        type: 'string',
-      },
-      type: {
-        type: 'string',
-      },
-    },
-    required: ['name'],
-    type: 'object',
-  },
-  EstimateScale: {
-    enum: ['fibonacci', 'tshirt', 'powers'],
-    type: 'string',
-  },
-  EventStormingNoteKind: {
-    enum: [
-      'domain-event',
-      'command',
-      'actor',
-      'policy',
-      'read-model',
-      'external-system',
-      'aggregate',
-      'hotspot',
+  "ChairFacing": {
+    "enum": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
-    type: 'string',
+    "type": "string"
   },
-  Folder: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
+  "ChangeLogEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "afterState": {
+        "additionalProperties": {},
+        "type": "object"
       },
-      id: {
-        type: 'string',
+      "beforeState": {
+        "additionalProperties": {},
+        "type": "object"
       },
-      name: {
-        type: 'string',
+      "createdAt": {
+        "type": "number"
       },
-      ownerId: {
-        type: 'string',
-      },
-      parentId: {
-        type: ['string', 'null'],
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'ownerId', 'parentId', 'teamId', 'name', 'createdAt', 'updatedAt'],
-    type: 'object',
-  },
-  FreehandElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      borderRadius: {
-        $ref: '#/components/schemas/BorderRadius',
-      },
-      closed: {
-        type: 'boolean',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      font: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
+      "elementIds": {
+        "items": {
+          "type": "string"
         },
-        type: 'array',
+        "type": "array"
       },
-      opacity: {
-        type: 'number',
+      "id": {
+        "type": "string"
       },
-      packedPoints: {
-        description:
-          "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
-        format: 'byte',
-        type: 'string',
+      "kind": {
+        "$ref": "#/components/schemas/ChangeLogKind"
       },
-      padding: {
-        $ref: '#/components/schemas/Padding',
+      "participantColor": {
+        "type": "string"
       },
-      pen: {
-        const: 'highlighter',
-        type: 'string',
+      "participantId": {
+        "type": "string"
       },
-      penColour: {
-        $ref: '#/components/schemas/PenColourName',
+      "participantName": {
+        "type": "string"
       },
-      penWidth: {
-        type: 'number',
+      "summary": {
+        "type": "string"
       },
-      rotation: {
-        type: 'number',
-      },
-      straightEdges: {
-        type: 'boolean',
-      },
-      streamline: {
-        type: 'number',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      strokeStyle: {
-        $ref: '#/components/schemas/BorderStyle',
-      },
-      strokeWidth: {
-        $ref: '#/components/schemas/BorderStroke',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'freehand',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
     },
-    required: ['id', 'type', 'x', 'y', 'width', 'height', 'packedPoints', 'closed'],
-    type: 'object',
-  },
-  HeroCaption: {
-    additionalProperties: false,
-    properties: {
-      subtitle: {
-        type: 'string',
-      },
-      title: {
-        type: 'string',
-      },
-    },
-    required: ['title', 'subtitle'],
-    type: 'object',
-  },
-  IconAnimation: {
-    enum: [
-      'spin',
-      'beat',
-      'pulse',
-      'glow',
-      'ping',
-      'breathe',
-      'shimmer',
-      'bounce',
-      'wiggle',
-      'flash',
-      'tada',
-      'flip',
-      'jump',
-      'swing',
-      'float',
+    "required": [
+      "id",
+      "tabId",
+      "participantId",
+      "participantName",
+      "participantColor",
+      "kind",
+      "summary",
+      "elementIds",
+      "beforeState",
+      "afterState",
+      "createdAt"
     ],
-    type: 'string',
+    "type": "object"
   },
-  IconPosition: {
-    enum: ['left', 'right', 'above', 'below'],
-    type: 'string',
-  },
-  IconSize: {
-    enum: ['sm', 'md', 'lg', 'xl'],
-    type: 'string',
-  },
-  IconWeight: {
-    enum: ['thin', 'regular', 'bold'],
-    type: 'string',
-  },
-  ImageCredit: {
-    additionalProperties: false,
-    properties: {
-      licenseUrl: {
-        type: 'string',
-      },
-      sourceUrl: {
-        type: 'string',
-      },
-      text: {
-        type: 'string',
-      },
-    },
-    required: ['text', 'sourceUrl'],
-    type: 'object',
-  },
-  ImageElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      alt: {
-        type: 'string',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      borderRadius: {
-        $ref: '#/components/schemas/BorderRadius',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      credit: {
-        $ref: '#/components/schemas/ImageCredit',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      font: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      heroCaption: {
-        $ref: '#/components/schemas/HeroCaption',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      imageId: {
-        type: ['string', 'null'],
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      naturalHeight: {
-        type: 'number',
-      },
-      naturalWidth: {
-        type: 'number',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      objectFit: {
-        enum: ['cover', 'contain'],
-        type: 'string',
-      },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      rotation: {
-        type: 'number',
-      },
-      shadow: {
-        $ref: '#/components/schemas/ElementShadow',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      strokeStyle: {
-        $ref: '#/components/schemas/BorderStyle',
-      },
-      strokeWidth: {
-        $ref: '#/components/schemas/BorderStroke',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'image',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'type', 'x', 'y', 'width', 'height', 'imageId'],
-    type: 'object',
-  },
-  ImageSummary: {
-    additionalProperties: false,
-    properties: {
-      byteSize: {
-        type: 'number',
-      },
-      contentType: {
-        type: 'string',
-      },
-      createdAt: {
-        type: 'number',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      originalName: {
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'contentType', 'byteSize', 'width', 'height', 'createdAt'],
-    type: 'object',
-  },
-  KnownTimelineEventType: {
-    enum: [
-      'document_created',
-      'document_renamed',
-      'document_duplicated',
-      'document_moved',
-      'document_edited',
-      'document_offline',
-      'document_synced',
-      'document_opened_by_visitor',
-      'document_copied_by_visitor',
-      'folder_created',
-      'folder_deleted',
-      'comment_added',
-      'comment_resolved',
-      'action_assigned',
-      'action_completed',
-      'share_link_created',
-      'share_link_expiring',
-      'team_created',
-      'team_invite_received',
-      'team_invite_accepted',
-      'team_invite_declined',
-      'team_member_joined',
-      'team_member_left',
-      'team_member_removed',
-      'team_role_changed',
-      'team_document_added',
-      'team_document_removed',
-      'team_renamed',
-      'team_deleted',
-      'team_invite_link_enabled',
-      'team_invite_link_disabled',
-      'token_created',
-      'token_revoked',
-      'token_expiring',
-      'theme_saved',
-      'theme_deleted',
-      'image_uploaded',
+  "ChangeLogKind": {
+    "enum": [
+      "add",
+      "edit",
+      "delete",
+      "revert"
     ],
-    type: 'string',
+    "type": "string"
   },
-  Layer: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'string',
+  "ChartLegendPosition": {
+    "enum": [
+      "top",
+      "right",
+      "bottom",
+      "left"
+    ],
+    "type": "string"
+  },
+  "ChartPaletteId": {
+    "enum": [
+      "vivid",
+      "ocean",
+      "forest",
+      "sunset",
+      "berry",
+      "earth",
+      "grey",
+      "contrast"
+    ],
+    "type": "string"
+  },
+  "ChecklistItem": {
+    "additionalProperties": false,
+    "properties": {
+      "done": {
+        "type": "boolean"
       },
-      locked: {
-        type: 'boolean',
-      },
-      name: {
-        type: 'string',
-      },
-      opacity: {
-        type: 'number',
-      },
-      visible: {
-        type: 'boolean',
-      },
+      "text": {
+        "type": "string"
+      }
     },
-    required: ['id', 'name'],
-    type: 'object',
+    "required": [
+      "text",
+      "done"
+    ],
+    "type": "object"
   },
-  LegendItem: {
-    additionalProperties: false,
-    properties: {
-      color: {
-        type: 'string',
-      },
-      label: {
-        type: 'string',
-      },
-    },
-    required: ['label'],
-    type: 'object',
+  "CodeLanguage": {
+    "enum": [
+      "plain",
+      "ts",
+      "js",
+      "python",
+      "json",
+      "bash",
+      "sql",
+      "html",
+      "css",
+      "yaml"
+    ],
+    "type": "string"
   },
-  LineSeries: {
-    additionalProperties: false,
-    properties: {
-      color: {
-        type: 'string',
+  "CodeThemeId": {
+    "enum": [
+      "midnight",
+      "graphite",
+      "ocean",
+      "forest",
+      "plum",
+      "contrast",
+      "paper",
+      "parchment"
+    ],
+    "type": "string"
+  },
+  "Comment": {
+    "additionalProperties": false,
+    "properties": {
+      "authorColor": {
+        "type": "string"
       },
-      name: {
-        type: 'string',
+      "authorId": {
+        "type": "string"
       },
-      values: {
-        items: {
-          type: 'number',
+      "authorName": {
+        "type": "string"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
         },
-        type: 'array',
+        "type": "array"
       },
+      "text": {
+        "type": "string"
+      }
     },
-    required: ['name', 'values'],
-    type: 'object',
+    "required": [
+      "id",
+      "text",
+      "createdAt",
+      "authorName",
+      "authorColor"
+    ],
+    "type": "object"
   },
-  LinkCardElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
+  "CommentMention": {
+    "additionalProperties": false,
+    "properties": {
+      "handle": {
+        "type": "string"
       },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
+      "memberId": {
+        "type": "string"
       },
-      animationRepeat: {
-        type: 'boolean',
+      "name": {
+        "type": "string"
       },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      font: {
-        type: 'string',
-      },
-      headerFill: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      meta: {
-        $ref: '#/components/schemas/LinkCardMeta',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
+      "userId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "userId",
+      "name",
+      "handle"
+    ],
+    "type": "object"
+  },
+  "CommentThread": {
+    "additionalProperties": false,
+    "properties": {
+      "comments": {
+        "items": {
+          "$ref": "#/components/schemas/Comment"
         },
-        type: 'array',
+        "type": "array"
       },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      rotation: {
-        type: 'number',
-      },
-      shadow: {
-        $ref: '#/components/schemas/ElementShadow',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'link-card',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
+      "resolved": {
+        "type": "boolean"
+      }
     },
-    required: ['id', 'type', 'x', 'y', 'width', 'height'],
-    type: 'object',
+    "required": [
+      "comments",
+      "resolved"
+    ],
+    "type": "object"
   },
-  LinkCardMeta: {
-    additionalProperties: false,
-    properties: {
-      favicon: {
-        type: 'string',
+  "CustomTheme": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
       },
-      image: {
-        type: 'string',
+      "definition": {
+        "$ref": "#/components/schemas/CustomThemeDefinition"
       },
-      title: {
-        type: 'string',
+      "id": {
+        "type": "string"
       },
-      url: {
-        type: 'string',
+      "name": {
+        "type": "string"
       },
+      "ownerId": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
     },
-    required: ['url'],
-    type: 'object',
+    "required": [
+      "id",
+      "ownerId",
+      "name",
+      "definition",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
   },
-  MindFlow: {
-    enum: ['tree', 'balanced', 'downward', 'bubble'],
-    type: 'string',
-  },
-  NoteCrop: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'number',
-      },
-      image: {
-        type: 'string',
-      },
-    },
-    required: ['id', 'image'],
-    type: 'object',
-  },
-  NoteText: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'number',
-      },
-      legible: {
-        type: 'boolean',
-      },
-      text: {
-        type: 'string',
-      },
-    },
-    required: ['id', 'text', 'legible'],
-    type: 'object',
-  },
-  Padding: {
-    enum: ['none', 'sm', 'md', 'lg'],
-    type: 'string',
-  },
-  ParticipantRecord: {
-    additionalProperties: false,
-    properties: {
-      color: {
-        type: 'string',
-      },
-      createdAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      pictureUrl: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['id', 'name', 'color', 'createdAt', 'pictureUrl'],
-    type: 'object',
-  },
-  ParticipantResponse: {
-    additionalProperties: false,
-    properties: {
-      at: {
-        type: 'number',
-      },
-      participantId: {
-        type: 'string',
-      },
-      value: {
-        type: 'string',
-      },
-    },
-    required: ['participantId', 'value', 'at'],
-    type: 'object',
-  },
-  PathElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      borderRadius: {
-        $ref: '#/components/schemas/BorderRadius',
-      },
-      closed: {
-        type: 'boolean',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      fillSwatch: {
-        $ref: '#/components/schemas/QuickSwatchSlot',
-      },
-      font: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      nodes: {
-        items: {
-          $ref: '#/components/schemas/PathNode',
-        },
-        type: 'array',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      penColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      rotation: {
-        type: 'number',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      strokeStyle: {
-        $ref: '#/components/schemas/BorderStyle',
-      },
-      strokeSwatch: {
-        $ref: '#/components/schemas/QuickSwatchSlot',
-      },
-      strokeWidth: {
-        $ref: '#/components/schemas/BorderStroke',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'path',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'type', 'x', 'y', 'width', 'height', 'nodes', 'closed'],
-    type: 'object',
-  },
-  PathHandleMode: {
-    enum: ['corner', 'mirrored', 'aligned'],
-    type: 'string',
-  },
-  PathNode: {
-    additionalProperties: false,
-    properties: {
-      handleIn: {
-        $ref: '#/components/schemas/PathPoint',
-      },
-      handleOut: {
-        $ref: '#/components/schemas/PathPoint',
-      },
-      mode: {
-        $ref: '#/components/schemas/PathHandleMode',
-      },
-      nx: {
-        type: 'number',
-      },
-      ny: {
-        type: 'number',
-      },
-    },
-    required: ['mode', 'nx', 'ny'],
-    type: 'object',
-  },
-  PathPoint: {
-    additionalProperties: false,
-    properties: {
-      nx: {
-        type: 'number',
-      },
-      ny: {
-        type: 'number',
-      },
-    },
-    required: ['nx', 'ny'],
-    type: 'object',
-  },
-  PenColourName: {
-    enum: ['blue', 'red', 'orange', 'green', 'teal', 'violet', 'pink'],
-    type: 'string',
-  },
-  PickerSource: {
-    enum: ['participants', 'options'],
-    type: 'string',
-  },
-  PieAnim: {
-    enum: ['grow', 'pop', 'spin', 'pulse'],
-    type: 'string',
-  },
-  PieSlice: {
-    additionalProperties: false,
-    properties: {
-      color: {
-        type: 'string',
-      },
-      label: {
-        type: 'string',
-      },
-      value: {
-        type: 'number',
-      },
-    },
-    required: ['label', 'value'],
-    type: 'object',
-  },
-  PollStyle: {
-    enum: ['yesNo', 'yesNoAbstain', 'choice', 'collaborators', 'rating', 'text'],
-    type: 'string',
-  },
-  ProgressAnim: {
-    enum: ['fill', 'pulse', 'stripes'],
-    type: 'string',
-  },
-  QaNote: {
-    additionalProperties: false,
-    properties: {
-      at: {
-        type: 'number',
-      },
-      author: {
-        additionalProperties: false,
-        properties: {
-          color: {
-            type: 'string',
+  "CustomThemeDefinition": {
+    "additionalProperties": false,
+    "properties": {
+      "backgroundColor": {
+        "type": "string"
+      },
+      "backgroundOpacity": {
+        "type": "number"
+      },
+      "backgroundPattern": {
+        "$ref": "#/components/schemas/BackgroundPattern"
+      },
+      "elementFill": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "elementStroke": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "elementText": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "palette": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "fill": {
+              "type": "string"
+            },
+            "stroke": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
           },
-          name: {
-            type: 'string',
+          "required": [
+            "fill",
+            "stroke",
+            "text"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "patternColor": {
+        "type": "string"
+      },
+      "rootColor": {
+        "additionalProperties": false,
+        "properties": {
+          "fill": {
+            "type": "string"
           },
-        },
-        required: ['name', 'color'],
-        type: 'object',
-      },
-      doneAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      state: {
-        $ref: '#/components/schemas/QaNoteState',
-      },
-      text: {
-        type: 'string',
-      },
-      voters: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-    },
-    required: ['id', 'text', 'at', 'voters'],
-    type: 'object',
-  },
-  QaNoteState: {
-    enum: ['discussing', 'done'],
-    type: 'string',
-  },
-  QuickSwatchSlot: {
-    enum: [1, 2, 3, 4, 5, 6],
-    type: 'number',
-  },
-  RatingAnim: {
-    enum: ['pop', 'twinkle', 'pulse', 'rock'],
-    type: 'string',
-  },
-  Reaction: {
-    enum: ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'],
-    type: 'string',
-  },
-  ReadNotesRequest: {
-    additionalProperties: false,
-    properties: {
-      crops: {
-        items: {
-          $ref: '#/components/schemas/NoteCrop',
-        },
-        type: 'array',
-      },
-    },
-    required: ['crops'],
-    type: 'object',
-  },
-  ReadNotesResponse: {
-    additionalProperties: false,
-    properties: {
-      texts: {
-        items: {
-          $ref: '#/components/schemas/NoteText',
-        },
-        type: 'array',
-      },
-    },
-    required: ['texts'],
-    type: 'object',
-  },
-  RollCallEntry: {
-    additionalProperties: false,
-    properties: {
-      at: {
-        type: 'number',
-      },
-      color: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-    },
-    required: ['name', 'color', 'at'],
-    type: 'object',
-  },
-  RunHeading: {
-    enum: [1, 2, 3],
-    type: 'number',
-  },
-  RunSize: {
-    enum: ['sm', 'md', 'lg'],
-    type: 'string',
-  },
-  SelectionMode: {
-    enum: [
-      'select',
-      'pan',
-      'laser',
-      'spotlight',
-      'avatar',
-      'eraser',
-      'format',
-      'isometric',
-      'highlighter',
-    ],
-    type: 'string',
-  },
-  SessionButtonConfig: {
-    additionalProperties: false,
-    properties: {
-      dots: {
-        type: 'number',
-      },
-      minutes: {
-        type: 'number',
-      },
-      options: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      question: {
-        type: 'string',
-      },
-      style: {
-        $ref: '#/components/schemas/PollStyle',
-      },
-      tool: {
-        $ref: '#/components/schemas/SessionTool',
-      },
-    },
-    required: ['tool'],
-    type: 'object',
-  },
-  SessionTool: {
-    enum: ['timer', 'stopwatch', 'vote', 'poll'],
-    type: 'string',
-  },
-  ShapeElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      actions: {
-        items: {
-          $ref: '#/components/schemas/ElementAction',
-        },
-        type: 'array',
-      },
-      agendaCurrent: {
-        type: 'number',
-      },
-      agendaItems: {
-        items: {
-          $ref: '#/components/schemas/AgendaItem',
-        },
-        type: 'array',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      borderRadius: {
-        $ref: '#/components/schemas/BorderRadius',
-      },
-      chairFacing: {
-        $ref: '#/components/schemas/ChairFacing',
-      },
-      chartLegend: {
-        type: 'boolean',
-      },
-      chartLegendPosition: {
-        $ref: '#/components/schemas/ChartLegendPosition',
-      },
-      chartPalette: {
-        $ref: '#/components/schemas/ChartPaletteId',
-      },
-      checklistItems: {
-        items: {
-          $ref: '#/components/schemas/ChecklistItem',
-        },
-        type: 'array',
-      },
-      code: {
-        type: 'string',
-      },
-      codeLanguage: {
-        $ref: '#/components/schemas/CodeLanguage',
-      },
-      codeTheme: {
-        $ref: '#/components/schemas/CodeThemeId',
-      },
-      codeWrap: {
-        type: 'boolean',
-      },
-      collabRound: {
-        type: 'string',
-      },
-      colorPreset: {
-        type: 'string',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      decisionDate: {
-        type: 'string',
-      },
-      decisionDrivers: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      decisionStatus: {
-        $ref: '#/components/schemas/DecisionStatus',
-      },
-      entityFields: {
-        items: {
-          $ref: '#/components/schemas/EntityField',
-        },
-        type: 'array',
-      },
-      estimateScale: {
-        $ref: '#/components/schemas/EstimateScale',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      fillSwatch: {
-        $ref: '#/components/schemas/QuickSwatchSlot',
-      },
-      fixedSize: {
-        type: 'boolean',
-      },
-      font: {
-        type: 'string',
-      },
-      headerFill: {
-        type: 'string',
-      },
-      headerSize: {
-        type: 'number',
-      },
-      height: {
-        type: 'number',
-      },
-      iconAnimation: {
-        $ref: '#/components/schemas/IconAnimation',
-      },
-      iconAnimationRepeat: {
-        type: 'boolean',
-      },
-      iconAnimationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      iconId: {
-        type: 'string',
-      },
-      iconPosition: {
-        $ref: '#/components/schemas/IconPosition',
-      },
-      iconSize: {
-        $ref: '#/components/schemas/IconSize',
-      },
-      iconWeight: {
-        $ref: '#/components/schemas/IconWeight',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      ideaCards: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      ideasRevealed: {
-        type: 'boolean',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      legendItems: {
-        items: {
-          $ref: '#/components/schemas/LegendItem',
-        },
-        type: 'array',
-      },
-      lineCategories: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      lineSeries: {
-        items: {
-          $ref: '#/components/schemas/LineSeries',
-        },
-        type: 'array',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      marker: {
-        $ref: '#/components/schemas/ShapeMarker',
-      },
-      markerSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      mindFlow: {
-        $ref: '#/components/schemas/MindFlow',
-      },
-      mindParentId: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      mode: {
-        $ref: '#/components/schemas/SelectionMode',
-      },
-      navLinks: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      pageSubtitle: {
-        type: 'string',
-      },
-      pageTitle: {
-        type: 'string',
-      },
-      penColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      penTextColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      pickerOptions: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      pickerResult: {
-        type: 'string',
-      },
-      pickerSource: {
-        $ref: '#/components/schemas/PickerSource',
-      },
-      pieAnim: {
-        $ref: '#/components/schemas/PieAnim',
-      },
-      pieAnimRepeat: {
-        type: 'boolean',
-      },
-      pieAnimSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      pieSlices: {
-        items: {
-          $ref: '#/components/schemas/PieSlice',
-        },
-        type: 'array',
-      },
-      portalTarget: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      processSteps: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      progress: {
-        type: 'number',
-      },
-      progressAnim: {
-        $ref: '#/components/schemas/ProgressAnim',
-      },
-      progressAnimRepeat: {
-        type: 'boolean',
-      },
-      progressAnimSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      qaNotes: {
-        items: {
-          $ref: '#/components/schemas/QaNote',
-        },
-        type: 'array',
-      },
-      qaRev: {
-        type: 'number',
-      },
-      quizCorrect: {
-        type: 'number',
-      },
-      quizLockedAt: {
-        type: 'number',
-      },
-      quizOptions: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      quizRevealed: {
-        type: 'boolean',
-      },
-      quizSeconds: {
-        type: 'number',
-      },
-      quizStartedAt: {
-        type: 'number',
-      },
-      railCount: {
-        type: 'number',
-      },
-      railLabels: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      rating: {
-        type: 'number',
-      },
-      ratingAnim: {
-        $ref: '#/components/schemas/RatingAnim',
-      },
-      ratingAnimRepeat: {
-        type: 'boolean',
-      },
-      ratingAnimSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      reaction: {
-        $ref: '#/components/schemas/Reaction',
-      },
-      responses: {
-        items: {
-          $ref: '#/components/schemas/ParticipantResponse',
-        },
-        type: 'array',
-      },
-      responsesRevealed: {
-        type: 'boolean',
-      },
-      revealed: {
-        type: 'boolean',
-      },
-      richText: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      rollCall: {
-        items: {
-          $ref: '#/components/schemas/RollCallEntry',
-        },
-        type: 'array',
-      },
-      rotation: {
-        type: 'number',
-      },
-      session: {
-        $ref: '#/components/schemas/SessionButtonConfig',
-      },
-      shadow: {
-        $ref: '#/components/schemas/ElementShadow',
-      },
-      shape: {
-        $ref: '#/components/schemas/ShapeKind',
-      },
-      stats: {
-        items: {
-          $ref: '#/components/schemas/StatItem',
-        },
-        type: 'array',
-      },
-      stickerId: {
-        type: 'string',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      strokeStyle: {
-        $ref: '#/components/schemas/BorderStyle',
-      },
-      strokeSwatch: {
-        $ref: '#/components/schemas/QuickSwatchSlot',
-      },
-      strokeWidth: {
-        $ref: '#/components/schemas/BorderStroke',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      themeLockFill: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'shape',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'type', 'shape', 'x', 'y', 'width', 'height'],
-    type: 'object',
-  },
-  ShapeKind: {
-    enum: [
-      'square',
-      'circle',
-      'diamond',
-      'cylinder',
-      'parallelogram',
-      'hexagon',
-      'document',
-      'page',
-      'mind-node',
-      'lane',
-      'entity',
-      'banner',
-      'callout',
-      'stat-row',
-      'process',
-      'site-header',
-      'mode-button',
-      'portal',
-      'session-button',
-      'reveal',
-      'picker',
-      'reaction-pad',
-      'comment-pin',
-      'action-card',
-      'done-check',
-      'chair',
-      'estimate',
-      'temperature',
-      'idea-box',
-      'qa-board',
-      'agenda',
-      'decision',
-      'roll-call',
-      'quiz',
-      'stadium',
-      'actor',
-      'cloud',
-      'triangle',
-      'trapezoid',
-      'star',
-      'speech-bubble',
-      'frame',
-      'browser',
-      'monitor',
-      'laptop',
-      'phone',
-      'tablet',
-      'foldable',
-      'smartwatch',
-      'progress-bar',
-      'progress-ring',
-      'timeline-rail',
-      'rating',
-      'pie-chart',
-      'bar-chart',
-      'line-chart',
-      'code-block',
-      'checklist',
-      'legend',
-      'focus-button',
-      'icon',
-      'sticker',
-    ],
-    type: 'string',
-  },
-  ShapeLibrary: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      items: {
-        items: {
-          $ref: '#/components/schemas/ShapeLibraryItem',
-        },
-        type: 'array',
-      },
-      name: {
-        type: 'string',
-      },
-      ownerId: {
-        type: 'string',
-      },
-      source: {
-        $ref: '#/components/schemas/ShapeLibrarySource',
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'ownerId', 'name', 'source', 'items', 'createdAt', 'updatedAt'],
-    type: 'object',
-  },
-  ShapeLibraryItem: {
-    additionalProperties: false,
-    description: 'One reusable shape: its elements placed from its top-left corner at (0, 0).',
-    properties: {
-      elements: {
-        items: {
-          $ref: '#/components/schemas/Element',
-        },
-        type: 'array',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      title: {
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'title', 'width', 'height', 'elements'],
-    type: 'object',
-  },
-  ShapeLibrarySource: {
-    const: 'drawio',
-    description: 'Where a library came from; one value today.',
-    type: 'string',
-  },
-  ShapeMarker: {
-    enum: ['green-circle', 'orange-circle', 'red-circle', 'checkbox-unchecked', 'checkbox-checked'],
-    type: 'string',
-  },
-  ShareLink: {
-    additionalProperties: false,
-    properties: {
-      code: {
-        type: 'string',
-      },
-      createdAt: {
-        type: 'number',
-      },
-      documentId: {
-        type: 'string',
-      },
-      expiresAt: {
-        type: ['number', 'null'],
-      },
-      expiry: {
-        $ref: '#/components/schemas/ShareLinkExpiry',
-      },
-      role: {
-        $ref: '#/components/schemas/ShareRole',
-      },
-      tabId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['code', 'documentId', 'role', 'createdAt', 'expiry', 'expiresAt', 'tabId'],
-    type: 'object',
-  },
-  ShareLinkExpiry: {
-    enum: ['never', 'week', 'month', 'sixMonths'],
-    type: 'string',
-  },
-  ShareRole: {
-    enum: ['edit', 'view'],
-    type: 'string',
-  },
-  SharedTabsSummary: {
-    additionalProperties: false,
-    properties: {
-      documents: {
-        type: 'number',
-      },
-      tabs: {
-        type: 'number',
-      },
-    },
-    required: ['tabs', 'documents'],
-    type: 'object',
-  },
-  SharedWithItem: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      ownerColor: {
-        type: ['string', 'null'],
-      },
-      ownerName: {
-        type: ['string', 'null'],
-      },
-      role: {
-        $ref: '#/components/schemas/ShareRole',
-      },
-      savedAt: {
-        type: 'number',
-      },
-      shareCode: {
-        type: 'string',
-      },
-      tabId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['id', 'name', 'savedAt', 'role', 'shareCode', 'tabId', 'ownerName', 'ownerColor'],
-    type: 'object',
-  },
-  StatItem: {
-    additionalProperties: false,
-    properties: {
-      caption: {
-        type: 'string',
-      },
-      value: {
-        type: 'string',
-      },
-    },
-    required: ['value', 'caption'],
-    type: 'object',
-  },
-  StickyElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      esDraft: {
-        const: true,
-        type: 'boolean',
-      },
-      esKind: {
-        $ref: '#/components/schemas/EventStormingNoteKind',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      fixedSize: {
-        type: 'boolean',
-      },
-      font: {
-        type: 'string',
-      },
-      headerFill: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      penTextColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      richText: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      rotation: {
-        type: 'number',
-      },
-      shadow: {
-        $ref: '#/components/schemas/ElementShadow',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'sticky',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'type', 'x', 'y', 'width', 'height'],
-    type: 'object',
-  },
-  Tab: {
-    additionalProperties: false,
-    properties: {
-      backgroundAnimationSpeed: {
-        type: 'number',
-      },
-      backgroundColor: {
-        type: 'string',
-      },
-      backgroundOpacity: {
-        type: 'number',
-      },
-      backgroundPattern: {
-        $ref: '#/components/schemas/BackgroundPattern',
-      },
-      backgroundPatternScale: {
-        type: 'number',
-      },
-      defaultTextSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      elements: {
-        items: {
-          $ref: '#/components/schemas/Element',
-        },
-        type: 'array',
-      },
-      esLanesSettled: {
-        type: 'boolean',
-      },
-      folder: {
-        type: 'string',
-      },
-      font: {
-        type: 'string',
-      },
-      id: {
-        $ref: '#/components/schemas/TabId',
-      },
-      kind: {
-        $ref: '#/components/schemas/TabKind',
-      },
-      layers: {
-        items: {
-          $ref: '#/components/schemas/Layer',
-        },
-        type: 'array',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      name: {
-        type: 'string',
-      },
-      patternColor: {
-        type: 'string',
-      },
-      templateChosen: {
-        type: 'boolean',
-      },
-      theme: {
-        type: 'string',
-      },
-      timer: {
-        $ref: '#/components/schemas/TabTimer',
-      },
-      vote: {
-        $ref: '#/components/schemas/TabVote',
-      },
-    },
-    required: ['id', 'name', 'elements'],
-    type: 'object',
-  },
-  TabId: {
-    type: 'string',
-  },
-  TabKind: {
-    enum: ['diagram', 'event-storming', 'whiteboard'],
-    type: 'string',
-  },
-  TabSummary: {
-    additionalProperties: false,
-    properties: {
-      documentId: {
-        type: 'string',
-      },
-      folder: {
-        type: 'string',
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      orderIndex: {
-        type: 'number',
-      },
-      outOfScope: {
-        const: true,
-        type: 'boolean',
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'documentId', 'name', 'orderIndex', 'updatedAt'],
-    type: 'object',
-  },
-  TabTimer: {
-    additionalProperties: false,
-    properties: {
-      anchorAt: {
-        type: 'number',
-      },
-      durationMs: {
-        type: 'number',
-      },
-      frozenMs: {
-        type: 'number',
-      },
-      mode: {
-        $ref: '#/components/schemas/TimerMode',
-      },
-      running: {
-        type: 'boolean',
-      },
-    },
-    required: ['mode', 'running'],
-    type: 'object',
-  },
-  TabVote: {
-    additionalProperties: false,
-    properties: {
-      active: {
-        type: 'boolean',
-      },
-      hideCounts: {
-        type: 'boolean',
-      },
-      hideCursors: {
-        type: 'boolean',
-      },
-      onePerElement: {
-        type: 'boolean',
-      },
-      revealed: {
-        type: 'boolean',
-      },
-      reviewIndex: {
-        type: 'number',
-      },
-      round: {
-        type: 'string',
-      },
-      startedBy: {
-        type: 'string',
-      },
-      voteLayerId: {
-        type: 'string',
-      },
-      votes: {
-        additionalProperties: {
-          items: {
-            type: 'string',
+          "stroke": {
+            "type": "string"
           },
-          type: 'array',
+          "text": {
+            "type": "string"
+          }
         },
-        type: 'object',
+        "required": [
+          "fill",
+          "stroke",
+          "text"
+        ],
+        "type": "object"
       },
-      votesPerPerson: {
-        type: 'number',
-      },
+      "shapeColors": {
+        "additionalProperties": false,
+        "properties": {
+          "action-card": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "actor": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "agenda": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "banner": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "bar-chart": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "browser": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "callout": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "chair": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "checklist": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "circle": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "cloud": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "code-block": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "comment-pin": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "cylinder": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "decision": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "diamond": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "document": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "done-check": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "entity": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "estimate": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "focus-button": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "foldable": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "frame": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "hexagon": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "icon": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "idea-box": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "lane": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "laptop": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "legend": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "line-chart": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "mind-node": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "mode-button": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "monitor": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "page": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "parallelogram": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "phone": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "picker": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "pie-chart": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "portal": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "process": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "progress-bar": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "progress-ring": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "qa-board": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "quiz": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "rating": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "reaction-pad": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "reveal": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "roll-call": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "session-button": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "site-header": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "smartwatch": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "speech-bubble": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "square": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "stadium": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "star": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "stat-row": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "sticker": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "tablet": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "temperature": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "timeline-rail": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "trapezoid": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "triangle": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
     },
-    required: ['active', 'revealed', 'votesPerPerson', 'votes'],
-    type: 'object',
+    "required": [
+      "backgroundColor",
+      "backgroundPattern",
+      "patternColor",
+      "elementFill",
+      "elementStroke",
+      "elementText"
+    ],
+    "type": "object"
   },
-  TableCellStyle: {
-    additionalProperties: false,
-    properties: {
-      alignX: {
-        $ref: '#/components/schemas/TextAlignX',
+  "DecisionStatus": {
+    "enum": [
+      "proposed",
+      "accepted",
+      "rejected",
+      "superseded"
+    ],
+    "type": "string"
+  },
+  "Document": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
       },
-      bg: {
-        type: 'string',
+      "folderId": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
-      bold: {
-        type: 'boolean',
+      "id": {
+        "type": "string"
       },
-      italic: {
-        type: 'boolean',
+      "name": {
+        "type": "string"
       },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
+      "ownerColor": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
-      textColor: {
-        type: 'string',
+      "ownerId": {
+        "type": "string"
       },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
-      underline: {
-        type: 'boolean',
+      "presentation": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
+      "savedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "shareable": {
+        "type": "boolean"
+      },
+      "source": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DocumentSource"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "tabs": {
+        "items": {
+          "$ref": "#/components/schemas/TabSummary"
+        },
+        "type": "array"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
     },
-    type: 'object',
+    "required": [
+      "id",
+      "ownerId",
+      "name",
+      "tabs",
+      "shareable",
+      "shareCode",
+      "folderId",
+      "teamId",
+      "source",
+      "presentation",
+      "savedAt",
+      "createdAt",
+      "ownerName",
+      "ownerColor"
+    ],
+    "type": "object"
   },
-  TableElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
+  "DocumentSource": {
+    "enum": [
+      "ai",
+      "mcp"
+    ],
+    "type": "string"
+  },
+  "DocumentSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
       },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
+      "empty": {
+        "type": "boolean"
       },
-      animationRepeat: {
-        type: 'boolean',
+      "folderId": {
+        "type": [
+          "string",
+          "null"
+        ]
       },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
+      "id": {
+        "type": "string"
       },
-      aspectLocked: {
-        type: 'boolean',
+      "name": {
+        "type": "string"
       },
-      cellStyles: {
-        items: {
-          items: {
-            anyOf: [
+      "ownerId": {
+        "type": "string"
+      },
+      "savedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "shareable": {
+        "type": "boolean"
+      },
+      "source": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DocumentSource"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "ownerId",
+      "name",
+      "shareable",
+      "shareCode",
+      "folderId",
+      "teamId",
+      "source",
+      "savedAt",
+      "createdAt",
+      "empty"
+    ],
+    "type": "object"
+  },
+  "DriveAccessToken": {
+    "additionalProperties": false,
+    "properties": {
+      "accessToken": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "accessToken",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnection": {
+    "additionalProperties": false,
+    "properties": {
+      "connectedAt": {
+        "type": "number"
+      },
+      "hasRefreshToken": {
+        "type": "boolean"
+      },
+      "pageToken": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pageTokenSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "rootFolderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "$ref": "#/components/schemas/DriveConnectionStatus"
+      }
+    },
+    "required": [
+      "status",
+      "hasRefreshToken",
+      "rootFolderId",
+      "pageToken",
+      "pageTokenSavedAt",
+      "connectedAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnectionStatus": {
+    "enum": [
+      "connected",
+      "needs_reconnect"
+    ],
+    "type": "string"
+  },
+  "DriveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "driveFileId": {
+        "type": "string"
+      },
+      "headRevisionId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kind": {
+        "$ref": "#/components/schemas/DriveItemKind"
+      },
+      "ldId": {
+        "type": "string"
+      },
+      "ldName": {
+        "type": "string"
+      },
+      "md5": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mirroredSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "notice": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DriveNotice"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "noticeParentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "parentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashed": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "kind",
+      "ldId",
+      "driveFileId",
+      "name",
+      "ldName",
+      "parentId",
+      "trashed",
+      "md5",
+      "headRevisionId",
+      "mirroredSavedAt",
+      "notice",
+      "noticeParentId"
+    ],
+    "type": "object"
+  },
+  "DriveItemKind": {
+    "enum": [
+      "document",
+      "folder"
+    ],
+    "type": "string"
+  },
+  "DriveLease": {
+    "additionalProperties": false,
+    "properties": {
+      "acquired": {
+        "type": "boolean"
+      },
+      "expiresAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "holder": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "acquired",
+      "holder",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveMode": {
+    "enum": [
+      "off",
+      "browser",
+      "broker"
+    ],
+    "type": "string"
+  },
+  "DriveNotice": {
+    "const": "unseen_folder",
+    "type": "string"
+  },
+  "Element": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/BoxedElement"
+      },
+      {
+        "$ref": "#/components/schemas/ArrowElement"
+      }
+    ]
+  },
+  "ElementAction": {
+    "additionalProperties": false,
+    "properties": {
+      "assignee": {
+        "$ref": "#/components/schemas/ElementActionAssignee"
+      },
+      "assignerId": {
+        "type": "string"
+      },
+      "assignerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "open",
+          "done"
+        ],
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "assignee",
+      "teamId",
+      "assignerId",
+      "assignerName",
+      "status",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "ElementActionAssignee": {
+    "additionalProperties": false,
+    "properties": {
+      "memberId": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "userId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "userId",
+      "name"
+    ],
+    "type": "object"
+  },
+  "ElementAnimation": {
+    "enum": [
+      "pulse",
+      "blink",
+      "glow",
+      "trace",
+      "gradient",
+      "heartbeat",
+      "breathe",
+      "shimmer",
+      "highlight",
+      "bounce",
+      "wobble",
+      "shake",
+      "jelly",
+      "float",
+      "swing"
+    ],
+    "type": "string"
+  },
+  "ElementId": {
+    "type": "string"
+  },
+  "ElementLink": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "tab",
+            "type": "string"
+          },
+          "tabId": {
+            "$ref": "#/components/schemas/TabId"
+          }
+        },
+        "required": [
+          "kind",
+          "tabId"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "elementId": {
+            "$ref": "#/components/schemas/ElementId"
+          },
+          "kind": {
+            "const": "element",
+            "type": "string"
+          },
+          "tabId": {
+            "$ref": "#/components/schemas/TabId"
+          }
+        },
+        "required": [
+          "kind",
+          "tabId",
+          "elementId"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "document",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "documentId",
+          "name"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "url",
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "url"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "ElementShadow": {
+    "additionalProperties": false,
+    "properties": {
+      "blur": {
+        "type": "number"
+      },
+      "offsetX": {
+        "type": "number"
+      },
+      "offsetY": {
+        "type": "number"
+      },
+      "opacity": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "offsetX",
+      "offsetY",
+      "blur",
+      "opacity"
+    ],
+    "type": "object"
+  },
+  "EmbedProvider": {
+    "enum": [
+      "youtube",
+      "vimeo",
+      "loom",
+      "figma",
+      "gdocs",
+      "website"
+    ],
+    "type": "string"
+  },
+  "Endpoint": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "free",
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "$ref": "#/components/schemas/Anchor"
+          },
+          "elementId": {
+            "$ref": "#/components/schemas/ElementId"
+          },
+          "kind": {
+            "const": "pinned",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "elementId",
+          "anchor"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "arrowId": {
+            "$ref": "#/components/schemas/ElementId"
+          },
+          "kind": {
+            "const": "on-arrow",
+            "type": "string"
+          },
+          "t": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "arrowId",
+          "t"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "EntityField": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "type": "object"
+  },
+  "EstimateScale": {
+    "enum": [
+      "fibonacci",
+      "tshirt",
+      "powers"
+    ],
+    "type": "string"
+  },
+  "EventStormingNoteKind": {
+    "enum": [
+      "domain-event",
+      "command",
+      "actor",
+      "policy",
+      "read-model",
+      "external-system",
+      "aggregate",
+      "hotspot"
+    ],
+    "type": "string"
+  },
+  "Folder": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "ownerId": {
+        "type": "string"
+      },
+      "parentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "ownerId",
+      "parentId",
+      "teamId",
+      "name",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "FreehandElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "closed": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "packedPoints": {
+        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
+        "format": "byte",
+        "type": "string"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "pen": {
+        "const": "highlighter",
+        "type": "string"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penWidth": {
+        "type": "number"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "straightEdges": {
+        "type": "boolean"
+      },
+      "streamline": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "freehand",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "packedPoints",
+      "closed"
+    ],
+    "type": "object"
+  },
+  "HeroCaption": {
+    "additionalProperties": false,
+    "properties": {
+      "subtitle": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "subtitle"
+    ],
+    "type": "object"
+  },
+  "IconAnimation": {
+    "enum": [
+      "spin",
+      "beat",
+      "pulse",
+      "glow",
+      "ping",
+      "breathe",
+      "shimmer",
+      "bounce",
+      "wiggle",
+      "flash",
+      "tada",
+      "flip",
+      "jump",
+      "swing",
+      "float"
+    ],
+    "type": "string"
+  },
+  "IconPosition": {
+    "enum": [
+      "left",
+      "right",
+      "above",
+      "below"
+    ],
+    "type": "string"
+  },
+  "IconSize": {
+    "enum": [
+      "sm",
+      "md",
+      "lg",
+      "xl"
+    ],
+    "type": "string"
+  },
+  "IconWeight": {
+    "enum": [
+      "thin",
+      "regular",
+      "bold"
+    ],
+    "type": "string"
+  },
+  "ImageCredit": {
+    "additionalProperties": false,
+    "properties": {
+      "licenseUrl": {
+        "type": "string"
+      },
+      "sourceUrl": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text",
+      "sourceUrl"
+    ],
+    "type": "object"
+  },
+  "ImageElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "alt": {
+        "type": "string"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "heroCaption": {
+        "$ref": "#/components/schemas/HeroCaption"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "imageId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "naturalHeight": {
+        "type": "number"
+      },
+      "naturalWidth": {
+        "type": "number"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "objectFit": {
+        "enum": [
+          "cover",
+          "contain"
+        ],
+        "type": "string"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "image",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "imageId"
+    ],
+    "type": "object"
+  },
+  "ImageSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "byteSize": {
+        "type": "number"
+      },
+      "contentType": {
+        "type": "string"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "originalName": {
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "contentType",
+      "byteSize",
+      "width",
+      "height",
+      "createdAt"
+    ],
+    "type": "object"
+  },
+  "KnownTimelineEventType": {
+    "enum": [
+      "document_created",
+      "document_renamed",
+      "document_duplicated",
+      "document_moved",
+      "document_edited",
+      "document_offline",
+      "document_synced",
+      "document_opened_by_visitor",
+      "document_copied_by_visitor",
+      "folder_created",
+      "folder_deleted",
+      "comment_added",
+      "comment_resolved",
+      "action_assigned",
+      "action_completed",
+      "share_link_created",
+      "share_link_expiring",
+      "team_created",
+      "team_invite_received",
+      "team_invite_accepted",
+      "team_invite_declined",
+      "team_member_joined",
+      "team_member_left",
+      "team_member_removed",
+      "team_role_changed",
+      "team_document_added",
+      "team_document_removed",
+      "team_renamed",
+      "team_deleted",
+      "team_invite_link_enabled",
+      "team_invite_link_disabled",
+      "token_created",
+      "token_revoked",
+      "token_expiring",
+      "theme_saved",
+      "theme_deleted",
+      "image_uploaded"
+    ],
+    "type": "string"
+  },
+  "Layer": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "visible": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "LegendItem": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "label"
+    ],
+    "type": "object"
+  },
+  "LineSeries": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "values": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "name",
+      "values"
+    ],
+    "type": "object"
+  },
+  "LinkCardElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "meta": {
+        "$ref": "#/components/schemas/LinkCardMeta"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "link-card",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "LinkCardMeta": {
+    "additionalProperties": false,
+    "properties": {
+      "favicon": {
+        "type": "string"
+      },
+      "image": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url"
+    ],
+    "type": "object"
+  },
+  "MindFlow": {
+    "enum": [
+      "tree",
+      "balanced",
+      "downward",
+      "bubble"
+    ],
+    "type": "string"
+  },
+  "NoteCrop": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "image": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "image"
+    ],
+    "type": "object"
+  },
+  "NoteText": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "legible": {
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "legible"
+    ],
+    "type": "object"
+  },
+  "Padding": {
+    "enum": [
+      "none",
+      "sm",
+      "md",
+      "lg"
+    ],
+    "type": "string"
+  },
+  "ParticipantRecord": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color",
+      "createdAt",
+      "pictureUrl"
+    ],
+    "type": "object"
+  },
+  "ParticipantResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "participantId": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "participantId",
+      "value",
+      "at"
+    ],
+    "type": "object"
+  },
+  "PathElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "closed": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/components/schemas/PathNode"
+        },
+        "type": "array"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "path",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "nodes",
+      "closed"
+    ],
+    "type": "object"
+  },
+  "PathHandleMode": {
+    "enum": [
+      "corner",
+      "mirrored",
+      "aligned"
+    ],
+    "type": "string"
+  },
+  "PathNode": {
+    "additionalProperties": false,
+    "properties": {
+      "handleIn": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "handleOut": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/PathHandleMode"
+      },
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "mode",
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PathPoint": {
+    "additionalProperties": false,
+    "properties": {
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PenColourName": {
+    "enum": [
+      "blue",
+      "red",
+      "orange",
+      "green",
+      "teal",
+      "violet",
+      "pink"
+    ],
+    "type": "string"
+  },
+  "PickerSource": {
+    "enum": [
+      "participants",
+      "options"
+    ],
+    "type": "string"
+  },
+  "PieAnim": {
+    "enum": [
+      "grow",
+      "pop",
+      "spin",
+      "pulse"
+    ],
+    "type": "string"
+  },
+  "PieSlice": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "value": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "label",
+      "value"
+    ],
+    "type": "object"
+  },
+  "PollStyle": {
+    "enum": [
+      "yesNo",
+      "yesNoAbstain",
+      "choice",
+      "collaborators",
+      "rating",
+      "text"
+    ],
+    "type": "string"
+  },
+  "ProgressAnim": {
+    "enum": [
+      "fill",
+      "pulse",
+      "stripes"
+    ],
+    "type": "string"
+  },
+  "QaNote": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "author": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "doneAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/QaNoteState"
+      },
+      "text": {
+        "type": "string"
+      },
+      "voters": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "at",
+      "voters"
+    ],
+    "type": "object"
+  },
+  "QaNoteState": {
+    "enum": [
+      "discussing",
+      "done"
+    ],
+    "type": "string"
+  },
+  "QuickSwatchSlot": {
+    "enum": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "type": "number"
+  },
+  "RatingAnim": {
+    "enum": [
+      "pop",
+      "twinkle",
+      "pulse",
+      "rock"
+    ],
+    "type": "string"
+  },
+  "Reaction": {
+    "enum": [
+      "confetti",
+      "sparkles",
+      "hearts",
+      "applause",
+      "fireworks"
+    ],
+    "type": "string"
+  },
+  "ReadNotesRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "crops": {
+        "items": {
+          "$ref": "#/components/schemas/NoteCrop"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "crops"
+    ],
+    "type": "object"
+  },
+  "ReadNotesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "texts": {
+        "items": {
+          "$ref": "#/components/schemas/NoteText"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "texts"
+    ],
+    "type": "object"
+  },
+  "RollCallEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "at"
+    ],
+    "type": "object"
+  },
+  "RunHeading": {
+    "enum": [
+      1,
+      2,
+      3
+    ],
+    "type": "number"
+  },
+  "RunSize": {
+    "enum": [
+      "xs",
+      "sm",
+      "md",
+      "lg"
+    ],
+    "type": "string"
+  },
+  "SelectionMode": {
+    "enum": [
+      "select",
+      "pan",
+      "laser",
+      "spotlight",
+      "avatar",
+      "eraser",
+      "format",
+      "isometric",
+      "highlighter"
+    ],
+    "type": "string"
+  },
+  "SessionButtonConfig": {
+    "additionalProperties": false,
+    "properties": {
+      "dots": {
+        "type": "number"
+      },
+      "minutes": {
+        "type": "number"
+      },
+      "options": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "question": {
+        "type": "string"
+      },
+      "style": {
+        "$ref": "#/components/schemas/PollStyle"
+      },
+      "tool": {
+        "$ref": "#/components/schemas/SessionTool"
+      }
+    },
+    "required": [
+      "tool"
+    ],
+    "type": "object"
+  },
+  "SessionTool": {
+    "enum": [
+      "timer",
+      "stopwatch",
+      "vote",
+      "poll"
+    ],
+    "type": "string"
+  },
+  "ShapeElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "actions": {
+        "items": {
+          "$ref": "#/components/schemas/ElementAction"
+        },
+        "type": "array"
+      },
+      "agendaCurrent": {
+        "type": "number"
+      },
+      "agendaItems": {
+        "items": {
+          "$ref": "#/components/schemas/AgendaItem"
+        },
+        "type": "array"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "chairFacing": {
+        "$ref": "#/components/schemas/ChairFacing"
+      },
+      "chartLegend": {
+        "type": "boolean"
+      },
+      "chartLegendPosition": {
+        "$ref": "#/components/schemas/ChartLegendPosition"
+      },
+      "chartPalette": {
+        "$ref": "#/components/schemas/ChartPaletteId"
+      },
+      "checklistItems": {
+        "items": {
+          "$ref": "#/components/schemas/ChecklistItem"
+        },
+        "type": "array"
+      },
+      "code": {
+        "type": "string"
+      },
+      "codeLanguage": {
+        "$ref": "#/components/schemas/CodeLanguage"
+      },
+      "codeTheme": {
+        "$ref": "#/components/schemas/CodeThemeId"
+      },
+      "codeWrap": {
+        "type": "boolean"
+      },
+      "collabRound": {
+        "type": "string"
+      },
+      "colorPreset": {
+        "type": "string"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "decisionDate": {
+        "type": "string"
+      },
+      "decisionDrivers": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "decisionStatus": {
+        "$ref": "#/components/schemas/DecisionStatus"
+      },
+      "entityFields": {
+        "items": {
+          "$ref": "#/components/schemas/EntityField"
+        },
+        "type": "array"
+      },
+      "estimateScale": {
+        "$ref": "#/components/schemas/EstimateScale"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "fixedSize": {
+        "type": "boolean"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "headerSize": {
+        "type": "number"
+      },
+      "height": {
+        "type": "number"
+      },
+      "iconAnimation": {
+        "$ref": "#/components/schemas/IconAnimation"
+      },
+      "iconAnimationRepeat": {
+        "type": "boolean"
+      },
+      "iconAnimationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "iconId": {
+        "type": "string"
+      },
+      "iconPosition": {
+        "$ref": "#/components/schemas/IconPosition"
+      },
+      "iconSize": {
+        "$ref": "#/components/schemas/IconSize"
+      },
+      "iconWeight": {
+        "$ref": "#/components/schemas/IconWeight"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "ideaCards": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "ideasRevealed": {
+        "type": "boolean"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "legendItems": {
+        "items": {
+          "$ref": "#/components/schemas/LegendItem"
+        },
+        "type": "array"
+      },
+      "lineCategories": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "lineSeries": {
+        "items": {
+          "$ref": "#/components/schemas/LineSeries"
+        },
+        "type": "array"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "marker": {
+        "$ref": "#/components/schemas/ShapeMarker"
+      },
+      "markerSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "mindFlow": {
+        "$ref": "#/components/schemas/MindFlow"
+      },
+      "mindParentId": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/SelectionMode"
+      },
+      "navLinks": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "pageSubtitle": {
+        "type": "string"
+      },
+      "pageTitle": {
+        "type": "string"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "pickerOptions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "pickerResult": {
+        "type": "string"
+      },
+      "pickerSource": {
+        "$ref": "#/components/schemas/PickerSource"
+      },
+      "pieAnim": {
+        "$ref": "#/components/schemas/PieAnim"
+      },
+      "pieAnimRepeat": {
+        "type": "boolean"
+      },
+      "pieAnimSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "pieSlices": {
+        "items": {
+          "$ref": "#/components/schemas/PieSlice"
+        },
+        "type": "array"
+      },
+      "portalTarget": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "processSteps": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "progress": {
+        "type": "number"
+      },
+      "progressAnim": {
+        "$ref": "#/components/schemas/ProgressAnim"
+      },
+      "progressAnimRepeat": {
+        "type": "boolean"
+      },
+      "progressAnimSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "qaNotes": {
+        "items": {
+          "$ref": "#/components/schemas/QaNote"
+        },
+        "type": "array"
+      },
+      "qaRev": {
+        "type": "number"
+      },
+      "quizCorrect": {
+        "type": "number"
+      },
+      "quizLockedAt": {
+        "type": "number"
+      },
+      "quizOptions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "quizRevealed": {
+        "type": "boolean"
+      },
+      "quizSeconds": {
+        "type": "number"
+      },
+      "quizStartedAt": {
+        "type": "number"
+      },
+      "railCount": {
+        "type": "number"
+      },
+      "railLabels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "rating": {
+        "type": "number"
+      },
+      "ratingAnim": {
+        "$ref": "#/components/schemas/RatingAnim"
+      },
+      "ratingAnimRepeat": {
+        "type": "boolean"
+      },
+      "ratingAnimSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "reaction": {
+        "$ref": "#/components/schemas/Reaction"
+      },
+      "responses": {
+        "items": {
+          "$ref": "#/components/schemas/ParticipantResponse"
+        },
+        "type": "array"
+      },
+      "responsesRevealed": {
+        "type": "boolean"
+      },
+      "revealed": {
+        "type": "boolean"
+      },
+      "richText": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "rollCall": {
+        "items": {
+          "$ref": "#/components/schemas/RollCallEntry"
+        },
+        "type": "array"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "session": {
+        "$ref": "#/components/schemas/SessionButtonConfig"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
+      "shape": {
+        "$ref": "#/components/schemas/ShapeKind"
+      },
+      "stats": {
+        "items": {
+          "$ref": "#/components/schemas/StatItem"
+        },
+        "type": "array"
+      },
+      "stickerId": {
+        "type": "string"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "themeLockFill": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "shape",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "shape",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "ShapeKind": {
+    "enum": [
+      "square",
+      "circle",
+      "diamond",
+      "cylinder",
+      "parallelogram",
+      "hexagon",
+      "document",
+      "page",
+      "mind-node",
+      "lane",
+      "entity",
+      "banner",
+      "callout",
+      "stat-row",
+      "process",
+      "site-header",
+      "mode-button",
+      "portal",
+      "session-button",
+      "reveal",
+      "picker",
+      "reaction-pad",
+      "comment-pin",
+      "action-card",
+      "done-check",
+      "chair",
+      "estimate",
+      "temperature",
+      "idea-box",
+      "qa-board",
+      "agenda",
+      "decision",
+      "roll-call",
+      "quiz",
+      "stadium",
+      "actor",
+      "cloud",
+      "triangle",
+      "trapezoid",
+      "star",
+      "speech-bubble",
+      "frame",
+      "browser",
+      "monitor",
+      "laptop",
+      "phone",
+      "tablet",
+      "foldable",
+      "smartwatch",
+      "progress-bar",
+      "progress-ring",
+      "timeline-rail",
+      "rating",
+      "pie-chart",
+      "bar-chart",
+      "line-chart",
+      "code-block",
+      "checklist",
+      "legend",
+      "focus-button",
+      "icon",
+      "sticker"
+    ],
+    "type": "string"
+  },
+  "ShapeLibrary": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/ShapeLibraryItem"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "ownerId": {
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/components/schemas/ShapeLibrarySource"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "ownerId",
+      "name",
+      "source",
+      "items",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "ShapeLibraryItem": {
+    "additionalProperties": false,
+    "description": "One reusable shape: its elements placed from its top-left corner at (0, 0).",
+    "properties": {
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "width",
+      "height",
+      "elements"
+    ],
+    "type": "object"
+  },
+  "ShapeLibrarySource": {
+    "const": "drawio",
+    "description": "Where a library came from; one value today.",
+    "type": "string"
+  },
+  "ShapeMarker": {
+    "enum": [
+      "green-circle",
+      "orange-circle",
+      "red-circle",
+      "checkbox-unchecked",
+      "checkbox-checked"
+    ],
+    "type": "string"
+  },
+  "ShareLink": {
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "type": "string"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "expiry": {
+        "$ref": "#/components/schemas/ShareLinkExpiry"
+      },
+      "role": {
+        "$ref": "#/components/schemas/ShareRole"
+      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "code",
+      "documentId",
+      "role",
+      "createdAt",
+      "expiry",
+      "expiresAt",
+      "tabId"
+    ],
+    "type": "object"
+  },
+  "ShareLinkExpiry": {
+    "enum": [
+      "never",
+      "week",
+      "month",
+      "sixMonths"
+    ],
+    "type": "string"
+  },
+  "ShareRole": {
+    "enum": [
+      "edit",
+      "view"
+    ],
+    "type": "string"
+  },
+  "SharedTabsSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "documents": {
+        "type": "number"
+      },
+      "tabs": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tabs",
+      "documents"
+    ],
+    "type": "object"
+  },
+  "SharedWithItem": {
+    "additionalProperties": false,
+    "properties": {
+      "empty": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "ownerColor": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "role": {
+        "$ref": "#/components/schemas/ShareRole"
+      },
+      "savedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "savedAt",
+      "role",
+      "shareCode",
+      "tabId",
+      "ownerName",
+      "ownerColor",
+      "empty"
+    ],
+    "type": "object"
+  },
+  "StatItem": {
+    "additionalProperties": false,
+    "properties": {
+      "caption": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "value",
+      "caption"
+    ],
+    "type": "object"
+  },
+  "StickyElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "esDraft": {
+        "const": true,
+        "type": "boolean"
+      },
+      "esKind": {
+        "$ref": "#/components/schemas/EventStormingNoteKind"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fixedSize": {
+        "type": "boolean"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "richText": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "sticky",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "Tab": {
+    "additionalProperties": false,
+    "properties": {
+      "backgroundAnimationSpeed": {
+        "type": "number"
+      },
+      "backgroundColor": {
+        "type": "string"
+      },
+      "backgroundOpacity": {
+        "type": "number"
+      },
+      "backgroundPattern": {
+        "$ref": "#/components/schemas/BackgroundPattern"
+      },
+      "backgroundPatternScale": {
+        "type": "number"
+      },
+      "defaultTextSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "esLanesSettled": {
+        "type": "boolean"
+      },
+      "folder": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "id": {
+        "$ref": "#/components/schemas/TabId"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/TabKind"
+      },
+      "layers": {
+        "items": {
+          "$ref": "#/components/schemas/Layer"
+        },
+        "type": "array"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "patternColor": {
+        "type": "string"
+      },
+      "templateChosen": {
+        "type": "boolean"
+      },
+      "theme": {
+        "type": "string"
+      },
+      "timer": {
+        "$ref": "#/components/schemas/TabTimer"
+      },
+      "vote": {
+        "$ref": "#/components/schemas/TabVote"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "elements"
+    ],
+    "type": "object"
+  },
+  "TabId": {
+    "type": "string"
+  },
+  "TabKind": {
+    "enum": [
+      "diagram",
+      "event-storming",
+      "whiteboard"
+    ],
+    "type": "string"
+  },
+  "TabSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "folder": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "orderIndex": {
+        "type": "number"
+      },
+      "outOfScope": {
+        "const": true,
+        "type": "boolean"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "documentId",
+      "name",
+      "orderIndex",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "TabTimer": {
+    "additionalProperties": false,
+    "properties": {
+      "anchorAt": {
+        "type": "number"
+      },
+      "durationMs": {
+        "type": "number"
+      },
+      "frozenMs": {
+        "type": "number"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/TimerMode"
+      },
+      "running": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "mode",
+      "running"
+    ],
+    "type": "object"
+  },
+  "TabVote": {
+    "additionalProperties": false,
+    "properties": {
+      "active": {
+        "type": "boolean"
+      },
+      "hideCounts": {
+        "type": "boolean"
+      },
+      "hideCursors": {
+        "type": "boolean"
+      },
+      "onePerElement": {
+        "type": "boolean"
+      },
+      "revealed": {
+        "type": "boolean"
+      },
+      "reviewIndex": {
+        "type": "number"
+      },
+      "round": {
+        "type": "string"
+      },
+      "startedBy": {
+        "type": "string"
+      },
+      "voteLayerId": {
+        "type": "string"
+      },
+      "votes": {
+        "additionalProperties": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": "object"
+      },
+      "votesPerPerson": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "active",
+      "revealed",
+      "votesPerPerson",
+      "votes"
+    ],
+    "type": "object"
+  },
+  "TableCellStyle": {
+    "additionalProperties": false,
+    "properties": {
+      "alignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "bg": {
+        "type": "string"
+      },
+      "bold": {
+        "type": "boolean"
+      },
+      "italic": {
+        "type": "boolean"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "underline": {
+        "type": "boolean"
+      }
+    },
+    "type": "object"
+  },
+  "TableElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "cellStyles": {
+        "items": {
+          "items": {
+            "anyOf": [
               {
-                $ref: '#/components/schemas/TableCellStyle',
+                "$ref": "#/components/schemas/TableCellStyle"
               },
               {
-                type: 'null',
-              },
-            ],
+                "type": "null"
+              }
+            ]
           },
-          type: 'array',
+          "type": "array"
         },
-        type: 'array',
+        "type": "array"
       },
-      cells: {
-        items: {
-          items: {
-            type: 'string',
+      "cells": {
+        "items": {
+          "items": {
+            "type": "string"
           },
-          type: 'array',
+          "type": "array"
         },
-        type: 'array',
+        "type": "array"
       },
-      colWidths: {
-        items: {
-          type: ['number', 'null'],
+      "colWidths": {
+        "items": {
+          "type": [
+            "number",
+            "null"
+          ]
         },
-        type: 'array',
+        "type": "array"
       },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
       },
-      fillColor: {
-        type: 'string',
+      "fillColor": {
+        "type": "string"
       },
-      font: {
-        type: 'string',
+      "font": {
+        "type": "string"
       },
-      headerColumn: {
-        type: 'boolean',
+      "headerColumn": {
+        "type": "boolean"
       },
-      headerFill: {
-        type: 'string',
+      "headerFill": {
+        "type": "string"
       },
-      headerRow: {
-        type: 'boolean',
+      "headerRow": {
+        "type": "boolean"
       },
-      headerTextColor: {
-        type: 'string',
+      "headerTextColor": {
+        "type": "string"
       },
-      height: {
-        type: 'number',
+      "height": {
+        "type": "number"
       },
-      id: {
-        $ref: '#/components/schemas/ElementId',
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
       },
-      label: {
-        type: 'string',
+      "label": {
+        "type": "string"
       },
-      layerId: {
-        type: 'string',
+      "layerId": {
+        "type": "string"
       },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
       },
-      locked: {
-        type: 'boolean',
+      "locked": {
+        "type": "boolean"
       },
-      note: {
-        type: 'string',
+      "note": {
+        "type": "string"
       },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
         },
-        type: 'array',
+        "type": "array"
       },
-      opacity: {
-        type: 'number',
+      "opacity": {
+        "type": "number"
       },
-      padding: {
-        $ref: '#/components/schemas/Padding',
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
       },
-      rotation: {
-        type: 'number',
+      "rotation": {
+        "type": "number"
       },
-      rowHeights: {
-        items: {
-          type: ['number', 'null'],
+      "rowHeights": {
+        "items": {
+          "type": [
+            "number",
+            "null"
+          ]
         },
-        type: 'array',
+        "type": "array"
       },
-      strokeColor: {
-        type: 'string',
+      "strokeColor": {
+        "type": "string"
       },
-      strokeStyle: {
-        $ref: '#/components/schemas/BorderStyle',
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
       },
-      strokeWidth: {
-        $ref: '#/components/schemas/BorderStroke',
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
       },
-      tablePreset: {
-        type: 'string',
+      "tablePreset": {
+        "type": "string"
       },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
       },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
       },
-      textBold: {
-        type: 'boolean',
+      "textBold": {
+        "type": "boolean"
       },
-      textColor: {
-        type: 'string',
+      "textColor": {
+        "type": "string"
       },
-      textItalic: {
-        type: 'boolean',
+      "textItalic": {
+        "type": "boolean"
       },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
       },
-      textStrikethrough: {
-        type: 'boolean',
+      "textStrikethrough": {
+        "type": "boolean"
       },
-      textUnderline: {
-        type: 'boolean',
+      "textUnderline": {
+        "type": "boolean"
       },
-      type: {
-        const: 'table',
-        type: 'string',
+      "type": {
+        "const": "table",
+        "type": "string"
       },
-      width: {
-        type: 'number',
+      "width": {
+        "type": "number"
       },
-      x: {
-        type: 'number',
+      "x": {
+        "type": "number"
       },
-      y: {
-        type: 'number',
+      "y": {
+        "type": "number"
       },
-      zebra: {
-        type: 'boolean',
-      },
+      "zebra": {
+        "type": "boolean"
+      }
     },
-    required: ['id', 'type', 'x', 'y', 'width', 'height', 'cells'],
-    type: 'object',
-  },
-  Team: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      organisation: {
-        type: ['string', 'null'],
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'name', 'organisation', 'createdAt', 'updatedAt'],
-    type: 'object',
-  },
-  TeamInvite: {
-    additionalProperties: false,
-    properties: {
-      invitedAt: {
-        type: 'number',
-      },
-      memberCount: {
-        type: 'number',
-      },
-      memberId: {
-        type: 'string',
-      },
-      team: {
-        $ref: '#/components/schemas/Team',
-      },
-    },
-    required: ['memberId', 'team', 'memberCount', 'invitedAt'],
-    type: 'object',
-  },
-  TeamInviteLink: {
-    additionalProperties: false,
-    properties: {
-      expiresAt: {
-        type: 'number',
-      },
-      token: {
-        type: 'string',
-      },
-    },
-    required: ['token', 'expiresAt'],
-    type: 'object',
-  },
-  TeamInviteLinkInfo: {
-    additionalProperties: false,
-    properties: {
-      alreadyMember: {
-        type: 'boolean',
-      },
-      memberCount: {
-        type: 'number',
-      },
-      team: {
-        $ref: '#/components/schemas/Team',
-      },
-    },
-    required: ['team', 'memberCount', 'alreadyMember'],
-    type: 'object',
-  },
-  TeamListItem: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      memberCount: {
-        type: 'number',
-      },
-      myRole: {
-        $ref: '#/components/schemas/TeamRole',
-      },
-      name: {
-        type: 'string',
-      },
-      organisation: {
-        type: ['string', 'null'],
-      },
-      updatedAt: {
-        type: 'number',
-      },
-    },
-    required: ['createdAt', 'id', 'memberCount', 'myRole', 'name', 'organisation', 'updatedAt'],
-    type: 'object',
-  },
-  TeamMember: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      email: {
-        type: ['string', 'null'],
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: ['string', 'null'],
-      },
-      pictureUrl: {
-        type: ['string', 'null'],
-      },
-      role: {
-        $ref: '#/components/schemas/TeamRole',
-      },
-      status: {
-        $ref: '#/components/schemas/TeamMemberStatus',
-      },
-      teamId: {
-        type: 'string',
-      },
-      updatedAt: {
-        type: 'number',
-      },
-      userId: {
-        type: ['string', 'null'],
-      },
-    },
-    required: [
-      'id',
-      'teamId',
-      'userId',
-      'email',
-      'role',
-      'status',
-      'name',
-      'pictureUrl',
-      'createdAt',
-      'updatedAt',
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "cells"
     ],
-    type: 'object',
+    "type": "object"
   },
-  TeamMemberStatus: {
-    enum: ['invited', 'joined'],
-    type: 'string',
-  },
-  TeamRole: {
-    enum: ['admin', 'member'],
-    type: 'string',
-  },
-  TelemetryAction: {
-    enum: [
-      'Created',
-      'Deleted',
-      'Added',
-      'Removed',
-      'Shared',
-      'Joined',
-      'Declined',
-      'Used',
-      'Changed',
-      'Exported',
-      'Locked',
-      'Unlocked',
-      'Grouped',
-      'Ungrouped',
-      'Duplicated',
-      'Renamed',
-      'Reordered',
-      'Linked',
-      'Unlinked',
-      'Resolved',
-      'Unresolved',
-      'Mentioned',
-      'Imported',
-      'Aligned',
-      'Undone',
-      'Redone',
-      'Cleared',
-      'Loaded',
-      'Opened',
-      'Searched',
-      'Selected',
-      'Toggled',
-      'Zoomed',
-      'Moved',
-      'Closed',
-      'Copied',
-      'Reverted',
-      'SignedIn',
-      'SignedUp',
-      'SignedOut',
-      'Started',
-      'Ended',
-      'Revealed',
-      'Voted',
-      'View',
-      'Helpful',
-      'Unhelpful',
-      'Returned',
-      'Restored',
-      'Applied',
-      'Sent',
-      'Api',
-      'Client',
-      'Warning',
+  "Team": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "organisation": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "organisation",
+      "createdAt",
+      "updatedAt"
     ],
-    type: 'string',
+    "type": "object"
   },
-  TelemetryCategory: {
-    enum: [
-      'Document',
-      'Element',
-      'Tab',
-      'Theme',
-      'Canvas',
-      'Template',
-      'Comment',
-      'Note',
-      'Action',
-      'Search',
-      'UI',
-      'Folder',
-      'Layer',
-      'Session',
-      'Facilitator',
-      'AI',
-      'Team',
-      'Participant',
-      'Help',
-      'Token',
-      'Mcp',
-      'Email',
-      'Error',
-      'Timeline',
-      'Activity',
-      'Page',
-      'Cta',
-      'Trash',
-      'Whiteboard',
-      'Drive',
+  "TeamInvite": {
+    "additionalProperties": false,
+    "properties": {
+      "invitedAt": {
+        "type": "number"
+      },
+      "memberCount": {
+        "type": "number"
+      },
+      "memberId": {
+        "type": "string"
+      },
+      "team": {
+        "$ref": "#/components/schemas/Team"
+      }
+    },
+    "required": [
+      "memberId",
+      "team",
+      "memberCount",
+      "invitedAt"
     ],
-    type: 'string',
+    "type": "object"
   },
-  TelemetryCount: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        type: 'string',
+  "TeamInviteLink": {
+    "additionalProperties": false,
+    "properties": {
+      "expiresAt": {
+        "type": "number"
       },
-      category: {
-        type: 'string',
-      },
-      count: {
-        type: 'number',
-      },
-      type: {
-        type: ['string', 'null'],
-      },
+      "token": {
+        "type": "string"
+      }
     },
-    required: ['category', 'action', 'type', 'count'],
-    type: 'object',
-  },
-  TelemetryDaily: {
-    additionalProperties: false,
-    properties: {
-      byCategory: {
-        additionalProperties: {
-          items: {
-            type: 'number',
-          },
-          type: 'array',
-        },
-        type: 'object',
-      },
-      byMetric: {
-        additionalProperties: {
-          items: {
-            type: 'number',
-          },
-          type: 'array',
-        },
-        type: 'object',
-      },
-      days: {
-        items: {
-          type: 'number',
-        },
-        type: 'array',
-      },
-      totals: {
-        items: {
-          type: 'number',
-        },
-        type: 'array',
-      },
-    },
-    required: ['days', 'totals', 'byCategory', 'byMetric'],
-    type: 'object',
-  },
-  TelemetryEvent: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/TelemetryAction',
-      },
-      category: {
-        $ref: '#/components/schemas/TelemetryCategory',
-      },
-      type: {
-        type: ['string', 'null'],
-      },
-    },
-    required: ['category', 'action'],
-    type: 'object',
-  },
-  TelemetrySummary: {
-    additionalProperties: false,
-    properties: {
-      daily: {
-        $ref: '#/components/schemas/TelemetryDaily',
-      },
-      enabled: {
-        type: 'boolean',
-      },
-      generatedAt: {
-        type: 'number',
-      },
-      previousWindows: {
-        additionalProperties: false,
-        properties: {
-          last30: {
-            $ref: '#/components/schemas/TelemetryWindow',
-          },
-          last7: {
-            $ref: '#/components/schemas/TelemetryWindow',
-          },
-          today: {
-            $ref: '#/components/schemas/TelemetryWindow',
-          },
-        },
-        required: ['today', 'last7', 'last30'],
-        type: 'object',
-      },
-      windows: {
-        additionalProperties: false,
-        properties: {
-          last30: {
-            $ref: '#/components/schemas/TelemetryWindow',
-          },
-          last7: {
-            $ref: '#/components/schemas/TelemetryWindow',
-          },
-          today: {
-            $ref: '#/components/schemas/TelemetryWindow',
-          },
-        },
-        required: ['today', 'last7', 'last30'],
-        type: 'object',
-      },
-    },
-    required: ['enabled', 'generatedAt', 'windows'],
-    type: 'object',
-  },
-  TelemetryWindow: {
-    additionalProperties: false,
-    properties: {
-      rows: {
-        items: {
-          $ref: '#/components/schemas/TelemetryCount',
-        },
-        type: 'array',
-      },
-      total: {
-        type: 'number',
-      },
-    },
-    required: ['total', 'rows'],
-    type: 'object',
-  },
-  TextAlignX: {
-    enum: ['left', 'center', 'right'],
-    type: 'string',
-  },
-  TextAlignY: {
-    enum: ['top', 'middle', 'bottom'],
-    type: 'string',
-  },
-  TextElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
-      },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
-      },
-      animationRepeat: {
-        type: 'boolean',
-      },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
-      },
-      aspectLocked: {
-        type: 'boolean',
-      },
-      autoWidth: {
-        type: 'boolean',
-      },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
-      },
-      fillColor: {
-        type: 'string',
-      },
-      font: {
-        type: 'string',
-      },
-      headerFill: {
-        type: 'string',
-      },
-      height: {
-        type: 'number',
-      },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      opacity: {
-        type: 'number',
-      },
-      padding: {
-        $ref: '#/components/schemas/Padding',
-      },
-      penTextColour: {
-        $ref: '#/components/schemas/PenColourName',
-      },
-      richText: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      rotation: {
-        type: 'number',
-      },
-      strokeColor: {
-        type: 'string',
-      },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
-      },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
-      },
-      textBold: {
-        type: 'boolean',
-      },
-      textColor: {
-        type: 'string',
-      },
-      textItalic: {
-        type: 'boolean',
-      },
-      textScale: {
-        type: 'number',
-      },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
-      },
-      textStrikethrough: {
-        type: 'boolean',
-      },
-      textSwatch: {
-        $ref: '#/components/schemas/QuickSwatchSlot',
-      },
-      textUnderline: {
-        type: 'boolean',
-      },
-      type: {
-        const: 'text',
-        type: 'string',
-      },
-      width: {
-        type: 'number',
-      },
-      x: {
-        type: 'number',
-      },
-      y: {
-        type: 'number',
-      },
-    },
-    required: ['id', 'type', 'x', 'y', 'width', 'height'],
-    type: 'object',
-  },
-  TextRun: {
-    additionalProperties: false,
-    properties: {
-      bold: {
-        type: 'boolean',
-      },
-      color: {
-        type: 'string',
-      },
-      heading: {
-        $ref: '#/components/schemas/RunHeading',
-      },
-      italic: {
-        type: 'boolean',
-      },
-      link: {
-        type: 'string',
-      },
-      size: {
-        $ref: '#/components/schemas/RunSize',
-      },
-      strikethrough: {
-        type: 'boolean',
-      },
-      text: {
-        type: 'string',
-      },
-      underline: {
-        type: 'boolean',
-      },
-    },
-    required: ['text'],
-    type: 'object',
-  },
-  TextSize: {
-    enum: ['scale', 'sm', 'md', 'lg'],
-    type: 'string',
-  },
-  TimelineEvent: {
-    additionalProperties: false,
-    properties: {
-      actorId: {
-        type: ['string', 'null'],
-      },
-      description: {
-        type: ['string', 'null'],
-      },
-      eventType: {
-        $ref: '#/components/schemas/TimelineEventType',
-      },
-      id: {
-        type: 'string',
-      },
-      occurredAt: {
-        type: 'number',
-      },
-      snapshot: {
-        additionalProperties: {},
-        type: 'object',
-      },
-      sourceId: {
-        type: 'string',
-      },
-      sourceType: {
-        $ref: '#/components/schemas/TimelineSourceType',
-      },
-      title: {
-        type: 'string',
-      },
-    },
-    required: [
-      'id',
-      'sourceType',
-      'sourceId',
-      'eventType',
-      'title',
-      'description',
-      'occurredAt',
-      'actorId',
-      'snapshot',
+    "required": [
+      "token",
+      "expiresAt"
     ],
-    type: 'object',
+    "type": "object"
   },
-  TimelineEventType: {
-    anyOf: [
+  "TeamInviteLinkInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "alreadyMember": {
+        "type": "boolean"
+      },
+      "memberCount": {
+        "type": "number"
+      },
+      "team": {
+        "$ref": "#/components/schemas/Team"
+      }
+    },
+    "required": [
+      "team",
+      "memberCount",
+      "alreadyMember"
+    ],
+    "type": "object"
+  },
+  "TeamListItem": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "memberCount": {
+        "type": "number"
+      },
+      "myRole": {
+        "$ref": "#/components/schemas/TeamRole"
+      },
+      "name": {
+        "type": "string"
+      },
+      "organisation": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "createdAt",
+      "id",
+      "memberCount",
+      "myRole",
+      "name",
+      "organisation",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "TeamMember": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "email": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "role": {
+        "$ref": "#/components/schemas/TeamRole"
+      },
+      "status": {
+        "$ref": "#/components/schemas/TeamMemberStatus"
+      },
+      "teamId": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "userId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "teamId",
+      "userId",
+      "email",
+      "role",
+      "status",
+      "name",
+      "pictureUrl",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "TeamMemberStatus": {
+    "enum": [
+      "invited",
+      "joined"
+    ],
+    "type": "string"
+  },
+  "TeamRole": {
+    "enum": [
+      "admin",
+      "member"
+    ],
+    "type": "string"
+  },
+  "TelemetryAction": {
+    "enum": [
+      "Created",
+      "Deleted",
+      "Added",
+      "Removed",
+      "Shared",
+      "Joined",
+      "Declined",
+      "Used",
+      "Changed",
+      "Exported",
+      "Locked",
+      "Unlocked",
+      "Grouped",
+      "Ungrouped",
+      "Duplicated",
+      "Renamed",
+      "Reordered",
+      "Linked",
+      "Unlinked",
+      "Resolved",
+      "Unresolved",
+      "Mentioned",
+      "Imported",
+      "Aligned",
+      "Undone",
+      "Redone",
+      "Cleared",
+      "Loaded",
+      "Opened",
+      "Searched",
+      "Selected",
+      "Toggled",
+      "Zoomed",
+      "Moved",
+      "Closed",
+      "Copied",
+      "Reverted",
+      "SignedIn",
+      "SignedUp",
+      "SignedOut",
+      "Started",
+      "Ended",
+      "Revealed",
+      "Voted",
+      "View",
+      "Helpful",
+      "Unhelpful",
+      "Returned",
+      "Restored",
+      "Applied",
+      "Sent",
+      "Api",
+      "Client",
+      "Warning"
+    ],
+    "type": "string"
+  },
+  "TelemetryCategory": {
+    "enum": [
+      "Document",
+      "Element",
+      "Tab",
+      "Theme",
+      "Canvas",
+      "Template",
+      "Comment",
+      "Note",
+      "Action",
+      "Search",
+      "UI",
+      "Folder",
+      "Layer",
+      "Session",
+      "Facilitator",
+      "AI",
+      "Team",
+      "Participant",
+      "Help",
+      "Token",
+      "Mcp",
+      "Email",
+      "Error",
+      "Timeline",
+      "Activity",
+      "Page",
+      "Cta",
+      "Trash",
+      "Whiteboard",
+      "Drive"
+    ],
+    "type": "string"
+  },
+  "TelemetryCount": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string"
+      },
+      "count": {
+        "type": "number"
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "category",
+      "action",
+      "type",
+      "count"
+    ],
+    "type": "object"
+  },
+  "TelemetryDaily": {
+    "additionalProperties": false,
+    "properties": {
+      "byCategory": {
+        "additionalProperties": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "type": "object"
+      },
+      "byMetric": {
+        "additionalProperties": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "type": "object"
+      },
+      "days": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "totals": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "days",
+      "totals",
+      "byCategory",
+      "byMetric"
+    ],
+    "type": "object"
+  },
+  "TelemetryEvent": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/TelemetryAction"
+      },
+      "category": {
+        "$ref": "#/components/schemas/TelemetryCategory"
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "category",
+      "action"
+    ],
+    "type": "object"
+  },
+  "TelemetrySummary": {
+    "additionalProperties": false,
+    "properties": {
+      "daily": {
+        "$ref": "#/components/schemas/TelemetryDaily"
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "generatedAt": {
+        "type": "number"
+      },
+      "previousWindows": {
+        "additionalProperties": false,
+        "properties": {
+          "last30": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          },
+          "last7": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          },
+          "today": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          }
+        },
+        "required": [
+          "today",
+          "last7",
+          "last30"
+        ],
+        "type": "object"
+      },
+      "windows": {
+        "additionalProperties": false,
+        "properties": {
+          "last30": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          },
+          "last7": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          },
+          "today": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          }
+        },
+        "required": [
+          "today",
+          "last7",
+          "last30"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "enabled",
+      "generatedAt",
+      "windows"
+    ],
+    "type": "object"
+  },
+  "TelemetryWindow": {
+    "additionalProperties": false,
+    "properties": {
+      "rows": {
+        "items": {
+          "$ref": "#/components/schemas/TelemetryCount"
+        },
+        "type": "array"
+      },
+      "total": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "total",
+      "rows"
+    ],
+    "type": "object"
+  },
+  "TextAlignX": {
+    "enum": [
+      "left",
+      "center",
+      "right"
+    ],
+    "type": "string"
+  },
+  "TextAlignY": {
+    "enum": [
+      "top",
+      "middle",
+      "bottom"
+    ],
+    "type": "string"
+  },
+  "TextElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "autoWidth": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "richText": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textScale": {
+        "type": "number"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "text",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "TextRun": {
+    "additionalProperties": false,
+    "properties": {
+      "bold": {
+        "type": "boolean"
+      },
+      "color": {
+        "type": "string"
+      },
+      "heading": {
+        "$ref": "#/components/schemas/RunHeading"
+      },
+      "italic": {
+        "type": "boolean"
+      },
+      "link": {
+        "type": "string"
+      },
+      "size": {
+        "$ref": "#/components/schemas/RunSize"
+      },
+      "strikethrough": {
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      },
+      "underline": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "TextSize": {
+    "enum": [
+      "scale",
+      "sm",
+      "md",
+      "lg"
+    ],
+    "type": "string"
+  },
+  "TimelineEvent": {
+    "additionalProperties": false,
+    "properties": {
+      "actorId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "eventType": {
+        "$ref": "#/components/schemas/TimelineEventType"
+      },
+      "id": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "number"
+      },
+      "snapshot": {
+        "additionalProperties": {},
+        "type": "object"
+      },
+      "sourceId": {
+        "type": "string"
+      },
+      "sourceType": {
+        "$ref": "#/components/schemas/TimelineSourceType"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "sourceType",
+      "sourceId",
+      "eventType",
+      "title",
+      "description",
+      "occurredAt",
+      "actorId",
+      "snapshot"
+    ],
+    "type": "object"
+  },
+  "TimelineEventType": {
+    "anyOf": [
       {
-        $ref: '#/components/schemas/KnownTimelineEventType',
+        "$ref": "#/components/schemas/KnownTimelineEventType"
       },
       {
-        type: 'string',
+        "type": "string"
+      }
+    ]
+  },
+  "TimelineSourceType": {
+    "anyOf": [
+      {
+        "type": "string"
       },
+      {
+        "enum": [
+          "document",
+          "team",
+          "account"
+        ],
+        "type": "string"
+      }
+    ]
+  },
+  "TimerMode": {
+    "enum": [
+      "countdown",
+      "stopwatch"
     ],
+    "type": "string"
   },
-  TimelineSourceType: {
-    anyOf: [
-      {
-        type: 'string',
+  "TrashedDocument": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
       },
-      {
-        enum: ['document', 'team', 'account'],
-        type: 'string',
+      "name": {
+        "type": "string"
       },
+      "purgeAt": {
+        "type": "number"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "teamId",
+      "teamName",
+      "trashedAt",
+      "purgeAt"
     ],
+    "type": "object"
   },
-  TimerMode: {
-    enum: ['countdown', 'stopwatch'],
-    type: 'string',
-  },
-  TrashedDocument: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'string',
+  "UnfurlResult": {
+    "additionalProperties": false,
+    "properties": {
+      "description": {
+        "type": "string"
       },
-      name: {
-        type: 'string',
+      "favicon": {
+        "type": "string"
       },
-      purgeAt: {
-        type: 'number',
+      "image": {
+        "type": "string"
       },
-      teamId: {
-        type: ['string', 'null'],
+      "siteName": {
+        "type": "string"
       },
-      teamName: {
-        type: ['string', 'null'],
+      "title": {
+        "type": "string"
       },
-      trashedAt: {
-        type: 'number',
-      },
+      "url": {
+        "type": "string"
+      }
     },
-    required: ['id', 'name', 'teamId', 'teamName', 'trashedAt', 'purgeAt'],
-    type: 'object',
+    "required": [
+      "url"
+    ],
+    "type": "object"
   },
-  UnfurlResult: {
-    additionalProperties: false,
-    properties: {
-      description: {
-        type: 'string',
+  "VideoElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
       },
-      favicon: {
-        type: 'string',
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
       },
-      image: {
-        type: 'string',
+      "animationRepeat": {
+        "type": "boolean"
       },
-      siteName: {
-        type: 'string',
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
       },
-      title: {
-        type: 'string',
+      "aspectLocked": {
+        "type": "boolean"
       },
-      url: {
-        type: 'string',
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
       },
-    },
-    required: ['url'],
-    type: 'object',
-  },
-  VideoElement: {
-    additionalProperties: false,
-    properties: {
-      action: {
-        $ref: '#/components/schemas/ElementAction',
+      "embedProvider": {
+        "$ref": "#/components/schemas/EmbedProvider"
       },
-      animation: {
-        $ref: '#/components/schemas/ElementAnimation',
+      "fillColor": {
+        "type": "string"
       },
-      animationRepeat: {
-        type: 'boolean',
+      "font": {
+        "type": "string"
       },
-      animationSpeed: {
-        $ref: '#/components/schemas/AnimationSpeed',
+      "headerFill": {
+        "type": "string"
       },
-      aspectLocked: {
-        type: 'boolean',
+      "height": {
+        "type": "number"
       },
-      commentThread: {
-        $ref: '#/components/schemas/CommentThread',
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
       },
-      embedProvider: {
-        $ref: '#/components/schemas/EmbedProvider',
+      "label": {
+        "type": "string"
       },
-      fillColor: {
-        type: 'string',
+      "layerId": {
+        "type": "string"
       },
-      font: {
-        type: 'string',
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
       },
-      headerFill: {
-        type: 'string',
+      "locked": {
+        "type": "boolean"
       },
-      height: {
-        type: 'number',
+      "note": {
+        "type": "string"
       },
-      id: {
-        $ref: '#/components/schemas/ElementId',
-      },
-      label: {
-        type: 'string',
-      },
-      layerId: {
-        type: 'string',
-      },
-      link: {
-        $ref: '#/components/schemas/ElementLink',
-      },
-      locked: {
-        type: 'boolean',
-      },
-      note: {
-        type: 'string',
-      },
-      noteRich: {
-        items: {
-          $ref: '#/components/schemas/TextRun',
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
         },
-        type: 'array',
+        "type": "array"
       },
-      opacity: {
-        type: 'number',
+      "opacity": {
+        "type": "number"
       },
-      padding: {
-        $ref: '#/components/schemas/Padding',
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
       },
-      rotation: {
-        type: 'number',
+      "rotation": {
+        "type": "number"
       },
-      shadow: {
-        $ref: '#/components/schemas/ElementShadow',
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
       },
-      strokeColor: {
-        type: 'string',
+      "strokeColor": {
+        "type": "string"
       },
-      textAlignX: {
-        $ref: '#/components/schemas/TextAlignX',
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
       },
-      textAlignY: {
-        $ref: '#/components/schemas/TextAlignY',
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
       },
-      textBold: {
-        type: 'boolean',
+      "textBold": {
+        "type": "boolean"
       },
-      textColor: {
-        type: 'string',
+      "textColor": {
+        "type": "string"
       },
-      textItalic: {
-        type: 'boolean',
+      "textItalic": {
+        "type": "boolean"
       },
-      textSize: {
-        $ref: '#/components/schemas/TextSize',
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
       },
-      textStrikethrough: {
-        type: 'boolean',
+      "textStrikethrough": {
+        "type": "boolean"
       },
-      textUnderline: {
-        type: 'boolean',
+      "textUnderline": {
+        "type": "boolean"
       },
-      type: {
-        const: 'video',
-        type: 'string',
+      "type": {
+        "const": "video",
+        "type": "string"
       },
-      width: {
-        type: 'number',
+      "width": {
+        "type": "number"
       },
-      x: {
-        type: 'number',
+      "x": {
+        "type": "number"
       },
-      y: {
-        type: 'number',
-      },
+      "y": {
+        "type": "number"
+      }
     },
-    required: ['id', 'type', 'x', 'y', 'width', 'height'],
-    type: 'object',
-  },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  }
 };

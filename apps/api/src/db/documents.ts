@@ -10,6 +10,7 @@ import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements } from './collab-index';
 import { imageRefAddStatements } from './image-refs';
 import { documentRemovalStatements } from './document-removal';
+import { firstTabCountSql, isEmptyCount } from './tabs';
 
 type DocumentRow = {
   id: string;
@@ -30,7 +31,7 @@ type DocumentRow = {
   share_code: string | null;
 };
 
-type SummaryRow = DocumentRow;
+type SummaryRow = DocumentRow & { first_tab_count: number | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
@@ -90,7 +91,7 @@ const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -178,6 +179,7 @@ function rowToSummary(row: SummaryRow): DocumentSummary {
     source: (row.source as DocumentSummary['source']) ?? null,
     savedAt: row.saved_at,
     createdAt: row.created_at,
+    empty: isEmptyCount(row.first_tab_count),
   };
 }
 
@@ -400,14 +402,20 @@ export async function copyDocument(
   // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-document/tab-document-many-to-many.md)
   // are deliberate: edits to the copy stay isolated from the source.
   const tabRows = await env.DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, t.data
+    `SELECT t.id, t.name, dt.order_index, t.data, t.element_count
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC`,
   )
     .bind(...(onlyTabId === null ? [sourceId] : [sourceId, onlyTabId]))
-    .all<{ id: string; name: string; order_index: number; data: string }>();
+    .all<{
+      id: string;
+      name: string;
+      order_index: number;
+      data: string;
+      element_count: number | null;
+    }>();
   // Mint every fresh tab id up front so a tab / element link on one tab
   // can be re-pointed at its sibling's copy (the Explorer duplicate does
   // the same walk through the shared remapTabLinks). Without it the copy's
@@ -421,12 +429,10 @@ export async function copyDocument(
     const freshTabId = tabIdMap.get(row.id)!;
     const data = remapTabDataLinks(row.data, tabIdMap);
     return [
-      env.DB.prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)`).bind(
-        freshTabId,
-        row.name,
-        data,
-        now,
-      ),
+      // Link remapping rewrites ids inside elements, never their number, so the count carries over.
+      env.DB.prepare(
+        `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, ?, ?, ?, ?)`,
+      ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,

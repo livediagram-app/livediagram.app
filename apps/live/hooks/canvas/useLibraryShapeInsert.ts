@@ -18,6 +18,7 @@ import {
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
 type Box = { x: number; y: number; width: number; height: number };
@@ -133,7 +134,7 @@ export function useLibraryShapeInsert(d: LibraryShapeInsertDeps): InsertLibraryS
       d.setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
     }
     track('Element', 'Added', 'LibraryShape');
-    console.debug('[shape-libraries] inserted', { elements: newElements.length, dropped: !!at });
+    debugLog('[shape-libraries] inserted', { elements: newElements.length, dropped: !!at });
     return true;
   };
 }

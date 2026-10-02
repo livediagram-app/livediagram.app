@@ -15,6 +15,7 @@ import { getTheme } from '@/lib/themes';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported
 // elements can't collide with anything already on the document. Shared
@@ -120,7 +121,7 @@ export function useTabImport({
     if (!read.ok) return { status: 'error', error: read.error };
     // The shared board-scene commit: landed for the tab's profile, images stored, one replace.
     const outcome = await importScene(read.scene, onProgress);
-    console.info('[excalidraw-import]', {
+    debugLog('[excalidraw-import]', {
       container: extracted.container,
       items: read.scene.items.length,
       status: outcome.status,
@@ -170,7 +171,7 @@ export function useTabImport({
     setFormatSourceId(null);
     if ((pages[0]?.elements.length ?? 0) > 0) requestFit();
     track('Tab', 'Imported', 'Drawio');
-    console.info('[drawio-import] applied', {
+    debugLog('[drawio-import] applied', {
       pages: result.report.pages,
       elements: result.report.elements,
       notes: Object.fromEntries(result.report.notes.map((n) => [n.kind, n.count])),

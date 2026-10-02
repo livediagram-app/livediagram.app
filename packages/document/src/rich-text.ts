@@ -20,8 +20,9 @@
 // where the EFFECTIVE value matters, see `toggleFormatInRange`).
 
 // Per-run size is the fixed scale only — 'scale' (whole-element auto-fit)
-// has no per-run meaning, see docs/specs/008-canvas/canvas-and-palette.md.
-export type RunSize = 'sm' | 'md' | 'lg';
+// has no per-run meaning, see docs/specs/008-canvas/canvas-and-palette.md. 'xs' is one step below
+// the element presets (RUN_XS_PX), for imported text that reads smaller than any of them.
+export type RunSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export type RunBoolKey = 'bold' | 'italic' | 'underline' | 'strikethrough';
 

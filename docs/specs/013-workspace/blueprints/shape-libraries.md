@@ -175,19 +175,19 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 ## Observability
 
-| Fingerprint                          | Level   | When                                                                  |
-| ------------------------------------ | ------- | --------------------------------------------------------------------- |
-| `[shape-libraries] created`          | `info`  | api: `{ id, items, bytes }`                                           |
-| `[shape-libraries] rejected`         | `warn`  | api: `{ reason }` for every 400 / 409 / 413                           |
-| `[shape-libraries] corrupt items`    | `warn`  | api: a row whose items fail to parse, `{ id }`                        |
-| `[shape-libraries] migrated`         | `info`  | api: sign-up `{ moved, renamed }`                                     |
-| `[shape-libraries] list failed`      | `warn`  | client: the list load failed, `{ status }`                            |
-| `[shape-libraries] save failed`      | `warn`  | client: a create / rename / items change failed, `{ action, status }` |
-| `[shape-libraries] inserted`         | `debug` | client: `{ elements }`                                                |
-| `[shape-libraries] insert refused`   | `warn`  | client: `{ reason }`, `edits blocked` or `tab full`                   |
-| `[shape-libraries] drop ignored`     | `warn`  | client: an unknown library or item in a drag                          |
-| `[shape-libraries] thumbnail failed` | `warn`  | client: `{ cause }` (the error's name and message)                    |
-| `[drawio-import] library imported`   | `info`  | client: `{ items, images }`                                           |
+| Fingerprint                          | Level                | When                                                                  |
+| ------------------------------------ | -------------------- | --------------------------------------------------------------------- |
+| `[shape-libraries] created`          | `info`               | api: `{ id, items, bytes }`                                           |
+| `[shape-libraries] rejected`         | `warn`               | api: `{ reason }` for every 400 / 409 / 413                           |
+| `[shape-libraries] corrupt items`    | `warn`               | api: a row whose items fail to parse, `{ id }`                        |
+| `[shape-libraries] migrated`         | `info`               | api: sign-up `{ moved, renamed }`                                     |
+| `[shape-libraries] list failed`      | `warn`               | client: the list load failed, `{ status }`                            |
+| `[shape-libraries] save failed`      | `warn`               | client: a create / rename / items change failed, `{ action, status }` |
+| `[shape-libraries] inserted`         | `trace` (`debugLog`) | client: `{ elements }`                                                |
+| `[shape-libraries] insert refused`   | `warn`               | client: `{ reason }`, `edits blocked` or `tab full`                   |
+| `[shape-libraries] drop ignored`     | `warn`               | client: an unknown library or item in a drag                          |
+| `[shape-libraries] thumbnail failed` | `warn`               | client: `{ cause }` (the error's name and message)                    |
+| `[drawio-import] library imported`   | `trace` (`debugLog`) | client: `{ items, images }`                                           |
 
 ## Testing
 

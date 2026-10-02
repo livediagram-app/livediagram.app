@@ -1,7 +1,7 @@
 import type { Server } from 'node:http';
 import type { FakeGoogle } from '@livediagram/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
-import { test, expect, expectNoPageErrors } from './fixtures';
+import { enableDebugLogs, test, expect, expectNoPageErrors } from './fixtures';
 import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 
 // The Google Drive mirror end to end (docs/specs/022-drive-mirror/drive-mirror.md):
@@ -689,6 +689,7 @@ test('the Cloud Sync buttons never cover anything, at three widths', async ({
             baseURL: test.info().project.use.baseURL,
             colorScheme: 'dark',
           });
+    if (other) await enableDebugLogs(other);
     const tab = other ? await other.newPage() : page;
     await signIn(tab, user);
     for (const width of [1280, 900, 390]) {
