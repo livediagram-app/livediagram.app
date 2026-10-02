@@ -66,6 +66,38 @@ where it is and changes only how the next mark is made.
   wins over the tab's opening mode from then on.
 - **Switching never changes the opening mode.**
 
+## One look
+
+There is one look, the diagram look, with the whiteboard's best parts merged
+into it. **A mode chooses the defaults written into new content and the
+backdrop behind it; it never re-colours what is already there.** Every colour
+is stored on the element, so collaborators in different modes see the same
+element in the same colour.
+
+- **Off-white light canvas.** The Default theme's light canvas is the board's
+  off-white (`#fbfaf7`); its dark canvas stays `#0d121a`.
+- **Ink is a theme colour.** The Default theme gains **Ink**, its drawing
+  colour (`#1c1917` light, `#e2e8f0` dark), stored by name and drawn in the
+  version for each viewer's appearance. Ink is in the palette's colours, so
+  any element can take it.
+  - Pen strokes and text with no colour of their own are drawn in Ink, in
+    both modes.
+  - Shapes keep their theme defaults: a shape added in Diagram mode is filled
+    and outlined as today.
+- **Draw mode writes Ink, unfilled.** A shape, line or arrow made in Draw mode
+  is written with an Ink outline and no fill, so it looks the same in Diagram
+  mode and to every collaborator.
+- **Marker colours are first-class.** The stock colours (Ink, Blue, Red,
+  Orange, Green, Teal, Violet, Pink) are stored by name on any element and
+  drawn in the version tuned for each viewer's appearance, on every tab, in
+  every export, thumbnail and image the api or MCP renders.
+- **Draw mode's backdrop ignores the custom background colour.** A tab's
+  custom background colour stays stored and shows in Diagram mode; in Draw
+  mode the canvas is the board colour for the viewer's appearance.
+- **The background pattern is the person's, per mode.** Plain, Dots or Grid
+  is taken from what that person last chose in that mode, not from the
+  document.
+
 ## What a mode brings into focus
 
 - **Diagram mode** is the editor as described by
