@@ -13,7 +13,7 @@ async function openExplorer(page: Page, path = '/explorer/activity') {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto(path);
-  await expect(page.getByRole('button', { name: 'Recent', exact: true })).toBeVisible({
+  await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible({
     timeout: 30_000,
   });
 }
@@ -67,7 +67,7 @@ test.describe('stale builds', () => {
     await openExplorer(page, '/explorer/unsorted');
     await removeUnseenChunks(page, seen, /^\/explorer\/trash/);
     const loads = pageLoads(page);
-    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    await page.getByRole('treeitem', { name: 'Trash', exact: true }).click();
     await expect.poll(() => loads).toEqual(['/explorer/trash']);
     await expect(page.getByRole('heading', { name: 'Trash', level: 1 })).toBeVisible();
     await expect(page.getByText(/This page couldn.t load|Something went wrong/)).toHaveCount(0);
@@ -86,7 +86,7 @@ test.describe('stale builds', () => {
     );
     await removeUnseenChunks(page, seen, /^$/);
     const loads = pageLoads(page);
-    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    await page.getByRole('treeitem', { name: 'Trash', exact: true }).click();
     await expect(
       page.getByText(/This page couldn.t load|Something went wrong/).first(),
     ).toBeVisible();
@@ -111,19 +111,19 @@ test.describe('stale builds', () => {
       });
     });
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Recent', exact: true })).toBeVisible();
+    await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
     // The Explorer's own api calls carry the newer id.
     await page.waitForLoadState('networkidle');
     const loads = pageLoads(page);
-    await page.getByRole('button', { name: 'Recent', exact: true }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/recent']);
+    await page.getByRole('treeitem', { name: /^Home/ }).click();
+    await expect.poll(() => loads).toEqual(['/explorer/timeline']);
     await page.waitForLoadState('networkidle');
-    await page.getByRole('button', { name: 'Activity', exact: true }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/recent', '/explorer/activity']);
+    await page.getByRole('treeitem', { name: /^Activity/ }).click();
+    await expect.poll(() => loads).toEqual(['/explorer/timeline', '/explorer/activity']);
     await page.waitForLoadState('networkidle');
     await page.goBack();
     await expect.poll(() => loads.length).toBe(3);
-    await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
+    await expect(page).toHaveURL(/\/explorer\/timeline\/?$/);
     await expect(page.getByText(CRASH)).toHaveCount(0);
   });
 });
