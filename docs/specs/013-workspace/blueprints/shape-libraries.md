@@ -4,27 +4,27 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled on custom themes
 
 ## Files
 
-| File                                                          | Holds                                                                                                        |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/api-schema/src/shape-libraries.ts`                  | `ShapeLibrary`, `ShapeLibraryItem`, the limits, `uniqueLibraryName`, `validateShapeLibraryItems`             |
-| `apps/api/migrations/0060_shape_libraries.sql`                | The table and its two indexes                                                                                |
-| `apps/api/src/shape-library-row.ts`                           | `ShapeLibraryRow`, `rowToShapeLibrary`: snake_case row and JSON items to the DTO                             |
-| `apps/api/src/db/shape-libraries.ts`                          | List, get, count, names, create, update, delete                                                              |
-| `apps/api/src/routes/shape-libraries.ts`                      | `handleShapeLibraries`: the four routes                                                                      |
-| `apps/api/src/db/account.ts`                                  | Account deletion deletes the rows; `migrateOwnerId` moves them, renaming clashes                             |
-| `apps/api/src/auth/guest-rest.ts`                             | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                 |
-| `apps/api/src/openapi/manifest.ts`                            | The four operations, tag `Shape libraries`                                                                   |
-| `shape-libraries.ts` in apps/live/lib/api                     | `apiListShapeLibraries` (deduped), `apiCreateShapeLibrary`, `apiUpdateShapeLibrary`, `apiDeleteShapeLibrary` |
-| `ShapeLibraryProvider.tsx` in apps/live/components/primitives | `ShapeLibraryProvider`, `useShapeLibraries`: the owner's list and its changes                                |
-| `library-store.ts` in apps/live/lib/drawio                    | `libraryForStore`: an imported library's items with ids, images stored, ready to create                      |
-| `apps/live/hooks/persistence/useDrawioFileImport.ts`          | Libraries listed and imported beside diagrams                                                                |
-| `apps/live/components/dialogs/ImportImageReport.tsx`          | "N new shape libraries:" links                                                                               |
-| `shape-library-thumbnail.ts` in apps/live/lib                 | `libraryItemThumbnail`: an item's elements as an inert SVG data URL                                          |
-| `PaletteMyShapesTab.tsx` in apps/live/components/palette      | The My shapes category body: search, sections, tiles                                                         |
-| `LibraryShapeTile.tsx` in apps/live/components/palette        | One tile: thumbnail or title, click, keyboard, drag                                                          |
-| `useLibraryShapeInsert.ts` in apps/live/hooks/canvas          | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                       |
-| `page.tsx` in apps/live/app/explorer/shape-libraries          | The route                                                                                                    |
-| `ShapeLibrariesPane.tsx` in apps/live/components/panels       | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                   |
+| File                                                       | Holds                                                                                                        |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `packages/api-schema/src/shape-libraries.ts`               | `ShapeLibrary`, `ShapeLibraryItem`, the limits, `uniqueLibraryName`, `validateShapeLibraryItems`             |
+| `apps/api/migrations/0060_shape_libraries.sql`             | The table and its two indexes                                                                                |
+| `apps/api/src/shape-library-row.ts`                        | `ShapeLibraryRow`, `rowToShapeLibrary`: snake_case row and JSON items to the DTO                             |
+| `apps/api/src/db/shape-libraries.ts`                       | List, get, count, names, create, update, delete                                                              |
+| `apps/api/src/routes/shape-libraries.ts`                   | `handleShapeLibraries`: the four routes                                                                      |
+| `apps/api/src/db/account.ts`                               | Account deletion deletes the rows; `migrateOwnerId` moves them, renaming clashes                             |
+| `apps/api/src/auth/guest-rest.ts`                          | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                 |
+| `apps/api/src/openapi/manifest.ts`                         | The four operations, tag `Shape libraries`                                                                   |
+| `apps/live/lib/api/shape-libraries.ts`                     | `apiListShapeLibraries` (deduped), `apiCreateShapeLibrary`, `apiUpdateShapeLibrary`, `apiDeleteShapeLibrary` |
+| `apps/live/components/primitives/ShapeLibraryProvider.tsx` | `ShapeLibraryProvider`, `useShapeLibraries`: the owner's list and its changes                                |
+| `apps/live/lib/drawio/library-store.ts`                    | `libraryForStore`: an imported library's items with ids, images stored, ready to create                      |
+| `apps/live/hooks/persistence/useDrawioFileImport.ts`       | Libraries listed and imported beside diagrams                                                                |
+| `apps/live/components/dialogs/ImportImageReport.tsx`       | "N new shape libraries:" links                                                                               |
+| `shape-library-thumbnail.ts` in apps/live/lib              | `libraryItemThumbnail`: an item's elements as an inert SVG data URL                                          |
+| `PaletteMyShapesTab.tsx` in apps/live/components/palette   | The My shapes category body: search, sections, tiles                                                         |
+| `LibraryShapeTile.tsx` in apps/live/components/palette     | One tile: thumbnail or title, click, keyboard, drag                                                          |
+| `useLibraryShapeInsert.ts` in apps/live/hooks/canvas       | `insertLibraryShape(item, at?)`: fresh ids, centred at the point, one commit, selected                       |
+| `page.tsx` in apps/live/app/explorer/shape-libraries       | The route                                                                                                    |
+| `ShapeLibrariesPane.tsx` in apps/live/components/panels    | The Explorer page body: cards, rename, delete, show shapes, delete a shape                                   |
 
 ## Domain and naming
 
@@ -188,7 +188,7 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 | Routes: auth, 400 / 403 / 404 / 409 / 413, clash suffix, rename           | `apps/api/src/routes/shape-libraries.test.ts`          |
 | Sign-up move with clash renaming; account deletion                        | `apps/api/src/db/account.test.ts` (or its route test)  |
 | OpenAPI covers the routes                                                 | the existing manifest coverage test                    |
-| Client calls and error copy                                               | `shape-libraries.test.ts` in apps/live/lib/api         |
+| Client calls and error copy                                               | `apps/live/lib/api/shape-libraries.test.ts`            |
 | Provider: load, create, rename, delete, delete item, failures             | `ShapeLibraryProvider.test.tsx`                        |
 | Import: libraries listed and made, failures, telemetry, outcome           | `useDrawioFileImport.test.ts`, `library-store.test.ts` |
 | Report links                                                              | `ImportImageReport.test.tsx`                           |

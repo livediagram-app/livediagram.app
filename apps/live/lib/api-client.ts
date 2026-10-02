@@ -50,6 +50,7 @@ export * from './api/share';
 export * from './api/change-log';
 export * from './api/folders';
 export * from './api/custom-themes';
+export * from './api/shape-libraries';
 export * from './api/teams';
 export * from './api/tokens';
 export * from './api/oauth';

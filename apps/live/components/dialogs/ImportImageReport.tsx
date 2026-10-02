@@ -14,6 +14,7 @@ export function ImportImageReport({
   scene,
   failures,
   documents,
+  libraries,
   onDone,
 }: {
   report?: Report;
@@ -21,6 +22,8 @@ export function ImportImageReport({
   failures?: { title: string; message: string }[];
   // The documents an import made, one per board, each opened from here.
   documents?: { id: string; name: string }[];
+  // The shape libraries an import made, opened together on the Explorer's Shape libraries page.
+  libraries?: { id: string; name: string }[];
   onDone: () => void;
 }) {
   const doneRef = useRef<HTMLButtonElement>(null);
@@ -39,23 +42,30 @@ export function ImportImageReport({
         </div>
       ) : null}
       {documents && documents.length > 0 ? (
-        <div className="mt-3">
-          <p className="text-sm text-slate-700 dark:text-slate-200">
-            {documents.length === 1 ? 'New document:' : `${documents.length} new documents:`}
-          </p>
-          <ul className="mt-1 space-y-1 text-sm" data-testid="import-documents">
-            {documents.map((d) => (
-              <li key={d.id}>
-                <a
-                  href={`/document/${encodeURIComponent(d.id)}`}
-                  className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300 dark:hover:text-brand-200"
-                >
-                  {d.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <LinkList
+          label={documents.length === 1 ? 'New document:' : `${documents.length} new documents:`}
+          testId="import-documents"
+          links={documents.map((d) => ({
+            key: d.id,
+            name: d.name,
+            href: `/document/${encodeURIComponent(d.id)}`,
+          }))}
+        />
+      ) : null}
+      {libraries && libraries.length > 0 ? (
+        <LinkList
+          label={
+            libraries.length === 1
+              ? 'New shape library:'
+              : `${libraries.length} new shape libraries:`
+          }
+          testId="import-libraries"
+          links={libraries.map((l) => ({
+            key: l.id,
+            name: l.name,
+            href: '/explorer/shape-libraries/',
+          }))}
+        />
       ) : null}
       {failures && failures.length > 0 ? (
         <ul className="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-300">
@@ -92,6 +102,35 @@ export function ImportImageReport({
           Done
         </Button>
       </div>
+    </div>
+  );
+}
+
+// What an import made outside the open tab, each a link.
+function LinkList({
+  label,
+  testId,
+  links,
+}: {
+  label: string;
+  testId: string;
+  links: { key: string; name: string; href: string }[];
+}) {
+  return (
+    <div className="mt-3">
+      <p className="text-sm text-slate-700 dark:text-slate-200">{label}</p>
+      <ul className="mt-1 space-y-1 text-sm" data-testid={testId}>
+        {links.map((link) => (
+          <li key={link.key}>
+            <a
+              href={link.href}
+              className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300 dark:hover:text-brand-200"
+            >
+              {link.name}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

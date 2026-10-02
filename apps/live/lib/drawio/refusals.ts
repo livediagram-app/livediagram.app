@@ -42,7 +42,7 @@ export function refusalMessage(reason: DrawioRefusalReason, detail?: string): st
     case 'page-unreadable':
       return `Page '${detail ?? ''}' couldn't be decoded.`;
     case 'library':
-      return 'This is a draw.io shape library, not a diagram. Shape libraries are coming soon.';
+      return 'This is a draw.io shape library. Import it with Import from draw.io on the Explorer page to add it to My shapes.';
     case 'not-library':
       return "This isn't a draw.io library (expected an mxlibrary holding a list of shapes).";
     case 'empty-library':

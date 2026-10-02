@@ -6,10 +6,10 @@ import type { DrawioDocumentFile } from '@/lib/drawio/new-document';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 import {
-  DRAWIO_LIBRARIES_SOON,
   DRAWIO_UNEXPECTED,
   useDrawioFileImport,
   type ImportDrawioDocuments,
+  type ImportDrawioLibraries,
 } from './useDrawioFileImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -43,11 +43,22 @@ const landedAll: ImportDrawioDocuments = async (files) => ({
   documents: files.map((f, i) => ({ id: `d${i}`, name: f.name })),
 });
 
-function setup(importDocuments: ImportDrawioDocuments = landedAll) {
+const madeAll: ImportDrawioLibraries = async (files) => ({
+  libraries: files.map((f, i) => ({ id: `l${i}`, name: f.name })),
+  failures: [],
+});
+
+function setup(
+  importDocuments: ImportDrawioDocuments = landedAll,
+  importLibraries: ImportDrawioLibraries = madeAll,
+) {
   const onDone = vi.fn();
   const spy = vi.fn<ImportDrawioDocuments>(importDocuments);
-  const { result } = renderHook(() => useDrawioFileImport({ importDocuments: spy, onDone }));
-  return { result, onDone, importDocuments: spy };
+  const libs = vi.fn<ImportDrawioLibraries>(importLibraries);
+  const { result } = renderHook(() =>
+    useDrawioFileImport({ importDocuments: spy, importLibraries: libs, onDone }),
+  );
+  return { result, onDone, importDocuments: spy, importLibraries: libs };
 }
 const names = (files: DrawioDocumentFile[]) => files.map((f) => f.name);
 
@@ -93,32 +104,47 @@ describe('useDrawioFileImport', () => {
     );
   });
 
-  it('leaves a library out, named, as coming soon: never an error', async () => {
+  it('lists a library with its shape count, and imports it after the diagrams, one count', async () => {
     const h = setup();
     await act(() => h.result.current.open([diagram('Roadmap'), library('Team icons.xml')]));
     const state = h.result.current.state;
     if (state.step !== 'list') throw new Error(state.step);
-    expect(state.rows.map((r) => r.name)).toEqual(['Roadmap']);
-    expect(state.failures).toEqual([{ title: 'Team icons', message: DRAWIO_LIBRARIES_SOON }]);
+    expect(state.rows.map((r) => [r.name, r.detail])).toEqual([
+      ['Roadmap', 'Edited 12 Mar 2026 · 1 page'],
+      ['Team icons', 'Shape library · 1 shape'],
+    ]);
     await act(() => h.result.current.importChecked());
-    expect(h.onDone).toHaveBeenCalledWith(
-      expect.objectContaining({
-        documents: [{ id: 'd0', name: 'Roadmap' }],
-        failures: [{ title: 'Team icons', message: 'Shape libraries are coming soon.' }],
-      }),
-    );
-  });
-
-  it('reports a lone library as coming soon, not as an error', async () => {
-    const h = setup();
-    await act(() => h.result.current.open([library('Team icons.xml')]));
-    expect(h.result.current.state).toEqual({ step: 'pick' });
+    expect(h.importLibraries.mock.calls[0]![0].map((l) => l.name)).toEqual(['Team icons']);
+    expect(h.importLibraries.mock.calls[0]![1]).toMatchObject({ offset: 1, total: 2 });
     expect(h.onDone).toHaveBeenCalledWith({
       status: 'done',
-      failures: [{ title: 'Team icons', message: DRAWIO_LIBRARIES_SOON }],
+      documents: [{ id: 'd0', name: 'Roadmap' }],
+      libraries: [{ id: 'l0', name: 'Team icons' }],
     });
+  });
+
+  it('imports a lone library straight away, its failures in the report', async () => {
+    const h = setup(landedAll, async (files) => ({
+      libraries: [],
+      failures: [{ title: files[0]!.name, message: 'This library is too large to store.' }],
+    }));
+    await act(() => h.result.current.open([library('Team icons.xml')]));
     expect(h.importDocuments).not.toHaveBeenCalled();
+    expect(h.onDone).toHaveBeenCalledWith({
+      status: 'done',
+      failures: [{ title: 'Team icons', message: 'This library is too large to store.' }],
+    });
     expect(track).not.toHaveBeenCalled();
+  });
+
+  it('leaves out an unticked library', async () => {
+    const h = setup();
+    await act(() => h.result.current.open([diagram('Roadmap'), library('Team icons.xml')]));
+    const state = h.result.current.state;
+    if (state.step !== 'list') throw new Error(state.step);
+    act(() => h.result.current.toggle(state.rows[1]!.key));
+    await act(() => h.result.current.importChecked());
+    expect(h.importLibraries).not.toHaveBeenCalled();
   });
 
   it('goes back to picking with the reason when nothing can be read', async () => {

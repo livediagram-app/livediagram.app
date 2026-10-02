@@ -11,6 +11,7 @@ import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { clearQuietLanding } from '@/lib/quiet-landing';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
+import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
@@ -223,7 +224,11 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
       >
         {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
         <MentionContext.Provider value={state.commentMentions}>
-          <EditorView />
+          {/* The owner's shape libraries, for the palette's My shapes
+              (docs/specs/013-workspace/shape-libraries.md). */}
+          <ShapeLibraryProvider ownerId={state.selfParticipant?.id ?? null}>
+            <EditorView />
+          </ShapeLibraryProvider>
         </MentionContext.Provider>
       </CustomThemeProvider>
     </EditorContext.Provider>

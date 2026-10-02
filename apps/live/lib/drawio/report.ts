@@ -71,7 +71,8 @@ function landedKind(el: Element): SceneItemKind {
 
 export function drawioSceneReport(
   report: DrawioReport,
-  pages: readonly ImportedPage[],
+  // Pages, or a library's items: anything holding the elements that landed.
+  pages: readonly Pick<ImportedPage, 'elements'>[],
 ): BoardSceneReport {
   const landed: BoardSceneReport['landed'] = {};
   for (const page of pages) {
