@@ -263,8 +263,7 @@ No environment variable or binding is added.
 
 `placementDefaultTelemetryType(key)` derives one closed type per key, `Default` + each part in
 PascalCase (`DefaultModeDiagram`, `DefaultModeDraw`, `DefaultBoardEventStorming`,
-`DefaultBoardRetrospective`, `DefaultBoardKanban`), so a new editor mode gains its type with its key.
-`PLACEMENT_DEFAULT_TELEMETRY_TYPES` is the same map, built from the keys. The surfaces that set and clear defaults fire `Folder·Changed·<type>` and
+`DefaultBoardRetrospective`, `DefaultBoardKanban`), so a new editor mode gains its type with its key. The surfaces that set and clear defaults fire `Folder·Changed·<type>` and
 `Folder·Cleared·<type>` before the write; no surface exists yet, so no emitter and no dashboard card are
 added here.
 

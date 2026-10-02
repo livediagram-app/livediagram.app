@@ -182,7 +182,7 @@ A create's place is decided in this order; the first that answers wins:
   `DefaultBoardRetrospective` / `DefaultBoardKanban`, fired by the surface that sets a default,
   before the write.
 - `Folder` · `Cleared` · the same types, fired by the surface that clears one, before the write.
-- The type is closed: one value per key (`PLACEMENT_DEFAULT_TELEMETRY_TYPES`), never a folder name
+- The type is closed: one value per key, derived from it (`placementDefaultTelemetryType`), never a folder name
   or id.
 
 ## Observability

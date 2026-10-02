@@ -2,41 +2,41 @@
 // docs/specs/013-workspace/blueprints/default-folders.md): where a person's new documents land when
 // no place is chosen, keyed by what the document opens as. The api resolves and stores them; the
 // editor and the MCP server send the creation intent; all read the keys and the intent from here.
+// Modes come from the one editor-mode list (EDITOR_MODES), so a new mode adds its key here unasked.
+
+import { EDITOR_MODES, isEditorMode, type EditorMode } from '@livediagram/document';
 
 /** The dimensions of a default key, most specific first: the order a create's keys are tried in. */
 export const DEFAULT_KEY_DIMENSIONS = ['board', 'mode'] as const;
-
-/** The editor mode a new document's first tab opens in. */
-export const CREATION_MODES = ['diagram', 'draw'] as const;
-export type CreationMode = (typeof CREATION_MODES)[number];
 
 /** The kind of board a new document is, when it is one: an event-storming board by its tab kind,
  *  a retrospective or a Kanban board by the template it was made from. */
 export const BOARD_TYPES = ['event-storming', 'retrospective', 'kanban'] as const;
 export type BoardType = (typeof BOARD_TYPES)[number];
 
-/** What a new document opens as, captured once when it is created: the create body's `intent`. */
-export type CreationIntent = { mode: CreationMode; boardType?: BoardType };
+/** How a new document opens, captured once when it is created: the create body's `intent`. */
+export type CreationIntent = { mode: EditorMode; boardType?: BoardType };
+
+export type PlacementDefaultKey = `mode:${EditorMode}` | `board:${BoardType}`;
 
 /** The default keys, `<dimension>:<value>`, in the order the "New documents that open as" list
- *  shows them. */
-export const PLACEMENT_DEFAULT_KEYS = [
-  'mode:diagram',
-  'mode:draw',
-  'board:event-storming',
-  'board:retrospective',
-  'board:kanban',
-] as const;
-export type PlacementDefaultKey = (typeof PLACEMENT_DEFAULT_KEYS)[number];
+ *  shows them: one per editor mode, then one per board type, both generated. */
+export const PLACEMENT_DEFAULT_KEYS: readonly PlacementDefaultKey[] = [
+  ...EDITOR_MODES.map((mode) => `mode:${mode}` as const),
+  ...BOARD_TYPES.map((board) => `board:${board}` as const),
+];
 
-/** The telemetry type of each key (`Folder·Changed` / `Folder·Cleared`): one closed value per key. */
-export const PLACEMENT_DEFAULT_TELEMETRY_TYPES: Record<PlacementDefaultKey, string> = {
-  'mode:diagram': 'DefaultModeDiagram',
-  'mode:draw': 'DefaultModeDraw',
-  'board:event-storming': 'DefaultBoardEventStorming',
-  'board:retrospective': 'DefaultBoardRetrospective',
-  'board:kanban': 'DefaultBoardKanban',
-};
+const pascal = (part: string) =>
+  part
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+
+/** The telemetry type of a key (`Folder·Changed` / `Folder·Cleared`): `mode:draw` →
+ *  `DefaultModeDraw`. Closed, as the keys are. */
+export function placementDefaultTelemetryType(key: PlacementDefaultKey): string {
+  return `Default${key.split(':').map(pascal).join('')}`;
+}
 
 /** One person's default folder for one key, as `GET /api/placement-defaults` answers it. */
 export type PlacementDefault = { key: PlacementDefaultKey; folderId: string };
@@ -69,7 +69,7 @@ export function creationIntentOf(
   templateBoardType: BoardType | null = null,
 ): CreationIntent {
   const draw = tab?.kind === 'whiteboard' || tab?.opensIn === 'draw';
-  const mode: CreationMode = draw ? 'draw' : 'diagram';
+  const mode: EditorMode = draw ? 'draw' : 'diagram';
   const boardType = tab?.kind === 'event-storming' ? 'event-storming' : templateBoardType;
   return boardType ? { mode, boardType } : { mode };
 }
@@ -81,7 +81,7 @@ export function readCreationIntent(
   if (value === undefined || value === null) return { ok: true, intent: null };
   if (typeof value !== 'object' || Array.isArray(value)) return { ok: false };
   const { mode, boardType } = value as { mode?: unknown; boardType?: unknown };
-  if (!isMember(CREATION_MODES, mode)) return { ok: false };
+  if (!isEditorMode(mode)) return { ok: false };
   if (boardType === undefined || boardType === null) return { ok: true, intent: { mode } };
   if (!isMember(BOARD_TYPES, boardType)) return { ok: false };
   return { ok: true, intent: { mode, boardType } };

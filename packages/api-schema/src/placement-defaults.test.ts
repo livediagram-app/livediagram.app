@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { EDITOR_MODES } from '@livediagram/document';
 import {
   PLACEMENT_DEFAULT_KEYS,
-  PLACEMENT_DEFAULT_TELEMETRY_TYPES,
   candidateKeysFor,
   creationIntentOf,
   defaultKeysFor,
   isPlacementDefaultKey,
+  placementDefaultTelemetryType,
   readCreationIntent,
 } from './placement-defaults';
 
@@ -13,6 +14,12 @@ import {
 // intent a create carries, and the order a create's keys are tried in.
 
 describe('PLACEMENT_DEFAULT_KEYS', () => {
+  it('has one mode key per editor mode, in their order', () => {
+    expect(PLACEMENT_DEFAULT_KEYS.filter((k) => k.startsWith('mode:'))).toEqual(
+      EDITOR_MODES.map((mode) => `mode:${mode}`),
+    );
+  });
+
   it('holds the mode keys and the board keys, in the order the list shows them', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
@@ -152,14 +159,14 @@ describe('defaultKeysFor', () => {
   });
 });
 
-describe('PLACEMENT_DEFAULT_TELEMETRY_TYPES', () => {
+describe('placementDefaultTelemetryType', () => {
   it('names one closed type per key', () => {
-    expect(PLACEMENT_DEFAULT_TELEMETRY_TYPES).toEqual({
-      'mode:diagram': 'DefaultModeDiagram',
-      'mode:draw': 'DefaultModeDraw',
-      'board:event-storming': 'DefaultBoardEventStorming',
-      'board:retrospective': 'DefaultBoardRetrospective',
-      'board:kanban': 'DefaultBoardKanban',
-    });
+    expect(PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType)).toEqual([
+      'DefaultModeDiagram',
+      'DefaultModeDraw',
+      'DefaultBoardEventStorming',
+      'DefaultBoardRetrospective',
+      'DefaultBoardKanban',
+    ]);
   });
 });
