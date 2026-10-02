@@ -5,7 +5,8 @@
 // layout effect ran before <main>'s ref attached, so opening a document left it unmeasured and the window
 // vanished. The size now comes in from the Canvas; these pin that the window draws from it.
 
-import { cleanup, render } from '@testing-library/react';
+import { act, cleanup, render } from '@testing-library/react';
+import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@livediagram/document';
 import { Minimap } from './Minimap';
@@ -60,5 +61,43 @@ describe('Minimap current-view window', () => {
   it('draws no window before the canvas has been measured', () => {
     const { container } = mount({ width: 0, height: 0 });
     expect(viewWindow(container)).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: the Map keeps its drawing through a move and redraws
+// when it ends, rather than rebuilding the whole board's markup on every frame.
+describe('Minimap during a move', () => {
+  afterEach(() => resetCanvasGesturesForTests());
+
+  const props = (els: typeof elements) => ({
+    elements: els,
+    viewportOffset: { x: 0, y: 0 },
+    viewportZoom: 1,
+    setViewportOffset: vi.fn(),
+    setViewportZoom: vi.fn(),
+    mainSize: { width: 800, height: 600 },
+    paperColor: '#ffffff',
+    accentColor: ACCENT,
+    position: null,
+    onMove: vi.fn(),
+    onResetPosition: vi.fn(),
+    dimOutside: true,
+    size: 'medium' as const,
+  });
+  const drawing = (container: HTMLElement) =>
+    container.querySelector('svg[role="img"] > g')?.innerHTML ?? '';
+
+  it('holds its drawing while the selection moves and redraws on release', () => {
+    const { container, rerender } = render(<Minimap {...props(elements)} />);
+    const before = drawing(container);
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('move');
+    });
+    const moved = elements.map((el, i) => (i === 0 ? { ...el, x: el.x + 900 } : el));
+    rerender(<Minimap {...props(moved)} />);
+    expect(drawing(container)).toBe(before);
+    act(() => end());
+    expect(drawing(container)).not.toBe(before);
   });
 });
