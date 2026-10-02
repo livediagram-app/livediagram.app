@@ -145,11 +145,12 @@ describe('swimlanes.drawio', () => {
         'Team',
         'Sprint board',
       ]);
+      // Its near-white body (#f5f9ff) is paper: it takes the theme's surface.
+      expect(byLabel(page, 'Candidate')).not.toHaveProperty('fillColor');
       expect(byLabel(page, 'Candidate')).toMatchObject({
         y: 40,
         headerFill: '#dae8fc',
         textColor: '#1e293b',
-        fillColor: '#f5f9ff',
         textAlignX: 'left',
       });
       expect(byLabel(page, 'Sprint board')).toMatchObject({

@@ -59,9 +59,10 @@ function buildShape(
   // A UML actor's name sits under the figure, like an icon's caption.
   const vside = cell.style.str('verticalLabelPosition');
   const actorCaption = cls.shape === 'actor' && (vside === 'bottom' || vside === 'top');
+  // A caption under the figure sits on the canvas, not on the figure's fill.
   const text = textProps(cell, ctx, {
     ...LABEL,
-    onFill: props.fillColor,
+    ...(actorCaption ? {} : { onFill: props.fillColor }),
     outsideMovesIn: !actorCaption,
   });
   const caption = actorCaption ? captionBox(cell, box, text.label, text.textSize, ctx) : null;

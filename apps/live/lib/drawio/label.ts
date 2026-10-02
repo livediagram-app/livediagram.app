@@ -5,7 +5,7 @@
 
 import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@livediagram/document';
 import { htmlFontSizePx } from './text-size';
-import { hexOf } from './colour';
+import { hexInk } from './colour';
 
 export type DrawioLabel = { plain: string; runs?: TextRun[] };
 
@@ -45,7 +45,7 @@ function formatOf(el: Element, inherited: Format): Format {
   if (/^h[1-3]$/.test(tag)) f.heading = Number(tag[1]) as RunHeading;
   if (/^h[4-6]$/.test(tag)) f.bold = true;
   if (tag === 'font') {
-    const color = hexOf(el.getAttribute('color') ?? undefined);
+    const color = hexInk(el.getAttribute('color') ?? undefined);
     if (color) f.color = color;
     const px = htmlFontSizePx(Number(el.getAttribute('size')));
     if (px !== undefined) f.px = px;
@@ -62,7 +62,7 @@ function formatOf(el: Element, inherited: Format): Format {
     const decoration = `${style.textDecoration} ${style.textDecorationLine}`;
     if (decoration.includes('underline')) f.underline = true;
     if (decoration.includes('line-through')) f.strikethrough = true;
-    const color = hexOf(style.color || undefined);
+    const color = hexInk(style.color || undefined);
     if (color) f.color = color;
     const px = /^([\d.]+)px$/.exec(style.fontSize ?? '')?.[1];
     if (px !== undefined && Number(px) > 0) f.px = Number(px);

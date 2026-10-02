@@ -5,7 +5,7 @@
 
 import type { ShapeKind } from '@livediagram/document';
 import type { DrawioCell, DrawioGraph } from './cells';
-import { readColour } from './colour';
+import { readColour, readFill } from './colour';
 import { shapeName, type DrawioStyle } from './style';
 import { azureImageIcon, readableStencilName, stencilIcon, type IconMatch } from './stencils';
 
@@ -217,7 +217,7 @@ export function shapeTurn(cell: DrawioCell, shape: ShapeKind): ShapeTurn {
 export function isBoxedText(style: DrawioStyle): boolean {
   if (!style.has('text')) return false;
   return (
-    readColour(style.str('fillColor')).kind === 'hex' ||
+    readFill(style.str('fillColor')).kind === 'hex' ||
     readColour(style.str('strokeColor')).kind === 'hex'
   );
 }

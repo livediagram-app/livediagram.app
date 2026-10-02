@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ReportTally } from './notes';
 import { readGraph } from './cells';
 import { parseStyle } from './style';
-import { model } from './test-support';
+import { model, vertex } from './test-support';
 import {
   boxedProps,
   dashStyle,
@@ -98,7 +98,8 @@ describe('boxedProps', () => {
       cell(
         'fillColor=#DAE8FC;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;opacity=60;rotation=375;shadow=1;locked=1;',
       ),
-      ctx(),
+      // Over another shape, so its opacity stays (a lone one is blended over the paper).
+      { ...ctx(), overlaps: () => true },
     );
     expect(p).toEqual({
       fillColor: '#dae8fc',
@@ -146,7 +147,7 @@ describe('textProps', () => {
   it('maps text, font style bits, colour, size, font and alignment', () => {
     const t = textProps(
       cell(
-        'fontStyle=7;fontColor=#333333;fontSize=28;fontFamily=Courier New;align=left;verticalAlign=top;',
+        'fontStyle=7;fontColor=#b85450;fontSize=28;fontFamily=Courier New;align=left;verticalAlign=top;',
         'Hi',
       ),
       ctx(),
@@ -157,7 +158,7 @@ describe('textProps', () => {
       textBold: true,
       textItalic: true,
       textUnderline: true,
-      textColor: '#333333',
+      textColor: '#b85450',
       textSize: 'lg',
       font: 'roboto-mono',
       textAlignX: 'left',
@@ -233,6 +234,21 @@ describe('textProps', () => {
       textSize: 'sm',
       textAlignX: 'center',
       textAlignY: 'middle',
+    });
+  });
+});
+
+describe('textProps, paper ink', () => {
+  it('leaves near-black label ink to the theme, or to the ink that reads on its fill', () => {
+    const graph = readGraph(
+      model(vertex('v', 'fontColor=#000000;', 'width="10" height="10"', 'parent="1" value="Hi"')),
+    );
+    const cell = graph.cells.get('v')!;
+    const ctx = { tally: new ReportTally(), pageIdToTab: new Map() };
+    const opts = { scale: 'label', rich: true, outsideMovesIn: true } as const;
+    expect(textProps(cell, ctx, opts)).not.toHaveProperty('textColor');
+    expect(textProps(cell, ctx, { ...opts, onFill: '#fff2cc' })).toMatchObject({
+      textColor: '#1e293b',
     });
   });
 });

@@ -21,7 +21,7 @@ import {
 } from '@livediagram/document';
 import type { ReportTally } from './notes';
 import type { DrawioCell } from './cells';
-import { readColour } from './colour';
+import { readFill, readInk } from './colour';
 import { cellLabel } from './label';
 import { DRAWIO_DEFAULT_ARC_SIZE, DRAWIO_SHADOW } from './limits';
 import { nearest } from './nearest';
@@ -38,6 +38,8 @@ export type ConvertContext = {
   tally: ReportTally;
   /** draw.io page id → the livediagram tab it became. */
   pageIdToTab: ReadonlyMap<string, string>;
+  /** Whether a cell overlaps another vertex (D41); absent means it overlaps nothing. */
+  overlaps?: (cellId: string) => boolean;
   /** The page scale (spec "The page scale"); 1 when absent. */
   scale?: number;
 };
@@ -148,19 +150,36 @@ export function noteOf(cell: DrawioCell): string | undefined {
   return lines.length > 0 ? lines.join('\n') : undefined;
 }
 
+/** `hex` seen at `alpha` over white paper, as one opaque colour. */
+export function overPaper(hex: string, alpha: number): string {
+  const long = hex.length === 4 ? `#${[...hex.slice(1)].map((d) => d + d).join('')}` : hex;
+  const channel = (i: number) =>
+    Math.round(parseInt(long.slice(i, i + 2), 16) * alpha + 255 * (1 - alpha))
+      .toString(16)
+      .padStart(2, '0');
+  return `#${channel(1)}${channel(3)}${channel(5)}`;
+}
+
 /** Fields every boxed element takes from its cell. */
 export function boxedProps(cell: DrawioCell, ctx: ConvertContext) {
   const s = cell.style;
-  const fill = readColour(s.str('fillColor'));
-  const stroke = readColour(s.str('strokeColor'));
-  const opacity = s.num('opacity');
+  const fill = readFill(s.str('fillColor'));
+  const stroke = readInk(s.str('strokeColor'));
+  const translucency = Math.min(s.num('opacity') ?? 100, s.num('fillOpacity') ?? 100);
+  // Over draw.io's white paper a translucent fill reads as the blend; that blend comes in opaque
+  // unless the shape overlaps something, where seeing through it matters (spec "Opacity over paper").
+  const blend =
+    translucency < 100 && fill.kind === 'hex' && !(ctx.overlaps?.(cell.id) ?? false)
+      ? overPaper(fill.value, Math.max(0, translucency) / 100)
+      : undefined;
+  const opacity = blend === undefined ? s.num('opacity') : undefined;
   const rotation = (((s.num('rotation') ?? 0) % 360) + 360) % 360;
   const link = elementLink(cell.link, ctx);
   const note = noteOf(cell);
   const strokeWidth = stroke.kind === 'none' ? 'none' : strokePreset(s.num('strokeWidth'));
   const strokeStyle = dashStyle(s);
   return {
-    ...(fill.kind === 'hex' ? { fillColor: fill.value } : {}),
+    ...(fill.kind === 'hex' ? { fillColor: blend ?? fill.value } : {}),
     ...(fill.kind === 'none' ? { fillColor: 'transparent' } : {}),
     ...(stroke.kind === 'hex' ? { strokeColor: stroke.value } : {}),
     strokeWidth,
@@ -233,7 +252,7 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
     : read.runs;
   if (options.rich && plain !== '' && belowXs) ctx.tally.add('text-below-xs');
   const fontStyle = s.num('fontStyle') ?? 0;
-  const color = readColour(s.str('fontColor'));
+  const color = readInk(s.str('fontColor'));
   const font = fontIdFor(s.str('fontFamily'));
   let alignX = ALIGN_X[s.str('align') ?? 'center'] ?? 'center';
   let alignY = ALIGN_Y[s.str('verticalAlign') ?? 'middle'] ?? 'middle';

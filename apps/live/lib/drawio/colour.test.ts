@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readColour } from './colour';
+import { hexFill, hexInk, readColour, readFill, readInk } from './colour';
 
 describe('readColour', () => {
   it('keeps hex colours, lower-cased', () => {
@@ -47,5 +47,38 @@ describe('readColour on hostile values', () => {
       kind: 'hex',
       value: '#112233',
     });
+  });
+});
+
+describe('paper colours (spec "Paper colours follow the theme too")', () => {
+  it('leaves near-black ink unset, so it takes the theme ink', () => {
+    expect(readInk('#000000')).toEqual({ kind: 'unset' });
+    expect(readInk('#333333')).toEqual({ kind: 'unset' });
+    expect(readInk('#1e1e1e')).toEqual({ kind: 'unset' });
+  });
+
+  it('keeps greys and colours as ink', () => {
+    expect(readInk('#5e5e5e')).toEqual({ kind: 'hex', value: '#5e5e5e' });
+    expect(readInk('#b85450')).toEqual({ kind: 'hex', value: '#b85450' });
+    expect(readInk('none')).toEqual({ kind: 'none' });
+  });
+
+  it('leaves near-white fills unset, so they take the theme surface', () => {
+    expect(readFill('#ffffff')).toEqual({ kind: 'unset' });
+    expect(readFill('#f5f5f5')).toEqual({ kind: 'unset' });
+    expect(readFill('#FAFAFA')).toEqual({ kind: 'unset' });
+  });
+
+  it('keeps light tints and greys as fills', () => {
+    expect(readFill('#e0e0e0')).toEqual({ kind: 'hex', value: '#e0e0e0' });
+    expect(readFill('#dae8fc')).toEqual({ kind: 'hex', value: '#dae8fc' });
+    expect(readFill('#fff2cc')).toEqual({ kind: 'hex', value: '#fff2cc' });
+    expect(readFill('none')).toEqual({ kind: 'none' });
+  });
+
+  it('reads hex ink and fills the same way', () => {
+    expect(hexInk('#000')).toBeUndefined();
+    expect(hexInk('#ff0000')).toBe('#ff0000');
+    expect(hexFill('#fff')).toBeUndefined();
   });
 });

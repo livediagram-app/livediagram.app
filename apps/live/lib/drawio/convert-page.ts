@@ -25,6 +25,7 @@ import { buildEntity, buildLane, buildTable } from './containers';
 import { buildArrow, type EndTarget } from './edges';
 import { cellLabel } from './label';
 import { classifyVertex, isBoxedText } from './shapes';
+import { overlapTest } from './overlap';
 import { buildImageCaption, buildVertex, type PageContext } from './vertices';
 
 export type ConvertedPage = {
@@ -45,7 +46,8 @@ const clampRect = (r: Rect): Rect => ({
 const isLabelCell = (c: DrawioCell) =>
   c.vertex && (c.style.has('edgeLabel') || (c.style.has('text') && !isBoxedText(c.style)));
 
-export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage {
+export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPage {
+  const ctx: PageContext = { ...input, overlaps: overlapTest(graph) };
   const cells = graph.cells;
   if (graph.backgroundImage) ctx.tally.add('image-unavailable');
   const cellToElement = new Map<string, BoxedElement>();

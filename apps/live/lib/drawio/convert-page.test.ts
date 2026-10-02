@@ -202,3 +202,107 @@ describe('marks, end states and braces', () => {
     expect(notes).toEqual([{ kind: 'shape-approximated', count: 1 }]);
   });
 });
+
+describe('paper colours follow the theme', () => {
+  it('leaves near-white fills and near-black ink unset, and keeps chosen colours', () => {
+    const { page } = convert(
+      vertex(
+        'a',
+        'fillColor=#ffffff;strokeColor=#000000;fontColor=#333333;',
+        'width="120" height="60"',
+        'parent="1" value="A"',
+      ) +
+        vertex(
+          'b',
+          'fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;',
+          'x="200" width="120" height="60"',
+          'parent="1" value="B"',
+        ),
+    );
+    const [a, b] = page.elements as Record<string, unknown>[];
+    expect(a).not.toHaveProperty('fillColor');
+    expect(a).not.toHaveProperty('strokeColor');
+    expect(a).not.toHaveProperty('textColor');
+    // The ink that reads on the chosen fill, as for any label without a colour of its own.
+    expect(b).toMatchObject({ fillColor: '#fff2cc', strokeColor: '#d6b656', textColor: '#1e293b' });
+  });
+
+  it('keeps a white-filled text a text, not a white panel', () => {
+    const { page } = convert(
+      vertex(
+        't',
+        'text;html=1;fillColor=#ffffff;',
+        'width="200" height="30"',
+        'parent="1" value="Title"',
+      ),
+    );
+    expect(page.elements[0]).toMatchObject({ type: 'text', label: 'Title' });
+    expect(page.elements[0]).not.toHaveProperty('fillColor');
+  });
+
+  it('gives black arrows and black runs the theme ink', () => {
+    const { page } = convert(
+      vertex('a', '', 'width="10" height="10"', 'parent="1"') +
+        vertex('b', '', 'x="100" width="10" height="10"', 'parent="1"') +
+        '<mxCell id="e" edge="1" parent="1" source="a" target="b" style="strokeColor=#000000;"><mxGeometry relative="1" as="geometry"/></mxCell>' +
+        vertex(
+          'r',
+          'html=1;',
+          'y="100" width="100" height="40"',
+          'parent="1" value="&lt;font color=&quot;#000000&quot;&gt;x&lt;/font&gt;&lt;b&gt;y&lt;/b&gt;"',
+        ),
+    );
+    const arrow = page.elements.find((e) => e.type === 'arrow')!;
+    expect(arrow).not.toHaveProperty('strokeColor');
+    const rich = page.elements.find((e) => 'richText' in e && e.richText) as { richText: object[] };
+    expect(rich.richText).toEqual([{ text: 'x' }, { text: 'y', bold: true }]);
+  });
+});
+
+describe('opacity over paper', () => {
+  it('blends a translucent fill with the white paper when it overlaps nothing', () => {
+    const { page } = convert(
+      vertex(
+        'd',
+        'rhombus;fillColor=#fff2cc;opacity=50;',
+        'width="80" height="80"',
+        'parent="1" value="?"',
+      ),
+    );
+    expect(page.elements[0]).toMatchObject({ fillColor: '#fff9e6' });
+    expect(page.elements[0]).not.toHaveProperty('opacity');
+  });
+
+  it('reads fillOpacity the same way', () => {
+    const { page } = convert(
+      vertex('d', 'fillColor=#000000;fillOpacity=20;', 'width="80" height="80"', 'parent="1"'),
+    );
+    expect(page.elements[0]).toMatchObject({ fillColor: '#cccccc' });
+  });
+
+  it('keeps the opacity where seeing through it matters', () => {
+    const { page } = convert(
+      vertex(
+        'e',
+        'ellipse;fillColor=#ffd966;opacity=50;',
+        'width="300" height="200"',
+        'parent="1"',
+      ) + vertex('b', '', 'x="50" y="50" width="100" height="40"', 'parent="1" value="Inside"'),
+    );
+    expect(page.elements[0]).toMatchObject({ fillColor: '#ffd966', opacity: 0.5 });
+  });
+});
+
+describe('actor captions on the canvas', () => {
+  it("does not take the head's fill as the backdrop of the name below", () => {
+    const { page } = convert(
+      vertex(
+        'a',
+        'shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;',
+        'width="30" height="60"',
+        'parent="1" value="guest"',
+      ),
+    );
+    expect(page.elements[0]).not.toHaveProperty('textColor');
+  });
+});

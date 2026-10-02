@@ -15,7 +15,7 @@ import {
   type TextElement,
 } from '@livediagram/document';
 import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './cells';
-import { hexOf, readColour } from './colour';
+import { hexFill, hexInk, readColour, readFill } from './colour';
 import { cellLabel } from './label';
 import { classifyVertex } from './shapes';
 import { shapeName } from './style';
@@ -141,8 +141,10 @@ export function buildLane(
   const horizontal = s.str('horizontal') !== '0';
   const { fillColor: _header, ...props } = boxedProps(cell, ctx);
   void _header;
-  const header = hexOf(s.str('fillColor'));
-  const body = readColour(s.str('swimlaneFillColor'));
+  const header = hexFill(s.str('fillColor'));
+  const body = readFill(s.str('swimlaneFillColor'));
+  // A paper body takes the theme's surface; no body at all lets the page show through.
+  const paperBody = body.kind === 'unset' && readColour(s.str('swimlaneFillColor')).kind === 'hex';
   const text = textProps(cell, ctx, { ...TITLE, onFill: header });
   const startSize = s.num('startSize') ?? 23;
   let box = rect;
@@ -159,7 +161,7 @@ export function buildLane(
     shape: 'lane',
     ...box,
     ...props,
-    fillColor: body.kind === 'hex' ? body.value : 'transparent',
+    ...(paperBody ? {} : { fillColor: body.kind === 'hex' ? body.value : 'transparent' }),
     ...(header ? { headerFill: header } : {}),
     headerSize,
     ...text,
@@ -211,8 +213,8 @@ const ALIGN_X: Record<string, TextAlignX> = { left: 'left', center: 'center', ri
 function cellStyleOf(c: DrawioCell): TableCellStyle | null {
   const s = c.style;
   const fontStyle = s.num('fontStyle') ?? 0;
-  const bg = hexOf(s.str('fillColor'));
-  const color = hexOf(s.str('fontColor')) ?? inkOnFill(bg);
+  const bg = hexFill(s.str('fillColor'));
+  const color = hexInk(s.str('fontColor')) ?? inkOnFill(bg);
   const alignX = ALIGN_X[s.str('align') ?? 'center'];
   const style: TableCellStyle = {
     ...(bg ? { bg } : {}),

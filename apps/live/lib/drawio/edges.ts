@@ -15,7 +15,7 @@ import {
   type Endpoint,
 } from '@livediagram/document';
 import type { DrawioCell, Pt } from './cells';
-import { readColour } from './colour';
+import { readInk } from './colour';
 import { cellLabel } from './label';
 import { DRAWIO_DEFAULT_MARKER_SIZE, DRAWIO_LABEL_CENTRE_EPSILON } from './limits';
 import type { DrawioStyle } from './style';
@@ -214,7 +214,7 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
   ) {
     ctx.tally.add('arrowhead-approximated');
   }
-  const stroke = readColour(s.str('strokeColor'));
+  const stroke = readInk(s.str('strokeColor'));
   const width = s.num('strokeWidth') ?? 1;
   const headSize = arrowheadSizePreset(
     s.num(end ? 'endSize' : 'startSize') ?? DRAWIO_DEFAULT_MARKER_SIZE,

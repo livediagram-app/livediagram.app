@@ -347,7 +347,8 @@ When the cell has no label, the box is labelled with the stencil's readable name
   that side. Counted (`label-moved`).
 - **Captions below.** An actor's, an icon's and an image's outside label is a caption on that side:
   the box grows by the caption's lines and widens about its centre to the caption's measured width,
-  so the name sits under the figure, unwrapped, as draw.io draws it. An image has no caption of its own, so
+  so the name sits under the figure, unwrapped, as draw.io draws it. A caption sits on the canvas, so it
+  takes the theme's text colour, never the ink for the figure's own fill. An image has no caption of its own, so
   its outside label comes in as a `text` element on that side of it (and stays its `alt`).
 
 ### Edges
