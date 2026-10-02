@@ -6,25 +6,32 @@ on the `nav`.
 
 ## Files
 
-| File                                                      | Holds                                                                                                                                            |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/live/app/explorer/sidebar/sidebar-structure.ts`     | Group titles, row labels, expand keys, `sidebarGroups`, `sidebarDivider`, `isLibraryView`, `initialExpanded`                                     |
-| `apps/live/app/explorer/sidebar/sidebar-telemetry.ts`     | `SidebarTelemetryRow`, `trackSidebar`                                                                                                            |
-| `apps/live/app/explorer/sidebar/useTreeNavigation.ts`     | `useTreeNavigation`: roving tab stop and the tree keys, over the DOM                                                                             |
-| `apps/live/app/explorer/sidebar/ExplorerSidebar.tsx`      | The `nav`: reads the context, computes the layout, renders the three groups in order                                                             |
-| `apps/live/app/explorer/sidebar/SidebarGroup.tsx`         | One group: its title (visible or visually hidden) or the hairline, and its `tree`                                                                |
-| `apps/live/app/explorer/sidebar/SidebarRow.tsx`           | `SidebarRow`: one `treeitem` with the chevron gutter, icon, label, badge, trailing slot and child `group`                                        |
-| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`        | Home, Activity, Shared with me                                                                                                                   |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`          | My documents (Unsorted, Generated, folders), teams, Invites, New team, the sign-in nudge                                                         |
-| `apps/live/app/explorer/sidebar/TeamRows.tsx`             | One row per team with its folder subtree                                                                                                         |
-| `apps/live/app/explorer/sidebar/MoreGroup.tsx`            | This browser, Library (Image gallery, Themes, Shape libraries), Trash                                                                            |
-| `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx` | A personal folder row, its menu, and its subfolders                                                                                              |
-| `apps/live/app/explorer/sidebar/TeamFolderSubtree.tsx`    | A team folder row and its subfolders                                                                                                             |
-| `apps/live/app/explorer/sidebar/SidebarSignInNudge.tsx`   | The guest's "Sign in to access Teams" card                                                                                                       |
-| `apps/live/app/explorer/useExplorerState.ts`              | `expanded` starts from `initialExpanded(selected)`; Library opens when a Library view becomes current                                            |
-| `apps/live/app/explorer/ExplorerShell.tsx`                | The header's Search control                                                                                                                      |
-| `apps/live/components/panels/ExplorerSections.tsx`        | The floating panel's My documents tab label, from `SIDEBAR_LABELS`                                                                               |
-| `apps/live/components/primitives/explorer-icons.tsx`      | `HomeIcon` (lucide `house`), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`) |
+| File                                                        | Holds                                                                                                                                            |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/live/app/explorer/sidebar/sidebar-structure.ts`       | Group titles, row labels, expand keys, `sidebarGroups`, `sidebarDivider`, `isLibraryView`, `initialExpanded`                                     |
+| `apps/live/app/explorer/sidebar/sidebar-telemetry.ts`       | `SidebarTelemetryRow`, `trackSidebar`                                                                                                            |
+| `apps/live/app/explorer/sidebar/useTreeNavigation.ts`       | `useTreeNavigation`: roving tab stop and the tree keys, over the DOM                                                                             |
+| `apps/live/app/explorer/sidebar/ExplorerSidebar.tsx`        | The `nav`: reads the context, computes the layout, renders the three groups in order                                                             |
+| `apps/live/app/explorer/sidebar/SidebarGroup.tsx`           | One group: its title (visible or visually hidden) or the hairline, and its `tree`                                                                |
+| `apps/live/app/explorer/sidebar/SidebarRow.tsx`             | `SidebarRow`: one `treeitem` with the chevron gutter, icon, label, badge, trailing slot and child `group`                                        |
+| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`          | Home, Activity, Shared with me                                                                                                                   |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`            | My documents (Unsorted, Generated, folders), teams, Invites, New team, the sign-in nudge                                                         |
+| `apps/live/app/explorer/sidebar/TeamRows.tsx`               | One row per team with its folder subtree                                                                                                         |
+| `apps/live/app/explorer/sidebar/MoreGroup.tsx`              | This browser, Library (Image gallery, Themes, Shape libraries), Trash                                                                            |
+| `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`   | A personal folder row, its menu, and its subfolders                                                                                              |
+| `apps/live/app/explorer/sidebar/TeamFolderSubtree.tsx`      | A team folder row and its subfolders                                                                                                             |
+| `apps/live/app/explorer/sidebar/SidebarSignInNudge.tsx`     | The guest's "Sign in to access Teams" card                                                                                                       |
+| `apps/live/app/explorer/sidebar/useSidebarExpansion.ts`     | `useSidebarExpansion(selected)`: the `expanded` set, `expand`, `toggleExpand`; Library opens with a Library view                                 |
+| `apps/live/app/explorer/useExplorerState.ts`                | Composes `useSidebarExpansion`; exposes `prefs` only once hydrated (`useHydrated`)                                                               |
+| `apps/live/hooks/ui/useHydrated.ts`                         | `useHydrated()`: false while React hydrates the static HTML, true after                                                                          |
+| `apps/live/components/chrome/HeaderSearchAction.tsx`        | The Explorer header's Search, opening the search panel; mounted by `ExplorerShell.tsx`                                                           |
+| `apps/live/components/chrome/header-action.tsx`             | `HEADER_ACTION_TONE`, shared by Search, Sign in and the account                                                                                  |
+| `apps/telemetry/app/catalogue/features.ts`                  | `EXPLORER_SIDEBAR_PICKS`, in the Organisation stack                                                                                              |
+| `apps/telemetry/app/computed-emitters.ts`                   | The sidebar's computed `UI·Selected` values, read from `SidebarTelemetryRow`                                                                     |
+| `apps/telemetry/app/event-explanation.ts`                   | The `UI·Selected·Sidebar.<Row>` sentence                                                                                                         |
+| `apps/live/components/panels/ExplorerSections.tsx`          | The floating panel's My documents tab label, from `SIDEBAR_LABELS`                                                                               |
+| `apps/live/components/primitives/explorer-icons.tsx`        | `HomeIcon` (lucide `house`), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`) |
+| `apps/live/components/primitives/EllipsisTriggerButton.tsx` | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop                                                                            |
 
 ## Domain and naming
 
@@ -49,9 +56,13 @@ name of the view (`kind: 'offline'`), whose row reads "This browser".
      `selected === 'invites'`); `newTeam` when `signedIn`; `signInNudge` when `!signedIn && signInAvailable`.
    - `more`: `thisBrowser` when `offlineDocuments > 0` or `selected === 'offline'`; `library`; `trash`.
 2. **Divider** (`sidebarDivider(minimalChrome)`): `'separators'` when `isMinimalChrome(prefs)`, else `'titles'`.
-3. **Expansion**: `expanded` starts as `initialExpanded(selected)`: always `MY_DOCUMENTS_EXPAND_KEY`, plus
-   `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`, `shape-libraries`). An effect on
-   `selected.kind` adds `LIBRARY_EXPAND_KEY` when a Library view becomes current. Toggling is `toggleExpand(key)`.
+   `prefs` is empty during hydration (`useExplorerState`), so a prerendered sidebar hydrates on titles and switches in
+   the next render.
+3. **Expansion** (`useSidebarExpansion`): `expanded` starts as `initialExpanded(selected)`: always
+   `MY_DOCUMENTS_EXPAND_KEY`, plus `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`,
+   `shape-libraries`). When `selected.kind` changes to a Library view, `LIBRARY_EXPAND_KEY` is added during that render
+   (state adjusted in render, not an effect). Toggling is `toggleExpand(key)`; `expand(key)` opens idempotently, used to
+   reveal a new folder's parent (My documents for a root folder).
 4. **Row activation** (click on the label area, or Enter / Space): `go(node)` for a view row, `toggleExpand` for
    Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New team, `window.location.assign` for a team
    folder. Home also clears the Timeline unread count. Each activation calls `trackSidebar(row)` first.
@@ -134,7 +145,8 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
 
 - Row: `[indent 16px × depth][gutter 20px][icon][label][badge][trailing]`, text 12px, padding as today.
 - Group title: 10px semibold uppercase, `tracking-wider`, `text-slate-400`; first group without top margin.
-- Separator: `h-px` `bg-slate-200` / `dark:bg-slate-700`, `my-3`, between groups only.
+- Separator: inside the title's own box (same classes, so the same height): the title as `sr-only` text and an
+  absolutely placed `h-px` line, `bg-slate-200` / `dark:bg-slate-700`, at its vertical middle; none in the first group.
 - Sign-in nudge: the existing card, last in Spaces.
 - New team: a row with `PlusIcon`, label "New team".
 - Header Search: a toolbar-style button left of the account control, magnifier plus "Search" (label hidden below `sm`).
@@ -147,7 +159,8 @@ As the spec's Keyboard and ARIA section. Focus ring: `ring-2 ring-brand-500` on 
 ## Web Experience
 
 No new network or JS on the critical path. CLS: initial expansion is computed before first paint
-(`initialExpanded`); the divider follows prefs at render; no element changes size after load.
+(`initialExpanded`); the divider switches after hydration inside a box of unchanged height; no element changes size
+after load.
 
 ## Observability
 
@@ -156,16 +169,18 @@ creation).
 
 ## Testing
 
-| Rule                                                 | Test                                                                      |
-| ---------------------------------------------------- | ------------------------------------------------------------------------- |
-| Group order and row order                            | `sidebar-structure.test.ts`                                               |
-| Guest vs signed in (teams, New team, nudge, Invites) | `sidebar-structure.test.ts`                                               |
-| This browser hidden when empty, kept while selected  | `sidebar-structure.test.ts`                                               |
-| Titles vs separators per mode                        | `sidebar-structure.test.ts`, `SidebarGroup.test.tsx`                      |
-| Initial expansion and Library views                  | `sidebar-structure.test.ts`                                               |
-| Gutter on every row; ARIA attributes                 | `SidebarRow.test.tsx`                                                     |
-| Keyboard model and roving tab stop                   | `useTreeNavigation.test.tsx`                                              |
-| Real browser: groups, keyboard, drawer               | `e2e/explorer-sidebar.spec.ts`, `e2e/clerk-stub/explorer-sidebar.spec.ts` |
+| Rule                                                 | Test                                                                                             |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Group order and row order                            | `sidebar-structure.test.ts`                                                                      |
+| Guest vs signed in (teams, New team, nudge, Invites) | `sidebar-structure.test.ts`                                                                      |
+| This browser hidden when empty, kept while selected  | `sidebar-structure.test.ts`                                                                      |
+| Titles vs separators per mode                        | `sidebar-structure.test.ts`, `SidebarGroup.test.tsx`                                             |
+| Initial expansion and Library views                  | `sidebar-structure.test.ts`, `useSidebarExpansion.test.tsx`                                      |
+| Preferences unread while hydrating                   | `useHydrated.test.tsx`, `e2e/explorer-sidebar.spec.ts` (no hydration error under Minimal chrome) |
+| Telemetry values charted and explained               | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                          |
+| Gutter on every row; ARIA attributes                 | `SidebarRow.test.tsx`                                                                            |
+| Keyboard model and roving tab stop                   | `useTreeNavigation.test.tsx`                                                                     |
+| Real browser: groups, keyboard, drawer               | `e2e/explorer-sidebar.spec.ts`, `e2e/clerk-stub/explorer-sidebar.spec.ts`                        |
 
 ## Constants and configuration
 

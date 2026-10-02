@@ -105,8 +105,9 @@ The groups are told apart in one of two ways, following **Minimal chrome**
   first). Each title stays in the document as visually hidden text and still names its group for assistive
   technology.
 
-Switching happens at render, from the preference: flipping Minimal chrome re-lays the sidebar once, as the direct result
-of the click, and nothing moves on its own.
+A title and its hairline occupy the same box, so switching moves no row. Switching happens at render, from the
+preference, read once the page has hydrated (a deployment without sign-in prerenders the sidebar, and the render that
+hydrates it matches that HTML); nothing moves on its own.
 
 ## Alignment
 
@@ -156,5 +157,5 @@ Library, ImageGallery, Themes, ShapeLibraries, Trash), never a name or id
 ## Help
 
 The help centre's [Explorer page](../../../apps/help/app/explorer/explorer-page/page.mdx) article describes the groups;
-[My documents and folders](../../../apps/help/app/explorer/personal-space/page.mdx) and
-[Team spaces](../../../apps/help/app/explorer/team-spaces/page.mdx) describe the two kinds of space.
+[My Documents and Folders](../../../apps/help/app/explorer/personal-space/page.mdx) and
+[Team Spaces](../../../apps/help/app/explorer/team-spaces/page.mdx) describe the two kinds of space.

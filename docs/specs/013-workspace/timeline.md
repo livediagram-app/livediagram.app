@@ -1526,7 +1526,7 @@ section and must not drag a feed nobody is looking at.
 Adding the section touches the same files every Explorer section does:
 `views.tsx` (the `SelectedNode` union), `routes.ts` (both directions),
 `apps/live/app/explorer/timeline/page.tsx` (the route stub),
-`ExplorerSidebar.tsx`,
+the sidebar group that holds its row (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
 `components/primitives/explorer-icons.tsx`, `useExplorerPane.ts` (pane content, title, crumbs),
 `ExplorerPane.tsx` (dispatch — Timeline is not a `BROWSE_KIND`),
 `ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`.
