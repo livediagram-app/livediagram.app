@@ -200,6 +200,42 @@ describe("Default's previous dark half", () => {
   });
 });
 
+describe("Default's previous light half", () => {
+  it('names a Default tab still on the white canvas', () => {
+    expect(retiredSchemeOf(tab({ backgroundColor: '#ffffff', patternColor: '#cbd5e1' }))).toBe(
+      'previous-default-light',
+    );
+    expect(retiredSchemeOf(tab({ theme: 'brand', backgroundColor: '#ffffff' }))).toBe(
+      'previous-default-light',
+    );
+  });
+
+  it('moves to the off-white light half, keeping the pattern kind', () => {
+    const out = migrateRetiredScheme(
+      tab({
+        theme: 'brand',
+        backgroundColor: '#ffffff',
+        patternColor: '#cbd5e1',
+        backgroundPattern: 'grid',
+      }),
+    );
+    expect(out).toMatchObject({
+      theme: 'brand',
+      backgroundColor: '#fbfaf7',
+      patternColor: '#cbd5e1',
+      backgroundPattern: 'grid',
+    });
+    expect(retiredSchemeOf(out)).toBeNull();
+  });
+
+  it('leaves a white canvas on another scheme, or with a hand-picked grid, alone', () => {
+    expect(retiredSchemeOf(tab({ theme: 'mono', backgroundColor: '#ffffff' }))).toBeNull();
+    expect(
+      retiredSchemeOf(tab({ backgroundColor: '#ffffff', patternColor: '#ff0000' })),
+    ).toBeNull();
+  });
+});
+
 describe('properties', () => {
   it('is idempotent', () => {
     const once = migrateRetiredScheme(charcoalTab([charcoalShape({ fillColor: '#7c3aed' })]));

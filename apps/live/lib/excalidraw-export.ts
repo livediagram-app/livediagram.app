@@ -9,6 +9,7 @@
 // the container) so they stay attached when edited in Excalidraw.
 
 import {
+  DEFAULT_BACKGROUND_COLOR,
   freehandStrokePoints,
   defaultFillColor,
   defaultStrokeColor,
@@ -317,7 +318,7 @@ export function tabToExcalidrawText(tab: Tab): string {
       elements: out,
       appState: {
         gridSize: null,
-        viewBackgroundColor: tab.backgroundColor ?? '#ffffff',
+        viewBackgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
       },
       files: {},
     },

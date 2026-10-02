@@ -160,3 +160,10 @@ describe('unpainted pen strokes and text', () => {
     expect(svgBoxed(text(), { surface: 'dark' })).toContain(PEN_INK.dark);
   });
 });
+
+describe('the page a whole-tab render paints', () => {
+  it('is the Default theme light canvas when the tab stores none', () => {
+    const svg = renderElementsToSvg({ id: 'tab', name: 'Tab', elements: [shape()] });
+    expect(svg).toContain('fill="#fbfaf7"');
+  });
+});

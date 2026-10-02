@@ -27,9 +27,11 @@ import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
 import { resolveStockColours } from './stock-colours';
+import { DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 
 export const EXPORT_PADDING = 32;
-export const EXPORT_BG = '#ffffff';
+// A tab that stores no canvas colour is on the Default theme: its light canvas.
+export const EXPORT_BG = DEFAULT_BACKGROUND_COLOR;
 export const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 export const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 export const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label

@@ -32,6 +32,13 @@ is exactly the previous dark half (both colours) is rewritten to the current dar
 recognised as "still on the scheme" and follows the viewer. A tab with only one of the two colours matching was
 already a hand-picked canvas and is left alone.
 
+## Default's previous light half
+
+Default's light half changed from white `#ffffff` to the off-white `#fbfaf7`, keeping its `#cbd5e1` grid
+([Editor modes](../007-editor/editor-modes.md#one-look)). A Default tab whose stored backdrop is white with that grid
+(or no stored grid colour) is rewritten to the current light half on load, so it keeps following the viewer. A white
+canvas with another grid colour, or on another scheme, was a choice and is left alone.
+
 ## Where it runs
 
 One pure function in `@livediagram/document`, `migrateStoredTab`, composes every tab-level migration (this one and the
@@ -47,7 +54,7 @@ fields), which SQL over a JSON blob cannot express safely, and because offline d
 
 ## Properties
 
-- **Idempotent.** A migrated tab has no Charcoal id and no previous dark-half backdrop, so a second pass changes
-  nothing. A tab with nothing to migrate is returned as the same object.
+- **Idempotent.** A migrated tab has no Charcoal id and no previous dark- or light-half backdrop, so a second pass
+  changes nothing. A tab with nothing to migrate is returned as the same object.
 - **Pure.** No I/O, no clock; the same tab always migrates the same way.
 - **Lossless for choices.** Only values equal to what the retired scheme wrote are removed.
