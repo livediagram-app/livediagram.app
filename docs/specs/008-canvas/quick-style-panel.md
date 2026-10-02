@@ -72,7 +72,7 @@ takes the first that overlaps none of them:
 5. the right edge, centred.
 
 If none is clear, the first is used. The order is fixed so the panel always lands in the same place
-for the same chrome. Placement is recomputed when the chrome moves or resizes, never on a timer.
+for the same chrome. Placement is recomputed when the chrome moves or resizes, never on a timer, and never while the chrome is still.
 
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.
