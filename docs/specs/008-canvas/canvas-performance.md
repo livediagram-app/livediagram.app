@@ -46,10 +46,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms.
-- **Questions about neighbours ask a spatial index.** Anything that relates an element to the
-  others near it (arrows passing behind boxes, alignment guides, snapping, the endpoint spread,
-  hit tests) queries one shared index of element bounds, updated for the elements that changed,
-  so its per-frame cost follows the neighbourhood, not the board.
+- **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
+  other elements are near it (arrows passing behind boxes) queries one shared index of element
+  bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
+  not the board. A per-frame pass is never quadratic in the board.
+- **Whole-board passes stay linear and run once.** What deliberately looks across the whole board
+  (alignment and distribution snapping, the endpoint spread, the arrow label pass) makes one
+  linear pass per frame at most, shared by everything that reads it.
 - **A move re-renders what moved.** Dragging a selection re-renders the moved elements, the arrows
   attached to them, and the arrows whose path or holes the move changes; every other element view
   keeps its last render.
