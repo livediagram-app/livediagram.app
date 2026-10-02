@@ -213,7 +213,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### The nightly run
 
-- `.github/workflows/canvas-perf.yml`: `schedule` at `PERF_CRON` and `workflow_dispatch`; permissions
+- `.github/workflows/canvas-perf.yml`: `schedule` at `30 2 * * *` (D67) and `workflow_dispatch`; permissions
   `contents: read`, `issues: write`, `actions: read`; one run at a time.
 - `apps/live/e2e/perf/nightly.mjs previous` prints the head SHA of the last successful run of this
   workflow on `main` (the REST API, `GITHUB_API_URL`). On a scheduled run that SHA equals
@@ -234,24 +234,50 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 // apps/live/lib/canvas-gesture.ts
 export type CanvasGesture =
   'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';
+export type CanvasGestureState = CanvasGesture | 'idle';
 export const ELEMENT_GESTURES: ReadonlySet<CanvasGesture>;
+export const WHEEL_SETTLE_MS = 150;
 export function beginCanvasGesture(kind: CanvasGesture): () => void;
-export function canvasGestureNow(): CanvasGesture | 'idle';
-export function useCanvasGesture(): CanvasGesture | 'idle';
-export function selectionMoving(g: CanvasGesture | 'idle'): boolean;
+export function canvasGestureNow(): CanvasGestureState;
+export function useCanvasGesture(): CanvasGestureState;
+export function selectionMoving(gesture: CanvasGestureState): boolean;
 export function resetCanvasGesturesForTests(): void;
 
+// apps/live/hooks/canvas/drag-gesture.ts
+export function gestureOfDrag(drag: DragState): CanvasGesture;
+export function dragWaitsToEngage(drag: DragState): boolean;
+
 // packages/document/src/element-grid.ts
+export const ELEMENT_GRID_CELL = 256;
+export const ELEMENT_GRID_MAX_CELLS = 64;
 export type ElementGrid;
 export function buildElementGrid(elements: readonly Element[]): ElementGrid;
 export function updateElementGrid(grid: ElementGrid, next: readonly Element[]): ElementGrid;
 export function queryElementGrid(grid: ElementGrid, rect: Rect): Element[];
+export function elementGridFor(elements: readonly Element[]): ElementGrid;
+export function createElementGridTracker(): { gridFor(elements: readonly Element[]): ElementGrid };
+
+// packages/document/src/arrow-behind.ts
+export function routeBehindQueryRect(from: Point, to: Point): Rect;
 
 // apps/live/components/canvas/arrow-view-frame.ts
 export type ArrowViewFrame = ReturnType<typeof deriveArrowViewFrame>;
 export function sameArrowViewFrame(a: ArrowViewFrame, b: ArrowViewFrame): boolean;
+export function sameRects(a: readonly Rect[], b: readonly Rect[]): boolean;
+export function arrowViewGeometry(
+  arrow: ArrowElement, elementIndex: ElementIndex, grid: ElementGrid,
+): { frame: ArrowViewFrame; holes: Rect[] };
+
+// apps/live/components/canvas/CanvasZoomContext.tsx
+export function CanvasZoomProvider(props: { zoom: number; children: ReactNode }): ReactElement;
+export function useCanvasZoom(): number;
+
+// apps/live/components/canvas/element-layer-props.ts
+export function idBound<T>(make: (id: string) => T): (id: string) => T;
+export function useStableCollab(collab: CollabApi): CollabApi;
 
 // apps/live/hooks/canvas/useSettledElements.ts
+export const MAP_REDRAW_MIN_MS = 250;
 export function useSettledElements(elements: Element[]): Element[];
 
 // apps/live/hooks/canvas/useEdgeAwarePlacement.ts
@@ -259,15 +285,27 @@ export function useEdgeAwarePlacement(
   bounds: Bounds, canvasOffset: XY, zoom: number, gap: number, suspended?: boolean,
 ): { ref; placeAbove: boolean; style: CSSProperties };
 
+// apps/live/hooks/canvas/useCanvasClientOrigin.ts
+export function useCanvasClientOrigin(
+  wrapperRef: RefObject<HTMLElement | null>, active: boolean, viewKey: string,
+): ClientOrigin | null;
+
+// apps/live/lib/debug-log.ts
+export function debugScopeOn(scope: string): boolean;
+
 // apps/live/e2e/perf/budget.ts
 export type Measurement = {
-  tab: 'whiteboard' | 'diagram'; zoom: 'fit' | '100%'; gesture: string;
-  longestTaskMs: number; tasksOver50: number; medianFrameMs: number; idleWorkMs: number;
-  elementRenders?: number; openMs?: number;
+  tab: 'whiteboard' | 'diagram'; zoom: 'fit' | '100%'; gesture: Gesture;
+  longestTaskMs: number; medianFrameMs?: number; idleWorkMs?: number; openMs?: number;
 };
-export type BudgetRow = Measurement & { rule: string; pass: boolean };
+export type BudgetRow = Measurement & { rule: string; measured: string; pass: boolean };
 export function evaluateBudget(m: readonly Measurement[]): BudgetRow[];
 export function budgetTable(rows: readonly BudgetRow[]): string;
+
+// apps/live/e2e/perf/budget-report.ts
+export const BUDGET_ISSUE_TITLE = 'Canvas performance budget';
+export function budgetIssueAction(run: { misses: number; issueOpen: boolean }): 'open' | 'comment' | 'close' | 'none';
+export function budgetIssueComment(report: BudgetIssueReport): string;
 ```
 
 - `queryElementGrid` with a rect of non-finite or negative size returns the oversize list only and
@@ -373,23 +411,23 @@ export function budgetTable(rows: readonly BudgetRow[]): string;
 
 ## Constants and configuration
 
-| Constant                 | Value        | Provenance                                         | Safe range        |
-| ------------------------ | ------------ | -------------------------------------------------- | ----------------- |
-| `WHEEL_SETTLE_MS`        | 150          | D62                                                | 100–300           |
-| `MAP_REDRAW_MIN_MS`      | 250          | Spec                                               | Spec-fixed        |
-| `ELEMENT_GRID_CELL`      | 256          | D63                                                | 128–1024          |
-| `ELEMENT_GRID_MAX_CELLS` | 64           | D64                                                | 16–1024           |
-| `REFERENCE_SEED`         | 1            | D65                                                | Any integer       |
-| `REFERENCE_COUNT`        | 1000         | Spec                                               | Spec-fixed        |
-| `REFERENCE_AREA`         | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed        |
-| `PERF_THROTTLE`          | 4            | Spec                                               | Spec-fixed        |
-| `LONG_TASK_MS`           | 50           | Spec                                               | Spec-fixed        |
-| `DRAG_MEDIAN_FRAME_MS`   | 33           | Spec                                               | Spec-fixed        |
-| `SELECT_TASK_MS`         | 100          | Spec                                               | Spec-fixed        |
-| `OPEN_INTERACTIVE_MS`    | 3000         | Spec                                               | Spec-fixed        |
-| `IDLE_WORK_MS`           | 5            | D66                                                | 0–16              |
-| `PERF_CRON`              | `30 2 * * *` | D67                                                | Any off-peak time |
-| `PERF_ARTEFACT_DAYS`     | 14           | Spec                                               | Spec-fixed        |
+| Constant                             | Value        | Provenance                                         | Safe range        |
+| ------------------------------------ | ------------ | -------------------------------------------------- | ----------------- |
+| `WHEEL_SETTLE_MS`                    | 150          | D62                                                | 100–300           |
+| `MAP_REDRAW_MIN_MS`                  | 250          | Spec                                               | Spec-fixed        |
+| `ELEMENT_GRID_CELL`                  | 256          | D63                                                | 128–1024          |
+| `ELEMENT_GRID_MAX_CELLS`             | 64           | D64                                                | 16–1024           |
+| `REFERENCE_SEED`                     | 1            | D65                                                | Any integer       |
+| `REFERENCE_COUNT`                    | 1000         | Spec                                               | Spec-fixed        |
+| `REFERENCE_AREA`                     | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed        |
+| `THROTTLE` (`canvas.perf.ts`)        | 4            | Spec                                               | Spec-fixed        |
+| `LONG_TASK_MS`                       | 50           | Spec                                               | Spec-fixed        |
+| `DRAG_MEDIAN_FRAME_MS`               | 33           | Spec                                               | Spec-fixed        |
+| `SELECT_TASK_MS`                     | 100          | Spec                                               | Spec-fixed        |
+| `OPEN_INTERACTIVE_MS`                | 3000         | Spec                                               | Spec-fixed        |
+| `IDLE_WORK_MS`                       | 5            | D66                                                | 0–16              |
+| `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                | Any off-peak time |
+| `retention-days` (`canvas-perf.yml`) | 14           | Spec                                               | Spec-fixed        |
 
 ## Defaults ledger
 
