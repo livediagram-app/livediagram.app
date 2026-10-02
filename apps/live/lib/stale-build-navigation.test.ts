@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { APP_RECOVERY_FLAG } from './reload-guard';
 import {
   inAppDestination,
   installStaleBuildNavigation,
@@ -50,6 +51,16 @@ function link(href: string, attrs: Record<string, string> = {}) {
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
+
+describe('the page guard hand-over', () => {
+  it('tells the pre-boot guard the app now recovers chunks itself, until uninstalled', () => {
+    setup({ isStale: () => false });
+    expect((window as unknown as Record<string, unknown>)[APP_RECOVERY_FLAG]).toBe(true);
+    cleanup();
+    cleanup = () => {};
+    expect((window as unknown as Record<string, unknown>)[APP_RECOVERY_FLAG]).toBeUndefined();
+  });
+});
 
 describe('inAppDestination', () => {
   it('keeps path, query and hash on this origin, and nothing elsewhere', () => {

@@ -1,4 +1,11 @@
-import { test as base, expect, type Locator, type Page } from '@playwright/test';
+import {
+  test as base,
+  expect,
+  type BrowserContext,
+  type Locator,
+  type Page,
+} from '@playwright/test';
+import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
@@ -35,7 +42,27 @@ function isIgnored(text: string): boolean {
   return IGNORED_ERROR_PATTERNS.some((re) => re.test(text));
 }
 
+// The editor's debug flag (docs/specs/003-system-architecture/console-logging.md): the suite drives
+// the production build, which writes its trace lines only with it set, and specs wait for some of
+// them (`[drive-mirror] pass-end`). Set before any page of the context loads.
+export async function enableDebugLogs(context: BrowserContext): Promise<void> {
+  await context.addInitScript(
+    ([key]) => {
+      try {
+        localStorage.setItem(key as string, '*');
+      } catch {
+        // A page with no storage (about:blank, a sandboxed frame) has no trace lines to show.
+      }
+    },
+    [DEBUG_STORAGE_KEY] as const,
+  );
+}
+
 export const test = base.extend<{ pageErrors: string[] }>({
+  context: async ({ context }, use) => {
+    await enableDebugLogs(context);
+    await use(context);
+  },
   pageErrors: async ({ page }, use) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => {

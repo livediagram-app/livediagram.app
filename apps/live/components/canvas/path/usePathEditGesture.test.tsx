@@ -14,7 +14,7 @@ let clock = 0;
 beforeEach(() => {
   clock = 1_000;
   vi.spyOn(performance, 'now').mockImplementation(() => clock);
-  vi.spyOn(console, 'debug').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());
 

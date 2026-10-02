@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { armPlainClick, isOnlySelected, plainClickOutcome } from '@/lib/selection-click';
+import { debugLog } from '@/lib/debug-log';
 
 // The element / arrow selection-routing callbacks, lifted out of
 // Canvas: stable wrappers for the memo'd children (BoxedElementView /
@@ -66,7 +67,7 @@ export function useCanvasSelectHandlers({
     (id: string) => {
       if (inertIds.has(id)) return;
       const outcome = plainClickOutcome(selectionRef.current, id);
-      console.debug('[select-click]', id, outcome);
+      debugLog('[select-click]', id, outcome);
       if (outcome === 'deselect') onDeselect();
       else onSelect(id);
     },

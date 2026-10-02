@@ -9,6 +9,7 @@ import { importDrawioLibrary, type ImportedLibraryItem } from './library';
 import type { DrawioDocumentFile } from './new-document';
 import type { DrawioReport } from './notes';
 import type { ImportImageRequest } from '@/lib/import-images';
+import { debugLog } from '@/lib/debug-log';
 
 /** The names draw.io files carry, longest first so `.drawio.png` is not read as `.png`. */
 export const DRAWIO_EXTENSIONS = [
@@ -151,7 +152,7 @@ export async function readDrawioFiles(files: readonly File[]): Promise<DrawioFil
       out.failures.push({ title, message: UNREADABLE_FILE });
     }
   }
-  console.info('[drawio-import] files', {
+  debugLog('[drawio-import] files', {
     files: files.length,
     diagrams: out.diagrams.length,
     libraries: out.libraries.length,

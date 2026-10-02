@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ShareRole } from '@livediagram/api-schema';
+import { debugLog } from '@/lib/debug-log';
 
 // The role pill's toggle (docs/specs/007-editor/live-app.md#role-pill): someone whose role allows
 // editing can preview the document read-only. Local to this tab and visit; the
@@ -10,7 +11,7 @@ export function useViewPreview(sessionRole: ShareRole, onEnterPreview: () => voi
   const toggleViewPreview = () => {
     if (!canToggleRole) return;
     const next = !viewPreview;
-    console.info('[role] view preview', next);
+    debugLog('[role] view preview', next);
     // No edit toolbar or open editor may linger into viewing.
     if (next) onEnterPreview();
     setViewPreview(next);

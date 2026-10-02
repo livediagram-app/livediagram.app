@@ -18,8 +18,9 @@ const WRITES_TABS =
 // file -> number of statements writing `tabs`, each one proven in
 // db/image-refs-writers.test.ts.
 const KNOWN_WRITERS: Record<string, number> = {
-  // upsertTab, seedTabs, deleteTabRow, swapTabData
-  'api/src/db/tabs.ts': 4,
+  // upsertTab, seedTabs, deleteTabRow, swapTabData; and stampTabElementCount, which writes only
+  // element_count, never `data`, so it has no image reference to keep.
+  'api/src/db/tabs.ts': 5,
   // copyDocument
   'api/src/db/documents.ts': 1,
   // documentRemovalStatements

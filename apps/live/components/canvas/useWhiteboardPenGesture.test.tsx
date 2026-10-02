@@ -66,7 +66,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('useWhiteboardPenGesture', () => {
   it('commits exactly the raw samples the stroke showed, in canvas px, with its streamline', () => {
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup(2);
     s.press(10, 20);
     const stroke = s.hook.result.current.penStroke!;
@@ -85,7 +85,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('records a pen\u2019s pressure with every sample', () => {
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20, 'pen', 0.3);
     s.send(pointer('pointermove', { x: 20, y: 20, pressure: 0.6 }));
@@ -107,7 +107,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('adds nothing on release when the pen lifts where it last was', () => {
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
     s.send(pointer('pointermove', { x: 30, y: 20 }));
@@ -126,7 +126,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('discards a stroke the browser cancels', () => {
-    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
     s.send(pointer('pointermove', { x: 30, y: 20 }));
@@ -138,7 +138,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('discards a stroke a second finger turned into a pinch', () => {
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
     s.send(pointer('pointermove', { x: 30, y: 20 }));
@@ -149,7 +149,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('drops the stroke when the pen is put down mid-stroke (Escape)', () => {
-    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20);
     s.send(pointer('pointermove', { x: 30, y: 20 }));
@@ -161,7 +161,7 @@ describe('useWhiteboardPenGesture', () => {
   });
 
   it('logs each committed stroke with its pointer, samples and pressure', () => {
-    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
     const s = setup();
     s.press(10, 20, 'pen', 0.4);
     s.send(pointer('pointermove', { x: 20, y: 20, pressure: 0.5 }));
@@ -179,7 +179,7 @@ describe('useWhiteboardPenGesture', () => {
     };
     // Canvas px = client px - (10, 20) at zoom 1.
     const locked = () => {
-      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      vi.spyOn(console, 'info').mockImplementation(() => {});
       const s = setup();
       s.press(110, 80);
       const stroke = s.hook.result.current.penStroke!;
@@ -243,7 +243,7 @@ describe('useWhiteboardPenGesture', () => {
     });
 
     it('takes Shift held on the press as held from the start', () => {
-      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      vi.spyOn(console, 'info').mockImplementation(() => {});
       const s = setup();
       act(() => {
         s.hook.result.current.beginWhiteboardStroke(
@@ -280,7 +280,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
   };
 
   beforeEach(() => {
-    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     vi.mocked(track).mockClear();
   });
 

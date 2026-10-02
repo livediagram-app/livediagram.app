@@ -12,6 +12,7 @@ import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
+import { debugLog } from '@/lib/debug-log';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -348,7 +349,7 @@ export function useCanvasSurfaceGestures({
   // the canvas menu (docs/specs/008-canvas/canvas-and-palette.md "Selection"). The
   // deselect lands first: it closes any open menu, and the canvas menu then opens.
   const openCanvasMenu = (x: number, y: number) => {
-    console.debug('[canvas-menu] deselect + open', x, y);
+    debugLog('[canvas-menu] deselect + open', x, y);
     onDeselect();
     onCanvasContextMenu?.(x, y);
   };

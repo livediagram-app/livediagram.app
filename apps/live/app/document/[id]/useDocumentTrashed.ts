@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { TrashedDocument } from '@livediagram/api-schema';
 import { apiListTrash, apiRestoreDocument } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 export type DocumentTrashedState = {
   trashed: boolean;
@@ -33,7 +34,7 @@ export function useDocumentTrashed(opts: {
   const [from, setFrom] = useState<'Personal' | 'Team' | 'Local'>('Personal');
 
   const setDocumentTrashed = useCallback((next: boolean) => {
-    if (next) console.info('[trash] open document is in the Trash');
+    if (next) debugLog('[trash] open document is in the Trash');
     setTrashed(next);
   }, []);
 

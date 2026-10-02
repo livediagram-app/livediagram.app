@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   NAVIGATION_INTENT_MS,
-  STALE_CHUNK_RELOAD_WINDOW_MS,
-  claimChunkReload,
   createNavigationIntents,
   isChunkLoadError,
   recoverFromChunkError,
@@ -41,35 +39,6 @@ describe('isChunkLoadError', () => {
     [null, false],
   ])('reads %s as %s', (error, expected) => {
     expect(isChunkLoadError(error)).toBe(expected);
-  });
-});
-
-describe('claimChunkReload', () => {
-  it('allows one reload per destination within the window', () => {
-    const storage = memoryStorage();
-    expect(claimChunkReload('/explorer/unsorted', storage, 1_000)).toBe(true);
-    expect(claimChunkReload('/explorer/unsorted', storage, 2_000)).toBe(false);
-    expect(claimChunkReload('/explorer/recent', storage, 2_000)).toBe(true);
-    expect(
-      claimChunkReload('/explorer/unsorted', storage, 1_000 + STALE_CHUNK_RELOAD_WINDOW_MS + 1),
-    ).toBe(true);
-  });
-
-  it('survives unreadable storage by refusing, never looping', () => {
-    const broken = memoryStorage();
-    broken.setItem('livediagram:stale-chunk-reloads', '{not json');
-    expect(claimChunkReload('/a', broken, 1)).toBe(true);
-    const throwing = {
-      ...memoryStorage(),
-      getItem: () => {
-        throw new Error('denied');
-      },
-    } as Storage;
-    expect(claimChunkReload('/a', throwing, 1)).toBe(false);
-  });
-
-  it('is short: one minute', () => {
-    expect(STALE_CHUNK_RELOAD_WINDOW_MS).toBe(60_000);
   });
 });
 

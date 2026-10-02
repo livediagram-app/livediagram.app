@@ -18,6 +18,7 @@ import { placementOffset, translateItem, type BoardScenePlacement } from './plac
 import { mergeNotes, type BoardSceneReport } from './report';
 import { compactLanded } from './compact';
 import type { BoardScene, SceneAsset, SceneItem, SceneItemKind, ScenePolyline } from './scene';
+import { debugLog } from '@/lib/debug-log';
 
 export type { BoardScenePlacement } from './placement';
 export type { BoardSceneReport } from './report';
@@ -132,7 +133,7 @@ function tabPatchOf(scene: BoardScene, profile: BoardSceneProfile): BoardSceneTa
 export function landBoardScene(scene: BoardScene, options: LandOptions): LandResult {
   const room = options.room ?? MAX_ELEMENTS_PER_TAB;
   if (scene.items.length > room) {
-    console.info('[board-scene] rejected', {
+    debugLog('[board-scene] rejected', {
       rejection: 'too-many-elements',
       items: scene.items.length,
       room,
@@ -186,7 +187,7 @@ export function landBoardScene(scene: BoardScene, options: LandOptions): LandRes
   for (const kind of landedKinds) if (kind) landed[kind] = (landed[kind] ?? 0) + 1;
   const report: BoardSceneReport = { landed, ...mergeNotes([...scene.notes, ...ctx.notes()]) };
   const elements = compactLanded(slots.filter((el): el is Element => el !== null));
-  console.info('[board-scene] landed', {
+  debugLog('[board-scene] landed', {
     source: scene.source,
     profile,
     placement: options.placement.kind,
@@ -195,6 +196,6 @@ export function landBoardScene(scene: BoardScene, options: LandOptions): LandRes
     degraded: report.degraded,
     skipped: report.skipped,
   });
-  for (const rule of report.skipped) console.info('[board-scene] skipped', rule);
+  for (const rule of report.skipped) debugLog('[board-scene] skipped', rule);
   return { ok: true, elements, imageRequests, report, tabPatch: tabPatchOf(scene, profile) };
 }

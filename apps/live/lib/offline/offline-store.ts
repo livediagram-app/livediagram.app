@@ -110,6 +110,7 @@ function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     source: null,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
+    empty: (rec.tabs[0]?.elements.length ?? 0) === 0,
   };
 }
 

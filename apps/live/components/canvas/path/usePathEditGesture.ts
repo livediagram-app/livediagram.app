@@ -34,6 +34,7 @@ import {
 } from '@/lib/path-edit';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { pathEditKey } from '@/lib/path-edit-keys';
+import { debugLog } from '@/lib/debug-log';
 
 type Point = { x: number; y: number };
 
@@ -142,7 +143,7 @@ export function usePathEditGesture({
     commitRef.current(el.id, { anchors, closed }, kind);
     // A path left with fewer nodes than it needs is deleted, and edit mode goes with it.
     if (!isCommittablePath(anchors, closed)) {
-      console.debug('[path] edit left: path deleted');
+      debugLog('[path] edit left: path deleted');
       leaveRef.current();
     }
   };
@@ -213,7 +214,7 @@ export function usePathEditGesture({
     if (g.kind === 'box') {
       if (!g.moved || !world) {
         // A click on empty space leaves edit mode, as a click off a path does anywhere.
-        console.debug('[path] edit left: click outside');
+        debugLog('[path] edit left: click outside');
         leaveRef.current();
         deselectRef.current();
         return;
@@ -346,7 +347,7 @@ export function usePathEditGesture({
   };
 
   const leave = (reason: string) => {
-    console.debug(`[path] edit left: ${reason}`);
+    debugLog(`[path] edit left: ${reason}`);
     leaveRef.current();
   };
 

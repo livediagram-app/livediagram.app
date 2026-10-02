@@ -2,10 +2,12 @@
 // "Errors and edge cases"): every decision point logs `[drive-mirror] <event>`,
 // so a failure is traceable from the browser console. Never a token.
 
+import { debugLog } from '@/lib/debug-log';
+
 export type DriveLogFields = Record<string, string | number | boolean | null | undefined>;
 
 export function driveLog(event: string, fields: DriveLogFields = {}): void {
-  console.info(`[drive-mirror] ${event}`, fields);
+  debugLog(`[drive-mirror] ${event}`, fields);
 }
 
 export function driveWarn(event: string, fields: DriveLogFields = {}): void {

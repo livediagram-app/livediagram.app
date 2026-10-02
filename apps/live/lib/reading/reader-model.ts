@@ -2,6 +2,7 @@ import type { NoteCrop } from '@livediagram/api-schema';
 import { downloadProgress, type ModelDownload, type ModelProgressEvent } from './download-progress';
 import { tooSmallToRead } from './floor';
 import type { ReaderBackend } from './reader-protocol';
+import { debugLog } from '@/lib/debug-log';
 
 // Reading the handwriting with a model that runs HERE (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
@@ -114,7 +115,7 @@ export async function readOne(
   const image = await RawImage.fromURL(crop.image);
   // Too small in the photo to read: asking only invents words (floor.ts).
   if (opts.floor === true && tooSmallToRead(image.width, image.height)) {
-    console.info(`[reader] crop ${crop.id} is ${image.width}x${image.height}: too small to read`);
+    debugLog(`[reader] crop ${crop.id} is ${image.width}x${image.height}: too small to read`);
     return '';
   }
   // A multimodal turn is a LIST of parts (an image and a question), which is

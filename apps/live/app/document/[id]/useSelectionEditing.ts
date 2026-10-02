@@ -17,6 +17,7 @@ import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
+import { debugLog } from '@/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -193,7 +194,7 @@ export function useSelectionEditing(opts: {
     );
     setEditingId(null);
     if (removesEmpty) {
-      console.debug('[text-hug] removed an empty text box', elementId);
+      debugLog('[text-hug] removed an empty text box', elementId);
       setSelectedId(null);
     }
     // While the document is still on its default name, mirror the label of

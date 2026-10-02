@@ -2,6 +2,7 @@
 
 import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
+import { firstTabCountSql, isEmptyCount } from './tabs';
 
 // Record a visitor's access to a shared document. Idempotent on
 // (owner_id, document_id): repeat visits just bump last_seen + role.
@@ -88,6 +89,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
                 AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)
               ORDER BY share_links.created_at ASC
               LIMIT 1) AS share_code,
+            ${firstTabCountSql('d.id', 's.tab_id')},
             p.name  AS owner_name,
             p.color AS owner_color
        FROM shared_with s
@@ -108,6 +110,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       share_code: string | null;
       owner_name: string | null;
       owner_color: string | null;
+      first_tab_count: number | null;
     }>();
   return (res.results ?? [])
     .filter((r) => r.share_code !== null)
@@ -120,6 +123,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       tabId: r.tab_id ?? null,
       ownerName: r.owner_name,
       ownerColor: r.owner_color,
+      empty: isEmptyCount(r.first_tab_count),
     }));
 }
 

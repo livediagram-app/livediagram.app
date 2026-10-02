@@ -31,6 +31,7 @@ import {
   openSaveWindow,
   type RemoteOpJournal,
 } from './save-baseline';
+import { emptyAfterSave } from '@/lib/list-row-empty';
 
 // Per-tab autosave (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -322,7 +323,16 @@ export function useAutosave(opts: {
           // "Updated X ago" stays fresh — used to refetch the whole
           // list here, which hit /api/documents on every autosave.
           setDocumentList((prev) =>
-            prev.map((d) => (d.id === documentId ? { ...d, savedAt: now, name: documentName } : d)),
+            prev.map((d) =>
+              d.id === documentId
+                ? {
+                    ...d,
+                    savedAt: now,
+                    name: documentName,
+                    empty: emptyAfterSave(tabs, loadedTabIdsRef.current, d.empty),
+                  }
+                : d,
+            ),
           );
         })
         .catch((err: unknown) => {

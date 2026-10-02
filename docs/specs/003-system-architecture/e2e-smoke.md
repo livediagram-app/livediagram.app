@@ -82,7 +82,17 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
    - serve `apps/help/out` under `/help/*` and `apps/telemetry/out` under `/telemetry/*`, their
-     basePaths, as the router mounts them; a missing build answers a logged 404.
+     basePaths, as the router mounts them; a missing build answers a logged 404;
+   - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
+     file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
+     ETag, 304 on a match), then through the router's rules, run from the router's own
+     `apps/router/src/cache-policy.ts` (pages `no-store`, build assets immutable, a missing asset a
+     plain-text 404). `E2E_CACHE_POLICY=off` serves without the router's rules, as production did
+     before them;
+   - simulate a deploy for the stale build specs: `POST /__e2e/deploy` swaps in a copy of the
+     build whose chunk files all carry new names (every reference rewritten), and
+     `POST /__e2e/assets-out-of-cache` serves build assets `no-store` until then, so the browser
+     keeps a page but not its chunks.
 3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
    since marketing owns `/` in production.
 
@@ -130,6 +140,12 @@ minus known benign noise (a favicon or manifest 404, dev-server Fast Refresh
 chatter, Chromium's generic "Failed to load resource" line, and the blocked
 model fetches of the photo tests). A test that takes `pageErrors` ends with
 **`expectNoPageErrors(pageErrors)`**, which fails naming what leaked.
+
+The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
+context before any page loads, so the production build the suite drives writes its trace lines
+([Console logging](console-logging.md)) and a spec may wait for one (`[drive-mirror] pass-end`).
+A spec that opens its own context with `browser.newContext()` sets it there with
+`enableDebugLogs(context)`.
 
 ## What the suite asserts
 
