@@ -33,7 +33,11 @@ lets you jump the viewport anywhere with a tap or drag.
   (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its
   real colours, silhouette, table grid, freehand stroke, icon glyph (the
   Technology marks pop in when the async catalogue lands), rotation, and
-  every arrow with its true curved / elbow path — not a grey wireframe. The
+  every arrow with its true curved / elbow path — not a grey wireframe. That
+  drawing is shown as **one image**, not as a copy of the board in the page: on
+  a large board a live copy doubled the page's elements and slowed every
+  gesture ([Canvas performance](canvas-performance.md)). An image cannot use the
+  app's web fonts, so the Map's tiny labels are set in the system's fonts. The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
   a glance as where you are. The window is coloured exactly like the canvas

@@ -52,6 +52,9 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms.
+- **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
+  elements in the page, which every style pass, layout, hit test and collection would otherwise
+  walk.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,

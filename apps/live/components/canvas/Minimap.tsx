@@ -9,6 +9,7 @@ import {
   arrowLabelPass,
   svgArrow,
   svgBoxed,
+  svgShadowDefs,
   type Element,
   type Point,
 } from '@livediagram/document';
@@ -137,9 +138,12 @@ export function Minimap({
   // exports / live image use — real colours, silhouettes, tables, freehand,
   // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
   // only when elements, the tab font or the icon catalogues change —
-  // panning/zooming re-renders just the viewport overlay below. The markup is our own renderer's output (user text is
-  // xmlEscaped inside it), so injecting it is safe.
-  const { markup, bounds } = useMemo(() => {
+  // panning/zooming re-renders just the viewport overlay below. It is shown as ONE image of that markup
+  // (docs/specs/008-canvas/minimap.md "What it shows"), not injected as live elements: on a large
+  // board a live copy doubled the page and slowed every gesture
+  // (docs/specs/008-canvas/canvas-performance.md "The Map is one image"). An image cannot load the
+  // app's web fonts, so its labels fall back to the system's.
+  const { picture, bounds } = useMemo(() => {
     const corners: Point[] = [];
     const parts: string[] = [];
     // The resolvers find nothing until the catalogue chunk lands, which
@@ -169,9 +173,24 @@ export function Minimap({
       parts.push(svgArrow(el, elements, surface, tabFont, labels, 'lvd-minimap-ko-'));
       corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
     }
+    const content = boundsOfPoints(corners);
+    if (!content) return { picture: null, bounds: null };
+    // The picture covers the padded content box, so strokes and shadows past the corners still show.
+    const px = content.width * PAD_FRACTION + PAD_MIN;
+    const py = content.height * PAD_FRACTION + PAD_MIN;
+    const box = {
+      x: content.x - px,
+      y: content.y - py,
+      width: content.width + 2 * px,
+      height: content.height + 2 * py,
+    };
+    const doc =
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box.x} ${box.y} ${box.width} ${box.height}" width="${box.width}" height="${box.height}">` +
+      `${svgShadowDefs(elements)}${parts.join('')}</svg>`;
     return {
-      markup: parts.join(''),
-      bounds: boundsOfPoints(corners),
+      // Our own renderer's output (user text is xmlEscaped inside it), shown as an image.
+      picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
+      bounds: content,
     };
   }, [elements, tabFont, iconsLoaded, surface]);
 
@@ -275,8 +294,17 @@ export function Minimap({
           }}
           onWheel={onWheel}
         >
-          {/* The tab's real rendering (see the markup build above). */}
-          <g dangerouslySetInnerHTML={{ __html: markup }} />
+          {/* The tab's real rendering, as one image (see the picture build above). */}
+          {picture ? (
+            <image
+              href={picture.href}
+              x={picture.x}
+              y={picture.y}
+              width={picture.width}
+              height={picture.height}
+              preserveAspectRatio="none"
+            />
+          ) : null}
           {hasView ? (
             <>
               {/* Dim everything outside the current view (even-odd: outer box
