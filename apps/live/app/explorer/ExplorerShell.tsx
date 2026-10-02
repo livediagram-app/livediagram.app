@@ -21,7 +21,7 @@ import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
-import { ExplorerSidebar } from './ExplorerSidebar';
+import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
