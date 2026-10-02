@@ -778,12 +778,15 @@ describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document
     expect(stored().folderId).toBe('f1');
   });
 
-  it("files into Unsorted rather than a folder that isn't theirs", async () => {
+  it("refuses a folder that isn't theirs by name, writing nothing", async () => {
+    // docs/specs/013-workspace/folders.md "Placement on create": never filed elsewhere instead.
+    // The sync itself refiles in Unsorted on this refusal (lib/offline/offline-convert.ts).
     db.getDocument.mockResolvedValue(null);
     db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'someone-else', teamId: null });
     const res = await create({ folderId: 'f1' });
-    expect(res.status).toBe(201);
-    expect(stored().folderId).toBeNull();
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'folder_not_found' });
+    expect(db.upsertDocumentMeta).not.toHaveBeenCalled();
   });
 });
 

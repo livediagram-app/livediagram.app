@@ -226,9 +226,12 @@ export async function upsertDocumentMeta(
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
   // setDocumentPresentation writes it.
+  // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
+  // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
+  // re-commit keeps its place, and moving is setDocumentFolder's job.
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, source, presentation, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -240,6 +243,7 @@ export async function upsertDocumentMeta(
       d.name,
       d.shareable ? 1 : 0,
       d.folderId,
+      d.teamId ?? null,
       d.source ?? null,
       d.presentation ?? null,
       d.savedAt,

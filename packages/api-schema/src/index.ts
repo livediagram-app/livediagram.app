@@ -612,3 +612,11 @@ export * from './document-dates';
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
 export * from './shape-libraries';
+
+// Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
+export {
+  PLACEMENT_REJECTIONS,
+  isPlacementRejection,
+  type DocumentPlacement,
+  type PlacementRejection,
+} from './placement';
