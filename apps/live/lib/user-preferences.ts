@@ -236,6 +236,9 @@ export type UserPreferences = {
   // Where a whiteboard's dock sits (docs/specs/023-whiteboard/whiteboard.md "Where the dock sits").
   // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
   whiteboardDockPosition?: 'top' | 'bottom';
+  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+  // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
+  drawPattern?: 'blank' | 'grid' | 'graph';
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

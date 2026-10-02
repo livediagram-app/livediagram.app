@@ -1,9 +1,10 @@
 // The whiteboard dock's synced preferences (docs/specs/023-whiteboard/whiteboard.md "Shape slots",
 // "Where the dock sits"): the pinned shape kinds and the pick counts behind the Shapes flyout's
-// slots, and where the dock sits. They live in the
+// slots, where the dock sits, and Draw mode's pattern. They live in the
 // user's preferences blob (lib/user-preferences.ts), so they follow a signed-in user across devices
 // and stay in this browser for a guest. Read through here, never directly: a stored value is only
 // trusted once parsed.
+import type { BackgroundPattern } from '@livediagram/document';
 import type { UserPreferences } from './user-preferences';
 import { isWhiteboardShapeKey, type WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import {
@@ -84,3 +85,22 @@ export const WHITEBOARD_DOCK_SELECTOR = '[data-whiteboard-dock]';
 // Where the top corner panel stacks start when a dock at the top reaches into them: its 12 px inset,
 // its 54 px height (44 px buttons, 4 px padding, 1 px border), and a 10 px gap (D34).
 export const WHITEBOARD_DOCK_TOP_CLEARANCE_PX = 12 + 54 + 10;
+
+// Draw mode's pattern (docs/specs/007-editor/editor-modes.md "One look"): the person's own Plain,
+// Dots or Grid, as they last chose it in Draw mode, never stored on a tab. Grid until chosen.
+export const DRAW_PATTERNS = [
+  'blank',
+  'grid',
+  'graph',
+] as const satisfies readonly BackgroundPattern[];
+export type DrawPattern = (typeof DRAW_PATTERNS)[number];
+export const DEFAULT_DRAW_PATTERN: DrawPattern = 'graph';
+
+export function readDrawPattern(prefs: UserPreferences): DrawPattern {
+  const stored = prefs.drawPattern;
+  return DRAW_PATTERNS.find((p) => p === stored) ?? DEFAULT_DRAW_PATTERN;
+}
+
+export function withDrawPattern(prefs: UserPreferences, pattern: DrawPattern): UserPreferences {
+  return { ...prefs, drawPattern: pattern };
+}
