@@ -76,10 +76,16 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   renders no element view, a one-element drag renders only its neighbourhood, a still canvas
   schedules no frames, the Map redraws once per gesture.
 - **A performance probe** (`pnpm perf:canvas`) builds the reference board, runs each gesture under
-  a trace at 4× throttle and prints the budget table with pass or fail per row. It runs before a
-  release and on any change to the canvas render path; its results are added to the research
-  report when they move. It is not a CI gate: timings on shared runners are too noisy to fail a
-  build on.
+  a trace at 4× throttle and prints the budget table with pass or fail per row. It also runs by
+  hand, against any build.
+- **It runs nightly on its own**, in a scheduled workflow, against the head of `main`; a night with
+  no new commit on `main` since the last run is skipped, so it spends no CI minutes on an unchanged
+  build. Each run writes the budget table to the job summary and keeps the raw traces as an
+  artefact for 14 days.
+- **It reports, it never blocks**: timings on shared runners are too noisy to fail a build on. A
+  run with a failing row opens one issue, **Canvas performance budget**, or comments on it if open,
+  with the table and the commits since the last passing run; the first all-pass run closes it. No
+  one has to remember to run or read it.
 
 ## Observability
 
