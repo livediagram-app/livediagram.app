@@ -8,18 +8,19 @@ page and consume it unchanged.
 
 Scope, by file (all under `packages/explorer-lens/src/`):
 
-| File                                                  | Role                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `packages/explorer-lens/src/dimensions.ts` (planned)  | The catalogue: dimensions, values, labels, telemetry types, constants          |
-| `packages/explorer-lens/src/types.ts` (planned)       | `Lens`, `LensTerm`, `LensIssue`, `LensContext`, `LensSubject` and their parts  |
-| `packages/explorer-lens/src/parse.ts` (planned)       | `parseLens`, `readWord`, `normaliseInput`, `emptyLens`                         |
-| `packages/explorer-lens/src/serialise.ts` (planned)   | `serialiseLens`, `tokenOf`, `setDimension`, `removeTerm`                       |
-| `packages/explorer-lens/src/match.ts` (planned)       | `documentSubject`, `sharedSubject`, `matchesLens`, `applyLens`, `editedCutoff` |
-| `packages/explorer-lens/src/suggest.ts` (planned)     | `suggestTokens`, `acceptSuggestion`                                            |
-| `packages/explorer-lens/src/view-models.ts` (planned) | `lensChips`, `lensPills`, `valueLabel`, `issueMessage`, `announceResults`      |
-| `packages/explorer-lens/src/url.ts` (planned)         | `readLensQuery`, `withLensQuery`, `carryLensQuery`                             |
-| `packages/explorer-lens/src/telemetry.ts` (planned)   | `selectedFacets`                                                               |
-| `packages/explorer-lens/src/index.ts` (planned)       | The public surface (re-exports only)                                           |
+| File                                        | Role                                                                                                      |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `packages/explorer-lens/src/dimensions.ts`  | The catalogue: dimensions, values, labels, telemetry types, constants                                     |
+| `packages/explorer-lens/src/types.ts`       | `Lens`, `LensTerm`, `LensIssue`, `WordProblem`, `LensContext`, `LensSubject`, `LensSuggestion`            |
+| `packages/explorer-lens/src/parse.ts`       | `parseLens`, `readWord`, `tokenKeyOf`, `normaliseInput`, `emptyLens`                                      |
+| `packages/explorer-lens/src/serialise.ts`   | `serialiseLens`, `tokenOf`, `setDimension`, `removeTerm`                                                  |
+| `packages/explorer-lens/src/match.ts`       | `documentSubject`, `sharedSubject`, `compileLens`, `matchesLens`, `applyLens`, `editedCutoff`, `foldText` |
+| `packages/explorer-lens/src/suggest.ts`     | `suggestTokens`, `acceptSuggestion`                                                                       |
+| `packages/explorer-lens/src/view-models.ts` | `lensChips`, `lensPills`, `issueMessage`, `announceResults`                                               |
+| `packages/explorer-lens/src/labels.ts`      | `valueLabel`, `valueOptions`: one source of labels for chips, pills and suggestions                       |
+| `packages/explorer-lens/src/url.ts`         | `readLensQuery`, `withLensQuery`, `carryLensQuery`                                                        |
+| `packages/explorer-lens/src/telemetry.ts`   | `selectedFacets`                                                                                          |
+| `packages/explorer-lens/src/index.ts`       | The public surface (re-exports only)                                                                      |
 
 ## Domain and naming
 
@@ -144,15 +145,22 @@ type LensTerm =
 type LensIssueReason =
   | 'unknown_dimension' | 'missing_value' | 'unknown_value' | 'unknown_team'
   | 'superseded' | 'space_not_here' | 'too_long';
-type LensIssue = { reason: LensIssueReason; raw: string; start: number; end: number; dimension: LensDimension | null; value: string | null };
+type Span = { raw: string; start: number; end: number };
+type LensIssue = // a reason about one dimension names it; the other two name none
+  | (Span & { reason: 'unknown_dimension' | 'too_long'; dimension: null; value: null })
+  | (Span & { reason: DimensionIssueReason; dimension: LensDimension; value: string | null });
 type ParsedLens = { lens: Lens; terms: readonly LensTerm[]; issues: readonly LensIssue[] };
 
 parseLens(input: string, context: LensContext, caret?: number): ParsedLens;
+readWord(word: string, context: LensContext): WordReading; // { kind: 'token', dimension, value } | { kind: 'text', problem }
 serialiseLens(lens: Lens): string;
 setDimension<D>(input: string, dimension: D, value: LensValueOf[D] | null, context: LensContext): string;
 removeTerm(input: string, term: { start: number; end: number }): string;
 applyLens<T extends LensSubject>(subjects: readonly T[], lens: Lens, now: number): T[];
 matchesLens(subject: LensSubject, lens: Lens, now: number): boolean;
+compileLens(lens: Lens, now: number): (subject: LensSubject) => boolean;
+documentSubject(summary: LensDocumentSummary, viewerId: string): LensSubject;
+sharedSubject(item: { name: string; savedAt: number }): LensSubject;
 suggestTokens(input: string, caret: number, context: SuggestContext): LensSuggestion[];
 acceptSuggestion(input: string, suggestion: LensSuggestion, context: LensContext): { input: string; caret: number };
 lensChips(parsed: ParsedLens, context: LensContext): LensChip[];
@@ -167,7 +175,8 @@ selectedFacets(previous: Lens, next: Lens): LensFacet[];
 
 `SuggestContext` is `LensContext & { subjects: readonly LensSubject[]; now: number }`. `LensSuggestion` is
 `{ id, kind: 'dimension' | 'value', dimension, value: string | null, insert, range: { start, end }, label,
-dimensionLabel, matchesNothing }`; `id` is `dimension:<key>` or `value:<token>`, unique within one list, for
+dimensionLabel, name, matchesNothing }`. `name` is the option's accessible name: the label alone for a dimension,
+"<label>, <dimension label>" for a value, plus ", no matches" when marked. `id` is `dimension:<key>` or `value:<token>`, unique within one list, for
 `aria-activedescendant`. A `caret` outside `[0, input.length]` is clamped (`D51`).
 
 `applyLens` takes subjects so one rule serves documents, shared rows and, later, Timeline events: the caller maps each
@@ -219,9 +228,9 @@ row with `documentSubject` / `sharedSubject` and keeps its row on the subject (`
 
 ## Presentation and UX
 
-Copy is the spec's, in one place (`view-models.ts`):
+Copy is the spec's, in one place (`view-models.ts`, labels in `labels.ts`):
 
-- Value labels, dimension labels, the issue messages, and the announcement ("40 documents", "1 document",
+- Value labels, dimension labels (a team the reader is not in reads "Unknown team"), the issue messages, and the announcement ("40 documents", "1 document",
   "12 of 40 documents", "No documents match").
 - A pill reads `<Dimension>: <value label>`, except Made by AI, which reads "Made by AI". A muted pill's note is its
   issue message.
@@ -261,16 +270,16 @@ Never the words of the lens or a team id.
 Every test is pure, `< 10 ms`; coverage of `packages/explorer-lens/src` is 100 % (lines, branches, functions,
 statements), enforced in the package's `vitest.config.ts`.
 
-| Rule                                                        | Test                                                       |
-| ----------------------------------------------------------- | ---------------------------------------------------------- |
-| Catalogue, labels, telemetry types closed and complete      | `packages/explorer-lens/src/dimensions.test.ts` (planned)  |
-| Grammar, every rejection, states, pending, cut, offsets     | `packages/explorer-lens/src/parse.test.ts` (planned)       |
-| Canonical form, round trip, chip writes, removal            | `packages/explorer-lens/src/serialise.test.ts` (planned)   |
-| Every dimension's matching, unknowns, cutoffs, text folding | `packages/explorer-lens/src/match.test.ts` (planned)       |
-| Dimensions then values, labels, marking, cap, accept        | `packages/explorer-lens/src/suggest.test.ts` (planned)     |
-| Chips, pills, names, messages, announcement                 | `packages/explorer-lens/src/view-models.test.ts` (planned) |
-| `q` read, write, removal, carry-over                        | `packages/explorer-lens/src/url.test.ts` (planned)         |
-| Selected facets only when a value is gained                 | `packages/explorer-lens/src/telemetry.test.ts` (planned)   |
+| Rule                                                        | Test                                             |
+| ----------------------------------------------------------- | ------------------------------------------------ |
+| Catalogue, labels, telemetry types closed and complete      | `packages/explorer-lens/src/dimensions.test.ts`  |
+| Grammar, every rejection, states, pending, cut, offsets     | `packages/explorer-lens/src/parse.test.ts`       |
+| Canonical form, round trip, chip writes, removal            | `packages/explorer-lens/src/serialise.test.ts`   |
+| Every dimension's matching, unknowns, cutoffs, text folding | `packages/explorer-lens/src/match.test.ts`       |
+| Dimensions then values, labels, marking, cap, accept        | `packages/explorer-lens/src/suggest.test.ts`     |
+| Chips, pills, names, messages, announcement                 | `packages/explorer-lens/src/view-models.test.ts` |
+| `q` read, write, removal, carry-over                        | `packages/explorer-lens/src/url.test.ts`         |
+| Selected facets only when a value is gained                 | `packages/explorer-lens/src/telemetry.test.ts`   |
 
 ## Constants and configuration
 
