@@ -66,14 +66,15 @@ What carries over:
 
 - **Shapes** keep their kind, size, position, colours, borders, rounded corners, rotation, opacity and shadow. Flowchart shapes (process, decision, terminator, document, database, data) map one to one; less common ones come in as the nearest livediagram shape.
 - **Text** keeps its formatting: bold, italic, underline, colours, links, headings and lists in rich labels, plus font size and alignment.
-- **Connections** stay attached to the shapes they join, with their route (straight, curved or right-angled, through their bend points), arrowheads, line style and labels.
-- **Swimlanes** become lanes, **UML classes and ER entities** become records with one row per field, **tables** become tables, and draw.io **layers** become the tab's layers, hidden and locked ones included.
+- **Connections** follow the route draw.io itself draws: the same corners, curves and shared trunks, attached to the shapes (or other connections) they join at the nearest connection point, with their arrowheads, line style and labels where draw.io puts them.
+- **Swimlanes** become lanes, with an upright title down the side where draw.io writes it upright, **UML classes and ER entities** become records with one row per field, **tables** become tables, and draw.io **layers** become the tab's layers, hidden and locked ones included.
 - **Cloud and network icons** (AWS, Azure, Kubernetes, servers, users and more) become the matching livediagram icon where there is a clear match. A stencil with no match comes in as a labelled box, so nothing disappears.
-- **Colours left at draw.io's default** take on your tab's theme, like anything drawn in livediagram. Colours you picked in draw.io stay as they were.
+- **Colours left at draw.io's default** take on your tab's theme, like anything drawn in livediagram, and so do near-black text and near-white panels, which draw.io's own dark mode turns too. Other colours you picked in draw.io stay as they were.
+- **Text keeps its room.** livediagram's text is a little larger than draw.io's, so the whole page is scaled up to match, and every label fits its shape as it did in draw.io.
 
 Pictures embedded in the diagram come across like any imported board's [images](#images-in-an-imported-file): resized and saved to your gallery. Pictures linked from the web, or from draw.io's own icon library, are never fetched; they come in as placeholders.
 
-When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), lane titles that now read across, arrowheads livediagram draws differently, hidden items left out, and so on.
+When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), arrowheads livediagram draws differently, labels shortened to fit their shapes, hidden items left out, and so on.
 
 ## Import replaces the tab
 
