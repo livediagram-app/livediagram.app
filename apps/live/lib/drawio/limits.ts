@@ -16,8 +16,6 @@ export const DRAWIO_DEFAULT_ARC_SIZE = 10;
 export const DRAWIO_SHADOW: ElementShadow = { offsetX: 2, offsetY: 3, blur: 3, opacity: 0.25 };
 /** Height one caption line adds to an icon's box (D23). */
 export const DRAWIO_CAPTION_LINE_PX = 18;
-/** Width one caption character adds to an icon's box, sideways captions (D23). */
-export const DRAWIO_CAPTION_CHAR_PX = 7;
 /** Room a caption's box keeps around its text, both sides together (D23). */
 export const DRAWIO_CAPTION_PADDING_PX = 16;
 /** How far from the middle an edge label must sit to keep its place (D24). */

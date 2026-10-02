@@ -23,6 +23,7 @@ import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
+import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
 
@@ -272,6 +273,42 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   // A workshop note exports in capitals, exactly as the board paints it
   // (docs/specs/021-event-storming/event-storming.md) — a shared PNG that quietly restored sentence case would
   // stop being the board people were looking at.
+  const upright =
+    el.type === 'shape' && el.shape === 'lane' && isUprightTitle(el)
+      ? uprightTitleStrip(el, el.width, el.height)
+      : null;
+  if (upright && el.label) {
+    // The turned frame: as long as the strip is tall, as tall as it is thick, turned about its
+    // top-left corner (the strip's bottom-left).
+    const inset = Math.min(PADDING_PX.sm, pad);
+    const fx = el.x + upright.x;
+    const fy = el.y + upright.y + upright.height;
+    const along = upright.alongAlign;
+    return {
+      opacity,
+      shape,
+      label: {
+        text: el.label,
+        x:
+          along === 'right'
+            ? fx + upright.height - inset
+            : along === 'left'
+              ? fx + inset
+              : fx + upright.height / 2,
+        y: fy + upright.width / 2,
+        anchor: along === 'right' ? 'end' : along === 'left' ? 'start' : 'middle',
+        valign: 'middle',
+        maxWidth: Math.max(0, upright.height - 2 * inset),
+        color: baseColor,
+        size: baseSize,
+        bold: !!el.textBold,
+        italic: !!el.textItalic,
+        fontFamily,
+        runs,
+        turnAbout: { x: fx, y: fy },
+      },
+    };
+  }
   const label: ExportLabel | null = el.label
     ? {
         text: eventStormingLabelText(el, el.label),

@@ -75,8 +75,8 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 10. **Upright title.** `isUprightTitle(el)` = `titleOrientation === 'upright'` and the gutter edge is
     `left`, `right` or `centre-x`. Then: the default gutter size is `LANE_BAND_PX`; the label box is the
     strip (inset by the padding), turned −90° about its centre, so its width runs up the strip's height
-    and its height across the strip; the text wraps within that turned box, at most
-    `UPRIGHT_TITLE_MAX_LINES` lines, then ellipsis; the vertical pin (`top` / `middle` / `bottom`)
+    and its height across the strip (`uprightTitleStrip`, `uprightTitleFrame`); the text wraps within that
+    turned box and is clipped to it, with a padding of at most `PADDING_PX.sm`; the vertical pin (`top` / `middle` / `bottom`)
     aligns it along the strip (`top` → the strip's top end, where the turned text ends). A band
     (`top` / `bottom` edge) ignores the field. Editing the title edits the turned box in place.
 11. **Toggle.** The context menu's Text section shows **Upright title** (switch) for a lane whose gutter
@@ -112,7 +112,8 @@ export function laneGutterEdge(alignX: TextAlignX, alignY: TextAlignY): LaneGutt
 export function isLaneBand(edge: LaneGutterEdge): boolean;
 export function laneEdgeOfElement(el: LaneLike): LaneGutterEdge;
 export function laneSizeOfElement(el: LaneLike): number;
-export const UPRIGHT_TITLE_MAX_LINES = 2;
+export type UprightTitleStrip = { x: number; y: number; width: number; height: number; alongAlign: TextAlignX };
+export function uprightTitleStrip(el: LaneLike, width: number, height: number): UprightTitleStrip;
 export function isUprightTitle(el: LaneLike): boolean;
 // LaneLike gains: titleOrientation?: 'upright' | undefined
 
@@ -230,7 +231,7 @@ None in code today [GA1]. The upright toggle tracks `Element·Changed·LaneUprig
 | Drag clamp, centred 2x, one commit (I2)                 | none [GA14]                                                                  |                                                                                               |
 | Render clamp of a stored size                           | none [QA10]                                                                  |                                                                                               |
 | Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `packages/document/src/lane-gutter.test.ts`                                                   |
-| Upright title renders turned on canvas and export       | the label box turned −90°, wrapped, ellipsis after two lines                 | `packages/document/src/svg-render.test.ts`, `apps/live/components/canvas/LaneGutter.test.tsx` |
+| Upright title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/live/components/canvas/LaneGutter.test.tsx` |
 | Upright toggle: offered on side strips only, one commit | the Text section switch                                                      | `apps/live/components/palette/*.test.tsx`                                                     |
 
 ## Constants and configuration

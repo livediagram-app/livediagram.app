@@ -135,19 +135,15 @@ describe('swimlanes.drawio', () => {
       const { pages, report } = await load(name);
       const page = pages[0]!;
       expectSound(page);
-      // Vertical titles read across: the pool and its three lanes.
-      expect(report).toMatchObject({
-        elements: 17,
-        notes: [{ kind: 'lane-title-turned', count: 4 }],
-      });
-      // Titles read in full: the three stacked lanes share a strip wide enough
-      // for the longest title and grow left of their content to hold it; the
-      // pool grows left of its lanes to hold its own.
+      // The pool and its three lanes keep their titles upright in thin strips; nothing to report.
+      expect(report).toMatchObject({ elements: 17, notes: [] });
       const k = scaleOf(page, 'Apply', 120);
       for (const title of ['Candidate', 'Recruiter', 'Team']) {
-        expectScaled(byLabel(page, title), { x: 23, width: 777, headerSize: 97 }, k);
+        expect(byLabel(page, title)).toMatchObject({ titleOrientation: 'upright' });
+        expectScaled(byLabel(page, title), { x: 60, width: 740, headerSize: 20 }, k);
       }
-      expectScaled(byLabel(page, 'Hiring'), { x: -47, width: 847, headerSize: 70 }, k);
+      expect(byLabel(page, 'Hiring')).toMatchObject({ titleOrientation: 'upright' });
+      expectScaled(byLabel(page, 'Hiring'), { x: 40, width: 760, headerSize: 20 }, k);
       expectScaled(byLabel(page, 'Apply'), { x: 120 }, k);
       const lanes = shapes(page).filter((s) => s.shape === 'lane');
       expect(lanes.map((l) => l.label)).toEqual([

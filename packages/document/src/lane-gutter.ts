@@ -25,6 +25,7 @@ export type LaneLike = {
   textAlignX?: TextAlignX | undefined;
   textAlignY?: TextAlignY | undefined;
   headerSize?: number | undefined;
+  titleOrientation?: 'upright' | undefined;
 };
 
 /**
@@ -56,7 +57,43 @@ export function laneEdgeOfElement(el: LaneLike): LaneGutterEdge {
   return laneGutterEdge(el.textAlignX ?? 'center', el.textAlignY ?? 'middle');
 }
 
-/** A lane's heading thickness, defaulted by orientation. */
+/**
+ * Whether the title reads turned a quarter, bottom to top (docs/specs/009-elements/lane.md
+ * "Upright titles"): the lane asks for it and its strip runs down a side. A band across the top or
+ * bottom always reads across.
+ */
+export function isUprightTitle(el: LaneLike): boolean {
+  return el.titleOrientation === 'upright' && !isLaneBand(laneEdgeOfElement(el));
+}
+
+/** A lane's heading thickness, defaulted by orientation: one line for a band or an upright strip. */
 export function laneSizeOfElement(el: LaneLike): number {
-  return el.headerSize ?? (isLaneBand(laneEdgeOfElement(el)) ? LANE_BAND_PX : LANE_GUTTER_PX);
+  return (
+    el.headerSize ??
+    (isLaneBand(laneEdgeOfElement(el)) || isUprightTitle(el) ? LANE_BAND_PX : LANE_GUTTER_PX)
+  );
+}
+
+/** An upright title's strip in element space, and where the title sits along it. */
+export type UprightTitleStrip = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** The title's alignment along the strip, read bottom to top: the vertical pin, turned. */
+  alongAlign: TextAlignX;
+};
+
+const ALONG: Record<TextAlignY, TextAlignX> = { top: 'right', middle: 'center', bottom: 'left' };
+
+/**
+ * Where an upright title draws (docs/specs/009-elements/lane.md "Upright titles"): its side strip,
+ * clamped like the gutter, with the vertical pin turned into an alignment along the strip. Both
+ * renderers turn a box `height` wide and `width` tall a quarter anticlockwise into this strip.
+ */
+export function uprightTitleStrip(el: LaneLike, width: number, height: number): UprightTitleStrip {
+  const edge = laneEdgeOfElement(el);
+  const size = Math.min(Math.max(laneSizeOfElement(el), 0), width);
+  const x = edge === 'right' ? width - size : edge === 'centre-x' ? (width - size) / 2 : 0;
+  return { x, y: 0, width: size, height, alongAlign: ALONG[el.textAlignY ?? 'middle'] };
 }

@@ -18,6 +18,8 @@ import {
   defaultPadding,
   isBoxed,
   isChartShape,
+  isLaneBand,
+  laneEdgeOfElement,
   isChecklistShape,
   isCodeBlockShape,
   isLegendShape,
@@ -51,6 +53,7 @@ import {
   MenuTile,
 } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
@@ -373,6 +376,18 @@ export function ElementAppearanceSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               </div>
+              {/* A lane whose title runs down a side can read it upright
+                  (docs/specs/009-elements/lane.md "Upright titles"); a band always reads across. */}
+              {shapeTarget?.shape === 'lane' && !isLaneBand(laneEdgeOfElement(shapeTarget)) ? (
+                <MenuToggleRow
+                  label="Upright title"
+                  description="Read bottom to top in a thin strip"
+                  checked={shapeTarget.titleOrientation === 'upright'}
+                  onToggle={() =>
+                    props.onSetLaneUprightTitle(shapeTarget.titleOrientation !== 'upright')
+                  }
+                />
+              ) : null}
             </MenuAccordionSection>
           ) : null}
           {showMarkers ? (

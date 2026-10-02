@@ -190,8 +190,9 @@ function endClearances(arrow: ArrowElement): { start: number; end: number } {
 // Blocks
 // ---------------------------------------------------------------------
 
-function capFor(u: Pt, o: ArrowLabelLayoutOptions): number {
-  return o.crossCapPx + (o.alongCapPx - o.crossCapPx) * u.x * u.x;
+// An arrow's own label width replaces the direction caps (arrow-labels.md "Width and wrapping").
+function capFor(u: Pt, o: ArrowLabelLayoutOptions, own?: number): number {
+  return own ?? o.crossCapPx + (o.alongCapPx - o.crossCapPx) * u.x * u.x;
 }
 
 function blockOf(text: string, width: number, measure: TextMeasure, lineHeight: number): Block {
@@ -224,12 +225,15 @@ function fittingBlock(
   room: number,
   measure: TextMeasure,
   lineHeight: number,
+  // An arrow's own label width is never narrowed: a label that does not fit at it moves beside.
+  fixed = false,
 ): Block | null {
   const floor = longestWordWidth(text, measure);
   let width = Math.max(cap, floor);
   for (;;) {
     const b = blockOf(text, width, measure, lineHeight);
     if (footprintAlong(b, u) <= room) return b;
+    if (fixed) return null;
     const textWidth = b.width - LABEL_PAD_X_PX * 2;
     if (textWidth <= floor + 0.01) return null;
     width = Math.max(floor, textWidth - 1);
@@ -363,7 +367,7 @@ export function layoutArrowLabel(
       arrow.curvePoints,
     );
     const u = directionAt(route, arrow.labelOffset.t * route.length);
-    const b = blockOf(text, capFor(u, o), measure, lineHeightPx);
+    const b = blockOf(text, capFor(u, o, arrow.labelMaxWidth), measure, lineHeightPx);
     const reach = Math.abs(u.y) * (b.width / 2) + Math.abs(u.x) * (b.height / 2);
     return {
       ...base,
@@ -391,7 +395,7 @@ export function layoutArrowLabel(
       return { x: p.x + n.x * d * sign, y: p.y + n.y * d * sign };
     };
     const floor = longestWordWidth(text, measure);
-    let width = Math.max(capFor(u, o), floor);
+    let width = Math.max(capFor(u, o, arrow.labelMaxWidth), floor);
     const first = blockOf(text, width, measure, lineHeightPx);
     let chosen: { b: Block; c: Pt } = { b: first, c: place(first, 1) };
     search: for (;;) {
@@ -404,7 +408,7 @@ export function layoutArrowLabel(
         }
       }
       const textWidth = b.width - LABEL_PAD_X_PX * 2;
-      if (textWidth <= floor + 0.01) break;
+      if (arrow.labelMaxWidth !== undefined || textWidth <= floor + 0.01) break;
       width = Math.max(floor, textWidth - 1);
     }
     console.debug('[arrow-label]', arrow.id, 'beside', reason);
@@ -428,7 +432,15 @@ export function layoutArrowLabel(
     const run = openRunOf(span, clear);
     if (run[1] <= run[0]) return null;
     const u = directionAt(route, (run[0] + run[1]) / 2);
-    const block = fittingBlock(text, capFor(u, o), u, run[1] - run[0], measure, lineHeightPx);
+    const block = fittingBlock(
+      text,
+      capFor(u, o, arrow.labelMaxWidth),
+      u,
+      run[1] - run[0],
+      measure,
+      lineHeightPx,
+      arrow.labelMaxWidth !== undefined,
+    );
     return block ? { block, run } : null;
   };
 

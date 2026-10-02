@@ -141,7 +141,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
     }
 
     let built: BoxedElement | null;
-    if (cls.kind === 'lane') built = buildLane(cell, rect, graph, ctx, elementId);
+    if (cls.kind === 'lane') built = buildLane(cell, rect, ctx, elementId);
     else if (cls.kind === 'entity') built = buildEntity(cell, rect, graph, ctx, elementId);
     else if (cls.kind === 'table') {
       const { title, table } = buildTable(cell, rect, graph, ctx, {

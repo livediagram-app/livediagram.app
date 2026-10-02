@@ -864,6 +864,15 @@ describe('chrome the canvas draws on a box', () => {
     expect(painted).toContain('fill="#fecdd3"');
   });
 
+  it('turns an upright lane title into its one-line strip', () => {
+    const svg = renderElementsToSvg(
+      tab([laneAt({ label: 'Strangler layer', titleOrientation: 'upright', x: 0, y: 0 })]),
+    );
+    // The strip is one line thick, and the title turns a quarter about the strip's bottom-left.
+    expect(svg).toContain('width="64"');
+    expect(svg).toMatch(/<g transform="rotate\(-90 0 200\)">[^]*Strangler layer/);
+  });
+
   it('gives a browser frame its window chrome', () => {
     const svg = renderElementsToSvg(
       tab([shape('br', { shape: 'browser', width: 300, height: 200 })]),

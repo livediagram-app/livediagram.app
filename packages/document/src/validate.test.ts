@@ -31,6 +31,25 @@ describe('isValidElement', () => {
     ).toBe(true);
   });
 
+  it('reads the orientation of a lane title as upright or nothing', () => {
+    const lane = { id: 'l', type: 'shape', shape: 'lane', ...box };
+    expect(isValidElement({ ...lane, titleOrientation: 'upright' })).toBe(true);
+    expect(isValidElement({ ...lane, titleOrientation: 'sideways' })).toBe(false);
+  });
+
+  it('bounds the exact end of an arrow and its own label width', () => {
+    const arrow = {
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 10, y: 20 },
+    };
+    expect(isValidElement({ ...arrow, exactEnd: true, labelMaxWidth: 180 })).toBe(true);
+    expect(isValidElement({ ...arrow, exactEnd: 'yes' })).toBe(false);
+    expect(isValidElement({ ...arrow, labelMaxWidth: 0 })).toBe(false);
+    expect(isValidElement({ ...arrow, labelMaxWidth: Number.NaN })).toBe(false);
+  });
+
   it('accepts table / image / freehand / text', () => {
     expect(isValidElement({ id: 't', type: 'table', cells: [['a', 'b']], ...box })).toBe(true);
     expect(isValidElement({ id: 'i', type: 'image', imageId: null, ...box })).toBe(true);

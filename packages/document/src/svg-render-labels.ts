@@ -44,6 +44,9 @@ export type ExportLabel = {
   // else the notation's, else the tab default. Undefined = the UI sans.
   fontFamily?: string;
   runs?: ExportRun[];
+  // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): laid out in its turned
+  // frame and turned a quarter anticlockwise about this point, as the canvas turns it.
+  turnAbout?: { x: number; y: number };
 };
 
 export function svgLabel(

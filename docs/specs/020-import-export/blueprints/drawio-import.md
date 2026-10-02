@@ -292,7 +292,7 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
 
 ### 11. Containers
 
-1. **Lane** (`buildLane(cell, rect, graph, ctx, id)`): `shape: 'lane'`, box from the cell,
+1. **Lane** (`buildLane(cell, rect, ctx, id)`): `shape: 'lane'`, box from the cell,
    `borderRadius: 'none'`. `horizontal=0` → `titleOrientation: 'upright'`, `textAlignX 'left'`,
    `textAlignY 'middle'`; else `textAlignX 'center'`, `textAlignY 'top'`. `headerSize` = `startSize`
    (23 when absent). `fillColor` → `headerFill` (per step 10.1); `swimlaneFillColor` → `fillColor`

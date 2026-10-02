@@ -177,6 +177,9 @@ export type ShapeElement = {
   // seam to change it. Unset keeps the default for the lane's orientation, so
   // an untouched lane is exactly as it was.
   headerSize?: number;
+  // A lane's title turned a quarter to read bottom to top in its side strip
+  // (docs/specs/009-elements/lane.md "Upright titles"). Absent reads across.
+  titleOrientation?: 'upright';
   // When set, theme transforms (recolour / switch / reset) leave this
   // shape's `fillColor` alone, so an intrinsic fill survives a theme
   // change the way a sticky note keeps its amber. Used by template

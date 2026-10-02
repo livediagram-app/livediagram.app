@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
   DEFAULT_BUTTON_MODE,
@@ -110,6 +110,8 @@ type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
+  // An upright lane title's turned frame (upright-title.ts), or null.
+  labelFrame: CSSProperties | null;
   // A pen stroke not yet selected: only its drawn line picks it.
   lineHit: boolean;
 };
@@ -160,6 +162,7 @@ export function ElementFaceRouter({
   inlineIcon,
   marker,
   iconCaptionBand,
+  labelFrame,
 }: ElementFaceRouterProps) {
   // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
@@ -498,6 +501,10 @@ export function ElementFaceRouter({
             {labelNode}
           </div>
         </div>
+      ) : labelFrame ? (
+        // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): the label and its
+        // editor turn together in the strip.
+        <div style={labelFrame}>{labelNode}</div>
       ) : iconCaptionBand ? (
         // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,

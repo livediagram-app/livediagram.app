@@ -64,6 +64,20 @@ describe('arrowEndpointSpread', () => {
     expect(arrowEndpointSpread('a', 'to', [hub, a, b])).toEqual({ x: -7, y: 0 });
   });
 
+  it('keeps an exact end on its anchor, and fans the others among themselves', () => {
+    const hub = box('hub', 400, 100);
+    const exact = {
+      ...arrow({ kind: 'free', x: 100, y: 400 }, pinned('hub', 's'), 'exact'),
+      exactEnd: true,
+    };
+    const b = arrow({ kind: 'free', x: 500, y: 400 }, pinned('hub', 's'), 'b');
+    const c = arrow({ kind: 'free', x: 800, y: 400 }, pinned('hub', 's'), 'c');
+    const elements: Element[] = [hub, exact, b, c];
+    expect(arrowEndpointSpread('exact', 'to', elements)).toEqual({ x: 0, y: 0 });
+    expect(arrowEndpointSpread('b', 'to', elements)).toEqual({ x: -7, y: 0 });
+    expect(arrowEndpointSpread('c', 'to', elements)).toEqual({ x: 7, y: 0 });
+  });
+
   it('orders slots by where each arrow comes from so lines do not cross', () => {
     const hub = box('hub', 400, 100);
     // Declared right-source first: order in the array must not matter.

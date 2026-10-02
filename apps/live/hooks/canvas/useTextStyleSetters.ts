@@ -94,6 +94,23 @@ export function useTextStyleSetters({
     track('Element', 'Changed', 'TextAlign');
   };
 
+  // A lane title turned upright in its side strip, or back across (docs/specs/009-elements/lane.md
+  // "Upright titles"). Lanes only; one commit.
+  const setLaneUprightTitleSelected = (upright: boolean) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'lane') return el;
+        if (upright) return { ...el, titleOrientation: 'upright' as const };
+        const { titleOrientation: _turned, ...across } = el;
+        void _turned;
+        return across;
+      }),
+    );
+    track('Element', 'Changed', 'LaneUprightTitle');
+  };
+
   // Generic helper for the inline label styles. Each toggle flips the
   // matching boolean on every member of the current selection. We
   // derive the next value from the primary so a partially-applied
@@ -114,5 +131,11 @@ export function useTextStyleSetters({
     // Strikethrough) — `field` minus its 'text' prefix, title-cased.
     track('Element', 'Toggled', field.replace(/^text/, ''));
   };
-  return { setTextSizeSelected, setFontSelected, setTextAlignSelected, toggleTextStyleSelected };
+  return {
+    setTextSizeSelected,
+    setFontSelected,
+    setTextAlignSelected,
+    setLaneUprightTitleSelected,
+    toggleTextStyleSelected,
+  };
 }

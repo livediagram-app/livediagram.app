@@ -24,7 +24,6 @@ export const DRAWIO_RULES: Readonly<Record<ImportNoteKind, string>> = {
   'arrowhead-approximated': "Arrowheads livediagram doesn't draw took the nearest one",
   'connection-loosened': "Connection ends that couldn't stay attached were left where they were",
   'label-moved': 'Labels were moved inside their shapes or merged onto one line',
-  'lane-title-turned': 'Upright lane titles now read across',
   'group-flattened': 'Groups were dropped',
   'hidden-skipped': 'Hidden items were left out',
   'collapsed-skipped': 'Items inside collapsed containers were left out',

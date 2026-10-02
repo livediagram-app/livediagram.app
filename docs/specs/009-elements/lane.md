@@ -124,8 +124,8 @@ for the work.
   and the seam drag sizes it like any gutter (`headerSize`).
 - Only a strip down a side turns its title: a band across the top or bottom always reads across, so
   turning a column's header has no effect and the toggle is not offered there.
-- A title longer than the strip is tall wraps onto a second line inside the strip, then ends with an
-  ellipsis, as any lane title does when it runs out of room.
+- A title longer than the strip is tall wraps across the strip's thickness; what does not fit is
+  clipped. The strip's padding is at most the small padding, so a one-line strip keeps its line.
 - The context menu's Text section carries **Upright title** for a lane with a side strip; one commit,
   one undo step.
 - Export (SVG, PNG, PDF) draws the turned title exactly as the canvas does; screen readers read the

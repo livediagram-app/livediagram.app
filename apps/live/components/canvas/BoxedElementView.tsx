@@ -17,12 +17,15 @@ import {
   ownColours,
   isOpenAction,
   isSelfDrawingShape,
+  isUprightTitle,
+  uprightTitleStrip,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
+import { uprightTitleFrame } from '@/components/canvas/upright-title';
 import { EntityView } from '@/components/canvas/EntityView';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
@@ -313,6 +316,14 @@ function BoxedElementViewImpl({
   const iconCaptionBand =
     element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
 
+  // An upright lane title turns in its strip; inside the turned frame it reads along the strip,
+  // centred across it (docs/specs/009-elements/lane.md "Upright titles").
+  const uprightStrip =
+    element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
+      ? uprightTitleStrip(element, element.width, element.height)
+      : null;
+  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
+
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
 
@@ -322,9 +333,12 @@ function BoxedElementViewImpl({
     element,
     label,
     textSize,
-    alignX,
-    iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
-    PADDING_PX[element.padding ?? defaultPadding(element)],
+    uprightStrip ? uprightStrip.alongAlign : alignX,
+    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    // A one-line strip has no room for a roomy padding across it.
+    uprightStrip
+      ? Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
+      : PADDING_PX[element.padding ?? defaultPadding(element)],
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
     onCancelEdit,
@@ -493,6 +507,7 @@ function BoxedElementViewImpl({
           stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
           headerFill={element.headerFill}
           headerSize={element.headerSize}
+          titleOrientation={element.titleOrientation}
           width={element.width}
           height={element.height}
           onCommitSize={onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined}
@@ -572,6 +587,7 @@ function BoxedElementViewImpl({
         inlineIcon={inlineIcon}
         marker={marker}
         iconCaptionBand={iconCaptionBand}
+        labelFrame={labelFrame}
       />
 
       {shapeHit ? (
