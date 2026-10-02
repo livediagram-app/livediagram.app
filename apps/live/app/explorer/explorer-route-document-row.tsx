@@ -18,6 +18,8 @@ import {
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
+import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { isLocalOnly } from '@/lib/document-space';
 
 // One document row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
@@ -83,6 +85,8 @@ export function DocumentRow(props: DocumentEntryProps) {
         {favourite ? <FavouriteMarker /> : null}
         <DriveNoticeMarker documentId={liveDoc.id} />
         {titleNode}
+        {/* Beside the name at every width: the visibility column hides on a phone. */}
+        {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">
             <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} />

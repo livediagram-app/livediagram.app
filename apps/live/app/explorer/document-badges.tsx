@@ -81,10 +81,10 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
   );
 }
 
-// The visibility badge: Offline (saved only in this browser, docs/specs/006-document/offline-mode.md), Shared
-// (a shared-with-me row / a share-link owned row), Team, or Private. Each
-// carries a concise hover card explaining what the state means. Offline
-// wins first: an offline document is never shared or in a team.
+// The visibility badge: Shared (a shared-with-me row / a share-link owned
+// row), Team, or Private, each with a concise hover card explaining what the
+// state means. An offline document has none: its Local only pill says it
+// (docs/specs/006-document/offline-mode.md#local-only-pill).
 // Whether a row's document is one the Google Drive mirror copies
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
 // own, in My documents, saved in the cloud. Team documents, documents
@@ -121,22 +121,9 @@ export function VisibilityBadge({
   const base = iconOnly
     ? `${badgeBase.replace('optical-edges ', '').replace('gap-1 ', '').replace('px-2 ', '')} w-[calc(1lh+0.25rem)] justify-center`
     : badgeBase;
-  if (liveDoc.ownerId === OFFLINE_OWNER_ID) {
-    return (
-      <HoverCard title="Offline" description="Saved only in this browser. Not synced or backed up.">
-        <span
-          tabIndex={iconOnly ? 0 : undefined}
-          className={`${base} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
-        >
-          <Glyph size={9} units={9}>
-            <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
-            <path d="M1.4 1.4l6.2 6.2" />
-          </Glyph>
-          {word('Offline')}
-        </span>
-      </HoverCard>
-    );
-  }
+  // A document saved only in this browser carries the Local only pill beside its name
+  // instead (docs/specs/006-document/offline-mode.md#local-only-pill).
+  if (liveDoc.ownerId === OFFLINE_OWNER_ID) return null;
   if (liveDoc.shared || liveDoc.shareCode) {
     return (
       <HoverCard title="Shared" description="Anyone with the link can open it.">

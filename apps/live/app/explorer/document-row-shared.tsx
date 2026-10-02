@@ -33,6 +33,7 @@ import {
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import type { PaneDocument } from './views';
+import { documentSpace } from '@/lib/document-space';
 import type { DocumentEntryProps } from './explorer-view-props';
 import { VisibilityBadge } from './document-badges';
 
@@ -45,11 +46,13 @@ export function hrefForDocument(liveDoc: PaneDocument): string {
 }
 
 // Who a row's Owner cell names: the team for a team document, the sharer
-// for one shared with you, otherwise you.
+// for one shared with you, otherwise you: a document in My documents or in
+// this browser alike is the reader's own (documentSpace).
 export function ownerLabelFor(liveDoc: PaneDocument): string {
-  return (
-    liveDoc.team?.name ?? liveDoc.shared?.ownerName ?? (liveDoc.shared ? 'Unknown owner' : 'You')
-  );
+  const space = documentSpace(liveDoc);
+  if (space === 'team') return liveDoc.team?.name ?? 'Team';
+  if (space === 'shared') return liveDoc.shared?.ownerName ?? 'Unknown owner';
+  return 'You';
 }
 
 // The actions menu shared by the row + card. Anchored to the trigger the
