@@ -83,6 +83,9 @@ where it is and changes only how the next mark is made.
 - **A switch is remembered** for that person and tab, in this browser, and
   wins over the tab's opening mode from then on.
 - **Switching never changes the opening mode.**
+- **A new tab inherits the mode you are in.** A tab added from the tab bar
+  (or Quick Start) opens in the creator's current mode: made in Draw mode, it
+  opens in Draw. A template or import that sets its own opening mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
   listing every editor mode (Diagram, Draw) as a radio choice with the
   current one checked. Choosing one sets `Tab.opensIn` for everyone; it does
@@ -157,6 +160,19 @@ element in the same colour.
 - `Editor` · `Changed` · `ModeDiagram` / `ModeDraw`, fired by the switch
   before the mode applies.
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw`, fired by Opens in.
+- Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
+  recognition, background, snap colours,
+  [Draw mode](../023-whiteboard/whiteboard.md#telemetry-telemetry--public-transparency-dashboard)).
+  It was named `Whiteboard`; the stored history is rewritten to `Draw` so the
+  dashboard's lines continue.
+
+## Naming in the interface
+
+- The mode is **Draw** on the switch and **Draw mode** in prose: the Settings
+  section (Dock Position), the help article (**Draw mode**, at a new address,
+  the old one redirecting) and the command palette.
+- The template and Quick Start card stays **Whiteboard**: it names the
+  activity a person comes for, and creates a tab that opens in Draw mode.
 
 ## Non-goals
 
