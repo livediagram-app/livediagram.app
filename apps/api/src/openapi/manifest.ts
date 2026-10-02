@@ -118,7 +118,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Create a document, optionally seeding it with tabs.',
+    summary:
+      'Create a document, optionally seeding it with tabs and filing it in a team and/or folder. ' +
+      'An invalid placement refuses the whole create by name (placement_invalid, team_forbidden, ' +
+      'folder_not_found, folder_scope_mismatch); nothing is written.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -127,8 +130,18 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         id: { type: 'string' },
         name: nameField,
         tabs: { type: 'array', items: ref('Tab') },
-        folderId: { type: ['string', 'null'] },
-        teamId: { type: ['string', 'null'] },
+        // Placement (docs/specs/013-workspace/folders.md "Placement on create").
+        teamId: {
+          type: ['string', 'null'],
+          description:
+            "The team library to file into; absent or null = the caller's Personal Space. " +
+            'Requires a signed-in caller (or API token) who has joined the team.',
+        },
+        folderId: {
+          type: ['string', 'null'],
+          description:
+            "A folder of the chosen space; absent or null = that space's root (Unsorted).",
+        },
         // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
         createdAt: { type: 'integer' },
         savedAt: { type: 'integer' },
@@ -136,7 +149,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['id', 'name'],
     },
     responseSchema: wrap('document', 'Document'),
-    statuses: [201, 400, 401, 403, 410, 413],
+    statuses: [201, 400, 401, 403, 404, 410, 413],
   },
   {
     method: 'GET',

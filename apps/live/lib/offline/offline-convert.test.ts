@@ -121,6 +121,47 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     });
   });
 
+  it.each(['folder_not_found', 'folder_scope_mismatch'])(
+    'files the document in Unsorted, saying so, when the server refuses its folder: %s',
+    async (code) => {
+      // docs/specs/006-document/offline-mode.md: the server refuses by name; the sync decides.
+      vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+        id: 'd1',
+        name: 'Roadmap',
+        tabs: [],
+        folderId: 'deleted-since',
+      } as never);
+      vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(
+        new core.ApiError('create document', 404, code),
+      );
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      await saveOfflineToCloud('d1', 'owner');
+      const creates = vi.mocked(apiClient.apiCreateDocument).mock.calls;
+      expect(creates).toHaveLength(2);
+      expect(creates[1]![1]).toMatchObject({ folderId: null });
+      expect(warn).toHaveBeenCalledWith(
+        `[offline-sync] placement refused reason=${code}, filed in Unsorted`,
+      );
+      expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
+      warn.mockRestore();
+    },
+  );
+
+  it('fails the sync on any other refusal, keeping the local copy', async () => {
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      folderId: 'f1',
+    } as never);
+    vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(
+      new core.ApiError('create document', 413, 'payload_too_large'),
+    );
+    await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
+    expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(1);
+    expect(store.offlineDeleteDocument).not.toHaveBeenCalled();
+  });
+
   it('stars nothing for an unstarred document', async () => {
     await saveOfflineToCloud('d1', 'owner');
     expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();

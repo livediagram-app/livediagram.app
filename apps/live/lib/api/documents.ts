@@ -134,14 +134,17 @@ export async function apiSaveDocumentMeta(
 // per-tab fetch lands on a populated row.
 export async function apiCreateDocument(
   ownerId: string,
-  // `folderId` / `createdAt` / `presentation` are for an Offline Mode sync
-  // (docs/specs/006-document/offline-mode.md), which must carry what the offline record held: the server
-  // copy is all that is left once the local one is deleted. `createdAt` / `savedAt` also date an
-  // imported board as the board (docs/specs/015-api/api.md "Document dates").
+  // `teamId` / `folderId` are the placement, filed by the create itself and refused by name when
+  // invalid (docs/specs/013-workspace/folders.md "Placement on create"). `createdAt` /
+  // `presentation` are for an Offline Mode sync (docs/specs/006-document/offline-mode.md), which must
+  // carry what the offline record held: the server copy is all that is left once the local one is
+  // deleted. `createdAt` / `savedAt` also date an imported board as the board
+  // (docs/specs/015-api/api.md "Document dates").
   d: {
     id: string;
     name: string;
     tabs?: Tab[];
+    teamId?: string | null;
     folderId?: string | null;
     createdAt?: number;
     savedAt?: number;
@@ -161,6 +164,7 @@ export async function apiCreateDocument(
       id: d.id,
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
+      ...(d.teamId ? { teamId: d.teamId } : {}),
       ...(d.folderId ? { folderId: d.folderId } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),

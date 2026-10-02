@@ -167,15 +167,17 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   // Duplicate a team document, keeping the copy IN the team alongside
-  // the original (same folder). duplicateDocumentApi mints a personal
-  // copy first; we then file it into this team + folder (docs/specs/013-workspace/team-shared-documents.md).
+  // the original (same folder), filed by the create itself
+  // (docs/specs/013-workspace/team-shared-documents.md).
   const duplicateDocument = useCallback(
     async (documentId: string) => {
       if (!ownerId) return;
       const sourceFolderId = liveDocs.find((d) => d.id === documentId)?.folderId ?? null;
-      const newId = await duplicateDocumentApi(ownerId, documentId);
+      const newId = await duplicateDocumentApi(ownerId, documentId, {
+        teamId,
+        folderId: sourceFolderId,
+      });
       if (!newId) return;
-      await apiSetDocumentFolder(ownerId, newId, sourceFolderId, teamId).catch(() => {});
       track('Document', 'Duplicated');
       await refresh();
     },

@@ -165,6 +165,59 @@ All endpoints continue the existing `X-Owner-Id` convention.
 
 `GET /api/documents` is extended to include `folderId` on each row (camelCase DTO; null for Unsorted). No new endpoint needed for "documents in folder X": the Explorer already has the full list client-side.
 
+### Placement on create
+
+A document is placed by the write that creates it. `POST /api/documents` carries the
+**placement** beside `id` and `name`: `teamId` (absent or null = Personal Space, a string =
+that team's library) and `folderId` (absent or null = the root of that space, its Unsorted;
+a string = that folder). There is no second placement request after a create, so a document
+never exists, even for a moment, in a place the caller did not ask for.
+
+- **Resolution order.** The space first, then the folder: an explicit folder, else the
+  space's root. The resolver (`apps/api/src/placement/`) is an ordered list of folder steps,
+  so a later "default folder" step slots in between the explicit folder and the root without
+  touching either.
+- **Team space.** Only a **verified account id** (a Clerk session or an API token) may place
+  into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
+  header never counts. A guest, an invited-but-not-joined member, or an unknown team is
+  refused with `team_forbidden`.
+- **Folder.** The folder must exist and belong to the resolved space: in Personal Space the
+  caller's own personal folder, in a team a folder of that team.
+  - A folder that does not exist, or one the caller cannot see (another person's personal
+    folder, a folder of a team the caller has not joined), is `folder_not_found`: the answer
+    never reveals that someone else's folder exists.
+  - A folder the caller can see but in the other space (their own personal folder with a
+    `teamId`, a folder of a team they have joined with no or another `teamId`) is
+    `folder_scope_mismatch`.
+- **Named rejections, never a fallback.** An invalid placement refuses the whole create
+  before anything is written: the document is not filed somewhere else instead.
+
+  | Rejection               | Status | When                                                        |
+  | ----------------------- | ------ | ----------------------------------------------------------- |
+  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string |
+  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined  |
+  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller            |
+  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space   |
+
+- **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
+  row; the caller is the owner, in a team as in Personal Space.
+- **A re-commit keeps its place.** A create naming an id the caller already owns is the editor
+  re-committing it: the stored placement stands and the body's placement is not applied
+  (moving is `PUT /api/documents/:id/folder`'s job). A malformed placement is still
+  `placement_invalid`.
+- **One feed event.** A create into a team records one `document_created` event whose
+  audience is the team ([Timeline](timeline.md)); there is no separate "Shared with a Team"
+  event, because the document was never personal.
+- **Observability.** Every decision logs one line with the `placement:` fingerprint:
+  `placement: resolved scope=personal|team folder=set|root via=explicit|root`,
+  `placement: rejected reason=<code> scope=personal|team`, and
+  `placement: skipped reason=existing` for a re-commit.
+
+What a caller does with a rejection is its own: the New Document wizard shows it
+([Dedicated route for new-document creation](../007-editor/new-document-route.md)), an Offline
+Mode sync files the document in Unsorted on a refused folder, saying so in its log
+([Offline Mode](../006-document/offline-mode.md)).
+
 ## Explorer UI — two surfaces
 
 Folders show up in two places, and the two surfaces use different

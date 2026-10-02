@@ -30,7 +30,6 @@ import {
   getDocument,
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
-  getFolder,
   countDocumentsByOwner,
   getParticipant,
   insertChangeLogEntry,
@@ -71,6 +70,15 @@ import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { forkTakenTabIds } from '../tab-id-fork';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
+import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
+import { placementLookups } from '../placement/placement-lookups';
+import {
+  logPlacementRejected,
+  logPlacementResolved,
+  logPlacementSkipped,
+  placementScope,
+} from '../placement/placement-log';
+import { placementRejected } from '../placement/placement-response';
 import type { ChangeLogEntryDTO, DocumentDTO } from '../types';
 import {
   gateEdit,
@@ -106,6 +114,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // invalid, before anything is written.
       const dates = documentDates(body, Date.now());
       if (!dates.ok) return badRequest('invalid document dates');
+      // Placement (docs/specs/013-workspace/folders.md "Placement on create"): read up front so a
+      // malformed one is refused before anything else is looked at.
+      const requested = parsePlacement(body);
+      if (!requested) {
+        logPlacementRejected('placement_invalid', placementScope(body.teamId));
+        return placementRejected('placement_invalid');
+      }
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
       if (Array.isArray(body.tabs)) {
@@ -154,15 +169,25 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
       }
-      // A seeded folder must be one of the caller's own personal folders, the
-      // same scope rule PUT /folder applies. Anything else (a folder deleted
-      // since an offline document was filed in it, someone else's) lands the
-      // document in Unsorted rather than failing the create: this is how an
-      // Offline Mode sync carries its placement (docs/specs/006-document/offline-mode.md).
-      let folderId = typeof body.folderId === 'string' ? body.folderId : null;
-      if (folderId !== null) {
-        const folder = await getFolder(env, folderId);
-        if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
+      // Where the document is filed, decided before the write and written by it
+      // (docs/specs/013-workspace/folders.md "Placement on create"). An invalid placement refuses
+      // the create by name; it never files the document somewhere else. A re-commit of the
+      // caller's own id keeps the placement it already has.
+      let placement = { teamId: clash?.teamId ?? null, folderId: clash?.folderId ?? null };
+      if (clash) {
+        logPlacementSkipped();
+      } else {
+        const outcome = await resolvePlacement(
+          requested,
+          { ownerId: owner, verifiedUserId: ctx.verifiedUserId },
+          placementLookups(env),
+        );
+        if (!outcome.ok) {
+          logPlacementRejected(outcome.rejection, placementScope(requested.teamId));
+          return placementRejected(outcome.rejection);
+        }
+        logPlacementResolved(outcome.placement, outcome.via);
+        placement = outcome.placement;
       }
       // A seeded tab whose id another document holds is created under a fresh
       // id, never upserted over it: that is how a synced-back offline copy of a
@@ -189,10 +214,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         name,
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
-        folderId,
-        // Documents are always created personal; they move into a
-        // team library via PUT /folder afterwards (docs/specs/013-workspace/team-shared-documents.md).
-        teamId: null,
+        folderId: placement.folderId,
+        teamId: placement.teamId,
         // Usually none. An Offline Mode sync carries the deck it built
         // offline (docs/specs/006-document/offline-mode.md), which would otherwise be lost with the local copy.
         presentation:

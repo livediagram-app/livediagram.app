@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
-import { wantsWelcome, wizardBrowseCollection, wizardBypassKind } from './new-document-params';
+import {
+  choosePlacementAgainUrl,
+  wantsWelcome,
+  wizardBrowseCollection,
+  wizardBypassKind,
+} from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
   it('reads ?blank as the blank template, whatever its value', () => {
@@ -54,5 +59,21 @@ describe('wantsWelcome (docs/specs/007-editor/new-document-route.md)', () => {
     expect(wantsWelcome('?welcome=1')).toBe(false);
     expect(wantsWelcome('?template=kanban&welcome=1')).toBe(false);
     expect(wantsWelcome('?blank=1')).toBe(false);
+  });
+});
+
+describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
+  it('drops the refused placement and the bypass, so the wizard starts from Unsorted', () => {
+    expect(choosePlacementAgainUrl('?blank=1&welcome=1&team=t1&folder=f1')).toBe('/new');
+  });
+
+  it('keeps every other param', () => {
+    expect(choosePlacementAgainUrl('?template=flowchart&folder=f1&browse=uml&cta=hero')).toBe(
+      '/new?browse=uml&cta=hero',
+    );
+  });
+
+  it('is plain /new for a plain visit', () => {
+    expect(choosePlacementAgainUrl('')).toBe('/new');
   });
 });
