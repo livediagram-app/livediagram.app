@@ -2,7 +2,7 @@
 
 import { penColourCss } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { LiveStroke } from '@/lib/live-stroke';
 import { useRecognitionPreview } from '@/hooks/canvas/useRecognitionPreview';
 import { LiveInk } from '@/components/canvas/whiteboard/LiveInk';
@@ -26,7 +26,8 @@ type WhiteboardPenPreviewProps = {
 // lands, so release changes no pixel.
 export function WhiteboardPenPreview({ stroke, pen, ink, zoom }: WhiteboardPenPreviewProps) {
   // A named colour in its version for this board, as the stroke that lands is drawn.
-  const { appearance } = useAppearance();
+  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  const appearance = useCanvasSurface();
   const colour = penColourCss(pen.colour, appearance, ink);
   const { shape: recognised, chip } = useRecognitionPreview(stroke, pen.recognise, zoom, pen.width);
   return (

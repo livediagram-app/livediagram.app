@@ -28,7 +28,7 @@ import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
 import { ColourPicker } from './ColourPicker';
 import { SnapColoursSection } from './SnapColoursSection';
-import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 
 const ERASER_MODES = [
@@ -42,7 +42,8 @@ const CURSOR_NAMES: Record<PenCursorVariant, string> = {
 };
 
 export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: WhiteboardDockModel }) {
-  const { appearance } = useAppearance();
+  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  const appearance = useCanvasSurface();
   return (
     <FlyoutRows>
       {/* The main pen always stays the board's ink: its flyout is the width only. The others get

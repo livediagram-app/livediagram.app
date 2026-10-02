@@ -17,7 +17,7 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { isPenColourName, WHITEBOARD_INK } from '@livediagram/document';
+import { canvasSurface, isPenColourName, PEN_INK } from '@livediagram/document';
 import {
   applyBoardStroke,
   applyBoardTextColour,
@@ -39,6 +39,7 @@ import {
 import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { PenColourMemoryApi } from './usePenColourMemory';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { resolveTabBackdrop } from '@/lib/themes';
 import {
   applyQuickFill,
   applyQuickIconAlign,
@@ -117,17 +118,21 @@ export function useQuickStyle(deps: {
   // defaults read as the board's ink, and the style memory is Draw mode's own
   // (useStyleMemory's board scope), never Diagram mode's.
   const whiteboard = deps.drawMode;
+  // The stock colours in their version for the canvas the tab paints
+  // (docs/specs/007-editor/editor-modes.md "One look"): the viewer's appearance on the Default
+  // theme, the theme's own canvas otherwise.
   const { appearance } = useAppearance();
-  const ink = WHITEBOARD_INK[appearance];
+  const board = canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor);
+  const ink = PEN_INK[board];
   const held = deps.pen?.held ?? null;
   // The custom colours used on this tab, the Marker colour row's second section.
   const palette = useMemo(
     () => ({
-      board: appearance,
+      board,
       ink,
       custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
     }),
-    [appearance, ink, whiteboard, activeTab.elements],
+    [board, ink, whiteboard, activeTab.elements],
   );
   // A tool's choices land in memory, not the document: a version to re-read it.
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);

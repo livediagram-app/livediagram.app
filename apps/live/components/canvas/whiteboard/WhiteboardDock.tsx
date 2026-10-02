@@ -8,7 +8,7 @@
 // together.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
@@ -69,7 +69,8 @@ export function WhiteboardDock({
   onUndo,
   onRedo,
 }: WhiteboardDockProps) {
-  const { appearance } = useAppearance();
+  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  const appearance = useCanvasSurface();
   const fly = useDockFlyout();
 
   // Where the dock is, logged only while one is shown: on mount and on every move.

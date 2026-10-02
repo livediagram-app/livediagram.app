@@ -12,7 +12,7 @@ import {
 } from '@/components/palette/palette-icons';
 import { penColourCss } from '@livediagram/document';
 import { penLabel } from '@/lib/whiteboard-prefs';
-import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
@@ -32,7 +32,8 @@ export function DrawingToolsGroup({
 }) {
   const { tool, prefs } = model;
   // A named colour in its version for this board (docs/specs/023-whiteboard/whiteboard.md).
-  const { appearance } = useAppearance();
+  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  const appearance = useCanvasSurface();
   const expanded = (kind: string) => fly.flyout?.kind === kind;
   return (
     <DockToolbar label="Drawing tools" group="drawing">

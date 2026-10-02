@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { WHITEBOARD_INK, penColourCss } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { penCursor, type PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
-import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 export function useWhiteboardPenCursor(
   pendingDraw: PendingDraw | null,
@@ -16,7 +16,8 @@ export function useWhiteboardPenCursor(
   // The canvas zoom: the dot is the stroke's width on screen.
   zoom: number,
 ): string | null {
-  const { appearance } = useAppearance();
+  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
+  const appearance = useCanvasSurface();
   const pen =
     pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
   // A named colour in its version for this board (docs/specs/023-whiteboard/whiteboard.md).
