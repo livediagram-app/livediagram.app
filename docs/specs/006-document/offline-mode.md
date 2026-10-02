@@ -128,9 +128,12 @@ panel's rows and its Current Document card, and the Trash.
   so a screen reader hears it without hovering.
 - **The guide is one click away.** The pill is a link to the Offline Mode help
   article (new tab, the editor's help-link telemetry), with its own focus ring.
-  Where the row is itself a single control (a search result), the pill is a
-  plain label inside it, carrying the same description: a link cannot sit inside
-  a button. The Trash row's pill is a link like any other.
+  Where the row is itself a single control (a search result, the panel's
+  Current Document row), the pill is a plain label inside it, carrying the same
+  description: a link cannot sit inside a button. In a tree (the floating
+  Explorer panel), the pill is a link out of the tab order, since the tree owns
+  the one tab stop, and the row itself carries the description. The Trash row's
+  pill is a link like any other.
 - **It replaces the "Offline" visibility badge** in the Explorer's lists: an
   offline document shows the pill beside its name at every width, and its
   visibility column stays empty. Minimal chrome keeps the words: the pill is a
