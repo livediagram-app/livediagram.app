@@ -72,3 +72,4 @@ One row per default applied where a spec is silent or qualitative.
 | D67 | canvas-performance | When the nightly run fires                                             | `30 2 * * *` (02:30 UTC)                                                                                            |
 | D68 | canvas-performance | When "interactive" starts and ends for opening a board                 | From the tab's GET response to the start of the first 500 ms window with no task over 50 ms                         |
 | D69 | canvas-performance | How "at most once every 250 ms" treats the first change after a pause  | Leading edge: shown at once; later changes in the window wait for one trailing redraw                               |
+| D70 | canvas-performance | How a machine's speed is read for calibration                          | The fastest of five fresh pages' benchmark medians: interference only ever slows a run                              |

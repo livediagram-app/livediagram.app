@@ -17,8 +17,13 @@ what the gesture touches, not the size of the board. The measurements behind it 
 
 ## The budget
 
-Measured on the reference board in Chromium at 1440 × 900 with the CPU throttled 4×, at two zooms:
-**fit** (the whole board on screen) and **100%**.
+Measured on the reference board in Chromium at 1440 × 900, at two zooms: **fit** (the whole board on
+screen) and **100%**, with the CPU at the **reference speed**: the machine the budget was set on (a
+fast desktop) throttled 4×, standing in for an ordinary laptop under load. Every measuring machine is
+brought to that speed: it benchmarks itself, and Chrome's CPU throttle is set so the benchmark
+takes as long as on the reference at 4×. A machine slower than the reference speed runs
+unthrottled, and its report says its numbers read harsher than the budget. Every report states the
+throttle it ran at.
 
 | Moment                     | Budget                                                                                   |
 | -------------------------- | ---------------------------------------------------------------------------------------- |
