@@ -104,9 +104,11 @@ element in the same colour.
 - **Off-white light canvas.** The Default theme's light canvas is the board's
   off-white (`#fbfaf7`); its dark canvas stays `#0d121a`.
 - **Ink is one colour everywhere.** **Ink**, the drawing colour (`#1c1917`
-  light, `#e2e8f0` dark), is the same on every theme, stored by name and
-  drawn in the version for each viewer's appearance. Ink is in the palette's
-  colours, so any element can take it.
+  on a light canvas, `#e2e8f0` on a dark one), is the same on every theme and
+  stored by name. Any element can take it: in Draw mode from the pen and
+  quick style rows, in Diagram mode as the **eighth swatch, after the theme's
+  colours**, in the quick style panel's colour rows and the element menu's
+  colour rows.
   - Pen strokes and text with no colour of their own are drawn in Ink, in
     both modes.
   - Shapes keep their theme defaults: a shape added in Diagram mode is filled
@@ -116,8 +118,10 @@ element in the same colour.
   mode and to every collaborator.
 - **Marker colours are first-class.** The stock colours (Ink, Blue, Red,
   Orange, Green, Teal, Violet, Pink) are stored by name on any element and
-  drawn in the version tuned for each viewer's appearance, on every tab, in
-  every export, thumbnail and image the api or MCP renders.
+  drawn in the version tuned for **the canvas behind them**, light or dark,
+  on every tab, in every export, thumbnail and image the api or MCP renders.
+  On the Default theme that canvas follows the viewer's appearance; a theme
+  with a fixed canvas keeps its ink readable whichever appearance is on.
 - **One backdrop colour in both modes.** The canvas colour is the tab's
   own: its theme's canvas, or the custom background colour when one is set;
   on the Default theme, the off-white or dark canvas.
