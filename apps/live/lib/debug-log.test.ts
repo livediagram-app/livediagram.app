@@ -3,7 +3,9 @@ import {
   DEBUG_STORAGE_KEY,
   debugLogEnabled,
   debugScopeOf,
-  inlineDebugLogSource,
+  INLINE_DEBUG_LOG_SOURCE,
+  inlineDebugLogConfig,
+  type InlineDebugLogConfig,
 } from './debug-log';
 
 // docs/specs/003-system-architecture/console-logging.md: trace lines show in development and tests,
@@ -83,9 +85,10 @@ describe('the console convention', () => {
   });
 });
 
-// An inline boot script (stale-html-guard.ts) cannot import this module; it embeds the same rule.
-describe('inlineDebugLogSource', () => {
-  const traceFn = (env: string | undefined, flag: string | null | Error) => {
+// An inline boot script (stale-html-guard.ts) cannot import this module; it embeds the same rule as
+// one static source, its settings handed over as data.
+describe('INLINE_DEBUG_LOG_SOURCE', () => {
+  const traceFn = (env: string, flag: string | null | Error) => {
     const info = vi.fn();
     const storage = {
       getItem: () => {
@@ -93,12 +96,17 @@ describe('inlineDebugLogSource', () => {
         return flag;
       },
     };
-    const trace = new Function(
-      'console',
-      'localStorage',
-      `return (${inlineDebugLogSource('stale-html', env)});`,
-    )({ info }, storage) as (message: string, detail: unknown) => void;
-    trace('[stale-html] reloading', { at: 1 });
+    const make = new Function('console', 'localStorage', `return (${INLINE_DEBUG_LOG_SOURCE});`)(
+      { info },
+      storage,
+    ) as (config: InlineDebugLogConfig) => (message: string, detail: unknown) => void;
+    make({
+      scope: 'stale-html',
+      quiet: env === 'production' ? 'true' : 'false',
+      flagKey: DEBUG_STORAGE_KEY,
+    })('[stale-html] reloading', {
+      at: 1,
+    });
     return info;
   };
 
@@ -115,5 +123,19 @@ describe('inlineDebugLogSource', () => {
 
   it('stays quiet when storage throws', () => {
     expect(traceFn('production', new Error('denied'))).not.toHaveBeenCalled();
+  });
+
+  it('is static source: no setting is written into it', () => {
+    for (const value of [DEBUG_STORAGE_KEY, 'stale-html', 'production', 'development']) {
+      expect(INLINE_DEBUG_LOG_SOURCE).not.toContain(value);
+    }
+  });
+
+  it('describes its settings as data', () => {
+    expect(inlineDebugLogConfig('stale-html')).toEqual({
+      scope: 'stale-html',
+      quiet: process.env.NODE_ENV === 'production' ? 'true' : 'false',
+      flagKey: DEBUG_STORAGE_KEY,
+    });
   });
 });
