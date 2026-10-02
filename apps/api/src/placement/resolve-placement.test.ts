@@ -113,7 +113,7 @@ describe('judgeFolder', () => {
     );
   });
 
-  it('names a mismatch for a joined team folder asked for in Personal Space', () => {
+  it('names a mismatch for a joined team folder asked for in My documents', () => {
     expect(judgeFolder({ ownerId: 'user_bob', teamId: 't2' }, personal, alice, true)).toBe(
       'folder_scope_mismatch',
     );

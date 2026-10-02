@@ -181,7 +181,7 @@ All endpoints continue the existing `X-Owner-Id` convention.
 ### Placement on create
 
 A document is placed by the write that creates it. `POST /api/documents` carries the
-**placement** beside `id` and `name`: `teamId` (absent or null = Personal Space, a string =
+**placement** beside `id` and `name`: `teamId` (absent or null = My documents, a string =
 that team's library) and `folderId` (a string = that folder; `null` = the root of that space,
 its Unsorted, chosen on purpose; absent = no folder chosen). There is no second placement request
 after a create, so a document never exists, even for a moment, in a place the caller did not ask
@@ -205,7 +205,7 @@ for.
   into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
   header never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
-- **Folder.** The folder must exist and belong to the resolved space: in Personal Space the
+- **Folder.** The folder must exist and belong to the resolved space: in My documents the
   caller's own personal folder, in a team a folder of that team.
   - A folder that does not exist, or one the caller cannot see (another person's personal
     folder, a folder of a team the caller has not joined), is `folder_not_found`: the answer
@@ -225,7 +225,7 @@ for.
   | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind?, templateFamily? }` of known values |
 
 - **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
-  row; the caller is the owner, in a team as in Personal Space.
+  row; the caller is the owner, in a team as in My documents.
 - **A re-commit keeps its place.** A create naming an id the caller already owns is the editor
   re-committing it: the stored placement stands and the body's placement is not applied
   (moving is `PUT /api/documents/:id/folder`'s job). A malformed placement is still
