@@ -60,11 +60,22 @@ the guard runs; it therefore both listens and, once the document is parsed, look
 - **A page restored from bfcache** (`pageshow` with `persisted`): it asks the api once (a single
   request, `cache: 'no-store'`) for the live build id from the server release signal; when that
   differs from the page's own `livediagram-build`, one reload.
-- **Loop guard:** at most one such reload per URL within `STALE_HTML_RELOAD_WINDOW_MS`, remembered
-  in `sessionStorage`; a second failure inside the window leaves the page as it is.
+- **One reload guard** (below): its reload claims the shared allowance; a second failure inside the
+  window leaves the page as it is.
+- **It stands down once the app runs:** when the editor's own chunk recovery is installed, failures
+  are left to it, because the app waits for unsaved work before it reloads and this script cannot.
 - It logs `[stale-html]` with the reason; it sends no telemetry (it runs before telemetry exists).
 - **Content Security Policy:** none is sent today. When one is, this script is allowed by its
   hash, never by `unsafe-inline`.
+
+## One reload guard
+
+Every reload the editor starts on its own after a deploy, the pre-boot guard's and the chunk
+recovery's alike, claims one shared allowance: **one reload per page** (path and query, the hash
+ignored) **within `RELOAD_GUARD_WINDOW_MS`** (one minute), remembered in `sessionStorage`.
+Whichever path fires first takes it, so a failure that persists is reloaded exactly once, then
+shown. One module defines the rule and the claim; the pre-boot guard embeds that same claim, so the
+two paths cannot drift apart. Storage that cannot be read refuses the reload.
 
 ## Knowing which build is live
 
@@ -107,9 +118,8 @@ uncaught error or rejection, an area error boundary, or the app's root error bou
 - **Recover:** after unsaved editor changes are saved (as above), the app does a full page load of
   the destination: the URL being navigated to when that is known (a back or forward, a link or a
   programmatic navigation in the last `NAVIGATION_INTENT_MS`), otherwise the current URL.
-- **Loop guard:** at most one such reload per destination within `STALE_CHUNK_RELOAD_WINDOW_MS`,
-  remembered in `sessionStorage`. A second failure inside the window shows the normal error, so a
-  genuinely broken deploy can never reload forever.
+- **One reload guard** (below): the recovery claims the shared allowance. A second failure inside
+  the window shows the normal error, so a genuinely broken deploy can never reload forever.
 - **The root error boundary** (the editor app's `global-error.tsx`) is the app's own: it runs the recovery, and
   when the guard stops it, shows a calm page ("This page couldn't load. Reload to try again.")
   with a Reload button, in the app's look, light and dark.

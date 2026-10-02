@@ -96,10 +96,11 @@ test.describe('stale builds', () => {
   });
 
   test('once a newer build is live, links and back are full page loads', async ({ page }) => {
-    const ownBuild = await (async () => {
-      await openExplorer(page);
-      return page.locator('meta[name="livediagram-build"]').getAttribute('content');
-    })();
+    await openExplorer(page);
+    // Counted first, so an export built without an id skips at once rather than waiting for a meta
+    // tag that never comes.
+    const meta = page.locator('meta[name="livediagram-build"]');
+    const ownBuild = (await meta.count()) > 0 ? await meta.getAttribute('content') : null;
     test.skip(!ownBuild, 'this export was built without a build id');
     // The api now reports another build, as it does once the next deploy is live.
     await page.route('**/api/**', async (route) => {

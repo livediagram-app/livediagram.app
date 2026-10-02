@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { STALE_HTML_GUARD_SCRIPT, STALE_HTML_RELOAD_WINDOW_MS } from './stale-html-guard';
+import { STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
+import {
+  APP_RECOVERY_FLAG,
+  RELOAD_GUARD_KEY,
+  RELOAD_GUARD_WINDOW_MS,
+  claimReload,
+} from './reload-guard';
 
 // docs/specs/016-platform/stale-builds.md "The pre-boot guard": the inline script, run against
 // stub globals the way the browser would run it, first thing in the head.
@@ -14,6 +20,7 @@ function harness({
   liveBuild = 'b1' as string | null,
   storage = new Map<string, string>(),
   storageThrows = false,
+  appRecovery = false,
 } = {}) {
   const listeners: Record<string, Listener[]> = {};
   const docListeners: Record<string, Listener[]> = {};
@@ -25,10 +32,12 @@ function harness({
       headers: { get: (h: string) => (h === 'X-Livediagram-Build' ? liveBuild : null) },
     }),
   );
-  const win = {
+  const win: Record<string, unknown> = {
     addEventListener: (type: string, fn: Listener) => (listeners[type] ??= []).push(fn),
   };
+  if (appRecovery) win[APP_RECOVERY_FLAG] = true;
   const sessionStorage = {
+    removeItem: (k: string) => storage.delete(k),
     getItem: (k: string) => {
       if (storageThrows) throw new Error('denied');
       return storage.get(k) ?? null;
@@ -111,13 +120,34 @@ describe('the stale HTML guard', () => {
     const storage = new Map<string, string>();
     const first = harness({ storage });
     first.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
-    const second = harness({ storage, now: 1_000 + STALE_HTML_RELOAD_WINDOW_MS - 1 });
+    const second = harness({ storage, now: 1_000 + RELOAD_GUARD_WINDOW_MS - 1 });
     second.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
     expect(second.reload).not.toHaveBeenCalled();
     expect(second.warn).toHaveBeenCalled();
-    const later = harness({ storage, now: 1_000 + STALE_HTML_RELOAD_WINDOW_MS + 1 });
+    const later = harness({ storage, now: 1_000 + RELOAD_GUARD_WINDOW_MS + 1 });
     later.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
     expect(later.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares one reload guard with the running app: a page it already reloaded stays', () => {
+    // docs/specs/016-platform/stale-builds.md "One reload guard".
+    const storage = new Map<string, string>();
+    const asStorage = {
+      getItem: (k: string) => storage.get(k) ?? null,
+      setItem: (k: string, v: string) => void storage.set(k, v),
+    } as unknown as Storage;
+    expect(claimReload('/explorer/unsorted?x=1', asStorage, 1_000)).toBe(true);
+    expect(storage.has(RELOAD_GUARD_KEY)).toBe(true);
+    const h = harness({ storage, now: 2_000 });
+    h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/old.js'));
+    expect(h.reload).not.toHaveBeenCalled();
+    expect(h.warn).toHaveBeenCalled();
+  });
+
+  it('stands down for failures once the running app recovers chunks itself', () => {
+    const h = harness({ appRecovery: true });
+    h.fire('error', failed('SCRIPT', 'https://x/live/_next/static/chunks/lazy.js'));
+    expect(h.reload).not.toHaveBeenCalled();
   });
 
   it('never reloads when it cannot remember doing so', () => {
