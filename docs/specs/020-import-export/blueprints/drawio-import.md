@@ -821,18 +821,18 @@ Refusals (the `error` string, final copy):
 
 ## Observability
 
-| Fingerprint                               | Level   | When                                                                                                                    |
-| ----------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `[drawio-import] refused`                 | `warn`  | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
-| `[drawio-import] page`                    | `debug` | Each page converted: `{ index, cells, elements }`                                                                       |
-| `[drawio-import] applied`                 | `info`  | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
-| `[drawio-import] json export laid out`    | `debug` | A graph-only JSON export laid out: `{ pages }`                                                                          |
-| `[drawio-import] library read`            | `info`  | A library decoded: `{ items, unreadable }`                                                                              |
-| `[drawio-import] library refused`         | `warn`  | A library refused: `{ reason: 'not-library'                                                                             | 'empty-library', items? }` |
-| `[drawio-import] library item unreadable` | `debug` | One library item left out: `{ cause }` (the error name and message, never content)                                      |
-| `[drawio-import] files`                   | `info`  | The Explorer read its picks: `{ files, diagrams, libraries, failures }`                                                 |
-| `[drawio-import] file unreadable`         | `warn`  | A picked file threw while reading: `{ error }`                                                                          |
-| `[drawio-import] import failed`           | `warn`  | The Explorer flow hit an unexpected error: `{ error }`; the panel shows the pick step with a message                    |
+| Fingerprint                               | Level                | When                                                                                                                    |
+| ----------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `[drawio-import] refused`                 | `warn`               | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
+| `[drawio-import] page`                    | `trace` (`debugLog`) | Each page converted: `{ index, cells, elements }`                                                                       |
+| `[drawio-import] applied`                 | `trace` (`debugLog`) | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
+| `[drawio-import] json export laid out`    | `trace` (`debugLog`) | A graph-only JSON export laid out: `{ pages }`                                                                          |
+| `[drawio-import] library read`            | `trace` (`debugLog`) | A library decoded: `{ items, unreadable }`                                                                              |
+| `[drawio-import] library refused`         | `warn`               | A library refused: `{ reason: 'not-library'                                                                             | 'empty-library', items? }` |
+| `[drawio-import] library item unreadable` | `trace` (`debugLog`) | One library item left out: `{ cause }` (the error name and message, never content)                                      |
+| `[drawio-import] files`                   | `trace` (`debugLog`) | The Explorer read its picks: `{ files, diagrams, libraries, failures }`                                                 |
+| `[drawio-import] file unreadable`         | `warn`               | A picked file threw while reading: `{ error }`                                                                          |
+| `[drawio-import] import failed`           | `warn`               | The Explorer flow hit an unexpected error: `{ error }`; the panel shows the pick step with a message                    |
 
 ## Testing
 
