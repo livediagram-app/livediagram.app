@@ -11,6 +11,8 @@ function convert(xml: string, attrs = '') {
   const page = convertPage(readGraph(model(xml, attrs)), {
     tally,
     pageIdToTab: new Map(),
+    // Geometry rules read in draw.io units; the page scale has its own tests (scale.test.ts).
+    scale: 1,
     images: [],
     imageKeys: new Map(),
   });
@@ -86,7 +88,7 @@ describe('convertPage', () => {
             img('e', 'data:image/svg+xml,%3Csvg%2F%3E'),
         ),
       ),
-      { tally, pageIdToTab: new Map(), images, imageKeys: new Map() },
+      { tally, pageIdToTab: new Map(), images, imageKeys: new Map(), scale: 1 },
     );
     expect(images.map((i) => [i.key, i.source?.kind === 'data-url' && i.source.dataUrl])).toEqual([
       ['drawio-image-1', 'data:image/png;base64,QUJD'],
@@ -304,5 +306,21 @@ describe('actor captions on the canvas', () => {
       ),
     );
     expect(page.elements[0]).not.toHaveProperty('textColor');
+  });
+});
+
+describe('the page scale', () => {
+  it("grows the page so draw.io's labels keep their room", () => {
+    const tally = new ReportTally();
+    const page = convertPage(
+      readGraph(
+        model(vertex('a', '', 'x="100" y="50" width="120" height="60"', 'parent="1" value="A"')),
+      ),
+      { tally, pageIdToTab: new Map(), images: [], imageKeys: new Map() },
+    );
+    const a = page.elements[0] as { x: number; y: number; width: number; height: number };
+    const k = a.width / 120;
+    expect(k).toBeGreaterThan(1.2);
+    expect(a).toMatchObject({ x: 100 * k, y: 50 * k, height: 60 * k });
   });
 });

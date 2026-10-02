@@ -40,7 +40,7 @@ export type ConvertContext = {
   pageIdToTab: ReadonlyMap<string, string>;
   /** Whether a cell overlaps another vertex (D41); absent means it overlaps nothing. */
   overlaps?: (cellId: string) => boolean;
-  /** The page scale (spec "The page scale"); 1 when absent. */
+  /** The page scale (spec "The page scale"); worked out per page when absent. */
   scale?: number;
 };
 

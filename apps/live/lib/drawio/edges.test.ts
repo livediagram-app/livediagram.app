@@ -16,6 +16,8 @@ function convert(xml: string) {
   const page = convertPage(readGraph(model(xml)), {
     tally,
     pageIdToTab: new Map(),
+    // Geometry rules read in draw.io units; the page scale has its own tests (scale.test.ts).
+    scale: 1,
     images: [],
     imageKeys: new Map(),
   });

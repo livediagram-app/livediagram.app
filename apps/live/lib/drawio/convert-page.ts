@@ -26,6 +26,7 @@ import { buildArrow, type EndTarget } from './edges';
 import { cellLabel } from './label';
 import { classifyVertex, isBoxedText } from './shapes';
 import { overlapTest } from './overlap';
+import { pageScale, scalePage } from './scale';
 import { buildImageCaption, buildVertex, type PageContext } from './vertices';
 
 export type ConvertedPage = {
@@ -47,7 +48,11 @@ const isLabelCell = (c: DrawioCell) =>
   c.vertex && (c.style.has('edgeLabel') || (c.style.has('text') && !isBoxedText(c.style)));
 
 export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPage {
-  const ctx: PageContext = { ...input, overlaps: overlapTest(graph) };
+  const ctx: PageContext = {
+    ...input,
+    overlaps: overlapTest(graph),
+    scale: input.scale ?? pageScale(graph),
+  };
   const cells = graph.cells;
   if (graph.backgroundImage) ctx.tally.add('image-unavailable');
   const cellToElement = new Map<string, BoxedElement>();
@@ -269,7 +274,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
   }
 
   return {
-    elements,
+    elements: scalePage(elements, ctx.scale ?? 1),
     ...(layered ? { layers } : {}),
     // White is draw.io's default paper, so it stays unset and the theme decides.
     ...(graph.background && !WHITE.has(graph.background)

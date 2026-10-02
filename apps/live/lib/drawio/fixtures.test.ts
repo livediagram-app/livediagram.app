@@ -30,6 +30,17 @@ const arrows = (page: ImportedPage) =>
 const byLabel = (page: ImportedPage, label: string) =>
   page.elements.find((e) => 'label' in e && e.label === label);
 
+// The page scale (spec "The page scale") as one element shows it: its width over draw.io's.
+const scaleOf = (page: ImportedPage, label: string, drawioWidth: number) =>
+  (byLabel(page, label) as ShapeElement).width / drawioWidth;
+
+// `expected` in draw.io units, at the page scale `k`.
+function expectScaled(el: Element | undefined, expected: Record<string, number>, k: number) {
+  for (const [key, v] of Object.entries(expected)) {
+    expect((el as unknown as Record<string, number>)[key]).toBeCloseTo(v * k, 3);
+  }
+}
+
 // Every element valid, every id unique, every pinned end on an element here.
 function expectSound(page: ImportedPage) {
   expect(page.elements.filter((e) => !isValidElement(e))).toEqual([]);
@@ -132,11 +143,12 @@ describe('swimlanes.drawio', () => {
       // Titles read in full: the three stacked lanes share a strip wide enough
       // for the longest title and grow left of their content to hold it; the
       // pool grows left of its lanes to hold its own.
+      const k = scaleOf(page, 'Apply', 120);
       for (const title of ['Candidate', 'Recruiter', 'Team']) {
-        expect(byLabel(page, title)).toMatchObject({ x: 23, width: 777, headerSize: 97 });
+        expectScaled(byLabel(page, title), { x: 23, width: 777, headerSize: 97 }, k);
       }
-      expect(byLabel(page, 'Hiring')).toMatchObject({ x: -47, width: 847, headerSize: 70 });
-      expect(byLabel(page, 'Apply')).toMatchObject({ x: 120 });
+      expectScaled(byLabel(page, 'Hiring'), { x: -47, width: 847, headerSize: 70 }, k);
+      expectScaled(byLabel(page, 'Apply'), { x: 120 }, k);
       const lanes = shapes(page).filter((s) => s.shape === 'lane');
       expect(lanes.map((l) => l.label)).toEqual([
         'Hiring',
@@ -147,20 +159,20 @@ describe('swimlanes.drawio', () => {
       ]);
       // Its near-white body (#f5f9ff) is paper: it takes the theme's surface.
       expect(byLabel(page, 'Candidate')).not.toHaveProperty('fillColor');
+      expectScaled(byLabel(page, 'Candidate'), { y: 40 }, k);
       expect(byLabel(page, 'Candidate')).toMatchObject({
-        y: 40,
         headerFill: '#dae8fc',
         textColor: '#1e293b',
         textAlignX: 'left',
       });
+      expectScaled(byLabel(page, 'Sprint board'), { headerSize: 30 }, k);
       expect(byLabel(page, 'Sprint board')).toMatchObject({
-        headerSize: 30,
         textAlignX: 'center',
         textAlignY: 'top',
         fillColor: 'transparent',
       });
       // A step inside a lane inside the pool lands at its canvas position.
-      expect(byLabel(page, 'Interview')).toMatchObject({ x: 280, y: 360 });
+      expectScaled(byLabel(page, 'Interview'), { x: 280, y: 360 }, k);
     }
   });
 });
@@ -179,14 +191,13 @@ describe('uml.drawio', () => {
       ],
     });
     // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
-    expect(byLabel(page, 'Shopper')).toMatchObject({
-      shape: 'actor',
-      x: 694.204,
-      y: 320,
-      width: 81.592,
-      height: 78,
-      textAlignY: 'bottom',
-    });
+    const shopper = byLabel(page, 'Shopper') as ShapeElement;
+    expect(shopper).toMatchObject({ shape: 'actor', textAlignY: 'bottom' });
+    // Grown a line down and widened about its centre to hold the name on one line.
+    const k = shopper.height / 78;
+    expect(shopper.y).toBeCloseTo(320 * k, 3);
+    expect(shopper.x + shopper.width / 2).toBeCloseTo(735 * k, 3);
+    expect(shopper.width).toBeGreaterThan(30 * k);
     expect(byLabel(page, 'Order')).toMatchObject({
       shape: 'entity',
       entityFields: [
@@ -197,15 +208,22 @@ describe('uml.drawio', () => {
       ],
     });
     const table = page.elements.find((e) => e.type === 'table')!;
+    expectScaled(table, { y: 110 }, k);
+    expect((table as { colWidths: number[] }).colWidths.map((w) => w / k)).toEqual([
+      expect.closeTo(30, 3),
+      expect.closeTo(150, 3),
+    ]);
+    expect((table as { rowHeights: number[] }).rowHeights.map((h) => h / k)).toEqual([
+      expect.closeTo(30, 3),
+      expect.closeTo(30, 3),
+      expect.closeTo(30, 3),
+    ]);
     expect(table).toMatchObject({
-      y: 110,
       cells: [
         ['PK', 'id'],
         ['', 'email'],
         ['', 'name'],
       ],
-      colWidths: [30, 150],
-      rowHeights: [30, 30, 30],
     });
     expect(byLabel(page, 'customers')).toMatchObject({ type: 'text', textBold: true });
     const inherit = arrows(page).find((a) => a.arrowheadShape === 'triangle-hollow')!;
@@ -273,13 +291,11 @@ describe('cloud-architecture.drawio', () => {
       // An icon's caption below it grows its box, down and (about its centre)
       // across to hold the line; the vendor's caption colour stays behind.
       const fn = byLabel(page, 'Orders function')!;
-      expect(fn).toMatchObject({
-        x: 391.408,
-        y: 120,
-        width: 135.184,
-        height: 96,
-        textAlignY: 'bottom',
-      });
+      expect(fn).toMatchObject({ textAlignY: 'bottom' });
+      const k = (fn as ShapeElement).height / 96;
+      expectScaled(fn, { y: 120 }, k);
+      expect((fn as ShapeElement).x + (fn as ShapeElement).width / 2).toBeCloseTo(459 * k, 3);
+      expect((fn as ShapeElement).width).toBeGreaterThan(78 * k);
       expect(fn).not.toHaveProperty('textColor');
       const logo = page.elements.find((e) => e.type === 'image' && e.alt === 'Team logo')!;
       expect(logo).toMatchObject({ imageId: null });
@@ -293,7 +309,7 @@ describe('cloud-architecture.drawio', () => {
             dataUrl:
               'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
           },
-          hint: { width: 80, height: 80 },
+          hint: { width: 80 * k, height: 80 * k },
         },
       ]);
     }
@@ -342,14 +358,24 @@ describe('multi-page.drawio', () => {
         link: { kind: 'url', url: 'https://example.com/docs' },
       });
       expect(byLabel(overview, 'Run')).not.toHaveProperty('link');
-      expect(byLabel(overview, 'Grouped B')).toMatchObject({ x: 220, y: 160 });
-      expect(byLabel(overview, 'Folded box')).toMatchObject({ shape: 'lane', height: 23 });
+      expectScaled(
+        byLabel(overview, 'Grouped B'),
+        { x: 220, y: 160 },
+        scaleOf(overview, 'Grouped B', 120),
+      );
+      expect(byLabel(overview, 'Folded box')).toMatchObject({ shape: 'lane' });
+      expectScaled(
+        byLabel(overview, 'Folded box'),
+        { height: 23 },
+        scaleOf(overview, 'Grouped B', 120),
+      );
       expect(byLabel(overview, 'Hidden draft')).toBeUndefined();
       expect(
         byLabel(detail, 'Release plan\n• Beta in May\n• GA in June\nSee the plan'),
       ).toMatchObject({ shape: 'square', textAlignX: 'left', textAlignY: 'top' });
       const tri = shapes(detail).find((s) => s.shape === 'triangle')!;
-      expect(tri).toMatchObject({ rotation: 90, x: 330, y: 50, width: 80, height: 60 });
+      expect(tri).toMatchObject({ rotation: 90 });
+      expectScaled(tri, { x: 330, y: 50, width: 80 }, tri.height / 60);
       expect(byLabel(detail, 'Subroutine')).toMatchObject({ rotation: 15, opacity: 0.6 });
       expect(byLabel(detail, 'Big and bold')).toMatchObject({
         type: 'text',
