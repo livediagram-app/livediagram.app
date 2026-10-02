@@ -127,6 +127,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   effect returns before measuring; `suspended` is in the effect's dependencies, so the first
   render after the gesture places the box once.
 
+### Layout reads outside gesture frames
+
+- `useCanvasClientOrigin(wrapperRef, active, viewKey)` measures the wrapper on activating and when
+  `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
+  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`, `CanvasDrawPreview`
+  and `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
+- The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
+
 ### The Map draws settled elements
 
 - `useSettledElements(elements)`:

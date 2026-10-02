@@ -121,14 +121,24 @@ export function useQuickStylePlacement(
     measure();
     const events = ['resize', 'livediagram:panel-layout-changed'] as const;
     for (const ev of events) window.addEventListener(ev, schedule);
-    const captured = ['pointerup', 'keyup', 'transitionend'] as const;
+    const captured = ['pointerup', 'keyup'] as const;
     for (const ev of captured) window.addEventListener(ev, schedule, true);
+    // A transition re-places only when it ran on the chrome itself: one ending anywhere on the
+    // canvas (a fading toolbar, a hover) moves nothing this watches, and must not cost a layout
+    // read mid-gesture (docs/specs/008-canvas/canvas-performance.md).
+    const onTransitionEnd = (e: Event) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (panel.contains(target) || target.closest(OBSTACLE_SELECTOR)) schedule();
+    };
+    window.addEventListener('transitionend', onTransitionEnd, true);
     return () => {
       if (frame) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       mutationObserver.disconnect();
       for (const ev of events) window.removeEventListener(ev, schedule);
       for (const ev of captured) window.removeEventListener(ev, schedule, true);
+      window.removeEventListener('transitionend', onTransitionEnd, true);
     };
   }, [active, panelRef, layout]);
 

@@ -16,6 +16,7 @@ const base = {
   stamp: null,
   viewportZoom: 2,
   wrapperRef: { current: wrapper },
+  viewKey: '0,0,1',
   whiteboardInk: '#1c1917',
 };
 const pen: PendingDraw = {

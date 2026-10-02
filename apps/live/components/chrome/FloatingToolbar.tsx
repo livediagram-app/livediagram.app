@@ -19,16 +19,25 @@ export function FloatingToolbar({
   bounds,
   canvasOffset,
   zoom,
+  suspended = false,
   title,
   children,
 }: {
   bounds: Bounds;
   canvasOffset: { x: number; y: number };
   zoom: number;
+  // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).
+  suspended?: boolean;
   title?: string;
   children: ReactNode;
 }) {
-  const { ref, placeAbove, style } = useEdgeAwarePlacement(bounds, canvasOffset, zoom, GAP / zoom);
+  const { ref, placeAbove, style } = useEdgeAwarePlacement(
+    bounds,
+    canvasOffset,
+    zoom,
+    GAP / zoom,
+    suspended,
+  );
   const minimalChrome = useMinimalChrome();
 
   return (

@@ -32,6 +32,9 @@ export function useEdgeAwarePlacement(
   canvasOffset: XY,
   zoom: number,
   gap: number,
+  // While the selection moves the box is hidden and measures nothing: a gesture frame never reads
+  // layout (docs/specs/008-canvas/canvas-performance.md). It places once on resuming.
+  suspended = false,
 ): { ref: React.RefObject<HTMLDivElement | null>; placeAbove: boolean; style: CSSProperties } {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState<XY>({ x: 0, y: 0 });
@@ -91,10 +94,18 @@ export function useEdgeAwarePlacement(
     const ny = dy / zoom;
     if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
   });
-  useLayoutEffect(
-    () => place(),
-    [bounds.x, bounds.y, bounds.width, bounds.height, canvasOffset.x, canvasOffset.y, placeAbove],
-  );
+  useLayoutEffect(() => {
+    if (!suspended) place();
+  }, [
+    bounds.x,
+    bounds.y,
+    bounds.width,
+    bounds.height,
+    canvasOffset.x,
+    canvasOffset.y,
+    placeAbove,
+    suspended,
+  ]);
 
   const baseLeft = bounds.x + bounds.width / 2;
   const baseTop = placeAbove ? bounds.y - gap : bounds.y + bounds.height + gap;

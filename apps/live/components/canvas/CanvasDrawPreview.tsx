@@ -24,6 +24,8 @@ type CanvasDrawPreviewProps = {
   stamp: StampGhost | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
+  // The view the wrapper sits in (useCanvasClientOrigin).
+  viewKey: string;
   // The board's ink on a whiteboard (docs/specs/023-whiteboard/whiteboard.md), what the main pen
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
@@ -43,6 +45,7 @@ export function CanvasDrawPreview({
   stamp,
   viewportZoom,
   wrapperRef,
+  viewKey,
   whiteboardInk,
 }: CanvasDrawPreviewProps) {
   // A whiteboard shape or line previews as it will land (docs/specs/023-whiteboard/whiteboard.md
@@ -59,7 +62,7 @@ export function CanvasDrawPreview({
   // (DrawnArrowPreview, docs/specs/023-whiteboard/whiteboard.md "Shapes"), not here.
   const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
-  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox);
+  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
   return (
     <>
       {stamp && pendingDraw?.type === 'sticky' ? (

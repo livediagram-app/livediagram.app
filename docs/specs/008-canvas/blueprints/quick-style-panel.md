@@ -324,7 +324,8 @@ measures `main[data-canvas-a11y-root]` (area), the panel, the Palette
 non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
 obstacles, so a collapsing Palette is followed), a `MutationObserver` on the anchor's
 `style` / `class` (so a dragged Palette is followed live), `resize`, `pointerup` / `keyup`
-(capture), `transitionend`, and `livediagram:panel-layout-changed`; coalesced to one run per
+(capture), `transitionend` on the panel or an obstacle (one elsewhere on the canvas is ignored), and
+`livediagram:panel-layout-changed`; coalesced to one run per
 animation frame. Each run observes only the elements it has not seen before and unobserves the ones
 that left (`observe()` always delivers an initial notification, so re-observing every run would
 re-run it every frame); the `MutationObserver` re-attaches only when the anchor changes. Still

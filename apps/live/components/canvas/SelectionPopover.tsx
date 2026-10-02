@@ -19,6 +19,8 @@ type SelectionPopoverProps = {
   bounds: Bounds;
   canvasOffset: { x: number; y: number };
   zoom: number;
+  // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).
+  suspended?: boolean;
   // Lock state + toggler. Optional so the read-only / view-role
   // mode (no edit handlers) can mount the popover without faking a
   // lock toggle; when omitted the lock button is suppressed.
@@ -95,6 +97,7 @@ export function SelectionPopover({
   onOpenComments,
   onOpenContextMenu,
   compact = false,
+  suspended = false,
   title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
@@ -114,6 +117,7 @@ export function SelectionPopover({
     canvasOffset,
     zoom,
     (compact ? GAP_COMPACT : GAP_DEFAULT) / zoom,
+    suspended,
   );
 
   return (
