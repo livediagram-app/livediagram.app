@@ -13,6 +13,7 @@ import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
+import { EditorModeSwitchSlot } from '@/components/chrome/editor-mode/EditorModeSwitchSlot';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
@@ -337,6 +338,7 @@ export function TabBar({
         className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
+        {selfRole === 'view' ? null : <EditorModeSwitchSlot activeTab={activeTab} />}
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
