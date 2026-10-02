@@ -175,7 +175,7 @@ colours can be snapped afterwards, in one press, if wanted.
 ## The tab
 
 A landing also says what the tab it fills should be: on the whiteboard
-profile, `kind: 'whiteboard'`, its background pattern from the scene
+profile, `opensIn: 'draw'`, its background pattern from the scene
 (Plain, Dots, Grid), else the new-board default (Grid), and its name from the
 scene's title, else "Whiteboard"; on the diagram profile, the scene's
 background colour, when it has one.
@@ -246,7 +246,7 @@ the landing writes no more than the drawing needs:
   its images upload belongs to that tab, so it does not land on another.
 - **Import a board** (the Import dialog): replace the active tab (the
   Excalidraw card, one undo step), or make each board **its own new document**
-  with one whiteboard tab (the Microsoft Whiteboard card), named after the board
+  with one tab that opens in Draw mode (the Microsoft Whiteboard card), named after the board
   and dated as it (the scene's `createdAt` / `modifiedAt`; a date that cannot
   be read is left out, so the document is dated today, and the report says so:
   "Board dates that couldn't be read were set to today"). An untitled board is

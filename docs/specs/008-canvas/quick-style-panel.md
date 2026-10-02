@@ -100,13 +100,13 @@ Top to bottom, each a small title over one row of option buttons:
 |                | Arrows                                             | Solid / Dashed / Flowing           |
 | Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
 | Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
-| Corners        | Free-corner shapes (whiteboards only)              | None / Small / Medium / Large      |
+| Corners        | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large      |
 | Actions        | Shapes + arrows + text elements                    | Clear styles                       |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
-- **Corners** (whiteboards only) sets the corner preset ([Corner radius](corner-radius.md)) of
+- **Corners** (Draw mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
   every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
   the web components with a rectangular surface) and leaves the rest. It earns its place on a
   whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the

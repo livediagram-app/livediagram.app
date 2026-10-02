@@ -161,7 +161,7 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 
 ## Accessibility
 
-- Tiles are `button`s in a `ul` per section, each section a `section` labelled by its heading; `aria-label` "Insert <title> from <library>". The palette is absent on read-only and whiteboard tabs, so no
+- Tiles are `button`s in a `ul` per section, each section a `section` labelled by its heading; `aria-label` "Insert <title> from <library>". The palette is absent on read-only tabs and in Draw mode, so no
   tile is ever shown disabled.$1Enter and Space place at the view's centre (native button behaviour).
 - The search input has a visible label (screen-reader only) and filters live; the result count is announced through the list itself (no live region needed: the user is typing into it).
 - Explorer: cards are `article`s labelled by their name; the rename input is labelled "Library name"; the delete confirmation is the shared confirm dialog (focus trapped, Escape cancels); item delete buttons are named "Delete <title>".

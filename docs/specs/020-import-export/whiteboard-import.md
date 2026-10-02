@@ -2,7 +2,7 @@
 
 **Import from Microsoft Whiteboard**, in the Explorer, brings boards made in
 Microsoft Whiteboard across as **documents**, one per board, each holding one
-whiteboard tab ([Draw mode](../023-draw-mode/draw-mode.md)): pressure ink as marker
+tab that opens in Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)): pressure ink as marker
 strokes, colours that follow light and dark boards, text, sticky notes, shapes,
 lines and images, all editable, so a board survives Microsoft deleting it.
 The parser turns each board into a [Board scene](board-scene.md); the shared
@@ -24,7 +24,7 @@ landing does the rest. Built on [Board import](board-import.md); background in
   Worker route; works offline and on self-host. Images go through the
   [Import image pipeline](import-image-pipeline.md) like any import's.
 - **Each board becomes a new document** (a single board too) with one
-  whiteboard tab, **named after the board** and **dated as the board**: its
+  tab that opens in Draw mode, **named after the board** and **dated as the board**: its
   created and last-modified dates are the board's. Importing never overwrites
   anything, and a board library comes across as a library, not as tabs.
 - **The picture route is retired.** A flat PNG keeps nothing editable; the
@@ -196,7 +196,7 @@ parser normalises:
   Whiteboard existed) and no later than now. One valid date stands in for both;
   a created date after the last edit becomes the last edit's; with neither, the
   document takes the import's own time, as any new document does.
-- The document's one tab is the board's whiteboard tab, its background and
+- The document's one tab is the board's, opening in Draw mode, its background and
   pattern the board's; the tab is named after the board too.
 
 ## Where it lives

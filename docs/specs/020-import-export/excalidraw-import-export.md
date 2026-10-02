@@ -2,17 +2,17 @@
 
 Excalidraw content reaches livediagram four ways, all through **one parser**:
 
-- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. On a
-  whiteboard tab it lands as whiteboard-native content (marker strokes, shapes,
-  text boxes that hug, stickies, arrows, a frame) as if drawn there; on a
-  diagram tab it lands as diagram elements.
+- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. In Draw
+  mode it lands as whiteboard-native content (marker strokes, shapes,
+  text boxes that hug, stickies, arrows, a frame) as if drawn there; in
+  Diagram mode it lands as diagram elements.
 - **Import dialog**: a `.excalidraw` file (Excalidraw's plain-JSON save format,
   also what excalidraw.com's "Save to disk" produces), or a `.png` / `.svg`
   Excalidraw exported with its scene embedded, replaces the active tab.
 - **Drop**: a `.excalidraw` file, or an Excalidraw PNG / SVG with an embedded
   scene, dropped on the canvas lands like a paste.
 - **New documents** (the Explorer's Import from group): each picked file becomes
-  its own document with one whiteboard tab, named and dated after the file.
+  its own document with one tab that opens in Draw mode, named and dated after the file.
 
 The parser turns Excalidraw into a [Board scene](board-scene.md), the
 source-neutral intermediate every board import shares; the shared landing turns
@@ -249,7 +249,7 @@ hand-drawn font).
 
 The landing is [Board scene](board-scene.md)'s, one for every source:
 
-- **Whiteboard profile** (a whiteboard tab): ink as marker strokes with
+- **Whiteboard profile** (in Draw mode): ink as marker strokes with
   pressure where recorded, adaptive ink and stock colours, text boxes that hug
   their text at the exact font size, stickies, whiteboard shapes, arrows
   pinned to their shapes, the frame.
@@ -363,8 +363,8 @@ with the colours you see, not blanks.
 - **Import dialog** ([Markdown import](markdown-import.md) + [Mermaid import & export](mermaid.md)): a fourth format card, "Excalidraw",
   opening the same paste-or-file panel; the file picker accepts
   `.excalidraw`, `.json`, `.png` and `.svg`. Same replace-the-tab semantics +
-  single undo step; on a whiteboard tab the scene lands with the whiteboard
-  profile, elsewhere with the diagram profile. While images upload the footer
+  single undo step; in Draw mode the scene lands with the whiteboard
+  profile, in Diagram mode with the diagram profile. While images upload the footer
   beside the buttons reads "Importing images 3 of 12…"; an import with images
   or notes ends on the shared report instead of closing.
 - **Export dialog** ([Mermaid import & export](mermaid.md)): a seventh card in the text-format group with the

@@ -47,7 +47,7 @@ Scope, by file:
 | Board scene     | `BoardScene`                | [Board scene](../board-scene.md); `source: 'excalidraw'`                         |
 | Embedded scene  | `ExcalidrawContainer`       | `'json' \| 'png' \| 'svg'`: where the scene was found                            |
 | Encoded wrapper | `EncodedSceneWrapper`       | `{ version?, encoding: 'bstring', compressed, encoded }`                         |
-| Profile         | `'whiteboard' \| 'diagram'` | Which landing the tab gets: whiteboard tabs `whiteboard`, all else `diagram`     |
+| Profile         | `'whiteboard' \| 'diagram'` | Which landing the tab gets: Draw mode `whiteboard`, Diagram mode `diagram`       |
 | Import progress | `ImportImageProgress`       | From the pipeline                                                                |
 
 ## Constants and configuration

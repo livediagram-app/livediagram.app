@@ -36,7 +36,7 @@ Scope, by file:
 | `apps/live/components/dialogs/BoardSceneReportList.tsx`                   | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
 | `packages/document/src/pen-colours.ts`                                    | `hexOklch` for the colour rules                                                                   |
-| `packages/document/src/whiteboard.ts`                                     | `projectWhiteboardElement` draws `penTextColour`                                                  |
+| `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
 | `apps/live/lib/quick-style-pen.ts`                                        | `tabCustomColours` reads text, path and arrow colours too                                         |
 
 ## Domain and naming
@@ -269,7 +269,7 @@ widthPx` verbatim; shapes, stickies (fill verbatim), images and frames as above.
 
 ### Tab patch
 
-- Whiteboard: `{ kind: 'whiteboard', name: title?.trim() || SCENE_DEFAULT_TITLE,
+- Whiteboard: `{ opensIn: 'draw', name: title?.trim() || SCENE_DEFAULT_TITLE,
 backgroundPattern }` with plain `blank`, dots `grid`, grid `graph`, absent
   `WHITEBOARD_DEFAULT_PATTERN`.
 - Diagram: `{ name: title?.trim() || SCENE_DEFAULT_TITLE }` plus `backgroundColor` from
@@ -302,7 +302,7 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
 `insertScene(scene)`:
 
 1. Read-only or a locked tab → no-op, returns `false`.
-2. Profile from `isWhiteboardTab(activeTab)`; placement at `at`, else the pointer, else the viewport centre;
+2. Profile from the viewer's editor mode (`drawMode`: Draw lands `whiteboard`); placement at `at`, else the pointer, else the viewport centre;
    `room = MAX_ELEMENTS_PER_TAB - activeTab.elements.length`.
 3. `landBoardScene`; a rejection sets the notice to the rejection message and returns.
 4. Images: when there are requests, the notice shows "Pasting images {done} of {total}…" while
@@ -441,9 +441,9 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 - `PathElement.penColour?: PenColourName`: as on a stroke, shape and arrow.
 - `validate.ts`: `penTextColour` must be a stock name when present (`isPenColourName`), on any
   element, as `penColour` already is.
-- `projectWhiteboardElement`: after `penColour` (stroke), `penTextColour` sets `textColor` when unset
-  (`penColourHex(name, board)`); then the ink projection. Every renderer that projects (canvas
-  through `whiteboard-ink.ts`, SVG and PNG exports through `export-as-seen.ts`) draws it.
+- `resolveStockColours`: after `penColour` (stroke), `penTextColour` sets `textColor` when unset
+  (its version for the canvas surface). Every renderer resolves it (the canvas through
+  `stock-colour-projector.ts`, exports through `export-as-seen.ts`, the api's thumbnails and MCP images).
 - `tabCustomColours`: the custom colours held in the snap's field table (`SNAP_COLOUR_FIELDS`,
   which gains rows for paths, text boxes and the labels of unfilled shapes and arrows), so the
   custom section and the snap agree.
