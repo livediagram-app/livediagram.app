@@ -42,6 +42,11 @@ const AWS: Record<string, string> = {
   identity_and_access_management: 'aws-iam',
   iam: 'aws-iam',
   role: 'aws-iam',
+  data_lake_resource_icon: 'aws-lake-formation',
+  lake_formation: 'aws-lake-formation',
+  data_lake: 'aws-lake-formation',
+  managed_streaming_for_kafka: 'aws-msk',
+  msk: 'aws-msk',
 };
 
 function awsIcon(name: string): string | undefined {
@@ -141,6 +146,13 @@ const NETWORK: Record<string, string> = {
   wireless_hub: 'wifi',
 };
 
+// ---- Marks (mxgraph.basic.*), line-art icons -------------------------------------
+
+const MARKS: Record<string, string> = {
+  'mxgraph.basic.x': 'x',
+  'mxgraph.basic.tick': 'check',
+};
+
 /** A stencil (the resolved shape name plus the style's icon keys) to its icon. */
 export function stencilIcon(
   shape: string,
@@ -162,6 +174,7 @@ export function stencilIcon(
       ...(kind ? { caption: K8S_KINDS[kind] ?? readableStencilName(kind) } : {}),
     };
   }
+  if (MARKS[shape]) return { iconId: MARKS[shape], tech: false };
   if (shape.startsWith('mxgraph.networks.')) {
     const id = NETWORK[shape.slice('mxgraph.networks.'.length)];
     return id ? { iconId: id, tech: false } : null;

@@ -332,8 +332,9 @@ When the cell has no label, the box is labelled with the stencil's readable name
   [Canvas](../008-canvas/canvas-and-palette.md) "Extra-small runs"); a larger span keeps the nearest
   preset as its run size. Text under 10 px, which `xs` cannot show, comes in at 10 px and is counted
   ("Text smaller than 10 px came in at 10 px").
-- **Blank lines** stay: an empty block (`<div><br></div>`, `<p></p>`) between two lines is one empty
-  line, as the browser shows it in draw.io.
+- **Line feeds are breaks.** draw.io draws a line feed in an HTML label as a line break (`nl2Br`,
+  on by default), so the importer does too: `Internal`, an empty line and `Keep separated` stay three
+  lines.
 - **Clipped labels.** A label with `overflow=hidden` or `overflow=fill` is clipped to its shape in
   draw.io; it comes in cut to the lines that fit its box at the page scale, counted
   (`text-truncated`).
@@ -346,8 +347,8 @@ When the cell has no label, the box is labelled with the stencil's readable name
   that side. Counted (`label-moved`).
 - **Captions below.** An actor's, an icon's and an image's outside label is a caption on that side:
   the box grows by the caption's lines and widens about its centre to the caption's measured width,
-  so the name sits under the figure, unwrapped, as draw.io draws it. An image's caption is its
-  `alt` and its caption both.
+  so the name sits under the figure, unwrapped, as draw.io draws it. An image has no caption of its own, so
+  its outside label comes in as a `text` element on that side of it (and stays its `alt`).
 
 ### Edges
 

@@ -13,7 +13,8 @@ export type VertexClass =
   | { kind: 'shape'; shape: ShapeKind; approximated: boolean }
   | { kind: 'text'; approximated: boolean }
   | { kind: 'sticky' }
-  | { kind: 'line' }
+  // `spine`: a curly bracket, drawn as the line down its middle.
+  | { kind: 'line'; spine?: true }
   | { kind: 'lane' }
   | { kind: 'entity' }
   | { kind: 'table' }
@@ -39,6 +40,7 @@ const SHAPES: Record<string, Row> = {
   [f('start_2')]: exact('circle'),
   [f('on-page_reference')]: exact('circle'),
   startState: exact('circle'),
+  endState: exact('circle'),
   rhombus: exact('diamond'),
   [f('decision')]: exact('diamond'),
   triangle: exact('triangle'),
@@ -73,7 +75,6 @@ const SHAPES: Record<string, Row> = {
   sumEllipse: near('circle'),
   or: near('circle'),
   xor: near('circle'),
-  endState: near('circle'),
   lineEllipse: near('circle'),
   umlBoundary: near('circle'),
   umlEntity: near('circle'),
@@ -162,6 +163,7 @@ export function classifyVertex(cell: DrawioCell, graph: DrawioGraph): VertexClas
   }
   if (name === 'note') return { kind: 'sticky' };
   if (name === 'line') return { kind: 'line' };
+  if (name === 'curlyBracket') return { kind: 'line', spine: true };
   if (name === 'umlFrame') return { kind: 'frame', approximated: false };
   const row = SHAPES[name];
   if (row) return { kind: 'shape', shape: row.shape, approximated: row.approximated === true };

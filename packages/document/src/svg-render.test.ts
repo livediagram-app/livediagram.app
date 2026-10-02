@@ -109,6 +109,18 @@ describe('renderElementsToSvg', () => {
       expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
     });
 
+    it('fills a hollow head with the tab paper, so it reads hollow on a dark canvas', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('a'),
+          shape('b', { x: 200 }),
+          pinnedArrow('r', 'a', 'b', { arrowheadShape: 'triangle-hollow', strokeColor: '#cbd5e1' }),
+        ]),
+        { background: '#0d121a' },
+      );
+      expect(svg).toMatch(/<polygon points="[^"]+" fill="#0d121a" stroke="#cbd5e1"/);
+    });
+
     it('renders the open-V (line) head as an unfilled polyline', () => {
       const svg = render({ arrowheadShape: 'line' });
       expect(svg).toMatch(new RegExp(`<polyline points="[^"]+" fill="none" stroke="${INK}"`));

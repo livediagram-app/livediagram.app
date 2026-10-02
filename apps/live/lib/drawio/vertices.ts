@@ -5,6 +5,8 @@
 
 import {
   ICON_SIZE_PX,
+  PADDING_PX,
+  labelFontPx,
   type ArrowElement,
   type Element,
   type IconSize,
@@ -12,17 +14,16 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
+  type TextSize,
 } from '@livediagram/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import type { DrawioCell, Rect } from './cells';
 import { requestDataUrlImage } from './images';
-import { readLabel } from './label';
-import {
-  DRAWIO_CAPTION_CHAR_PX,
-  DRAWIO_CAPTION_LINE_PX,
-  DRAWIO_CAPTION_PADDING_PX,
-} from './limits';
+import { cellLabel } from './label';
+import { DRAWIO_CAPTION_LINE_PX, DRAWIO_CAPTION_PADDING_PX } from './limits';
 import { shapeTurn, type VertexClass } from './shapes';
+import { shapeName } from './style';
+import { labelTextWidth } from './text-size';
 import { boxedProps, radiusPreset, textProps, type ConvertContext } from './vertex-props';
 
 export type PageContext = ConvertContext & {
@@ -63,7 +64,7 @@ function buildShape(
     onFill: props.fillColor,
     outsideMovesIn: !actorCaption,
   });
-  const caption = actorCaption ? captionBox(cell, box, text.label) : null;
+  const caption = actorCaption ? captionBox(cell, box, text.label, text.textSize, ctx) : null;
   return {
     id,
     type: 'shape',
@@ -74,6 +75,8 @@ function buildShape(
     ...(cls.shape === 'square'
       ? { borderRadius: radiusPreset(cell.style, rect.width, rect.height) }
       : {}),
+    // draw.io rings an end state with a heavy outline.
+    ...(shapeName(cell.style) === 'endState' ? { strokeWidth: 'thick' as const } : {}),
     ...text,
     ...(caption ? { textAlignX: caption.textAlignX, textAlignY: caption.textAlignY } : {}),
   };
@@ -119,9 +122,18 @@ function buildSticky(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string)
 
 // A vertex drawn as a line: a headless arrow across the box's middle,
 // vertical when draw.io turned it north or south.
-function buildLine(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): ArrowElement {
+// A curly bracket (`spine`) is the line down its middle: vertical unless turned north or south.
+function buildLine(
+  cell: DrawioCell,
+  rect: Rect,
+  ctx: PageContext,
+  id: string,
+  spine = false,
+): ArrowElement {
   const direction = cell.style.str('direction');
-  const vertical = direction === 'north' || direction === 'south';
+  const turned = direction === 'north' || direction === 'south';
+  const vertical = spine ? !turned : turned;
+  if (spine) ctx.tally.add('shape-approximated');
   const cx = rect.x + rect.width / 2;
   const cy = rect.y + rect.height / 2;
   const { strokeColor, strokeStyle, opacity, locked, link } = boxedProps(cell, ctx);
@@ -153,7 +165,7 @@ function buildImage(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string):
     ctx.tally.add('image-unavailable');
   }
   const { opacity, rotation, locked, link, note } = boxedProps(cell, ctx);
-  const alt = readLabel(cell.value, cell.html).plain;
+  const alt = cellLabel(cell).plain;
   return {
     id,
     type: 'image',
@@ -165,6 +177,45 @@ function buildImage(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string):
     ...(locked ? { locked } : {}),
     ...(link ? { link } : {}),
     ...(note ? { note } : {}),
+  };
+}
+
+/**
+ * An image's label drawn outside it in draw.io (below by default): a `text` element in the band the
+ * caption needs on that side; null when the label is empty or sits on the picture.
+ */
+export function buildImageCaption(
+  cell: DrawioCell,
+  rect: Rect,
+  ctx: PageContext,
+  id: string,
+): TextElement | null {
+  const side = cell.style.str('labelPosition');
+  const vside = cell.style.str('verticalLabelPosition');
+  const outside = side === 'left' || side === 'right' || vside === 'top' || vside === 'bottom';
+  const text = textProps(cell, ctx, { ...LABEL, outsideMovesIn: false });
+  if (!outside || !text.label) return null;
+  const { box, textAlignX, textAlignY } = captionBox(cell, rect, text.label, text.textSize, ctx);
+  const band: Rect =
+    side === 'left'
+      ? { x: box.x, y: rect.y, width: rect.x - box.x, height: rect.height }
+      : side === 'right'
+        ? { x: rect.x + rect.width, y: rect.y, width: box.width - rect.width, height: rect.height }
+        : vside === 'top'
+          ? { x: box.x, y: box.y, width: box.width, height: rect.y - box.y }
+          : {
+              x: box.x,
+              y: rect.y + rect.height,
+              width: box.width,
+              height: box.height - rect.height,
+            };
+  return {
+    id,
+    type: 'text',
+    ...band,
+    ...text,
+    textAlignX: side === 'left' ? 'right' : side === 'right' ? 'left' : textAlignX,
+    textAlignY: vside === 'top' ? 'bottom' : vside === 'bottom' ? 'top' : textAlignY,
   };
 }
 
@@ -180,27 +231,42 @@ type CaptionBox = {
   textAlignY: NonNullable<ShapeElement['textAlignY']>;
 };
 
+// The room a caption needs across, in draw.io units (the page scale turns them into canvas px): its
+// longest line set in the label face, with a character to spare, the label's own padding both sides,
+// and the caption padding.
+function captionWidth(lines: string[], textSize: TextSize | undefined, scale: number): number {
+  const px = labelFontPx(textSize);
+  const chars = Math.max(...lines.map((l) => l.length)) + 1;
+  return (labelTextWidth(chars, px) + 2 * PADDING_PX.sm) / scale + DRAWIO_CAPTION_PADDING_PX;
+}
+
 // An icon or actor carries its label OUTSIDE its figure in draw.io (below by
 // default); livediagram keeps the caption inside the element's box, beside the
 // figure. So the box grows by the caption towards its side (blueprint step 14):
 // by a line per line above or below, widening about its centre to hold the
 // longest line unwrapped, or by the line's width beside it.
-function captionBox(cell: DrawioCell, rect: Rect, label: string | undefined): CaptionBox {
+function captionBox(
+  cell: DrawioCell,
+  rect: Rect,
+  label: string | undefined,
+  textSize: TextSize | undefined,
+  ctx: PageContext,
+): CaptionBox {
   const box = { ...rect };
   const lines = label ? label.split('\n') : [];
   if (lines.length === 0) return { box, textAlignX: 'center', textAlignY: 'bottom' };
   const side = cell.style.str('labelPosition');
   const vside = cell.style.str('verticalLabelPosition');
-  const across = Math.max(...lines.map((l) => l.length)) * DRAWIO_CAPTION_CHAR_PX;
+  const across = captionWidth(lines, textSize, ctx.scale ?? 1);
   if (side === 'left' || side === 'right') {
-    box.width += across + DRAWIO_CAPTION_PADDING_PX;
-    if (side === 'left') box.x -= across + DRAWIO_CAPTION_PADDING_PX;
+    box.width += across;
+    if (side === 'left') box.x -= across;
     return { box, textAlignX: side, textAlignY: 'middle' };
   }
   const grow = lines.length * DRAWIO_CAPTION_LINE_PX;
   box.height += grow;
   if (vside === 'top') box.y -= grow;
-  const wide = across + DRAWIO_CAPTION_PADDING_PX;
+  const wide = across;
   if (wide > box.width) {
     box.x -= (wide - box.width) / 2;
     box.width = wide;
@@ -218,8 +284,18 @@ function buildIcon(
   ctx.tally.add('icon-substituted');
   const text = textProps(cell, ctx, { scale: 'label', rich: false, outsideMovesIn: false });
   const label = text.label ?? cls.caption;
-  const { box, textAlignX, textAlignY } = captionBox(cell, rect, label);
-  const { strokeColor, opacity, rotation, locked, link, note } = boxedProps(cell, ctx);
+  const { box, textAlignX, textAlignY } = captionBox(cell, rect, label, text.textSize, ctx);
+  const {
+    strokeColor: stroke,
+    fillColor,
+    opacity,
+    rotation,
+    locked,
+    link,
+    note,
+  } = boxedProps(cell, ctx);
+  // A mark (a cross, a tick) is a filled stencil: its colour is the fill when it has no stroke.
+  const strokeColor = stroke ?? (fillColor && fillColor !== 'transparent' ? fillColor : undefined);
   return {
     id,
     type: 'shape',
@@ -315,7 +391,7 @@ export function buildVertex(
     case 'sticky':
       return buildSticky(cell, rect, ctx, id);
     case 'line':
-      return buildLine(cell, rect, ctx, id);
+      return buildLine(cell, rect, ctx, id, cls.spine === true);
     case 'image':
       return buildImage(cell, rect, ctx, id);
     case 'icon':

@@ -180,9 +180,9 @@ describe('uml.drawio', () => {
     // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
     expect(byLabel(page, 'Shopper')).toMatchObject({
       shape: 'actor',
-      x: 702.5,
+      x: 694.204,
       y: 320,
-      width: 65,
+      width: 81.592,
       height: 78,
       textAlignY: 'bottom',
     });
@@ -232,7 +232,8 @@ describe('cloud-architecture.drawio', () => {
       expectSound(page);
       expect(report).toEqual({
         pages: 1,
-        elements: 20,
+        // The team logo's name, drawn under it, comes in as its caption.
+        elements: 21,
         notes: [
           {
             kind: 'shape-unmatched',
@@ -271,10 +272,17 @@ describe('cloud-architecture.drawio', () => {
       // An icon's caption below it grows its box, down and (about its centre)
       // across to hold the line; the vendor's caption colour stays behind.
       const fn = byLabel(page, 'Orders function')!;
-      expect(fn).toMatchObject({ x: 398.5, y: 120, width: 121, height: 96, textAlignY: 'bottom' });
+      expect(fn).toMatchObject({
+        x: 391.408,
+        y: 120,
+        width: 135.184,
+        height: 96,
+        textAlignY: 'bottom',
+      });
       expect(fn).not.toHaveProperty('textColor');
       const logo = page.elements.find((e) => e.type === 'image' && e.alt === 'Team logo')!;
       expect(logo).toMatchObject({ imageId: null });
+      expect(byLabel(page, 'Team logo')).toMatchObject({ type: 'text', textAlignX: 'center' });
       expect(images).toEqual([
         {
           elementId: logo.id,

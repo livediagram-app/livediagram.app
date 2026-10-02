@@ -26,6 +26,8 @@ export const TECH_ICON_IDS: ReadonlySet<string> = new Set([
   'aws-eks',
   'aws-cloudwatch',
   'aws-iam',
+  'aws-lake-formation',
+  'aws-msk',
   // ---- Azure ----
   'azure-vm',
   'azure-blob',

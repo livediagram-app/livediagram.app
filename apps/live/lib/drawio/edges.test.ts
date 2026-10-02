@@ -136,12 +136,19 @@ describe('edge heads and stroke', () => {
     );
     expect(arrow).toMatchObject({
       arrowheadShape: 'triangle-hollow',
-      arrowheadSize: 'extra-large',
+      arrowheadSize: 'small',
       strokeWidth: 3,
       strokeStyle: 'dashed',
     });
     expect(arrow.arrowEnds).toBeUndefined();
     expect(notes).toEqual([]);
+  });
+
+  it('sizes a head to the length draw.io draws on its own stroke', () => {
+    // draw.io draws size + stroke width; the canvas marker draws its preset times the stroke width.
+    expect(convert(boxA + boxB + edge('')).arrow.arrowheadSize).toBeUndefined();
+    expect(convert(boxA + boxB + edge('strokeWidth=5;')).arrow.arrowheadSize).toBe('small');
+    expect(convert(boxA + boxB + edge('endSize=10;')).arrow.arrowheadSize).toBe('extra-large');
   });
 
   it('counts heads livediagram does not draw, and mismatched pairs', () => {

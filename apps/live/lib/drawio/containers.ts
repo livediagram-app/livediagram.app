@@ -16,7 +16,7 @@ import {
 } from '@livediagram/document';
 import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './cells';
 import { hexOf, readColour } from './colour';
-import { readLabel } from './label';
+import { cellLabel } from './label';
 import { classifyVertex } from './shapes';
 import { shapeName } from './style';
 import { DRAWIO_CAPTION_CHAR_PX } from './limits';
@@ -43,7 +43,7 @@ const isVerticalLane = (cell: DrawioCell, graph: DrawioGraph) =>
   cell.style.str('horizontal') === '0' &&
   classifyVertex(cell, graph).kind === 'lane';
 
-const titleOf = (cell: DrawioCell) => readLabel(cell.value, cell.html).plain.trim();
+const titleOf = (cell: DrawioCell) => cellLabel(cell).plain.trim();
 
 export type LaneLayout = {
   /** How far the lane grows to the left; its right edge stays. */
@@ -175,7 +175,7 @@ const cut = (text: string, ctx: PageContext) => {
 };
 
 function fieldOf(row: DrawioCell, ctx: PageContext): EntityField {
-  const text = readLabel(row.value, row.html).plain.replace(/\n/g, ' ').trim();
+  const text = cellLabel(row).plain.replace(/\n/g, ' ').trim();
   const colon = text.lastIndexOf(':');
   const name = colon < 0 ? text : text.slice(0, colon).trim();
   const type = colon < 0 ? '' : text.slice(colon + 1).trim();
@@ -237,7 +237,7 @@ export function buildTable(
   const rows = cell.children
     .map((childId) => graph.cells.get(childId)!)
     .filter((row) => row.vertex && shapeName(row.style) === 'tableRow');
-  const title = readLabel(cell.value, cell.html).plain;
+  const title = cellLabel(cell).plain;
   const startSize = Math.min(cell.style.num('startSize') ?? 0, rect.height - 1);
   const props = boxedProps(cell, ctx);
 
@@ -263,7 +263,7 @@ export function buildTable(
     const cs = cellsOf(row);
     return Array.from({ length: width }, (_, i) => cs[i]);
   });
-  const cells = grid.map((row) => row.map((c) => (c ? readLabel(c.value, c.html).plain : '')));
+  const cells = grid.map((row) => row.map((c) => (c ? cellLabel(c).plain : '')));
   const cellStyles = grid.map((row) => row.map((c) => (c ? cellStyleOf(c) : null)));
   const anyStyle = cellStyles.some((row) => row.some((s) => s !== null));
   const firstRowCells = grid[0]!;

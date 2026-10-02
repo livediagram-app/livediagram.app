@@ -44,7 +44,14 @@ describe('dashStyle', () => {
   it('reads dashed and dotted patterns', () => {
     expect(dashStyle(parseStyle('', false))).toBeUndefined();
     expect(dashStyle(parseStyle('dashed=1;', false))).toBe('dashed');
-    expect(dashStyle(parseStyle('dashed=1;dashPattern=8 8;', false))).toBe('dotted');
+    expect(dashStyle(parseStyle('dashed=1;dashPattern=8 8;', false))).toBe('dashed');
+    expect(
+      dashStyle(parseStyle('dashed=1;fixDash=1;dashPattern=8 8;strokeWidth=2.3;', false)),
+    ).toBe('dashed');
+    expect(
+      dashStyle(parseStyle('dashed=1;fixDash=1;dashPattern=1 2;strokeWidth=2.3;', false)),
+    ).toBe('dotted');
+    expect(dashStyle(parseStyle('dashed=1;dashPattern=1 1;strokeWidth=3;', false))).toBe('dotted');
     expect(dashStyle(parseStyle('dashed=1;dashPattern=1 4;', false))).toBe('dotted');
     expect(dashStyle(parseStyle('dashed=1;dashPattern=12 4;', false))).toBe('dashed');
   });

@@ -16,8 +16,8 @@ import {
 } from '@livediagram/document';
 import type { DrawioCell, Pt } from './cells';
 import { readColour } from './colour';
-import { readLabel } from './label';
-import { DRAWIO_LABEL_CENTRE_EPSILON } from './limits';
+import { cellLabel } from './label';
+import { DRAWIO_DEFAULT_MARKER_SIZE, DRAWIO_LABEL_CENTRE_EPSILON } from './limits';
 import type { DrawioStyle } from './style';
 import { arrowheadSizePreset, dashStyle, elementLink, textProps } from './vertex-props';
 import type { PageContext } from './vertices';
@@ -214,22 +214,22 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
   ) {
     ctx.tally.add('arrowhead-approximated');
   }
-  const headSize = arrowheadSizePreset(s.num(end ? 'endSize' : 'startSize') ?? 6);
-
   const stroke = readColour(s.str('strokeColor'));
   const width = s.num('strokeWidth') ?? 1;
+  const headSize = arrowheadSizePreset(
+    s.num(end ? 'endSize' : 'startSize') ?? DRAWIO_DEFAULT_MARKER_SIZE,
+    width,
+  );
   const opacity = s.num('opacity');
   const strokeStyle = dashStyle(s);
   const link = elementLink(cell.link, ctx);
 
   // One label: the edge's own, then its label children, one per line.
-  const parts = [cell, ...input.labels]
-    .map((c) => readLabel(c.value, c.html).plain)
-    .filter((t) => t !== '');
+  const parts = [cell, ...input.labels].map((c) => cellLabel(c).plain).filter((t) => t !== '');
   if (parts.length > 1) ctx.tally.add('label-moved');
   const styled = cell.value.trim() === '' && input.labels[0] ? input.labels[0] : cell;
   const text = textProps(styled, ctx, { scale: 'arrow', rich: false, outsideMovesIn: false });
-  const placed = input.labels.find((c) => readLabel(c.value, c.html).plain !== '')?.geometry;
+  const placed = input.labels.find((c) => cellLabel(c).plain !== '')?.geometry;
   const offsetT =
     placed && Math.abs(placed.x) > DRAWIO_LABEL_CENTRE_EPSILON ? (placed.x + 1) / 2 : undefined;
 

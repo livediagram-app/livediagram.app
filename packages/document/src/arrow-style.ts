@@ -54,6 +54,14 @@ export const ARROWHEAD_SIZE_PX: Record<ArrowheadSize, number> = {
 };
 export const DEFAULT_ARROWHEAD_SIZE: ArrowheadSize = 'medium';
 
+/**
+ * How long a head draws on the canvas: its marker is sized in stroke widths (SVG's default
+ * `markerUnits`), so the preset's px times the line's stroke width.
+ */
+export function arrowheadLengthPx(size: ArrowheadSize, strokeWidth: number): number {
+  return ARROWHEAD_SIZE_PX[size] * strokeWidth;
+}
+
 export function arrowheadSizeOf(arrow: ArrowElement): ArrowheadSize {
   return arrow.arrowheadSize ?? DEFAULT_ARROWHEAD_SIZE;
 }

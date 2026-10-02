@@ -164,3 +164,38 @@ describe('shapeTurn', () => {
     expect(turn('shape=document;', 'document').approximated).toBe(false);
   });
 });
+
+describe('classifyVertex, marks and braces', () => {
+  it('maps the cross and the tick to their line-art icons', () => {
+    expect(classify('shape=mxgraph.basic.x;fillColor=#ff0000;')).toMatchObject({
+      kind: 'icon',
+      iconId: 'x',
+      tech: false,
+    });
+    expect(classify('shape=mxgraph.basic.tick;')).toMatchObject({ kind: 'icon', iconId: 'check' });
+  });
+
+  it('draws an end state as the circle it is', () => {
+    expect(
+      classify('ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;'),
+    ).toEqual({
+      kind: 'shape',
+      shape: 'circle',
+      approximated: false,
+    });
+  });
+
+  it('draws a curly bracket as a line down its spine', () => {
+    expect(classify('shape=curlyBracket;whiteSpace=wrap;')).toEqual({ kind: 'line', spine: true });
+  });
+
+  it('matches the AWS data lake and MSK stencils to their Technology icons', () => {
+    expect(classify('shape=mxgraph.aws4.data_lake_resource_icon;')).toMatchObject({
+      iconId: 'aws-lake-formation',
+      tech: true,
+    });
+    expect(
+      classify('shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.managed_streaming_for_kafka;'),
+    ).toMatchObject({ iconId: 'aws-msk', tech: true });
+  });
+});

@@ -482,7 +482,7 @@ export function renderElementsToSvg(
   for (const band of layerBands(tab.elements, tab.layers)) {
     const inner = band.elements.map((el) =>
       el.type === 'arrow'
-        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible)
+        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg)
         : svgBoxed(el, {
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,

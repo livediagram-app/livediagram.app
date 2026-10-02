@@ -49,6 +49,13 @@ export type DrawioGraph = {
 
 // Wrapper attributes that are not custom properties.
 const WRAPPER_KEYS = new Set(['id', 'label', 'link', 'tooltip', 'placeholders']);
+// Ids other tools write to trace their own objects through a conversion into draw.io: not the
+// author's properties, so they fill placeholders but never become note lines.
+export const DRAWIO_PROVENANCE_ATTRIBUTES: ReadonlySet<string> = new Set([
+  'lucidchartObjectId',
+  'visioObjectId',
+  'gliffyId',
+]);
 
 const num = (el: Element, name: string): number => {
   const n = Number(el.getAttribute(name) ?? 0);
@@ -104,15 +111,16 @@ function readCell(el: Element): DrawioCell | null {
   const id = (wrapper ?? cellEl).getAttribute('id') ?? '';
   const isEdge = cellEl.getAttribute('edge') === '1';
   const style = parseStyle(cellEl.getAttribute('style') ?? '', isEdge);
-  const props: [string, string][] = wrapper
+  const attributes: [string, string][] = wrapper
     ? Array.from(wrapper.attributes)
         .filter((a) => !WRAPPER_KEYS.has(a.name))
         .map((a) => [a.name, a.value])
     : [];
+  const props = attributes.filter(([name]) => !DRAWIO_PROVENANCE_ATTRIBUTES.has(name));
   let value = wrapper
     ? (wrapper.getAttribute('label') ?? '')
     : (cellEl.getAttribute('value') ?? '');
-  if (wrapper?.getAttribute('placeholders') === '1') value = fillPlaceholders(value, props);
+  if (wrapper?.getAttribute('placeholders') === '1') value = fillPlaceholders(value, attributes);
   const link = wrapper?.getAttribute('link') || undefined;
   const tooltip = wrapper?.getAttribute('tooltip') || undefined;
   const geometry = readGeometry(cellEl);

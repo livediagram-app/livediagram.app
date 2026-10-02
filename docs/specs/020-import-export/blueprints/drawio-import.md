@@ -173,9 +173,9 @@ lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything
    `backgroundImage` present → `backgroundImage: true`.
 2. Walk `root`'s element children in order. `mxCell` is a cell; `UserObject` / `object` wraps one
    `mxCell` child: the wrapper's `id` is the cell's id, its `label` the value, `link`, `tooltip`,
-   `placeholders` read, every other attribute a custom property (in attribute order). Properties named
-   in `DRAWIO_PROVENANCE_ATTRIBUTES` fill placeholders but are flagged `provenance` and never reach a
-   note (step 10.9).
+   `placeholders` read, every other attribute a custom property (in attribute order). Attributes named
+   in `DRAWIO_PROVENANCE_ATTRIBUTES` fill placeholders but are left out of the properties, so they
+   never reach a note (step 10.9).
 3. Per cell: `id`, `parent`, `value` (attribute, `''` when absent), `style` (`parseStyle` with
    `isEdge`), `vertex="1"` / `edge="1"`, `visible` (`!== '0'`), `collapsed` (`=== '1'`), `source`,
    `target`, and its `mxGeometry` (`as="geometry"`): `x`, `y`, `width`, `height` (absent = 0),
@@ -206,9 +206,10 @@ lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything
     new line when text precedes them. `li` inside `ul` prefixes `• `, inside `ol` `n. `. `td` / `th`
     after the first in a row prefix a tab.
   - Text nodes: whitespace runs collapse to one space (not inside `pre`), `&nbsp;` is a space.
-  - Lines are trimmed at both ends; leading and trailing empty lines dropped. A block holding only
-    a `br` (or nothing) is one empty line, so `<div>a</div><div><br></div><div>b</div>` is
-    `a\n\nb`; empty lines between text are kept as written.
+  - Line feeds in the value are line breaks (draw.io's `nl2Br`, on unless the style says `nl2Br=0`):
+    each `\n` becomes a `br` before parsing, so `a&#10;&#10;b` is `a\n\nb`.
+  - Lines are trimmed at both ends; leading and trailing empty lines dropped; more than one empty
+    line between blocks collapses to one.
 - Returns `{ plain, runs }`, `runs` via `normalizeRuns`; `runs` omitted when no run carries a format
   (so an unformatted HTML label is a plain label).
 
@@ -244,8 +245,9 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
 2. `strokeColor`: `hex` → `paperColour(hex, 'ink')`; `none` → `strokeWidth: 'none'`.
 3. `strokeWidth` px → nearest of `BORDER_STROKE_PX` (`thin` 1, `medium` 2, `thick` 4,
    `extra-thick` 7), ties to the thinner (D17); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D18).
-4. `dashed=1` → `dashed`; with `dashPattern` `"a b ..."` where every dash (the odd entries) is at
-   most `DRAWIO_DOT_MAX_STROKES` × the stroke width (px, default 1) → `dotted`.
+4. `dashed=1` → `dashed`; with `dashPattern` `"a b ..."` where every dash (the odd entries), in px
+   (times the stroke width unless `fixDash=1`, as draw.io scales it), is at most
+   `DRAWIO_DOT_MAX_STROKES` × the stroke width (px, default 1) → `dotted`.
 5. `rounded=1` on `square`: radius = `absoluteArcSize=1` ? `arcSize` px : `arcSize` (default
    `DRAWIO_DEFAULT_ARC_SIZE`) % of `min(width, height)`; nearest of `BORDER_RADIUS_PX` excluding
    `full`, and `full` when radius ≥ half the shorter side. `rounded` absent → `none`.
@@ -258,7 +260,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
 7. `shadow=1` → `DRAWIO_SHADOW`. `locked=1` → `locked: true`.
 8. Link (`cell.link`): `http:`, `https:`, `mailto:` → `{ kind: 'url', url }`; `data:page/id,<id>` →
    `{ kind: 'tab', tabId: pageIdToTab.get(id) }` when known; else dropped, `link-dropped`.
-9. Note: `tooltip` then each custom property not flagged `provenance` as `name: value`, lines
+9. Note: `tooltip` then each custom property as `name: value`, lines
    joined by `\n`, omitted when empty.
 10. Text: `readLabel`; `label = plain` (omitted when empty); `richText = runs` when the kind carries
     rich text (shape, text, sticky). `fontStyle` bits → `textBold` / `textItalic` / `textUnderline` /
@@ -413,11 +415,12 @@ carries `image=` → `image-unavailable` += 1. A page with `backgroundImage` →
 'bottom'`) or, for `verticalLabelPosition=top`, upwards (`'top'`), and widens about its centre to
   `captionWidth(lines)` when that is wider.
 
-Icons and images always use it; an `actor` shape with `verticalLabelPosition` `top` / `bottom` uses
+Icons and images (with an outside label) always use it; an `actor` shape with `verticalLabelPosition` `top` / `bottom` uses
 it too and does not count `label-moved`. `captionWidth(lines)` is the longest line's characters ×
 `LABEL_EM_ADVANCE` × the caption preset's px, divided by the page scale (the box is in draw.io
-units until step 15.9), plus `DRAWIO_CAPTION_PADDING_PX`. An image's caption is its `label` and
-`alt`.
+units until step 15.9), plus `DRAWIO_CAPTION_PADDING_PX`. An image's caption is a `text` element (`buildImageCaption`) in the
+caption band `captionBox` gives (the band only, below or beside the picture, which keeps its
+rect), centred, after the image; the image keeps `alt`.
 
 Marks: `mxgraph.basic.x` → line-art `x`, `mxgraph.basic.tick` → `check`, `strokeColor` (else
 `fillColor`) hex as the icon's stroke, `icon-substituted` += 1. `endState` → `circle`, `fillColor`

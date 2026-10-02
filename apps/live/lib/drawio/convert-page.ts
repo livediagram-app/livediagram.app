@@ -23,9 +23,9 @@ import {
 } from './cells';
 import { buildEntity, buildLane, buildTable } from './containers';
 import { buildArrow, type EndTarget } from './edges';
-import { readLabel } from './label';
+import { cellLabel } from './label';
 import { classifyVertex, isBoxedText } from './shapes';
-import { buildVertex, type PageContext } from './vertices';
+import { buildImageCaption, buildVertex, type PageContext } from './vertices';
 
 export type ConvertedPage = {
   elements: Element[];
@@ -85,7 +85,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     const cell = cells.get(cellId)!;
     const id = i === 0 ? DEFAULT_LAYER_ID : `layer:${mint()}`;
     layerIdOf.set(cellId, id);
-    const name = readLabel(cell.value, cell.html).plain;
+    const name = cellLabel(cell).plain;
     layers.push({
       id,
       name: name || (i === 0 ? DEFAULT_LAYER_NAME : `Layer ${i + 1}`),
@@ -156,6 +156,10 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     if (!built) return;
     place(built, layerId);
     cellToElement.set(id, built);
+    if (cls.kind === 'image') {
+      const caption = buildImageCaption(cell, rect, ctx, mint());
+      if (caption) place(caption, layerId);
+    }
 
     if (cls.kind === 'entity' || cls.kind === 'table') {
       forwardSubtree(id, id);

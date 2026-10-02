@@ -3,7 +3,7 @@
 // stroke, corners, opacity, rotation, shadow, lock, link, note, and the text.
 
 import {
-  ARROWHEAD_SIZE_PX,
+  arrowheadLengthPx,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   FONTS,
@@ -22,7 +22,7 @@ import {
 import type { ReportTally } from './notes';
 import type { DrawioCell } from './cells';
 import { readColour } from './colour';
-import { readLabel } from './label';
+import { cellLabel } from './label';
 import { DRAWIO_DEFAULT_ARC_SIZE, DRAWIO_SHADOW } from './limits';
 import { nearest } from './nearest';
 import {
@@ -38,6 +38,8 @@ export type ConvertContext = {
   tally: ReportTally;
   /** draw.io page id → the livediagram tab it became. */
   pageIdToTab: ReadonlyMap<string, string>;
+  /** The page scale (spec "The page scale"); 1 when absent. */
+  scale?: number;
 };
 
 const STROKES: readonly BorderStroke[] = ['thin', 'medium', 'thick', 'extra-thick'];
@@ -49,6 +51,9 @@ export function strokePreset(px: number | undefined): BorderStroke {
   return nearest(BORDER_STROKE_PX, STROKES, px);
 }
 
+// A dash at most this many stroke widths long reads as a dot (D38).
+export const DRAWIO_DOT_MAX_STROKES = 2;
+
 /** `dashed` / `dashPattern` as a line style; undefined when solid. */
 export function dashStyle(style: DrawioStyle): BorderStyle | undefined {
   if (!style.flag('dashed')) return undefined;
@@ -58,7 +63,12 @@ export function dashStyle(style: DrawioStyle): BorderStyle | undefined {
     .map(Number)
     .filter((n) => Number.isFinite(n) && n > 0);
   if (pattern.length >= 2) {
-    const dotted = pattern.every((n, i) => i % 2 === 1 || n <= (pattern[i + 1] ?? n));
+    // draw.io scales the pattern by the stroke width unless `fixDash=1` keeps it in px.
+    const width = style.num('strokeWidth') ?? 1;
+    const unit = style.flag('fixDash') ? 1 : width;
+    const dotted = pattern.every(
+      (n, i) => i % 2 === 1 || n * unit <= DRAWIO_DOT_MAX_STROKES * width,
+    );
     if (dotted) return 'dotted';
   }
   return 'dashed';
@@ -76,8 +86,20 @@ export function radiusPreset(style: DrawioStyle, width: number, height: number):
   return nearest(BORDER_RADIUS_PX, RADII, radius);
 }
 
-export function arrowheadSizePreset(px: number): ArrowheadSize {
-  return nearest(ARROWHEAD_SIZE_PX, ['small', 'medium', 'large', 'extra-large'] as const, px);
+const HEAD_SIZES = ['small', 'medium', 'large', 'extra-large'] as const;
+
+/**
+ * The head preset nearest the length draw.io draws (its marker size plus the stroke width), on the
+ * canvas's own head length for this stroke; ties to the smaller.
+ */
+export function arrowheadSizePreset(markerSize: number, strokeWidth: number): ArrowheadSize {
+  const target = markerSize + strokeWidth;
+  let best: ArrowheadSize = HEAD_SIZES[0];
+  for (const size of HEAD_SIZES) {
+    const gap = Math.abs(arrowheadLengthPx(size, strokeWidth) - target);
+    if (gap < Math.abs(arrowheadLengthPx(best, strokeWidth) - target)) best = size;
+  }
+  return best;
 }
 
 const SKETCHY = ['comic', 'architects daughter', 'xkcd', 'caveat', 'indie flower'];
@@ -197,7 +219,7 @@ export function textProps(cell: DrawioCell, ctx: ConvertContext, options: TextOp
   const basePx = s.num('fontSize') ?? 12;
   // Text under what the extra-small run size shows, anywhere in the label (spec "Text size").
   let belowXs = belowExtraSmall(basePx);
-  const read = readLabel(cell.value, cell.html, (px) => {
+  const read = cellLabel(cell, (px) => {
     if (belowExtraSmall(px)) belowXs = true;
     return runTextSize(px, basePx, options.scale);
   });

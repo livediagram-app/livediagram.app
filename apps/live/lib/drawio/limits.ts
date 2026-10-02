@@ -37,3 +37,5 @@ export const DRAWIO_TAB_FILE_ACCEPT =
 export const DRAWIO_JSON_LOOSE_EDGE_PX = 80;
 /** Items read from one library; the rest are counted (spec "Shape libraries": the first 1 000). */
 export const DRAWIO_MAX_LIBRARY_ITEMS = 1000;
+/** draw.io's head size when an edge names none (`mxConstants.DEFAULT_MARKERSIZE`). */
+export const DRAWIO_DEFAULT_MARKER_SIZE = 6;

@@ -74,11 +74,21 @@ function formatOf(el: Element, inherited: Format): Format {
 // empty-line collapsing can work on text without losing the formatting.
 type Glyph = { ch: string; f: Format };
 
-export function readLabel(value: string, html: boolean, sizeOf?: RunSizeOf): DrawioLabel {
+/**
+ * A cell value as text and runs. `nl2Br` is draw.io's own switch (on unless the style says `nl2Br=0`):
+ * a line feed in an HTML label draws as a line break.
+ */
+export function readLabel(
+  value: string,
+  html: boolean,
+  sizeOf?: RunSizeOf,
+  nl2Br = true,
+): DrawioLabel {
   if (!html) return { plain: value.replace(/\r\n?/g, '\n') };
   if (value.trim() === '') return { plain: '' };
 
-  const body = new DOMParser().parseFromString(value, 'text/html').body;
+  const source = nl2Br ? value.replace(/\r\n?|\n/g, '<br>') : value;
+  const body = new DOMParser().parseFromString(source, 'text/html').body;
   const out: Glyph[] = [];
   const endsWithBreak = () => out.length === 0 || out[out.length - 1]!.ch === '\n';
   const push = (text: string, f: Format) => {
@@ -149,3 +159,9 @@ export function readLabel(value: string, html: boolean, sizeOf?: RunSizeOf): Dra
   const formatted = normalised.some((r) => Object.keys(r).length > 1);
   return formatted ? { plain, runs: normalised } : { plain };
 }
+
+/** A cell's label as draw.io draws it: its value, HTML or not, line feeds per its `nl2Br`. */
+export const cellLabel = (
+  cell: { value: string; html: boolean; style: { str(key: string): string | undefined } },
+  sizeOf?: RunSizeOf,
+): DrawioLabel => readLabel(cell.value, cell.html, sizeOf, cell.style.str('nl2Br') !== '0');

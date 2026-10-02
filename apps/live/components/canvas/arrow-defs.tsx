@@ -18,14 +18,19 @@ export function arrowheadMarkerId(shape: ArrowheadShape, size: ArrowheadSize): s
 // 0..10 viewBox with the attachment point at x≈9. `context-stroke`
 // is the canonical SVG2 way to inherit the referencing line's colour
 // through the marker boundary (currentColor didn't inherit reliably).
-// The `-hollow` variants fill white and outline with the line colour;
+// The `-hollow` variants fill with the canvas paper (the `--lvd-canvas-paper` the canvas sets from
+// its background, so a hollow head reads hollow on a dark canvas too) and outline with the line colour;
 // `line` is an open V with no fill.
+const HOLLOW_FILL = { fill: 'var(--lvd-canvas-paper, #ffffff)' };
+
 function arrowheadMarkerShape(shape: ArrowheadShape, paint = 'context-stroke') {
   switch (shape) {
     case 'triangle':
       return <path d="M 0 0 L 10 5 L 0 10 z" fill={paint} />;
     case 'triangle-hollow':
-      return <path d="M 0.6 1 L 9.4 5 L 0.6 9 z" fill="white" stroke={paint} strokeWidth={1} />;
+      return (
+        <path d="M 0.6 1 L 9.4 5 L 0.6 9 z" style={HOLLOW_FILL} stroke={paint} strokeWidth={1} />
+      );
     case 'line':
       return (
         <path
@@ -40,12 +45,17 @@ function arrowheadMarkerShape(shape: ArrowheadShape, paint = 'context-stroke') {
     case 'circle':
       return <circle cx="5" cy="5" r="4.5" fill={paint} />;
     case 'circle-hollow':
-      return <circle cx="5" cy="5" r="4" fill="white" stroke={paint} strokeWidth={1} />;
+      return <circle cx="5" cy="5" r="4" style={HOLLOW_FILL} stroke={paint} strokeWidth={1} />;
     case 'diamond':
       return <path d="M 0 5 L 5 0 L 10 5 L 5 10 z" fill={paint} />;
     case 'diamond-hollow':
       return (
-        <path d="M 0.7 5 L 5 0.7 L 9.3 5 L 5 9.3 z" fill="white" stroke={paint} strokeWidth={1} />
+        <path
+          d="M 0.7 5 L 5 0.7 L 9.3 5 L 5 9.3 z"
+          style={HOLLOW_FILL}
+          stroke={paint}
+          strokeWidth={1}
+        />
       );
   }
 }

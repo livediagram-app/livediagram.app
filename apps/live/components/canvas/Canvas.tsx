@@ -604,6 +604,8 @@ export function Canvas(props: CanvasProps) {
         pendingDraw ? '' : cursorClass
       }`}
       style={{
+        // The paper hollow arrowheads fill with (arrow-defs.tsx).
+        ['--lvd-canvas-paper' as string]: tabBackgroundColor,
         // In world space: the pattern pans and zooms with the elements, so
         // they stay on the same dots at any zoom (worldPatternOrigin).
         ...tabBackgroundStyle(
