@@ -40,6 +40,21 @@ async function seedDocument(page: Page, name: string): Promise<string> {
   }, name);
 }
 
+// The suite runs in parallel: a simulated deploy is this context's alone, never the stack's.
+test('a simulated deploy leaves every other browser context on its build', async ({
+  page,
+  request,
+}) => {
+  const chunkOf = (html: string) => /_next\/static\/chunks\/([\w-]+)\.js/.exec(html)?.[1];
+  const before = chunkOf(await (await request.get('/explorer/recent')).text());
+  expect(before).toBeTruthy();
+
+  expect((await page.request.post('/__e2e/deploy')).ok()).toBe(true);
+
+  expect(chunkOf(await (await page.request.get('/explorer/recent')).text())).toMatch(/-d\d+$/);
+  expect(chunkOf(await (await request.get('/explorer/recent')).text())).toBe(before);
+});
+
 test('back after a deploy brings the Explorer back, never a white screen', async ({ page }) => {
   test.setTimeout(60_000);
   const refusedStyles: string[] = [];

@@ -48,9 +48,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
 // the signed-in specs run against (apps/live/scripts/build-clerk-stub.mjs).
 const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
-// The build being served: OUT_DIR, until a simulated deploy (POST /__e2e/deploy) swaps in a copy
-// whose chunk files carry new names, as a real deploy's do.
-let liveOut = OUT_DIR;
+// The builds a simulated deploy (POST /__e2e/deploy) made: copies whose chunk files carry new
+// names, as a real deploy's do. Deploy n is served from deployDirs[n - 1].
 const deployDirs = [];
 // Production's caching, as a browser meets it (docs/specs/016-platform/stale-builds.md): Cloudflare's
 // asset server marks every file `public, max-age=0, must-revalidate` with an ETag, and the router's
@@ -61,7 +60,27 @@ const CACHE_POLICY = process.env.E2E_CACHE_POLICY !== 'off';
 // Set by POST /__e2e/assets-out-of-cache, cleared by the next simulated deploy: build assets go out
 // `no-store`, so the browser keeps a page but not its chunks, as a cache that evicted them (or never
 // held a lazily loaded one) does.
-let assetsOutOfCache = false;
+//
+// Both belong to the browser context that asked (a cookie each, which `page.request` shares with
+// its page), never to the whole stack: the suite runs in parallel, and a deploy every test saw
+// would pull chunks from under pages that never asked for one.
+const DEPLOY_COOKIE = 'e2e-deploy';
+const OUT_OF_CACHE_COOKIE = 'e2e-assets-out-of-cache';
+function cookiesOf(req) {
+  const jar = new Map();
+  for (const part of (req.headers.cookie ?? '').split(';')) {
+    const eq = part.indexOf('=');
+    if (eq > 0) jar.set(part.slice(0, eq).trim(), part.slice(eq + 1).trim());
+  }
+  return jar;
+}
+// The build this request's browser context is served: its latest simulated deploy, else OUT_DIR.
+function buildFor(req) {
+  return deployDirs[Number(cookiesOf(req).get(DEPLOY_COOKIE)) - 1] ?? OUT_DIR;
+}
+function assetsOutOfCacheFor(req) {
+  return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
+}
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
@@ -208,8 +227,10 @@ const MIME = {
 };
 
 // What production sends for a response: the asset server's caching, then the router's rules.
-function cacheControlFor(pathname, status, contentType) {
-  if (assetsOutOfCache && isBuildAsset(pathname)) return { cacheControl: 'no-store', missing: false };
+function cacheControlFor(req, pathname, status, contentType) {
+  if (assetsOutOfCacheFor(req) && isBuildAsset(pathname)) {
+    return { cacheControl: 'no-store', missing: false };
+  }
   if (!CACHE_POLICY) return { cacheControl: ASSET_SERVER_CACHE_CONTROL, missing: false };
   const rule = cacheRule(pathname, status, contentType);
   if (rule === 'no-store') return { cacheControl: HTML_CACHE_CONTROL, missing: false };
@@ -226,7 +247,7 @@ function serveFile(req, res, filePath, pathname) {
   const headers = {
     'Content-Type': contentType,
     ETag: etag,
-    'Cache-Control': cacheControlFor(pathname, 200, contentType).cacheControl,
+    'Cache-Control': cacheControlFor(req, pathname, 200, contentType).cacheControl,
   };
   if (req.headers['if-none-match'] === etag) {
     res.writeHead(304, headers);
@@ -239,9 +260,9 @@ function serveFile(req, res, filePath, pathname) {
 
 // A missing file: the site's HTML 404 page, as Cloudflare's `not_found_handling = "404-page"`
 // answers, unless the router's rules make a missing build asset a plain-text 404.
-function serveNotFound(res, pathname, notFoundPage) {
+function serveNotFound(req, res, pathname, notFoundPage) {
   const html = 'text/html; charset=utf-8';
-  const { cacheControl, missing } = cacheControlFor(pathname, 404, html);
+  const { cacheControl, missing } = cacheControlFor(req, pathname, 404, html);
   if (missing || !notFoundPage || !existsSync(notFoundPage)) {
     res.writeHead(404, {
       'Content-Type': 'text/plain; charset=utf-8',
@@ -255,9 +276,10 @@ function serveNotFound(res, pathname, notFoundPage) {
   createReadStream(notFoundPage).pipe(res);
 }
 
-// A deploy, simulated: a copy of the build being served whose chunk files are renamed, every
-// reference to them rewritten, and the copy served from now on. The old names are gone, exactly
-// as after a real deploy, while a page the browser kept still names them.
+// A deploy, simulated: a copy of the build a context is served whose chunk files are renamed,
+// every reference to them rewritten, and the copy served to that context from now on. The old
+// names are gone for it, exactly as after a real deploy, while a page the browser kept still
+// names them.
 const TEXT_FILES = new Set(['.html', '.txt', '.js', '.css', '.json', '.map']);
 function filesUnder(dir, out = []) {
   for (const name of readdirSync(dir)) {
@@ -267,11 +289,10 @@ function filesUnder(dir, out = []) {
   }
   return out;
 }
-function simulateDeploy() {
-  const n = deployDirs.length + 1;
+function simulateDeploy(from) {
   const next = mkdtempSync(path.join(tmpdir(), 'livediagram-e2e-deploy-'));
-  deployDirs.push(next);
-  cpSync(liveOut, next, { recursive: true });
+  const n = deployDirs.push(next);
+  cpSync(from, next, { recursive: true });
   const renames = new Map();
   for (const file of filesUnder(path.join(next, '_next', 'static', 'chunks'))) {
     const ext = path.extname(file);
@@ -288,15 +309,13 @@ function simulateDeploy() {
     const rewritten = text.replace(pattern, (m) => renames.get(m) ?? m);
     if (rewritten !== text) writeFileSync(file, rewritten);
   }
-  liveOut = next;
-  assetsOutOfCache = false;
   console.log(`[e2e] simulated deploy ${n}: ${renames.size} chunks renamed, serving ${next}`);
   return n;
 }
 
 // Resolve a request path to a file in out/, mirroring the live worker
 // (apps/live/src/worker.ts) + the static export's file layout.
-function resolveStatic(pathname) {
+function resolveStatic(pathname, out) {
   // The build references assets as `/live/_next/*` (assetPrefix); the
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
@@ -304,9 +323,9 @@ function resolveStatic(pathname) {
   if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
   if (p === '/') p = '/index';
   const candidates = [
-    path.join(liveOut, p), // exact file (assets)
-    path.join(liveOut, `${p}.html`), // clean route → new.html
-    path.join(liveOut, p, 'index.html'),
+    path.join(out, p), // exact file (assets)
+    path.join(out, `${p}.html`), // clean route → new.html
+    path.join(out, p, 'index.html'),
   ];
   for (const c of candidates) {
     if (existsSync(c) && statSync(c).isFile()) return c;
@@ -380,6 +399,7 @@ function proxyApiUpgrade(req, socket, head) {
 function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const liveOut = buildFor(req);
     if (NO_AI && pathname === '/api/capabilities') {
       // Everything else about the real answer stands; only the AI is off.
       http
@@ -414,14 +434,23 @@ function startLiveServer() {
     }
     if (serveClerkStandIn(pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
-      assetsOutOfCache = true;
-      res.writeHead(204, { 'Cache-Control': 'no-store' });
+      res.writeHead(204, {
+        'Cache-Control': 'no-store',
+        'Set-Cookie': `${OUT_OF_CACHE_COOKIE}=1; Path=/; SameSite=Lax`,
+      });
       res.end();
       return;
     }
     if (pathname === '/__e2e/deploy' && req.method === 'POST') {
-      const deploy = simulateDeploy();
-      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      const deploy = simulateDeploy(liveOut);
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+        'Set-Cookie': [
+          `${DEPLOY_COOKIE}=${deploy}; Path=/; SameSite=Lax`,
+          `${OUT_OF_CACHE_COOKIE}=; Path=/; SameSite=Lax; Max-Age=0`,
+        ],
+      });
       res.end(JSON.stringify({ deploy }));
       return;
     }
@@ -452,9 +481,9 @@ function startLiveServer() {
       res.end(`Not built: ${site.notFound}`);
       return;
     }
-    const file = resolveStatic(pathname);
+    const file = resolveStatic(pathname, liveOut);
     if (file) return serveFile(req, res, file, pathname);
-    serveNotFound(res, pathname, path.join(liveOut, '404.html'));
+    serveNotFound(req, res, pathname, path.join(liveOut, '404.html'));
   });
   server.on('upgrade', proxyApiUpgrade);
   server.listen(LIVE_PORT, () => console.log(`[e2e] live static server on :${LIVE_PORT}`));
