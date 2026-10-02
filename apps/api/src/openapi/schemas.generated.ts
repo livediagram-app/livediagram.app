@@ -5917,9 +5917,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
-      "autoWidth": {
-        "type": "boolean"
-      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
@@ -5976,6 +5973,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rotation": {
         "type": "number"
+      },
+      "sizing": {
+        "$ref": "#/components/schemas/TextSizing"
       },
       "strokeColor": {
         "type": "string"
@@ -6076,6 +6076,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "sm",
       "md",
       "lg"
+    ],
+    "type": "string"
+  },
+  "TextSizing": {
+    "enum": [
+      "fit",
+      "wrap"
     ],
     "type": "string"
   },

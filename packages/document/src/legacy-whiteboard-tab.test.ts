@@ -158,8 +158,16 @@ describe('migrateWhiteboardKind', () => {
     expect(stroke.fillColor).toBe('transparent');
     const highlighter = freehand({ pen: 'highlighter' });
     expect(migrated(highlighter)).toEqual(highlighter);
-    const words = text();
-    expect(migrated(words)).toEqual(words);
+  });
+
+  // docs/specs/007-editor/editor-modes.md "A text box's sizing": text hugged on a board.
+  it("keeps a board's text boxes hugging: set width wraps, an auto width fits", () => {
+    expect((migrated(text()) as TextElement).sizing).toBe('wrap');
+    const fit = migrated(text({ autoWidth: true } as Partial<TextElement>)) as TextElement;
+    expect(fit.sizing).toBe('fit');
+    expect(fit).not.toHaveProperty('autoWidth');
+    const kept = text({ sizing: 'fit' });
+    expect(migrated(kept)).toBe(kept);
   });
 
   it('keeps an element nothing needs to change the same object', () => {

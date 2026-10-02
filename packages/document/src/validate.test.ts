@@ -432,20 +432,22 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
   });
 });
 
-// docs/specs/023-whiteboard/whiteboard.md "Text boxes": a text box's hug fields.
+// docs/specs/007-editor/editor-modes.md "A text box's sizing": a text box's sizing and Shift scale.
 describe('text box validation', () => {
   const text = { id: 't', type: 'text', x: 0, y: 0, width: 40, height: 22, label: 'Hi' };
 
-  it('takes an auto width and a Shift scale in range', () => {
-    expect(isValidElement({ ...text, autoWidth: true, textScale: 2.5 })).toBe(true);
+  it('takes a sizing and a Shift scale in range', () => {
+    expect(isValidElement({ ...text, sizing: 'fit', textScale: 2.5 })).toBe(true);
+    expect(isValidElement({ ...text, sizing: 'wrap' })).toBe(true);
     expect(isValidElement({ ...text, textScale: TEXT_SCALE_MIN })).toBe(true);
     expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX })).toBe(true);
   });
 
-  it('refuses a scale out of range and a non-boolean auto width', () => {
+  it('refuses a scale out of range and any other sizing', () => {
     expect(isValidElement({ ...text, textScale: 0 })).toBe(false);
     expect(isValidElement({ ...text, textScale: TEXT_SCALE_MAX + 1 })).toBe(false);
     expect(isValidElement({ ...text, textScale: Number.NaN })).toBe(false);
-    expect(isValidElement({ ...text, autoWidth: 'yes' })).toBe(false);
+    expect(isValidElement({ ...text, sizing: 'grow' })).toBe(false);
+    expect(isValidElement({ ...text, sizing: true })).toBe(false);
   });
 });

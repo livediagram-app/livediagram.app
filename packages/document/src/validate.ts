@@ -546,9 +546,9 @@ export function isValidElement(el: unknown): el is Element {
     return true;
   }
   if (t === 'path') return isValidPath(el);
-  // A whiteboard text box's hug fields (docs/specs/023-whiteboard/whiteboard.md "Text boxes").
+  // A text box's sizing and Shift scale (docs/specs/007-editor/editor-modes.md "A text box's sizing").
   if (t === 'text') {
-    if (el.autoWidth !== undefined && typeof el.autoWidth !== 'boolean') return false;
+    if (el.sizing !== undefined && el.sizing !== 'fit' && el.sizing !== 'wrap') return false;
     if (
       el.textScale !== undefined &&
       (!isNum(el.textScale) || el.textScale < TEXT_SCALE_MIN || el.textScale > TEXT_SCALE_MAX)

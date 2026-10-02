@@ -7,6 +7,8 @@
 // elements here, Ink by name (adaptive per appearance), so the board looks unchanged in either
 // mode and to every collaborator. Pen strokes and text with no colour of their own draw in Ink in
 // both modes already, so they keep their colour unset; a stroke only loses a fill it never showed.
+// A board's text boxes hugged their text, so each keeps hugging (`sizing`, docs/specs/007-editor/
+// editor-modes.md "A text box's sizing"): an auto width fits its words, any other wraps at its width.
 // An unset background read as Plain on a board and the theme's pattern on a general tab, so it is
 // written down as Plain.
 import { INK_PEN_COLOUR } from './pen-colours';
@@ -49,7 +51,15 @@ function inkPatch(el: Element): ColourFields {
   }
 }
 
+// A board's text box as a hugging one: its stored auto width read as 'fit', else 'wrap'.
+function hugText(el: Element): Element {
+  if (el.type !== 'text' || el.sizing !== undefined) return el;
+  const { autoWidth, ...rest } = el as Element & { autoWidth?: unknown };
+  return { ...rest, sizing: autoWidth === true ? 'fit' : 'wrap' } as Element;
+}
+
 function inkElement(el: Element): Element {
+  if (el.type === 'text') return hugText(el);
   const patch = inkPatch(el);
   return Object.keys(patch).length === 0 ? el : ({ ...el, ...patch } as Element);
 }

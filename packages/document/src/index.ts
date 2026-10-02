@@ -53,6 +53,7 @@ export type {
   ChartLegendPosition,
   ShapeElement,
   TextElement,
+  TextSizing,
   TableCellStyle,
   TableElement,
   StickyElement,
