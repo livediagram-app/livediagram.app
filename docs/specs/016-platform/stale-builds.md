@@ -64,7 +64,7 @@ the guard runs; it therefore both listens and, once the document is parsed, look
   window leaves the page as it is.
 - **It stands down once the app runs:** when the editor's own chunk recovery is installed, failures
   are left to it, because the app waits for unsaved work before it reloads and this script cannot.
-- It logs `[stale-html]` with the reason; it sends no telemetry (it runs before telemetry exists).
+- It logs `[stale-html]` with the reason as a warning (`console.warn`): an inline script cannot reach `debugLog`, and a stale page is something gone wrong; it sends no telemetry (it runs before telemetry exists).
 - **Content Security Policy:** none is sent today. When one is, this script is allowed by its
   hash, never by `unsafe-inline`.
 

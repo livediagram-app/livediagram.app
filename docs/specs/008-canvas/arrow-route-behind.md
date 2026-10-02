@@ -46,6 +46,10 @@ a wrong obstacle **erases a line that should be visible**:
 - **A shape with no fill never cuts** (`fillColor: transparent`, as every
   whiteboard shape starts): there is nothing to hide behind, and a line
   broken under an outline reads as a fault.
+- **An open path never cuts.** A path paints its fill only when closed, so an
+  open curve (a Path tool line, or an imported multi-point line) is ink like
+  freehand. A closed path follows the shape rule: it cuts unless its fill is
+  `transparent`.
 - **The arrow's own endpoint elements never cut.** The line has to reach their
   edges, and the arrowhead sits on one.
 - **A box containing an endpoint never cuts** — and containment is tested
