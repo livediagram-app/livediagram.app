@@ -76,7 +76,9 @@ letterboxing handled for free.
 
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
-  memoised on `elements` so panning only re-renders the viewport rectangle.
+  memoised on `elements` so panning only re-renders the viewport rectangle, and
+  redrawn when a gesture ends rather than on each frame of it, a remote edit at most
+  every 250 ms ([Canvas performance](canvas-performance.md)).
   The `<main>` size (`W`,`H` above) comes in as a prop, measured by `Canvas`,
   which owns `<main>`. The map must not observe `<main>` itself: it renders
   inside `<main>`, and a child's layout effect runs before its parent's ref

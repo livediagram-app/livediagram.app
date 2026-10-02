@@ -39,3 +39,9 @@ How the event-storming photo import finds sticky notes in a wall photo and reads
 How a freehand stroke is smoothed live, so the line seen mid-stroke is the line that lands.
 
 - ./stroke-smoothing.md - when revisiting how the whiteboard pen smooths ink: techniques, measurements, the decision
+
+## Canvas performance
+
+Where a large board spends its time during pan, zoom, drag, marquee and pen strokes.
+
+- ./canvas-performance.md - when a large board feels slow: method, per-gesture breakdown, named hot spots
