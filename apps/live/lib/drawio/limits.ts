@@ -18,8 +18,6 @@ export const DRAWIO_SHADOW: ElementShadow = { offsetX: 2, offsetY: 3, blur: 3, o
 export const DRAWIO_CAPTION_LINE_PX = 18;
 /** Room a caption's box keeps around its text, both sides together (D23). */
 export const DRAWIO_CAPTION_PADDING_PX = 16;
-/** How far from the middle an edge label must sit to keep its place (D24). */
-export const DRAWIO_LABEL_CENTRE_EPSILON = 0.05;
 /** Unmatched stencil names the summary lists (D25). */
 export const DRAWIO_REPORT_NAMES_MAX = 5;
 /**

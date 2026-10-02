@@ -82,6 +82,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## draw.io
+
+- Source: <https://github.com/jgraph/drawio> (v31.7.0)
+- Used for: draw.io's view geometry (edge routers, perimeters, label points), ported to TypeScript
+  and changed in `apps/live/lib/drawio/route/`, so imported draw.io diagrams keep their routes.
+- Licence: Apache License 2.0, full text in
+  [`packages/licences/texts/drawio-31.7.0-LICENSE.txt`](./packages/licences/texts/drawio-31.7.0-LICENSE.txt).
+
+```text
+Copyright (c) 2006-2015, JGraph Holdings Ltd
+Copyright (c) 2006-2015, draw.io AG
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
 ## svg-path-bbox
 
 - Source: <https://github.com/mondeja/svg-path-bbox>

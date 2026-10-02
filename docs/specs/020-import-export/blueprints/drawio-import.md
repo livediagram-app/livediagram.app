@@ -24,7 +24,11 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/drawio/nearest.ts`                         | `nearest`: the nearest preset to a px value                                                                                      |
 | `lib/drawio/vertices.ts`                        | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                                   |
 | `lib/drawio/containers.ts`                      | `buildLane`, `buildEntity`, `buildTable`                                                                                         |
-| `lib/drawio/edges.ts`                           | `buildArrow`: endpoints, route, heads, labels                                                                                    |
+| `lib/drawio/edges.ts`                           | `buildArrow`: ends, route shape, heads, stroke, caption                                                                          |
+| `lib/drawio/edge-pass.ts`                       | `createEdgeBuilder`: a page's edges routed, ends resolved, riding shapes, ends on arrows placed                                  |
+| `lib/drawio/arrow-route.ts`                     | `nearestAnchor`, `exitSide`, `simplifyRoute`, `snapRouteEnds`, `routeShape`, `curveThrough`                                      |
+| `lib/drawio/route/`                             | draw.io's view geometry, ported: `page.ts` `createPageRouter`, `view.ts` `routeEdge`, routers, perimeters, `label.ts`            |
+| `scripts/drawio-route-goldens.mts`              | Golden routes from draw.io's CLI for the fixtures (`__fixtures__/routes/*.json`)                                                 |
 | `lib/drawio/convert-page.ts`                    | `convertPage`: one page's graph to elements, layers, background                                                                  |
 | `lib/drawio/import.ts`                          | `importDrawio`: the entry point                                                                                                  |
 | `lib/drawio/json-export.ts`                     | `readJsonExport`, `jsonLabelText`, `jsonPageElements`: draw.io's JSON export, its `data` file or its graph laid out              |
@@ -314,53 +318,75 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    when every cell is `null`. No rows → a `square` with the table's label, `shape-approximated`.
    Rows and cells are consumed, forwarding to the table.
 
-### 12. Edges (`route/`, `buildArrow`)
+### 12. Edges (`route/`, `arrow-route.ts`, `edge-pass.ts`, `buildArrow`)
 
 The route is draw.io's own, computed by a TypeScript port of draw.io's view geometry
-(`lib/drawio/route/`, from jgraph/drawio v31.7.0 `mxgraph/src/view`, Apache-2.0). Everything in
-draw.io units, before the page scale.
+(`lib/drawio/route/`, from jgraph/drawio v31.7.0 `mxgraph/src/view`, `mxgraph/src/util`,
+`js/grapheditor/Graph.js` and `Shapes.js`, Apache-2.0). Everything in draw.io units, at view scale 1,
+before the page scale. Every ported file opens with the attribution and change notice, and every
+ported function names its source.
 
-1. **Terminal states** (`route/state.ts`): per edge end, the terminal is the source / target cell
-   itself (consumed or not: draw.io routes to the cell it drew) with its absolute rect
-   (`absoluteRect`), its parsed style, and its `rotation`. A terminal that is an edge has the
-   state of its computed route (edges route in dependency order; a cycle routes its later member
-   as if that end were free).
-2. **View** (`route/view.ts`, port of `mxGraphView`): `updateFixedTerminalPoints` (a constraint
-   from `exitX` / `exitY` / `exitDx` / `exitDy` / `exitPerimeter` and the `entry*` twins, through
-   `getConnectionPoint` with the terminal's perimeter and rotation), `updatePoints` (the edge style
-   function with the waypoints, or the waypoints as given when there is none), `updateFloatingTerminalPoints`
-   (`getPerimeterPoint` towards `getNextPoint`, orthogonal projection when the style is orthogonal,
-   `perimeterSpacing` / `sourcePerimeterSpacing` / `targetPerimeterSpacing`), loops
-   (`isLoopStyleEnabled`), and a free end at `sourcePoint` / `targetPoint`. draw.io's `Graph`
-   defaults apply (`Graph.prototype.defaultEdgeStyle`, the `orthogonal` rule of `isOrthogonal`).
-3. **Edge styles** (`route/edge-styles.ts`, port of `mxEdgeStyle`): `orthogonalEdgeStyle` →
-   `OrthConnector` (with `getJettySize`, `getRoutePattern`), `elbowEdgeStyle` → `ElbowConnector`
-   (`SideToSide` / `TopToBottom` by `elbow`), `sideToSideEdgeStyle`, `topToBottomEdgeStyle`,
-   `entityRelationEdgeStyle` → `EntityRelation`, `segmentEdgeStyle` → `SegmentConnector`,
-   `isometricEdgeStyle` → `ElbowConnector` (the isometric skew is not drawn), `loopEdgeStyle` /
-   a self-loop → `Loop`.
-4. **Perimeters** (`route/perimeters.ts`, port of `mxPerimeter` and `Graph.js`'s registered ones):
-   rectangle (default), ellipse (`ellipse`, `doubleEllipse`, `endState`, `startState`, `umlActor`'s
-   head excluded: a rectangle), rhombus, triangle, hexagon, parallelogram, trapezoid, step; the
-   `perimeter` style key wins over the shape's default.
-5. The result per edge: `route: Point[]` (absolute, both terminal points included) and its total
-   length.
-6. **Ends** (`buildArrow`): a terminal that became an element (directly or by `forward`) → pinned
-   to the offered anchor nearest the route's terminal point (`anchorPosition` on the element's box
-   in draw.io units). A terminal that is an edge which became an arrow → `{ kind: 'on-arrow',
-arrowId, t }`, `t` the parameter of the nearest point on that arrow's route. No terminal → free
-   at the route's terminal point. A terminal that was a cell but has nowhere to pin → free at the
-   route's terminal point, `connection-loosened` += 1.
-7. **Snap the route to the anchors** (`snapRouteEnds`): replace the first point by the source anchor
-   point; when the first segment was horizontal (equal y), set the second point's y to the anchor's,
-   when vertical (equal x) its x; the same at the target end. A two-point orthogonal route whose
-   snapped ends differ in both axes gains two corners at the mid x (the first segment's direction
-   kept), so it stays orthogonal. Then drop consecutive duplicates and collinear interior points.
-8. **Style.** `curved=1` → `curved`; else an edge style → `angled`; else `straight` with interior
-   points → `angled` (a polyline), without → `straight`. `curvePoints` = the interior points as
-   `{ dx, dy }` from the midpoint of the snapped first and last points.
-9. `exactStart: true` on a pinned start, `exactEnd: true` on a pinned end; `routeBehind: false`.
-10. **Heads.** `startArrow` / `endArrow` through `DRAWIO_MARKERS`: `none` / `''` → no head; a known
+1. **Styles as draw.io reads them** (`route/state.ts`): `styleValue` is `mxStylesheet.getCellStyle`'s
+   reading (`none` removes the key, numeric text is a number), `truthy` JavaScript's truthiness of
+   it. `style.ts` carries the stylesheet's `perimeter` defaults: `rectanglePerimeter` for every
+   vertex, `ellipsePerimeter` / `rhombusPerimeter` / `trianglePerimeter` for the named styles.
+2. **Terminal states** (`route/page.ts`, `createPageRouter(graph)`): each end's terminal is the cell
+   `mxGraphView.getVisibleTerminal` gives (the highest collapsed ancestor, else the cell), with a
+   state only when it and every ancestor below the root are visible. A vertex's state is its
+   `absoluteRect`, its style and its relative geometry's `x` (`relativeX`, EntityRelation reads it);
+   an edge terminal's state is its own route (`edgeState`, `mxGraphView.updateEdgeBounds`), routed
+   first. A cycle routes its later member's end as a point. An end with no state is a point: its
+   `sourcePoint` / `targetPoint`, else its cell's centre, else the origin (`[drawio-route] end has no
+terminal state`). `DrawioGraph.gridSize` (the model's `gridSize`, else
+   `DRAWIO_DEFAULT_GRID_SIZE`) is the loop router's segment.
+3. **View** (`route/view.ts`, `routeEdge`): `getFixedTerminalPoint` (Graph.js's `centerPerimeter`,
+   then `Graph.getLegacyConnectionPoint` for an `exit*` / `entry*` constraint: perimeter bounds,
+   `direction` quarter turns, flips, perimeter projection, `rotation`), `updatePoints` (the router,
+   with `getTerminalPort`, or the waypoints plus the edge's origin), `getEdgeStyle` with
+   `isLoopStyleEnabled`, then `updateFloatingTerminalPoints` (target first; `getNextPoint`,
+   `getPerimeterPoint` with the orthogonal projection when `isOrthogonal`, `perimeterSpacing` and
+   its source / target twins, the terminal's rotation).
+4. **Routers** (`route/edge-styles.ts`, `route/segment-connector.ts`, `route/orth-connector.ts`):
+   `orthogonalEdgeStyle` → `OrthConnector` (with `getJettySize`, falling back to
+   `SegmentConnector` for waypoints or fixed ends closer than both jetties), `elbowEdgeStyle` →
+   `ElbowConnector` (`SideToSide` / `TopToBottom` by `elbow`), `sideToSideEdgeStyle`,
+   `topToBottomEdgeStyle`, `entityRelationEdgeStyle` → `EntityRelation`, `segmentEdgeStyle` →
+   `SegmentConnector`, `isometricEdgeStyle` → `ElbowConnector`, `loopEdgeStyle` / a self-loop →
+   `Loop`. Any other name routes through its waypoints (`[drawio-route] edge style not ported`).
+5. **Perimeters** (`route/perimeters.ts`): rectangle, ellipse, rhombus, triangle (mxPerimeter),
+   parallelogram, trapezoid, step, `hexagonPerimeter2`, callout, centre (Shapes.js), by the
+   `perimeter` style; another name routes as a rectangle (`[drawio-route] perimeter not ported`).
+6. The result per edge (`EdgeRoute`): `points` (`mxCellState.absolutePoints`, both ends), `drawn`
+   (`drawnPoints`, port of `mxShape.getWaypoints`: a point less than a pixel from the one before on
+   both axes left out) and `state` (for labels, riding shapes and edges on edges).
+7. **Ends** (`edge-pass.ts` resolves, `buildArrow` places): the route is `drawn`, simplified
+   (`simplifyRoute`: repeats and the middles of straight runs, axis read within
+   `DRAWIO_AXIS_TOLERANCE_PX`, out; two points kept). A terminal that became an element (directly or
+   by `forward`) → pinned to `nearestAnchor(element, end point, exitSide(end, next))`: the offered
+   anchors whose primary side is the side the end segment leaves towards, else those on its axis,
+   else all; a slanted segment takes the nearest of all. A terminal edge that became an arrow →
+   `{ kind: 'on-arrow', arrowId, t: 0 }`, `t` set once every arrow exists (`finish`: `projectToArrow`
+   of draw.io's end point onto the host arrow's drawn line; a host that did not land frees the end,
+   `connection-loosened` += 1). No terminal → free at the route's end. A terminal that was a cell
+   but has nowhere to pin → free there, `connection-loosened` += 1. Arrow ids are minted per edge
+   slot before any is built.
+8. **Snap the route to the anchors** (`snapRouteEnds`): the first and last points become the end
+   positions; when the first segment is horizontal the second point takes the start's y, when
+   vertical its x; the same at the target. A two-point orthogonal route (a router named in
+   `DRAWIO_ANGLED_EDGE_STYLES`) whose snapped ends differ across its axis gains two corners at its
+   middle, keeping its direction. Then `simplifyRoute` again.
+9. **Shape** (`routeShape`): no interior points → `straight`. `curved=1` with one → `curved`,
+   `curveOffset` the corner from the ends' midpoint (draw.io's quadratic, exact). `curved=1` with
+   two or more → `curved`, `curvePoints` from `curveThrough(points)`: draw.io's curve
+   (`mxPolyline.paintCurvedLine`: quadratics through segment midpoints, the corners their controls)
+   sampled `DRAWIO_CURVE_SAMPLES_PER_PIECE` per piece, reduced by Ramer-Douglas-Peucker with a
+   tolerance halved from `DRAWIO_CURVE_TOLERANCE_PX` until the Catmull-Rom curve through the kept
+   points (the renderer's own) stays within `DRAWIO_CURVE_TOLERANCE_PX` of draw.io's. Otherwise →
+   `angled`, `curvePoints` the interior points. Every point as `{ dx, dy }` from the midpoint of the
+   snapped first and last points.
+10. `exactStart: true` on a pinned start, `exactEnd: true` on a pinned end; `routeBehind: false` on
+    every arrow. `[drawio-route] arrow` logs `{ edge, style, bends, from, to }`.
+11. **Heads.** `startArrow` / `endArrow` through `DRAWIO_MARKERS`: `none` / `''` → no head; a known
     marker → `{ shape, exact }`; unknown → `{ shape: 'line', exact: false }`. `startFill` /
     `endFill` read as `'0'` (string) turn `triangle`, `circle`, `diamond` hollow (`-hollow`).
     `arrowEnds` from which ends carry a head; `arrowheadShape` = the end's shape, else the start's;
@@ -369,22 +395,23 @@ DRAWIO_DEFAULT_MARKER_SIZE) + strokeWidth`; the preset whose `arrowheadLengthPx(
 strokeWidth)` (`@livediagram/document`, the canvas marker's own size) is nearest `L`, omitted at
     `medium`. `arrowhead-approximated` += 1 when either head is not exact, or both ends carry heads
     of different shapes.
-11. **Stroke.** `strokeColor` hex → `paperColour(hex, 'ink')` (`none` → `opacity: 0`, D19);
+12. **Stroke.** `strokeColor` hex → `paperColour(hex, 'ink')` (`none` → `opacity: 0`, D19);
     `strokeWidth` px → `strokeWidth` (number, default 1, omitted at 2). `dashed` / `dashPattern` as
     vertices. `opacity` as vertices (no paper blend: an arrow has no fill). `link` as step 10.8.
-12. **Labels.** Parts: the edge's own label, then each visible child vertex's with `edgeLabel` or
-    `text` named style (in order), as rich lines: runs kept (colour through `paperColour`). Joined
-    with `\n`; more than one non-empty part → `label-moved` += 1. Font props as step 10.10 on the
-    arrow scale. Position (`route/label.ts`, port of `mxGraphView.updateEdgeLabelOffset` and
-    `getPoint`): the first labelled part's geometry (the edge's own when it has a value) gives
-    `x` (−1..1) and `y`, plus `offset`; the point on the route at `(x + 1) / 2` of its length,
-    moved `y` along the segment's normal, plus `offset`. `labelOffset = { t, offset }`: `t` the
-    length fraction of that point's projection on the snapped route, `offset` its signed
-    perpendicular distance; omitted when `t` is within `DRAWIO_LABEL_CENTRE_EPSILON` of 0.5 and
-    `offset` within 1 px. `labelMaxWidth` = the widest label line's width at the label's preset
-    (`LABEL_EM_ADVANCE` × preset px × characters), in livediagram px.
-13. A child vertex of an edge that is not a label is built as its own element at the route point of
-    step 12, right after the arrow.
+13. **Labels.** Parts: the edge's own label, then each visible child vertex's with `edgeLabel` or
+    `text` named style (in order), plain text. Joined with `\n`; more than one non-empty part →
+    `label-moved` += 1. Font props as step 10.10 on the arrow scale, from the first part with text;
+    `textColor` its `fontColor`, else the one colour every run of it shares (`soleRunColour`).
+    Position (`route/label.ts`): the edge's own label at `edgeLabelPoint` (port of
+    `mxGraphView.updateEdgeLabelOffset`: `getPoint` along `state` at geometry `x`, `y`, `offset`;
+    the ends' midpoint plus `offset` for an absolute geometry), else the first label child with
+    text at `childLabelPoint` (its box's corner at `getPoint` for a relative geometry, at the edge's
+    origin plus its `x`, `y` for an absolute one; the centre of that box). `labelOffset =
+projectToArrow(style, from, to, …, point, curvePoints)` on the arrow as built, always set when
+    there is a label. `labelMaxWidth = ceil(widest line's labelTextWidth(chars,
+arrowLabelFontSize(textSize)) × DRAWIO_CAPTION_WIDTH_SLACK)`, in livediagram px.
+14. A child vertex of an edge that is not a label is built as its own element with its box's corner
+    at `pointAlong(state, x, y, offset)` (`mxGraphView.getPoint`), right after the arrow.
 
 ### 13. Images
 
@@ -458,10 +485,11 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
 5. `group` class: no element; `forward[group] = ''` (connections loosen), children walked,
    `group-flattened` += 1.
 6. Elements carry `layerId` of their layer cell when layers were emitted.
-7. Pass 2: arrows, built in their queued paint positions, then any shapes riding on them (12.7).
+7. Pass 2 (`createEdgeBuilder`): arrows, built in their queued paint positions, then any shapes riding
+   on them (12.14); then `finish` places the ends on arrows (12.7).
 8. Truncation: output beyond `MAX_ELEMENTS_PER_TAB` dropped, `content-truncated` += dropped.
 9. **Scale** (`scalePage(elements, scale)`): about the page origin, multiply boxed `x`, `y`, `width`,
-   `height`, lane `headerSize`, table `rowHeights` / `colWidths`, arrow `curvePoints`, free
+   `height`, lane `headerSize`, table `rowHeights` / `colWidths`, arrow `curvePoints`, `curveOffset`, free
    endpoints and `labelOffset.offset`; `labelMaxWidth` is already in livediagram px. Stroke widths,
    presets and font sizes are untouched. Skipped at scale 1.
 10. Result `{ elements, layers?, backgroundColor? }`: `backgroundColor` is the page background unless
@@ -876,60 +904,67 @@ Refusals (the `error` string, final copy):
 
 ## Observability
 
-| Fingerprint                               | Level                | When                                                                                                                    |
-| ----------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `[drawio-import] refused`                 | `warn`               | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
-| `[drawio-import] page`                    | `trace` (`debugLog`) | Each page converted: `{ index, cells, elements }`                                                                       |
-| `[drawio-import] applied`                 | `trace` (`debugLog`) | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
-| `[drawio-import] json export laid out`    | `trace` (`debugLog`) | A graph-only JSON export laid out: `{ pages }`                                                                          |
-| `[drawio-import] library read`            | `trace` (`debugLog`) | A library decoded: `{ items, unreadable }`                                                                              |
-| `[drawio-import] library refused`         | `warn`               | A library refused: `{ reason: 'not-library'                                                                             | 'empty-library', items? }` |
-| `[drawio-import] library item unreadable` | `trace` (`debugLog`) | One library item left out: `{ cause }` (the error name and message, never content)                                      |
-| `[drawio-import] files`                   | `trace` (`debugLog`) | The Explorer read its picks: `{ files, diagrams, libraries, failures }`                                                 |
-| `[drawio-import] file unreadable`         | `warn`               | A picked file threw while reading: `{ error }`                                                                          |
-| `[drawio-import] import failed`           | `warn`               | The Explorer flow hit an unexpected error: `{ error }`; the panel shows the pick step with a message                    |
+| Fingerprint                                | Level                | When                                                                                                                    |
+| ------------------------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `[drawio-import] refused`                  | `warn`               | Any refusal: `{ reason, detail?, cause? }` (`cause` only for an unexpected error; never file content)                   |
+| `[drawio-import] page`                     | `trace` (`debugLog`) | Each page converted: `{ index, cells, elements }`                                                                       |
+| `[drawio-import] applied`                  | `trace` (`debugLog`) | The hook applied: `{ pages, elements, notes: kind→count, images? }` (the pipeline logs each image as `[import-images]`) |
+| `[drawio-import] json export laid out`     | `trace` (`debugLog`) | A graph-only JSON export laid out: `{ pages }`                                                                          |
+| `[drawio-import] library read`             | `trace` (`debugLog`) | A library decoded: `{ items, unreadable }`                                                                              |
+| `[drawio-import] library refused`          | `warn`               | A library refused: `{ reason: 'not-library'                                                                             | 'empty-library', items? }` |
+| `[drawio-import] library item unreadable`  | `trace` (`debugLog`) | One library item left out: `{ cause }` (the error name and message, never content)                                      |
+| `[drawio-import] files`                    | `trace` (`debugLog`) | The Explorer read its picks: `{ files, diagrams, libraries, failures }`                                                 |
+| `[drawio-import] file unreadable`          | `warn`               | A picked file threw while reading: `{ error }`                                                                          |
+| `[drawio-route] arrow`                     | `trace` (`debugLog`) | Each edge as an arrow: `{ edge, style, bends, from, to }` (anchors or end kinds)                                        |
+| `[drawio-route] end has no terminal state` | `trace` (`debugLog`) | An end routed from a point although it named a cell: `{ edge, end }`                                                    |
+| `[drawio-route] edge style not ported`     | `trace` (`debugLog`) | A router name the port does not carry: `{ name }`; the edge runs through its waypoints                                  |
+| `[drawio-route] perimeter not ported`      | `trace` (`debugLog`) | A perimeter name the port does not carry: `{ perimeter }`; it routes as a rectangle                                     |
+| `[drawio-route] edge has no route`         | `trace` (`debugLog`) | An edge with fewer than two points, left out: `{ edge }`                                                                |
+| `[drawio-import] import failed`            | `warn`               | The Explorer flow hit an unexpected error: `{ error }`; the panel shows the pick step with a message                    |
 
 ## Testing
 
 Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-environment jsdom`.
 
-| Rule (spec)                                                                                                                  | Test                                                                                                |
-| ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Inputs table                                                                                                                 | `envelope.test.ts`: each input form from the fixtures, each refusal                                 |
-| Compressed decode + zip-bomb guard                                                                                           | `inflate.test.ts`                                                                                   |
-| PNG chunks (tEXt, zTXt zlib + raw, iTXt, none)                                                                               | `png.test.ts`                                                                                       |
-| Style parsing and named styles                                                                                               | `style.test.ts`                                                                                     |
-| Colours                                                                                                                      | `colour.test.ts`                                                                                    |
-| Cell tree, geometry, layers, UserObject, placeholders                                                                        | `cells.test.ts`                                                                                     |
-| Labels, plain and HTML                                                                                                       | `label.test.ts`                                                                                     |
-| Shape table, stencils, unmatched                                                                                             | `shapes.test.ts`                                                                                    |
-| Vertex properties                                                                                                            | `vertex-props.test.ts`                                                                              |
-| Lanes (upright titles, square corners), entities, tables                                                                     | `containers.test.ts`                                                                                |
-| Edges                                                                                                                        | `edges.test.ts`                                                                                     |
-| Images, groups, hidden, collapsed, truncation, report                                                                        | `convert-page.test.ts`                                                                              |
-| Pages to tabs, page links, refusals, size limit                                                                              | `fixtures.test.ts` (via `importDrawio`)                                                             |
-| Every fixture valid + expected report                                                                                        | `fixtures.test.ts`                                                                                  |
-| Apply to tabs: names, folder, look, layers                                                                                   | `drawio-apply.test.ts`                                                                              |
-| Page images through one pipeline pass, split back per page                                                                   | `images.test.ts`                                                                                    |
-| One commit, new tabs marked loaded, telemetry, refusal and lock, embedded images stored (pipeline faked at its browser seam) | `useTabImport.drawio.test.ts`                                                                       |
-| Report tally                                                                                                                 | `notes.test.ts`                                                                                     |
-| The shared report: landed counts, rules in order, stencil names, outcome                                                     | `report.test.ts`                                                                                    |
-| Sniffing: every form, Drive saves without an extension, libraries, other files                                               | `envelope.test.ts`                                                                                  |
-| JSON export: the `data` path, the laid-out graph, labels, links, auto-layout rule                                            | `json-export.test.ts`                                                                               |
-| Libraries: items, image items, unreadable items, refusals, the tab dialog refusal                                            | `library.test.ts`                                                                                   |
-| Pages as the tabs of a new document, images in one pass                                                                      | `new-document.test.ts`                                                                              |
-| New documents from ready tabs: oversized tabs named, empty documents failed, per-source failures, offline                    | `board-scene-import.test.ts`                                                                        |
-| Files to documents: names, dates, kinds, failures, pick order                                                                | `files.test.ts`                                                                                     |
-| The Explorer flow and panel                                                                                                  | `useDrawioFileImport.test.ts`, `DrawioImportPanel.test.tsx`                                         |
-| Dialog routing (close vs summary)                                                                                            | `ImportTabDialog.test.tsx`                                                                          |
-| Page scale: ratios, clamp, no labels                                                                                         | `scale.test.ts`                                                                                     |
-| Paper colours: ink, paper, kept hex, run colours, arrows                                                                     | `colour.test.ts`                                                                                    |
-| Opacity over paper, overlap keeps opacity                                                                                    | `vertex-props.test.ts`                                                                              |
-| Provenance attributes, blank lines, clipped labels, dot rule                                                                 | `cells.test.ts`, `label.test.ts`, `vertex-props.test.ts`                                            |
-| Upright lanes, square lane corners                                                                                           | `containers.test.ts`                                                                                |
-| Ported routes against draw.io's own (OrthConnector, Elbow, EntityRelation, Segment, Loop, perimeters, constraints)           | `route/*.test.ts`, expected points taken from draw.io's CLI export of each fixture page (SVG paths) |
-| Snapped ends, shared ends exact, no route behind, on-arrow ends, free ends, heads, label position and width                  | `edges.test.ts`                                                                                     |
-| Captions below actors, icons, images; marks; endState; curlyBracket                                                          | `shapes.test.ts`, `convert-page.test.ts`                                                            |
+| Rule (spec)                                                                                                                  | Test                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Inputs table                                                                                                                 | `envelope.test.ts`: each input form from the fixtures, each refusal                                                     |
+| Compressed decode + zip-bomb guard                                                                                           | `inflate.test.ts`                                                                                                       |
+| PNG chunks (tEXt, zTXt zlib + raw, iTXt, none)                                                                               | `png.test.ts`                                                                                                           |
+| Style parsing and named styles                                                                                               | `style.test.ts`                                                                                                         |
+| Colours                                                                                                                      | `colour.test.ts`                                                                                                        |
+| Cell tree, geometry, layers, UserObject, placeholders                                                                        | `cells.test.ts`                                                                                                         |
+| Labels, plain and HTML                                                                                                       | `label.test.ts`                                                                                                         |
+| Shape table, stencils, unmatched                                                                                             | `shapes.test.ts`                                                                                                        |
+| Vertex properties                                                                                                            | `vertex-props.test.ts`                                                                                                  |
+| Lanes (upright titles, square corners), entities, tables                                                                     | `containers.test.ts`                                                                                                    |
+| Edges                                                                                                                        | `edges.test.ts`                                                                                                         |
+| Images, groups, hidden, collapsed, truncation, report                                                                        | `convert-page.test.ts`                                                                                                  |
+| Pages to tabs, page links, refusals, size limit                                                                              | `fixtures.test.ts` (via `importDrawio`)                                                                                 |
+| Every fixture valid + expected report                                                                                        | `fixtures.test.ts`                                                                                                      |
+| Apply to tabs: names, folder, look, layers                                                                                   | `drawio-apply.test.ts`                                                                                                  |
+| Page images through one pipeline pass, split back per page                                                                   | `images.test.ts`                                                                                                        |
+| One commit, new tabs marked loaded, telemetry, refusal and lock, embedded images stored (pipeline faked at its browser seam) | `useTabImport.drawio.test.ts`                                                                                           |
+| Report tally                                                                                                                 | `notes.test.ts`                                                                                                         |
+| The shared report: landed counts, rules in order, stencil names, outcome                                                     | `report.test.ts`                                                                                                        |
+| Sniffing: every form, Drive saves without an extension, libraries, other files                                               | `envelope.test.ts`                                                                                                      |
+| JSON export: the `data` path, the laid-out graph, labels, links, auto-layout rule                                            | `json-export.test.ts`                                                                                                   |
+| Libraries: items, image items, unreadable items, refusals, the tab dialog refusal                                            | `library.test.ts`                                                                                                       |
+| Pages as the tabs of a new document, images in one pass                                                                      | `new-document.test.ts`                                                                                                  |
+| New documents from ready tabs: oversized tabs named, empty documents failed, per-source failures, offline                    | `board-scene-import.test.ts`                                                                                            |
+| Files to documents: names, dates, kinds, failures, pick order                                                                | `files.test.ts`                                                                                                         |
+| The Explorer flow and panel                                                                                                  | `useDrawioFileImport.test.ts`, `DrawioImportPanel.test.tsx`                                                             |
+| Dialog routing (close vs summary)                                                                                            | `ImportTabDialog.test.tsx`                                                                                              |
+| Page scale: ratios, clamp, no labels                                                                                         | `scale.test.ts`                                                                                                         |
+| Paper colours: ink, paper, kept hex, run colours, arrows                                                                     | `colour.test.ts`                                                                                                        |
+| Opacity over paper, overlap keeps opacity                                                                                    | `vertex-props.test.ts`                                                                                                  |
+| Provenance attributes, blank lines, clipped labels, dot rule                                                                 | `cells.test.ts`, `label.test.ts`, `vertex-props.test.ts`                                                                |
+| Upright lanes, square lane corners                                                                                           | `containers.test.ts`                                                                                                    |
+| Ported routes against draw.io's own (OrthConnector, Elbow, EntityRelation, Segment, Loop, perimeters, constraints)           | `route/page.test.ts` against `__fixtures__/routes/*.json`: draw.io's CLI SVG paths (`scripts/drawio-route-goldens.mts`) |
+| Snapped ends, shared ends exact, no route behind, on-arrow ends, free ends, heads, label position and width                  | `edges.test.ts`                                                                                                         |
+| Anchor by exit side, simplify, snap, step, route shape, sampled curves within the tolerance                                  | `arrow-route.test.ts`                                                                                                   |
+| The renderer draws imported angled routes as stored; a slanted line's end legs squared (accepted loss)                       | `route-render.test.ts`                                                                                                  |
+| Captions below actors, icons, images; marks; endState; curlyBracket                                                          | `shapes.test.ts`, `convert-page.test.ts`                                                                                |
 
 End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-stack.mjs`) picks each fixture form through the Import dialog, checks the summary, the tabs and what the api stored, and that one undo removes the new tabs. Its Explorer case picks a synthesised Drive save (no extension, three compressed pages), a JSON export and a text file through Import from draw.io, checks the list, the report and the stored tabs of the new document. `DRAWIO_SHOTS=<dir>` also saves screenshots.
 
@@ -947,7 +982,6 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_CAPTION_PADDING_PX`                     | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D23; 8 to 24                                                                               |
 | `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts) | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D29                                                                                    |
 | `WHITE` (convert-page.ts)                       | `#fff`, `#ffffff`, `#ffffffff`                                                                                                                              | draw.io's default page                                                                                                                        |
-| `DRAWIO_LABEL_CENTRE_EPSILON`                   | 0.05                                                                                                                                                        | D24; 0 to 0.2                                                                                                                                 |
 | `DRAWIO_REPORT_NAMES_MAX`                       | 5                                                                                                                                                           | D25; 3 to 10                                                                                                                                  |
 | `DRAWIO_ANGLED_EDGE_STYLES`                     | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                                                                                                               |
 | `DRAWIO_EXTENSIONS`                             | `.drawio.svg`, `.drawio.png`, `.drawio`, `.xml`, `.json`, `.svg`, `.png`                                                                                    | The spec's names rule                                                                                                                         |
@@ -973,6 +1007,12 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `LABEL_EM_ADVANCE`                              | 0.4785                                                                                                                                                      | Mean advance per em of the reference text in the canvas label face (system UI stack, weight 500), measured in Chromium on Linux; 0.45 to 0.52 |
 | `HELVETICA_EM_ADVANCE`                          | 0.4746                                                                                                                                                      | The same for Helvetica / Arial / Liberation Sans (metric-compatible) at 400                                                                   |
 | `DRAWIO_DEFAULT_MARKER_SIZE`                    | 6                                                                                                                                                           | `mxConstants.DEFAULT_MARKERSIZE`                                                                                                              |
+| `DRAWIO_DEFAULT_GRID_SIZE`                      | 10                                                                                                                                                          | `mxGraph.gridSize`, when the model names none                                                                                                 |
+| `DRAWIO_AXIS_TOLERANCE_PX`                      | 1                                                                                                                                                           | draw.io paints a corner within a pixel of the one before as a lean (`mxShape.getWaypoints`); 0.5 to 2                                         |
+| `DRAWIO_CURVE_TOLERANCE_PX`                     | 2                                                                                                                                                           | Operator decision: a sampled curve within about 2 px of draw.io's; 1 to 3                                                                     |
+| `DRAWIO_CURVE_SAMPLES_PER_PIECE`                | 16                                                                                                                                                          | D44; 8 to 32                                                                                                                                  |
+| `DRAWIO_CAPTION_WIDTH_SLACK`                    | 1.2                                                                                                                                                         | D43; 1.1 to 1.4                                                                                                                               |
+| `ORTH_BUFFER` (route/orth-connector.ts)         | 10                                                                                                                                                          | `mxEdgeStyle.orthBuffer`                                                                                                                      |
 
 ## Assets and external resources
 
@@ -984,8 +1024,16 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 - No vendor artwork is copied: stencil names are identifiers, and icons render from livediagram's
   own catalogues.
 - `lib/drawio/route/` ports draw.io's view geometry (jgraph/drawio v31.7.0, `mxGraphView`,
-  `mxEdgeStyle`, `mxPerimeter`, parts of `Graph.js`; Apache-2.0). Each ported function names its
-  source function; the licences package lists it as an embedded work (`drawio-mxgraph`, triggered by
-  `apps/live/lib/drawio/route/`) with draw.io's `LICENSE` text committed under `packages/licences/texts/`.
+  `mxEdgeStyle`, `mxPerimeter`, `mxUtils`, `mxShape.getWaypoints`, parts of `Graph.js` and
+  `Shapes.js`; Apache-2.0). Each file opens with draw.io's copyright and a change notice, and each
+  ported function names its source; the licences package lists it as an embedded work
+  (`drawio-mxgraph`, triggered by each ported file under `apps/live/lib/drawio/route/`) with
+  draw.io's `LICENSE` committed as `packages/licences/texts/drawio-31.7.0-LICENSE.txt`, and
+  `THIRD_PARTY_NOTICES.md` names it.
+- `lib/drawio/__fixtures__/routes.drawio` (hand-written, MIT) holds the route cases (trunks,
+  floating ends, waypoints and routers, curves, edges on edges); `__fixtures__/routes/*.json` are
+  draw.io's own paths for every fixture edge, regenerated with
+  `pnpm --filter @livediagram/live exec tsx scripts/drawio-route-goldens.mts --drawio <bin>` (draw.io
+  desktop's CLI under `xvfb-run`).
 - New Technology icons for vendor stencils met in real diagrams (`aws-lake-formation`, `aws-msk`) are
   authored in-repo as the catalogue's tile + white glyph (Technology icons spec), not copied.

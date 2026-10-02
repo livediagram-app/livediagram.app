@@ -77,6 +77,9 @@ export function scalePage(elements: Element[], k: number): Element[] {
         ...(el.curvePoints
           ? { curvePoints: el.curvePoints.map((p) => ({ dx: p.dx * k, dy: p.dy * k })) }
           : {}),
+        ...(el.curveOffset
+          ? { curveOffset: { dx: el.curveOffset.dx * k, dy: el.curveOffset.dy * k } }
+          : {}),
         ...(el.labelOffset
           ? { labelOffset: { ...el.labelOffset, offset: el.labelOffset.offset * k } }
           : {}),

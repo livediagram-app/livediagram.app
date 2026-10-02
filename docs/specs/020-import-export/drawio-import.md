@@ -128,6 +128,7 @@ draw.io sets labels in 12 px Helvetica; livediagram's labels are larger and heav
 fills its draw.io box would overflow the same box here. Rather than shrink livediagram's text or the
 author's words, **the whole page scales up**: every position, size, waypoint and label offset is
 multiplied by the page scale, so each label keeps the room draw.io gave it, in livediagram's own type.
+Routes are worked out in draw.io's units first and scale with the page.
 
 - The page scale is how much wider livediagram sets the page's **commonest label size** than draw.io
   does: the width of a reference text in livediagram's label face at the preset that size maps to,
@@ -356,14 +357,17 @@ When the cell has no label, the box is labelled with the stencil's readable name
 - **draw.io's route, exactly.** The importer works out the path draw.io itself draws for every edge,
   with draw.io's own rules (its view: terminal perimeters, `exitX` / `entryX` constraints, the edge
   style's router, waypoints, `jettySize`, loops), ported from draw.io's open-source graph library
-  (Apache-2.0, credited on the licences page). The arrow is that path; nothing is guessed
-  (operator decision).
+  (Apache-2.0, credited on the licences page). The path is the one draw.io paints: a corner less
+  than a pixel from the one before it is left out, as draw.io leaves it out. The arrow is that
+  path; nothing is guessed (operator decision).
 - **Ends.** An edge's `source` / `target` pin its ends to the elements they became, at the anchor
-  nearest the point where draw.io's path meets the shape. Where that anchor is not the point itself,
-  the path's end segment moves with it and stays on its axis, so an orthogonal route stays
-  orthogonal. A cell that was consumed (an entity row, a table cell, a dropped group) hands its
+  nearest the point where draw.io's path meets the shape, among the anchors on the side the path
+  leaves through (an end segment running down leaves through the bottom, even from a side's
+  middle); a slanted end segment takes the nearest anchor of all. Where that anchor is not the
+  point itself, the path's end segment moves with it and stays on its axis, so an orthogonal route
+  stays orthogonal; a level route whose ends no longer line up steps halfway along. A cell that was consumed (an entity row, a table cell, a dropped group) hands its
   connections to the nearest ancestor that became an element. An end on another edge attaches to that
-  arrow's line (`on-arrow`) where draw.io's path meets it. An end with no cell is a free end at its
+  arrow's line (`on-arrow`) at the place along it nearest where draw.io's path meets it. An end with no cell is a free end at its
   point (`sourcePoint` / `targetPoint`), so a legend's loose arrow keeps its length. One that had a
   cell but has nowhere to pin is counted (`connection-loosened`).
 - **Shared ends stay shared.** draw.io lets edges leave or enter one point together and run along
@@ -371,12 +375,19 @@ When the cell has no label, the box is labelled with the stencil's readable name
   stays one line.
 - **Crossings stay.** draw.io draws an edge over whatever it crosses; an imported arrow does not
   route behind boxes (`routeBehind: false`), so no part of it disappears under a shape.
-- **Route.** An orthogonal route (`orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`,
-  `segmentEdgeStyle`, `isometricEdgeStyle` and the other routers) is `angled` through every corner
-  of draw.io's path; a `curved=1` edge is `curved` through the same corners, as draw.io smooths them;
-  an edge with no style is `straight`, through its waypoints as a polyline. The corners are
-  `curvePoints`, stored as the angled bend points [Arrow bending](../008-canvas/arrow-bending.md)
-  defines.
+- **Route.** A path with no corners is `straight`, whatever its router. An orthogonal route
+  (`orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`,
+  `isometricEdgeStyle` and the other routers) is `angled` through every corner of draw.io's path,
+  the corners stored as the angled bend points [Arrow bending](../008-canvas/arrow-bending.md)
+  defines; an edge with no router is an `angled` polyline through its waypoints. A `curved=1` edge
+  is `curved`: with one corner it is draw.io's own curve exactly (one bow, the corner its control
+  point, `curveOffset`); with two or more, draw.io smooths through the middle of each segment with
+  the corners as control points, which livediagram's curve through bend points cannot draw, so the
+  curve comes in through points sampled on draw.io's curve (`curvePoints`), the fewest that keep
+  the drawn curve within `DRAWIO_CURVE_TOLERANCE_PX` of draw.io's (operator decision), so it
+  stays easy to reshape.
+- **A shape riding on an edge** (a vertex inside the edge that is not a label) has its corner where
+  draw.io puts it along the route.
 - **Heads.** `endArrow` / `startArrow` decide `arrowEnds` (draw.io's default end is `classic`, its
   default start none). The head shape is one per arrow: the end's, else the start's. `classic`,
   `block`, `classicThin`, `blockThin` to `triangle`; `open`, `openThin` to `line`; `oval`, `circle`
@@ -390,13 +401,16 @@ When the cell has no label, the box is labelled with the stencil's readable name
 - **Stroke.** `strokeColor`, `strokeWidth` (px, kept as a number), `dashed`, `opacity` as for
   vertices.
 - **Labels.** The edge's own value and its `edgeLabel` children form the arrow's one label; several
-  labels join with a line break and are counted (`label-moved`). The label sits where draw.io puts
-  it on the routed path: its geometry `x` (-1 to 1 along the path's length) and `y` plus its offset
-  (sideways) become `labelOffset`, measured along the same path the arrow draws, curved or not.
-  The caption keeps draw.io's lines: `labelMaxWidth` is its widest line's measured width, so it
-  wraps only where the author broke it ([Arrow labels](../008-canvas/arrow-labels.md)).
-  Font size and styling map as for vertex labels, on the arrow caption scale; coloured runs keep
-  their colour.
+  labels join with a line break and are counted (`label-moved`). The label sits where draw.io centres
+  it on the routed path (the edge's own label by its geometry, else the first label child by its
+  own): `x` (-1 to 1 along the path's length) and `y` plus its offset (sideways). That point becomes
+  `labelOffset`, measured along the same path the arrow draws, curved or not; every imported label
+  is placed this way, the middle included, so none slides to dodge as an auto-placed label would.
+  The caption keeps draw.io's lines: `labelMaxWidth` is its widest line's estimated width with
+  room to spare (`DRAWIO_CAPTION_WIDTH_SLACK`), so it wraps only where the author broke it
+  ([Arrow labels](../008-canvas/arrow-labels.md)). Font size and styling map as for vertex labels,
+  on the arrow caption scale. A caption has no runs: a label set in one colour throughout keeps that
+  colour; one coloured in part is drawn in one colour.
 
 ### Images
 
@@ -500,7 +514,18 @@ These differ from draw.io for every file and are not worth a line each time:
 - Gradients (`gradientColor`), glass, `sketch=1` hand-drawn rendering (operator decision: livediagram
   keeps its own lines), `fillStyle` hatching: solid fills.
 - Rounded corners on connector bends; jump-overs (`jumpStyle`); edge `labelBackgroundColor` (captions
-  keep livediagram's knockout).
+  keep livediagram's knockout, so labels draw.io stacks on one spot, the lower hidden by the upper's
+  background, both show).
+- A slanted line's first and last leg come in squared: livediagram draws the leg next to a pinned
+  end square to its anchor, so a straight edge with waypoints moves its first and last waypoint
+  (operator decision).
+- A curve with two or more corners comes in through sampled points, within
+  `DRAWIO_CURVE_TOLERANCE_PX` of draw.io's curve rather than on it.
+- Parts of a label coloured differently: a caption takes one colour.
+- Routing details that need draw.io's stencil artwork: a fixed-aspect stencil's narrower routing box,
+  `snapToPoint` to a stencil's connection points, and the isometric router's skew (it routes as the
+  elbow it is drawn from); perimeters draw.io registers that the port does not carry
+  (`lifelinePerimeter`, the older `hexagonPerimeter`, ...) route as rectangles.
 - `spacing*`, `perimeterSpacing`, `whiteSpace`, `overflow`, `textOpacity`, `fillOpacity`,
   `strokeOpacity`, `labelBorderColor`: livediagram lays text out itself.
 - Page size, grid, guides, page view and print settings; the page's zoom and scroll.

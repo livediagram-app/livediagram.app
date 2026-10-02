@@ -6,18 +6,21 @@
 
 import {
   anchorPosition,
-  offeredAnchors,
-  type Anchor,
+  arrowLabelFontSize,
+  projectToArrow,
   type ArrowElement,
   type ArrowheadShape,
-  type ArrowStyle,
   type BoxedElement,
   type Endpoint,
+  type TextSize,
 } from '@livediagram/document';
+import { debugLog } from '@/lib/debug-log';
+import { exitSide, nearestAnchor, routeShape, simplifyRoute, snapRouteEnds } from './arrow-route';
 import type { DrawioCell, Pt } from './cells';
 import { readInk } from './colour';
 import { cellLabel } from './label';
-import { DRAWIO_DEFAULT_MARKER_SIZE, DRAWIO_LABEL_CENTRE_EPSILON } from './limits';
+import { DRAWIO_DEFAULT_MARKER_SIZE } from './limits';
+import { labelTextWidth } from './text-size';
 import type { DrawioStyle } from './style';
 import { arrowheadSizePreset, dashStyle, elementLink, textProps } from './vertex-props';
 import type { PageContext } from './vertices';
@@ -69,139 +72,80 @@ function marker(style: DrawioStyle, end: 'start' | 'end'): Marker | null {
   return filled ? m : { ...m, shape: HOLLOW[m.shape] ?? m.shape };
 }
 
-/** Where an edge end attaches, as the converter resolved it. */
+/** Where an edge end attaches, as the converter resolved it: an element, another edge's arrow,
+ *  or nothing (a free end at the route's point; `loosened` when it had a cell). */
 export type EndTarget =
-  { kind: 'element'; element: BoxedElement } | { kind: 'point'; at: Pt; loosened: boolean };
+  | { kind: 'element'; element: BoxedElement }
+  | { kind: 'arrow'; arrowId: string }
+  | { kind: 'point'; loosened: boolean };
 
 export type EdgeInput = {
   cell: DrawioCell;
   source: EndTarget;
   target: EndTarget;
-  /** Waypoints, absolute. */
-  waypoints: Pt[];
+  /** draw.io's route as it paints it, both ends included, absolute (route/page.ts). */
+  route: Pt[];
   /** The edge's label children. */
   labels: DrawioCell[];
+  /** Where draw.io centres the label (route/label.ts), absolute. */
+  labelAt?: Pt;
 };
 
-const centre = (el: BoxedElement): Pt => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
+/** How much wider than its estimate a caption line may be before it wraps: the estimate is the
+ *  label face's mean advance, and a line of wide letters runs past it (D43). Safe range: 1.1 to 1.4. */
+export const DRAWIO_CAPTION_WIDTH_SLACK = 1.2;
 
-// Where the segment from the box centre towards `toward` leaves the box, and
-// through which side.
-function boxExit(el: BoxedElement, toward: Pt): { at: Pt; side: Anchor } {
-  const c = centre(el);
-  const dx = toward.x - c.x;
-  const dy = toward.y - c.y;
-  if (dx === 0 && dy === 0) return { at: c, side: 'e' };
-  const sx = dx === 0 ? Infinity : el.width / 2 / Math.abs(dx);
-  const sy = dy === 0 ? Infinity : el.height / 2 / Math.abs(dy);
-  const s = Math.min(sx, sy);
-  const side: Anchor = sx <= sy ? (dx > 0 ? 'e' : 'w') : dy > 0 ? 's' : 'n';
-  return { at: { x: c.x + dx * s, y: c.y + dy * s }, side };
+/** The caption's own wrap width (blueprint step 12.13): its widest line at its size, with slack, so
+ *  it breaks only where the author broke it. */
+function captionWidth(label: string, size: TextSize | undefined): number {
+  const px = arrowLabelFontSize(size ?? 'sm');
+  const widest = Math.max(...label.split('\n').map((line) => labelTextWidth(line.length, px)));
+  return Math.ceil(widest * DRAWIO_CAPTION_WIDTH_SLACK);
 }
 
-function nearestAnchor(el: BoxedElement, point: Pt): Anchor {
-  let best: Anchor = 'e';
-  let bestD = Infinity;
-  for (const anchor of offeredAnchors(el)) {
-    const at = anchorPosition(el, anchor);
-    const d = (at.x - point.x) ** 2 + (at.y - point.y) ** 2;
-    if (d < bestD) {
-      bestD = d;
-      best = anchor;
-    }
-  }
-  return best;
+/** The one colour every run of a label is set in, when they share one: an arrow caption has no runs,
+ *  so a label coloured whole keeps its colour, and one coloured in part is drawn in one. */
+function soleRunColour(cell: DrawioCell): string | undefined {
+  const runs = cellLabel(cell).runs?.filter((r) => r.text.trim() !== '');
+  const first = runs?.[0]?.color;
+  return first && runs!.every((r) => r.color === first) ? first : undefined;
 }
 
-const referenceOf = (end: EndTarget): Pt => (end.kind === 'element' ? centre(end.element) : end.at);
-
-function endpoint(
-  end: EndTarget,
-  style: DrawioStyle,
-  prefix: 'exit' | 'entry',
-  toward: Pt,
-  routed: boolean,
-  ctx: PageContext,
-): Endpoint {
-  if (end.kind === 'point') {
-    if (end.loosened) ctx.tally.add('connection-loosened');
-    return { kind: 'free', x: end.at.x, y: end.at.y };
+// A pinned end on the anchor nearest the route's end, on the axis the route leaves along; an end
+// on another edge on that edge's arrow (its place along it is resolved once every arrow exists);
+// anything else free at the route's end.
+function endpoint(end: EndTarget, at: Pt, next: Pt, ctx: PageContext) {
+  if (end.kind === 'element') {
+    const anchor = nearestAnchor(end.element, at, exitSide(at, next));
+    return {
+      endpoint: { kind: 'pinned', elementId: end.element.id, anchor } as Endpoint,
+      at: anchorPosition(end.element, anchor),
+    };
   }
-  const el = end.element;
-  const fx = style.num(`${prefix}X`);
-  const fy = style.num(`${prefix}Y`);
-  const fixed = fx !== undefined && fy !== undefined;
-  if (fixed) {
-    const point = { x: el.x + fx * el.width, y: el.y + fy * el.height };
-    return { kind: 'pinned', elementId: el.id, anchor: nearestAnchor(el, point) };
+  if (end.kind === 'arrow') {
+    return { endpoint: { kind: 'on-arrow', arrowId: end.arrowId, t: 0 } as Endpoint, at };
   }
-  const exit = boxExit(el, toward);
-  // An orthogonal route leaves square to the side it crosses: that side's middle.
-  const anchor =
-    routed && offeredAnchors(el).includes(exit.side) ? exit.side : nearestAnchor(el, exit.at);
-  return { kind: 'pinned', elementId: el.id, anchor };
-}
-
-const positionOf = (ep: Endpoint, end: EndTarget): Pt =>
-  ep.kind === 'pinned' && end.kind === 'element'
-    ? anchorPosition(end.element, ep.anchor)
-    : ep.kind === 'free'
-      ? { x: ep.x, y: ep.y }
-      : referenceOf(end);
-
-// Right-angle corners between consecutive points that differ in both axes.
-// `vertical` is the direction the next segment leaves in: a corner keeps it
-// (the leg into the next point turns), a straight leg flips it.
-function orthogonal(points: Pt[], firstVertical: boolean): Pt[] {
-  const out: Pt[] = [points[0]!];
-  let vertical = firstVertical;
-  for (const q of points.slice(1)) {
-    const p = out[out.length - 1]!;
-    if (p.x !== q.x && p.y !== q.y) {
-      out.push(vertical ? { x: p.x, y: q.y } : { x: q.x, y: p.y });
-    } else {
-      vertical = p.y === q.y;
-    }
-    out.push(q);
-  }
-  return out;
+  if (end.loosened) ctx.tally.add('connection-loosened');
+  return { endpoint: { kind: 'free', x: at.x, y: at.y } as Endpoint, at };
 }
 
 export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): ArrowElement {
-  const { cell, source, target, waypoints } = input;
+  const { cell, source, target } = input;
   const s = cell.style;
-  const edgeStyle = s.str('edgeStyle') ?? '';
-  // A routed edge leaves and enters through side middles. `curved=1` wins over the router:
-  // draw.io smooths the routed path into a curve.
-  const routed = DRAWIO_ANGLED_EDGE_STYLES.has(edgeStyle);
-  const route: ArrowStyle = s.flag('curved') ? 'curved' : routed ? 'angled' : 'straight';
-  const angled = route === 'angled';
-
-  const from = endpoint(source, s, 'exit', waypoints[0] ?? referenceOf(target), routed, ctx);
-  const to = endpoint(
-    target,
-    s,
-    'entry',
-    waypoints[waypoints.length - 1] ?? referenceOf(source),
-    routed,
-    ctx,
-  );
-
-  const fromAt = positionOf(from, source);
-  const toAt = positionOf(to, target);
-  let bends: Pt[] = [];
-  if (waypoints.length > 0) {
-    if (angled) {
-      const firstVertical = from.kind === 'pinned' && (from.anchor === 'n' || from.anchor === 's');
-      bends = orthogonal([fromAt, ...waypoints, toAt], firstVertical).slice(1, -1);
-    } else {
-      bends = waypoints;
-    }
-  }
-  const mid = { x: (fromAt.x + toAt.x) / 2, y: (fromAt.y + toAt.y) / 2 };
-  const curvePoints = bends.map((p) => ({ dx: p.x - mid.x, dy: p.y - mid.y }));
-  // A bent straight edge is a polyline: an angled arrow through its points.
-  const arrowStyle: ArrowStyle = curvePoints.length > 0 && route === 'straight' ? 'angled' : route;
+  const orthogonal = DRAWIO_ANGLED_EDGE_STYLES.has(s.str('edgeStyle') ?? '');
+  const route = simplifyRoute(input.route);
+  const n = route.length;
+  const from = endpoint(source, route[0]!, route[1]!, ctx);
+  const to = endpoint(target, route[n - 1]!, route[n - 2]!, ctx);
+  const points = snapRouteEnds(route, from.at, to.at, orthogonal);
+  const shape = routeShape(points, s.flag('curved'));
+  debugLog('[drawio-route] arrow', {
+    edge: cell.id,
+    style: shape.arrowStyle,
+    bends: points.length - 2,
+    from: from.endpoint.kind === 'pinned' ? from.endpoint.anchor : from.endpoint.kind,
+    to: to.endpoint.kind === 'pinned' ? to.endpoint.anchor : to.endpoint.kind,
+  });
 
   const start = marker(s, 'start');
   const end = marker(s, 'end');
@@ -224,25 +168,44 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
   const strokeStyle = dashStyle(s);
   const link = elementLink(cell.link, ctx);
 
-  // One label: the edge's own, then its label children, one per line.
-  const parts = [cell, ...input.labels].map((c) => cellLabel(c).plain).filter((t) => t !== '');
+  // One label: the edge's own, then its label children, one per line, styled by the first.
+  const labelled = [cell, ...input.labels].filter((c) => cellLabel(c).plain !== '');
+  const parts = labelled.map((c) => cellLabel(c).plain);
   if (parts.length > 1) ctx.tally.add('label-moved');
-  const styled = cell.value.trim() === '' && input.labels[0] ? input.labels[0] : cell;
+  const styled = labelled[0] ?? cell;
   const text = textProps(styled, ctx, { scale: 'arrow', rich: false, outsideMovesIn: false });
-  const placed = input.labels.find((c) => cellLabel(c).plain !== '')?.geometry;
-  const offsetT =
-    placed && Math.abs(placed.x) > DRAWIO_LABEL_CENTRE_EPSILON ? (placed.x + 1) / 2 : undefined;
+  const textColor = text.textColor ?? soleRunColour(styled);
+  const label = parts.join('\n');
+  const placement =
+    parts.length > 0 && input.labelAt
+      ? projectToArrow(
+          shape.arrowStyle,
+          from.at,
+          to.at,
+          from.endpoint,
+          to.endpoint,
+          shape.curveOffset,
+          undefined,
+          input.labelAt,
+          shape.curvePoints,
+        )
+      : undefined;
 
   return {
     id,
     type: 'arrow',
-    from,
-    to,
+    from: from.endpoint,
+    to: to.endpoint,
+    // draw.io's ends meet where it draws them, and its lines cross what they cross.
+    ...(from.endpoint.kind === 'pinned' ? { exactStart: true } : {}),
+    ...(to.endpoint.kind === 'pinned' ? { exactEnd: true } : {}),
+    routeBehind: false,
     ...(arrowEnds !== 'to' ? { arrowEnds } : {}),
     ...(head && head !== 'triangle' ? { arrowheadShape: head } : {}),
     ...(headSize !== 'medium' ? { arrowheadSize: headSize } : {}),
-    ...(arrowStyle !== 'straight' ? { arrowStyle } : {}),
-    ...(curvePoints.length > 0 ? { curvePoints } : {}),
+    ...(shape.arrowStyle !== 'straight' ? { arrowStyle: shape.arrowStyle } : {}),
+    ...(shape.curvePoints ? { curvePoints: shape.curvePoints } : {}),
+    ...(shape.curveOffset ? { curveOffset: shape.curveOffset } : {}),
     ...(stroke.kind === 'hex' ? { strokeColor: stroke.value } : {}),
     ...(width !== 2 ? { strokeWidth: width } : {}),
     ...(strokeStyle ? { strokeStyle } : {}),
@@ -255,15 +218,16 @@ export function buildArrow(input: EdgeInput, ctx: PageContext, id: string): Arro
     ...(link ? { link } : {}),
     ...(parts.length > 0
       ? {
-          label: parts.join('\n'),
+          label,
           textSize: text.textSize,
           ...(text.textBold ? { textBold: true } : {}),
           ...(text.textItalic ? { textItalic: true } : {}),
           ...(text.textUnderline ? { textUnderline: true } : {}),
           ...(text.textStrikethrough ? { textStrikethrough: true } : {}),
-          ...(text.textColor ? { textColor: text.textColor } : {}),
+          ...(textColor ? { textColor } : {}),
           ...(text.font ? { font: text.font } : {}),
-          ...(offsetT !== undefined ? { labelOffset: { t: offsetT, offset: placed!.y } } : {}),
+          ...(placement ? { labelOffset: placement } : {}),
+          labelMaxWidth: captionWidth(label, text.textSize),
         }
       : {}),
   };

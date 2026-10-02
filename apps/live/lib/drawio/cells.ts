@@ -45,7 +45,12 @@ export type DrawioGraph = {
   layerIds: string[];
   background?: string;
   backgroundImage: boolean;
+  /** The page's grid size (draw.io's loop router reads it); 10, draw.io's default, when unset. */
+  gridSize: number;
 };
+
+/** draw.io's default grid size (`mxGraph.gridSize`). */
+export const DRAWIO_DEFAULT_GRID_SIZE = 10;
 
 // Wrapper attributes that are not custom properties.
 const WRAPPER_KEYS = new Set(['id', 'label', 'link', 'tooltip', 'placeholders']);
@@ -146,8 +151,18 @@ function readCell(el: Element): DrawioCell | null {
 
 export function readGraph(model: Element | null): DrawioGraph {
   const cells = new Map<string, DrawioCell>();
-  const graph: DrawioGraph = { cells, rootId: '0', layerIds: [], backgroundImage: false };
+  const graph: DrawioGraph = {
+    cells,
+    rootId: '0',
+    layerIds: [],
+    backgroundImage: false,
+    gridSize: DRAWIO_DEFAULT_GRID_SIZE,
+  };
   if (!model) return graph;
+  const gridSize = Number(model.getAttribute('gridSize'));
+  if (model.hasAttribute('gridSize') && Number.isFinite(gridSize) && gridSize > 0) {
+    graph.gridSize = gridSize;
+  }
 
   const bg = readColour(model.getAttribute('background') ?? undefined);
   if (bg.kind === 'hex') graph.background = bg.value;

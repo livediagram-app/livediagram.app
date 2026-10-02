@@ -99,9 +99,11 @@ describe('flowchart.drawio', () => {
       textItalic: true,
       textColor: '#666666',
     });
+    // draw.io routes "No" level from the decision's tip into the retry shape: a straight line,
+    // however its router is named.
     const no = arrows(page!).find((a) => a.label === 'No')!;
+    expect(no.arrowStyle).toBeUndefined();
     expect(no).toMatchObject({
-      arrowStyle: 'angled',
       from: { kind: 'pinned', anchor: 'w' },
       to: { kind: 'pinned', anchor: 'e' },
       labelOffset: { t: 0.4, offset: 0 },
