@@ -45,11 +45,26 @@ where it is and changes only how the next mark is made.
   document; the selection is kept, an in-progress gesture or text edit is
   finished first, and the canvas viewport does not move.
 - **Where it is offered:** on general tabs, to anyone who can edit. A view-role
-  visitor sees no switch.
+  visitor sees no switch and sees the tab in its opening mode.
+- **Not on event-storming boards:** the tab kind keeps its own tools and
+  notation, and shows no switch.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
   moves when the mode changes.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
   technology, its text and focus ring at least WCAG 2.2 AA.
+
+## Where the mode lives
+
+- **Per person, per tab.** Each person chooses their own editor mode on each
+  tab; switching changes nothing for anyone else. Two collaborators may work
+  on the same tab in different modes at once.
+- **The tab says what it opens in.** A general tab stores the mode it
+  **opens in** (`Tab.opensIn`, `diagram` when absent). A person who has not
+  switched on that tab sees it in that mode; the Whiteboard template, Quick
+  Start entry and whiteboard imports set it to `draw`.
+- **A switch is remembered** for that person and tab, in this browser, and
+  wins over the tab's opening mode from then on.
+- **Switching never changes the opening mode.**
 
 ## What a mode brings into focus
 
