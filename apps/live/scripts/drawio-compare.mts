@@ -14,7 +14,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { basename, join, relative } from 'node:path';
 import { chromium, type Page } from '@playwright/test';
 
 type Args = { paths: string[]; out: string; base: string; drawio?: string; only?: string };
@@ -46,7 +46,7 @@ const filesUnder = (path: string): string[] =>
     : [path];
 
 const slugOf = (root: string, file: string) =>
-  (relative(root, file) || file)
+  (relative(root, file) || basename(file))
     .replace(/\.(drawio|xml|png|svg)$/i, '')
     .replace(/[^A-Za-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
@@ -109,7 +109,29 @@ async function importThroughDialog(page: Page, base: string, file: string) {
   await (await chooser).setFiles(file);
   // A clean import closes the dialog; one with a report waits on Done.
   const done = page.getByRole('button', { name: 'Done' });
-  if (await done.isVisible({ timeout: 30_000 }).catch(() => false)) await done.click();
+  const dialog = page.getByRole('dialog');
+  for (let waited = 0; waited < 30_000; waited += 250) {
+    if (await done.isVisible()) {
+      await done.click();
+      break;
+    }
+    if ((await dialog.count()) === 0) break;
+    await page.waitForTimeout(250);
+  }
+  // Panels off the canvas, so only the diagram is in the shot.
+  for (const panel of ['Explorer', 'Palette', 'Map']) {
+    const collapse = page
+      .getByRole('button', { name: new RegExp(`^(collapse|minimi[sz]e|hide).*${panel}`, 'i') })
+      .first();
+    if (await collapse.isVisible().catch(() => false)) await collapse.click();
+  }
+}
+
+// A tab pill by its name (a button holding exactly that text).
+async function selectTab(page: Page, name: string) {
+  const pill = page.getByRole('button', { name, exact: true }).last();
+  await pill.scrollIntoViewIfNeeded();
+  await pill.click({ timeout: 10_000 });
 }
 
 // The active tab's elements, framed and clipped.
@@ -165,7 +187,7 @@ for (const root of args.paths) {
       );
       await importThroughDialog(page, args.base, file);
       for (const [index, name] of names.entries()) {
-        if (index > 0) await page.getByText(name, { exact: true }).last().click();
+        if (index > 0) await selectTab(page, name);
         await shootTab(page, join(dir, `ld-p${index + 1}.png`));
       }
       await page.close();
@@ -173,7 +195,7 @@ for (const root of args.paths) {
     } catch (error) {
       failed = true;
       console.error(
-        `[drawio-compare] failed slug=${slug} ${(error as Error).message.split('\n')[0]}`,
+        `[drawio-compare] failed slug=${slug} ${(error as Error).message.split('\n').slice(0, 4).join(' | ')}`,
       );
     }
   }
