@@ -1,33 +1,21 @@
 import type { ComponentType } from 'react';
-import {
-  EDITOR_MODES,
-  editorModeDescription,
-  editorModeLabel,
-  type EditorMode,
-} from '@livediagram/document';
+import type { EditorMode } from '@livediagram/document';
 import { FlowchartIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
 
-// The words and glyphs every variant of the mode switch shows for the two
-// editor modes (docs/specs/007-editor/editor-modes.md).
-
-// The words come from the document's one mode catalogue (EDITOR_MODE_CATALOGUE).
-export const EDITOR_MODE_LABEL = Object.fromEntries(
-  EDITOR_MODES.map((m) => [m, editorModeLabel(m)]),
-) as Record<EditorMode, string>;
-
-export const EDITOR_MODE_DESCRIPTION = Object.fromEntries(
-  EDITOR_MODES.map((m) => [m, editorModeDescription(m)]),
-) as Record<EditorMode, string>;
+// What the editor's mode controls show for each editor mode beyond the words, which come from the
+// document's one mode catalogue (editorModeLabel / editorModeDescription), and the shortcut that
+// moves to the next mode (docs/specs/007-editor/editor-modes.md "The mode switch").
 
 export const EDITOR_MODE_ICON: Record<EditorMode, ComponentType<IconProps>> = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
 };
 
-export const otherEditorMode = (mode: EditorMode): EditorMode =>
-  mode === 'diagram' ? 'draw' : 'diagram';
+// Shift+D, as `aria-keyshortcuts` spells it and as the interface shows it.
+export const EDITOR_MODE_KEYSHORTCUT = 'Shift+D';
+export const EDITOR_MODE_KEY_LABEL = '⇧D';
 
-// What every variant receives from its host.
+// What both forms of the switch receive from their host.
 export type EditorModeSwitchProps = {
   mode: EditorMode;
   onChange: (mode: EditorMode) => void;

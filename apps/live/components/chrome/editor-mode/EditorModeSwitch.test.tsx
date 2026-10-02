@@ -1,123 +1,77 @@
 // @vitest-environment jsdom
 
-// The mode switch's four prototype variants (docs/specs/007-editor/editor-modes.md
-// "The mode switch"): each exposes its state to assistive technology through its
-// own ARIA pattern and is fully operable by keyboard.
+// The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip for
+// everyone, an icon-only segmented pill in power user mode
+// (docs/specs/007-editor/power-user-mode.md "Quick mode switch").
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
 import { EditorModeSwitch } from './EditorModeSwitch';
-import type { EditorMode } from '@livediagram/document';
-import type { ModeSwitchVariant } from './mode-switch-variant';
 
 afterEach(cleanup);
 
-function renderSwitch(variant: ModeSwitchVariant, mode: EditorMode, hidden = false) {
+function renderSwitch(mode: EditorMode, { compact = false, hidden = false } = {}) {
   const onChange = vi.fn<(mode: EditorMode) => void>();
   const view = render(
-    <EditorModeSwitch variant={variant} mode={mode} onChange={onChange} hidden={hidden} />,
+    <EditorModeSwitch compact={compact} mode={mode} onChange={onChange} hidden={hidden} />,
   );
   return { onChange, ...view };
 }
 
-describe('EditorModeSwitch variant A (segmented pill)', () => {
-  it('exposes a radiogroup named Editor mode with one checked radio per mode', () => {
-    renderSwitch('a', 'diagram');
-    const group = screen.getByRole('radiogroup', { name: 'Editor mode' });
-    const diagram = screen.getByRole('radio', { name: 'Diagram' });
-    const draw = screen.getByRole('radio', { name: 'Draw' });
-    expect(group.contains(diagram) && group.contains(draw)).toBe(true);
-    expect(diagram.getAttribute('aria-checked')).toBe('true');
-    expect(draw.getAttribute('aria-checked')).toBe('false');
-  });
+const slot = (container: HTMLElement) => container.querySelector('[data-editor-mode-switch]')!;
 
-  it('keeps one tab stop on the checked radio (roving tabindex)', () => {
-    renderSwitch('a', 'draw');
-    expect(screen.getByRole('radio', { name: 'Draw' }).tabIndex).toBe(0);
-    expect(screen.getByRole('radio', { name: 'Diagram' }).tabIndex).toBe(-1);
-  });
-
-  it('selects the other mode on click and ignores a click on the checked one', () => {
-    const { onChange } = renderSwitch('a', 'diagram');
-    fireEvent.click(screen.getByRole('radio', { name: 'Diagram' }));
-    expect(onChange).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('radio', { name: 'Draw' }));
-    expect(onChange).toHaveBeenCalledWith('draw');
-  });
-
-  it.each([
-    ['ArrowRight', 'diagram', 'draw'],
-    ['ArrowDown', 'diagram', 'draw'],
-    ['ArrowLeft', 'draw', 'diagram'],
-    ['ArrowUp', 'draw', 'diagram'],
-    ['ArrowRight', 'draw', 'diagram'],
-  ] as const)('moves focus and selection with %s from %s', (key, from, to) => {
-    const { onChange } = renderSwitch('a', from);
-    const current = screen.getByRole('radio', { checked: true });
-    current.focus();
-    fireEvent.keyDown(current, { key });
-    expect(onChange).toHaveBeenCalledWith(to);
-    expect(document.activeElement?.getAttribute('aria-label')).toBe(
-      to === 'draw' ? 'Draw' : 'Diagram',
-    );
-  });
-
-  it('ignores keys that are not arrows', () => {
-    const { onChange } = renderSwitch('a', 'diagram');
-    fireEvent.keyDown(screen.getByRole('radio', { name: 'Diagram' }), { key: 'x' });
-    expect(onChange).not.toHaveBeenCalled();
-  });
-});
-
-describe('EditorModeSwitch variant B (icon toggle)', () => {
-  it('is a toggle button with a constant name and aria-pressed for Draw', () => {
-    const { rerender, onChange } = renderSwitch('b', 'diagram');
-    const button = screen.getByRole('button', { name: 'Draw mode' });
-    expect(button.getAttribute('aria-pressed')).toBe('false');
-    rerender(<EditorModeSwitch variant="b" mode="draw" onChange={onChange} />);
-    expect(screen.getByRole('button', { name: 'Draw mode' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-  });
-
-  it('toggles to the other mode on press', () => {
-    const { onChange } = renderSwitch('b', 'draw');
-    fireEvent.click(screen.getByRole('button', { name: 'Draw mode' }));
-    expect(onChange).toHaveBeenCalledWith('diagram');
-  });
-});
-
-describe('EditorModeSwitch variant C (dropdown chip)', () => {
+describe('EditorModeSwitch chip', () => {
   const chip = () => screen.getByRole('button', { name: /^Editor mode:/ });
 
-  it('is a collapsed menu button named after the current mode', () => {
-    renderSwitch('c', 'draw');
-    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
+  it.each(EDITOR_MODES)('is a collapsed menu button named after %s', (mode) => {
+    renderSwitch(mode);
+    expect(chip().getAttribute('aria-label')).toBe(
+      `Editor mode: ${mode === 'draw' ? 'Draw' : 'Diagram'}`,
+    );
     expect(chip().getAttribute('aria-haspopup')).toBe('menu');
     expect(chip().getAttribute('aria-expanded')).toBe('false');
+    expect(chip().getAttribute('aria-keyshortcuts')).toBe('Shift+D');
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
-  it('opens a menu of menuitemradio rows and focuses the checked one', () => {
-    renderSwitch('c', 'draw');
+  it('opens a menu of every mode, in catalogue order, focusing the checked one', () => {
+    renderSwitch('draw');
     fireEvent.click(chip());
     expect(chip().getAttribute('aria-expanded')).toBe('true');
     screen.getByRole('menu', { name: 'Editor mode' });
-    const draw = screen.getByRole('menuitemradio', { name: /^Draw/ });
-    const diagram = screen.getByRole('menuitemradio', { name: /^Diagram/ });
-    expect(draw.getAttribute('aria-checked')).toBe('true');
-    expect(diagram.getAttribute('aria-checked')).toBe('false');
-    expect(document.activeElement).toBe(draw);
+    const rows = screen.getAllByRole('menuitemradio');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringMatching(/^Diagram/),
+      expect.stringMatching(/^Draw/),
+    ]);
+    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    expect(document.activeElement).toBe(rows[1]);
+  });
+
+  it('shows each description in full', () => {
+    renderSwitch('diagram');
+    fireEvent.click(chip());
+    screen.getByText('Shapes, arrows, the palette and snapping.');
+    screen.getByText('Pens, the eraser and shape recognition.');
+  });
+
+  it('shows Shift+D on the row it leads to', () => {
+    renderSwitch('diagram');
+    fireEvent.click(chip());
+    const [diagram, draw] = screen.getAllByRole('menuitemradio');
+    expect(diagram!.textContent).not.toContain('⇧D');
+    expect(draw!.textContent).toContain('⇧D');
   });
 
   it('opens from the keyboard with ArrowUp', () => {
-    renderSwitch('c', 'diagram');
+    renderSwitch('diagram');
     fireEvent.keyDown(chip(), { key: 'ArrowUp' });
     expect(screen.getByRole('menu')).toBeTruthy();
   });
 
   it('moves focus with ArrowDown, ArrowUp, Home and End, wrapping around', () => {
-    renderSwitch('c', 'diagram');
+    renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
     const [diagram, draw] = screen.getAllByRole('menuitemradio');
@@ -133,17 +87,20 @@ describe('EditorModeSwitch variant C (dropdown chip)', () => {
     expect(document.activeElement).toBe(draw);
   });
 
-  it('chooses a row, closes the menu and returns focus to the chip', () => {
-    const { onChange } = renderSwitch('c', 'diagram');
+  it.each([
+    ['diagram', 'Draw', 'draw'],
+    ['draw', 'Diagram', 'diagram'],
+  ] as const)('from %s, choosing %s switches, closes and refocuses the chip', (from, row, to) => {
+    const { onChange } = renderSwitch(from);
     fireEvent.click(chip());
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /^Draw/ }));
-    expect(onChange).toHaveBeenCalledWith('draw');
+    fireEvent.click(screen.getByRole('menuitemradio', { name: new RegExp(`^${row}`) }));
+    expect(onChange).toHaveBeenCalledWith(to);
     expect(screen.queryByRole('menu')).toBeNull();
     expect(document.activeElement).toBe(chip());
   });
 
   it('closes without choosing on the current row', () => {
-    const { onChange } = renderSwitch('c', 'diagram');
+    const { onChange } = renderSwitch('diagram');
     fireEvent.click(chip());
     fireEvent.click(screen.getByRole('menuitemradio', { name: /^Diagram/ }));
     expect(onChange).not.toHaveBeenCalled();
@@ -151,7 +108,7 @@ describe('EditorModeSwitch variant C (dropdown chip)', () => {
   });
 
   it('closes on Escape and returns focus to the chip', () => {
-    renderSwitch('c', 'diagram');
+    renderSwitch('diagram');
     fireEvent.click(chip());
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
@@ -159,105 +116,99 @@ describe('EditorModeSwitch variant C (dropdown chip)', () => {
   });
 
   it('closes on a press outside', () => {
-    renderSwitch('c', 'diagram');
+    renderSwitch('diagram');
     fireEvent.click(chip());
     fireEvent.pointerDown(document.body);
     expect(screen.queryByRole('menu')).toBeNull();
   });
 });
 
-describe('EditorModeSwitch variant D (sliding switch)', () => {
-  it('is a switch named Draw, checked in Draw mode', () => {
-    const { rerender, onChange } = renderSwitch('d', 'diagram');
-    expect(screen.getByRole('switch', { name: 'Draw' }).getAttribute('aria-checked')).toBe('false');
-    rerender(<EditorModeSwitch variant="d" mode="draw" onChange={onChange} />);
-    expect(screen.getByRole('switch', { name: 'Draw' }).getAttribute('aria-checked')).toBe('true');
+describe('EditorModeSwitch icon pill (power user mode)', () => {
+  const radio = (name: string) => screen.getByRole('radio', { name });
+
+  it('is a radiogroup with one radio per mode, named by the mode', () => {
+    renderSwitch('diagram', { compact: true });
+    const group = screen.getByRole('radiogroup', { name: 'Editor mode' });
+    expect(screen.getAllByRole('radio').every((r) => group.contains(r))).toBe(true);
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('aria-label'))).toEqual([
+      'Diagram',
+      'Draw',
+    ]);
   });
 
-  it('flips the mode on press', () => {
-    const { onChange } = renderSwitch('d', 'diagram');
-    fireEvent.click(screen.getByRole('switch', { name: 'Draw' }));
+  it('shows icons only, no words', () => {
+    renderSwitch('diagram', { compact: true });
+    expect(screen.getByRole('radiogroup').textContent).toBe('');
+  });
+
+  it.each(EDITOR_MODES)('checks %s exactly when given it, with one tab stop there', (mode) => {
+    renderSwitch(mode, { compact: true });
+    for (const option of EDITOR_MODES) {
+      const r = radio(option === 'draw' ? 'Draw' : 'Diagram');
+      expect(r.getAttribute('aria-checked')).toBe(String(option === mode));
+      expect(r.tabIndex).toBe(option === mode ? 0 : -1);
+    }
+  });
+
+  it('advertises Shift+D on every segment', () => {
+    renderSwitch('diagram', { compact: true });
+    for (const r of screen.getAllByRole('radio')) {
+      expect(r.getAttribute('aria-keyshortcuts')).toBe('Shift+D');
+    }
+  });
+
+  it('selects the other mode on press and ignores a press on the checked one', () => {
+    const { onChange } = renderSwitch('diagram', { compact: true });
+    fireEvent.click(radio('Diagram'));
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(radio('Draw'));
     expect(onChange).toHaveBeenCalledWith('draw');
   });
-});
 
-// What each variant tells assistive technology about the mode it shows; the
-// visible state (thumb, pressed tint, chip label, switch position) is driven by
-// the same `mode === 'draw'` test, so this pins both to the prop.
-const EXPOSED_MODE: Record<ModeSwitchVariant, () => EditorMode> = {
-  a: () =>
-    screen.getByRole('radio', { name: 'Draw' }).getAttribute('aria-checked') === 'true'
-      ? 'draw'
-      : 'diagram',
-  b: () =>
-    screen.getByRole('button', { name: 'Draw mode' }).getAttribute('aria-pressed') === 'true'
-      ? 'draw'
-      : 'diagram',
-  c: () =>
-    screen.getByRole('button', { name: /^Editor mode:/ }).getAttribute('aria-label') ===
-    'Editor mode: Draw'
-      ? 'draw'
-      : 'diagram',
-  d: () =>
-    screen.getByRole('switch', { name: 'Draw' }).getAttribute('aria-checked') === 'true'
-      ? 'draw'
-      : 'diagram',
-};
-
-describe('EditorModeSwitch state', () => {
-  it.each(
-    (['a', 'b', 'c', 'd'] as const).flatMap((variant) =>
-      (['diagram', 'draw'] as const).map((mode) => [variant, mode] as const),
-    ),
-  )('variant %s shows %s exactly when given it', (variant, mode) => {
-    renderSwitch(variant, mode);
-    expect(EXPOSED_MODE[variant]()).toBe(mode);
+  it.each([
+    ['ArrowRight', 'diagram', 'draw'],
+    ['ArrowDown', 'diagram', 'draw'],
+    ['ArrowLeft', 'draw', 'diagram'],
+    ['ArrowUp', 'draw', 'diagram'],
+    ['ArrowRight', 'draw', 'diagram'],
+    ['ArrowLeft', 'diagram', 'draw'],
+  ] as const)('moves focus and selection with %s from %s', (key, from, to) => {
+    const { onChange } = renderSwitch(from, { compact: true });
+    const current = screen.getByRole('radio', { checked: true });
+    current.focus();
+    fireEvent.keyDown(current, { key });
+    expect(onChange).toHaveBeenCalledWith(to);
+    expect(document.activeElement?.getAttribute('aria-label')).toBe(
+      to === 'draw' ? 'Draw' : 'Diagram',
+    );
   });
 
-  it.each(['a', 'b', 'c', 'd'] as const)(
-    'variant %s asks for the other mode when operated from either state',
-    (variant) => {
-      for (const mode of ['diagram', 'draw'] as const) {
-        const { onChange } = renderSwitch(variant, mode);
-        const other = mode === 'draw' ? 'diagram' : 'draw';
-        if (variant === 'a')
-          fireEvent.click(screen.getByRole('radio', { name: /^D/, checked: false }));
-        if (variant === 'b') fireEvent.click(screen.getByRole('button', { name: 'Draw mode' }));
-        if (variant === 'c') {
-          fireEvent.click(screen.getByRole('button', { name: /^Editor mode:/ }));
-          fireEvent.click(screen.getByRole('menuitemradio', { checked: false }));
-        }
-        if (variant === 'd') fireEvent.click(screen.getByRole('switch', { name: 'Draw' }));
-        expect(onChange).toHaveBeenCalledWith(other);
-        cleanup();
-      }
-    },
-  );
+  it('ignores keys that are not arrows', () => {
+    const { onChange } = renderSwitch('diagram', { compact: true });
+    fireEvent.keyDown(radio('Diagram'), { key: 'x' });
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
 
 describe('EditorModeSwitch slot', () => {
-  it.each(['a', 'b', 'c', 'd'] as const)(
-    'variant %s keeps the same slot width in both modes',
-    (variant) => {
-      const { container, rerender, onChange } = renderSwitch(variant, 'diagram');
-      const slot = () => container.querySelector('[data-editor-mode-switch]')!;
-      const before = slot().className;
-      rerender(<EditorModeSwitch variant={variant} mode="draw" onChange={onChange} />);
-      expect(slot().className).toBe(before);
-    },
-  );
+  it('keeps one width across both modes and both forms (zero layout shift)', () => {
+    const widths = new Set<string>();
+    for (const compact of [false, true]) {
+      for (const mode of EDITOR_MODES) {
+        const { container } = renderSwitch(mode, { compact });
+        widths.add(slot(container).className);
+        cleanup();
+      }
+    }
+    expect(widths.size).toBe(1);
+  });
 
-  it.each(['a', 'b', 'c', 'd'] as const)(
-    'variant %s hidden keeps its slot but offers no control',
-    (variant) => {
-      const shown = renderSwitch(variant, 'diagram');
-      const width = shown.container.querySelector('[data-editor-mode-switch]')!.className;
-      cleanup();
-      const { container } = renderSwitch(variant, 'diagram', true);
-      const slot = container.querySelector('[data-editor-mode-switch]')!;
-      expect(slot.className).toBe(width);
-      expect(slot.getAttribute('aria-hidden')).toBe('true');
-      expect(slot.childElementCount).toBe(0);
-    },
-  );
+  it.each([false, true])('hidden (compact %s) keeps the slot but offers no control', (compact) => {
+    const shown = slot(renderSwitch('diagram', { compact }).container).className;
+    cleanup();
+    const hidden = slot(renderSwitch('diagram', { compact, hidden: true }).container);
+    expect(hidden.className).toBe(shown);
+    expect(hidden.getAttribute('aria-hidden')).toBe('true');
+    expect(hidden.childElementCount).toBe(0);
+  });
 });

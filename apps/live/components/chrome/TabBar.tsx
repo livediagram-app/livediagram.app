@@ -344,7 +344,11 @@ export function TabBar({
         className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
-        <EditorModeSwitchSlot activeTab={activeTab} canEdit={selfRole === 'edit'} />
+        <EditorModeSwitchSlot
+          activeTab={activeTab}
+          canEdit={selfRole === 'edit'}
+          powerUser={powerUser}
+        />
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
