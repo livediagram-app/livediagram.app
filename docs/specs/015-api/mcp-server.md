@@ -228,9 +228,9 @@ canvas overrides; the model then personalises labels via `update_document`'s
    their own afterwards (which moves it out of Generated). (Earlier this
    find-or-created a real "Generated" folder; the provenance tag replaces
    that so the folder is dynamic, like Unsorted.)
-   The create also sends the creation `intent` of the first tab it built
-   (`{ mode: "diagram", kind: "diagram" }` unless the input makes a whiteboard or an
-   event-storming board), so with no folder named the server files it in the
+   The create also sends the creation `intent` of the first tab it built and the
+   template it used (`{ mode: "diagram" }` unless the input makes a whiteboard or a
+   board: an event-storming board, a retrospective, a Kanban board), so with no folder named the server files it in the
    user's [default folder](../013-workspace/default-folders.md) for that intent,
    when they have one; a document filed there is in that folder, not in Generated.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array

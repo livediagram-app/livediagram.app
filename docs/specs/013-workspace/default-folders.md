@@ -7,61 +7,81 @@ caller sends); the surfaces that set, show and clear a default come later.
 
 A **default folder** is where a person's new documents land when they create one without choosing
 a place. A person keeps one default per **default key**, and the key is chosen by what the new
-document is: a diagram can land in "Diagrams" while a whiteboard lands in "Sketches". Defaults
+document opens as: a diagram can land in "Diagrams", a whiteboard in "Sketches" and a retrospective
+in "Retros". Defaults
 belong to the person, not to a folder or a team: two teammates may send the same kind of document
 to different places.
 
 ## Domain language
 
-| Term                 | Means                                                                                               |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                     |
-| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).             |
-| **creation intent**  | What a new document is, captured once when it is created: its first tab's editor mode and tab kind. |
-| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.    |
+| Term                 | Means                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                                   |
+| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                           |
+| **creation intent**  | What a new document opens as, captured once when it is created: its editor mode and its board type.               |
+| **board type**       | The kind of board a new document is, when it is one: `event-storming`, `retrospective` or `kanban` (`BoardType`). |
+| **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.                  |
 
 "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
 specs and code say **default folder** or **placement default**.
 
 ## Default keys
 
-- A key is `<dimension>:<value>`. The dimensions, most specific first, are `kind` (the tab kind)
-  and `mode` (the editor mode the first tab opens in).
-- The keys in force are a **closed list** (`PLACEMENT_DEFAULT_KEYS`): `mode:diagram` and
-  `mode:draw`. A key outside the list is refused when set and ignored when read.
-- `kind:event-storming` is reserved and not in force. Every create already carries its kind, so
-  bringing that key into force is adding it to the list and nothing else.
-- A general tab (`kind: 'diagram'`) has no kind key: a kind key exists only for a specific tab
-  kind, so a general document is routed by its mode.
+The list a person sets defaults from is titled **New documents that open as**, and holds, in this
+order:
+
+| Entry                 | Key                    |
+| --------------------- | ---------------------- |
+| Diagrams              | `mode:diagram`         |
+| Whiteboards           | `mode:draw`            |
+| Event Storming boards | `board:event-storming` |
+| Retrospectives        | `board:retrospective`  |
+| Kanban boards         | `board:kanban`         |
+
+- A key is `<dimension>:<value>`. The dimensions, most specific first, are `board` (the board
+  type) and `mode` (the editor mode the first tab opens in).
+- The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`). A key outside it is refused when set
+  and ignored when read.
+- The board types are a **closed list** (`BOARD_TYPES`): `event-storming`, `retrospective`,
+  `kanban`. Every other document has no board type and is routed by its mode alone.
 
 ## Creation intent
 
-- **Captured once, at creation, from the first tab**, and never inferred later: content drawn
-  afterwards does not move a document, and the intent is not stored on the document.
+- **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
+  document, and the intent is not stored on the document.
   - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode,
     including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-whiteboard/whiteboard.md));
-    `diagram` otherwise, including a document with no tab.
-  - `kind`: `event-storming` for an [event-storming board](../021-event-storming/event-storming.md),
-    `diagram` (the general tab) otherwise. An event-storming board opens in `diagram`.
-- **Sent on the create** as `intent: { mode, kind }` beside the placement
+    `diagram` otherwise, including a document with no tab and an event-storming board.
+  - `boardType`, when the document is a board:
+    - `event-storming` when the first tab is an
+      [event-storming board](../021-event-storming/event-storming.md) (its kind is
+      `event-storming`), or the document is made from the Event storming template;
+    - `retrospective` or `kanban` by the **template** the document is made from. One exhaustive
+      map from every template to its board type, or none, decides it
+      (`boardTypeOfTemplate` in `@livediagram/templates`): every retrospective format is a
+      retrospective, the Kanban template a Kanban board, every other template no board. A new
+      template is not complete until it is mapped.
+    - absent otherwise: an import, a blank document, any other template.
+- **Sent on the create** as `intent: { mode, boardType? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:** every create that makes something new. The New Document wizard and its
   bypasses (Quick Start, `/new?blank=1`, `/new?template=`), imports into the account (board and
   draw.io imports, Google Drive **Import a copy**) and the MCP `create_document` tool, which sends
-  the intent of the first tab it built (`mode:diagram` unless its input makes a whiteboard).
+  the intent of the first tab it built and the template it used (`mode:diagram` unless its input
+  makes a whiteboard or a board).
 - **Who does not:** a create that keeps a place the document already has. Duplicate keeps the
   source's place, an Offline Mode sync keeps the folder it had in the browser, a Google Drive copy
   of a mirrored file follows the mirror, a Drive restore puts back what it restores. A create
   without an intent never consults defaults.
-- An intent that is present but malformed refuses the create, `intent_invalid` (400), before
-  anything is written.
+- An intent that is present but malformed (no known `mode`, or a `boardType` outside the list)
+  refuses the create, `intent_invalid` (400), before anything is written.
 
 ## Precedence
 
 A create's place is decided in this order; the first that answers wins:
 
 1. **Explicit placement**: a folder, or a team (its root included), the person is inside or picked.
-2. **Kind default**: the default for `kind:<kind>`, when that key is in force.
+2. **Board default**: the default for `board:<boardType>`, when the document is a board.
 3. **Mode default**: the default for `mode:<mode>`.
 4. **The root of My documents** (Personal Space's Unsorted).
 
@@ -106,8 +126,8 @@ A create's place is decided in this order; the first that answers wins:
 
 - Defaults live in their **own D1 table** (`placement_defaults`), one row per person and key, not
   in the 4 KB preferences blob ([User preferences](../007-editor/user-preferences.md)).
-- A person holds at most one default per key in force, so their rows are bounded by the length of
-  the key list.
+- A person holds at most one default per key, so their rows are bounded by the length of the key
+  list (five).
 - Writes ride the per-owner write rate limit (`WRITE_RATE_LIMITER`, [Rate limiting](../015-api/api.md#rate-limiting)).
 
 ## API
@@ -119,13 +139,13 @@ A create's place is decided in this order; the first that answers wins:
 | DELETE | `/api/placement-defaults/:key` |                | 204, the default cleared            |
 
 - Owner-scoped: the Clerk user, an API token's owner, or a guest's `X-Owner-Id`.
-- `GET` answers every stored default whose key is in force, dangling ones included: a surface
-  shows a dangling default as such.
+- `GET` answers every stored default whose key is in the list, in list order, dangling ones
+  included: a surface shows a dangling default as such.
 - `DELETE` of a key with no default is a 204 as well.
 
 | Rejection                | Status | When                                                                  |
 | ------------------------ | ------ | --------------------------------------------------------------------- |
-| `default_key_invalid`    | 400    | `:key` is not a key in force                                          |
+| `default_key_invalid`    | 400    | `:key` is not one of the keys                                         |
 | `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string      |
 | `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined        |
 | `rate_limited`           | 429    | The per-owner write rate limit is spent                               |
@@ -133,11 +153,12 @@ A create's place is decided in this order; the first that answers wins:
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw`, fired by the surface that sets
-  a default, before the write.
+- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultBoardEventStorming` /
+  `DefaultBoardRetrospective` / `DefaultBoardKanban`, fired by the surface that sets a default,
+  before the write.
 - `Folder` · `Cleared` · the same types, fired by the surface that clears one, before the write.
-- The type is closed: one per key in force (`PLACEMENT_DEFAULT_TELEMETRY_TYPES`), never a folder
-  name or id.
+- The type is closed: one value per key (`PLACEMENT_DEFAULT_TELEMETRY_TYPES`), never a folder name
+  or id.
 
 ## Observability
 
@@ -151,7 +172,8 @@ A create's place is decided in this order; the first that answers wins:
 
 ## Non-goals
 
-- A default for a space's root, per device, or per template.
+- A default for a space's root, per device, or per template (templates route only through their
+  board type).
 - Defaults for Offline Mode documents: a document made in the browser is filed where it is made.
 - Moving existing documents when a default changes.
 

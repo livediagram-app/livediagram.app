@@ -195,13 +195,13 @@ never exists, even for a moment, in a place the caller did not ask for.
 - **Named rejections, never a fallback.** An invalid placement refuses the whole create
   before anything is written: the document is not filed somewhere else instead.
 
-  | Rejection               | Status | When                                                         |
-  | ----------------------- | ------ | ------------------------------------------------------------ |
-  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string  |
-  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined   |
-  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller             |
-  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space    |
-  | `intent_invalid`        | 400    | `intent` is present but not `{ mode, kind }` of known values |
+  | Rejection               | Status | When                                                               |
+  | ----------------------- | ------ | ------------------------------------------------------------------ |
+  | `placement_invalid`     | 400    | `teamId` or `folderId` is neither absent, null nor a string        |
+  | `team_forbidden`        | 403    | A team asked for by a guest or a caller who has not joined         |
+  | `folder_not_found`      | 404    | The folder is missing or invisible to the caller                   |
+  | `folder_scope_mismatch` | 400    | The folder is the caller's to see, but in the other space          |
+  | `intent_invalid`        | 400    | `intent` is present but not `{ mode, boardType? }` of known values |
 
 - **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
   row; the caller is the owner, in a team as in Personal Space.
