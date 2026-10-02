@@ -332,6 +332,9 @@
             <mxPoint x="200" y="420" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="tag" value="Tap" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="200" y="220" as="geometry" />
+        </mxCell>
         <mxCell id="dangling" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="m">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="520" y="420" as="targetPoint" />
