@@ -34,6 +34,7 @@ export function TimelineLanesOverlay({
   tabThemeId,
   viewportZoom,
   wrapperRef,
+  viewKey,
 }: {
   // The active tab's lane stack, or null when lanes are off / this is not an
   // event-storming board. Null draws nothing at all.
@@ -41,9 +42,11 @@ export function TimelineLanesOverlay({
   tabThemeId: ThemeId;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
+  // The view the wrapper sits in (useCanvasClientOrigin).
+  viewKey: string;
 }) {
   const preview = useLanePreview();
-  const rect = useCanvasClientOrigin(wrapperRef, !!timeline && !!preview);
+  const rect = useCanvasClientOrigin(wrapperRef, !!timeline && !!preview, viewKey);
   if (!timeline || !preview || !rect) return null;
 
   const theme = getTheme(tabThemeId);

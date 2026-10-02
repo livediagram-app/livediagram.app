@@ -7,7 +7,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 | File                                                           | Role                                                                              |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/live/lib/canvas-gesture.ts` (planned)                    | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
+| `apps/live/lib/canvas-gesture.ts`                              | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`   |
 | `apps/live/components/canvas/CanvasZoomContext.tsx` (planned)  | `CanvasZoomProvider`, `useCanvasZoom()`: zoom for the counter-scaled parts only   |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`          | Stable per-element props; per-arrow frame and holes; the grid                     |
 | `apps/live/components/canvas/element-layer-props.ts` (planned) | `useStableElementActions`, `useStableCollab`: identity-stable per-element objects |
@@ -58,18 +58,18 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   idempotent. Listeners fire only when the snapshot changes.
 - Sources, each calling `end()` on its gesture's end, cancel and unmount:
 
-| Source                                                                            | Gesture          | Begins                                                          |
-| --------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------- |
-| `useEditorDrag`, `boxed` + `move`                                                 | `move`           | When the drag engages (`DRAG_ENGAGE_PX`)                        |
-| `useEditorDrag`, `boxed` + `resize-*`                                             | `resize`         | On the drag                                                     |
-| `useEditorDrag`, `arrow-translate`                                                | `move`           | On the drag                                                     |
-| `useEditorDrag`, `arrow-scale`                                                    | `resize`         | On the drag                                                     |
-| `useEditorDrag`, other `arrow-*`                                                  | `reshape`        | On the drag                                                     |
-| `useCanvasPanAndMarquee`                                                          | `pan`, `marquee` | When the pan or the marquee state is set                        |
-| `useCanvasPinchZoom`, plain wheel                                                 | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last |
-| `useCanvasPinchZoom`, Ctrl/Cmd, pinch                                             | `zoom`           | Likewise                                                        |
-| `useCanvasDrawGesture`, `useWhiteboardPenGesture`, `useShapeDrawing` drag-to-size | `stroke`         | On the pointer down that starts the drawing                     |
-| `useCanvasEraser` sweep                                                           | `erase`          | On the sweep's pointer down                                     |
+| Source                                                                                    | Gesture          | Begins                                                                                     |
+| ----------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| `useEditorDrag`, `boxed` + `move`                                                         | `move`           | When the drag engages (`DRAG_ENGAGE_PX`)                                                   |
+| `useEditorDrag`, `boxed` + `resize-*`                                                     | `resize`         | On the drag                                                                                |
+| `useEditorDrag`, `arrow-translate`                                                        | `move`           | On the drag                                                                                |
+| `useEditorDrag`, `arrow-scale`                                                            | `resize`         | On the drag                                                                                |
+| `useEditorDrag`, other `arrow-*`                                                          | `reshape`        | On the drag                                                                                |
+| `useCanvasPanAndMarquee`                                                                  | `pan`, `marquee` | When the pan or the marquee state is set                                                   |
+| `useCanvasPinchZoom`, plain wheel                                                         | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last                            |
+| `useCanvasPinchZoom`, Ctrl/Cmd, pinch                                                     | `zoom`           | Likewise                                                                                   |
+| `useCanvasDrawGesture` (`drawDrag`, `penPoints`), `useWhiteboardPenGesture` (`penStroke`) | `stroke`         | While the drawing state is set (draw-to-size, pencil, pen)                                 |
+| `useCanvasEraser` sweep                                                                   | `erase`          | On `beginErase`; ends on `pointerup` or `pointercancel` (both record the sweep) or unmount |
 
 - Discrete actions (a click, a key, a zoom button) open no gesture.
 
@@ -126,6 +126,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `useEdgeAwarePlacement(bounds, offset, zoom, gap, suspended)`: while `suspended` its layout
   effect returns before measuring; `suspended` is in the effect's dependencies, so the first
   render after the gesture places the box once.
+
+### Layout reads outside gesture frames
+
+- `useCanvasClientOrigin(wrapperRef, active, viewKey)` measures the wrapper on activating and when
+  `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
+  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`, `CanvasDrawPreview`
+  and `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
+- The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
 
 ### The Map draws settled elements
 

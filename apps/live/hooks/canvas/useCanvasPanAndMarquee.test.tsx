@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { useCanvasPanAndMarquee } from './useCanvasPanAndMarquee';
 
 // Held Space turns a canvas drag into a pan (docs/specs/008-canvas/canvas-and-palette.md). The pointerdown reads the
@@ -121,5 +122,42 @@ describe('useCanvasPanAndMarquee additive marquee', () => {
     up(300, 300);
     expect(deps.onDeselect).not.toHaveBeenCalled();
     expect(deps.onShiftSelect).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: a pan and a marquee are canvas gestures.
+describe('useCanvasPanAndMarquee gestures', () => {
+  afterEach(() => resetCanvasGesturesForTests());
+
+  it('opens a pan for as long as one is held', () => {
+    const { result } = setup();
+    act(() =>
+      result.current.setPan({
+        startClientX: 0,
+        startClientY: 0,
+        startOffsetX: 0,
+        startOffsetY: 0,
+        movedRef: { current: false },
+      }),
+    );
+    expect(canvasGestureNow()).toBe('pan');
+    act(() => result.current.setPan(null));
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('opens one marquee however often the box moves', () => {
+    const { result } = setup();
+    act(() => result.current.setMarquee({ startX: 0, startY: 0, currentX: 0, currentY: 0 }));
+    expect(canvasGestureNow()).toBe('marquee');
+    act(() => result.current.setMarquee((m) => (m ? { ...m, currentX: 40 } : m)));
+    act(() => result.current.setMarquee(null));
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('closes an open gesture on unmount', () => {
+    const { result, unmount } = setup();
+    act(() => result.current.setMarquee({ startX: 0, startY: 0, currentX: 0, currentY: 0 }));
+    unmount();
+    expect(canvasGestureNow()).toBe('idle');
   });
 });

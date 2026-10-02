@@ -23,6 +23,8 @@ type CanvasGuideOverlayProps = {
   tabThemeId: ThemeId;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
+  // The view the wrapper sits in (useCanvasClientOrigin).
+  viewKey: string;
 };
 
 // The in-canvas snap overlays drawn during a drag: alignment guides, arrow
@@ -38,6 +40,7 @@ export function CanvasGuideOverlay({
   tabThemeId,
   viewportZoom,
   wrapperRef,
+  viewKey,
 }: CanvasGuideOverlayProps) {
   const surface = useCanvasSurface();
   const marqueeColors = selectionBoxColors(getTheme(tabThemeId).elementStroke, surface);
@@ -46,6 +49,7 @@ export function CanvasGuideOverlay({
   const origin = useCanvasClientOrigin(
     wrapperRef,
     alignGuides.length > 0 || allSnapTargets.length > 0 || !!drawHover || distGuides.length > 0,
+    viewKey,
   );
   return (
     <>

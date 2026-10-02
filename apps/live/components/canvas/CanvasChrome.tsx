@@ -249,6 +249,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     zenMode,
     onToggleZen,
   } = props;
+  // What moves the canvas wrapper on screen: the overlays that convert canvas points to client
+  // coordinates re-measure its origin only when this changes (useCanvasClientOrigin).
+  const canvasViewKey = `${props.viewportOffset.x},${props.viewportOffset.y},${viewportZoom},${props.mainSize.width},${props.mainSize.height}`;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
@@ -448,6 +451,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         tabThemeId={tabThemeId}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
+        viewKey={canvasViewKey}
       />
 
       <CanvasGuideOverlay
@@ -459,6 +463,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         marquee={marquee}
         tabThemeId={tabThemeId}
         wrapperRef={wrapperRef}
+        viewKey={canvasViewKey}
       />
 
       <CanvasDrawPreview
@@ -473,6 +478,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
+        viewKey={canvasViewKey}
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the

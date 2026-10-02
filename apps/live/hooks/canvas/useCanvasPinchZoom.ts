@@ -3,6 +3,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livediagram/document';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Wheel + touch viewport gestures on the canvas:
@@ -87,6 +88,24 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       });
     };
 
+    // The canvas gestures (docs/specs/008-canvas/canvas-performance.md): a touch pinch is a zoom from
+    // its start to its end; a wheel has no end, so its pan or zoom closes WHEEL_SETTLE_MS after the
+    // last wheel event, and a switch between the two closes the one in flight.
+    let endPinchGesture: (() => void) | null = null;
+    let wheelGesture: { kind: 'pan' | 'zoom'; end: () => void; timer: number } | null = null;
+    const endWheelGesture = () => {
+      if (!wheelGesture) return;
+      window.clearTimeout(wheelGesture.timer);
+      wheelGesture.end();
+      wheelGesture = null;
+    };
+    const noteWheel = (kind: 'pan' | 'zoom') => {
+      if (wheelGesture && wheelGesture.kind !== kind) endWheelGesture();
+      wheelGesture ??= { kind, end: beginCanvasGesture(kind), timer: 0 };
+      window.clearTimeout(wheelGesture.timer);
+      wheelGesture.timer = window.setTimeout(endWheelGesture, WHEEL_SETTLE_MS);
+    };
+
     // ── Touch (mobile pinch) ──────────────────────────────────────────
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 2) return;
@@ -96,6 +115,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // touches and trigger a pan / select gesture simultaneously.
       e.preventDefault();
       isPinchingRef.current = true;
+      endPinchGesture ??= beginCanvasGesture('zoom');
       const t0 = e.touches[0]!;
       const t1 = e.touches[1]!;
       pinch = {
@@ -118,6 +138,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
     const onTouchEnd = () => {
       pinch = null;
       isPinchingRef.current = false;
+      endPinchGesture?.();
+      endPinchGesture = null;
     };
 
     // ── Wheel (trackpad pinch / Ctrl- or Cmd-scroll = zoom; plain
@@ -164,6 +186,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier.
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
+        noteWheel('zoom');
         const { viewportZoom, viewportOffset } = depsRef.current;
         // deltaY > 0 = pinch-close / scroll-down = zoom out; < 0 = zoom in.
         const factor = Math.exp(-e.deltaY / 200);
@@ -177,6 +200,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // so divide by zoom (a 100px drag pans 100/zoom canvas px), matching
       // the pointer-pan maths.
       e.preventDefault();
+      noteWheel('pan');
       const { viewportZoom } = depsRef.current;
       const base = pendingPan ?? depsRef.current.viewportOffset;
       pendingPan = {
@@ -194,6 +218,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
 
     return () => {
       if (panRaf !== null) cancelAnimationFrame(panRaf);
+      endWheelGesture();
+      endPinchGesture?.();
       document.removeEventListener('touchstart', onTouchStart);
       document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('touchend', onTouchEnd);

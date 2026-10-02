@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { DragMode } from '@/lib/canvas';
+import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { createShape, type Element, type Tab } from '@livediagram/document';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
@@ -43,9 +45,9 @@ function harness(multi: string[]) {
     insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
   const view = renderHook(() => useEditorDrag(deps));
-  const press = (key: string) =>
+  const press = (key: string, mode: DragMode = 'move') =>
     act(() => {
-      view.result.current.beginDrag(ids[key]!, 'move', {
+      view.result.current.beginDrag(ids[key]!, mode, {
         clientX: 0,
         clientY: 0,
         button: 0,
@@ -53,11 +55,25 @@ function harness(multi: string[]) {
         preventDefault: () => {},
       } as unknown as Parameters<typeof view.result.current.beginDrag>[2]);
     });
-  return { press, ids, setSelectedId, setMultiSelectedIds };
+  const pointer = (type: 'pointermove' | 'pointerup', x: number) =>
+    act(() => {
+      window.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: 0 }));
+    });
+  return {
+    press,
+    move: (x: number) => pointer('pointermove', x),
+    release: (x: number) => pointer('pointerup', x),
+    unmount: view.unmount,
+    ids,
+    setSelectedId,
+    setMultiSelectedIds,
+  };
 }
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
+  resetCanvasGesturesForTests();
 });
 
 describe('a plain press on a boxed element', () => {
@@ -79,5 +95,54 @@ describe('a plain press on a boxed element', () => {
     h.press('a');
     expect(h.setSelectedId).toHaveBeenCalledWith(h.ids.a);
     expect(h.setMultiSelectedIds).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: a drag opens the canvas gesture the Map and the
+// selection chrome stand down for.
+describe('the gesture a drag opens', () => {
+  const syncFrames = () => {
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(performance.now());
+      return 0;
+    });
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+  };
+
+  it('opens a move only once the press travels far enough to be a drag', () => {
+    syncFrames();
+    const h = harness([]);
+    h.press('a');
+    h.move(2);
+    expect(canvasGestureNow()).toBe('idle');
+    h.move(20);
+    expect(canvasGestureNow()).toBe('move');
+    h.release(20);
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('opens a resize on the press itself', () => {
+    syncFrames();
+    const h = harness([]);
+    h.press('a', 'resize-se');
+    expect(canvasGestureNow()).toBe('resize');
+    h.release(0);
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('opens nothing for a click', () => {
+    syncFrames();
+    const h = harness([]);
+    h.press('a');
+    h.release(0);
+    expect(canvasGestureNow()).toBe('idle');
+  });
+
+  it('closes the gesture when the editor unmounts mid-drag', () => {
+    syncFrames();
+    const h = harness([]);
+    h.press('a', 'resize-se');
+    h.unmount();
+    expect(canvasGestureNow()).toBe('idle');
   });
 });

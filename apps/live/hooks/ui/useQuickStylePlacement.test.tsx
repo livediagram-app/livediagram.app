@@ -144,6 +144,28 @@ describe('useQuickStylePlacement', () => {
     expect(result.current!.top).toBeGreaterThanOrEqual(560);
   });
 
+  it('re-places for a transition on the chrome it watches, not one on the canvas', () => {
+    const panelRef = mountPanel();
+    renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));
+    for (let i = 0; i < 5; i++) act(runFrame);
+    const settled = measures;
+
+    const onCanvas = document.createElement('div');
+    area.append(onCanvas);
+    act(() => {
+      onCanvas.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    });
+    for (let i = 0; i < 3; i++) act(runFrame);
+    expect(measures).toBe(settled);
+
+    act(() => {
+      palette.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    });
+    for (let i = 0; i < 3; i++) act(runFrame);
+    expect(measures).toBe(settled + 1);
+    onCanvas.remove();
+  });
+
   it('watches chrome that mounts after the panel', () => {
     const panelRef = mountPanel();
     const { result } = renderHook(() => useQuickStylePlacement(panelRef, true, 'toolbar'));

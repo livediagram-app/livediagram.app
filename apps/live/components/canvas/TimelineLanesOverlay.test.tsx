@@ -25,6 +25,7 @@ function draw(opts: { zoom?: number; timeline?: EsTimeline | null } = {}) {
       tabThemeId="brand"
       viewportZoom={opts.zoom ?? 1}
       wrapperRef={wrapper()}
+      viewKey="0,0,1"
     />,
   );
   return container;
