@@ -384,7 +384,7 @@ export default function NewDocumentPage() {
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
     // A whiteboard tab born from the wizard (docs/specs/023-whiteboard/whiteboard.md "Telemetry").
-    if (templateKind === 'whiteboard') track('Whiteboard', 'Created', 'Template');
+    if (templateKind === 'whiteboard') track('Draw', 'Created', 'Template');
     cta.trackCreated();
     // Created straight into a team library: the same Team·Added·Document an Explorer move into a
     // team sends (docs/specs/017-telemetry/telemetry.md), only reached once the create, and so

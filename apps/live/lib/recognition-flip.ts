@@ -32,7 +32,7 @@ export function flipStrokeRecognition(
   debugLog(`[whiteboard] recognition flip by ${via}: ${flip ?? 'no shape'}`);
   if (!flip) return null;
   track(
-    'Whiteboard',
+    'Draw',
     'Toggled',
     flip === 'recognised'
       ? via === 'key'

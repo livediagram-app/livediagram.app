@@ -210,31 +210,31 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Whiteboards (docs/specs/023-whiteboard/whiteboard.md): boards made, and which of the dock's
+// Draw mode (docs/specs/023-whiteboard/whiteboard.md): Whiteboard tabs made, and which of the dock's
 // choices people reach for. Headed by the boards made; the rest are settings.
 export const WHITEBOARDS_CREATED = chart(
-  'Whiteboard',
+  'Draw',
   'Created',
   'Whiteboards Created',
   'A whiteboard tab made, from the New Document wizard or as a new tab.',
 );
 
 export const WHITEBOARD_PENS = chart(
-  'Whiteboard',
+  'Draw',
   'Selected',
   'Pens Picked',
   'A whiteboard pen picked up: the main, second or third pen.',
 );
 
 export const WHITEBOARD_SETTINGS = chart(
-  'Whiteboard',
+  'Draw',
   'Changed',
   'Pens, Eraser and Background',
   "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
 );
 
 export const WHITEBOARD_RECOGNITION = chart(
-  'Whiteboard',
+  'Draw',
   'Toggled',
   'Shape Recognition',
   'Shape recognition switched on or off on a whiteboard.',
@@ -260,9 +260,9 @@ export const TAB_OPENS_IN = chart(
 
 export const WHITEBOARDS: MetricStack = {
   stack: true,
-  title: 'Whiteboards',
+  title: 'Draw Mode',
   blurb:
-    'Whiteboard tabs made, and the pens, erasers, backgrounds and recognition people use on them.',
+    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,

@@ -54,7 +54,7 @@ describe('useSnapColours', () => {
     expect(hook.result.current.snap()).toBe(2);
     expect(commit).toHaveBeenCalledTimes(1);
     expect(live()).toEqual([{ ...stroke('a'), penColour: 'red' }, stroke('b')]);
-    expect(track).toHaveBeenCalledExactlyOnceWith('Whiteboard', 'Changed', 'SnapColours');
+    expect(track).toHaveBeenCalledExactlyOnceWith('Draw', 'Changed', 'SnapColours');
   });
 
   it('does nothing while edits are blocked or with nothing to snap', () => {

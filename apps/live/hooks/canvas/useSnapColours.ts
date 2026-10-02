@@ -41,7 +41,7 @@ export function useSnapColours(deps: {
     });
     if (result.changed === 0) return 0;
     debugLog('[snap-colours] snapped', { colours: result.colours, elements: result.changed });
-    track('Whiteboard', 'Changed', 'SnapColours');
+    track('Draw', 'Changed', 'SnapColours');
     return result.colours;
   };
 

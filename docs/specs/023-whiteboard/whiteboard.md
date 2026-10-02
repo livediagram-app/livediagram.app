@@ -260,7 +260,7 @@ The shapes group learns and keeps the shapes a user reaches for.
   so they follow the user across devices; a guest keeps them in this
   browser. Only kinds from the palette's shape catalogue are stored; unknown
   kinds are dropped on read.
-- **Telemetry:** `Whiteboard` · `Changed` · `ShapePinned` / `ShapeUnpinned`
+- **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
 
 ## Pens
@@ -625,7 +625,7 @@ The eraser offers **both** modes, switched in its flyout:
   what Alt does; the pen stays down and the stroke carries on. The chip
   leaves when the pen moves on or lifts. A mouse stroke has Alt and shows no
   chip.
-- **Telemetry:** `Whiteboard` · `Toggled` · `RecogniseOnceKey`,
+- **Telemetry:** `Draw` · `Toggled` · `RecogniseOnceKey`,
   `RecogniseOnceChip`, `BreakShapeKey` or `BreakShapeChip`.
 
 ## Board background
@@ -775,7 +775,7 @@ where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Preset-enum events only, never content, under a `Whiteboard` category:
+Preset-enum events only, never content, under a `Draw` category (named `Whiteboard` until its stored history was rewritten):
 
 | Event                     | Action     | Type                                                     |
 | ------------------------- | ---------- | -------------------------------------------------------- |

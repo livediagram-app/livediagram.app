@@ -91,6 +91,24 @@ describe('useWhiteboard', () => {
 
   // docs/specs/007-editor/editor-modes.md "What a mode brings into focus": leaving a mode puts its
   // tool down; a pen, the eraser or an armed shape never carries over into the other mode.
+  // docs/specs/007-editor/editor-modes.md: entering Draw by switching follows the rule for opening.
+  it('leaves Select in hand when a tab with content switches into Draw', () => {
+    const tab = { id: 't5', name: 'Tab 5', kind: 'diagram', elements: [stroke] } as Tab;
+    const { deps, hook } = setup(tab);
+    hook.rerender({ ...deps, drawMode: true });
+    expect(deps.beginDraw).not.toHaveBeenCalled();
+    expect(deps.setCanvasTool).not.toHaveBeenCalled();
+  });
+
+  it('puts the pen in hand on every switch into Draw on an empty tab, not only the first', () => {
+    const blank = { id: 't6', name: 'Tab 6', kind: 'diagram', elements: [] } as Tab;
+    const { deps, hook } = setup(blank);
+    hook.rerender({ ...deps, drawMode: true });
+    hook.rerender({ ...deps, drawMode: false });
+    hook.rerender({ ...deps, drawMode: true });
+    expect(deps.beginDraw).toHaveBeenCalledTimes(2);
+  });
+
   it('puts the eraser down when switching out of Draw', () => {
     const { deps, hook } = setup(board('wb', { elements: [stroke] }), null, 'eraser' as never);
     hook.rerender({ ...deps, drawMode: false });
@@ -141,7 +159,7 @@ describe('useWhiteboard', () => {
     act(() => hook.result.current.pickPath());
     expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
     expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'path' });
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'Path');
+    expect(track).toHaveBeenCalledWith('Draw', 'Selected', 'Path');
   });
 
   it('puts the Path tool down on a diagram tab', () => {
@@ -155,7 +173,7 @@ describe('useWhiteboard', () => {
     expect(deps.beginDraw).toHaveBeenLastCalledWith(
       expect.objectContaining({ variant: 'whiteboard', colour: 'red' }),
     );
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'Third');
+    expect(track).toHaveBeenCalledWith('Draw', 'Selected', 'Third');
     expect(hook.result.current.prefs.activePenId).toBe('third');
   });
 
@@ -163,8 +181,8 @@ describe('useWhiteboard', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.setRecognition(true));
     act(() => hook.result.current.setEraserMode('partial'));
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Toggled', 'RecognitionOn');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'EraserPartial');
+    expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'RecognitionOn');
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'EraserPartial');
     const stored = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);
     expect(stored).toMatchObject({ recognise: true, eraserMode: 'partial' });
   });
@@ -205,14 +223,14 @@ describe('useWhiteboard', () => {
     act(() => hook.result.current.setBackground('dots'));
     expect(readUserPreferences().drawPattern).toBe('grid');
     expect(hook.result.current.background).toBe('grid');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'BackgroundDots');
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'BackgroundDots');
   });
 
   it('does nothing for the background already chosen', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.setBackground('grid'));
     expect(readUserPreferences().drawPattern).toBeUndefined();
-    expect(track).not.toHaveBeenCalledWith('Whiteboard', 'Changed', 'BackgroundGrid');
+    expect(track).not.toHaveBeenCalledWith('Draw', 'Changed', 'BackgroundGrid');
   });
 });
 
@@ -221,7 +239,7 @@ describe('pen cursor', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.setCursor('dot'));
     expect(hook.result.current.prefs.cursor).toBe('dot');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'CursorDot');
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'CursorDot');
   });
 });
 
@@ -231,21 +249,21 @@ describe('pen changes', () => {
     act(() => hook.result.current.updatePen('second', { colour: '#9061f9', width: 2.5 }));
     act(() => hook.result.current.resetPen('second'));
     expect(hook.result.current.prefs.pens[1]).toEqual(DEFAULT_WHITEBOARD_PREFS.pens[1]);
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenReset');
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'PenReset');
   });
 
   it('does nothing for a pen already as it started', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.resetPen('third'));
-    expect(track).not.toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenReset');
+    expect(track).not.toHaveBeenCalledWith('Draw', 'Changed', 'PenReset');
   });
 
   it('reports a new colour and a new width, never the colour itself', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.updatePen('second', { colour: '#9061f9' }));
     act(() => hook.result.current.updatePen('main', { width: 1 }));
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenColour');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Changed', 'PenWidth');
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'PenColour');
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'PenWidth');
   });
 
   it('remembers a custom colour in Your colours, synced, and nothing for a stock colour', () => {
@@ -315,7 +333,7 @@ describe('shapes from the catalogue', () => {
   it('reports a search pick as one fixed token, never the kind', () => {
     const { hook } = setup(board());
     act(() => hook.result.current.pickSearchedShape('hexagon'));
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Selected', 'ShapeSearch');
+    expect(track).toHaveBeenCalledWith('Draw', 'Selected', 'ShapeSearch');
     expect(vi.mocked(track).mock.calls.flat()).not.toContain('hexagon');
   });
 
@@ -341,13 +359,13 @@ describe('dock mode and pins', () => {
     const defaults = hook.result.current.pinnedShapes;
     act(() => hook.result.current.applySlotOutcome({ type: 'pin', pinned: [...defaults, 'star'] }));
     expect(hook.result.current.pinnedShapes).toEqual([...defaults, 'star']);
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapePinned');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Changed', 'ShapePinned');
     act(() =>
       hook.result.current.applySlotOutcome({ type: 'pin', pinned: [...defaults, 'cloud'] }),
     );
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapePinned');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Changed', 'ShapePinned');
     act(() => hook.result.current.applySlotOutcome({ type: 'unpin', pinned: [...defaults] }));
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Changed', 'ShapeUnpinned');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Changed', 'ShapeUnpinned');
     expect(vi.mocked(track).mock.calls.flat()).not.toContain('cloud');
   });
 

@@ -189,7 +189,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 
 | Event                       | Action     | Type                   |
 | --------------------------- | ---------- | ---------------------- |
-| The Path tool picked        | `Selected` | `Whiteboard` · `Path`  |
+| The Path tool picked        | `Selected` | `Draw` · `Path`        |
 | A path committed            | `Added`    | `Element` · `Path`     |
 | A path edited in edit mode  | `Changed`  | `Element` · `PathEdit` |
 | A path closed while editing | `Changed`  | `Element` · `PathJoin` |

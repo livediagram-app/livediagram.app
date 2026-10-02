@@ -292,7 +292,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(down);
     expect(down.defaultPrevented).toBe(true);
     expect(stroke.shaped()?.kind).toBe('square');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Toggled', 'RecogniseOnceKey');
+    expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'RecogniseOnceKey');
     const up = key('keyup');
     s.send(up);
     expect(up.defaultPrevented).toBe(true);
@@ -312,7 +312,7 @@ describe('useWhiteboardPenGesture, with Alt', () => {
     s.send(key('keydown'));
     expect(stroke.shaped()).toBeNull();
     expect(stroke.inkHeld()).toBe(true);
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Toggled', 'BreakShapeKey');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeKey');
     s.send(key('keyup'));
     expect(stroke.inkHeld()).toBe(false);
     s.send(pointer('pointerup', { x: 10, y: 30 }));

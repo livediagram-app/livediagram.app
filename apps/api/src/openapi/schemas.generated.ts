@@ -5707,7 +5707,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Page",
       "Cta",
       "Trash",
-      "Whiteboard",
+      "Draw",
+      "Editor",
       "Drive"
     ],
     "type": "string"

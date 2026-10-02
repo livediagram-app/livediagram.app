@@ -263,7 +263,7 @@ Gated on `whiteboard = isWhiteboardTab(activeTab)`:
     `penColour`). For the held pen Ink is `colour: null`.
     `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
     / `QuickStrokeWidth`) and `remember` the colour (a custom one moves to the front of Your colours),
-    or call `updatePen` for the held pen (its own `Whiteboard·Changed` tokens; `updatePen`
+    or call `updatePen` for the held pen (its own `Draw·Changed` tokens; `updatePen`
     remembers). Clear styles shows only when `targetIds` is non-empty. `QuickPenRows`
     shows `subject.name` as a caption unless `QuickStylePanel` has `powerUser` (from `isPowerUserMode`).
     Choosing the held pen's current value is a no-op.
@@ -332,7 +332,7 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   `penColourHardToSee(hex)` is not: the warning icon, "Hard to see on the {light|dark} board." and a
   swatch "Use {readable}, readable on both boards" that applies it. `lib/hsv.ts`: `hsvToHex`,
   `hexToHsv`.
-- Telemetry: `Whiteboard·Changed·PenColour` on every marker colour change, never the colour.
+- Telemetry: `Draw·Changed·PenColour` on every marker colour change, never the colour.
 
 ### Shapes flyout hover, Settings flyout
 
@@ -414,7 +414,7 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   a whole pixel at its centre; the
   crosshair + nib black with a white outline on light, white with no outline on dark, its dot rimmed in
   the inverse), `penCursor`. `WhiteboardPrefs.cursor` (parsed, default `nib-crosshair`), `setCursor`
-  (`Whiteboard·Changed·CursorDot | CursorCrosshair`), the Settings flyout's Cursor row, and
+  (`Draw·Changed·CursorDot | CursorCrosshair`), the Settings flyout's Cursor row, and
   `useWhiteboardPenCursor(pendingDraw, variant, zoom)` (strokePx = pen width x zoom) feeding the Canvas cursor style.
 
 ### Recognition preview

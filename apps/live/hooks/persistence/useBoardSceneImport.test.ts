@@ -87,7 +87,7 @@ describe('importScenesAsNewDocuments', () => {
     expect(untitled!.tabs[0]!.elements).toHaveLength(2);
     expect(calls.refreshed).toBe(1);
     expect(track).toHaveBeenCalledWith('Document', 'Created', 'Cloud');
-    expect(track).toHaveBeenCalledWith('Whiteboard', 'Created', 'Import');
+    expect(track).toHaveBeenCalledWith('Draw', 'Created', 'Import');
     expect(outcome).toMatchObject({
       status: 'done',
       documents: [

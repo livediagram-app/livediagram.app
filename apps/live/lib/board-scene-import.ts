@@ -229,7 +229,7 @@ export async function importDocuments(
       for (const page of omitted) failures.push({ title: name, message: pageTooLarge(page) });
     }
     track('Document', 'Created', o.offline ? 'Offline' : 'Cloud');
-    if (source.kind === 'whiteboard') track('Whiteboard', 'Created', 'Import');
+    if (source.kind === 'whiteboard') track('Draw', 'Created', 'Import');
     const boardReport: BoardSceneReport = dates.unreadable
       ? addReports(prepared.report, {
           landed: {},

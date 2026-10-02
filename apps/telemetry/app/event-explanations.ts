@@ -17,49 +17,48 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
-  'Whiteboard|Created|Template':
+  'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
-  'Whiteboard|Created|NewTab':
+  'Draw|Created|NewTab':
     'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
-  'Whiteboard|Selected|Main':
+  'Draw|Selected|Main':
     "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
-  'Whiteboard|Selected|Path':
+  'Draw|Selected|Path':
     "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
-  'Whiteboard|Selected|ShapeSearch':
+  'Draw|Selected|ShapeSearch':
     "Someone picked a shape they searched for in a whiteboard's Shapes flyout, which finds any of the palette's shapes by name.",
-  'Whiteboard|Selected|Second':
+  'Draw|Selected|Second':
     "Someone picked up a whiteboard's second pen (blue unless they changed it).",
-  'Whiteboard|Selected|Third':
-    "Someone picked up a whiteboard's third pen (red unless they changed it).",
-  'Whiteboard|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
-  'Whiteboard|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
-  'Whiteboard|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
-  'Whiteboard|Changed|CursorCrosshair':
+  'Draw|Selected|Third': "Someone picked up a whiteboard's third pen (red unless they changed it).",
+  'Draw|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
+  'Draw|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
+  'Draw|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
+  'Draw|Changed|CursorCrosshair':
     "Someone chose the crosshair with a nib as a whiteboard's pen cursor.",
-  'Whiteboard|Changed|PenReset':
+  'Draw|Changed|PenReset':
     "Someone reset one of a whiteboard's pens to its starting colour and width.",
-  'Whiteboard|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
-  'Whiteboard|Changed|EraserPartial':
+  'Draw|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
+  'Draw|Changed|EraserPartial':
     "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
-  'Whiteboard|Changed|ShapePinned':
+  'Draw|Changed|ShapePinned':
     'Someone pinned a shape to their whiteboard dock, so it stays there beside the shapes they use most.',
-  'Whiteboard|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
-  'Whiteboard|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
-  'Whiteboard|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
-  'Whiteboard|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
-  'Whiteboard|Changed|SnapColours':
+  'Draw|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
+  'Draw|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
+  'Draw|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
+  'Draw|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
+  'Draw|Changed|SnapColours':
     "Someone snapped a whiteboard's custom colours to its stock colours, so they adapt to light and dark boards.",
-  'Whiteboard|Toggled|RecognitionOn':
+  'Draw|Toggled|RecognitionOn':
     'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
-  'Whiteboard|Toggled|RecognitionOff':
+  'Draw|Toggled|RecognitionOff':
     'Someone turned off shape recognition on a whiteboard, so strokes stay as drawn.',
-  'Whiteboard|Toggled|RecogniseOnceKey':
+  'Draw|Toggled|RecogniseOnceKey':
     'Someone pressed Alt (Option) while drawing on a whiteboard to turn that one stroke into a clean shape at once.',
-  'Whiteboard|Toggled|RecogniseOnceChip':
+  'Draw|Toggled|RecogniseOnceChip':
     "Someone tapped a whiteboard's Make shape chip while drawing to turn that one stroke into a clean shape at once.",
-  'Whiteboard|Toggled|BreakShapeKey':
+  'Draw|Toggled|BreakShapeKey':
     'Someone pressed Alt (Option) while drawing on a whiteboard to turn a recognised shape back into the ink they drew.',
-  'Whiteboard|Toggled|BreakShapeChip':
+  'Draw|Toggled|BreakShapeChip':
     "Someone tapped a whiteboard's Keep drawing chip while drawing to turn a recognised shape back into the ink they drew.",
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
@@ -913,12 +912,12 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
-  'Whiteboard|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
-  'Whiteboard|Selected':
+  'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
+  'Draw|Selected':
     'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
-  'Whiteboard|Changed':
+  'Draw|Changed':
     "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background or its pinned shapes.",
-  'Whiteboard|Toggled':
+  'Draw|Toggled':
     'Someone switched shape recognition on a whiteboard on or off, or flipped the stroke they were drawing between ink and a shape.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',

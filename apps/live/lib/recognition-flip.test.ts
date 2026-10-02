@@ -62,13 +62,13 @@ describe('flipStrokeRecognition', () => {
     const listener = vi.fn();
     stroke.subscribe(listener);
     flipStrokeRecognition(stroke, 1.5, 'key');
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Toggled', 'RecogniseOnceKey');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'RecogniseOnceKey');
     flipStrokeRecognition(stroke, 1.5, 'chip');
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Toggled', 'BreakShapeChip');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeChip');
     flipStrokeRecognition(stroke, 1.5, 'chip');
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Toggled', 'RecogniseOnceChip');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'RecogniseOnceChip');
     flipStrokeRecognition(stroke, 1.5, 'key');
-    expect(track).toHaveBeenLastCalledWith('Whiteboard', 'Toggled', 'BreakShapeKey');
+    expect(track).toHaveBeenLastCalledWith('Draw', 'Toggled', 'BreakShapeKey');
     expect(listener).toHaveBeenCalledTimes(4);
   });
 

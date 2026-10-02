@@ -60,11 +60,11 @@ export function useWhiteboardDockPrefs({
   const applySlotOutcome = (outcome: SlotOutcome) => {
     if (outcome.type !== 'pin' && outcome.type !== 'unpin') return;
     const change = outcome.pinned.length - pinned.length;
-    if (change > 0) track('Whiteboard', 'Changed', 'ShapePinned');
-    if (change < 0) track('Whiteboard', 'Changed', 'ShapeUnpinned');
+    if (change > 0) track('Draw', 'Changed', 'ShapePinned');
+    if (change < 0) track('Draw', 'Changed', 'ShapeUnpinned');
     // A replacement unpins one kind and pins another.
     if (change === 0 && outcome.pinned.some((k) => !pinned.includes(k))) {
-      track('Whiteboard', 'Changed', 'ShapePinned');
+      track('Draw', 'Changed', 'ShapePinned');
     }
     update(() => ({ pinned: outcome.pinned }));
   };

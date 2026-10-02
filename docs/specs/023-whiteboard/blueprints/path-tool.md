@@ -309,7 +309,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 
 - `activeWhiteboardTool`: `pendingDraw.type === 'path'` → `'path'`.
 - `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
-  `Whiteboard·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
+  `Draw·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
 - The dock button, in the Shapes group after the sticky note (the dock's own blueprint places it):
   key `path`, label "Path tool", shortcut `P`,
   `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component

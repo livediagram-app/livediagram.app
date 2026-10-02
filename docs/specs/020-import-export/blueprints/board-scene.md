@@ -337,7 +337,7 @@ total }`; the text hug), then `createDocument({ id, name, tabs: [tab], folderId?
 savedAt? })` with one tab `{ name: 'Whiteboard', kind, backgroundPattern, elements,
 templateChosen: true }`. `createDocument` defaults to `apiCreateDocument` (cloud) or
   `offlineCreateDocument(.., { createdAt, savedAt, folderId })` (offline). Per document:
-  `track('Document', 'Created', 'Cloud' | 'Offline')` and `track('Whiteboard', 'Created', 'Import')`.
+  `track('Document', 'Created', 'Cloud' | 'Offline')` and `track('Draw', 'Created', 'Import')`.
   A rejected landing or a failed create is listed in `failures` (`{ title: name, message }`; a failed
   create "The document couldn't be created. Try again."), the rest still land; none landing is an
   `error` outcome. Reports and image reports add up (`addReports`, `addImageReports`); unreadable

@@ -55,6 +55,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Renamed',
   'Document·Reverted',
   'Document·Shared',
+  // Draw mode (docs/specs/023-whiteboard/whiteboard.md): a Whiteboard tab created (Template /
+  // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
+  'Draw·Changed',
+  'Draw·Created',
+  'Draw·Selected',
+  'Draw·Toggled',
   'Document·Undone',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
   'Drive·Applied',
@@ -193,10 +199,4 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Toggled',
   'UI·Used',
   'UI·View',
-  // Whiteboard tabs (docs/specs/023-whiteboard/whiteboard.md): created (Template / NewTab / Import),
-  // a pen picked, the eraser mode or background changed, shape recognition toggled.
-  'Whiteboard·Changed',
-  'Whiteboard·Created',
-  'Whiteboard·Selected',
-  'Whiteboard·Toggled',
 ];

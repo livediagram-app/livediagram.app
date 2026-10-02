@@ -151,7 +151,7 @@ export function useWhiteboard(deps: Deps) {
     setPrefs(next);
     armPen(next);
     const pen = next.pens.find((p) => p.id === id);
-    if (pen) track('Whiteboard', 'Selected', penTelemetryType(pen));
+    if (pen) track('Draw', 'Selected', penTelemetryType(pen));
   };
 
   const updatePen = (id: WhiteboardPenId, patch: { colour?: PenColour | null; width?: number }) => {
@@ -162,10 +162,10 @@ export function useWhiteboard(deps: Deps) {
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
     if (patch.colour !== undefined) {
-      track('Whiteboard', 'Changed', 'PenColour');
+      track('Draw', 'Changed', 'PenColour');
       colourMemory.remember(patch.colour);
     }
-    if (patch.width !== undefined) track('Whiteboard', 'Changed', 'PenWidth');
+    if (patch.width !== undefined) track('Draw', 'Changed', 'PenWidth');
   };
 
   // Right-click on a pen: back to how it started, colour and width (docs/specs/023-whiteboard/whiteboard.md "Pens").
@@ -176,14 +176,14 @@ export function useWhiteboard(deps: Deps) {
     const next = { ...prefs, pens: prefs.pens.map((p) => (p.id === id ? preset : p)) };
     setPrefs(next);
     if (tool === 'pen' && prefs.activePenId === id) armPen(next);
-    track('Whiteboard', 'Changed', 'PenReset');
+    track('Draw', 'Changed', 'PenReset');
   };
 
   // The Path tool (docs/specs/023-whiteboard/path-tool.md): held like a pen until another tool is picked.
   const pickPath = () => {
     setCanvasTool('select');
     beginDraw({ type: 'path' });
-    track('Whiteboard', 'Selected', 'Path');
+    track('Draw', 'Selected', 'Path');
   };
 
   const pickEraser = () => {
@@ -194,7 +194,7 @@ export function useWhiteboard(deps: Deps) {
   const setEraserMode = (mode: WhiteboardEraserMode) => {
     if (mode === prefs.eraserMode) return;
     setPrefs({ ...prefs, eraserMode: mode });
-    track('Whiteboard', 'Changed', mode === 'partial' ? 'EraserPartial' : 'EraserStroke');
+    track('Draw', 'Changed', mode === 'partial' ? 'EraserPartial' : 'EraserStroke');
   };
 
   const pickIntent = (intent: PendingDraw) => {
@@ -218,7 +218,7 @@ export function useWhiteboard(deps: Deps) {
   // A pick from the More shapes search: reported as one fixed token, never the kind.
   const pickSearchedShape = (key: WhiteboardShapeKey) => {
     pickShape(key);
-    track('Whiteboard', 'Selected', 'ShapeSearch');
+    track('Draw', 'Selected', 'ShapeSearch');
   };
 
   const setRecognition = (on: boolean) => {
@@ -226,13 +226,13 @@ export function useWhiteboard(deps: Deps) {
     const next = { ...prefs, recognise: on };
     setPrefs(next);
     if (tool === 'pen') armPen(next);
-    track('Whiteboard', 'Toggled', next.recognise ? 'RecognitionOn' : 'RecognitionOff');
+    track('Draw', 'Toggled', next.recognise ? 'RecognitionOn' : 'RecognitionOff');
   };
 
   const setCursor = (cursor: PenCursorVariant) => {
     if (cursor === prefs.cursor) return;
     setPrefs({ ...prefs, cursor });
-    track('Whiteboard', 'Changed', cursor === 'dot' ? 'CursorDot' : 'CursorCrosshair');
+    track('Draw', 'Changed', cursor === 'dot' ? 'CursorDot' : 'CursorCrosshair');
   };
 
   // The Background row writes the person's own Draw pattern, never the tab
@@ -241,7 +241,7 @@ export function useWhiteboard(deps: Deps) {
     const bg = WHITEBOARD_BACKGROUNDS.find((b) => b.id === id);
     const pattern = DRAW_PATTERNS.find((p) => p === bg?.pattern);
     if (!bg || !pattern || pattern === dockPrefs.pattern) return;
-    track('Whiteboard', 'Changed', BACKGROUND_TOKEN[bg.id]);
+    track('Draw', 'Changed', BACKGROUND_TOKEN[bg.id]);
     dockPrefs.setPattern(pattern);
   };
 
