@@ -56,7 +56,9 @@ const STABLE = {
 
 // What one editor render hands the layer: the same data, every handler a fresh closure, the panel
 // action bags fresh objects, as the editor mints them per render.
-function layerProps(over: { elements?: Element[]; selectedId?: string | null; zoom?: number } = {}) {
+function layerProps(
+  over: { elements?: Element[]; selectedId?: string | null; zoom?: number } = {},
+) {
   const fresh = () => vi.fn();
   return {
     ...STABLE,

@@ -601,9 +601,7 @@ function BoxedElementViewImpl({
 
       {isLocked ? <LockBadge /> : null}
 
-      {remoteSelectors.length > 0 ? (
-        <RemoteSelectorsStrip selectors={remoteSelectors} />
-      ) : null}
+      {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
@@ -696,4 +694,3 @@ function BoxedElementViewImpl({
 // changed), every other prop is a primitive or an id-bearing
 // callback that the parent keeps stable.
 export const BoxedElementView = memo(BoxedElementViewImpl);
-
