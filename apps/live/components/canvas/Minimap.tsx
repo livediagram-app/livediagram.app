@@ -19,6 +19,7 @@ import { MovablePanel, type MovablePanelDockProps } from '@/components/primitive
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
+import { useSettledElements } from '@/hooks/canvas/useSettledElements';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
@@ -103,7 +104,7 @@ const MAP_RATIO: Record<MapSize, number> = {
 };
 
 export function Minimap({
-  elements,
+  elements: liveElements,
   tabFont,
   viewportOffset,
   viewportZoom,
@@ -120,6 +121,8 @@ export function Minimap({
   size,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md).
+  const elements = useSettledElements(liveElements);
   const draggingRef = useRef(false);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas

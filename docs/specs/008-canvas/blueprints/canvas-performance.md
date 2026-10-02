@@ -18,7 +18,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `packages/document/src/arrow-behind.ts`                    | `routeBehindHoles` unchanged in contract; callers pass grid candidates          |
 | `packages/document/src/svg-render-arrows.ts`               | The export builds one grid per render and queries it                            |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`           | `draftLayout` identity-stable across passes                                     |
-| `apps/live/hooks/canvas/useSettledElements.ts` (planned)   | What the Map draws: frozen during element gestures, throttled otherwise         |
+| `apps/live/hooks/canvas/useSettledElements.ts`             | What the Map draws: frozen during element gestures, throttled otherwise         |
 | `apps/live/components/canvas/Minimap.tsx`                  | Draws `useSettledElements(elements)`                                            |
 | `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`          | Takes `suspended`; never measures while suspended                               |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | `toolbarsStale` includes `selectionMoving`                                      |
@@ -333,7 +333,7 @@ export function budgetTable(rows: readonly BudgetRow[]): string;
 | A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only |
 | No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                |
 | Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                |
-| The Map redraws when a gesture ends              | `useSettledElements.test.ts`: frozen, released, throttled, trailing                                                        |
+| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                    |
 | Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                        |
 | Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                          |
 | A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; `element-layer-props.collab.test.tsx`               |
