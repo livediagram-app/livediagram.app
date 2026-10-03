@@ -8,7 +8,8 @@ import {
   type ArticleFlow,
   type ArticleZoneBlock,
 } from './article-flow';
-import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
+import { buildElementIndex } from './geometry';
+import { elementAnchorPoint } from './illustrate-page-content';
 import {
   illustratePagesOf,
   layOutIllustratePages,
@@ -33,17 +34,9 @@ export function zoneCanvasRect(
   };
 }
 
-/** The point an element belongs to a zone by: a box's centre, an arrow's midpoint. */
-export function zoneAnchorOf(
-  el: Element,
-  elements: readonly Element[] | ElementIndex,
-): { x: number; y: number } {
-  if (isBoxed(el)) return { x: el.x + el.width / 2, y: el.y + el.height / 2 };
-  const all = elements as Element[] | ElementIndex;
-  const a = endpointPosition(el.from, all);
-  const b = endpointPosition(el.to, all);
-  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-}
+/** The point an element belongs to a zone by: a box's centre, an arrow's midpoint (the same
+ *  anchor that places it on its page). */
+export const zoneAnchorOf = elementAnchorPoint;
 
 const inside = (r: PageRect, p: { x: number; y: number }) =>
   p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;

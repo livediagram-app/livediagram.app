@@ -11,7 +11,7 @@ import {
   type CanvasSurface,
 } from './colors';
 import { duplicateElements } from './duplicate';
-import { endpointPosition } from './geometry';
+import { endpointPosition, type ElementIndex } from './geometry';
 import {
   illustratePageAt,
   illustratePagesOf,
@@ -29,10 +29,14 @@ type Point = { x: number; y: number };
 
 /** Where an element sits for the purpose of "which page is it on": a box's centre, an arrow's
  *  midpoint between its resolved ends. */
-export function elementAnchorPoint(el: Element, elements: Element[]): Point {
+export function elementAnchorPoint(
+  el: Element,
+  elements: readonly Element[] | ElementIndex,
+): Point {
   if (isBoxed(el)) return { x: el.x + el.width / 2, y: el.y + el.height / 2 };
-  const a = endpointPosition(el.from, elements);
-  const b = endpointPosition(el.to, elements);
+  const all = elements as Element[] | ElementIndex;
+  const a = endpointPosition(el.from, all);
+  const b = endpointPosition(el.to, all);
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 

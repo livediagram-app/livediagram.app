@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@livediagram/document';
 import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
-import { canvasPointOf, type DropCaret } from './useZoneDrag';
+import { screenToCanvasBySheet, type DropCaret } from './useZoneDrag';
 
 type Held = { flow: string; zone: ArticleZoneBlock; rect: PageRect; elementId: string };
 
@@ -58,7 +58,7 @@ export function useObjectDropCaret({
       if (r.left === lastLeft && r.top === lastTop) return;
       lastLeft = r.left;
       lastTop = r.top;
-      const at = canvasPointOf(
+      const at = screenToCanvasBySheet(
         pages[0]!,
         latest.current.zoom,
         r.left + r.width / 2,

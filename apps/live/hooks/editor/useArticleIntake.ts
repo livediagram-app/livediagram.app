@@ -12,7 +12,6 @@
 // an edit, so the end of this person's element gesture counts as one, measured from its start.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import {
-  articleMarginPx,
   articlesOf,
   illustratePagesOf,
   layOutIllustratePages,
@@ -39,14 +38,12 @@ import {
   takeZoneReleased,
 } from '@/lib/article/article-editor-store';
 import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
-import { flowFrame } from '@/lib/article/article-flow-geometry';
+import { articleTextWidth } from '@/lib/article/article-flow-geometry';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
-const textWidthOf = (pages: readonly LaidOutPage[], flow: string, doc: ArticleFlow): number => {
-  const own = pages.filter((p) => p.flow === flow);
-  return own.length ? flowFrame(own, articleMarginPx(doc.style)).columnWidth : 600;
-};
+const textWidthOf = (pages: readonly LaidOutPage[], flow: string, doc: ArticleFlow): number =>
+  articleTextWidth(pages, flow, doc.style);
 
 export function useArticleIntake({
   activeTab,

@@ -21,7 +21,7 @@ export type ZoneDragState = {
 };
 
 /** A screen point on the canvas, by a page's sheet (its canvas rect and its box on screen). */
-export function canvasPointOf(
+export function screenToCanvasBySheet(
   page: LaidOutPage,
   zoom: number,
   clientX: number,
@@ -57,7 +57,7 @@ export function useZoneDrag({
       const handle = articleHandleOf(flow);
       if (!page || !handle) return;
       const z = latest.current.zoom;
-      const grab = canvasPointOf(page, z, e.clientX, e.clientY);
+      const grab = screenToCanvasBySheet(page, z, e.clientX, e.clientY);
       if (!grab) return;
       // On the window: the zone bar (and its grip) stands down while the zone is in hand.
       const target = window;
@@ -84,7 +84,7 @@ export function useZoneDrag({
         });
       };
       const move = (ev: PointerEvent) => {
-        const p = canvasPointOf(page, latest.current.zoom, ev.clientX, ev.clientY);
+        const p = screenToCanvasBySheet(page, latest.current.zoom, ev.clientX, ev.clientY);
         if (!p) return;
         point = p;
         if (!frame) frame = requestAnimationFrame(paint);

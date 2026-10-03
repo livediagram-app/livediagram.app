@@ -3,7 +3,13 @@
 // (the page less its margins), the gap between two columns the margins and the space between the
 // pages. The browser breaks the writing into those columns; these helpers map between a place in
 // the box and a place on a page. Pure.
-import { ARTICLE_TOP_MIN_PX, ILLUSTRATE_PAGE_GAP, type LaidOutPage } from '@livediagram/document';
+import {
+  ARTICLE_TOP_MIN_PX,
+  articleMarginPx,
+  ILLUSTRATE_PAGE_GAP,
+  type ArticleStyle,
+  type LaidOutPage,
+} from '@livediagram/document';
 
 export type FlowFrame = {
   // The box's top-left on the canvas, and its size, in canvas px.
@@ -70,4 +76,20 @@ export function canvasPointOf(
 ): { x: number; y: number } | null {
   const page = pages.find((p) => p.id === place.page);
   return page ? { x: page.rect.x + place.x, y: page.rect.y + place.y } : null;
+}
+
+/** The text width before an article is laid out (no pages of its own yet), canvas px: about an A4
+ *  page's column at Normal margins. */
+export const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
+
+/** An article's text width (one column), from its pages laid out among `pages`. */
+export function articleTextWidth(
+  pages: readonly LaidOutPage[],
+  flow: string,
+  style: ArticleStyle | undefined,
+): number {
+  const own = pages.filter((p) => p.flow === flow);
+  return own.length
+    ? flowFrame(own, articleMarginPx(style)).columnWidth
+    : ARTICLE_FALLBACK_TEXT_WIDTH;
 }

@@ -15,7 +15,7 @@ import {
   type ArticleZoneWrap,
 } from './article-flow';
 import { withArticleFlow, withArticlePageCount } from './article-pages';
-import { zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './article-zones';
+import { withElementsMoved, zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './article-zones';
 import { isBoxed, type BoxedElement, type Element, type Tab } from './index';
 import {
   illustratePagesOf,
@@ -508,4 +508,34 @@ export function objectsDraggedOut(before: ArticlesTab, now: ArticlesTab): Object
     }
   }
   return out;
+}
+
+/** A zone moved in the writing (landed where the editor measured it), its elements carried from
+ *  its old place to its new one in the same edit. */
+export function withZoneMoved<T extends ArticlesTab>(
+  t: T,
+  flow: string,
+  zoneId: string,
+  res: Parameters<typeof withZoneLanded>[2],
+): T {
+  const pagesOf = (tab: T) =>
+    layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const zoneOf = (tab: T) =>
+    articlesOf(tab)[flow]?.blocks.find(
+      (b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone',
+    );
+  const before = zoneOf(t);
+  const from = before ? zoneCanvasRect(pagesOf(t), before) : null;
+  const landed = withZoneLanded(t, flow, res);
+  if (!from || !landed.rect) return landed.tab;
+  const ids = zoneMemberIds(t.elements as Element[], from);
+  return {
+    ...landed.tab,
+    elements: withElementsMoved(
+      landed.tab.elements as Element[],
+      ids,
+      landed.rect.x - from.x,
+      landed.rect.y - from.y,
+    ),
+  };
 }

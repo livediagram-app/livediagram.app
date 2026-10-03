@@ -17,11 +17,7 @@ import {
   articleNoteCorner,
   newArticleNote,
   type ArticleNoteKind,
-  withElementsMoved,
-  zoneCanvasRect,
-  zoneMemberIds,
-  type ArticleZoneBlock,
-  type Element,
+  withZoneMoved,
   withZoneRemoved,
   withZoneReleased,
   withElementsIntoZone,
@@ -42,7 +38,7 @@ import {
 import { debugLog } from '@/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
 import { articleHandleOf, markZoneReleased } from '@/lib/article/article-editor-store';
-import { flowFrame } from '@/lib/article/article-flow-geometry';
+import { articleTextWidth } from '@/lib/article/article-flow-geometry';
 import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/article/ArticleEditor';
 
@@ -221,11 +217,8 @@ export function useArticles(deps: {
     tickTabs: deps.tickTabs,
   });
 
-  const textWidth = (t: Tab, flow: string) => {
-    const doc = articlesOf(t)[flow];
-    const own = layOutIllustratePages(illustratePagesOf(t)).filter((p) => p.flow === flow);
-    return doc && own.length ? flowFrame(own, articleMarginPx(doc.style)).columnWidth : 600;
-  };
+  const textWidth = (t: Tab, flow: string) =>
+    articleTextWidth(layOutIllustratePages(illustratePagesOf(t)), flow, articlesOf(t)[flow]?.style);
 
   const insertObject = useCallback(
     (flow: string, what: ArticleInsert) => {
@@ -411,35 +404,5 @@ export function useArticles(deps: {
     setStyle,
     stylePreview,
     setStylePreview,
-  };
-}
-
-// A zone moved in the writing (landed where the editor measured it), its elements carried from its
-// old place to its new one in the same edit.
-export function withZoneMoved(
-  t: Tab,
-  flow: string,
-  zoneId: string,
-  res: Parameters<typeof withZoneLanded>[2],
-): Tab {
-  const pagesOf = (tab: Tab) =>
-    layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
-  const zoneOf = (tab: Tab) =>
-    articlesOf(tab)[flow]?.blocks.find(
-      (b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone',
-    );
-  const before = zoneOf(t);
-  const from = before ? zoneCanvasRect(pagesOf(t), before) : null;
-  const landed = withZoneLanded(t, flow, res);
-  if (!from || !landed.rect) return landed.tab;
-  const ids = zoneMemberIds(t.elements as Element[], from);
-  return {
-    ...landed.tab,
-    elements: withElementsMoved(
-      landed.tab.elements as Element[],
-      ids,
-      landed.rect.x - from.x,
-      landed.rect.y - from.y,
-    ),
   };
 }
