@@ -611,8 +611,8 @@ export const TABLES: MetricStack = {
   members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
 };
 
-// Undo and redo. (Document·Reverted, the Activity panel's per-entry revert, retired with
-// the panel on 2026-10-03 and has no chart; its explanation stays for Search.)
+// Undo and redo. (Document·Reverted, the removed Activity panel's per-entry revert, is a
+// retired event: dropped before any chart, see retired-events.ts.)
 export const UNDOS = chart('Document', 'Undone', 'Undos', 'A change undone.', {
   rising: 'neutral',
 });
