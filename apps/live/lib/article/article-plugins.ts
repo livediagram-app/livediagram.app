@@ -42,7 +42,7 @@ const PLACEHOLDER: Record<string, string> = {
   list: 'List',
   todo: 'To-do',
 };
-export const FIRST_BODY_PLACEHOLDER = 'Start writing, or press / for blocks';
+const FIRST_BODY_PLACEHOLDER = 'Start writing, or press / for blocks';
 
 function decorations(state: EditorState, editable: boolean): DecorationSet {
   const decos: Decoration[] = [];

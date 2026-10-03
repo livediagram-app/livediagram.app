@@ -3,7 +3,7 @@
 // list), every one carrying its block id, so the writing converts to and from `ArticleBlock`s one to
 // one (article-convert.ts). The DOM each node draws carries the classes the writing's stylesheet
 // (article-styles.ts) styles; nothing here is user HTML.
-import { Schema, type DOMOutputSpec, type Mark, type Node as PMNode } from 'prosemirror-model';
+import { Schema, type DOMOutputSpec, type Mark } from 'prosemirror-model';
 import {
   ARTICLE_ALIGNS,
   ARTICLE_LIST_KINDS,
@@ -345,10 +345,6 @@ export const articleSchema = new Schema({
     },
   },
 });
-
-/** Whether a node is one of the text blocks (a paragraph or a list item). */
-export const isTextNode = (node: PMNode): boolean =>
-  node.type === articleSchema.nodes.paragraph || node.type === articleSchema.nodes.list_item;
 
 /** A colour a mark may carry: a hex, never anything that could reach CSS otherwise. */
 export const safeMarkColor = (c: unknown): string | null => (isArticleHex(c) ? c : null);

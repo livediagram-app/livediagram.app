@@ -8,7 +8,7 @@ import type { EditorView } from 'prosemirror-view';
 
 export type SlashState = { active: false } | { active: true; from: number; query: string };
 
-export const SLASH_QUERY_MAX = 24;
+const SLASH_QUERY_MAX = 24;
 
 export type SlashBridge = {
   // The menu's state changed (opened, filtered, closed).

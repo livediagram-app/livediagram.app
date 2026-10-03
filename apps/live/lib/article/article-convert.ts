@@ -56,7 +56,7 @@ function inlineOf(runs: readonly ArticleRun[]): PMNode[] {
 }
 
 /** One block as its editor node. */
-export function blockToNode(b: ArticleBlock): PMNode {
+function blockToNode(b: ArticleBlock): PMNode {
   switch (b.type) {
     case 'paragraph':
       return S.nodes.paragraph!.create(
@@ -130,7 +130,7 @@ function runsOf(node: PMNode): ArticleRun[] {
 }
 
 /** One editor node as its block (undefined for a node with no id yet). */
-export function nodeToBlock(node: PMNode): ArticleBlock | undefined {
+function nodeToBlock(node: PMNode): ArticleBlock | undefined {
   const id = node.attrs.id as string;
   if (!id) return undefined;
   const align = node.attrs.align as ArticleAlign | undefined;

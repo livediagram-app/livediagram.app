@@ -25,7 +25,7 @@ function caretDom(peer: ArticlePeerCaret): HTMLElement {
 }
 
 /** The decorations for `peers` in `doc`: a caret each, and a margin bar per block someone is in. */
-export function peerDecorations(doc: PMNode, peers: readonly ArticlePeerCaret[]): DecorationSet {
+function peerDecorations(doc: PMNode, peers: readonly ArticlePeerCaret[]): DecorationSet {
   if (peers.length === 0) return DecorationSet.empty;
   const decos: Decoration[] = [];
   const barred = new Set<number>();

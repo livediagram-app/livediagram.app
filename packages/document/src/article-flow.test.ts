@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   articleListMarkers,
   articlesOf,
-  articleWordCount,
   MAX_ARTICLE_BLOCK_TEXT,
   newArticleFlow,
   normaliseRuns,
@@ -118,12 +117,6 @@ describe('article writing: reading it', () => {
     expect(Object.keys(a)).toEqual(['d1']);
     expect(articlesOf({ articles })).toBe(a);
     expect(articlesOf({})).toEqual({});
-  });
-
-  it('counts words', () => {
-    expect(
-      articleWordCount([P('a', 'two words'), { id: 'c', type: 'code', text: 'x = 1' }, P('e', '')]),
-    ).toBe(5);
   });
 
   it('starts an article with a title and a paragraph', () => {

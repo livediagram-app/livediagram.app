@@ -77,7 +77,7 @@ import { debugLog } from '@/lib/debug-log';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
-export const ARTICLE_IDLE_COMMIT_MS = 600;
+const ARTICLE_IDLE_COMMIT_MS = 600;
 // How long after a local change this person still counts as the writer of its consequences.
 const WRITER_WINDOW_MS = 3000;
 // How long an undo or redo from the writing waits for its writing to come back (UNDO_SETTLE_MS).

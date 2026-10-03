@@ -32,7 +32,7 @@ import type { ArticleSelectionState } from '@/lib/article/article-commands';
 import { MenuRow, SwatchGrid } from './page-toolbar-menus';
 
 const I = (glyph: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(glyph, 16);
-export const PanelIcons = {
+const PanelIcons = {
   bullet: I(lucideList),
   numbered: I(lucideListOrdered),
   todo: I(lucideListTodo),
@@ -179,14 +179,14 @@ export function ListPanel({
   );
 }
 
-export const ALIGN_OPTIONS: { id: ArticleAlign; label: string; keys: string }[] = [
+const ALIGN_OPTIONS: { id: ArticleAlign; label: string; keys: string }[] = [
   { id: 'left', label: 'Align left', keys: 'Mod-Shift-l' },
   { id: 'center', label: 'Align centre', keys: 'Mod-Shift-e' },
   { id: 'right', label: 'Align right', keys: 'Mod-Shift-r' },
   { id: 'justify', label: 'Justify', keys: 'Mod-Shift-j' },
 ];
 
-export const alignIcon = (id: ArticleAlign) =>
+const alignIcon = (id: ArticleAlign) =>
   id === 'center'
     ? PanelIcons.center
     : id === 'right'

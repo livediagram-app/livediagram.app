@@ -21,7 +21,7 @@ export type SlashItem = {
   action: SlashAction;
 };
 
-export const SLASH_ITEMS: readonly SlashItem[] = [
+const SLASH_ITEMS: readonly SlashItem[] = [
   {
     id: 'text',
     label: 'Text',

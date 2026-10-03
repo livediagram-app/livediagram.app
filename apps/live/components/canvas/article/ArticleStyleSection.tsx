@@ -19,7 +19,7 @@ import { PanelSection } from '../illustrate-page-panel-sections';
 
 // The accents an article can take besides its theme's (docs/specs/007-editor/article-pages.md
 // "Article style").
-export const ARTICLE_ACCENTS: readonly { label: string; value: string }[] = [
+const ARTICLE_ACCENTS: readonly { label: string; value: string }[] = [
   { label: 'Blue', value: '#2563eb' },
   { label: 'Teal', value: '#0d9488' },
   { label: 'Green', value: '#16a34a' },

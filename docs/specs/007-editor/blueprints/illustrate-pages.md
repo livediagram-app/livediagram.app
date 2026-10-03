@@ -11,8 +11,8 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page                        | `IllustratePage` (`{ id, orientation, size?, background?, name?, kind?, flow? }`), `packages/document/src/illustrate-page.ts`                                              |
 | Page kind                   | `PageKind` (`'infographic' \| 'article'`); `pageKindOf(page)` (absent reads infographic), `isArticlePage(page)`                                                            |
 | The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, flow)`, `packages/document/src/article-pages.ts`                               |
-| Units of the row            | `PageUnit` (`{ pageIds, flow? }`), `pageUnits`, `unitOfPage`, `withUnitMoved` (`article-pages.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                               |
-| A flow's pages together     | `withArticlesTogether(pages)`, private to `illustrate-page.ts`, run by `illustratePagesOf`                                                                                |
+| Units of the row            | `PageUnit` (`{ pageIds, flow? }`), `pageUnits`, `withUnitMoved` (`article-pages.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                                             |
+| A flow's pages together     | `withArticlesTogether(pages)`, private to `illustrate-page.ts`, run by `illustratePagesOf`                                                                                 |
 | A page laid out             | `LaidOutPage` (`IllustratePage & { index, rect: PageRect }`)                                                                                                               |
 | Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide'`), `PAGE_SIZES`, `PAGE_SIZE_IDS`                                                                 |
 | Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                         |

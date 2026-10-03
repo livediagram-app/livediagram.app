@@ -350,7 +350,7 @@ function ZoneDragMarks({ drag, zoom }: { drag: ZoneDragState; zoom: number }) {
 }
 
 /** The drop caret: a brand line across the column at a block boundary, a dot at each end. */
-export function DropCaretMark({
+function DropCaretMark({
   caret,
   zoom,
 }: {

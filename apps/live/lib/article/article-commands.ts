@@ -26,7 +26,7 @@ const LIST = S.nodes.list_item!;
 const CODE = S.nodes.code_block!;
 
 /** The top-level blocks the selection touches, with their positions. */
-export function selectedBlocks(state: EditorState): { node: PMNode; pos: number }[] {
+function selectedBlocks(state: EditorState): { node: PMNode; pos: number }[] {
   const { from, to } = state.selection;
   const out: { node: PMNode; pos: number }[] = [];
   state.doc.forEach((node, pos) => {

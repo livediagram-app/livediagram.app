@@ -19,7 +19,6 @@ import {
   PAGE_NAME_MAX,
   withIllustratePages,
   type IllustratePage,
-  type LaidOutPage,
   type PageKind,
 } from './illustrate-page';
 import { elementIdsOnPage, withPageContentReplaced } from './illustrate-page-content';
@@ -43,16 +42,6 @@ export function pageUnits(pages: readonly IllustratePage[]): PageUnit[] {
     else units.push(p.flow ? { pageIds: [p.id], flow: p.flow } : { pageIds: [p.id] });
   }
   return units;
-}
-
-/** The unit a page belongs to, and its place among the units. */
-export function unitOfPage(
-  pages: readonly IllustratePage[],
-  pageId: string,
-): { unit: PageUnit; index: number } | undefined {
-  const units = pageUnits(pages);
-  const index = units.findIndex((u) => u.pageIds.includes(pageId));
-  return index < 0 ? undefined : { unit: units[index]!, index };
 }
 
 /** An article's pages, laid out, in order. */
@@ -254,16 +243,6 @@ export function withArticlePageCount<T extends PagesTab>(tab: T, flow: string, c
     tab,
     pages.filter((p) => !drop.has(p.id)),
   ) as T;
-}
-
-/** The lead page of each article, laid out (its first page). */
-export function articleLeads(pages: readonly LaidOutPage[]): LaidOutPage[] {
-  const seen = new Set<string>();
-  return pages.filter((p) => {
-    if (!p.flow || seen.has(p.flow)) return false;
-    seen.add(p.flow);
-    return true;
-  });
 }
 
 /** Whether a page still offers the choice of its kind (docs/specs/007-editor/illustrate-pages.md

@@ -36,7 +36,7 @@ export const ARTICLE_LIST_KINDS: readonly ArticleListKind[] = ['bullet', 'number
 
 export type ArticleZoneKind = 'object' | 'drawing';
 export type ArticleZoneWrap = 'inline' | 'left' | 'right';
-export const ARTICLE_ZONE_WRAPS: readonly ArticleZoneWrap[] = ['inline', 'left', 'right'];
+const ARTICLE_ZONE_WRAPS: readonly ArticleZoneWrap[] = ['inline', 'left', 'right'];
 export type ArticleZoneAlign = 'left' | 'center' | 'right';
 
 /** A stretch of text with one formatting. `text` may hold '\n', a line break inside the block. */
@@ -113,7 +113,6 @@ export type ArticleBlock =
   | ArticleZoneBlock;
 
 export type ArticleBlockType = ArticleBlock['type'];
-export type ArticleTextBlock = ArticleParagraphBlock | ArticleListBlock;
 
 export type ArticleLookId = 'clean' | 'classic' | 'report' | 'notebook' | 'bold';
 export const ARTICLE_LOOK_IDS: readonly ArticleLookId[] = [
@@ -398,28 +397,6 @@ export function newArticleFlow(): ArticleFlow {
       { id: body, type: 'paragraph', runs: [] },
     ],
   };
-}
-
-/** Whether a block holds formatted text (a paragraph or a list item). */
-export function isArticleTextBlock(b: ArticleBlock): b is ArticleTextBlock {
-  return b.type === 'paragraph' || b.type === 'list';
-}
-
-/** A block's plain text: its runs joined, a code block's text, nothing for the rest. */
-export function articleBlockText(b: ArticleBlock): string {
-  if (isArticleTextBlock(b)) return b.runs.map((r) => r.text).join('');
-  if (b.type === 'code') return b.text;
-  return '';
-}
-
-/** How many words the writing holds (runs of non-space characters). */
-export function articleWordCount(blocks: readonly ArticleBlock[]): number {
-  let n = 0;
-  for (const b of blocks) {
-    const words = articleBlockText(b).match(/\S+/g);
-    if (words) n += words.length;
-  }
-  return n;
 }
 
 /** A copy of an article's writing with every block given a fresh id (a duplicated article). */

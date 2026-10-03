@@ -11,7 +11,6 @@ import type {
   ArticleLookId,
   ArticleMargins,
   ArticleParagraphSpacing,
-  ArticleParagraphStyle,
   ArticleRules,
   ArticleStyle,
   ArticleTextSize,
@@ -37,24 +36,6 @@ export const ARTICLE_MARGIN_PX: Readonly<Record<ArticleMargins, number>> = {
   narrow: 48,
   normal: 96,
   wide: 144,
-};
-
-// Each style's size at Normal text size, its weight, and the space before and after it in lines
-// (docs/specs/007-editor/article-pages.md "Type"). Body's space after is the paragraph spacing.
-export const ARTICLE_TYPE: Readonly<
-  Record<
-    ArticleParagraphStyle | 'code',
-    { size: number; weight: number; before: number; after: number }
-  >
-> = {
-  body: { size: 16, weight: 400, before: 0, after: -1 },
-  title: { size: 36, weight: 700, before: 0, after: 0.5 },
-  subtitle: { size: 20, weight: 400, before: 0, after: 1 },
-  h1: { size: 28, weight: 700, before: 1.2, after: 0.4 },
-  h2: { size: 22, weight: 650, before: 1, after: 0.3 },
-  h3: { size: 18, weight: 650, before: 0.8, after: 0.2 },
-  quote: { size: 18, weight: 400, before: 0.5, after: 0.75 },
-  code: { size: 14, weight: 400, before: 0.5, after: 0.75 },
 };
 
 export type ResolvedArticleStyle = {
