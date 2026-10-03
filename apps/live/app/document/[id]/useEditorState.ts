@@ -1,5 +1,6 @@
 'use client';
 
+import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
   useCallback,
   useEffect,
@@ -1139,6 +1140,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     isCentredOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
+  // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
+  useKeyboardAvoidance({ canvasMainRef, zoom: viewportZoom, setViewportOffset });
 
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
   // element, at our zoom, on our tab.

@@ -212,6 +212,12 @@ home indicator, rising in (`animate-sheet-up`). A grab handle across its top dra
 released past 80px, or flicked, it closes (`useSwipeDownDismiss`); otherwise it springs back.
 Outside taps and Escape close it as before. A section's flyout opens in place inside it.
 
+**The keyboard never hides the caret.** The on-screen keyboard shrinks the visual viewport, not
+the page, and the canvas never scrolls, so a label edited low on a phone was typed behind the
+keyboard. While a text field inside the canvas has focus, each visual-viewport change re-checks
+the caret: below the visible area (less a 24px margin) the canvas pans up by just the overlap
+(`useKeyboardAvoidance`). Phones only. The pan stays when the keyboard closes.
+
 **Haptics.** On a touch screen with a Vibration API (Android; Safari has none, so iOS stays silent)
 the editor gives a short buzz for what a finger cannot see land (`lib/haptics.ts`): **press** (15ms)
 when a long-press opens its menu or holds a path node, **snap** (8ms) once as a move catches an
