@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.ts`                               | `withinReach`, `utcDay`: the allocation shared with the api and the Shapes flyout       |
 | `packages/api-schema/src/home.ts`                                       | `HOME_WITHIN_REACH_PER_ROW`, `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf`            |
 | `apps/live/lib/offline/offline-opens.ts`                                | `LocalOpens`, `nextLocalOpens`, `localOpensOf`, `offlineRecordOpen`, `offlineListOpens` |
-| `apps/live/lib/offline/offline-store.ts`                                | `OfflineDocumentRecord.opens`                                                           |
+| `apps/live/lib/offline/offline-store.ts`                                | `OfflineDocumentRecord.opens`; `offlineCreateDocument(..., { markUsed })` starts them   |
 | `apps/live/lib/api/tabs.ts`                                             | A marked load of a local document records a local open                                  |
 | `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                           |
 | `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump back in's set, the phone order, hrefs, What happened's days, the fade        |
@@ -142,6 +142,10 @@ it runs out; at most `2n` (8) items, each with the half it came from (`group`), 
   resolves.
 - `_apiLoadTab`: for a local id with `opts.open`, `void offlineRecordOpen(documentId, Date.now())` before reading the
   tab. The editor's first-tab read is the only marked one (data blueprint `D66`), so embeds never count.
+- `offlineCreateDocument(d, now, { markUsed = true })`: a making (spec Making a document) writes the new record with
+  `opens: { days: [utcDay(now)], lastOpenedAt: now }`, what `nextLocalOpens(undefined, now)` gives, unless
+  `markUsed` is `false` (`D140`). Its callers are the makings only: the wizard, a local duplicate, the new-document
+  import (`markUsed: importMarksUse(sources.length)`); Take Offline writes through `offlinePutRecord`, no making.
 - `offlineListOpens()`: live records (no `trashedAt`) with readable `opens`, as
   `{ document: recordToSummary(rec), opens }`.
 
@@ -368,6 +372,7 @@ dark:border-slate-700` (the page's line colour), 12 px above the section's body.
 | The allocation                                                                     | `packages/api-schema/src/within-reach.test.ts`                                          |
 | The use window                                                                     | `packages/api-schema/src/home.test.ts`                                                  |
 | Local opens: first, same day, next day, window, legacy shape, trashed, failure     | `apps/live/lib/offline/offline-opens.test.ts`                                           |
+| A local making starts the record; one with `markUsed: false` has none              | `apps/live/lib/offline/offline-store.test.ts`                                           |
 | A marked local load records; an unmarked one does not                              | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
 | Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade           | `apps/live/app/explorer/home/home-model.test.ts`                                        |
 | Sentences, people, verbs, updates, location                                        | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
@@ -395,4 +400,4 @@ dark:border-slate-700` (the page's line colour), 12 px above the section's body.
 
 ## Defaults ledger
 
-D94 to D104 and D128 to D132 in [DEFAULTS.md](DEFAULTS.md); D96, D97, D98 and D101 are retired there.
+D94 to D104, D128 to D132 and D140 in [DEFAULTS.md](DEFAULTS.md); D96, D97, D98 and D101 are retired there.
