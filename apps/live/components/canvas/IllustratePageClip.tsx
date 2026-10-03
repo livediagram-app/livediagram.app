@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { elementPageSurfaces, type Element, type LaidOutPage } from '@livediagram/document';
 import { PageSurfacesProvider } from './CanvasSurfaceContext';
+import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 
 // Illustrate mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md "The
 // pages"): whatever hangs off a page is hidden, and cannot be pressed, as if the pages were the
@@ -35,9 +36,13 @@ export function IllustratePageClip({
   hiddenPageId?: string | null;
   children: ReactNode;
 }) {
+  // A background hovered in a page's panel inks the page's elements as the press would.
+  const preview = usePageBackgroundPreview();
   if (!pages) return <>{children}</>;
   return (
-    <PageSurfacesProvider surfaces={elementPageSurfaces(elements, pages)}>
+    <PageSurfacesProvider
+      surfaces={elementPageSurfaces(elements, withPreviewedBackgrounds(pages, preview))}
+    >
       <div
         data-page-clip=""
         className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"

@@ -33,6 +33,7 @@ import type { PageLayoutId } from '@livediagram/templates';
 import { buildPageLayout } from '@/lib/page-layout-build';
 import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { debugLog } from '@/lib/debug-log';
+import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 
 export type IllustratePageEdits = {
@@ -59,6 +60,9 @@ export type IllustratePageEdits = {
   applyLayout: (pageId: string, layout: PageLayoutId) => void;
   // How many elements are on the page.
   contentCount: (pageId: string) => number;
+  // A fill hovered in the panel: the page's own-coloured text, lines and icons drawn re-inked as
+  // the press would re-ink them (a preview, writing nothing); null puts them back.
+  previewInk: (preview: { pageId: string; patch: Partial<PageBackground> } | null) => void;
 };
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -299,8 +303,29 @@ export function illustratePageEdits({
   const laidOut = layOutIllustratePages(current);
   const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
 
+  const previewInk = (preview: { pageId: string; patch: Partial<PageBackground> } | null) => {
+    const target = preview ? page(preview.pageId) : undefined;
+    if (!preview || !target || !('fill' in preview.patch)) {
+      if (localPreview()?.tabId === tabId) clearLocalPreview();
+      return;
+    }
+    const background = withBackgroundPatch(target, preview.patch);
+    let shown: { elements: Tab['elements']; pages: IllustratePage[] } = {
+      elements,
+      pages: [...current],
+    };
+    for (const id of sharing(current, preview.pageId))
+      shown = withPageInkFor(shown, id, background);
+    if (shown.elements === elements) {
+      if (localPreview()?.tabId === tabId) clearLocalPreview();
+      return;
+    }
+    setLocalPreview(tabId, shown.elements, elements);
+  };
+
   const room = current.length < MAX_ILLUSTRATE_PAGES;
   return {
+    previewInk,
     setOrientation,
     setSize,
     rename,

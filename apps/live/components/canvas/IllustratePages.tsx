@@ -22,11 +22,16 @@ import {
   type PageReorder,
 } from '@/hooks/canvas/usePageReorderDrag';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { pageSheetStyle, withBackgroundPatch } from '@/lib/illustrate-page-paint';
-import { IllustratePagePanel, type PagePanelTab, type PagePreview } from './IllustratePagePanel';
+import { pageSheetStyle } from '@/lib/illustrate-page-paint';
+import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
 import { AddPagePopover } from './AddPagePopover';
 import { DocumentStyleSection } from './doc/DocumentStyleSection';
 import { useStylePanelRequest } from '@/lib/doc/doc-editor-store';
+import {
+  previewedBackground,
+  setPageBackgroundPreview,
+  usePageBackgroundPreview,
+} from '@/lib/page-background-preview';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
@@ -93,7 +98,13 @@ export function IllustratePages({
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab } | null>(null);
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
-  const [preview, setPreview] = useState<PagePreview>(null);
+  // A background hovered in a page's panel: a shared preview (page-background-preview), so the
+  // writing and the elements on the page take its ink too.
+  const preview = usePageBackgroundPreview();
+  const setPreview = (next: Parameters<typeof setPageBackgroundPreview>[0]) => {
+    setPageBackgroundPreview(next);
+    edit?.previewInk(next);
+  };
   const last = pages[pages.length - 1]!;
   // A label dragged sideways reorders the pages (usePageReorderDrag).
   const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
@@ -123,8 +134,7 @@ export function IllustratePages({
   return (
     <>
       {pages.map((page) => {
-        const background =
-          preview?.pageId === page.id ? withBackgroundPatch(page, preview.patch) : page.background;
+        const background = previewedBackground(page, pages, preview);
         const label = pageLabel(page, page.index, pages.length);
         // The label fits the page's on-screen width, less the cog's room; too narrow, it hides.
         // The title bar's room on screen: the page's width at this zoom. The cog takes its corner;

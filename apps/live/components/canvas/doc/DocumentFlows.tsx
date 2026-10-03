@@ -23,6 +23,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { DocInk } from '@/lib/doc/doc-style-vars';
 import { docHandleOf, requestDocLink, useActiveDoc } from '@/lib/doc/doc-editor-store';
 import { PageToolbar } from './PageToolbar';
+import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
 import { ZoneBar, ZoneResizeGrip } from './ZoneBar';
 
 const DocumentFlowEditor = lazy(() => import('./DocumentFlowEditor'));
@@ -44,6 +45,8 @@ export function DocumentFlows({
 }) {
   const docs = view.documents;
   const surface = useCanvasSurface();
+  // A background hovered in a page's panel inks the writing as it would on the press.
+  const preview = usePageBackgroundPreview();
   // Each document's pages, in order, kept by identity while the pages are.
   const row = view.rowPages ?? view.pages;
   const byFlow = useMemo(() => {
@@ -120,7 +123,10 @@ export function DocumentFlows({
                 editable={docs.editable}
                 interactive={interactive}
                 zoom={zoom}
-                ink={inkOf(lead, surface)}
+                ink={inkOf(
+                  { ...lead, background: previewedBackground(lead, pages, preview) },
+                  surface,
+                )}
                 themeAccent={view.themeAccent}
                 styleOverride={
                   docs.stylePreview?.flow === flow ? docs.stylePreview.style : undefined
