@@ -69,6 +69,7 @@ import { caretOf } from '@/lib/article/article-caret';
 import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
 import { SlashMenu } from './SlashMenu';
+import { useArticleLinkHover } from './useArticleLinkHover';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@/lib/debug-log';
 
@@ -848,6 +849,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     if (view) view.dispatch(setArticlePeers(view.state, peers));
   }, [peers]);
 
+  // A link hovered: its address, Open, Edit and Remove (made after the view, which it listens on).
+  const linkCard = useArticleLinkHover(viewRef, props.editable);
+
   // A request to put the caret in this article (a new article: its title).
   const request = props.focusRequest;
   useEffect(() => {
@@ -863,6 +867,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
 
   return (
     <>
+      {linkCard}
       {slash && props.editable ? (
         <SlashMenu
           at={slash.at}
