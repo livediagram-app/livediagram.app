@@ -9,6 +9,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleMarginPx,
+  MAX_ILLUSTRATE_PAGES,
   articleTopMarginPx,
   drawingZoneClips,
   isBoxed,
@@ -177,6 +178,7 @@ export function ArticleFlows({
                 key={flow}
                 flow={flow}
                 pages={pages}
+                atPageLimit={row.length >= MAX_ILLUSTRATE_PAGES}
                 doc={doc}
                 editable={articles.editable}
                 interactive={interactive}

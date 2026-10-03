@@ -27,6 +27,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { gapCursor } from 'prosemirror-gapcursor';
 import {
+  MAX_ILLUSTRATE_PAGES,
   applyArticleOps,
   diffArticleFlow,
   nextArticleBlockId,
@@ -100,6 +101,9 @@ export type ArticleEditorProps = {
   flow: string;
   // The article's pages, laid out, in order.
   pages: LaidOutPage[];
+  // The tab holds as many pages as it can (MAX_ILLUSTRATE_PAGES): no page is added for writing that
+  // runs past the last.
+  atPageLimit?: boolean;
   doc: ArticleFlow;
   editable: boolean;
   // Whether a press on the writing is the writing's (not while a drawing tool is in hand).
@@ -156,6 +160,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     }, UNDO_SETTLE_MS);
   };
   const blurTimer = useRef<number | null>(null);
+  // The writing runs past the last page while the tab is at its page limit.
+  const [cutOff, setCutOff] = useState(false);
   // The writing as soft bars, measured once per layout (handle.bars).
   const barsCache = useRef<{ ink: string; ops: ArticleDrawOp[] } | null>(null);
   // The slash menu: open with its query and where the `/` is, and the entry highlighted.
@@ -229,6 +235,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       }
     }
     const pagesNeeded = columnAt(frame, Math.max(0, right - 2)) + 1;
+    // At the tab's page limit the writing past the last page waits unseen: say so on that page.
+    const cut = p.atPageLimit === true && pagesNeeded > p.pages.length;
+    setCutOff((was) => (was === cut ? was : cut));
     const zones: FlowLayout['zones'] = [];
     view.dom.querySelectorAll<HTMLElement>('.article-zone').forEach((el) => {
       const r = el.getBoundingClientRect();
@@ -868,6 +877,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   return (
     <>
       {linkCard}
+      {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
       {slash && props.editable ? (
         <SlashMenu
           at={slash.at}
@@ -922,4 +932,26 @@ function replaceContent(
     tr.setSelection(TextSelection.near(tr.doc.resolve(at), -1));
   }
   view.dispatch(tr);
+}
+
+// The foot of an article's last page when the tab is at its page limit and the writing runs past it
+// (docs/specs/007-editor/article-pages.md "Flowing onto pages", Limit). In canvas space, on the page.
+function PageLimitNotice({ page }: { page: LaidOutPage }) {
+  return (
+    <div
+      role="status"
+      data-page-limit-notice=""
+      className="pointer-events-none absolute flex items-end justify-center"
+      style={{
+        left: page.rect.x,
+        top: page.rect.y + page.rect.height - 40,
+        width: page.rect.width,
+        height: 32,
+      }}
+    >
+      <span className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/30">
+        This tab has reached {MAX_ILLUSTRATE_PAGES} pages: the writing below this line is hidden
+      </span>
+    </div>
+  );
 }
