@@ -29,7 +29,10 @@ beforeEach(() => {
   vi.stubGlobal(
     'IntersectionObserver',
     class {
-      constructor(private callback: IntersectionObserverCallback) {}
+      callback: IntersectionObserverCallback;
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+      }
       observe(el: Element) {
         observed.push({ callback: this.callback, el });
       }
