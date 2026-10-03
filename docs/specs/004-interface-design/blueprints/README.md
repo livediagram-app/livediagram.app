@@ -8,5 +8,6 @@ Follow the references below only as needed; never upfront.
 - ./optical-alignment.md - when implementing or changing GlyphDisc, Chip, IconSlot, text-optical-*, SVG cap-band text, the ink audit or the optical guard
 - ./scrollbars.md - when implementing or changing the default scrollbar, the slim variant, or their guards
 - ./iconography.md - when implementing or changing the icon primitive, weight tokens, Lucide vendoring, icon weight, or icon guards
+- ./within-reach.md - when implementing or changing the shared most used + recent allocation (`withinReach`)
 - ./DEFAULTS.md - when an interface-design blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an interface-design blueprint covers

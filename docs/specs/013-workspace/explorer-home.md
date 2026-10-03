@@ -13,45 +13,67 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 
 ## Layout
 
-- **Desktop and tablet** (`md:` and wider): two columns side by side.
-  - **Recent** on the left, taking the remaining width.
-  - **Timeline** on the right, a fixed-width column. It has **no panel background or border of its own**: it sits
-    directly on the page and blends in, set apart only by its heading and its centre line.
-- **Phone** (below `md:`): one column with a two-option switch, **Recent** and **Timeline**, at the top of the page.
-  - **Recent** is shown by default on every visit.
-  - The switch follows the WAI-ARIA tabs pattern: two tabs and one tab panel.
+- **One column**, at every width: **Jump back in**, then **What happened**. It scrolls with the page.
+- Each section is its own wrapper in the page, headed by its title, so the sections can be set apart without
+  restructuring.
 - The page header carries **New document**, as every Explorer section does, and the section's Help link, as every
   section's header does ([Contextual help links](../018-help/contextual-help-links.md)). Home has no other header
   actions: no import, no folder, no view switch.
-- The two columns scroll with the page; neither scrolls on its own.
+- The person's own history (what they created, updated or opened) is not on Home: Jump back in holds what they
+  reach for, and the full record is All activity's.
 
-## Recent
+## Jump back in
 
-Recent holds two sections, top to bottom.
+Jump back in is a **[Within reach](../004-interface-design/within-reach.md)** set of the person's documents:
+the **4 most used** and the **4 most recent**, no document twice.
 
-### Jump back in
+- **Most used**: the documents the person used on the most days in the **last 90 days**. A **use day** is a UTC
+  day on which they opened the document ([Opens](#opens)) or edited it (an edit needs an open, so the days before
+  opens were recorded still count, through their edits). Equal counts go to the one used most recently.
+- **Recent**: the documents the person used most recently, newest first: the later of their last open and their
+  last edit. A document that is both shows under **Most used**, and Recent takes the next most recent instead.
+- **Not empty on day one**: every day the person edited a document before opens were recorded counts as a day
+  they opened it, so Most used reflects the work they already did.
+- Only documents the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
+  team they have left.
+- A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) takes part with this
+  browser's own record of its opens and edits ([Opens](#opens)), and carries the **Local only** pill on its
+  thumbnail, as every other row and card of one does.
+- Each document is a small snapshot thumbnail with its name below it in a small font, truncated to the
+  thumbnail's width. The full name is its tooltip and accessible name. Activating a thumbnail opens the document.
+- **No row titles.** "Jump back in" is the section's only title: the two groups carry no visible label and no
+  extra screen-reader label, and their order (most used first, then recent) is left to people's intuition
+  ([Design principles: Calm by default](../004-interface-design/design-principles.md)). The documents are one list
+  of links, named **Jump back in**, each named by its document's name.
+- **See more** opens the **Recent** page: a quiet link at the end of the section's heading row on a desktop or
+  tablet, the strip's last tile on a phone. The Recent page is `/explorer/recent`: every document the person can
+  open, newest first, with the shared filter chips ([Explorer filters](explorer-filters.md)). Its breadcrumb leads
+  back to Home (**Home › Recent**).
 
-- The documents the person **returns to most**: ranked by how often they open each document, weighted towards
-  recent opens, not by recency alone. Plain recency is the Timeline's job, so the two never repeat each other.
-- The rank is the document's **frecency**: every day the person opens it adds one, and each day's weight halves
-  every **14 days** (an exponential decay with a fortnight's half-life). A document opened on each of the last ten
-  days outranks one opened once yesterday for about six weeks after its last open.
-- At most **12** documents, the strongest first. Only documents the person can open now: never one in the Trash,
-  nor one whose share link has lapsed or whose team they have left.
-- **Seeded once** from what the person already did, so the strip is not empty on the day Home arrives: on their
-  first Home, every day they edited a document counts as a day they opened it (an edit needs an open). Only days
-  before the document's first recorded open count, so a day is never counted twice and seeding again changes
-  nothing. Bounded to their most recent edits.
-- A single row, a **scrolling strip** of small snapshot thumbnails, each with the document's name below it in a
-  small font, truncated to the thumbnail's width. The full name is its tooltip and accessible name.
+### Desktop and tablet
+
+- A **4 by 2 grid** that never scrolls sideways: the top row holds the most used, the bottom row the recent, each
+  most used or newest first from the left. The thumbnails share the column's width equally, up to a comfortable
+  size.
+
+### Phone
+
+- One **sideways-scrolling strip** of at most **8** thumbnails: most used, recent, most used, recent, and so on;
+  when one group runs out, the rest of the other follows.
+- The strip ends in a **See more** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
   edge fades to say there is more, and only while there is more.
-- Activating a thumbnail opens the document.
-- A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) carries the **Local only**
-  pill on its thumbnail, as every other row and card of one does. It ranks among the rest by the same frecency,
-  counted in this browser ([Opens](#opens)).
 
-### What happened
+### Fewer than 8 documents
+
+- Only the documents that exist are drawn: no empty boxes. A short group leaves the rest of its row blank; with no
+  most used document at all, the recent ones take the top row.
+- The grid keeps its two rows' height whatever lands in it, so nothing below moves when Home loads.
+- With no document at all, the section holds one quiet line: "The documents you use most and last will gather
+  here." On a phone the strip still ends in its See more tile.
+
+## What happened
+
 
 - What **other people** did to documents the person can open, grouped under day headings (**Today**, **Yesterday**,
   then the date). The days are the person's own (their time zone), and the section covers the last **14 days**.
@@ -105,39 +127,16 @@ Recent holds two sections, top to bottom.
 - Times are clock times in the person's own time zone and locale (`14:05`, `2:05 PM`), under the day heading that dates
   them.
 
-## Timeline
-
-- The person's **own** document activity only: documents they **created** (a duplicate is a document they created),
-  **updated** or **opened**, on documents they can still open.
-- One entry per document per day (their time zone). When a day holds more than one, the entry says the strongest:
-  created, then updated, then opened, at that event's time.
-- Newest first, 30 entries at a time, with more loaded on demand.
-- Only events with a real actor count. The Timeline's backfill ([Timeline](timeline.md) §5) reconstructs a
-  document's last save as its owner's edit without knowing who saved, so those reconstructed edits are not shown.
-- Entries run down a vertical centre line, newest first, under day markers.
-- Each entry is the document's snapshot thumbnail ([Document SVG snapshots](../006-document/document-snapshots.md)),
-  placed on **alternating sides** of the line. People recognise their own documents by what is drawn on them.
-- The document's name sits **below** its thumbnail in a small font. It never exceeds the thumbnail's width: a longer
-  name is truncated with an ellipsis, and the full name is its accessible name and tooltip.
-- A small marker on the centre line says what happened (created, updated or opened). The marker is never colour
-  alone: each kind has its own glyph (a plus, a pencil, an eye), and the entry's accessible name states it. The
-  entry's time sits on the other side of the line, level with the marker.
-- Day markers sit on the centre line: **Today**, **Yesterday**, then the date.
-- More entries load as the person scrolls towards the end of the column; a reserved slot at the foot holds the
-  loading row (or, when a page fails, **Try again**), so nothing moves when the page lands.
-- Activating an entry opens the document.
-- Documents stored only in this browser never reach the server, so they have no Timeline entries.
-
 ## Unread
 
-Viewing Home counts as having looked: it moves the Timeline's unread mark exactly as the Timeline page does
+Viewing Home counts as having looked: it moves the Timeline feed's unread mark exactly as the Timeline page does
 ([Timeline](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
 can be marked.
 
 - In What happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
   never colour alone. A summary is new when its latest action is.
 - A person who has never looked sees none: marking a whole history new would be noise.
-- The mark is the one the first read of the visit reports; a retry or a further page does not move what is marked.
+- The mark is the one the first read of the visit reports; a retry does not move what is marked.
 - The sidebar's Home badge clears when Home has been read.
 
 ## Opens
@@ -146,23 +145,25 @@ An **open** is the editor loading a document for a person to look at.
 
 - It counts for whoever opens it: the owner, a teammate, or a visitor through a share link. A visitor always has an
   identity (their guest id, or their account), so their open is theirs.
-- It is recorded **once per person per document per day** (UTC, the day boundary every coalesced event uses), at the
-  day's first open.
+- Its **day** is recorded **once per person per document per day** (UTC, the day boundary every coalesced event
+  uses), at the day's first open. Every open, the first of the day or not, moves the person's **last open** of the
+  document, which is what Recent reads.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, the Google Drive mirror, and any read through the public API or an AI tool.
-- Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump back in and
-  their Timeline, never in What happened, a document's History, a team's feed, or the Timeline feed
-  ([Timeline](timeline.md)).
+- Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump back in, never in What happened, a document's
+  History, a team's feed, or the Timeline feed ([Timeline](timeline.md)).
 - Offline Mode documents never reach the server, so the server records none of their opens. **This browser counts
-  them instead**: the editor opening a document stored only here adds an open day to that document's own record in
-  this browser, by the same once-per-UTC-day rule and the same frecency, so Jump back in ranks it among the rest. The
-  count lives and dies with the document's local record and never leaves the browser.
+  them instead**: the editor opening a document stored only here adds the day to that document's own record in
+  this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
+  last edit is the record's own save time. So Jump back in places it among the rest by the same rule. The record
+  lives and dies with the document's local record and never leaves the browser.
 
 ### Guests, sign-up and deletion
 
 - Guests have Home in full, keyed to their guest id.
 - Signing up moves a guest's opens to the account with the rest of their data ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
-  A document opened under both identities keeps both histories: the two frecencies add up.
+  A document opened under both identities keeps both histories: its use days are the days of either, and its last
+  open the later of the two.
 - Deleting the account deletes its opens. Deleting a document for good deletes everyone's opens of it; a document in
   the Trash only leaves Home until it is restored.
 - An open older than a year is forgotten, the Timeline's retention ([Timeline](timeline.md) §3.5).
@@ -174,12 +175,11 @@ has the size of what replaces it, so nothing shifts (CLS 0).
 
 | State                 | What shows                                                                                           |
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
-| Loading               | Each section's skeleton: a strip of thumbnail boxes, three entry rows, four Timeline entries         |
-| Jump back in, empty   | "The documents you open most will gather here."                                                      |
+| Loading               | Each section's skeleton: the grid's two rows (the phone's strip), three entry rows                   |
+| Jump back in, partial | What exists, no empty boxes (see [Fewer than 8 documents](#fewer-than-8-documents))                  |
+| Jump back in, empty   | "The documents you use most and last will gather here."                                              |
 | What happened, empty  | "Nothing from others in the last 14 days." (See all activity stays.)                                 |
-| Timeline, empty       | "Documents you create, update or open will appear here."                                             |
 | Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body |
-| A further page failed | "Could not load more." with **Try again**, in the Timeline's reserved slot                           |
 
 Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
 
@@ -188,20 +188,23 @@ Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no sm
 One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md)), never a name or an id:
 
 - `Home·Opened·Landing` / `Nav`: Home shown, as the page the Explorer opened on or after starting elsewhere.
-- `Home·Selected·JumpBackIn` / `Timeline` / `WhatHappened`: a document opened from that part of Home.
+- `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a document opened from Jump back in, by the group it
+  belongs to (most used or recent), wherever it sits.
+- `Home·Selected·JumpBackIn.SeeMore`: See more followed to the Recent page (the link or the phone's tile).
+- `Home·Selected·WhatHappened`: a document opened from What happened.
 - `Home·Opened·Group`: a summary entry expanded.
-- `Home·Loaded·More` / `Retry`: a further Timeline page loaded, or a failed read retried.
+- `Home·Loaded·Retry`: a failed read retried.
 
 ## Help
 
-The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home and All activity.
+The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home (Jump back in, What happened) and All activity.
 
 ## Accessibility
 
-- Both columns are landmarks with headings (**Recent**, **Timeline**). On a phone the switch's two tabs name them,
-  and the headings stay for assistive technology.
+- Each section is a landmark (`section`) named by its heading (**Jump back in**, **What happened**).
+- Jump back in's documents are one list named **Jump back in**; each document is one link named by its document's
+  name (plus **Local only** for a document stored only here). No row or group carries a label of its own.
 - A summary entry's expanded list is the region its disclosure button controls (`aria-controls`).
-- The Timeline is a list; each entry is one link, whose name is the document, what happened and when.
-- Every thumbnail has a text alternative: the document name and what happened.
-- Keyboard order follows the reading order: Jump back in, What happened, then Timeline.
+- Keyboard order follows the reading order: See more (desktop and tablet), Jump back in's documents in their order
+  (then the See more tile on a phone), then What happened.
 - WCAG 2.2 AA: contrast, visible focus, and targets of at least 24 by 24 px.

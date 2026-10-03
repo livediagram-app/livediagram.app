@@ -910,7 +910,6 @@ CREATE TABLE timeline_scope_state (
   scope_id         TEXT NOT NULL,
   backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
   last_refreshed_at INTEGER,
-  frecency_seeded_at INTEGER,             -- user scope only: Explorer Home seeded Jump back in (migration 0063)
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
@@ -1131,7 +1130,7 @@ everything else even with stacking.
 
 **A person's own opens are recorded here but are not part of this feed.** [Explorer Home](explorer-home.md#opens)
 keeps a coalesced `document_opened` row per person per document per UTC day, in that person's `user` scope only
-(opens are private), so its Timeline column reads one table for created, updated and opened. It is outside the
+(opens are private); Jump back in counts them as use days. It is outside the
 feed's vocabulary: `readTimeline` and `countUnseen` leave it out the way they leave out legacy renames, and no
 renderer, tone or chip knows it. Deletion, retention, the document sweep and sign-up migration treat it like every
 other row.
