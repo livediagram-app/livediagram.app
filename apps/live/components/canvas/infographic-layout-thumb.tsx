@@ -52,7 +52,16 @@ function ElementGlyph({ el }: { el: Element }) {
   );
 }
 
-export function LayoutThumb({ layout, page }: { layout: PageLayoutId; page: LaidOutPage }) {
+export function LayoutThumb({
+  layout,
+  page,
+  width = THUMB_W,
+}: {
+  layout: PageLayoutId;
+  page: LaidOutPage;
+  // The tile's width in px (a category card's fan draws them smaller).
+  width?: number;
+}) {
   const { rect } = page;
   const els = useMemo(
     () => buildPageLayout(layout, page),
@@ -60,11 +69,11 @@ export function LayoutThumb({ layout, page }: { layout: PageLayoutId; page: Laid
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [layout, rect.x, rect.y, rect.width, rect.height],
   );
-  const h = (THUMB_W * rect.height) / rect.width;
+  const h = (width * rect.height) / rect.width;
   return (
     <svg
-      width={THUMB_W}
-      height={Math.min(h, THUMB_W * 1.5)}
+      width={width}
+      height={Math.min(h, width * 1.5)}
       viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}
       preserveAspectRatio="xMidYMid meet"
       aria-hidden

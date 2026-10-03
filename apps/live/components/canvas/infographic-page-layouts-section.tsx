@@ -131,21 +131,22 @@ export function LayoutsSection({
                 onClick={() => setCategory(c.id)}
                 className="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 p-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-900/5 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:bg-slate-800/60 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-800"
               >
-                {/* Fronted by its first two layouts, fanned as /new fans a shelf. */}
+                {/* Fronted by its first two layouts, fanned as /new fans a shelf: drawn small,
+                    in a clipped box of fixed height, so they never spill out of the card. */}
                 <span
                   aria-hidden
-                  className="relative flex h-[84px] w-full items-center justify-center"
+                  className="relative flex h-20 w-full items-center justify-center overflow-hidden"
                 >
                   {members.slice(0, 2).map((l, i) => (
                     <span
                       key={l.id}
-                      className="absolute"
+                      className="absolute flex"
                       style={{
-                        transform: `translateX(${i === 0 ? -12 : 12}px) rotate(${i === 0 ? -5 : 5}deg) scale(0.72)`,
+                        transform: `translateX(${i === 0 ? -10 : 10}px) rotate(${i === 0 ? -5 : 5}deg)`,
                         zIndex: i === 0 ? 1 : 0,
                       }}
                     >
-                      <LayoutThumb layout={l.id} page={page} />
+                      <LayoutThumb layout={l.id} page={page} width={44} />
                     </span>
                   ))}
                 </span>
