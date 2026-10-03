@@ -71,6 +71,7 @@ import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-car
 import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
 import { SlashMenu } from './SlashMenu';
 import { useArticleLinkHover } from './useArticleLinkHover';
+import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@/lib/debug-log';
 
@@ -474,6 +475,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         publish(v);
       },
       handleDOMEvents: {
+        // An image, or elements copied from a canvas: not the writing's to take. Left alone (no
+        // preventDefault), the paste reaches the canvas, which puts it into the writing as a zone.
+        paste: (_v, e) => articlePasteIsCanvas(e.clipboardData),
         click: (_v, e) => {
           // A plain click on a margin note's text opens what it carries; a drag that selects
           // does not.

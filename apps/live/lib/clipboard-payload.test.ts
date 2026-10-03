@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Element, FreehandElement, ShapeElement } from '@livediagram/document';
 
 import {
+  articlePasteIsCanvas,
   CLIPBOARD_KIND,
   CLIPBOARD_SCHEMA_VERSION,
   MAX_CLIPBOARD_BYTES,
@@ -190,5 +191,21 @@ describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
     const back = parseElementsPayload(text);
     expect(back).toHaveLength(1);
     expect(typeof (back![0] as FreehandElement).packedPoints).toBe('string');
+  });
+});
+
+describe('articlePasteIsCanvas', () => {
+  const data = (over: { files?: unknown[]; items?: unknown[]; text?: string }) =>
+    ({
+      files: over.files ?? [],
+      items: over.items ?? [],
+      getData: () => over.text ?? '',
+    }) as unknown as DataTransfer;
+
+  it('hands images and copied elements to the canvas, text to the writing', () => {
+    expect(articlePasteIsCanvas(null)).toBe(false);
+    expect(articlePasteIsCanvas(data({ text: 'plain words' }))).toBe(false);
+    expect(articlePasteIsCanvas(data({ files: [{}] }))).toBe(true);
+    expect(articlePasteIsCanvas(data({ items: [{ kind: 'file', type: 'image/png' }] }))).toBe(true);
   });
 });
