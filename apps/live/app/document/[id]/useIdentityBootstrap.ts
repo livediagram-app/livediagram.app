@@ -47,6 +47,8 @@ export function useIdentityBootstrap(opts: {
   hydrated: boolean;
   clerkUserId: string | null | undefined;
   clerkDisplayName: string | null | undefined;
+  // The read-only embed view (docs/specs/013-workspace/embeds.md): its reads are not opens.
+  embed: boolean;
   activeId: string;
   selfParticipant: Participant;
   refreshDocumentList: (ownerId: string) => void;
@@ -99,6 +101,7 @@ export function useIdentityBootstrap(opts: {
     hydrated,
     clerkUserId,
     clerkDisplayName,
+    embed,
     activeId,
     selfParticipant,
     refreshDocumentList,
@@ -145,6 +148,8 @@ export function useIdentityBootstrap(opts: {
   // see seed-fetched-document.ts.
   const seedFetchedDocument = makeSeedFetchedDocument({
     activeId,
+    // An embed's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
+    recordOpen: !embed,
     resetTabs,
     lastSavedTabsRef,
     lastSavedNameRef,

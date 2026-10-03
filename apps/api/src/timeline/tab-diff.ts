@@ -35,16 +35,18 @@ function actionsOf(el: Element): ElementAction[] {
 
 // Comments present in `next` whose id isn't in `prev`. Ordered as the
 // elements are, which for a single save is the order they were written.
-export function newComments(next: Element[], prev: Element[]): Comment[] {
+// `reply` says the comment is not the first of its thread, which is what
+// Explorer Home's What happened calls "replied" (docs/specs/013-workspace/explorer-home.md).
+export function newComments(next: Element[], prev: Element[]): (Comment & { reply: boolean })[] {
   const seen = new Set<string>();
   for (const el of prev) {
     for (const c of threadOf(el)?.comments ?? []) seen.add(c.id);
   }
-  const added: Comment[] = [];
+  const added: (Comment & { reply: boolean })[] = [];
   for (const el of next) {
-    for (const c of threadOf(el)?.comments ?? []) {
-      if (!seen.has(c.id)) added.push(c);
-    }
+    (threadOf(el)?.comments ?? []).forEach((c, i) => {
+      if (!seen.has(c.id)) added.push({ ...c, reply: i > 0 });
+    });
   }
   return added;
 }

@@ -835,6 +835,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     clerkUserId,
     clerkDisplayName,
+    embed: embedMode,
     activeId,
     selfParticipant,
     refreshDocumentList,

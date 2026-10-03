@@ -1,4 +1,5 @@
 import type { Tab } from '@livediagram/document';
+import { DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCreateDocument,
@@ -653,6 +654,36 @@ describe('apiLoadTab load boundary', () => {
     expect(table.cells.map((r) => r.length)).toEqual([2, 2]); // padded to the widest row
     expect(table.cells[1]).toEqual(['c', '']);
     expect(tab!.elements.find((e) => e.id === 's')).toEqual(shape); // unchanged
+  });
+
+  // docs/specs/013-workspace/explorer-home.md "Opens": only a read the editor declares counts.
+  function sentHeaders(): Headers {
+    const init = vi.mocked(fetch).mock.calls[0]![1] as RequestInit;
+    return new Headers(init.headers);
+  }
+
+  it('declares an open only when asked to', async () => {
+    stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
+    await apiLoadTab('owner', 'd1', 't-open', null, { open: true });
+    expect(sentHeaders().get(DOCUMENT_OPEN_HEADER)).toBe('1');
+  });
+
+  it('sends no open marker on an ordinary load', async () => {
+    stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
+    await apiLoadTab('owner', 'd1', 't-plain', null);
+    expect(sentHeaders().has(DOCUMENT_OPEN_HEADER)).toBe(false);
+  });
+
+  it('keeps a marked load apart from an unmarked one in flight', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ tab: { id: 't1', name: 'T', elements: [] } })),
+    );
+    await Promise.all([
+      apiLoadTab('owner', 'd1', 't-both', null),
+      apiLoadTab('owner', 'd1', 't-both', null, { open: true }),
+    ]);
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
   });
 });
 

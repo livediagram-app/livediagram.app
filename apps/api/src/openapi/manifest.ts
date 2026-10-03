@@ -1202,6 +1202,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401],
   },
 
+  // ---- Explorer Home (docs/specs/013-workspace/explorer-home.md) ----
+  {
+    method: 'GET',
+    path: '/home',
+    segment: 'home',
+    tag: 'Account',
+    summary:
+      "The Explorer's Home in one read: Jump back in (the caller's most-returned-to documents, by frecency, at most 12), the first page of their own Timeline (created, updated and opened), and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC), `limit` (1 to 100, default 30). 400 `tz_invalid` / `limit_invalid` / `cursor_invalid`.",
+    auth: 'guest-or-clerk',
+    responseSchema: { $ref: '#/components/schemas/HomeResponse' },
+    statuses: [200, 400, 401, 429],
+  },
+  {
+    method: 'GET',
+    path: '/home/timeline',
+    segment: 'home',
+    tag: 'Account',
+    summary:
+      "The next page of the caller's own Home Timeline, newest first. Keyset-paginated: pass the previous page's `nextCursor` as `cursor`. 400 `limit_invalid` / `cursor_invalid`.",
+    auth: 'guest-or-clerk',
+    responseSchema: { $ref: '#/components/schemas/HomeTimelinePage' },
+    statuses: [200, 400, 401, 429],
+  },
+
   // ---- Account ----
   {
     method: 'DELETE',

@@ -45,6 +45,8 @@ export const ROOT_TYPES = [
   'TimelineEvent',
   'ActivityAction',
   'ActivityThread',
+  'HomeResponse',
+  'HomeTimelinePage',
   'ImageSummary',
   'ChangeLogEntry',
   'ChangeLogKind',
