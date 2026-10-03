@@ -90,17 +90,20 @@ Recent holds two sections, top to bottom.
   expands**:
   - the people's avatars, overlapped, then one sentence naming them and what they did, e.g. "Priya, Sam and Lee
     commented, edited and assigned you an action in **Payments architecture**";
-  - beneath it, where the document lives and how many updates there were ("Platform team · 5 updates");
-  - the time of the latest action, and a chevron;
+  - beneath it, where the document lives, how many updates there were and the time of the latest ("Platform team ·
+    5 updates · 14:05");
+  - a chevron;
   - expanding lists every underlying action, newest first: avatar, who, what, a small icon for the kind, and time.
   - The entry is a disclosure button (`aria-expanded`); collapsed is the default, and the state is not remembered.
   - Each expanded action opens the document.
 - A one-person entry is a link that opens the document. A comment or reply shows its words beneath, an action its
-  name, on one line.
-- "Where the document lives" reads **My documents** or the team's name, then `›` and the folder when it has one; a
+  name, on one line; then where the document lives and the time.
+- "Where the document lives" reads the team's name for a document in a team (whoever reaches it, its owner included)
+  or **My documents**, then `›` and the folder when it has one; a
   document shared with the person reads **Shared by** and the owner's name.
 - A person without a known name is **Someone**. A summary names at most three people, then "and N others".
-- Times are the person's own clock times (`14:05`), under the day heading that dates them.
+- Times are clock times in the person's own time zone and locale (`14:05`, `2:05 PM`), under the day heading that dates
+  them.
 
 ## Timeline
 

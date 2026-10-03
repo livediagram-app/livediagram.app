@@ -19,8 +19,10 @@ Scope, by file:
 | `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                     |
 | `apps/live/app/explorer/home/home-model.ts`                             | Pure: merge, fold, sides, hrefs, days, the strip's fade                           |
 | `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                        |
-| `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, paging, retry, the unread clear, the landing telemetry |
-| `apps/live/components/panels/home/HomePane.tsx`                         | Columns or the phone switch; landmarks; the error state                           |
+| `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, paging, retry, the unread clear                        |
+| `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began |
+| `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                     |
+| `apps/live/components/panels/home/HomePane.tsx`                         | Columns or the phone switch; landmarks; the error state; the landing telemetry    |
 | `apps/live/components/panels/home/HomeSwitch.tsx`                       | The phone's Recent / Timeline tabs                                                |
 | `apps/live/components/panels/home/JumpBackIn.tsx`                       | The strip, its fade, its empty state                                              |
 | `apps/live/components/panels/home/WhatHappened.tsx`                     | Day headings, See all activity, the entries                                       |
@@ -29,9 +31,12 @@ Scope, by file:
 | `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                        |
 | `apps/live/components/panels/home/home-icons.tsx`                       | The kind markers and the verb icons                                               |
 | `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The three skeletons, sized as what replaces them                                  |
+| `apps/live/components/panels/home/home-styles.ts`                       | The shared classes, and the Timeline entry box the skeletons share                |
+| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, an entry                 |
 | `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`           | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                     |
 | `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`          | Crumbs (`Home › All activity`), the dispatch, the header                          |
-| `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `/explorer/home`                                              |
+| `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                       |
+| `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                      |
 | `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                               |
 | `apps/live/components/panels/explorer-tree/PanelOverviewGroup.tsx`      | The panel's Home row opens Home                                                   |
 | `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`    |
@@ -39,7 +44,9 @@ Scope, by file:
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                  |
 | `packages/api-schema/src/telemetry-schema.ts`                           | The `Home` category                                                               |
 | `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                       |
+| `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                      |
 | `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then All activity                                         |
+| `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn documents, opens, edits through a link         |
 
 ## Domain and naming
 
@@ -90,8 +97,9 @@ State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn, whatHappened, timel
    `apiReadHomeTimeline(owner, { cursor })`; success appends `items` (deduplicated by event id), sets `nextCursor`,
    `paging = 'idle'`, tracks `Home·Loaded·More`; `null` → `paging = 'error'`.
 5. `retry()`: tracks `Home·Loaded·Retry`, re-runs 1. `retryMore()`: tracks `Home·Loaded·Retry`, re-runs 4.
-6. Once per mount: `Home·Opened·Landing` when the page load started on `/explorer` or `/explorer/home`
-   (`ARRIVED_ON_HOME`, captured at module evaluation), else `Home·Opened·Nav`.
+6. Once per `HomePane` mount: `Home·Opened·Landing` when the page load started on `/explorer` or `/explorer/home`
+   (`ARRIVED_ON_HOME`, `entry-path.ts`, captured at module evaluation in the eager Explorer chunk), else
+   `Home·Opened·Nav`.
 
 ### Merge (`mergeJumpBackIn(server, local, max = HOME_JUMP_BACK_IN_MAX)`)
 
@@ -234,10 +242,12 @@ export function verbList(verbs: HomeVerbCount[]): string; // 'commented, edited 
 export function summarySentence(group: HomeGroup): {
   people: string;
   verbs: string;
+  preposition: 'in' | null; // null when every verb takes the document directly (edited, shared)
   document: string;
 };
+export function actionPhrase(verb: HomeVerb): string; // one person's entry: 'commented on', 'edited', 'resolved a thread in'
 export function updatesLabel(total: number): string; // '1 update', '5 updates'
-export function locationLabel(doc: HomeDocument): string;
+export function locationLabel(doc: HomeDocument): string; // team name (any via) or 'My documents', ' › folder'; shared: 'Shared by <owner>'
 export function clockTime(at: number): string; // timeLabel from @livediagram/ui
 export function timelineEntryLabel(entry: HomeTimelineEntry): string; // 'Payments architecture, created at 14:05'
 export function actionDetail(action: HomeAction): string | null;
@@ -245,12 +255,15 @@ export function actionDetail(action: HomeAction): string | null;
 
 Component props:
 
-- `HomePane({ ownerId })`: owns `useHome`.
+- `HomePane({ ownerId, onSeen, allActivityHref, onSeeAll })`: owns `useHome`; `onSeen` is the unread badge's
+  `clear`.
 - `JumpBackIn({ ownerId, items, loading })`.
-- `WhatHappened({ groups, loading, onSeeAll })`.
-- `ActionEntry({ group, action, person })`, `SummaryEntry({ group })`.
-- `HomeTimeline({ ownerId, entries, loading, hasMore, paging, onLoadMore, onRetryMore })`.
-- `HomeSwitch({ column, onChange, ids })`.
+- `WhatHappened({ groups, loading, allActivityHref, onSeeAll })`: the link keeps its href (new tab, copy link); a plain
+  click navigates in the app.
+- `ActionEntry({ group, action })`, `SummaryEntry({ group })`.
+- `HomeTimeline({ ownerId, entries, loading, hasMore, paging, onLoadMore, onRetryMore, labelledBy })`.
+- `HomeSwitch({ column, onChange })`; `homeTabId(column)`, `HOME_PANEL_ID`.
+- Today and Yesterday are taken at mount (`useNow(false)`): a page left open past midnight keeps its headings.
 
 ## Data and persistence
 
@@ -273,7 +286,8 @@ Component props:
 | Group whose actor has no name                         | "Someone"                                                                                         |
 | Group of more than three people                       | "Priya, Sam, Lee and 2 others"                                                                    |
 | Shared document                                       | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
-| Document name longer than the thumbnail               | Truncated with an ellipsis; the full name is `title` and the accessible name                      |
+| Document name longer than the thumbnail               | Truncated with an ellipsis; the full name is the accessible name and a `Tooltip`                  |
+| A team document the person owns (`via: 'own'`)        | Its location is the team: `locationLabel` reads `teamName` whatever the via                       |
 | Nothing drawn (`empty`)                               | The thumbnail shows the undrawn sketch and sends no request                                       |
 | Strip narrower than its items / wider                 | Fade only while more lies to the right                                                            |
 | Viewport crosses 768 px                               | Columns ↔ switch; the switch starts on Recent when it appears                                     |
@@ -295,29 +309,32 @@ Component props:
 
 ## Presentation and UX
 
-- Body: `md:grid md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_20rem] md:gap-8`. Recent left,
+- Body (wide): `grid grid-cols-[minmax(0,1fr)_15rem] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8`. Recent left,
   Timeline right; neither column has a background or border.
 - Section heading (`h2`): `text-sm font-semibold text-slate-900 dark:text-slate-100`, 8 px below. Sub-heading (`h3`,
   Jump back in / What happened) `text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`.
 - Strip: `ul` flex, `gap-3`, `overflow-x-auto`, `scrollbar-slim`, `snap-x`, padding 4 px for focus rings. Item: a
   link 128 × 80 thumbnail (`h-20 w-32 rounded-md`, slate border) and the name below (`mt-1 w-32 truncate text-xs`).
   Local only: `LocalOnlyPill asLabel` absolutely in the thumbnail's bottom-left corner (4 px inset). Fade: 48 px
-  `bg-gradient-to-l from-white dark:from-slate-950`, `pointer-events-none`, opacity transition.
+  `bg-gradient-to-l from-slate-50 dark:from-slate-900` (the page), `pointer-events-none`, opacity transition. The
+  strip, its skeleton and its empty line share one height (`h-28`).
 - What happened: day heading (`h4`, `text-xs font-medium text-slate-500`), entries in a `ul` with 4 px between.
-  `ActionEntry`: a link row, 28 px avatar, text column: "**Priya** commented in **Payments architecture**"
-  (`text-sm`), the detail in quotes (`text-xs text-slate-500 truncate`), then location (`text-xs text-slate-500`),
-  the time right-aligned (`text-xs tabular-nums`). `SummaryEntry`: a full-width button, overlapped 24 px avatars
-  (`-ml-2`, `ring-2 ring-white dark:ring-slate-950`, at most 3 plus a `+N` disc), the sentence, "location · N updates",
-  time and a 16 px chevron rotating 180° when open (`motion-safe:transition-transform`). Expanded list indented
-  under the sentence: each a link row with a 20 px avatar, "**Sam** edited", the verb icon (14 px), the time.
-  Rows hover `bg-slate-50 dark:bg-slate-800/60`, `rounded-lg`, padding 8 px.
+  `ActionEntry`: a link row, 28 px avatar, text column: "**Priya** commented on **Payments architecture**"
+  (`text-sm`), the detail in quotes (`text-xs`, muted, truncated), then "location · time" (`text-xs`, muted,
+  wrapping). `SummaryEntry`: a full-width button, overlapped 24 px avatars (`-ml-2`, a 2 px ring in the page colour,
+  at most 3 plus a `+N` disc), the sentence, then "location · N updates · time" (wrapping), and a 16 px chevron at the
+  end rotating 180° when open (`motion-safe:transition-transform`). The times sit in the text column so a narrow
+  tablet column keeps its words. Expanded list indented under the sentence: each a link row with a 20 px avatar,
+  "**Sam** edited", the verb icon (14 px), the time. Rows hover `bg-slate-100 dark:bg-slate-800/70`, `rounded-lg`,
+  padding 8 px.
 - See all activity: in the What happened heading row, right, `text-xs font-medium text-brand-700
 dark:text-brand-300 hover:underline`.
 - Timeline column: `ol`, `relative`; centre line `absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2
 bg-slate-200 dark:bg-slate-700`. Row grid `grid-cols-[1fr_1.5rem_1fr]`, 16 px between rows. Day marker: a centred
-  pill `rounded-full px-2 text-[11px] font-semibold bg-white dark:bg-slate-950 ring-1 ring-slate-200
-dark:ring-slate-700`. Entry: the link (thumbnail `h-16 w-24 lg:h-20 lg:w-32 rounded-md`, the name below
-  `text-[11px] truncate` at the thumbnail's width) in its side's cell, aligned towards the line; the 20 px marker
+  pill `rounded-full px-2 text-[11px] font-semibold bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-200
+dark:ring-slate-700`. Entry: the link (thumbnail `h-20 w-32 md:h-16 md:w-24 lg:h-20 lg:w-32 rounded-md`, the name
+  below `text-[11px] leading-4 truncate` at the thumbnail's width) in its side's cell, aligned towards the line; each
+  entry is one box high (`ENTRY_HEIGHT`, `home-styles.ts`), which the paging slot reserves; the 20 px marker
   in the middle cell (`rounded-full ring-2` in the kind's tone, a 12 px glyph); the time (`text-[11px]
 tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 - Kind tones (with a glyph, never alone): created `emerald-600 / emerald-400` plus, updated `sky-600 / sky-400`
@@ -325,7 +342,7 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 - Phone switch: a two-tab segmented control, full width, `rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5`; the
   selected tab `bg-white dark:bg-slate-900 shadow-sm`; height 36 px.
 - Skeletons: strip 6 boxes `h-20 w-32` with name bars `h-3 w-24`; What happened 3 rows of 56 px; Timeline 4 entries
-  at the entry's size, alternating; `motion-safe:animate-pulse`, `bg-slate-100 dark:bg-slate-800`.
+  at the entry's size, alternating; `motion-safe:animate-pulse`, `bg-slate-200/70 dark:bg-slate-800`.
 - Error state: a centred block, `text-sm`, copy plus a secondary Try again button.
 - Copy is final as in the spec's States table.
 
@@ -336,15 +353,16 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
   `aria-controls`, `id`; roving `tabIndex` (0 on the selected); Left / Right move and select (wrapping), Home / End
   first / last. One `div role="tabpanel" aria-labelledby=<tab id> tabIndex=0`; the `h2`s stay as `sr-only`.
 - Strip: `ul aria-labelledby` (Jump back in); each link's accessible name is the document name ("Payments
-  architecture", plus ", Local only" for a local one, from the pill label); `title` the full name.
+  architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip` shows the full name.
 - Summary: `button aria-expanded aria-controls=<list id>`; the list `ul id` follows it. Avatars `aria-hidden`; the
   sentence names everyone.
 - Timeline: `ol aria-labelledby` (Timeline); day markers are `li` with `h3`-level text (`role="presentation"` not
-  used: they are list items carrying the day); each entry link `aria-label` = `timelineEntryLabel`, `title` = the
+  used: they are list items carrying the day); each entry link `aria-label` = `timelineEntryLabel`, its `Tooltip` the
   name. Markers and times `aria-hidden` (the label carries both).
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500` on every link and
   button. Targets ≥ 24 × 24 px (the smallest is the 36 px switch tab; links are larger).
-- Contrast: body text slate-900 / slate-100; muted slate-500 on white (4.6:1) and slate-400 on slate-950 (7.0:1).
+- Contrast: body text slate-900 / slate-100; muted slate-500 on the slate-50 page (4.5:1) and slate-400 on the
+  slate-900 page (6.9:1).
 - Reduced motion: `motion-safe:` on the pulse, the chevron and the fade's transition; `scroll-behavior` untouched.
 
 ## Web Experience
@@ -371,22 +389,23 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 
 ## Testing
 
-| Rule                                                              | Test                                                                          |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Frecency maths in the shared package                              | `packages/api-schema/src/frecency.test.ts`                                    |
-| The api returns the key                                           | `apps/api/src/routes/home.test.ts`                                            |
-| Local opens: first, same day, next day, trashed, absent, failure  | `apps/live/lib/offline/offline-opens.test.ts`                                 |
-| A marked local load records; an unmarked one does not             | `apps/live/lib/api/tabs-local-open.test.ts`                                   |
-| Merge order, cap, ties, local flag, hrefs                         | `apps/live/app/explorer/home/home-model.test.ts`                              |
-| Fold strength, day keys, order; rows, sides, day labels; fade     | `apps/live/app/explorer/home/home-model.test.ts`                              |
-| Sentences, people, verbs, updates, location, entry labels         | `apps/live/app/explorer/home/home-copy.test.ts`                               |
-| Read, error, retry, paging, dedupe, stale owner, unread clear     | `apps/live/app/explorer/home/useHome.test.tsx`                                |
-| Strip: names, pill, fade, telemetry                               | `apps/live/components/panels/home/JumpBackIn.test.tsx`                        |
-| Entries: one-person links, summary disclosure, telemetry, See all | `apps/live/components/panels/home/WhatHappened.test.tsx`                      |
-| Timeline: sides, markers, labels, paging slot states              | `apps/live/components/panels/home/HomeTimeline.test.tsx`                      |
-| Switch keys and ARIA; columns on wide                             | `apps/live/components/panels/home/HomePane.test.tsx`                          |
-| Routes, titles, crumbs                                            | `routes.test.ts`, `view-titles.test.ts`                                       |
-| Telemetry charted and explained                                   | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`       |
+| Rule                                                              | Test                                                                                    |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Frecency maths in the shared package                              | `packages/api-schema/src/frecency.test.ts`                                              |
+| The api returns the key                                           | `apps/api/src/routes/home.test.ts`                                                      |
+| Local opens: first, same day, next day, trashed, absent, failure  | `apps/live/lib/offline/offline-opens.test.ts`                                           |
+| A marked local load records; an unmarked one does not             | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
+| Merge order, cap, ties, local flag, hrefs                         | `apps/live/app/explorer/home/home-model.test.ts`                                        |
+| Fold strength, day keys, order; rows, sides, day labels; fade     | `apps/live/app/explorer/home/home-model.test.ts`                                        |
+| Sentences, people, verbs, updates, location, entry labels         | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
+| Read, error, retry, paging, dedupe, stale owner, unread clear     | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
+| A clear outlives an unread count still in flight                  | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
+| Strip: names, pill, fade, telemetry                               | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
+| Entries: one-person links, summary disclosure, telemetry, See all | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| Timeline: sides, markers, labels, paging slot states              | `apps/live/components/panels/home/HomeTimeline.test.tsx`                                |
+| Switch keys and ARIA; columns on wide                             | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
+| Routes, titles, crumbs, the landing 302                           | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
+| Telemetry charted and explained                                   | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
 | Real browser: guest and signed in, desktop and phone, dark        | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
 
 ## Constants and configuration
@@ -400,7 +419,7 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 | `AVATAR_STACK_MAX`      | 3                       | `HomeAvatar.tsx`   | `D86`                                    | 2 to 5          |
 | Strip thumbnail         | 128 × 80 px             | `JumpBackIn.tsx`   | `D87`: "small", 16:10                    | 96 to 160 wide  |
 | Timeline thumbnail      | 96 × 64, `lg:` 128 × 80 | `HomeTimeline.tsx` | `D87`: half the column less the gutter   | fixed by column |
-| Timeline column         | 16 rem, `lg:` 20 rem    | `HomePane.tsx`     | `D88`                                    | 14 to 24 rem    |
+| Timeline column         | 15 rem, `lg:` 20 rem    | `HomePane.tsx`     | `D88`                                    | 15 to 24 rem    |
 
 ## Defaults ledger
 

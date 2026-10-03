@@ -22,7 +22,7 @@ async function seedFolder(page: Page, owner: string, origin: string, name: strin
   expect(res.ok(), `seeding a folder failed: ${res.status()}`).toBe(true);
 }
 
-async function openExplorer(page: Page, path = '/explorer/timeline') {
+async function openExplorer(page: Page, path = '/explorer/home') {
   await page.goto(path);
   await expect(row(page, /^Home/)).toBeVisible({ timeout: 30_000 });
 }

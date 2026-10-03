@@ -1508,13 +1508,16 @@ feed vanishing and coming back.
 
 ### 8.1 Home is the landing view; the feed is All activity
 
-The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. The landing is set in three
-places, all of which must change together (they exist because a static export has no single entry point):
+The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. A static export has no single
+entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
+(`apps/live/lib/explorer-landing.ts`):
 
-1. `apps/live/src/worker.ts`: the `/explorer` 302 goes to `/explorer/home`.
+1. `apps/live/src/worker.ts`: the `/explorer` 302.
 2. `apps/live/app/explorer/page.tsx`: the client `router.replace` fallback for the dev server and direct asset hits.
-3. `apps/live/app/explorer/routes.ts`: `selectedFromRoute`'s `default:` case, which catches mangled URLs and
-   id-less `folder`/`team` links, returns `{ kind: 'home' }`.
+3. `scripts/e2e-stack.mjs`: the end-to-end stack's stand-in for the worker.
+
+`apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
+`folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
 
 The feed keeps its route, `/explorer/timeline`, and its page is titled **All activity** (heading, document title and
 breadcrumb, **Home › All activity**). Home says what the person was working on and what others did; All activity is
