@@ -122,7 +122,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
   });
 
   it.each(['folder_not_found', 'folder_scope_mismatch'])(
-    'files the document in Unsorted, saying so, when the server refuses its folder: %s',
+    'files the document at the root, saying so, when the server refuses its folder: %s',
     async (code) => {
       // docs/specs/006-document/offline-mode.md: the server refuses by name; the sync decides.
       vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({

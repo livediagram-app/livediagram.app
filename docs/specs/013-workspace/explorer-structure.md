@@ -114,7 +114,7 @@ Trash). Views without a row keep their own names (Recent, Favourites, Search res
 - **My documents** starts expanded, so its root folders stay one click away.
 - **Library** starts collapsed, and expands by itself when one of its pages is the current view (on arrival and on
   navigating to one), so the highlighted row is always visible.
-- **Teams and folders** start collapsed. A team or folder with no subfolders shows no chevron.
+- **Teams and folders** start collapsed. My documents, a team or a folder with no subfolders shows no chevron.
 - Expansion is session-local (a reload starts afresh) and shared between the desktop sidebar and the mobile drawer.
 
 ## Group titles and separators
@@ -174,7 +174,7 @@ What differs is what a row does in an editor, where leaving the document is a bi
 
 - **Rows with documents open in place.** Shared with me, My documents, each folder, each team and This browser
   expand to show their documents as rows beneath them; My documents and a team show their root folders, then their
-  root documents. Shared with me with nothing shared, and a team
+  root documents. My documents with nothing in it goes to its Explorer page, as an empty team does. Shared with me with nothing shared, and a team
   with nothing in it, go to their Explorer page instead. Activating such a row expands or collapses it; it
   never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
   Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the

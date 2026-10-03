@@ -216,6 +216,8 @@ Keyboard:
 
 - **Failed** replaces the list when the view's last read failed: the reader's own documents for their own views,
   Recent, Favourites and Search results; the shared list for Shared with me. A failed read never reads as Empty.
+  When only the shared list failed, the other views still list what loaded, and a notice says the documents shared
+  with the reader could not load.
 - The live region speaks only on document views, and only after the lens changes.
 
 ## Telemetry

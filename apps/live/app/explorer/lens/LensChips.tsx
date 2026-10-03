@@ -93,16 +93,20 @@ function MultipleChip({
   onChoose: (dimension: LensDimension, value: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const button = useRef<HTMLButtonElement>(null);
+  // In state, so the listbox anchors to the chip on the render that opens it.
+  const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const set = chip.values.length > 0;
-  const close = useCallback((refocus: boolean) => {
-    setOpen(false);
-    if (refocus) button.current?.focus();
-  }, []);
+  const close = useCallback(
+    (refocus: boolean) => {
+      setOpen(false);
+      if (refocus) button?.focus();
+    },
+    [button],
+  );
   return (
     <>
       <button
-        ref={button}
+        ref={setButton}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -121,7 +125,7 @@ function MultipleChip({
       {open ? (
         <ChipListbox
           chip={chip}
-          anchor={button.current}
+          anchor={button}
           onChoose={(value) => onChoose(chip.dimension, value)}
           onClose={close}
         />

@@ -48,14 +48,14 @@ describe('inbound rows', () => {
     expect(w.events).toContain('Applied:Move');
   });
 
-  it('File moved to the root folder: document to Unsorted', async () => {
+  it('File moved to the root folder: document to the root of My documents', async () => {
     const w = await mirrored();
     w.google.userMove(w.file().id, w.ld.connection!.rootFolderId!);
     await w.engine.syncNow();
     expect(w.ld.document('d1')!.folderId).toBeNull();
   });
 
-  it('File moved into a folder livediagram cannot see: Unsorted, a notice, and the file stays put', async () => {
+  it('File moved into a folder livediagram cannot see: the root, a notice, and the file stays put', async () => {
     const w = await mirrored();
     const hidden = w.google.userCreateFolder(OWNER, 'Secret', w.ld.connection!.rootFolderId!);
     w.google.userMove(w.file().id, hidden);

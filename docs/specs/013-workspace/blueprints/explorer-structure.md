@@ -83,7 +83,8 @@ name of the view (`kind: 'offline'`), whose row reads "This browser".
 4. **Row activation** (click on the label area, or Enter / Space): `go(node)` for a view row, `toggleExpand` for
    Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New team, `window.location.assign` for a team
    folder. Home also clears the Timeline unread count. Each activation calls `trackSidebar(row)` first.
-5. **Chevron**: a click on the gutter toggles that row; it never activates it.
+5. **Chevron**: a click on the gutter toggles that row; it never activates it. My documents is expandable only while it
+   has a root folder (the page) or a root folder or document (the panel).
 6. **Roving tab stop** (`useTreeNavigation`): after every render exactly one `treeitem` in the `nav` has
    `tabIndex = 0`: the focused one while focus is inside the `nav`, else the `aria-selected` one, else the first.
 7. **Keys** on a focused `treeitem` (ignored when the event comes from an `input`, `textarea` or a descendant control):
@@ -95,7 +96,7 @@ name of the view (`kind: 'offline'`), whose row reads "This browser".
    breadcrumb is `[My documents, …ancestors, folder]` for a folder, and the single leaf otherwise; each static page's `metadata.title` is `viewDocumentTitle(kind)`.
 9. **Panel** (`PanelExplorerTree`): rows with documents toggle on activation (Shared with me, My documents, folders,
    teams, This browser; a team or Shared with me with nothing in it goes to its page); Home,
-   Activity, Library pages and Trash, and Shared with me or a team with nothing in it, call `openExplorerPage` (`window.location.assign(explorerPathFor(node))`). The open
+   Activity, Library pages and Trash, and Shared with me, My documents or a team with nothing in it, call `openExplorerPage` (`window.location.assign(explorerPathFor(node))`). The open
    document's row is `aria-selected`. Keys `space:my-documents`, `overview:shared`, `more:this-browser`, `more:library`, folder and team ids, all false at first. Activations
    call `trackSidebar(row, 'panel')` (`ExplorerPanel.<Row>`).
 10. **Local only**: `isLocalOnly(doc)` (`ownerId === OFFLINE_OWNER_ID`) shows `LocalOnlyPill` beside a list row's

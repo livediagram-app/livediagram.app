@@ -137,7 +137,7 @@ describe('Open with on a copy of a mirrored file', () => {
     expect(w.ld.document(newId)!.folderId).toBe('f1');
   });
 
-  it('puts it in Unsorted with the unseen-folder notice when its folder is one livediagram cannot see', async () => {
+  it('puts it at the root with the unseen-folder notice when its folder is one livediagram cannot see', async () => {
     const w = await mirrored();
     const copyId = w.copy();
     const hidden = w.google.userCreateFolder(OWNER, 'Private');

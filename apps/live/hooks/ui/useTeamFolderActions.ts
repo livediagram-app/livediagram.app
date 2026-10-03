@@ -58,11 +58,11 @@ export function useTeamFolderActions({
         const name = teamFolders.find((f) => f.id === id)?.name;
         // The same confirm the personal tree's delete uses, with the same
         // consequences spelled out: a team folder's documents go to the
-        // team's Unsorted and its subfolders are promoted.
+        // team's top level and its subfolders are promoted.
         void confirm({
           title: name ? `Delete "${name}"?` : 'Delete this folder?',
           message:
-            'Documents inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+            "Documents inside the folder move to the team's top level. Subfolders are promoted to the top level. The folder row itself is removed.",
           confirmLabel: 'Delete folder',
         }).then((ok) => {
           if (!ok) return;

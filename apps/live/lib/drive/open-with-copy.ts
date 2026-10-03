@@ -24,7 +24,7 @@ export type CopyPort = Pick<
 type Placement = { folderId: string | null; unseen: boolean };
 
 // Where the new document goes: the livediagram folder the copy's Drive folder
-// mirrors; Unsorted for the root; Unsorted with the unseen-folder notice for a
+// mirrors; the root of My documents for the root; that root with the unseen-folder notice for a
 // folder livediagram cannot see.
 async function placeCopy(port: CopyPort, parentId: string | null): Promise<Placement> {
   const [connection, items, folders] = await Promise.all([

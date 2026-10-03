@@ -17,7 +17,7 @@ import {
   type LensSubject,
   type LensSuggestion,
 } from '@livediagram/explorer-lens';
-import { CloseIcon, SearchIcon } from '@livediagram/ui';
+import { CloseIcon, HoverCard, SearchIcon } from '@livediagram/ui';
 import type { ExplorerLens } from './useExplorerLens';
 import { composeField, removePill, settleField, splitField, writeDraft } from './field-model';
 
@@ -58,19 +58,23 @@ export function LensField({
   const activeSuggestion = listOpen && active >= 0 ? suggestions[active] : undefined;
   const optionId = (s: LensSuggestion) => `${id}-${s.id}`;
 
-  // The model may move the caret (a token joining the pills): put the DOM caret where it says.
+  // An edit may move the caret (a token joining the pills): after one, put the DOM caret where the
+  // model says. Only after an edit, so a selection the reader made is never collapsed.
+  const moveCaret = useRef(false);
   useLayoutEffect(() => {
     const el = field.current;
-    if (!el || caret === null || document.activeElement !== el) return;
+    if (!moveCaret.current || !el || document.activeElement !== el) return;
+    moveCaret.current = false;
     if (el.selectionStart !== parts.draftCaret || el.selectionEnd !== parts.draftCaret) {
       el.setSelectionRange(parts.draftCaret, parts.draftCaret);
     }
-  }, [caret, parts.draftCaret]);
+  }, [input, parts.draftCaret]);
 
   const caretOf = (el: HTMLInputElement) => el.selectionStart ?? el.value.length;
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const next = writeDraft(parts.tokens, e.target.value, caretOf(e.target), context);
+    moveCaret.current = true;
     setField(next.input, next.caret);
     setOpen(true);
     setActive(-1);
@@ -88,6 +92,7 @@ export function LensField({
   const accept = (suggestion: LensSuggestion) => {
     const accepted = acceptSuggestion(input, suggestion);
     const settled = settleField(accepted.input, accepted.caret, context);
+    moveCaret.current = true;
     setField(settled.input, settled.caret);
     setActive(-1);
     setOpen(suggestion.kind === 'dimension');
@@ -160,24 +165,34 @@ export function LensField({
             <span
               key={pill.dimension}
               data-lens-pill={pill.dimension}
-              title={pill.note ?? undefined}
               className={`inline-flex h-6 shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full pl-2 text-[11px] font-medium ${
                 muted
                   ? 'border border-dashed border-slate-400 bg-slate-50 text-slate-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-300'
                   : 'bg-brand-50 text-brand-800 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-400/50'
               } ${picked ? 'outline-2 outline-offset-1 outline-brand-500' : ''}`}
             >
-              <span className="text-optical-centre">
-                <span className="sr-only">Filter </span>
-                {pill.label}
-                {pill.note ? <span className="sr-only">, not applied: {pill.note}</span> : null}
-              </span>
+              {pill.note ? (
+                // A muted pill says why on hover and focus, and to a screen reader.
+                <HoverCard title="Not applied" description={pill.note}>
+                  <span className="text-optical-centre">
+                    <span className="sr-only">Filter </span>
+                    {pill.label}
+                    <span className="sr-only">, not applied: {pill.note}</span>
+                  </span>
+                </HoverCard>
+              ) : (
+                <span className="text-optical-centre">
+                  <span className="sr-only">Filter </span>
+                  {pill.label}
+                </span>
+              )}
               <button
                 type="button"
                 aria-label={pill.removeName}
                 onClick={() => {
                   setInput(removePill(parts.tokens, parts.draft, pill.dimension, context));
-                  field.current?.focus();
+                  // Back to the words once the pill is gone: focusing now would read the old string.
+                  requestAnimationFrame(() => field.current?.focus());
                 }}
                 className="ml-0.5 flex h-6 w-6 items-center justify-center rounded-full text-current opacity-70 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-brand-500"
               >

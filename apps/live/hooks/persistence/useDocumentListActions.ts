@@ -43,7 +43,7 @@ type DocumentListActionsDeps = {
   toast: ReturnType<typeof useToast>;
   // useFolders' delete. deleteFolder below chains the document-side
   // re-bucket cascade in front of it so rows visibly fall to
-  // Unsorted instead of waiting for the next list refresh. Only
+  // the root instead of waiting for the next list refresh. Only
   // DIRECT children re-bucket, mirroring the server (subfolders are
   // promoted to root, so documents inside them stay put).
   deleteFolderFromHook: (id: string) => void;
@@ -183,7 +183,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   };
 
   // Delete a folder (docs/specs/013-workspace/folders.md): confirm, re-bucket its direct
-  // documents to Unsorted locally, then let useFolders handle the
+  // documents to the root locally, then let useFolders handle the
   // folder rows + the API call. `name` personalises the confirm
   // title when the caller has it. Returns whether the delete went
   // through, so callers with selection state (the /explorer sidebar)
@@ -192,7 +192,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     const ok = await confirm({
       title: name ? `Delete "${name}"?` : 'Delete this folder?',
       message:
-        'Documents inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+        'Documents inside the folder move to the top level of My documents. Subfolders are promoted to the top level. The folder row itself is removed.',
       confirmLabel: 'Delete folder',
     });
     if (!ok) return false;
@@ -208,9 +208,9 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     void apiSetDocumentFolder(ownerId, id, folderId)
       .then(() => {
         // The row leaves the current view (it's now under the target
-        // folder / Unsorted), so confirm where it went — only once the
+        // folder / the root), so confirm where it went — only once the
         // server actually accepted the move.
-        toast.success(folderId ? 'Moved to folder' : 'Moved to Unsorted');
+        toast.success(folderId ? 'Moved to folder' : 'Moved to My documents');
         track('Document', 'Moved');
       })
       .catch(() => {

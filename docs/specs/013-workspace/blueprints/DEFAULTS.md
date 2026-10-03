@@ -80,5 +80,5 @@ One row per default applied where a spec is silent or qualitative.
 | D89 | explorer-filters   | The Made by AI badge's look                                              | A sparkle and the words, violet, built like the Local only pill                                                |
 | D90 | explorer-filters   | Where the retired Dynamic view goes                                      | The My documents root, as Unsorted does                                                                        |
 | D91 | explorer-filters   | What the personal root tile of the placement browser says under its name | "Top level", in place of "Unsorted"                                                                            |
-| D92 | explorer-filters   | How a failed list read shows                                             | Failed on the views that read it; a toast only when the shared read alone failed on another view               |
+| D92 | explorer-filters   | How a failed list read shows                                             | Failed on the views that read it; a toast when the shared read alone failed, as other views still list rows    |
 | D93 | explorer-filters   | Whether typed tokens of one dimension stay apart                         | No: they merge into one pill, as the canonical string writes them                                              |
