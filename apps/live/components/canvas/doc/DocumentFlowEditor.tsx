@@ -530,6 +530,22 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
           ink,
         );
       },
+      focusAt: (clientX: number, clientY: number) => {
+        const p = latest.current;
+        const frame = flowFrame(p.pages, p.margin);
+        const root = view.dom.getBoundingClientRect();
+        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+        // Into the text column of the page pressed, then to the nearest place in the writing.
+        const col = columnAt(frame, (clientX - root.left) / z);
+        const colLeft = root.left + col * frame.stride * z;
+        const x = Math.max(colLeft + 1, Math.min(clientX, colLeft + frame.columnWidth * z - 1));
+        const y = Math.max(root.top + 1, Math.min(clientY, root.bottom - 1));
+        const hit = view.posAtCoords({ left: x, top: y });
+        // Below the writing (nothing laid out there): the end of the writing.
+        const pos = hit?.pos ?? view.state.doc.content.size;
+        view.dispatch(view.state.tr.setSelection(Selection.near(view.state.doc.resolve(pos))));
+        view.focus();
+      },
       caretCanvasPoint: () => {
         const p = latest.current;
         try {

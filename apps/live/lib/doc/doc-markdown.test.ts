@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { looksLikeMarkdown, parseInline, parseMarkdownBlocks, plainTextBlocks } from './doc-markdown';
+import {
+  looksLikeMarkdown,
+  parseInline,
+  parseMarkdownBlocks,
+  plainTextBlocks,
+} from './doc-markdown';
 
 // docs/specs/007-editor/document-pages.md "Writing": a paste of Markdown becomes the blocks it means.
 const shape = (text: string) =>
@@ -62,9 +67,8 @@ describe('Markdown pasted into a document', () => {
   it('tells Markdown from plain text, which pastes a paragraph a line', () => {
     expect(looksLikeMarkdown('## Heading')).toBe(true);
     expect(looksLikeMarkdown('Dear team,\nthanks for today.')).toBe(false);
-    expect(plainTextBlocks('a\n\nb').map((b) => b.type === 'paragraph' && b.runs[0]!.text)).toEqual([
-      'a',
-      'b',
-    ]);
+    expect(plainTextBlocks('a\n\nb').map((b) => b.type === 'paragraph' && b.runs[0]!.text)).toEqual(
+      ['a', 'b'],
+    );
   });
 });

@@ -306,6 +306,22 @@ export const enter: Command = (state, dispatch) => {
     if (dispatch) dispatch(state.tr.insertText('\n').scrollIntoView());
     return true;
   }
+  // At the end of a heading with an empty paragraph waiting under it (a new document's first
+  // paragraph): into that paragraph, rather than another.
+  if (
+    empty &&
+    node.type === PARAGRAPH &&
+    node.attrs.style !== 'body' &&
+    node.attrs.style !== 'quote' &&
+    $from.parentOffset === node.content.size
+  ) {
+    const next = state.doc.nodeAt(pos + node.nodeSize);
+    if (next?.type === PARAGRAPH && next.attrs.style === 'body' && next.content.size === 0) {
+      if (dispatch)
+        dispatch(state.tr.setSelection(TextSelection.create(state.doc, pos + node.nodeSize + 1)));
+      return true;
+    }
+  }
   if (empty && node.content.size === 0) {
     if (node.type === LIST) return shiftLevel(-1)(state, dispatch);
     if (node.type === PARAGRAPH && node.attrs.style === 'quote')

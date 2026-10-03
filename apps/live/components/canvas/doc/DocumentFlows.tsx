@@ -21,7 +21,7 @@ import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { pagesClipPath } from '@/components/canvas/IllustratePageClip';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { DocInk } from '@/lib/doc/doc-style-vars';
-import { requestDocLink, useActiveDoc } from '@/lib/doc/doc-editor-store';
+import { docHandleOf, requestDocLink, useActiveDoc } from '@/lib/doc/doc-editor-store';
 import { PageToolbar } from './PageToolbar';
 import { ZoneBar } from './ZoneBar';
 
@@ -77,6 +77,35 @@ export function DocumentFlows({
         className="absolute inset-0"
         style={{ clipPath: pagesClipPath(view.pages) }}
       >
+        {/* A press on a document page's blank paper (its margins, below the writing) puts the
+            caret at the writing nearest it, as on a page of a word processor. */}
+        {docs.editable && interactive
+          ? [...byFlow].flatMap(([flow, pages]) =>
+              pages
+                .filter((p) => view.pages.some((shown) => shown.id === p.id))
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    aria-hidden
+                    data-doc-paper=""
+                    className="absolute cursor-text"
+                    style={{
+                      left: p.rect.x,
+                      top: p.rect.y,
+                      width: p.rect.width,
+                      height: p.rect.height,
+                    }}
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      e.stopPropagation();
+                      e.preventDefault();
+                      docs.onWritingPress();
+                      docHandleOf(flow)?.focusAt(e.clientX, e.clientY);
+                    }}
+                  />
+                )),
+            )
+          : null}
         <Suspense fallback={null}>
           {[...byFlow].map(([flow, pages]) => {
             const doc = docs.docs[flow];

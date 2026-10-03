@@ -40,6 +40,8 @@ export type DocEditorHandle = {
     x: number;
     y: number;
   } | null;
+  // The caret put at the writing nearest a screen point (a press on the page's blank paper).
+  focusAt: (clientX: number, clientY: number) => void;
   // The caret's place on the canvas (for an insert there).
   caretCanvasPoint: () => { x: number; y: number } | null;
   // The writing as laid out now, as draw operations in canvas coordinates (an export).

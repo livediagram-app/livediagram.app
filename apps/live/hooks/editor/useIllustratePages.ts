@@ -21,7 +21,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
-import { computeFitBelow } from '@/lib/viewport';
+import { computeFitBelow, computeReadingFrame } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
@@ -96,11 +96,12 @@ export function useIllustratePages(deps: {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
-    const { zoom, offset } = computeFitBelow(
-      { width: canvas.offsetWidth, height: canvas.offsetHeight },
-      illustratePageFitBox(page),
-      inset,
-    );
+    const size = { width: canvas.offsetWidth, height: canvas.offsetHeight };
+    // A document page is framed to be read (its width, room above for its toolbar); an
+    // infographic page to be seen whole.
+    const { zoom, offset } = page?.flow
+      ? computeReadingFrame(size, page.rect, inset)
+      : computeFitBelow(size, illustratePageFitBox(page), inset);
     deps.setViewportZoom(zoom);
     deps.setViewportOffset(offset);
     debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom });
