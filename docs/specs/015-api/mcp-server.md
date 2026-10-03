@@ -221,21 +221,21 @@ canvas overrides; the model then personalises labels via `update_document`'s
    Layout only ever arranges the **connected graph** — edgeless content (titles,
    per-node descriptions, captions) passes through at its given position rather
    than being raked into a disconnected-component column.
-3. **Tags it as generated.** The create sends `source: 'mcp'`, which the
-   Explorer surfaces in a synthetic **Generated** folder (`source != null`,
-   [Folders](../013-workspace/folders.md)) so a user's own work and AI-generated documents stay separate
-   without a real, deletable folder. The user can file one into a folder of
-   their own afterwards (which moves it out of Generated). (Earlier this
-   find-or-created a real "Generated" folder; the provenance tag replaces
-   that so the folder is dynamic, like Unsorted.)
+3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the
+   Explorer's **Made by AI** filter (`made-by:ai`,
+   [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's
+   own work and AI-made documents can be told apart wherever either is filed.
+   Unfiled, it sits in Unsorted like any other document. (Earlier this
+   find-or-created a real "Generated" folder, then a synthetic Generated
+   bucket; provenance is now a filter, not a place.)
    The create also sends the creation `intent` of the first tab it built and the
    template it used (`{ mode: "diagram" }` unless the input makes a whiteboard, an
    event-storming board, or a document from a template family such as a retrospective), so with no folder named the server files it in the
    user's [default folder](../013-workspace/default-folders.md) for that intent,
-   when they have one; a document filed there is in that folder, not in Generated.
+   when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
    and accepts `source`).
-5. **Returns** the new `id`, tab count + ids, the folder ("Generated", or the name of
+5. **Returns** the new `id`, tab count + ids, the folder ("Unsorted", or the name of
    the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
@@ -828,7 +828,7 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_document only auto-files new documents under "Generated");
+  move folders (create_document files new documents in the user's Unsorted);
   more `/api` surface can be wrapped later if demand appears. (Share-link
   creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
   folders/teams themselves stays out.)

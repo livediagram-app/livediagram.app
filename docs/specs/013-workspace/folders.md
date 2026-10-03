@@ -72,7 +72,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Shared with you                                         | `/explorer/shared`                                          |
 | All documents                                           | `/explorer/all` (route kept for deep links; no sidebar row) |
 | Unsorted                                                | `/explorer/unsorted`                                        |
-| Generated                                               | `/explorer/generated`                                       |
+| Made by AI (old Generated links)                        | `/explorer/generated` → `/explorer/recent?q=made-by:ai`     |
 | A folder                                                | `/explorer/folder?id=<id>`                                  |
 | A team ([Teams](teams.md))                              | `/explorer/team?id=<id>`                                    |
 | Invites ([Teams](teams.md))                             | `/explorer/invites`                                         |
@@ -104,7 +104,7 @@ folders
 diagrams
   ...
   folder_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
-  source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = generated
+  source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = made by AI
 ```
 
 - `folder_id IS NULL` means the document is in Unsorted. Unsorted has
@@ -115,24 +115,24 @@ diagrams
   created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
   in-editor AI assistant (no producer today). Set once on create and never
   rewritten by the metadata upsert (rename / autosave / move can't clear
-  it).
+  it). Provenance is a **filter**, not a place: the `made-by:ai` token of
+  [Explorer filters](explorer-filters.md) finds AI-made documents wherever
+  they are filed.
 
 ### Dynamic (synthetic) folders
 
-Two folders in **Personal Space** aren't rows in the `folders` table — they're
-live views the Explorer always shows (badge hidden at zero), each with an
-info block under its breadcrumb explaining why it exists:
+**Unsorted** in **Personal Space** isn't a row in the `folders` table — it's a
+live view the Explorer always shows (badge hidden at zero), with an info block
+under its breadcrumb explaining why it exists:
 
-- **Unsorted** — `folder_id IS NULL AND source IS NULL`. Documents not filed
-  into a folder and not generated.
-- **Generated** — `source IS NOT NULL AND folder_id IS NULL`. AI-made
-  documents (the AI assistant / MCP server) the user hasn't filed yet.
-  Mirrors Unsorted (folder-null), so the two synthetic buckets are mutually
-  exclusive: a generated document shows in Generated, not Unsorted, until the
-  user files it into a real folder of their own, at which point it leaves
-  Generated just as a filed document leaves Unsorted. Route:
-  `/explorer/generated`. Neither dynamic folder offers New folder / New
-  document affordances (you don't author into them).
+- **Unsorted** — `folder_id IS NULL`. Documents not filed into a folder,
+  AI-made ones included. It offers no New folder / New document affordances
+  (you don't author into it).
+- There is no **Generated** bucket. AI-made documents are documents like any
+  other: unfiled ones sit in Unsorted, filed ones in their folder, and
+  `made-by:ai` ([Explorer filters](explorer-filters.md)) lists them all. The
+  old `/explorer/generated` route replaces itself with
+  `/explorer/recent?q=made-by:ai`, so links to it keep working.
 - `parent_id IS NULL` means the folder is at the tree root.
 - `ON DELETE SET NULL` on both `parent_id` and `folder_id`: deleting
   a folder doesn't delete its contents. Direct subfolders become

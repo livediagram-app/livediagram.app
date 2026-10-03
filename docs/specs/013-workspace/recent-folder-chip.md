@@ -25,7 +25,9 @@ two-level breadcrumb was considered for disambiguating repeated names
 Special cases:
 
 - **No folder** still shows a location: `Unsorted`, linking to that synthetic
-  view. "Filed nowhere" is information too.
+  view. "Filed nowhere" is information too. An AI-made document is no
+  exception: there is no Generated bucket, and provenance is the `made-by:ai`
+  filter ([Explorer filters](explorer-filters.md)), not a location.
 - **Team documents** name the **team** and open its library. A team document's
   folder lives in the team's own tree, which the personal `folderById` index
   doesn't cover — and for a team row the team is the location that matters.
