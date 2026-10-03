@@ -116,14 +116,14 @@ test.describe('stale builds', () => {
     await page.waitForLoadState('networkidle');
     const loads = pageLoads(page);
     await page.getByRole('treeitem', { name: /^Home/ }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/timeline']);
+    await expect.poll(() => loads).toEqual(['/explorer/home']);
     await page.waitForLoadState('networkidle');
     await page.getByRole('treeitem', { name: /^Activity/ }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/timeline', '/explorer/activity']);
+    await expect.poll(() => loads).toEqual(['/explorer/home', '/explorer/activity']);
     await page.waitForLoadState('networkidle');
     await page.goBack();
     await expect.poll(() => loads.length).toBe(3);
-    await expect(page).toHaveURL(/\/explorer\/timeline\/?$/);
+    await expect(page).toHaveURL(/\/explorer\/home\/?$/);
     await expect(page.getByText(CRASH)).toHaveCount(0);
   });
 });
