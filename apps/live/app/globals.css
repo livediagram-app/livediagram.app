@@ -830,3 +830,5 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 [data-path-cursor] * {
   cursor: inherit !important;
 }
+
+[data-zooming] { will-change: transform; }
