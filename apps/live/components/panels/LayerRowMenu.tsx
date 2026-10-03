@@ -7,14 +7,13 @@ import { EyeIcon, LockIcon } from '@/components/panels/layers-panel-icons';
 import { ClearIcon } from '@/components/chrome/tab-bar-icons';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import {
-  MenuAccordionSection,
-  MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
   MenuToolbar,
   MenuToolButton,
-} from '@/components/primitives/PortalMenu';
+} from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import {
   LayerDownIcon,

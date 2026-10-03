@@ -2,6 +2,7 @@
 // items, a control menu's focusables, the tabbable beside a trigger, and who owns focus.
 
 import { accessibleNameOf } from '../hint/trigger-text';
+import { lastInputWasKeyboard } from './input-modality';
 import {
   FOCUSABLE_SELECTOR,
   MENU_ITEM_SELECTOR,
@@ -106,15 +107,10 @@ export function isTextEditFocused(): boolean {
 }
 
 /**
- * Whether the keyboard opened what is opening now: the focused element matches `:focus-visible`,
- * the browser's own modality heuristic (D51). False with nothing focused, or without support.
+ * Whether the keyboard opened what is opening now: the last interaction was a key press, not a
+ * pointer press (D51). Tracked on the document, because the control that opened a menu may be gone
+ * by the time the menu mounts.
  */
 export function openedFromKeyboard(): boolean {
-  const active = document.activeElement;
-  if (!active || active === document.body) return false;
-  try {
-    return active.matches(':focus-visible');
-  } catch {
-    return false;
-  }
+  return lastInputWasKeyboard();
 }

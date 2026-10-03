@@ -17,11 +17,13 @@ import {
   MenuAccordionSection,
   MenuActionRow,
   MenuGroupSeparator,
+} from '@/components/primitives/PortalMenu';
+import {
   MenuTile,
   MenuTileGrid,
   MenuToolbar,
   MenuToolButton,
-} from '@/components/primitives/PortalMenu';
+} from '@/components/primitives/MenuTiles';
 import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';

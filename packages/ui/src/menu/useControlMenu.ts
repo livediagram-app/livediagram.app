@@ -4,7 +4,12 @@ import { useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, us
 import { MENU_PARENT_ATTR, MENU_SURFACE_ATTR } from './menu-constants';
 import { focusablesOf, isTextEditFocused, openedFromKeyboard, ownsFocus } from './menu-dom';
 import { MenuTreeContext, type MenuTree } from './menu-tree';
-import { focusedOutside, returnFocus, useSurfaceElement, type MenuHandle } from './useMenu';
+import {
+  focusedOutside,
+  returnFocusAfterCommit,
+  useSurfaceElement,
+  type MenuHandle,
+} from './useMenu';
 
 // A control menu (docs/specs/004-interface-design/menus.md "Control menus"; blueprint C1 to C3):
 // a menu holding controls, announced as a named non-modal dialog. Tab walks its controls; focus
@@ -47,7 +52,9 @@ export function useControlMenu({
     const focus = latest.current.focusOnOpen ?? openedFromKeyboard();
     if (focus && !isTextEditFocused()) focusablesOf(element)[0]?.focus({ preventScroll: true });
     return () => {
-      if (ownsFocus(element)) returnFocus(returnTarget.current, latest.current.trigger);
+      if (ownsFocus(element)) {
+        returnFocusAfterCommit(element, returnTarget.current, latest.current.trigger);
+      }
     };
   }, [element]);
 

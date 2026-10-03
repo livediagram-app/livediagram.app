@@ -33,7 +33,10 @@ groups and separators, so a slider inside one is invisible or garbled to a scree
   activating it does nothing.
 - A group's title (an accordion header inside a menu) is a `menuitem` with `aria-expanded`, and the
   rows it reveals are a `group` labelled by it. Collapsed rows are inert: not focusable, not read.
-- A divider is a `separator`. A header naming the menu is not an item and is never focused.
+- A divider is a `separator`. A header naming the menu is not an item and is never focused; its
+  title alone names the menu (a badge beside it, such as a document's visibility, is decoration).
+- Every item has a name: an icon-only tile carries one (the element menu's Shape tiles are named
+  after their shape).
 - A submenu's trigger is a `menuitem` with `aria-haspopup="menu"`, `aria-expanded` and, while open,
   `aria-controls`; the submenu is a `menu` named by its header or its trigger.
 - A menu's trigger carries `aria-haspopup="menu"`, `aria-expanded` and, while open, `aria-controls`
@@ -46,7 +49,7 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 | Key                      | Does                                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------------------- |
 | Enter, Space, Down Arrow | On the trigger: open the menu, focus on its first item (the checked one in a one-of-a-set menu)       |
-| Up Arrow                 | On the trigger: open the menu, focus on its last item                                                 |
+| Up Arrow                 | On a menu button: open the menu on its last item (a row's ⋯ opens on its first)                       |
 | Down Arrow / Up Arrow    | Next / previous item, wrapping at the ends                                                            |
 | Home / End               | First / last item                                                                                     |
 | A letter or digit        | Next item whose name starts with what was typed in the last half second; one letter again cycles them |
@@ -59,10 +62,15 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 - **Focus moves into the menu on open**, however it was opened: to the checked entry of a
   one-of-a-set menu, else the first item. A menu opened by hovering (the zoom presets) is the one
   exception: hover is not asking for the keyboard, so focus stays where it was.
+- **Focus moving elsewhere closes it.** A click or Tab that takes focus outside the menu (and its
+  submenus) closes it; a press that moves focus nowhere (Safari does not focus a pressed button)
+  leaves it open.
 - **Focus comes back.** When a menu closes while it holds focus (Escape, choosing a verb) focus
   returns to where it was when the menu opened: the trigger that opened it, the tree row Shift+F10
   was pressed on, the element that was right-clicked. If that place is gone, or was nowhere, it
-  goes to the menu's trigger. A verb that opens a dialog or a rename field hands focus on from there.
+  goes to the menu's trigger; a control that re-renders as the menu closes (the selection
+  toolbar's More actions, which steps aside while the element menu is up) is found again by its
+  id. A verb that opens a dialog or a rename field hands focus on from there.
 - **The zoom percentage is a button of its own**: Enter and Space fit the screen, as a click does,
   and Down Arrow or Up Arrow opens its presets.
 - Opening never takes focus from a live text edit: a menu opened beside a label being edited
@@ -74,13 +82,16 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 ## Control menus
 
 - The menu is a non-modal `role="dialog"` with a name ("Element menu", "Selection menu", "Cell
-  menu", "Tab menu", "Canvas menu", "Layer menu", the session tool's settings, "Live image").
+  menu", "Tab menu", "Canvas menu", "<layer> layer menu", the session tool's "<tool> options",
+  "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the selection
+  toolbar's More actions, an element's settings ⋯).
 - Its controls keep their own roles: buttons, toggle buttons (`aria-pressed`), sliders, fields,
   selects. Its accordion headers are disclosure buttons (`aria-expanded`) and collapsed sections are
   inert. Its flyouts are triggered by a button with `aria-haspopup="dialog"` and `aria-expanded`,
   and are themselves named non-modal dialogs.
 - **Keyboard**: Tab and Shift+Tab walk its controls in reading order. Focus moves to its first
-  control when it was opened from the keyboard (Shift+F10, the Menu key, Enter on a trigger); opened
+  control when it was opened from the keyboard (the last interaction was a key press: Enter on a
+  trigger, Shift+F10, the Menu key); opened
   by pointer it stays beside the canvas without taking focus, as it always has, so a right-click
   followed by Delete still deletes. Escape closes the innermost open flyout first, then the menu,
   and focus returns as for a command menu. Focus is not trapped: Tab past the last control leaves
@@ -128,7 +139,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                   | Verbs, one-of-a-set choices, labelled groups, All settings…              | Tab only                                            |
+| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                   | Verbs, All settings… under a separator                                   | Tab only                                            |
 | Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
 | Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |

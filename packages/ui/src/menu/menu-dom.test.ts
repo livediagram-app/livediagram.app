@@ -126,7 +126,10 @@ describe('isTextEditFocused', () => {
 });
 
 describe('openedFromKeyboard', () => {
-  it('is false with nothing focused', () => {
+  it('follows the last interaction: a key press, then a pointer press', () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    expect(openedFromKeyboard()).toBe(true);
+    document.dispatchEvent(new Event('pointerdown'));
     expect(openedFromKeyboard()).toBe(false);
   });
 });

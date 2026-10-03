@@ -11,7 +11,13 @@ import {
   useState,
 } from 'react';
 import { accessibleNameOf } from '../hint/trigger-text';
-import { MENU_LABEL_ATTR, MENU_PARENT_ATTR, MENU_SURFACE_ATTR } from './menu-constants';
+import { lastFocusedElement } from './input-modality';
+import {
+  MENU_FOCUS_RETRY_FRAMES,
+  MENU_LABEL_ATTR,
+  MENU_PARENT_ATTR,
+  MENU_SURFACE_ATTR,
+} from './menu-constants';
 import {
   isTextEditFocused,
   itemLabel,
@@ -77,17 +83,60 @@ export function useSurfaceElement() {
   return { element, elementRef, ref };
 }
 
-/** Where focus goes when a menu closes holding it: where it was at open, else the trigger (M10). */
+/**
+ * Where focus goes when a menu closes holding it: where it was at open, else the trigger (M10).
+ * When both are gone (the control re-renders as the menu closes, as the selection toolbar's More
+ * actions does), the next frame looks the place up again by its id.
+ */
 export function returnFocus(target: HTMLElement | null, trigger: HTMLElement | null): void {
   const to = target?.isConnected ? target : trigger?.isConnected ? trigger : null;
-  to?.focus({ preventScroll: true });
+  if (to) {
+    to.focus({ preventScroll: true });
+    return;
+  }
+  const id = target?.id || trigger?.id;
+  if (!id || typeof requestAnimationFrame === 'undefined') return;
+  requestAnimationFrame(() => {
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    document.getElementById(id)?.focus({ preventScroll: true });
+  });
 }
 
-/** What held focus as the menu opened, if anything did. */
+/**
+ * M10 from inside a commit. Focus moves at once, so a dialog or rename field that a verb opens in
+ * the same commit still takes it after; then, once the commit is done, it moves again if focus
+ * ended up back in the menu or nowhere: React restores focus to the element that held it before a
+ * commit when that element is still mounted (a menu that stays mounted while closed, such as the
+ * product switcher), which would otherwise leave focus inside a hidden menu.
+ */
+export function returnFocusAfterCommit(
+  surface: HTMLElement,
+  target: HTMLElement | null,
+  trigger: HTMLElement | null,
+): void {
+  returnFocus(target, trigger);
+  queueMicrotask(() => {
+    const active = surface.ownerDocument.activeElement;
+    if (active && active !== surface.ownerDocument.body && !surface.contains(active)) return;
+    returnFocus(target, trigger);
+  });
+}
+
+/**
+ * What held focus as the menu opened, if anything did. Focus on the body means the control that
+ * held it may have gone away as the menu opened; the last focused element stands in for it then.
+ */
 export function focusedOutside(surface: HTMLElement): HTMLElement | null {
-  const active = surface.ownerDocument.activeElement;
-  if (!(active instanceof HTMLElement) || active === surface.ownerDocument.body) return null;
-  return surface.contains(active) ? null : active;
+  const doc = surface.ownerDocument;
+  const active = doc.activeElement;
+  if (active instanceof HTMLElement && active !== doc.body) {
+    return surface.contains(active) ? null : active;
+  }
+  // Only a control that is GONE stands in: a live one that lost focus earlier is somewhere else.
+  const held = lastFocusedElement();
+  if (!held || held.isConnected) return null;
+  return surface.contains(held) ? null : held;
 }
 
 export function useMenu({
@@ -131,6 +180,8 @@ export function useMenu({
     if (!element || !open) return;
     returnTarget.current = focusedOutside(element);
     typeahead.current = { query: '', at: 0 };
+    let retry = 0;
+    let closed = false;
     const items = menuItemsOf(element);
     if (items.length === 0) {
       console.warn('[menu] opened with no items', { id });
@@ -141,10 +192,27 @@ export function useMenu({
           item.getAttribute('role') === 'menuitemradio' &&
           item.getAttribute('aria-checked') === 'true',
       );
-      items[initialIndex(checked, latest.current.initialFocus)]?.focus({ preventScroll: true });
+      const first = items[initialIndex(checked, latest.current.initialFocus)];
+      first?.focus({ preventScroll: true });
+      // A menu that becomes visible through a transition (the product switcher fades in from
+      // `visibility: hidden`) cannot take focus until the transition has started; keep trying for a
+      // few frames, stopping the moment focus is anywhere in the menu or anywhere else at all.
+      const from = element.ownerDocument.activeElement;
+      let frames = MENU_FOCUS_RETRY_FRAMES;
+      const settle = () => {
+        const now = element.ownerDocument.activeElement;
+        if (closed || !first?.isConnected || element.contains(now) || now !== from) return;
+        if (frames-- <= 0 || isTextEditFocused()) return;
+        first.focus({ preventScroll: true });
+        retry = requestAnimationFrame(settle);
+      };
+      if (first && !element.contains(from)) retry = requestAnimationFrame(settle);
     }
     return () => {
-      if (ownsFocus(element)) returnFocus(returnTarget.current, latest.current.trigger);
+      closed = true;
+      cancelAnimationFrame(retry);
+      if (ownsFocus(element))
+        returnFocusAfterCommit(element, returnTarget.current, latest.current.trigger);
     };
   }, [element, open, id]);
 

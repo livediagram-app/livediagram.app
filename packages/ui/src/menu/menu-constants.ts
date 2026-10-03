@@ -3,6 +3,12 @@
 /** How long typed letters keep building one typeahead search (D49). */
 export const MENU_TYPEAHEAD_RESET_MS = 500;
 
+/**
+ * Frames a menu keeps trying to take focus on open while it is still becoming visible (a
+ * `visibility` transition, ~150 ms at 60 Hz is nine frames). D60.
+ */
+export const MENU_FOCUS_RETRY_FRAMES = 12;
+
 /** The three ARIA roles a command menu's items may carry. */
 export const MENU_ITEM_SELECTOR =
   '[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"]';

@@ -11,10 +11,9 @@ import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
-  MenuTile,
-  MenuToolButton,
   PortalMenu,
 } from './PortalMenu';
+import { MenuTile, MenuToolButton } from './MenuTiles';
 
 const MENU_W = 224;
 const MENU_H = 300;

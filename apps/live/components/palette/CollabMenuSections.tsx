@@ -35,7 +35,8 @@ import {
   type EstimateScale,
   type ShapeElement,
 } from '@livediagram/document';
-import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
