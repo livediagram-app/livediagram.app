@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
+import { haptic } from '@/lib/haptics';
 import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
@@ -328,6 +329,7 @@ export function usePathEditGesture({
             const g = gestureRef.current;
             if (!g || g.moved) return;
             g.held = true;
+            haptic('press');
             setSelected(new Set([node]));
             setToolbarAt(node);
           }, PATH_LONG_PRESS_MS);

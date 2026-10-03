@@ -9,6 +9,7 @@
 // the page passes those setters in. Verbatim relocation — no
 // behaviour change.
 
+import { haptic } from '@/lib/haptics';
 import {
   arrowReferencesAny,
   createText,
@@ -93,6 +94,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // goes. If the whole selection is locked, the delete is a no-op.
     const targetIds = deletableIds(ids);
     if (targetIds.size === 0) return;
+    haptic('delete');
     commit((els) => {
       return els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the

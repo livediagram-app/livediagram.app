@@ -204,6 +204,12 @@ zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the e
 gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
 zoom instead.
 
+**Haptics.** On a touch screen with a Vibration API (Android; Safari has none, so iOS stays silent)
+the editor gives a short buzz for what a finger cannot see land (`lib/haptics.ts`): **press** (15ms)
+when a long-press opens its menu or holds a path node, **snap** (8ms) once as a move catches an
+alignment guide (not again while it stays on it), **delete** (a double pulse) when a selection is
+deleted. Never with a mouse.
+
 **Safe areas.** The edge chrome clears the device's safe-area insets (`lib/safe-area.ts`): the
 header below the top inset and past the side insets, the tab bar above the home indicator and past
 the side insets, the strip's row and the bottom-right cluster past a landscape notch. Inline
