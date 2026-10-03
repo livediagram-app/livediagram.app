@@ -62,6 +62,7 @@ export function EditorModals() {
             // after that effect ran, so the id is always set here.
             writeUserPreferences(next, selfParticipant?.id ?? null);
           }}
+          ownerId={selfParticipant?.id ?? null}
           onClose={closeSettings}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}

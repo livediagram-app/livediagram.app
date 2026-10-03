@@ -2048,6 +2048,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     confirm,
     ownerId: selfParticipant.id,
     hookDeleteFolder,
+    folders,
     sharedDocuments,
     setSharedDocuments,
     copying,

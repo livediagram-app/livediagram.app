@@ -484,6 +484,7 @@ export class DriveMirrorEngine {
       folders,
       trash,
       items,
+      seen: this.deps.seen.read(this.deps.ownerId),
     });
   }
 

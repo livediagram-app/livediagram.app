@@ -31,6 +31,8 @@ import {
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
+import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 import {
   CLOUD_SYNC_PROVIDERS,
   CLOUD_SYNC_SECTION,
@@ -222,6 +224,14 @@ export type SettingsCloudSyncRowSpec = RowBase & {
   provider: CloudSyncProviderId;
 };
 
+// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
+// documents of that key go, with Change and Clear. Not a preference: it reads and writes
+// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
+export type SettingsPlacementDefaultRowSpec = RowBase & {
+  kind: 'placementDefault';
+  placementKey: PlacementDefaultKey;
+};
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -236,7 +246,8 @@ export type SettingsRowSpec =
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
-  | SettingsCloudSyncRowSpec;
+  | SettingsCloudSyncRowSpec
+  | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -900,6 +911,22 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    id: 'documents',
+    label: 'Documents',
+    // One row per default folder entry, in list order: guests have defaults too.
+    rows: DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
+      kind: 'placementDefault',
+      key: `placementDefault-${entry.key}`,
+      placementKey: entry.key,
+      section: 'Where New Documents Go',
+      label: titleCase(entry.label),
+      keywords:
+        'default folder where new documents go save location place file automatically always save placement',
+      description: `Where new ${entry.noun} go when you create one without choosing a place.`,
+      helpArticle: 'defaultFolders',
+    })),
+  },
+  {
     id: 'account',
     label: 'Account',
     rows: [
@@ -996,6 +1023,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
 ];
+
+// Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
+function titleCase(label: string): string {
+  return label.replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 // A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).

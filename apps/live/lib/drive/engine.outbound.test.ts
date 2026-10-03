@@ -243,6 +243,42 @@ describe('outbound rows', () => {
     expect(w.google.get(folderFile)!.trashed).toBe(true);
   });
 
+  it('Nested folder deleted: its contents move to its parent folder in Drive too', async () => {
+    const w = await mirrored();
+    const p = w.ld.port();
+    await p.createFolder('mid', 'Mid', 'f1');
+    await p.createFolder('leaf', 'Leaf', 'mid');
+    await p.moveDocument('d1', 'mid');
+    await w.engine.syncNow();
+    const midFile = fileOf(w.google, w.ld, 'folder', 'mid')!.id;
+    await p.deleteFolder('mid');
+    await w.engine.syncNow();
+    const parent = fileOf(w.google, w.ld, 'folder', 'f1')!.id;
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!).toMatchObject({
+      parents: [parent],
+      trashed: false,
+    });
+    expect(fileOf(w.google, w.ld, 'folder', 'leaf')!).toMatchObject({
+      parents: [parent],
+      trashed: false,
+    });
+    expect(w.google.get(midFile)!.trashed).toBe(true);
+  });
+
+  it('Folder deleted before its creation is read back: never brought back', async () => {
+    const w = await mirrored();
+    const p = w.ld.port();
+    await p.createFolder('brief', 'Brief', null);
+    await w.engine.syncNow();
+    const file = fileOf(w.google, w.ld, 'folder', 'brief')!.id;
+    // Deleted in livediagram before any pass read the Drive change its own create made.
+    await p.deleteFolder('brief');
+    await w.engine.syncNow();
+    await w.engine.syncNow();
+    expect(w.ld.folders.has('brief')).toBe(false);
+    expect(w.google.get(file)!.trashed).toBe(true);
+  });
+
   it('re-creates a file deleted outside livediagram when it next writes (404)', async () => {
     const w = await mirrored();
     const oldId = w.ld.item('document', 'd1')!.driveFileId;

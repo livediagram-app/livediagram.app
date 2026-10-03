@@ -91,7 +91,8 @@ confirmation; nothing empties more than one group at once.
 
 Restoring returns the document exactly as it was: its tabs, its deck, its share
 links, its stars, its history and its place. It goes back to the folder it was
-in, or to the root of its space when that folder has since been deleted; a team document goes
+in, or to that folder's parent when the folder has since been deleted (the delete moved it up,
+[Folders: Deleting a folder](folders.md#deleting-a-folder)); a team document goes
 back to its team library the same way. The document keeps its id, so every link
 to it works again.
 

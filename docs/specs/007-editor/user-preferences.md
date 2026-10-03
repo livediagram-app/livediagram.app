@@ -524,7 +524,9 @@ and the dialog stays as the one complete, browsable index of them.
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
   suggested prompts, and a **Manage API Tokens** link row that opens the API
-  Tokens category), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
+  Tokens category), **Documents** (a **Where New Documents Go** section: one row per
+  [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; not a
+  preference, it reads and writes `/api/placement-defaults`), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
   deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);

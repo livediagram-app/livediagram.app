@@ -1,0 +1,62 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Default Folders',
+  description:
+    'Send new diagrams, whiteboards, Event Storming boards, retrospectives and Kanban boards to a folder of your choice automatically, from the folder menu, the New Document wizard or Settings.',
+  path: '/help/explorer/folders/default-folders/',
+});
+
+<ArticleLayout
+  title="Default Folders"
+  description="Choose where each kind of new document lands when you create it without picking a place."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+  parentArticle={{ title: 'Folders', slug: 'folders' }}
+  subArticles={getSubArticles('folders').filter((a) => a.slug !== 'default-folders')}
+>
+
+A **default folder** is where your new documents go when you create one without choosing a place. You can keep one for each of these, listed under **New documents that open as**:
+
+- **Diagrams**: documents that open in Diagram mode.
+- **Whiteboards**: documents that open in Draw mode.
+- **Event Storming boards**.
+- **Retrospectives**: documents made from any retrospective template.
+- **Kanban boards**: documents made from the Kanban template.
+
+A document goes to the most specific default that fits it: an Event Storming board's default first, then a retrospective's or a Kanban board's, then the one for the mode it opens in. With none set, it lands in My documents. Your defaults are your own: teammates choose theirs.
+
+## Setting a default from a folder
+
+Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as default for**. Tick the kinds of document that should land there. Each kind points at one folder, so ticking it here moves it from wherever it was; unticking it sends those documents back to My documents.
+
+**My documents** has the same menu: a ticked entry there means those documents land in My documents. Choosing an unticked one clears its default folder.
+
+You can use a team's folders too, as long as you are a member of the team. A team's own top level cannot be a default: create inside the team to put a document there.
+
+## Seeing your defaults
+
+A folder that is one of your defaults shows a small mark after its name, in the sidebar, the Explorer's lists and cards, and the editor's Explorer panel: the icon of each kind it receives (two at most, then **+N**). Hover it to read, for example, "Default folder for new whiteboards".
+
+## When you create a document
+
+On the New Document wizard's **Location** step, the folder for your template is chosen for you and the step says why, for example "Whiteboards go to Workshops by default". **Change default** picks another folder for next time too.
+
+- Starting from inside a folder or a team keeps you there: that folder wins over your default.
+- Choosing **My documents** itself puts the document there on purpose.
+- When you choose a different folder, tick **Always save whiteboards here** (the wording follows your template) to make it the new default.
+
+## In Settings
+
+**Settings > Documents > Where New Documents Go** lists every kind with the folder it goes to, or My documents. **Change** picks a folder; **Clear** sends that kind back to My documents.
+
+If a default folder has been deleted, or belongs to a team you have left, the row says so, for example "Workshops (deleted), using My documents", and new documents go to the next default that fits, or My documents. Deleting a folder that is one of your defaults warns you first.
+
+<Tip>
+  Defaults only decide where a new document starts. Moving a document later, or changing a default,
+  never moves documents you already have.
+</Tip>
+
+</ArticleLayout>

@@ -147,7 +147,9 @@ the rest. Deleting a team re-homes its trashed documents to their owners' person
 
 - **E1** Trash an already-trashed document: 410, `trashed_at` unchanged.
 - **E2** Restore a live or missing id: 404; the offline form throws `not in the local Trash`.
-- **E3** Restore after the folder was deleted: the root (I4). After the team was deleted: the document is
+- **E3** Restore after the folder was deleted: the folder's parent, where the folder delete moved the
+  trashed document ([Folders: Deleting a folder](../folders.md#deleting-a-folder)); the root only when
+  that folder too is gone (I4). After the team was deleted: the document is
   in its owner's personal Trash and restores there.
 - **E4** Snapshot (R2) delete fails during a purge: the purge stands; `[trash] snapshot delete failed` warns.
 - **E5** The room is unreachable when trashing: logged `[room-broadcast] document-trashed did not reach the

@@ -5,12 +5,15 @@ import type { Folder } from '@livediagram/api-schema';
 import { useFolders } from './useFolders';
 
 const apiListFolders = vi.fn<(ownerId: string) => Promise<Folder[]>>();
+const apiDeleteFolder = vi.fn<(ownerId: string, id: string) => Promise<void>>();
 vi.mock('@/lib/api-client', () => ({
   apiListFolders: (ownerId: string) => apiListFolders(ownerId),
+  apiDeleteFolder: (ownerId: string, id: string) => apiDeleteFolder(ownerId, id),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const folder = (id: string) => ({ id, name: id, parentId: null }) as unknown as Folder;
+const folder = (id: string, parentId: string | null = null) =>
+  ({ id, name: id, parentId }) as unknown as Folder;
 
 afterEach(() => vi.clearAllMocks());
 
@@ -49,5 +52,21 @@ describe('useFolders', () => {
     const { result } = renderHook(() => useFolders('u4', { autoLoad: false }));
     expect(result.current.loading).toBe(false);
     expect(apiListFolders).not.toHaveBeenCalled();
+  });
+});
+
+describe('useFolders deleteFolder', () => {
+  it('moves the deleted folder’s subfolders up to its parent, as the api does', async () => {
+    apiListFolders.mockResolvedValue([
+      folder('projects'),
+      folder('workshops', 'projects'),
+      folder('archive', 'workshops'),
+    ]);
+    apiDeleteFolder.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useFolders('u5'));
+    await waitFor(() => expect(result.current.folders).toHaveLength(3));
+    act(() => result.current.deleteFolder('workshops'));
+    expect(result.current.folders).toEqual([folder('projects'), folder('archive', 'projects')]);
+    expect(apiDeleteFolder).toHaveBeenCalledWith('u5', 'workshops');
   });
 });

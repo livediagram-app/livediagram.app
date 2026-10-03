@@ -4,6 +4,9 @@ import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import { apiCreateFolder, apiDeleteFolder, apiUpdateFolder } from '@/lib/api-client';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
+import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
+import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
+import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
 
 // Team-library folder mutations for the Explorer panel's team tree
 // (docs/specs/013-workspace/team-shared-documents.md), lifted out of EditorCanvasHost. Straight api calls plus a
@@ -55,16 +58,17 @@ export function useTeamFolderActions({
           .catch(() => {});
       },
       delete: (id) => {
-        const name = teamFolders.find((f) => f.id === id)?.name;
-        // The same confirm the personal tree's delete uses, with the same
-        // consequences spelled out: a team folder's documents go to the
-        // team's top level and its subfolders are promoted.
-        void confirm({
-          title: name ? `Delete "${name}"?` : 'Delete this folder?',
-          message:
-            "Documents inside the folder move to the team's top level. Subfolders are promoted to the top level. The folder row itself is removed.",
-          confirmLabel: 'Delete folder',
-        }).then((ok) => {
+        const folder = teamFolders.find((f) => f.id === id);
+        // The one folder delete confirmation (docs/specs/013-workspace/folders.md "Deleting a
+        // folder"): its documents and subfolders move up to its parent, the team's root at the top.
+        void confirm(
+          folderDeleteConfirmation({
+            name: folder?.name ?? '',
+            parentName: teamFolders.find((f) => f.id === folder?.parentId)?.name ?? null,
+            scope: 'team',
+            defaultKeys: folderDefaultKeys(id, placementDefaultsSnapshot().defaults),
+          }),
+        ).then((ok) => {
           if (!ok) return;
           void apiDeleteFolder(viewerId, id)
             .then(() => {

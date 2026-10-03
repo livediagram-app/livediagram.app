@@ -138,11 +138,10 @@ Explorer once split the personal root into two synthetic buckets,
 documents wherever they are filed.
 
 - `parent_id IS NULL` means the folder is at the tree root.
-- `ON DELETE SET NULL` on both `parent_id` and `folder_id`: deleting
-  a folder doesn't delete its contents. Direct subfolders become
-  root-level; direct documents fall to the root. Grandchildren keep
-  their existing parents (they were never pointing at the deleted
-  folder).
+- Deleting a folder never deletes its contents: they **move up to the
+  deleted folder's parent** ([Deleting a folder](#deleting-a-folder)).
+  The `ON DELETE SET NULL` on both foreign keys is a backstop only; the
+  delete re-parents explicitly before the row goes.
 - Folder name uniqueness is **not** enforced — sibling folders can
   share names if the user really wants. The breadcrumb path
   disambiguates them in the move picker.
@@ -152,6 +151,32 @@ documents wherever they are filed.
 
 Migration `0007_folders.sql` creates the `folders` table and adds
 the `folder_id` column.
+
+### Deleting a folder
+
+- A deleted folder's **direct documents and direct subfolders move to
+  its parent**: the folder it sat in, or the root of its space (My
+  documents, or the team's root) when it sat at the top. Its subfolders
+  keep their own contents, so a whole branch moves up one level intact.
+- Documents in the [Trash](trash.md) that were in the folder move with
+  the rest, so a later restore lands in the parent.
+- **One transaction.** `DELETE /api/folders/:id` re-parents the
+  subfolders, re-files the documents, drops the folder's
+  [Drive mirror](../022-drive-mirror/drive-mirror.md) row and deletes
+  the folder in one D1 batch: either all of it happens or none of it.
+  The parent is read inside the batch, so a concurrent move of the
+  folder cannot strand its contents under a parent it has left.
+- The same rule holds for personal and team folders.
+- The delete confirmation names where the contents go: "Its documents
+  and subfolders move to <parent>.", <parent> being the parent
+  folder's name, "My documents", or "the team's root". When the folder
+  is one of the reader's [default folders](default-folders.md), it adds
+  the default-folder line ([Deleting a default
+  folder](default-folders.md#deleting-a-default-folder)).
+- A dangling [default folder](default-folders.md#dangling-defaults) is
+  kept; documents created afterwards skip it.
+- The api logs `folders: deleted scope=<personal|team> moved_up=<parent|root>`
+  for every delete.
 
 ## API
 
@@ -283,12 +308,11 @@ link.
   data, not markup: team folders take no drag-and-drop, and Show in
   Explorer opens the team page.
 - **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
-- Folder-row ellipsis menu: Rename, Delete, "Move to folder…".
-- Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands at the root (its `folder_id` was already cleared by the folder delete's `SET NULL`).
+- Folder-row ellipsis menu: Rename, New subfolder, Change Folder, Use as default for (the [default folder](default-folders.md#use-as-default-for) submenu), Delete.
+- Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands in that folder's parent (the folder delete moved it there, [Deleting a folder](#deleting-a-folder)).
   Rename is inline (same pattern as the document-row rename). Delete
-  pops a confirmation dialog ("Delete this folder?" with the
-  cascade rules in the body: documents inside move to My documents,
-  subfolders promote to root, the folder row itself goes) via the
+  pops a confirmation dialog ("Delete <name>?" naming where the
+  contents go, [Deleting a folder](#deleting-a-folder)) via the
   shared `useConfirm` hook. The cascade is genuinely non-destructive
   for the contents, but a folder vanishing without a tap-back is
   startling enough that the confirmation is worth the extra click;
@@ -332,7 +356,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   its root folders beneath it, each team with its
   folders, New team), and More (This browser, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
-  Delete. The Image gallery (under Library) degrades to an empty state
+  Use as default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
   when the api worker reports 503, e.g. a self-host without R2.
 - **Right pane:**
   - Breadcrumb showing the path from "My documents" through every

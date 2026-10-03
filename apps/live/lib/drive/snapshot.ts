@@ -5,6 +5,7 @@
 import type { DriveItem, DriveItemKind } from '@livediagram/api-schema';
 import type { DriveFile } from './drive-client';
 import type { MirrorDocument, MirrorFolder, MirrorTrashed } from './livediagram-port';
+import type { SeenRow } from './tombstones';
 
 export type MirrorSnapshot = {
   host: string;
@@ -15,6 +16,10 @@ export type MirrorSnapshot = {
   // Keyed by itemKey(kind, ldId).
   items: Map<string, DriveItem>;
   itemsByFile: Map<string, DriveItem>;
+  // Folders this browser last saw mirrored that livediagram has since deleted, their rows gone with
+  // them: their Drive folders are about to be binned (a tombstone), so a change Drive still reports
+  // for one (the create it made before the delete) is stale, never a folder to bring back.
+  deletedFolders: Set<string>;
 };
 
 export const itemKey = (kind: DriveItemKind, ldId: string) => `${kind}:${ldId}`;
@@ -26,7 +31,11 @@ export function buildSnapshot(input: {
   folders: MirrorFolder[];
   trash: MirrorTrashed[];
   items: DriveItem[];
+  // The rows the last pass saw (tombstones.ts).
+  seen?: SeenRow[];
 }): MirrorSnapshot {
+  const items = new Set(input.items.map((i) => itemKey(i.kind, i.ldId)));
+  const folders = new Set(input.folders.map((f) => f.id));
   return {
     host: input.host,
     rootFolderId: input.rootFolderId,
@@ -35,6 +44,14 @@ export function buildSnapshot(input: {
     trash: new Map(input.trash.map((t) => [t.id, t])),
     items: new Map(input.items.map((i) => [itemKey(i.kind, i.ldId), i])),
     itemsByFile: new Map(input.items.map((i) => [i.driveFileId, i])),
+    deletedFolders: new Set(
+      (input.seen ?? [])
+        .filter(
+          (r) =>
+            r.kind === 'folder' && !items.has(itemKey('folder', r.ldId)) && !folders.has(r.ldId),
+        )
+        .map((r) => r.ldId),
+    ),
   };
 }
 

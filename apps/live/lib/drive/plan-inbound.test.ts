@@ -243,6 +243,22 @@ describe('planInbound: folders', () => {
       types: ['Restore'],
     });
   });
+
+  it('never re-creates a folder deleted here whose tombstone is still pending', () => {
+    const pending = buildSnapshot({
+      host: HOST,
+      rootFolderId: 'root',
+      documents: [],
+      folders: [],
+      trash: [],
+      items: [],
+      seen: [{ kind: 'folder', ldId: 'f1', driveFileId: 'file-f1' }],
+    });
+    expect(planInbound(change(folderFile({ name: 'Work' })), pending)).toEqual({
+      kind: 'ignore',
+      reason: 'deleted-here',
+    });
+  });
 });
 
 describe('planInbound: unrecorded files', () => {

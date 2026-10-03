@@ -349,6 +349,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
             setPrefs(next);
             writeUserPreferences(next, ownerId);
           }}
+          ownerId={ownerId}
           onClose={() => {
             setSettingsOpen(false);
             setSettingsFocus(null);
