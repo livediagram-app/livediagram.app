@@ -78,7 +78,8 @@ export function ShapesGroup({
               if (slotDrag.consumeClick()) return;
               pickAndClose(() => model.pickShape(key));
             }}
-            onPointerDown={slotDrag.onSlotPointerDown}
+            // Pinning by drag is the dock's: the panel has no pinned side to drop on.
+            onPointerDown={panel ? () => {} : slotDrag.onSlotPointerDown}
             onMenu={openPinMenu}
           />
         ))}
