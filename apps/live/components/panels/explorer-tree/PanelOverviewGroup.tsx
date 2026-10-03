@@ -35,7 +35,7 @@ export function PanelOverviewGroup({
         selected={false}
         onActivate={() => {
           trackSidebar('Home', 'panel');
-          openExplorerPage({ kind: 'timeline' });
+          openExplorerPage({ kind: 'home' });
         }}
         depth={0}
       />

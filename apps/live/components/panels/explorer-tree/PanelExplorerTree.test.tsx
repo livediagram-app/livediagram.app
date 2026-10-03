@@ -139,7 +139,7 @@ describe('PanelExplorerTree', () => {
     render(<Harness />);
     activate('Home');
     activate('Trash');
-    expect(assign.mock.calls).toEqual([['/explorer/timeline'], ['/explorer/trash']]);
+    expect(assign.mock.calls).toEqual([['/explorer/home'], ['/explorer/trash']]);
   });
 
   it('sends Shared with me to its Explorer page when nothing is shared', () => {

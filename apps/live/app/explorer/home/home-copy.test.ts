@@ -134,9 +134,9 @@ describe('locationLabel', () => {
     expect(locationLabel({ ...doc, folderName: 'Architecture' })).toBe(
       'Platform team › Architecture',
     );
-    expect(
-      locationLabel({ ...doc, via: 'own', teamId: null, teamName: null, folderName: 'Specs' }),
-    ).toBe('My documents › Specs');
+    expect(locationLabel({ ...doc, via: 'own', teamName: null, folderName: 'Specs' })).toBe(
+      'My documents › Specs',
+    );
   });
 
   it('names the owner of a shared document', () => {
@@ -151,7 +151,7 @@ describe('timelineEntryLabel', () => {
   it('names the document, what happened and when', () => {
     const at = new Date(2026, 7, 30, 14, 5).getTime();
     expect(
-      timelineEntryLabel({ ...doc, id: 'e', kind: 'created', occurredAt: at }, () => '14:05'),
+      timelineEntryLabel({ name: doc.name, kind: 'created', occurredAt: at }, () => '14:05'),
     ).toBe('Payments architecture, created at 14:05');
   });
 });

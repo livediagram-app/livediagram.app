@@ -38,7 +38,14 @@ const place = {
 };
 
 const server = (documentId: string, frecencyKey: number, over: Partial<HomeJumpBackInItem> = {}) =>
-  ({ ...place, documentId, lastOpenedAt: 1, openDays: 1, frecencyKey, ...over }) as HomeJumpBackInItem;
+  ({
+    ...place,
+    documentId,
+    lastOpenedAt: 1,
+    openDays: 1,
+    frecencyKey,
+    ...over,
+  }) as HomeJumpBackInItem;
 
 const local = (id: string, frecencyKey: number): LocalOpenDocument => ({
   document: {
@@ -69,7 +76,9 @@ const entry = (
 
 describe('homeDocumentHref', () => {
   it('opens own and team documents on their path', () => {
-    expect(homeDocumentHref({ documentId: 'd1', via: 'own', shareCode: null })).toBe('/document/d1');
+    expect(homeDocumentHref({ documentId: 'd1', via: 'own', shareCode: null })).toBe(
+      '/document/d1',
+    );
     expect(homeDocumentHref({ documentId: 'd1', via: 'team', shareCode: null })).toBe(
       '/document/d1',
     );
@@ -173,7 +182,10 @@ describe('timelineRows', () => {
 describe('groupsByDay', () => {
   it('groups in the order sent under each day heading', () => {
     const g = (id: string, day: string) => ({ id, day }) as HomeGroup;
-    const days = groupsByDay([g('x', '2026-08-30'), g('y', '2026-08-30'), g('z', '2026-08-28')], NOW);
+    const days = groupsByDay(
+      [g('x', '2026-08-30'), g('y', '2026-08-30'), g('z', '2026-08-28')],
+      NOW,
+    );
     expect(days.map((d) => [d.label, d.groups.map((x) => x.id)])).toEqual([
       ['Today', ['x', 'y']],
       ['Fri, 28 Aug', ['z']],

@@ -7,6 +7,7 @@ import type { SelectedNode } from './views';
 // highlights whatever selectedFromRoute derives from the address bar.
 
 const STATIC_NODES: SelectedNode[] = [
+  { kind: 'home' },
   { kind: 'timeline' },
   { kind: 'activity' },
   { kind: 'recent' },
@@ -49,20 +50,24 @@ describe('explorer route mapping', () => {
     });
   });
 
-  // The landing section (docs/specs/013-workspace/timeline.md §8.1). Three places decide it — the
-  // live worker's 302, the /explorer client replace, and this default —
-  // and they have to agree, or a mangled link lands somewhere the
-  // address bar doesn't.
-  it('falls back to timeline for /explorer, id-less folder/team URLs, and junk', () => {
-    expect(selectedFromRoute('/explorer', new URLSearchParams())).toEqual({ kind: 'timeline' });
+  it('keeps All activity, the Timeline feed, on its route', () => {
+    expect(explorerPathFor({ kind: 'timeline' })).toBe('/explorer/timeline');
+    expect(explorerPathFor({ kind: 'home' })).toBe('/explorer/home');
+  });
+
+  // The landing section is Home (docs/specs/013-workspace/timeline.md §8.1). Three places decide
+  // it (the live worker's 302, the /explorer client replace, and this default) and they have to
+  // agree, or a mangled link lands somewhere the address bar doesn't.
+  it('falls back to home for /explorer, id-less folder/team URLs, and junk', () => {
+    expect(selectedFromRoute('/explorer', new URLSearchParams())).toEqual({ kind: 'home' });
     expect(selectedFromRoute('/explorer/folder', new URLSearchParams())).toEqual({
-      kind: 'timeline',
+      kind: 'home',
     });
     expect(selectedFromRoute('/explorer/team', new URLSearchParams())).toEqual({
-      kind: 'timeline',
+      kind: 'home',
     });
     expect(selectedFromRoute('/explorer/nope', new URLSearchParams())).toEqual({
-      kind: 'timeline',
+      kind: 'home',
     });
   });
 });

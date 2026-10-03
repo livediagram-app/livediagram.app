@@ -14,6 +14,7 @@ import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 import { useExplorerImport } from './useExplorerImport';
+import { explorerPathFor } from './routes';
 
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
@@ -34,6 +35,8 @@ const BROWSE_KINDS = new Set([
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
+  // The Home article covers Home and All activity (docs/specs/013-workspace/explorer-home.md).
+  home: 'timeline',
   timeline: 'timeline',
   activity: 'activity',
   recent: 'recentDocuments',
@@ -78,6 +81,12 @@ const TeamInvitesPane = dynamic(
 // unaffected by a feature they don't use.
 const TimelinePane = dynamic(
   () => import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
+  { ssr: false },
+);
+// Home is the landing route (docs/specs/013-workspace/explorer-home.md), lazy like every pane so
+// the shared explorer chunk stays the same size for the other sections.
+const HomePane = dynamic(
+  () => import('@/components/panels/home/HomePane').then((m) => m.HomePane),
   { ssr: false },
 );
 const ActivityPane = dynamic(
@@ -134,6 +143,7 @@ export function ExplorerPane() {
     movePersonalFolders,
     moveTeamDests,
     moveDocumentTo,
+    timelineUnread,
   } = useExplorer();
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
@@ -190,12 +200,9 @@ export function ExplorerPane() {
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
   const newDocument =
-    // Timeline gets one too. A feed is a record of what happened rather
-    // than a container you add to, so this started out omitted and left
-    // to the empty state's CTA — but the empty state is exactly what a
-    // returning user never sees, and Timeline is now the Explorer
-    // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new document" a
-    // dead end on the first screen of the app.
+    // Home and All activity get one too. Neither is a container you add to, but Home is the
+    // first screen of the app (docs/specs/013-workspace/explorer-home.md), where starting a
+    // document must never be a dead end; it navigates to /new and files nothing here.
     //
     // Activity does NOT: a new document puts nothing on an inbox of
     // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
@@ -241,7 +248,7 @@ export function ExplorerPane() {
               {selected.kind === 'timeline' ? (
                 <TimelineControls controls={timeline.controls} />
               ) : null}
-              {newDocument ? imports.toolbar : null}
+              {newDocument && selected.kind !== 'home' ? imports.toolbar : null}
             </>
           ) : undefined
         }
@@ -249,6 +256,7 @@ export function ExplorerPane() {
         onSetViewMode={isBrowse ? setViewMode : undefined}
         onCreateDocument={newDocument}
         onCreateFolder={
+          selected.kind === 'home' ||
           selected.kind === 'timeline' ||
           selected.kind === 'activity' ||
           selected.kind === 'shared' ||
@@ -275,7 +283,17 @@ export function ExplorerPane() {
           tracks the DOCUMENT lists, which this section doesn't read, and
           waiting on them would show document skeletons on the landing
           page before the feed's own skeleton. */}
-      {selected.kind === 'timeline' ? (
+      {selected.kind === 'home' ? (
+        // Ahead of the `loading` gate, like the Timeline: Home reads its own data.
+        ownerId ? (
+          <HomePane
+            ownerId={ownerId}
+            onSeen={timelineUnread.clear}
+            allActivityHref={explorerPathFor({ kind: 'timeline' })}
+            onSeeAll={() => go({ kind: 'timeline' })}
+          />
+        ) : null
+      ) : selected.kind === 'timeline' ? (
         ownerId ? (
           <TimelinePane
             feed={timeline}
@@ -307,7 +325,7 @@ export function ExplorerPane() {
             clerkUserId={clerkUserId ?? null}
             clerkDisplayName={clerkDisplayName}
             onTeamsChanged={() => void refreshTeams()}
-            onLeftTeam={() => go({ kind: 'timeline' })}
+            onLeftTeam={() => go({ kind: 'home' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
             // The shared-documents move picker offers every space (docs/specs/013-workspace/team-shared-documents.md):
             // the personal tree + each team, with `moveDocumentTo` routing a

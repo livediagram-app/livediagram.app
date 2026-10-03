@@ -117,6 +117,7 @@ export function useExplorerPane({
       return { showUnsortedRow: false, folders: [], documents: sorted.slice(0, RECENT_LIMIT) };
     }
     if (
+      selected.kind === 'home' ||
       selected.kind === 'timeline' ||
       selected.kind === 'activity' ||
       selected.kind === 'shared' ||
@@ -217,6 +218,9 @@ export function useExplorerPane({
       selected.kind === 'dynamic'
     )
       return [all, { name: VIEW_TITLES[selected.kind] }];
+    // All activity is reached from Home, and leads back to it.
+    if (selected.kind === 'timeline')
+      return [{ name: VIEW_TITLES.home, onClick: () => go({ kind: 'home' }) }, { name: paneTitle }];
     if (selected.kind !== 'folder') return [{ name: paneTitle }];
     const chain = breadcrumb(selected.id);
     return [

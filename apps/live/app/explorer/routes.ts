@@ -2,7 +2,8 @@
 // its own route under /explorer so sections are linkable, the browser
 // back button works, and new sections keep landing as new pages:
 //
-//   timeline → /explorer/timeline        recent  → /explorer/recent
+//   home     → /explorer/home            recent  → /explorer/recent
+//   timeline → /explorer/timeline (All activity)
 //   unsorted → /explorer/unsorted        shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
@@ -23,6 +24,8 @@ import type { SelectedNode } from './views';
 
 export function explorerPathFor(node: SelectedNode): string {
   switch (node.kind) {
+    case 'home':
+      return '/explorer/home';
     case 'timeline':
       return '/explorer/timeline';
     case 'activity':
@@ -63,21 +66,21 @@ export function explorerPathFor(node: SelectedNode): string {
 // Inverse: which section a URL shows. `pathname` arrives without the
 // /live basePath (usePathname strips it); trailing slashes from the
 // static export are tolerated. Unknown paths and id-less folder/team
-// URLs fall back to `timeline` — the section /explorer itself redirects
-// to (docs/specs/013-workspace/timeline.md §8.1) — so a mangled link degrades to the default view,
+// URLs fall back to `home`, the section /explorer itself redirects to
+// (docs/specs/013-workspace/timeline.md §8.1), so a mangled link degrades to the default view,
 // never a crash.
 export function selectedFromRoute(pathname: string, search: URLSearchParams): SelectedNode {
   const path = pathname.replace(/\/+$/, '');
   switch (path) {
+    case '/explorer/home':
+      return { kind: 'home' };
     case '/explorer/timeline':
       return { kind: 'timeline' };
     case '/explorer/activity':
       return { kind: 'activity' };
-    // Explicit, not left to the default. Recent used to BE the default,
-    // so it round-tripped for free; now that the default is the
-    // Timeline (docs/specs/013-workspace/timeline.md §8.1), /explorer/recent without its own case
-    // would resolve to the Timeline and the sidebar would highlight
-    // the wrong row.
+    // Explicit, not left to the default: without its own case /explorer/recent would resolve
+    // to Home (docs/specs/013-workspace/timeline.md §8.1) and the sidebar would highlight the
+    // wrong row.
     case '/explorer/recent':
       return { kind: 'recent' };
     case '/explorer/all':
@@ -106,13 +109,13 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'invites' };
     case '/explorer/folder': {
       const id = search.get('id');
-      return id ? { kind: 'folder', id } : { kind: 'timeline' };
+      return id ? { kind: 'folder', id } : { kind: 'home' };
     }
     case '/explorer/team': {
       const id = search.get('id');
-      return id ? { kind: 'team', id } : { kind: 'timeline' };
+      return id ? { kind: 'team', id } : { kind: 'home' };
     }
     default:
-      return { kind: 'timeline' };
+      return { kind: 'home' };
   }
 }

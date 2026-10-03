@@ -9,7 +9,7 @@ import type { SelectedNode } from './views';
 type NamedKind = Exclude<SelectedNode['kind'], 'folder' | 'team'>;
 
 export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
-  timeline: SIDEBAR_LABELS.home,
+  home: SIDEBAR_LABELS.home,
   activity: SIDEBAR_LABELS.activity,
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myDocuments,
@@ -24,6 +24,8 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   recent: 'Recent',
   favourites: 'Favourites',
   dynamic: SYNTHETIC_FOLDERS.dynamic.label,
+  // The Timeline feed has no row; its page is named by the link that leads there from Home.
+  timeline: 'All activity',
 };
 
 // The document title a static Explorer page exports.
