@@ -30,6 +30,9 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
+  // The formats offered, in catalogue order; absent offers every one. Infographic mode offers JSON
+  // only (docs/specs/007-editor/infographic-pages.md "Import").
+  formats?: readonly Format[];
   onClose: () => void;
 };
 
@@ -108,7 +111,9 @@ export function ImportTabDialog({
   onImportFile,
   onImportText,
   onClose,
+  formats,
 }: ImportTabDialogProps) {
+  const offered = formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS;
   const [active, setActive] = useState<Format | null>(null);
   // Set once an import that met images, or brought a board across with changes, has landed: the
   // dialog then shows how it came across instead of closing.
@@ -145,6 +150,7 @@ export function ImportTabDialog({
           <ImportChooser
             tabName={tabName}
             activeFormat={activeFormat ?? null}
+            formats={offered}
             onPick={setActive}
             onImportFile={onImportFile}
             onImportText={onImportText}
@@ -160,6 +166,7 @@ export function ImportTabDialog({
 function ImportChooser({
   tabName,
   activeFormat,
+  formats,
   onPick,
   onImportFile,
   onImportText,
@@ -167,6 +174,7 @@ function ImportChooser({
 }: {
   tabName: string;
   activeFormat: (typeof FORMATS)[number] | null;
+  formats: typeof FORMATS;
   onPick: (format: Format | null) => void;
   onImportFile: ImportTabDialogProps['onImportFile'];
   onImportText: ImportTabDialogProps['onImportText'];
@@ -209,7 +217,7 @@ function ImportChooser({
         />
       ) : (
         <div className="grid grid-cols-3 gap-3">
-          {FORMATS.map((f) => (
+          {formats.map((f) => (
             <FormatCard
               key={f.key}
               title={f.title}

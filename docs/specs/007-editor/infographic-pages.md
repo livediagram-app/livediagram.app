@@ -230,26 +230,42 @@ From the page panel's footer:
 
 ## Export
 
-In Infographic mode the Export dialog exports **pages**, not the tab's content bounds:
+In Infographic mode the Export dialog exports **pages**, not the tab's content bounds.
 
-- **PDF**: every page, in order, one PDF page each, each at its own size and orientation.
-- **PNG** and **SVG**: one page, chosen in the dialog (**Page 1**, **Page 2**, ... or its name);
-  the first by default.
+- **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab itself, a backup that imports
+  back). The diagram-tool formats (Mermaid, Markdown, Excalidraw) are not offered: a page is not
+  a diagram.
+- **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
+  page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
+  the first.
+  - **PDF, all pages**: one PDF, every page in order, one PDF page each.
+  - **PDF, one page**: a one-page PDF of the chosen page.
+  - **PNG / SVG, one page**: that page's image.
+  - **PNG / SVG, all pages**: a **.zip** holding one image per page, in order, each named
+    `NN <page label>.png` (two-digit place, then the label).
+- The download is named `<document> - <tab>` (`.pdf`, `.zip`), or with ` - <page label>` for one
+  page.
+- The preview shows the chosen page, or with All pages a page picked to preview.
 - Each page exports **exactly its sheet**: its size, its background and pattern, and the elements on
   it clipped to its edges, as the canvas shows them. The surround is not exported. The plain paper
   exports white; elements are inked for the page's own surface. An element (an arrow by its
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
-- The dialog shows a **Page** row: a picker for PNG / SVG, "All n pages, one PDF page each" (and a
-  preview picker) for PDF. The Isometric and Background pattern options are not offered: a page is
-  its own background and is never tilted.
+- The Isometric and Background pattern options are not offered: a page is its own background and
+  is never tilted.
 - Outside Infographic mode, export is unchanged.
+
+## Import
+
+In Infographic mode the Import dialog offers **JSON** only (a livediagram tab, which may carry
+pages). Mermaid, Markdown, Excalidraw and draw.io are diagram formats and are not offered.
 
 ## Telemetry
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
-`PagesLaidOut`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`;
+`PagesLaidOut`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF` (one page) and
+`InfographicPNGPages / InfographicSVGPages / InfographicPDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
 
 ## Into pages
