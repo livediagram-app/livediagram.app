@@ -22,7 +22,7 @@ import { track } from '@/lib/telemetry';
 //
 // Everything degrades rather than throws. A folder or team fetch that fails
 // leaves an empty list, because being unable to offer a team is not a reason to
-// block someone making a document — they land in Unsorted and can move it later.
+// block someone making a document — they land at the root of My documents and can move it later.
 export function usePlacementOptions({
   selfId,
   clerkUserId,

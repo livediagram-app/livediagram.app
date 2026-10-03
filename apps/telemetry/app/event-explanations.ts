@@ -404,8 +404,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Folder|Created|Tab':
     'A new tab folder was created inside a document, by typing a name the document had not used before.',
   'Folder|Created|Team': 'A new folder was created in the document explorer.',
-  'Folder|Deleted|': 'A folder was deleted (contained documents move to Unsorted).',
-  'Folder|Deleted|Team': 'A folder was deleted (contained documents move to Unsorted).',
+  'Folder|Deleted|': 'A folder was deleted (contained documents move to the top level).',
+  'Folder|Deleted|Team': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
   'Folder|Moved|Team': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed|': 'A folder was renamed.',
@@ -579,6 +579,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Selected|Others':
     "Someone switched the Timeline's filter to show only other people's activity, hiding their own.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
+  'Explorer|Selected|Text':
+    'Someone typed words into the Explorer search to narrow a list of documents.',
+  'Explorer|Selected|OpensIn':
+    'Someone filtered an Explorer list by the editor mode documents open in (Diagram or Draw).',
+  'Explorer|Selected|Kind':
+    'Someone filtered an Explorer list by tab kind (Event Storming boards).',
+  'Explorer|Selected|Template':
+    'Someone filtered an Explorer list by the template family documents were made from (Retrospective, Kanban).',
+  'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the documents an AI made.',
+  'Explorer|Selected|Edited':
+    'Someone filtered an Explorer list by when documents were last edited.',
+  'Explorer|Selected|People':
+    'Someone filtered an Explorer list by who owns the documents (Me or Others).',
+  'Explorer|Selected|Space':
+    'Someone filtered an aggregate Explorer list by where documents live (My documents, Shared with me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -1001,7 +1016,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Facilitator|Ended': 'The facilitator role in a live session ended.',
   'Facilitator|Started': 'Someone became the facilitator of a live session.',
   'Folder|Created': 'A new folder was created in the document explorer.',
-  'Folder|Deleted': 'A folder was deleted (contained documents move to Unsorted).',
+  'Folder|Deleted': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed': 'A folder was renamed.',
   'Help|Helpful':
@@ -1100,6 +1115,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Drive|Opened':
     'Someone opened a livediagram file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
+  'Explorer|Selected':
+    'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',

@@ -146,9 +146,13 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
             ),
           );
         } else if (folderId !== existing.folderId) {
+          // A space's root is no bucket of its own: a move to it names the space
+          // (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets).
           const folderName = folderId
             ? ((await getFolder(env, folderId))?.name ?? 'a folder')
-            : 'Unsorted';
+            : moved.teamId
+              ? ((await getTeam(env, moved.teamId))?.name ?? 'the team')
+              : 'My documents';
           ctx.waitUntil?.(recordDocumentMoved(env, moved, folderName, owner));
         }
       }

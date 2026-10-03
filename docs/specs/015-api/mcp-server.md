@@ -225,10 +225,10 @@ canvas overrides; the model then personalises labels via `update_document`'s
    Explorer's **Made by AI** filter (`made-by:ai`,
    [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's
    own work and AI-made documents can be told apart wherever either is filed.
-   Unfiled, it shows in the Explorer's Generated view until the filter chips
-   ship, then in Unsorted like any other document. (Earlier this
-   find-or-created a real "Generated" folder; provenance becomes a filter,
-   not a place, with the chips.)
+   Unfiled, it sits at the root of My documents like any other document,
+   with its **Made by AI** badge. (Earlier this find-or-created a real
+   "Generated" folder, then the Explorer showed a Generated view;
+   provenance is a filter, not a place.)
    The create also sends the creation `intent` of the first tab it built and the
    template it used (`{ mode: "diagram" }` unless the input makes a whiteboard, an
    event-storming board, or a document from a template family such as a retrospective), so with no folder named the server files it in the
@@ -236,9 +236,8 @@ canvas overrides; the model then personalises labels via `update_document`'s
    when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
    and accepts `source`).
-5. **Returns** the new `id`, tab count + ids, the folder ("Generated", or the name of
-   the default folder it was filed in; "Unsorted" in place of "Generated" once the
-   filter chips ship), the deep-link `url`,
+5. **Returns** the new `id`, tab count + ids, the folder ("My documents" for the root,
+   or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
 ### 4.3a `add_tab`
@@ -508,7 +507,7 @@ and every team Trash they have joined.
   `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
   the team's name, the two times ISO 8601.
 - **`restore_document`** — `{ documentId }`. Restores it to its folder, or
-  Unsorted when that folder is gone, and returns `{ restored, id, name, url }`.
+  the root of its space when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
@@ -830,7 +829,7 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_document files new documents in the user's Unsorted);
+  move folders (create_document files new documents at the root of the user's My documents, or their default folder);
   more `/api` surface can be wrapped later if demand appears. (Share-link
   creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
   folders/teams themselves stays out.)

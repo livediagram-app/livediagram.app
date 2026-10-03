@@ -24,11 +24,11 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 
 // Full document payload returned by `GET /api/documents/:id`. After
 // per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
-// How a document came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
+// How a document came to exist (docs/specs/013-workspace/folders.md, docs/specs/015-api/mcp-server.md).
 // null = authored by a person in the editor; 'mcp' = created by an
 // external AI tool via the MCP server; 'ai' = created by the in-editor
-// AI assistant (reserved — no producer today). Drives the synthetic
-// "Generated" Explorer folder (source != null).
+// AI assistant (reserved — no producer today). The Explorer's Made by AI
+// filter and badge read it (source != null).
 export type DocumentSource = 'ai' | 'mcp';
 
 // (metadata only) — element content is fetched separately via
@@ -44,13 +44,13 @@ export type LiveDoc = {
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
-  // Folder placement. null means the document is in the conceptual
-  // Unsorted bucket. See docs/specs/013-workspace/folders.md.
+  // Folder placement. null means the document sits at the root of its
+  // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
   // Team library placement (docs/specs/013-workspace/team-shared-documents.md). null = the owner's personal
   // tree; non-null = this team's shared library (where folderId then
   // refers to one of THAT team's folders, or null for the team's
-  // Unsorted). Joined members of the team get edit access.
+  // root). Joined members of the team get edit access.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DocumentSource). Set on create, never rewritten by meta updates.

@@ -57,13 +57,13 @@ describe('SidebarRow', () => {
   });
 
   it('renders its children in a group only while expanded', () => {
-    const child = <li role="treeitem" aria-selected={false} aria-label="Unsorted" />;
+    const child = <li role="treeitem" aria-selected={false} aria-label="Archive" />;
     row({ expandable: true, expanded: false, onToggleExpand: () => {}, children: child });
     expect(screen.queryByRole('group')).toBeNull();
     cleanup();
     row({ expandable: true, expanded: true, onToggleExpand: () => {}, children: child });
     expect(screen.getByRole('group').textContent).toBe('');
-    expect(screen.getByRole('treeitem', { name: 'Unsorted' })).toBeTruthy();
+    expect(screen.getByRole('treeitem', { name: 'Archive' })).toBeTruthy();
   });
 
   it('toggles from the chevron without activating', () => {

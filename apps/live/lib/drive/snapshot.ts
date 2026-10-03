@@ -60,14 +60,14 @@ export function dropSnapshotItem(
   snapshot.items.delete(key);
 }
 
-// The Drive folder a livediagram folder id maps to: the root for Unsorted,
+// The Drive folder a livediagram folder id maps to: the Drive root for the root of My documents,
 // the folder's file once mirrored, null while it is not mirrored yet.
 export function folderFileId(snapshot: MirrorSnapshot, folderId: string | null): string | null {
   if (folderId === null) return snapshot.rootFolderId;
   return snapshot.items.get(itemKey('folder', folderId))?.driveFileId ?? null;
 }
 
-// Where a document's file belongs. A document sitting in Unsorted because it was
+// Where a document's file belongs. A document sitting at the root because it was
 // moved in Drive into a folder livediagram cannot see stays where the user put
 // it, so the notice's folder is its expected parent until it moves again.
 export function expectedDocumentParent(
@@ -93,7 +93,7 @@ export function expectedFolderParent(
 }
 
 // The livediagram folder a Drive parent id stands for: `null` for the root
-// (Unsorted / top level), the folder id for a mirrored folder, `undefined`
+// (the root / top level), the folder id for a mirrored folder, `undefined`
 // for a folder livediagram cannot see (or no parent at all).
 export function ldFolderForParent(
   snapshot: MirrorSnapshot,

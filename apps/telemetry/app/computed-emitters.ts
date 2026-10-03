@@ -74,6 +74,14 @@ const SIDEBAR_ROWS = ['Sidebar', 'ExplorerPanel'].flatMap((prefix) =>
   SIDEBAR_ROW_KINDS.map((row) => `${prefix}.${row}`),
 );
 
+// The Explorer filters' facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the
+// values of LENS_TELEMETRY_TYPES, whose keys are lower case.
+const LENS_FACETS = tokensAfter(
+  read('../packages/explorer-lens/src/dimensions.ts'),
+  'export const LENS_TELEMETRY_TYPES',
+  '}',
+).filter((token) => /^[A-Z]/.test(token));
+
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
 const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
 
@@ -210,6 +218,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  'apps/live/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
   // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // the inbound change types and the Open with outcomes, read from their unions.
   'apps/live/lib/drive/browser-engine.ts Drive·Applied': { values: DRIVE_INBOUND_TYPES },

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { deflateRawSync } from 'node:zlib';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ImportDrawioDocuments } from '@/hooks/persistence/useDrawioFileImport';
 import { DrawioImportPanel, filesOfPick } from './DrawioImportPanel';
@@ -23,6 +23,12 @@ const diagram = (name: string) =>
   );
 
 describe('DrawioImportPanel', () => {
+  // The panel loads the draw.io reader lazily (useDrawioFileImport). Loading it here first keeps the
+  // module's first transform, slow on a busy machine, out of the reading step's waits.
+  beforeAll(async () => {
+    await import('@/lib/drawio/files');
+  });
+
   it('lists the picked files in a labelled group and imports the ticked ones', async () => {
     const importDocuments = vi.fn<ImportDrawioDocuments>(async (files) => ({
       status: 'done',

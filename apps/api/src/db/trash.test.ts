@@ -209,7 +209,7 @@ describe('restoreDocument', () => {
     expect((await getDocument(env, 'A'))?.folderId).toBe('F');
   });
 
-  it('lands in Unsorted when its folder was deleted meanwhile', async () => {
+  it('lands at the root when its folder was deleted meanwhile', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'F');
     liveDoc(sql, 'A', { folder: 'F' });
@@ -221,7 +221,7 @@ describe('restoreDocument', () => {
     expect((await getDocument(env, 'A'))?.folderId).toBeNull();
   });
 
-  it('lands in Unsorted when its folder is no longer in its scope', async () => {
+  it('lands at the root when its folder is no longer in its scope', async () => {
     // Belt and braces: a folder_id that names a folder of another owner or
     // another team must not come back as the document's place.
     const { env, sql } = sqliteD1();

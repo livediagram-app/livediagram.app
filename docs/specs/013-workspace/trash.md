@@ -91,7 +91,7 @@ confirmation; nothing empties more than one group at once.
 
 Restoring returns the document exactly as it was: its tabs, its deck, its share
 links, its stars, its history and its place. It goes back to the folder it was
-in, or to Unsorted when that folder has since been deleted; a team document goes
+in, or to the root of its space when that folder has since been deleted; a team document goes
 back to its team library the same way. The document keeps its id, so every link
 to it works again.
 
@@ -104,7 +104,7 @@ lands in the owner's personal Trash.
 
 A trashed document is gone from everywhere a live one shows up:
 
-- every document list: the Explorer (all sections, Recent, Unsorted, folders),
+- every document list: the Explorer (all sections, Recent, Search results, folders),
   the team library, **Shared with you**, **Favourites**, search, the
   **Timeline**, and the **Activity** page;
 - the tab picker that links a tab into another document.

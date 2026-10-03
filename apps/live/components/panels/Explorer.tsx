@@ -78,8 +78,8 @@ function ExplorerImpl({
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
   const isMobile = useIsMobileViewport();
-  // Expansion state for each folder node + Unsorted (keyed by
-  // folder id, or the literal 'unsorted' for the synthetic bucket).
+  // Expansion state for each row of the tree (keyed by folder or team id, or
+  // a prefixed key such as `space:my-documents` for the fixed rows).
   // Team rows + team folders share this map too (ids are globally
   // unique). Defaults to all collapsed so the panel stays compact.
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});

@@ -70,7 +70,7 @@ export type HomeDocument = {
   /** Null for `shared`: the owner's filing is theirs. */
   teamId: string | null;
   teamName: string | null;
-  /** Null for `shared`, and for a document in its space's Unsorted. */
+  /** Null for `shared`, and for a document at its space's root. */
   folderId: string | null;
   folderName: string | null;
   ownerName: string | null;

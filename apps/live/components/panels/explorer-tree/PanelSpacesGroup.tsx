@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import type { DocumentListItem } from '@/lib/api-client';
 import { MyDocumentsIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
-import { SYNTHETIC_FOLDERS } from '@/app/explorer/synthetic-folders';
 import {
   MY_DOCUMENTS_EXPAND_KEY,
   SIDEBAR_LABELS,
@@ -15,14 +14,14 @@ import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import { SidebarGroup } from '@/app/explorer/sidebar/SidebarGroup';
 import { SidebarRow } from '@/app/explorer/sidebar/SidebarRow';
 import { useDocumentDropTarget } from '../useDocumentDropTarget';
-import { openExplorerPage, splitRootDocuments } from './panel-tree-model';
+import { openExplorerPage } from './panel-tree-model';
 import { PanelDocumentItem } from './PanelDocumentItem';
 import { PanelFolderItem, type PanelFolder, type PanelFolderIndex } from './PanelFolderItem';
 import { usePanelTree } from './PanelTreeContext';
 
 // The panel's Spaces (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel):
-// My documents (Unsorted, Generated, then its folders) and each team, opening in place to their
-// folders and documents. No Invites, New team or sign-in nudge: those are the Explorer's.
+// My documents and each team, opening in place to their root folders, then their root documents.
+// My documents takes a dragged document, filing it at the root. No Invites, New team or sign-in nudge: those are the Explorer's.
 export function PanelSpacesGroup({
   rows,
   divider,
@@ -42,8 +41,11 @@ export function PanelSpacesGroup({
   documentsByTeam: Map<string, DocumentListItem[]>;
 }) {
   const tree = usePanelTree();
-  const { unsorted, generated } = splitRootDocuments(ownIndex.documentsByFolder.get(null) ?? []);
+  const rootFolders = ownIndex.foldersByParent.get(null) ?? [];
+  const rootDocuments = ownIndex.documentsByFolder.get(null) ?? [];
   const draggable = !!tree.onMoveDocumentToFolder;
+  const drop = useDocumentDropTarget(null, tree.onMoveDocumentToFolder);
+  const expandable = rootFolders.length + rootDocuments.length > 0;
   return (
     <SidebarGroup id="spaces" divider={divider} first={first}>
       <SidebarRow
@@ -53,17 +55,26 @@ export function PanelSpacesGroup({
         selected={false}
         onActivate={() => {
           trackSidebar('MyDocuments', 'panel');
-          tree.onToggle(MY_DOCUMENTS_EXPAND_KEY);
+          // Nothing in it yet: its Explorer page, as an empty team does.
+          if (expandable) tree.onToggle(MY_DOCUMENTS_EXPAND_KEY);
+          else openExplorerPage({ kind: 'all' });
         }}
         depth={0}
-        expandable
+        expandable={expandable}
         expanded={tree.expanded[MY_DOCUMENTS_EXPAND_KEY] ?? false}
         onToggleExpand={() => tree.onToggle(MY_DOCUMENTS_EXPAND_KEY)}
+        rowProps={
+          tree.onMoveDocumentToFolder
+            ? { onDragOver: drop.onDragOver, onDragLeave: drop.onDragLeave, onDrop: drop.onDrop }
+            : undefined
+        }
+        highlighted={drop.isDragOver}
       >
-        <BucketItem kind="unsorted" documents={unsorted} dropTarget draggable={draggable} />
-        <BucketItem kind="generated" documents={generated} draggable={draggable} />
-        {(ownIndex.foldersByParent.get(null) ?? []).map((f) => (
+        {rootFolders.map((f) => (
           <PanelFolderItem key={f.id} folder={f} depth={1} index={ownIndex} />
+        ))}
+        {rootDocuments.map((d) => (
+          <PanelDocumentItem key={d.id} document={d} depth={1} draggable={draggable} />
         ))}
       </SidebarRow>
       {rows.includes('teams')
@@ -77,52 +88,6 @@ export function PanelSpacesGroup({
           ))
         : null}
     </SidebarGroup>
-  );
-}
-
-// Unsorted or Generated under My documents: opens in place to its documents. Unsorted takes a
-// dragged document (filed back to no folder).
-function BucketItem({
-  kind,
-  documents,
-  dropTarget = false,
-  draggable,
-}: {
-  kind: 'unsorted' | 'generated';
-  documents: DocumentListItem[];
-  dropTarget?: boolean;
-  draggable: boolean;
-}) {
-  const tree = usePanelTree();
-  const { Icon, label } = SYNTHETIC_FOLDERS[kind];
-  const drop = useDocumentDropTarget(null, dropTarget ? tree.onMoveDocumentToFolder : undefined);
-  const key = `space:${kind}`;
-  return (
-    <SidebarRow
-      icon={<Icon />}
-      label={label}
-      textLabel={label}
-      selected={false}
-      onActivate={() => {
-        trackSidebar(kind === 'unsorted' ? 'Unsorted' : 'Generated', 'panel');
-        if (documents.length > 0) tree.onToggle(key);
-      }}
-      depth={1}
-      badge={documents.length || undefined}
-      expandable={documents.length > 0}
-      expanded={tree.expanded[key] ?? false}
-      onToggleExpand={() => tree.onToggle(key)}
-      rowProps={
-        dropTarget && tree.onMoveDocumentToFolder
-          ? { onDragOver: drop.onDragOver, onDragLeave: drop.onDragLeave, onDrop: drop.onDrop }
-          : undefined
-      }
-      highlighted={drop.isDragOver}
-    >
-      {documents.map((d) => (
-        <PanelDocumentItem key={d.id} document={d} depth={2} draggable={draggable} />
-      ))}
-    </SidebarRow>
   );
 }
 

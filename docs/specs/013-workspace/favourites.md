@@ -104,7 +104,7 @@ folder you can move things into).
 
 - **The empty state has no CTA.** Creating a document doesn't land it here,
   starring an existing one does, so the generic "New document" button would be
-  a dead end — same reason Shared and Unsorted carry none.
+  a dead end, the same reason Shared with me carries none.
 - **Shared-with-you documents can't be starred.** They're not in your library —
   they live in the sharer's — and the existing **Dismiss** already covers
   "stop showing me this".

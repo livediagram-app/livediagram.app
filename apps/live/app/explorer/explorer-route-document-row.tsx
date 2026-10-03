@@ -19,11 +19,12 @@ import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { isLocalOnly } from '@/lib/document-space';
 
 // One document row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
-// by FolderRow + the unsorted list there. The badge + actions menu come
+// beside the FolderRows there. The badge + actions menu come
 // from document-row-shared so the card view (CardView) can't drift. The
 // team library (TeamSharedDocuments) renders this same row.
 export function DocumentRow(props: DocumentEntryProps) {
@@ -87,6 +88,7 @@ export function DocumentRow(props: DocumentEntryProps) {
         {titleNode}
         {/* Beside the name at every width: the visibility column hides on a phone. */}
         {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
+        {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">
             <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} />

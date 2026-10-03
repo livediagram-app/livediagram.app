@@ -13,7 +13,7 @@ import { expect, test } from './fixtures';
 // while the Explorer first loads, the stack serves its build assets `no-store`
 // (POST /__e2e/assets-out-of-cache, until the deploy): the browser keeps the page, not its chunks.
 
-// A document of this guest's, listed in the Explorer's Unsorted section.
+// A document of this guest's, listed at the root of the Explorer's My documents.
 async function seedDocument(page: Page, name: string): Promise<string> {
   // The guest's signed id is minted asynchronously; seed under the final one.
   await expect
@@ -65,7 +65,7 @@ test('back after a deploy brings the Explorer back, never a white screen', async
   await page.emulateMedia({ colorScheme: 'dark' });
 
   expect((await page.request.post('/__e2e/assets-out-of-cache')).ok()).toBe(true);
-  await page.goto('/explorer/unsorted');
+  await page.goto('/explorer/all');
   // The Explorer drawn: its sidebar's Home row.
   const home = page
     .getByRole('navigation', { name: 'Explorer' })
@@ -92,7 +92,7 @@ test('back after a deploy brings the Explorer back, never a white screen', async
   expect((await page.request.post('/__e2e/deploy')).ok()).toBe(true);
 
   await page.goBack();
-  await expect(page).toHaveURL(/\/explorer\/unsorted$/);
+  await expect(page).toHaveURL(/\/explorer\/all$/);
   await expect(home).toBeVisible({ timeout: 20_000 });
   // Its styles applied, as before the deploy: not an unstyled white page.
   await expect

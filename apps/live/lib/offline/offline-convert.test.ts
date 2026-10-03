@@ -122,7 +122,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
   });
 
   it.each(['folder_not_found', 'folder_scope_mismatch'])(
-    'files the document in Unsorted, saying so, when the server refuses its folder: %s',
+    'files the document at the root, saying so, when the server refuses its folder: %s',
     async (code) => {
       // docs/specs/006-document/offline-mode.md: the server refuses by name; the sync decides.
       vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
@@ -140,7 +140,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       expect(creates).toHaveLength(2);
       expect(creates[1]![1]).toMatchObject({ folderId: null });
       expect(warn).toHaveBeenCalledWith(
-        `[offline-sync] placement refused reason=${code}, filed in Unsorted`,
+        `[offline-sync] placement refused reason=${code}, filed at root`,
       );
       expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
       warn.mockRestore();

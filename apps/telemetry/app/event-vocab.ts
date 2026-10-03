@@ -59,6 +59,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Editor:
     'Editor modes: a person switching a tab between Diagram mode (shapes, arrows and the palette) and Draw mode (freehand pens). Only the mode, never the tab or what is on it.',
   Draw: 'Draw mode, drawn in with a dock of pens: a Whiteboard tab created (from the New Document wizard, as a new tab or by an import), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
+  Explorer:
+    "The Explorer's filters: which kind of filter a person reached for (words, Opens in, Kind, Template, Made by AI, Edited, People, Space), from a chip, a suggestion or a typed token. Never what they typed or picked.",
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
@@ -113,6 +115,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Draw: '#78716c',
   // Deep violet: the mode switch, apart from Draw's stone beside it.
   Editor: '#6d28d9',
+  // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
+  Explorer: '#155e75',
 };
 export const categoryColor = (c: string, appearance: Appearance = 'light') =>
   forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);

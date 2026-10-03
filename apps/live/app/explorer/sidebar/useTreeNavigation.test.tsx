@@ -66,8 +66,8 @@ function Tree({ onActivate = () => {} }: { onActivate?: (label: string) => void 
             onToggle={() => setOpen((v) => !v)}
             onActivate={() => onActivate('My documents')}
           >
-            <Item label="Unsorted" selected />
-            <Item label="Generated" />
+            <Item label="Archive" selected />
+            <Item label="Projects" />
           </Item>
           <Item label="Trash" />
         </ul>
@@ -86,7 +86,7 @@ describe('useTreeNavigation', () => {
   it('makes the selected row the only tab stop', () => {
     render(<Tree />);
     const stops = screen.getAllByRole('treeitem').filter((el) => el.tabIndex === 0);
-    expect(stops.map((el) => el.getAttribute('aria-label'))).toEqual(['Unsorted']);
+    expect(stops.map((el) => el.getAttribute('aria-label'))).toEqual(['Archive']);
   });
 
   it('falls back to the first row when no row is selected', () => {
@@ -101,7 +101,7 @@ describe('useTreeNavigation', () => {
     key('ArrowDown');
     expect(focused()).toBe('My documents');
     key('ArrowDown');
-    expect(focused()).toBe('Unsorted');
+    expect(focused()).toBe('Archive');
     key('ArrowUp');
     key('ArrowUp');
     expect(focused()).toBe('Activity');
@@ -112,19 +112,19 @@ describe('useTreeNavigation', () => {
     item('Home').focus();
     key('ArrowDown');
     expect(item('Activity').tabIndex).toBe(0);
-    expect(item('Unsorted').tabIndex).toBe(-1);
+    expect(item('Archive').tabIndex).toBe(-1);
   });
 
   it('returns the tab stop to the selected row when focus leaves', () => {
     render(<Tree />);
     item('Home').focus();
     fireEvent.blur(item('Home'), { relatedTarget: screen.getByText('after') });
-    expect(item('Unsorted').tabIndex).toBe(0);
+    expect(item('Archive').tabIndex).toBe(0);
   });
 
   it('jumps to the first and last rows with Home and End', () => {
     render(<Tree />);
-    item('Unsorted').focus();
+    item('Archive').focus();
     key('End');
     expect(focused()).toBe('Trash');
     key('Home');
@@ -133,7 +133,7 @@ describe('useTreeNavigation', () => {
 
   it('collapses with Left, then moves to the parent', () => {
     render(<Tree />);
-    item('Unsorted').focus();
+    item('Archive').focus();
     key('ArrowLeft');
     expect(focused()).toBe('My documents');
     key('ArrowLeft');
@@ -147,7 +147,7 @@ describe('useTreeNavigation', () => {
     key('ArrowRight');
     expect(item('My documents').getAttribute('aria-expanded')).toBe('true');
     key('ArrowRight');
-    expect(focused()).toBe('Unsorted');
+    expect(focused()).toBe('Archive');
   });
 
   it('activates the focused row with Enter and Space', () => {

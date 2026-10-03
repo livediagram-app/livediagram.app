@@ -340,7 +340,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
 
   // A rename made in Drive reaches livediagram on the next pass.
   google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
-  // Into a folder livediagram cannot see: Unsorted, and a notice.
+  // Into a folder livediagram cannot see: the root of My documents, and a notice.
   const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed(ROOT_NAME)!.id);
   google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
   await syncNow(page);

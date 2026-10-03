@@ -20,7 +20,7 @@ export type PanelTree = {
   onDuplicateDocument?: (id: string) => void;
   onMoveDocumentRequest?: (id: string) => void;
   onMoveTeamDocumentRequest?: (id: string, teamId: string) => void;
-  // Present = the reader's own rows drag onto personal folders and Unsorted.
+  // Present = the reader's own rows drag onto personal folders and My documents.
   onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
   onDismissShared?: (id: string) => void;
   favouriteIds?: Set<string>;

@@ -140,7 +140,7 @@ A create's place is decided in this order; the first that answers wins:
 2. **Kind default**: the default for `kind:<tabKind>`, when the first tab is a specific kind.
 3. **Template default**: the default for `template:<templateFamily>`, when the document has one.
 4. **Mode default**: the default for `mode:<mode>`.
-5. **The root of My documents** (its Unsorted).
+5. **The root of My documents**.
 
 - **An absent placement is no choice.** A create whose body names no `folderId` (the key absent) and
   no team, and that carries an intent, consults the defaults.

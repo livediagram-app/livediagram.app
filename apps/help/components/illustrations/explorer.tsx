@@ -174,7 +174,7 @@ export function SharedWithYou() {
   );
 }
 
-/** My documents as a folder tree: Unsorted and Generated first, then nested project folders. */
+/** My documents as a folder tree: its root folders, nested project folders, then root documents. */
 export function MyDocumentsTree() {
   const row = (
     y: number,
@@ -223,12 +223,12 @@ export function MyDocumentsTree() {
         My documents
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
-      {row(56, 'Unsorted', 0, { glyph: 'folder' })}
-      {row(82, 'Generated', 0, { glyph: 'folder' })}
-      {row(108, 'Projects', 0, { open: true })}
-      {row(134, 'Acme Corp', 24, { open: true })}
-      {row(160, 'Kickoff diagram', 48, { glyph: 'doc' })}
-      {row(186, 'Architecture', 48, { glyph: 'doc', active: true })}
+      {row(56, 'Projects', 0, { open: true })}
+      {row(82, 'Acme Corp', 24, { open: true })}
+      {row(108, 'Kickoff diagram', 48, { glyph: 'doc' })}
+      {row(134, 'Architecture', 48, { glyph: 'doc', active: true })}
+      {row(160, 'Archive', 0, {})}
+      {row(186, 'Quick sketch', 0, { glyph: 'doc' })}
     </Scene>
   );
 }
@@ -462,28 +462,93 @@ export function ThemesLibrary() {
   );
 }
 
-/** The Unsorted folder: the synthetic home for documents not filed anywhere,
- *  shown highlighted at the top of My documents with a couple of loose docs in it. */
-export function UnsortedFolder() {
-  return (
-    <Scene w={420} h={214} bg="plain">
+/** Searching and filtering (docs/specs/013-workspace/explorer-filters.md): the top-bar field holding
+ *  a Made by AI pill and a typed word, the chip row under the page title, and the matches. */
+export function FilterBar() {
+  const chip = (x: number, w: number, label: string, set = false) => (
+    <g key={label}>
       <rect
-        x={24}
-        y={16}
-        width={372}
-        height={182}
+        x={x}
+        y={78}
+        width={w}
+        height={20}
         rx={10}
-        className="fill-white stroke-slate-200"
+        className={set ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-300'}
         strokeWidth={1.5}
       />
-      <Label x={40} y={32} size={11} weight={700} tone="strong">
-        My documents
+      <Label
+        x={x + w / 2}
+        y={89}
+        anchor="middle"
+        size={9}
+        weight={600}
+        tone={set ? 'accent' : 'body'}
+      >
+        {label}
       </Label>
-      <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
-      <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />
-      <SidebarRow x={64} y={92} w={312} label="Untitled document" glyph="doc" />
-      <SidebarRow x={64} y={122} w={312} label="Quick sketch" glyph="doc" />
-      <SidebarRow x={40} y={158} w={336} label="Projects" glyph="folder" />
+    </g>
+  );
+  return (
+    <Scene w={420} h={230} bg="plain">
+      {/* The field: a pill, then the words being typed. */}
+      <rect
+        x={150}
+        y={14}
+        width={254}
+        height={26}
+        rx={8}
+        className="fill-white stroke-brand-400"
+        strokeWidth={1.5}
+      />
+      <circle cx={164} cy={26.5} r={4} className="stroke-slate-400" strokeWidth={1.5} fill="none" />
+      <path
+        d="M167 29.5l3 3"
+        className="stroke-slate-400"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <rect
+        x={176}
+        y={19}
+        width={74}
+        height={16}
+        rx={8}
+        className="fill-brand-50 stroke-brand-300"
+        strokeWidth={1.2}
+      />
+      <Label x={213} y={27.5} anchor="middle" size={9} weight={600} tone="accent">
+        Made by AI ×
+      </Label>
+      <Label x={258} y={27.5} size={10} tone="strong">
+        payment
+      </Label>
+      <Label x={16} y={60} size={13} weight={700} tone="strong">
+        Search results
+      </Label>
+      {chip(16, 62, 'Opens in')}
+      {chip(82, 44, 'Kind')}
+      {chip(130, 62, 'Template')}
+      {chip(196, 74, '✓ Made by AI', true)}
+      {chip(274, 52, 'Edited')}
+      {chip(330, 52, 'People')}
+      <DocumentRow
+        x={16}
+        y={112}
+        w={388}
+        title="AI payment flow"
+        meta="Made by AI · Projects"
+        active
+      />
+      <DocumentRow
+        x={16}
+        y={150}
+        w={388}
+        title="Payment architecture"
+        meta="Made by AI · My documents"
+      />
+      <Label x={16} y={204} size={9} tone="muted">
+        2 of 14 documents
+      </Label>
     </Scene>
   );
 }

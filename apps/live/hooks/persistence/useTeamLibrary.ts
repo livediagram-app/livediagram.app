@@ -129,7 +129,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   // Re-folder a document WITHIN the team (folderId null = the team's
-  // Unsorted).
+  // root).
   const moveDocument = useCallback(
     async (documentId: string, folderId: string | null) => {
       if (!ownerId) return;

@@ -58,10 +58,10 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
   } catch (err) {
     // The server refuses a folder deleted since, or not the caller's, by name and writes nothing
     // (docs/specs/013-workspace/folders.md "Placement on create"). The sync files the document in
-    // Unsorted instead, on its own say-so, rather than losing the conversion over a folder.
+    // the root of My documents instead, on its own say-so, rather than losing the conversion over a folder.
     const code = err instanceof ApiError ? err.code : null;
     if (code !== 'folder_not_found' && code !== 'folder_scope_mismatch') throw err;
-    console.warn(`[offline-sync] placement refused reason=${code}, filed in Unsorted`);
+    console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);
     await upload(null);
   }
   await offlineDeleteDocument(rec.id);
@@ -128,7 +128,7 @@ export async function takeCloudOffline(
     name: liveDoc.name,
     // Keep its place and its deck: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
-    // offline record lives in, so a team document lands in Unsorted.
+    // offline record lives in, so a team document lands at the root of My documents.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,

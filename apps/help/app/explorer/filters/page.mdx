@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { FilterBar } from '@/components/illustrations/explorer';
+
+export const metadata = helpMetadata({
+  title: 'Search and Filter Documents',
+  description:
+    'Narrow any Explorer list with the search field and filter chips: Opens in, Kind, Template, Made by AI, Edited, People and Space, or type filters like made-by:ai straight into the search.',
+  path: '/help/explorer/filters/',
+});
+
+<ArticleLayout
+  title="Search and Filter Documents"
+  description="Narrow any list of documents with a few words, a chip, or a typed filter, and share the result as a link."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+Every list of documents in the [Explorer](/explorer) can be narrowed. Type a few words of a document's name into the **search** field at the top of the page, or pick a **filter chip** under the page title. Both edit the same search, so a chip you pick shows up in the field, and a filter you type lights its chip.
+
+<Figure caption="The search field holds a Made by AI filter and a word; the chips under the title show what is set, and the list keeps only what matches.">
+  <FilterBar />
+</Figure>
+
+## Where it works
+
+- **My documents, a folder, a team, and This browser.** The search stays inside the place you are in, and reaches into every folder below it: the list shows each matching document once, with the folder it lives in beside its name. Folders step aside while a search is set and come back when you clear it.
+- **Recent, Favourites, Shared with me and Search results** gather documents from everywhere, so they add a **Space** chip: My documents, Shared with me, or one of your teams.
+- **Home, Activity, the Library pages and Trash** have no list of documents to narrow. Typing in the field there opens **Search results**, every document you can open, narrowed by what you typed.
+
+## The chips
+
+| Chip       | Keeps documents that                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| Opens in   | Were created to open in Diagram or Draw mode                                             |
+| Kind       | Were created as an Event Storming board                                                  |
+| Template   | Were made from a Retrospective or Kanban template                                        |
+| Made by AI | An AI tool made for you; they also carry a **Made by AI** badge wherever they are listed |
+| Edited     | Were last edited today, in the last 7, 30 days or 12 months, or this year                |
+| People     | You own (Me), or someone else owns (Others)                                              |
+| Space      | Live in My documents, are shared with you, or are in a team (gathered lists only)        |
+
+A chip can hold several values: picking Retrospective and Kanban keeps both. Different chips narrow together: Template and Edited keeps the retrospectives you edited this week. **Clear** at the end of the row empties the search.
+
+A document made before livediagram recorded how it was created has no Opens in, Kind or Template: it shows whenever those chips are not set.
+
+## Typing filters
+
+The field takes filters as words too, the way the chips write them:
+
+- `made-by:ai` keeps what an AI made.
+- `template:retrospective,kanban` keeps both template families.
+- `edited:7d` keeps what you edited in the last 7 days; `today`, `30d`, `12m` and `this-year` work too.
+- `opens-in:draw`, `kind:event-storming`, `people:me`, `space:shared` work the same way.
+
+As you type, suggestions appear under the field: use **Down** and **Up** to move through them, and **Enter** or **Tab** to take one. A suggestion marked **No matches** would leave nothing in the list on its own. A finished filter becomes a pill in the field; **Backspace** at the start of the words selects the last pill, and a second **Backspace** removes it.
+
+A word that looks like a filter but isn't one, such as `colour:red`, is searched as plain text, and the Explorer says so under the chips, so a typo never hides documents silently.
+
+## Share a search
+
+The search lives in the page's address, so copying the link shares exactly what you are looking at. Moving between Recent, Favourites, Shared with me and Search results keeps your search; opening a folder or a team starts afresh. A search is not remembered for next time.
+
+<Tip>
+  Looking for everything an AI tool made for you? Pick **Made by AI** on Recent or Search results,
+  or type `made-by:ai` into the search on any page.
+</Tip>
+
+</ArticleLayout>

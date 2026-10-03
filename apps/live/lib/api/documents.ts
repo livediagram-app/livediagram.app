@@ -44,11 +44,17 @@ export type DocumentListItem = Pick<
 > & {
   // Provenance (docs/specs/013-workspace/folders.md). Present on real list rows from the API; optional
   // so synthetic rows (shared / team placeholders) can omit it. Absent or
-  // null means user-made (not in the Generated folder).
+  // null means user-made (no Made by AI badge).
   source?: DocumentSummary['source'];
   // Nothing drawn (docs/specs/006-document/document-snapshots.md): the row asks for no thumbnail. Absent on a
   // synthetic row, which asks as before.
   empty?: DocumentSummary['empty'];
+  // The creation intent recorded on the document (docs/specs/013-workspace/default-folders.md
+  // "Recorded intent"), which the Explorer filters read. Absent on a row that cannot say (an
+  // offline record, a synthetic shared row): it reads as unknown.
+  opensIn?: DocumentSummary['opensIn'];
+  tabKind?: DocumentSummary['tabKind'];
+  templateFamily?: DocumentSummary['templateFamily'];
 };
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict
