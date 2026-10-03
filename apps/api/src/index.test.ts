@@ -152,6 +152,16 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(res.status).toBe(403);
   });
 
+  it('403s the share-link list, which holds every code and the password', async () => {
+    // A read-only token must not be able to lift an edit link.
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1/share', { headers: RO }),
+      env(),
+    );
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'read_only_token' });
+  });
+
   it('lets a GET through (reads are allowed)', async () => {
     const res = await worker.fetch(req('GET'), env());
     expect(res.status).not.toBe(403);

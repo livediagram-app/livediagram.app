@@ -4,6 +4,7 @@
 // Durable Object WebSocket upgrade with its role / password trust
 // boundary.
 
+import { isClerkIdShape } from '@livediagram/api-schema';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
@@ -88,8 +89,16 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // removed member could present it here — the exact hole the ticket
     // closed for the membership leg. Team owners come in via the ticket
     // (its mint admits them through the verified callerId === ownerId
-    // leg); a personal guest owner's id stays an unguessable UUID.
-    const isOwnerUpgrade = isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
+    // leg); a personal guest owner's id stays an unguessable UUID. An ACCOUNT id is
+    // refused here outright for the same reason REST refuses it as `X-Owner-Id`
+    // (docs/specs/015-api/public-api-and-tokens.md §4.1): teammates can read it, so
+    // it proves nothing. A signed-in owner of a personal document comes in through
+    // the ticket like a team owner.
+    const accountIdClaimed = !!claimedOwnerId && isClerkIdShape(claimedOwnerId);
+    if (accountIdClaimed)
+      console.warn('[room-upgrade] account id refused as ?o=', { documentId: id });
+    const isOwnerUpgrade =
+      !accountIdClaimed && isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
       ({ role, tabScope, shareCode, account } = admission);
     } else if (isOwnerUpgrade) {
