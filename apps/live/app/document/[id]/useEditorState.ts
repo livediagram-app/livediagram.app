@@ -1564,7 +1564,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     switchMode: editorMode.setMode,
   });
   // Infographic mode's A4 page: its orientation toggle, and the view centred on it.
-  const infographicPage = useInfographicPage({
+  const infographicPages = useInfographicPage({
     activeTab,
     mode: editorMode.mode,
     canEdit: !isReadOnly,
@@ -2955,7 +2955,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    infographicPage,
+    infographicPages,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,

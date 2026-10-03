@@ -128,7 +128,7 @@ describe('nextEditorMode', () => {
   });
 });
 
-// Infographic mode's page (docs/specs/007-editor/editor-modes.md "The page").
+// Infographic mode's page (docs/specs/007-editor/editor-modes.md "The pages").
 describe('hasPageLook', () => {
   it('draws the page in Infographic mode only', () => {
     expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['infographic']);

@@ -3821,6 +3821,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "InfographicPage": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "orientation": {
+        "$ref": "#/components/schemas/PageOrientation"
+      }
+    },
+    "required": [
+      "id",
+      "orientation"
+    ],
+    "type": "object"
+  },
   "KnownTimelineEventType": {
     "enum": [
       "document_created",
@@ -5581,6 +5597,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pageOrientation": {
         "$ref": "#/components/schemas/PageOrientation"
+      },
+      "pages": {
+        "items": {
+          "$ref": "#/components/schemas/InfographicPage"
+        },
+        "type": "array"
       },
       "patternColor": {
         "type": "string"

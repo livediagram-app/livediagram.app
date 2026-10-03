@@ -505,6 +505,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+  'Tab|Changed|PageAdded': 'Someone added a page to an infographic tab.',
+  'Tab|Changed|PageRemoved': 'Someone deleted a page from an infographic tab.',
   'Tab|Changed|PagePortrait': "Someone turned an infographic tab's A4 page to portrait.",
   'Tab|Changed|PageLandscape': "Someone turned an infographic tab's A4 page to landscape.",
   'Tab|Changed|OpensInInfographic':
