@@ -235,4 +235,4 @@ and `pnpm icons:vendor`; `app-window` is already vendored.
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md) rows D17 to D22.
+See [DEFAULTS.md](DEFAULTS.md) rows D59 to D64.
