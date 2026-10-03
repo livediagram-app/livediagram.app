@@ -3,7 +3,7 @@
 // (the page less its margins), the gap between two columns the margins and the space between the
 // pages. The browser breaks the writing into those columns; these helpers map between a place in
 // the box and a place on a page. Pure.
-import { ILLUSTRATE_PAGE_GAP, type LaidOutPage } from '@livediagram/document';
+import { ARTICLE_TOP_MIN_PX, ILLUSTRATE_PAGE_GAP, type LaidOutPage } from '@livediagram/document';
 
 export type FlowFrame = {
   // The box's top-left on the canvas, and its size, in canvas px.
@@ -16,6 +16,8 @@ export type FlowFrame = {
   gap: number;
   stride: number;
   margin: number;
+  // The top margin: the margin, never less than ARTICLE_TOP_MIN_PX.
+  top: number;
   // How many pages (columns) the article has.
   count: number;
 };
@@ -26,14 +28,17 @@ export function flowFrame(pages: readonly LaidOutPage[], margin: number): FlowFr
   const { width: pageW, height: pageH } = lead.rect;
   // A margin never leaves a column narrower than a quarter of the page.
   const m = Math.min(margin, pageW * 0.375, pageH * 0.375);
+  // The top keeps room for the page toolbar above the first line (articleTopMarginPx).
+  const top = Math.min(Math.max(m, ARTICLE_TOP_MIN_PX), pageH * 0.375);
   const columnWidth = pageW - 2 * m;
   const gap = 2 * m + ILLUSTRATE_PAGE_GAP;
   const count = pages.length;
   return {
     x: lead.rect.x + m,
-    y: lead.rect.y + m,
+    y: lead.rect.y + top,
     width: count * columnWidth + (count - 1) * gap,
-    height: pageH - 2 * m,
+    height: pageH - top - m,
+    top,
     columnWidth,
     gap,
     stride: columnWidth + gap,
@@ -55,7 +60,7 @@ export function pagePlaceOf(
   local: { x: number; y: number },
 ): { index: number; x: number; y: number } {
   const index = columnAt(frame, local.x);
-  return { index, x: local.x - index * frame.stride + frame.margin, y: local.y + frame.margin };
+  return { index, x: local.x - index * frame.stride + frame.margin, y: local.y + frame.top };
 }
 
 /** The canvas point of a place on one of the article's pages. */

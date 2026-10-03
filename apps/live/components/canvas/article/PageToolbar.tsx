@@ -92,6 +92,8 @@ const TypeIcon = lucideGlyph(lucideType, 14);
 
 // Screen px: the card's breathing room above and below it when it sits in the page's margin.
 const MARGIN_PAD = 4;
+// The smallest the card shrinks to in a thin margin (zoomed far out), as a share of its size.
+const TOOLBAR_MIN_SCALE = 0.55;
 
 // The page toolbar's telemetry (docs/specs/007-editor/article-pages.md "Telemetry").
 const FORMAT_EVENT = {
@@ -192,18 +194,25 @@ export function PageToolbar({
         (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
       const h = el.offsetHeight;
       const w = el.offsetWidth;
-      // Always at the page's top, inside it: centred in the top margin, or just under the page's
-      // top edge when the margin is thinner than the card. Off with the page's top.
-      const top = r.top + Math.max(MARGIN_PAD, (topRoom.current(pageId) - h) / 2);
-      const visible = top >= floor && top + h <= c.bottom && r.bottom > top + h;
+      // Always at the page's top, inside it, centred in the top margin; zoomed out until the margin
+      // is thinner than the card, the card shrinks to fit it (to TOOLBAR_MIN_SCALE), so it never
+      // covers the first line. Off with the page's top.
+      const roomTop = topRoom.current(pageId);
+      const scale = Math.min(1, Math.max(TOOLBAR_MIN_SCALE, (roomTop - 2 * MARGIN_PAD) / h));
+      const top = r.top + Math.max(MARGIN_PAD * scale, (roomTop - h * scale) / 2);
+      const visible = top >= floor && top + h * scale <= c.bottom && r.bottom > top + h * scale;
       // Inside the page across, and inside the canvas: a page narrower on screen than the card
       // narrows it (its controls scroll).
       const lo = Math.max(c.left, r.left) + 8;
       const hi = Math.min(c.right, r.right) - 8;
-      const room = Math.max(0, hi - lo);
+      const room = Math.max(0, (hi - lo) / scale);
       if (el.style.maxWidth !== `${room}px`) el.style.maxWidth = `${room}px`;
-      const left = Math.max(lo, Math.min(r.left + r.width / 2 - w / 2, hi - w));
-      el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+      const sw = w * scale;
+      const left = Math.max(lo, Math.min(r.left + r.width / 2 - sw / 2, hi - sw));
+      el.style.transformOrigin = '0 0';
+      el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)${
+        scale < 1 ? ` scale(${scale.toFixed(3)})` : ''
+      }`;
       el.style.visibility = visible ? 'visible' : 'hidden';
     };
     follow();

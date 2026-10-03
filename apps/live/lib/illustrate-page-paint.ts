@@ -112,7 +112,7 @@ export function pageSheetStyle(
   background: PageBackground | undefined,
   // A document page's ruling (docs/specs/007-editor/article-pages.md "Document style"): its Lines
   // drawn at its body line pitch inside its margins, on the writing's baselines.
-  ruling?: { pitch: number; inset: number },
+  ruling?: { pitch: number; inset: number; top: number },
 ): CSSProperties {
   const fill = background?.fill;
   const style: CSSProperties = {};
@@ -125,7 +125,7 @@ export function pageSheetStyle(
     if (ruling && background.pattern === 'lines') {
       sizes.push(`100% ${ruling.pitch}px`);
       clips.push('content-box');
-      style.padding = ruling.inset;
+      style.padding = `${ruling.top}px ${ruling.inset}px ${ruling.inset}px`;
       style.backgroundOrigin = 'content-box';
     } else {
       sizes.push(layer.size);

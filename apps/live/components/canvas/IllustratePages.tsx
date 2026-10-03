@@ -5,6 +5,7 @@ import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import {
   articleBodyLinePx,
   articleMarginPx,
+  articleTopMarginPx,
   ILLUSTRATE_PAGE_GAP,
   pageIsDark,
   pageLabel,
@@ -81,6 +82,7 @@ export function IllustratePages({
       ? {
           pitch: articleBodyLinePx(articleStyleOf(page)),
           inset: articleMarginPx(articleStyleOf(page)),
+          top: articleTopMarginPx(articleStyleOf(page)),
         }
       : undefined;
   // A document page's number, in its bottom margin, once its document has more than one page.

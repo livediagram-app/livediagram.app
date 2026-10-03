@@ -5,6 +5,8 @@ import {
   articleNoteCorner,
   newArticleNote,
   withNoteMarksRemoved,
+  withNoteMarkersRemoved,
+  articleNoteIds,
   withNotesSettled,
 } from './article-notes';
 import { layOutIllustratePages, type IllustratePage } from './illustrate-page';
@@ -55,5 +57,19 @@ describe('margin notes', () => {
     const b = (out.articles as { f: { blocks: ArticleBlock[] } }).f.blocks[0]!;
     expect('runs' in b && b.runs).toEqual([{ text: 'The budget' }]);
     expect(withNoteMarksRemoved(tab, new Set(['other']))).toBe(tab);
+  });
+});
+
+describe('a margin note goes with its text', () => {
+  it('finds the notes the writing carries and drops the markers of the rest', () => {
+    expect(articleNoteIds({ f: { blocks } })).toEqual(new Set(['n1']));
+    const marker = newArticleNote('n1', 'action', { x: 0, y: 0 });
+    const plainMarker = {
+      ...newArticleNote('n2', 'comment', { x: 0, y: 0 }),
+      articleNote: undefined,
+    };
+    const tab = { elements: [marker, plainMarker] };
+    expect(withNoteMarkersRemoved(tab, new Set(['n1', 'n2'])).elements).toEqual([plainMarker]);
+    expect(withNoteMarkersRemoved(tab, new Set())).toBe(tab);
   });
 });

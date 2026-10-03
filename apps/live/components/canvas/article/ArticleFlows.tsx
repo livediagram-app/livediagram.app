@@ -8,6 +8,7 @@
 import { lazy, Suspense, useLayoutEffect, useMemo } from 'react';
 import {
   articleMarginPx,
+  articleTopMarginPx,
   drawingZoneClips,
   isBoxed,
   isDrawingElement,
@@ -198,7 +199,7 @@ export function ArticleFlows({
               const doc = flow ? articles.flows[flow] : undefined;
               const preview = articles.stylePreview;
               const style = preview && preview.flow === flow ? preview.style : doc?.style;
-              return articleMarginPx(style) * zoom;
+              return articleTopMarginPx(style) * zoom;
             }}
             onInsert={(what) => {
               if (active) articles.insertObject(active.handle.flow, what);

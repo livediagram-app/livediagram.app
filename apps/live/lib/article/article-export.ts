@@ -6,6 +6,7 @@
 import {
   articleBodyLinePx,
   articleMarginPx,
+  articleTopMarginPx,
   articlesOf,
   illustratePagesOf,
   resolveArticleStyle,
@@ -69,10 +70,14 @@ export function pageWritingBars(
 export function pageRulingOf(
   tab: Tab,
   page: LaidOutPage,
-): { pitch: number; inset: number } | undefined {
+): { pitch: number; inset: number; top: number } | undefined {
   if (!page.flow) return undefined;
   const doc = articlesOf(tab)[page.flow];
   return doc
-    ? { pitch: articleBodyLinePx(doc.style), inset: articleMarginPx(doc.style) }
+    ? {
+        pitch: articleBodyLinePx(doc.style),
+        inset: articleMarginPx(doc.style),
+        top: articleTopMarginPx(doc.style),
+      }
     : undefined;
 }

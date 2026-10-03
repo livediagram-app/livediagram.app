@@ -66,7 +66,7 @@ export function pageExportFrame(
     idPrefix?: string;
     // A document page's Lines, on its writing's baselines inside its margins
     // (docs/specs/007-editor/article-pages.md "Article style").
-    ruling?: { pitch: number; inset: number };
+    ruling?: { pitch: number; inset: number; top: number };
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -91,9 +91,9 @@ export function pageExportFrame(
     const p = ruling.pitch;
     const ink = xmlEscape(pagePatternInk(page.background));
     parts.push(
-      `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.inset)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(p)}">` +
+      `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.top)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(p)}">` +
         `<rect y="${r2(p - 1)}" width="${r2(r.width - 2 * ruling.inset)}" height="1" fill="${ink}"/></pattern></defs>`,
-      `<rect x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.inset)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(r.height - 2 * ruling.inset)}" fill="url(#${id}-pattern)"/>`,
+      `<rect x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.top)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(r.height - ruling.top - ruling.inset)}" fill="url(#${id}-pattern)"/>`,
     );
   } else if (pattern) {
     const p = PAGE_PATTERN_PITCH;

@@ -175,6 +175,16 @@ export function articleMarginPx(style: ArticleStyle | undefined): number {
   return ARTICLE_MARGIN_PX[resolveArticleStyle(style).margins];
 }
 
+/** The least top margin an article page has, canvas px, whatever its margins: room for the page
+ *  toolbar's card (44 px, 4 px clear) above the first line at 100% and below, so writing never
+ *  starts under it (Narrow's 48 would). */
+export const ARTICLE_TOP_MIN_PX = 72;
+
+/** An article's top margin, in canvas px: its margin, never less than ARTICLE_TOP_MIN_PX. */
+export function articleTopMarginPx(style: ArticleStyle | undefined): number {
+  return Math.max(articleMarginPx(style), ARTICLE_TOP_MIN_PX);
+}
+
 /** The body text's line height in canvas px: the pitch ruled lines are drawn at. */
 export function articleBodyLinePx(style: ArticleStyle | undefined): number {
   const r = resolveArticleStyle(style);

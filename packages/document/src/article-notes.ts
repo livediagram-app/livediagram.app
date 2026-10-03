@@ -114,3 +114,24 @@ export function withNoteMarksRemoved<T extends NotesTab>(tab: T, ids: ReadonlySe
   }
   return next;
 }
+
+/** Every margin note id the writing of `articles` carries. */
+export function articleNoteIds(
+  articles: Readonly<Record<string, { blocks: readonly unknown[] }>>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const doc of Object.values(articles))
+    for (const b of doc.blocks as { runs?: { note?: string }[] }[])
+      for (const r of b.runs ?? []) if (r.note) out.add(r.note);
+  return out;
+}
+
+/** The tab without the markers of margin notes whose text is gone from the writing (`ids`): the
+ *  comment thread or action on deleted text goes with it. Markers no longer notes stay. */
+export function withNoteMarkersRemoved<T extends NotesTab>(tab: T, ids: ReadonlySet<string>): T {
+  if (ids.size === 0) return tab;
+  const elements = (tab.elements as Element[]).filter(
+    (el) => !(el.type === 'annotation' && el.articleNote && ids.has(el.id)),
+  );
+  return elements.length === tab.elements.length ? tab : { ...tab, elements };
+}

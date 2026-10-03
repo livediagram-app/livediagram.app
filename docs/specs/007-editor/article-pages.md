@@ -150,8 +150,10 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 
 ## The page toolbar
 
-- **Where**: a card fixed at the top of the page, inside it, centred in the top margin (just under
-  the page's top edge when the margin is thinner than the card); it never leaves the page: a page
+- **Where**: a card fixed at the top of the page, inside it, centred in the top margin. An article
+  page's top margin is never less than 72 px (`ARTICLE_TOP_MIN_PX`), whatever its margins, so at
+  100% the first line always starts below the card; zoomed out until the margin is thinner than
+  the card, the card shrinks to fit it (to 55%) rather than cover the writing; it never leaves the page: a page
   narrower on screen than the card narrows it (its controls scroll), and it goes from view with
   the page's top. Held at one screen size at any zoom. It never takes focus from the writing.
 - **When**: for someone who may edit, on the page of the article being worked on, from the moment
@@ -261,8 +263,9 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   zone is.
 - **Several close together** (notes on one line, or lines apart) stack down the margin in the
   writing's order, 6 px apart, rather than covering each other.
-- **Deleting the marker** takes the tint off its text. Deleting the text leaves the marker, and its
-  thread, where it last stood.
+- **Deleting the marker** takes the tint off its text. **Deleting the text** (all of it the note
+  was on) deletes the marker, and with it the comment thread or action, in the same edit (undo
+  brings both back).
 - **Never printed**: exports leave the markers out and the text untinted.
 - A tint is never taken from a paste.
 
@@ -306,7 +309,8 @@ has no Layouts). Every change is one edit, previewed on the page while a choice 
 - **Paragraph spacing**: None, Normal (default, 0.75 of a line), Wide (1.5 lines).
 - **Lines under text**: **None** (default), **Under the title**, **Under headings** (the title and
   every heading), a hairline in the accent under the block's last line.
-- **Margins**: Narrow (48 px), Normal (96 px, default), Wide (144 px).
+- **Margins**: Narrow (48 px), Normal (96 px, default), Wide (144 px); the top margin is never
+  less than 72 px, room for the page toolbar.
 - **Page numbers**: on (default) or off.
 - **Ruled lines**: the page's **Lines** pattern on an article page is drawn on the text's own
   baselines, at the body line height, inside the margins: lined paper the writing sits on.
