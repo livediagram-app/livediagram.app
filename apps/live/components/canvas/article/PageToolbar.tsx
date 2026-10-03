@@ -6,8 +6,8 @@
 // strip (toolbar-surface.ts). It never leaves the page: it narrows to the page's width on screen,
 // and goes from view with the page's top. Its buttons never take focus: the caret stays in the writing.
 // Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
-// the less used formats are menus (page-toolbar-panels.tsx). It follows the page by measuring the
-// sheet each frame while it is shown (a pan or a zoom moves it with no render).
+// the less used formats are menus (page-toolbar-panels.tsx). Where it sits is
+// page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   lucideBaseline,
@@ -31,11 +31,10 @@ import {
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
 import { Portal } from '@/components/primitives/Portal';
-import { canvasGestureNow, subscribeCanvasGesture, useCanvasGesture } from '@/lib/canvas-gesture';
+import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,
-  clearActiveArticle,
   requestStylePanel,
   useActiveArticle,
   useArticleLinkRequest,
@@ -62,6 +61,8 @@ import {
 import { articleSchema } from '@/lib/article/article-schema';
 import { track } from '@/lib/telemetry';
 import { LinkField, ToolbarPopover } from './page-toolbar-menus';
+import { usePageToolbarPlacement } from './page-toolbar-placement';
+import { useHoveredArticlePage, useOffPagePressClears } from './page-toolbar-presence';
 import {
   AlignGlyph,
   AlignPanel,
@@ -91,17 +92,6 @@ const More = I(lucideEllipsis);
 const CommentIcon = I(lucideMessageSquare);
 const ActionIcon = I(lucideCircleCheck);
 const TypeIcon = lucideGlyph(lucideType, 14);
-
-// Screen px: the card's breathing room above and below it when it sits in the page's margin.
-const MARGIN_PAD = 4;
-// Frames the toolbar keeps placing itself after the last cause to (an easing view settling).
-const PLACE_TRAILING_FRAMES = 3;
-// Screen px: a phone's bar keeps this clear of the screen's sides and the bottom.
-const PHONE_GUTTER = 8;
-// Screen px: the room the canvas's bottom controls (undo, Fit) take on a phone.
-const PHONE_CONTROLS_ROOM = 64;
-// The smallest the card shrinks to in a thin margin (zoomed far out), as a share of its size.
-const TOOLBAR_MIN_SCALE = 0.55;
 
 // The page toolbar's telemetry (docs/specs/007-editor/article-pages.md "Telemetry").
 const FORMAT_EVENT = {
@@ -151,18 +141,6 @@ export function PageToolbar({
         }
       : null);
   useOffPagePressClears(selected, articlePages);
-  const bar = useRef<HTMLDivElement>(null);
-  // Read each frame by the placement (a phone's bar sits along the bottom).
-  const mobile = useIsMobileViewport();
-  const phone = useRef(mobile);
-  useLayoutEffect(() => {
-    phone.current = mobile;
-  });
-  // Read each frame: the margin changes with the zoom and the article's style, with no new effect.
-  const topRoom = useRef(topRoomOf);
-  useLayoutEffect(() => {
-    topRoom.current = topRoomOf;
-  });
   const [open, setOpen] = useState<Open>(null);
   const linkRequest = useArticleLinkRequest();
   // ⌘K in the writing opens the link field.
@@ -190,101 +168,11 @@ export function PageToolbar({
   // A menu goes with the article.
   if (!active && open) setOpen(null);
 
-  const pageId = active?.pageId ?? null;
-  // Placed when something may have moved it, never on idle frames
-  // (docs/specs/008-canvas/canvas-performance.md "At rest"): after each render, while a pan or zoom
-  // gesture is under way, on the wheel and on a resize of the window or of a phone's visible
-  // viewport (the keyboard); then a couple of frames more for anything easing to rest.
-  const place = useRef<() => void>(() => {});
-  useLayoutEffect(() => {
-    if (!pageId) return;
-    let raf = 0;
-    let trailing = 0;
-    const tick = () => {
-      raf = 0;
-      follow();
-      const gesture = canvasGestureNow();
-      if (gesture === 'pan' || gesture === 'zoom' || trailing > 0) {
-        if (gesture !== 'pan' && gesture !== 'zoom') trailing -= 1;
-        raf = requestAnimationFrame(tick);
-      }
-    };
-    const schedule = () => {
-      trailing = PLACE_TRAILING_FRAMES;
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    place.current = schedule;
-    const vv = window.visualViewport;
-    window.addEventListener('resize', schedule);
-    window.addEventListener('wheel', schedule, { passive: true });
-    vv?.addEventListener('resize', schedule);
-    vv?.addEventListener('scroll', schedule);
-    const unsubscribe = subscribeCanvasGesture(schedule);
-    const follow = () => {
-      const el = bar.current;
-      const sheet = document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
-      const canvas = document.querySelector('[data-canvas-a11y-root]');
-      if (!el || !sheet || !canvas) return;
-      const r = sheet.getBoundingClientRect();
-      const c = canvas.getBoundingClientRect();
-      const strip = document
-        .querySelector('[data-toolbar-palette]:not(.hidden)')
-        ?.getBoundingClientRect();
-      const floor =
-        c.top +
-        8 +
-        (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
-      const h = el.offsetHeight;
-      const w = el.offsetWidth;
-      // On a phone: a bar along the bottom of the screen, above the keyboard when it is up,
-      // across the screen (its controls scroll), for the writing being worked on.
-      if (phone.current) {
-        const vv = window.visualViewport;
-        const keyboard = vv ? vv.offsetTop + vv.height : window.innerHeight;
-        // Keyboard up: right above it. Down: above the canvas's own controls along the bottom.
-        const bottom = keyboard < c.bottom - 1 ? keyboard : c.bottom - PHONE_CONTROLS_ROOM;
-        const across = window.innerWidth - 2 * PHONE_GUTTER;
-        if (el.style.maxWidth !== `${across}px`) el.style.maxWidth = `${across}px`;
-        const left = Math.max(PHONE_GUTTER, (window.innerWidth - w) / 2);
-        el.style.transformOrigin = '0 0';
-        el.style.transform = `translate(${Math.round(left)}px, ${Math.round(bottom - h - PHONE_GUTTER)}px)`;
-        el.style.visibility = 'visible';
-        return;
-      }
-      // Always at the page's top, inside it, centred in the top margin; zoomed out until the margin
-      // is thinner than the card, the card shrinks to fit it (to TOOLBAR_MIN_SCALE), so it never
-      // covers the first line. Off with the page's top.
-      const roomTop = topRoom.current(pageId);
-      const scale = Math.min(1, Math.max(TOOLBAR_MIN_SCALE, (roomTop - 2 * MARGIN_PAD) / h));
-      const top = r.top + Math.max(MARGIN_PAD * scale, (roomTop - h * scale) / 2);
-      const visible = top >= floor && top + h * scale <= c.bottom && r.bottom > top + h * scale;
-      // Inside the page across, and inside the canvas: a page narrower on screen than the card
-      // narrows it (its controls scroll).
-      const lo = Math.max(c.left, r.left) + 8;
-      const hi = Math.min(c.right, r.right) - 8;
-      const room = Math.max(0, (hi - lo) / scale);
-      if (el.style.maxWidth !== `${room}px`) el.style.maxWidth = `${room}px`;
-      const sw = w * scale;
-      const left = Math.max(lo, Math.min(r.left + r.width / 2 - sw / 2, hi - sw));
-      el.style.transformOrigin = '0 0';
-      el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)${
-        scale < 1 ? ` scale(${scale.toFixed(3)})` : ''
-      }`;
-      el.style.visibility = visible ? 'visible' : 'hidden';
-    };
-    follow();
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      place.current = () => {};
-      window.removeEventListener('resize', schedule);
-      window.removeEventListener('wheel', schedule);
-      vv?.removeEventListener('resize', schedule);
-      vv?.removeEventListener('scroll', schedule);
-      unsubscribe();
-    };
-  }, [pageId]);
-  // Every render (zoom, offset, writing, selection) may have moved the page.
-  useLayoutEffect(() => place.current());
+  const bar = usePageToolbarPlacement({
+    pageId: active?.pageId ?? null,
+    phone: useIsMobileViewport(),
+    topRoomOf,
+  });
 
   if (!active) return null;
   const { handle, selection } = active;
@@ -595,99 +483,4 @@ function Button({
       </button>
     </Tooltip>
   );
-}
-
-// Screen px of slack around a page that still counts as on it, and how long the pointer may be off
-// an article page before its toolbar goes (time to cross the gap to the card).
-const HOVER_SLACK = 12;
-const HOVER_GRACE_MS = 250;
-
-const sheetOf = (pageId: string) =>
-  document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
-
-const onSheet = (pageId: string, x: number, y: number, slack: number) => {
-  const r = sheetOf(pageId)?.getBoundingClientRect();
-  return (
-    !!r &&
-    x >= r.left - slack &&
-    x <= r.right + slack &&
-    y >= r.top - slack &&
-    y <= r.bottom + slack
-  );
-};
-
-// The article page under the pointer (kept a moment after it leaves), or null.
-function useHoveredArticlePage(
-  pages: readonly { id: string; flow: string }[],
-): { flow: string; pageId: string } | null {
-  const [hovered, setHovered] = useState<{ flow: string; pageId: string } | null>(null);
-  const latest = useRef(pages);
-  useLayoutEffect(() => {
-    latest.current = pages;
-  });
-  useLayoutEffect(() => {
-    let frame = 0;
-    let leave = 0;
-    let x = 0;
-    let y = 0;
-    const look = () => {
-      frame = 0;
-      // Mid-gesture (a pan, a drag): the pointer is not choosing a page.
-      if (canvasGestureNow() !== 'idle') return;
-      const page = latest.current.find((p) => onSheet(p.id, x, y, HOVER_SLACK));
-      if (page) {
-        window.clearTimeout(leave);
-        leave = 0;
-        setHovered((h) => (h?.pageId === page.id ? h : { flow: page.flow, pageId: page.id }));
-      } else if (!leave) {
-        leave = window.setTimeout(() => {
-          leave = 0;
-          setHovered(null);
-        }, HOVER_GRACE_MS);
-      }
-    };
-    const move = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
-      // Over the toolbar or its menus: the page it is for stays.
-      if ((e.target as Element | null)?.closest?.('[data-article-keep-active]')) {
-        window.clearTimeout(leave);
-        leave = 0;
-        return;
-      }
-      x = e.clientX;
-      y = e.clientY;
-      if (!frame) frame = requestAnimationFrame(look);
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => {
-      window.removeEventListener('pointermove', move);
-      if (frame) cancelAnimationFrame(frame);
-      window.clearTimeout(leave);
-    };
-  }, []);
-  return hovered;
-}
-
-// A press off the active article's pages (and off its toolbar, menus and zone bar) ends working on
-// it: its toolbar goes.
-function useOffPagePressClears(
-  active: ActiveArticle | null,
-  pages: readonly { id: string; flow: string }[],
-) {
-  const flow = active?.handle.flow ?? null;
-  const latest = useRef(pages);
-  useLayoutEffect(() => {
-    latest.current = pages;
-  });
-  useLayoutEffect(() => {
-    if (!flow) return;
-    const press = (e: PointerEvent) => {
-      if ((e.target as Element | null)?.closest?.('[data-article-keep-active]')) return;
-      const own = latest.current.filter((p) => p.flow === flow);
-      if (own.some((p) => onSheet(p.id, e.clientX, e.clientY, 0))) return;
-      clearActiveArticle(flow);
-    };
-    window.addEventListener('pointerdown', press, true);
-    return () => window.removeEventListener('pointerdown', press, true);
-  }, [flow]);
 }

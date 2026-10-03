@@ -9,28 +9,13 @@
 // where the writing reaches (how many pages, where each zone landed) and reports it, so the host
 // can add or remove pages and move zones' elements (useArticles).
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import {
-  EditorState,
-  Selection,
-  NodeSelection,
-  TextSelection,
-  type Command,
-  type Transaction,
-} from 'prosemirror-state';
+import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { Slice, type Node as PMNode } from 'prosemirror-model';
-import {
-  looksLikeMarkdown,
-  parseMarkdownBlocks,
-  plainTextBlocks,
-} from '@/lib/article/article-markdown';
-import { track } from '@/lib/telemetry';
 import { gapCursor } from 'prosemirror-gapcursor';
 import {
   MAX_ILLUSTRATE_PAGES,
   applyArticleOps,
   diffArticleFlow,
-  nextArticleBlockId,
   type ArticleBlock,
   type ArticleFlow,
   type LaidOutPage,
@@ -57,7 +42,7 @@ import {
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import { articleStyleVars, type ArticleInk } from '@/lib/article/article-style-vars';
-import { snapshotBars, snapshotWriting, type ArticleDrawOp } from '@/lib/article/article-snapshot';
+import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import {
   removeSlashQuery,
   slashKey,
@@ -71,7 +56,9 @@ import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-car
 import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
 import { SLASH_MENU_ID, SlashMenu, slashOptionId } from './SlashMenu';
 import { useArticleLinkHover } from './useArticleLinkHover';
+import { createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
+import { articlePasteProps } from '@/lib/article/article-paste';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@/lib/debug-log';
 
@@ -160,6 +147,17 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       undoing.current = false;
     }, UNDO_SETTLE_MS);
   };
+  // An undo or redo asked for from the writing: what was typed goes first, as its own step. The
+  // commit and the undo of it land in one render, the tab's article back to the very object it was:
+  // `undoSeq` has the writing look at the tab again all the same.
+  const [undoSeq, setUndoSeq] = useState(0);
+  const undoRedo = (which: 'undo' | 'redo') => {
+    flush();
+    markUndoing();
+    if (which === 'undo') latest.current.onUndo();
+    else latest.current.onRedo();
+    setUndoSeq((n) => n + 1);
+  };
   const blurTimer = useRef<number | null>(null);
   // The writing runs past the last page while the tab is at its page limit.
   const [cutOff, setCutOff] = useState(false);
@@ -229,9 +227,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const view = viewRef.current;
     const p = latest.current;
     if (!view || p.pages.length === 0) return;
-    const frame = flowFrame(p.pages, p.margin);
-    const root = view.dom.getBoundingClientRect();
-    const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+    const { frame, root, z } = writingScale(view, p);
     let right = 0;
     for (const child of Array.from(view.dom.children)) {
       for (const r of Array.from(child.getClientRects())) {
@@ -279,9 +275,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const p = latest.current;
     try {
       const at = view.coordsAtPos(view.state.selection.head);
-      const root = view.dom.getBoundingClientRect();
-      const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-      const col = columnAt(flowFrame(p.pages, p.margin), (at.left - root.left) / z);
+      const { frame, root, z } = writingScale(view, p);
+      const col = columnAt(frame, (at.left - root.left) / z);
       return p.pages[Math.min(col, p.pages.length - 1)]?.id ?? null;
     } catch {
       return p.pages[0]?.id ?? null;
@@ -362,16 +357,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         // First, so its keys come before Enter's and the arrows'.
         slashPlugin(bridge),
         ...articleKeymap({
-          undo: () => {
-            flush();
-            markUndoing();
-            latest.current.onUndo();
-          },
-          redo: () => {
-            flush();
-            markUndoing();
-            latest.current.onRedo();
-          },
+          undo: () => undoRedo('undo'),
+          redo: () => undoRedo('redo'),
           onLink: () => latest.current.onLinkRequest(),
           onComment: () => requestArticleComment(),
           onEscape: () => {
@@ -435,43 +422,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       },
       // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
       handleScrollToSelection: () => true,
-      // Pasted text (docs/specs/007-editor/article-pages.md "Writing", Paste): Markdown becomes
-      // the blocks it means, several lines of plain text a paragraph each, its first and last
-      // joining the text around the caret. Into code, or a single plain line: as typed.
-      clipboardTextParser: (text, $context) => {
-        if ($context.parent.type.spec.code) return undefined as unknown as Slice;
-        const markdown = looksLikeMarkdown(text);
-        if (!markdown && !text.includes('\n')) return undefined as unknown as Slice;
-        const blocks = markdown ? parseMarkdownBlocks(text) : plainTextBlocks(text);
-        if (blocks.length === 0) return undefined as unknown as Slice;
-        if (markdown) track('Element', 'Changed', 'ArticlePaste');
-        const doc = blocksToDoc(blocks);
-        const first = doc.firstChild!;
-        const last = doc.lastChild!;
-        return new Slice(doc.content, first.isTextblock ? 1 : 0, last.isTextblock ? 1 : 0);
-      },
-      // Into an empty block, pasted text comes whole: the block gives its place to the pasted
-      // blocks, the first keeping its own style (a heading stays a heading).
-      handlePaste: (v, event) => {
-        const data = event.clipboardData;
-        if (!data || data.types.includes('text/html')) return false;
-        const text = data.getData('text/plain');
-        const { $from, empty } = v.state.selection;
-        if (!empty || $from.depth < 1 || $from.parent.content.size > 0) return false;
-        if ($from.parent.type.spec.code) return false;
-        const markdown = looksLikeMarkdown(text);
-        if (!markdown && !text.includes('\n')) return false;
-        const blocks = markdown ? parseMarkdownBlocks(text) : plainTextBlocks(text);
-        if (blocks.length === 0) return false;
-        const nodes: PMNode[] = [];
-        blocksToDoc(blocks).forEach((n) => nodes.push(n));
-        const start = $from.before(1);
-        const tr = v.state.tr.replaceWith(start, $from.after(1), nodes);
-        const end = start + nodes.reduce((n, node) => n + node.nodeSize, 0);
-        tr.setSelection(Selection.near(tr.doc.resolve(end), -1)).setMeta('uiEvent', 'paste');
-        v.dispatch(tr.scrollIntoView());
-        return true;
-      },
+      ...articlePasteProps,
       dispatchTransaction(tr: Transaction) {
         const v = viewRef.current;
         if (!v) return;
@@ -529,277 +480,16 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     viewRef.current = view;
     // A handle for driving the writing in development (browser checks); never in production.
     if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__articleView', view);
-    // Canvas px per screen px of the writing, and the writing's frame on the canvas.
-    const scaleAndFrame = () => {
-      const p = latest.current;
-      const frame = flowFrame(p.pages, p.margin);
-      const root = view.dom.getBoundingClientRect();
-      const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-      return { frame, root, z };
-    };
-    // The block boundary nearest a canvas point, by the blocks' own boxes (an element dragged over
-    // the writing covers the point, so a hit test there finds the element): the block whose box (in
-    // the point's column) is nearest, before it when the point is in its upper half. With the drop
-    // caret for it: a line across the column at the boundary, in canvas px. A block named `skipId`
-    // (the zone being moved) is never a neighbour.
-    const boundaryNear = (near: { x: number; y: number }, skipId: string | null) => {
-      const { frame, root, z } = scaleAndFrame();
-      const left = root.left + (near.x - frame.x) * z;
-      const top = root.top + (near.y - frame.y) * z;
-      let best: { pos: number; size: number; before: boolean; d: number; r: DOMRect } | null = null;
-      let pos = 0;
-      view.state.doc.forEach((node) => {
-        const dom = view.nodeDOM(pos) as HTMLElement | null;
-        if (node.attrs.id !== skipId)
-          for (const r of dom ? Array.from(dom.getClientRects()) : []) {
-            if (left < r.left - 24 * z || left > r.right + 24 * z) continue;
-            const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
-            if (!best || d < best.d)
-              best = { pos, size: node.nodeSize, before: top < r.top + r.height / 2, d, r };
-          }
-        pos += node.nodeSize;
-      });
-      const found = best as { pos: number; size: number; before: boolean; r: DOMRect } | null;
-      if (!found) return null;
-      // The caret spans the column the block sits in.
-      const index = columnAt(frame, (found.r.left - root.left) / z);
-      return {
-        pos: found.before ? found.pos : found.pos + found.size,
-        caret: {
-          x: frame.x + index * frame.stride,
-          y: frame.y + ((found.before ? found.r.top : found.r.bottom) - root.top) / z,
-          width: frame.columnWidth,
-        },
-      };
-    };
-    // Where a zone now in the writing landed, the writing taken as written: the host writes these
-    // blocks, the zone placed, in one edit.
-    const landedOf = (id: string) => {
-      const { frame, root, z } = scaleAndFrame();
-      const el = view.dom.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
-      if (!el) return null;
-      const r = el.getBoundingClientRect();
-      const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
-      const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-      committed.current = { ...committed.current, blocks };
-      if (idle.current !== null) {
-        window.clearTimeout(idle.current);
-        idle.current = null;
-      }
-      lastLocal.current = Date.now();
-      return {
-        id,
-        blocks,
-        index: place.index,
-        x: Math.round(place.x * 2) / 2,
-        y: Math.round(place.y * 2) / 2,
-      };
-    };
-    handleRef.current = {
-      flow: latest.current.flow,
-      run: (command: Command) => {
-        const ok = command(view.state, view.dispatch, view);
-        view.focus();
-        return ok;
-      },
-      can: (command: Command) => command(view.state, undefined, view),
-      insert: (nodes: PMNode[]) => {
-        insertBlocksAfterCaret(nodes)(view.state, view.dispatch, view);
-        view.focus();
-      },
+    handleRef.current = createArticleHandle({
+      view,
+      latest,
+      committed,
+      idle,
+      lastLocal,
+      barsCache,
       flush,
-      takeBlocks: () => {
-        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-        committed.current = { ...committed.current, blocks };
-        if (idle.current !== null) {
-          window.clearTimeout(idle.current);
-          idle.current = null;
-        }
-        return blocks;
-      },
-      undo: () => {
-        flush();
-        markUndoing();
-        latest.current.onUndo();
-        view.focus();
-      },
-      redo: () => {
-        flush();
-        markUndoing();
-        latest.current.onRedo();
-        view.focus();
-      },
-      focus: () => view.focus(),
-      selection: () => selectionStateOf(view.state),
-      claimLayout: () => {
-        lastLocal.current = Date.now();
-      },
-      caretRect: () => {
-        try {
-          const c = view.coordsAtPos(view.state.selection.head);
-          return new DOMRect(c.left, c.top, 1, c.bottom - c.top);
-        } catch {
-          return null;
-        }
-      },
-      blocksByPage: () => {
-        const { frame, root, z } = scaleAndFrame();
-        const out: string[][] = latest.current.pages.map(() => []);
-        let pos = 0;
-        view.state.doc.forEach((node) => {
-          const r = (view.nodeDOM(pos) as HTMLElement | null)?.getClientRects()[0];
-          const index = r
-            ? Math.min(out.length - 1, columnAt(frame, (r.left - root.left) / z))
-            : out.length - 1;
-          out[Math.max(0, index)]?.push(node.attrs.id as string);
-          pos += node.nodeSize;
-        });
-        return out;
-      },
-      markNote: (id, kind) => {
-        const { from, to, empty } = view.state.selection;
-        if (empty) return null;
-        const mark = articleSchema.marks.note!.create({ id, kind });
-        view.dispatch(view.state.tr.addMark(from, to, mark));
-        const { frame, root, z } = scaleAndFrame();
-        const el = view.dom.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(id)}"]`);
-        const r = el?.getClientRects()[0];
-        if (!r) return null;
-        const place = pagePlaceOf(frame, {
-          x: (r.left - root.left) / z,
-          y: (r.top - root.top) / z,
-        });
-        // Taken as written: the host writes these blocks and the marker in one edit.
-        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-        committed.current = { ...committed.current, blocks };
-        if (idle.current !== null) {
-          window.clearTimeout(idle.current);
-          idle.current = null;
-        }
-        lastLocal.current = Date.now();
-        return { blocks, place: { id, index: place.index, y: place.y, height: r.height / z } };
-      },
-      boundaryNear: (near, skipId) => {
-        const found = boundaryNear(near, skipId);
-        return found ? { pos: found.pos, caret: found.caret } : null;
-      },
-      moveZone: (id, near) => {
-        const doc = view.state.doc;
-        let from = -1;
-        doc.forEach((n, pos) => {
-          if (n.attrs.id === id && n.type === articleSchema.nodes.zone) from = pos;
-        });
-        const node = from >= 0 ? doc.nodeAt(from) : null;
-        const found = boundaryNear(near, id);
-        if (!node || !found) return null;
-        // Dropped where it already is: nothing moves.
-        if (found.pos === from || found.pos === from + node.nodeSize) return null;
-        const tr = view.state.tr.delete(from, from + node.nodeSize);
-        const at = tr.mapping.map(found.pos);
-        tr.insert(at, node);
-        tr.setSelection(NodeSelection.create(tr.doc, at));
-        view.dispatch(tr);
-        return landedOf(id);
-      },
-      insertZone: (spec, near) => {
-        const doc = view.state.doc;
-        const ids = new Set<string>();
-        doc.forEach((n) => ids.add(n.attrs.id as string));
-        const id = nextArticleBlockId(ids);
-        const node = articleSchema.nodes.zone!.create({ id, ...spec });
-        // The block boundary nearest the point; with no point, after the caret's block.
-        let at = doc.content.size;
-        const blockAt = (at: number) => {
-          const $p = doc.resolve(Math.min(at, doc.content.size));
-          return $p.depth >= 1 ? { start: $p.before(1), end: $p.after(1) } : null;
-        };
-        if (near) {
-          const found = boundaryNear(near, null);
-          if (found) at = found.pos;
-        } else {
-          const block = blockAt(view.state.selection.from);
-          if (block) at = block.end;
-        }
-        // An empty paragraph beside the boundary, with the caret in it, gives its place up.
-        const caretBlock = blockAt(view.state.selection.from);
-        const emptyAt = (start: number) => {
-          const n = doc.nodeAt(start);
-          return n?.type === articleSchema.nodes.paragraph && n.content.size === 0 ? n : null;
-        };
-        let replaceTo = at;
-        if (caretBlock && view.state.selection.empty) {
-          const n = emptyAt(caretBlock.start);
-          if (n && (caretBlock.end === at || caretBlock.start === at)) {
-            at = caretBlock.start;
-            replaceTo = caretBlock.end;
-          }
-        }
-        const tr = view.state.tr.replaceWith(at, replaceTo, node);
-        // Always somewhere to write after it; the caret goes there, so writing carries on below.
-        if (at + node.nodeSize >= tr.doc.content.size)
-          tr.insert(tr.doc.content.size, articleSchema.nodes.paragraph!.create());
-        tr.setSelection(TextSelection.near(tr.doc.resolve(at + node.nodeSize + 1)));
-        view.dispatch(tr);
-        return landedOf(id);
-      },
-      snapshot: () => {
-        const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin);
-        const root = view.dom.getBoundingClientRect();
-        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-        return snapshotWriting(
-          view.dom,
-          (x, y) => ({ x: frame.x + (x - root.left) / z, y: frame.y + (y - root.top) / z }),
-          z,
-        );
-      },
-      bars: (ink: string) => {
-        // One walk of the writing per layout, whoever asks (the Map, every slide thumbnail).
-        if (barsCache.current?.ink === ink) return barsCache.current.ops;
-        const ops = (() => {
-          const p = latest.current;
-          const frame = flowFrame(p.pages, p.margin);
-          const root = view.dom.getBoundingClientRect();
-          const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-          return snapshotBars(
-            view.dom,
-            (x, y) => ({ x: frame.x + (x - root.left) / z, y: frame.y + (y - root.top) / z }),
-            z,
-            ink,
-          );
-        })();
-        barsCache.current = { ink, ops };
-        return ops;
-      },
-      focusAt: (clientX: number, clientY: number) => {
-        const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin);
-        const root = view.dom.getBoundingClientRect();
-        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-        // Into the text column of the page pressed, then to the nearest place in the writing.
-        const col = columnAt(frame, (clientX - root.left) / z);
-        const colLeft = root.left + col * frame.stride * z;
-        const x = Math.max(colLeft + 1, Math.min(clientX, colLeft + frame.columnWidth * z - 1));
-        const y = Math.max(root.top + 1, Math.min(clientY, root.bottom - 1));
-        const hit = view.posAtCoords({ left: x, top: y });
-        // Below the writing (nothing laid out there): the end of the writing.
-        const pos = hit?.pos ?? view.state.doc.content.size;
-        view.dispatch(view.state.tr.setSelection(Selection.near(view.state.doc.resolve(pos))));
-        view.focus();
-      },
-      caretCanvasPoint: () => {
-        const p = latest.current;
-        try {
-          const c = view.coordsAtPos(view.state.selection.head);
-          const frame = flowFrame(p.pages, p.margin);
-          const root = view.dom.getBoundingClientRect();
-          const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-          return { x: frame.x + (c.left - root.left) / z, y: frame.y + (c.top - root.top) / z };
-        } catch {
-          return null;
-        }
-      },
-    };
+      undoRedo,
+    });
     const unregister = registerArticleHandle(handleRef.current);
     scheduleMeasure();
     // Web fonts arriving change every line's length.
@@ -849,7 +539,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     view.setProps({});
     scheduleMeasure();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.doc]);
+  }, [props.doc, undoSeq]);
 
   // Pages, zoom, style or rights changed: the box, its columns and its look follow.
   useLayoutEffect(() => {

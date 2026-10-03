@@ -45,7 +45,8 @@ export function SlashMenu({
       ?.querySelector(`[data-slash-index="${index}"]`)
       ?.scrollIntoView({ block: 'nearest' });
   }, [index]);
-  // The entries by group, each group a labelled set of options (their headings are its name).
+  // The entries by group, each group a labelled set of options (their headings are its name). A
+  // search ranks across groups, so a group can come back after another: a run of its own each time.
   const groups: { name: string; entries: { item: SlashItem; i: number }[] }[] = [];
   items.forEach((item, i) => {
     const last = groups[groups.length - 1];
@@ -74,7 +75,7 @@ export function SlashMenu({
           <p className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">No blocks match</p>
         ) : (
           groups.map((group) => (
-            <div key={group.name} role="group" aria-label={group.name}>
+            <div key={`${group.name}-${group.entries[0]!.i}`} role="group" aria-label={group.name}>
               <p
                 aria-hidden
                 className="px-2.5 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400"
