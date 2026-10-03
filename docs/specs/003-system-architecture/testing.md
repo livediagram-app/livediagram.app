@@ -146,9 +146,8 @@ tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
 
 Checks, Tests and Build are required status checks on `main`, with E2E Smoke's Chromium smoke
-([End-to-end tests](e2e-smoke.md#when-it-runs)). `ci.yml` also takes `workflow_dispatch`, so a
-workflow that commits to a pull request's branch can run it on that commit
-([Iconography](../004-interface-design/iconography.md)).
+([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
+`workflow_dispatch` run on the same commit is not attached to it.
 
 Coverage is a separate step because it enforces the thresholds above — and
 because running it at all keeps the coverage tooling exercised. It previously

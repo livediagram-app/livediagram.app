@@ -2,8 +2,8 @@ name: Lucide re-vendor
 
 # A Dependabot bump of lucide-static leaves the vendored glyphs and the manifest's pin behind, which
 # packages/icons' tests fail on (docs/specs/004-interface-design/iconography.md). This regenerates
-# them and commits to the pull request. A commit pushed with GITHUB_TOKEN starts no pull_request
-# run, so it then dispatches CI and E2E Smoke on that commit for the required checks.
+# them and commits to the pull request. GitHub holds the pull_request runs a bot's push starts
+# (action_required), and only pull_request runs count as the PR's required checks, so it approves them.
 on:
   pull_request:
     paths:
@@ -11,11 +11,12 @@ on:
 
 permissions:
   contents: write # push the regenerated files to the Dependabot branch
-  actions: write # dispatch ci.yml and e2e.yml on that commit
+  actions: write # approve the pull_request runs that commit starts
 
 concurrency:
   group: lucide-revendor-${{ github.head_ref }}
-  cancel-in-progress: true
+  # Queued, not cancelled: this workflow approves its own held run, which must not cancel the approver.
+  cancel-in-progress: false
 
 jobs:
   revendor:
@@ -47,7 +48,7 @@ jobs:
       - name: Re-vendor
         run: pnpm --filter @livediagram/icons vendor:lucide --adopt-installed
 
-      - name: Commit and dispatch the checks
+      - name: Commit and approve the checks
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.head_ref }}
@@ -63,6 +64,22 @@ jobs:
           git commit -m 'Re-vendor Lucide for the bumped lucide-static'
           git push origin "HEAD:${BRANCH}"
           echo "lucide-revendor: pushed $(git rev-parse --short HEAD) to ${BRANCH}"
-          gh workflow run ci.yml --ref "${BRANCH}"
-          gh workflow run e2e.yml --ref "${BRANCH}"
-          echo "lucide-revendor: dispatched CI and E2E Smoke on ${BRANCH}"
+          sha="$(git rev-parse HEAD)"
+          # The held runs appear within seconds of the push; CI, E2E Smoke and CodeQL are required.
+          approved=''
+          for attempt in $(seq 1 24); do
+            for id in $(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${sha}&status=action_required" -q '.workflow_runs[].id'); do
+              gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/approve" > /dev/null
+              name="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}" -q .name)"
+              echo "lucide-revendor: approved ${name} (run ${id})"
+              approved="${approved}|${name}|"
+            done
+            missing=''
+            for required in 'CI' 'E2E Smoke' 'CodeQL'; do
+              case "${approved}" in *"|${required}|"*) ;; *) missing="${missing} ${required};" ;; esac
+            done
+            [ -z "${missing}" ] && exit 0
+            sleep 5
+          done
+          echo "::error::lucide-revendor: no held run to approve for${missing} on ${sha}; approve it in the Actions tab"
+          exit 1

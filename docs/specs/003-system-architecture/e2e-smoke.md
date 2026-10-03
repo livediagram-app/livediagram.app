@@ -27,9 +27,8 @@ The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggere
 - **`pull_request`**: every pull request, the gate;
 - **push to `main`**: the merged result, since a pull request is tested against the `main` it
   was opened on; and
-- **`workflow_dispatch`**: by hand against any branch, and by the Lucide re-vendor workflow
-  after it commits ([Iconography](../004-interface-design/iconography.md)), whose commit no
-  `pull_request` event announces.
+- **`workflow_dispatch`**: by hand against any branch; such a run is not attached to a pull
+  request, so it never stands in for the required check.
 
 A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
 pull request never queues two runs of the suite.

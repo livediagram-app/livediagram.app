@@ -1,8 +1,7 @@
 name: E2E Smoke
 
 # Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md "When it runs"): a per-PR merge gate.
-# Its job is a required check on main; it needs no secret, so fork PRs run it too. Dispatched by
-# lucide-revendor.yml after it commits to a Dependabot PR.
+# Its job is a required check on main; it needs no secret, so fork PRs run it too.
 on:
   pull_request:
   push:
