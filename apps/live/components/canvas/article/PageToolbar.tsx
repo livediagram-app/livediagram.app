@@ -1,10 +1,10 @@
 'use client';
 
 // The page toolbar (docs/specs/007-editor/article-pages.md "The page toolbar"): formatting for the
-// article being written in, a card centred in the top margin of the page holding the caret, at one
-// screen size, dressed as the Toolbar layout's strip (toolbar-surface.ts). Zoomed out so far the
-// margin cannot hold it, the card sits on the page's top edge instead; scrolled past the page's top,
-// it pins under the canvas's top edge while the page is in view. Its buttons never take focus: the caret stays in the writing.
+// article being worked on (or the article page under the pointer), a card fixed at the top of its
+// page, inside it, centred in the top margin, at one screen size, dressed as the Toolbar layout's
+// strip (toolbar-surface.ts). It never leaves the page: it narrows to the page's width on screen,
+// and goes from view with the page's top. Its buttons never take focus: the caret stays in the writing.
 // Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
 // the less used formats are menus (page-toolbar-panels.tsx). It follows the page by measuring the
 // sheet each frame while it is shown (a pan or a zoom moves it with no render).
@@ -30,9 +30,12 @@ import {
 } from '@/components/chrome/toolbar-surface';
 import { Portal } from '@/components/primitives/Portal';
 import {
+  articleHandleOf,
+  clearActiveArticle,
   requestStylePanel,
   useActiveArticle,
   useArticleLinkRequest,
+  type ActiveArticle,
 } from '@/lib/article/article-editor-store';
 import {
   clearFormatting,
@@ -103,8 +106,11 @@ type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'more' |
 export function PageToolbar({
   accent,
   topRoomOf,
+  articlePages,
   onInsert,
 }: {
+  // The article pages on the tab, each with its article: what a hover or a press is measured on.
+  articlePages: readonly { id: string; flow: string }[];
   // The screen px of a page's top margin at the current zoom: the room the band sits in.
   topRoomOf: (pageId: string) => number;
   // The article's accent (the theme's when it has none of its own).
@@ -112,7 +118,21 @@ export function PageToolbar({
   // An insert the writing alone cannot make (an object or a drawing): handled by the host.
   onInsert?: (what: ObjectInsert) => void;
 }) {
-  const active = useActiveArticle();
+  const selected = useActiveArticle();
+  const hovered = useHoveredArticlePage(articlePages);
+  // Shown for the article being worked on, else for the article page under the pointer.
+  const hoverHandle = !selected && hovered ? articleHandleOf(hovered.flow) : undefined;
+  const active: ActiveArticle | null =
+    selected ??
+    (hovered && hoverHandle
+      ? {
+          handle: hoverHandle,
+          pageId: hovered.pageId,
+          selection: hoverHandle.selection(),
+          focused: false,
+        }
+      : null);
+  useOffPagePressClears(selected, articlePages);
   const bar = useRef<HTMLDivElement>(null);
   // Read each frame: the margin changes with the zoom and the article's style, with no new effect.
   const topRoom = useRef(topRoomOf);
@@ -151,16 +171,19 @@ export function PageToolbar({
         (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
       const h = el.offsetHeight;
       const w = el.offsetWidth;
-      const fits = topRoom.current(pageId) >= h + MARGIN_PAD * 2;
-      const natural = fits ? r.top + Math.max(0, (topRoom.current(pageId) - h) / 2) : r.top - h;
-      const pinned = natural < floor;
-      const top = pinned ? floor : natural;
-      const visible = r.bottom > floor + h && r.top < c.bottom;
-      const left = Math.max(c.left + 8, Math.min(r.left + r.width / 2 - w / 2, c.right - w - 8));
+      // Always at the page's top, inside it: centred in the top margin, or just under the page's
+      // top edge when the margin is thinner than the card. Off with the page's top.
+      const top = r.top + Math.max(MARGIN_PAD, (topRoom.current(pageId) - h) / 2);
+      const visible = top >= floor && top + h <= c.bottom && r.bottom > top + h;
+      // Inside the page across, and inside the canvas: a page narrower on screen than the card
+      // narrows it (its controls scroll).
+      const lo = Math.max(c.left, r.left) + 8;
+      const hi = Math.min(c.right, r.right) - 8;
+      const room = Math.max(0, hi - lo);
+      if (el.style.maxWidth !== `${room}px`) el.style.maxWidth = `${room}px`;
+      const left = Math.max(lo, Math.min(r.left + r.width / 2 - w / 2, hi - w));
       el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
       el.style.visibility = visible ? 'visible' : 'hidden';
-      const place = pinned ? 'pinned' : fits ? 'margin' : 'edge';
-      if (el.dataset.place !== place) el.dataset.place = place;
     };
     follow();
     return () => cancelAnimationFrame(raf);
@@ -228,7 +251,7 @@ export function PageToolbar({
         data-article-keep-active=""
         onMouseDown={(e) => e.preventDefault()}
         onPointerDown={(e) => e.stopPropagation()}
-        className={`fixed left-0 top-0 z-[var(--z-overlay)] max-w-[calc(100vw-16px)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`}
+        className={`fixed left-0 top-0 z-[var(--z-overlay)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`}
         style={{ visibility: 'hidden' }}
       >
         <button
@@ -452,4 +475,97 @@ function Button({
       </button>
     </Tooltip>
   );
+}
+
+// Screen px of slack around a page that still counts as on it, and how long the pointer may be off
+// an article page before its toolbar goes (time to cross the gap to the card).
+const HOVER_SLACK = 12;
+const HOVER_GRACE_MS = 250;
+
+const sheetOf = (pageId: string) =>
+  document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
+
+const onSheet = (pageId: string, x: number, y: number, slack: number) => {
+  const r = sheetOf(pageId)?.getBoundingClientRect();
+  return (
+    !!r &&
+    x >= r.left - slack &&
+    x <= r.right + slack &&
+    y >= r.top - slack &&
+    y <= r.bottom + slack
+  );
+};
+
+// The article page under the pointer (kept a moment after it leaves), or null.
+function useHoveredArticlePage(
+  pages: readonly { id: string; flow: string }[],
+): { flow: string; pageId: string } | null {
+  const [hovered, setHovered] = useState<{ flow: string; pageId: string } | null>(null);
+  const latest = useRef(pages);
+  useLayoutEffect(() => {
+    latest.current = pages;
+  });
+  useLayoutEffect(() => {
+    let frame = 0;
+    let leave = 0;
+    let x = 0;
+    let y = 0;
+    const look = () => {
+      frame = 0;
+      const page = latest.current.find((p) => onSheet(p.id, x, y, HOVER_SLACK));
+      if (page) {
+        window.clearTimeout(leave);
+        leave = 0;
+        setHovered((h) => (h?.pageId === page.id ? h : { flow: page.flow, pageId: page.id }));
+      } else if (!leave) {
+        leave = window.setTimeout(() => {
+          leave = 0;
+          setHovered(null);
+        }, HOVER_GRACE_MS);
+      }
+    };
+    const move = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+      // Over the toolbar or its menus: the page it is for stays.
+      if ((e.target as Element | null)?.closest?.('[data-article-keep-active]')) {
+        window.clearTimeout(leave);
+        leave = 0;
+        return;
+      }
+      x = e.clientX;
+      y = e.clientY;
+      if (!frame) frame = requestAnimationFrame(look);
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', move);
+      if (frame) cancelAnimationFrame(frame);
+      window.clearTimeout(leave);
+    };
+  }, []);
+  return hovered;
+}
+
+// A press off the active article's pages (and off its toolbar, menus and zone bar) ends working on
+// it: its toolbar goes.
+function useOffPagePressClears(
+  active: ActiveArticle | null,
+  pages: readonly { id: string; flow: string }[],
+) {
+  const flow = active?.handle.flow ?? null;
+  const latest = useRef(pages);
+  useLayoutEffect(() => {
+    latest.current = pages;
+  });
+  useLayoutEffect(() => {
+    if (!flow) return;
+    const press = (e: PointerEvent) => {
+      if ((e.target as Element | null)?.closest?.('[data-article-keep-active]')) return;
+      const own = latest.current.filter((p) => p.flow === flow);
+      if (own.some((p) => onSheet(p.id, e.clientX, e.clientY, 0))) return;
+      clearActiveArticle(flow);
+    };
+    window.addEventListener('pointerdown', press, true);
+    return () => window.removeEventListener('pointerdown', press, true);
+  }, [flow]);
 }

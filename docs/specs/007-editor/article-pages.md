@@ -149,12 +149,15 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 
 ## The page toolbar
 
-- **Where**: a card centred in the top margin of the page holding the caret, part of the page
-  rather than floating over the canvas, while the writing of an article has the caret or a
-  selection, for someone who may edit. Held at one screen size at any zoom. Zoomed out until the
-  margin cannot hold it, the card sits on the page's top edge instead. When the page's top is off
-  the top of the canvas, the card pins under the canvas's top edge (below the Toolbar layout's
-  strip) while any of the page is in view. It never takes focus from the writing.
+- **Where**: a card fixed at the top of the page, inside it, centred in the top margin (just under
+  the page's top edge when the margin is thinner than the card); it never leaves the page: a page
+  narrower on screen than the card narrows it (its controls scroll), and it goes from view with
+  the page's top. Held at one screen size at any zoom. It never takes focus from the writing.
+- **When**: for someone who may edit, on the page of the article being worked on, from the moment
+  its writing takes the caret until a press lands off that article's pages (a press on its paper,
+  on its toolbar, menus or zone bar, or on an element on it keeps it); else on the article page
+  under the pointer (a moment's grace after the pointer leaves, so it can cross to the card). A
+  control used while hovering acts on the article's own selection and puts the caret back in it.
 - **Look**: the Toolbar layout's card exactly (`toolbar-surface.ts`): the same surface, 36 px
   controls, hairline dividers, and the Style menu's trigger in the brand tint of the palette's
   pickers, so it reads as the same product as the panels around it.

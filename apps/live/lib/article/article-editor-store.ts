@@ -56,6 +56,8 @@ export type ArticleEditorHandle = {
     x: number;
     y: number;
   } | null;
+  // What the selection is now (styles, marks, list), whether or not the writing has focus.
+  selection: () => ArticleSelectionState;
   // The caret put at the writing nearest a screen point (a press on the page's blank paper).
   focusAt: (clientX: number, clientY: number) => void;
   // The caret's place on the canvas (for an insert there).
@@ -86,6 +88,9 @@ export type ActiveArticle = {
   // The page the caret is on.
   pageId: string | null;
   selection: ArticleSelectionState;
+  // Whether the writing has focus now. An article stays active after its writing loses focus
+  // (a press on its page, the toolbar, a zone's element) until a press lands off its pages.
+  focused: boolean;
 };
 
 let active: ActiveArticle | null = null;
@@ -97,6 +102,13 @@ const emit = () => {
 export function setActiveArticle(next: ActiveArticle | null): void {
   if (active === next) return;
   active = next;
+  emit();
+}
+
+/** The active article, its writing no longer focused: kept, so its page keeps its toolbar. */
+export function blurActiveArticle(flow: string): void {
+  if (active?.handle.flow !== flow || !active.focused) return;
+  active = { ...active, focused: false };
   emit();
 }
 

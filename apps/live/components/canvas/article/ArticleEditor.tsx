@@ -42,6 +42,7 @@ import {
   clearActiveArticle,
   registerArticleHandle,
   setActiveArticle,
+  blurActiveArticle,
   type ArticleEditorHandle,
 } from '@/lib/article/article-editor-store';
 import { articleSchema } from '@/lib/article/article-schema';
@@ -225,6 +226,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       handle: handleRef.current,
       pageId: caretPage(view),
       selection: selectionStateOf(view.state),
+      focused: true,
     });
   };
 
@@ -383,15 +385,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         },
         blur: (v) => {
           flush();
-          // The toolbar and its popovers keep the article active while focus is in them.
+          // The article stays active (its page keeps its toolbar) until a press lands off its
+          // pages (PageToolbar); only the focus goes.
           window.setTimeout(() => {
-            const el = document.activeElement;
-            if (
-              v.hasFocus() ||
-              (el instanceof HTMLElement && el.closest('[data-article-keep-active]'))
-            )
-              return;
-            clearActiveArticle(latest.current.flow);
+            if (!v.hasFocus()) blurActiveArticle(latest.current.flow);
           }, 0);
           return false;
         },
@@ -492,6 +489,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         view.focus();
       },
       focus: () => view.focus(),
+      selection: () => selectionStateOf(view.state),
       caretRect: () => {
         try {
           const c = view.coordsAtPos(view.state.selection.head);

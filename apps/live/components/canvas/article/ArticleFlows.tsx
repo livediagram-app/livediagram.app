@@ -69,12 +69,16 @@ export function ArticleFlows({
     ? zoneTarget(
         byFlow,
         articles.flows,
-        active?.selection.zoneId ?? null,
+        active?.focused ? active.selection.zoneId : null,
         active?.handle.flow ?? null,
         selectedIds,
         elements,
       )
     : null;
+  const articlePages = useMemo(
+    () => row.flatMap((p) => (p.flow ? [{ id: p.id, flow: p.flow }] : [])),
+    [row],
+  );
   const zoneDrag = useZoneDrag({
     zoom,
     pagesOf: (flow) => byFlow.get(flow),
@@ -159,6 +163,7 @@ export function ArticleFlows({
         {articles.editable ? (
           <PageToolbar
             accent={view.themeAccent}
+            articlePages={articlePages}
             topRoomOf={(pageId) => {
               const flow = row.find((p) => p.id === pageId)?.flow;
               const doc = flow ? articles.flows[flow] : undefined;
