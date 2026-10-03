@@ -507,8 +507,15 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
   'Tab|Changed|PageAdded': 'Someone added a page to an infographic tab.',
   'Tab|Changed|PageRemoved': 'Someone deleted a page from an infographic tab.',
-  'Tab|Changed|PagePortrait': "Someone turned an infographic tab's A4 page to portrait.",
-  'Tab|Changed|PageLandscape': "Someone turned an infographic tab's A4 page to landscape.",
+  'Tab|Changed|PagePortrait': 'Someone turned an infographic page to portrait.',
+  'Tab|Changed|PageLandscape': 'Someone turned an infographic page to landscape.',
+  'Tab|Changed|PageSize': 'Someone changed an infographic page to another size.',
+  'Tab|Changed|PageBackground': "Someone changed an infographic page's background colour.",
+  'Tab|Changed|PagePattern': "Someone changed an infographic page's background pattern.",
+  'Tab|Changed|PageRenamed': 'Someone renamed an infographic page.',
+  'Tab|Changed|PageDuplicated': 'Someone duplicated an infographic page with its content.',
+  'Tab|Changed|PageMoved': 'Someone moved an infographic page left or right in its row.',
+  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an infographic page.',
   'Tab|Changed|OpensInInfographic':
     'Someone set a tab to open in Infographic mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':

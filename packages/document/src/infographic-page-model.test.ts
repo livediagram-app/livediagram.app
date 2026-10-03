@@ -12,6 +12,7 @@ import {
 } from './infographic-page';
 import {
   elementIdsOnPage,
+  elementPageSurfaces,
   pageFillTone,
   pageIsDark,
   pageSurface,
@@ -176,5 +177,22 @@ describe('page backgrounds', () => {
       'light',
     );
     expect(pageSurface({})).toBeNull();
+  });
+
+  it('ink elements on a filled page for that page, and leave the rest to the canvas', () => {
+    const pages = layOutInfographicPages([
+      {
+        id: 'a',
+        orientation: 'portrait',
+        background: { fill: { kind: 'solid', color: '#0f172a' } },
+      },
+      { id: 'b', orientation: 'portrait' },
+    ]);
+    const onA = box('x', 0, 0);
+    const onB = box('y', pages[1]!.rect.x + 50, 0);
+    const off = box('z', 0, 5000);
+    const surfaces = elementPageSurfaces([onA, onB, off], pages);
+    expect([...surfaces]).toEqual([['x', 'dark']]);
+    expect(elementPageSurfaces([onA], layOutInfographicPages([pages[1]!])).size).toBe(0);
   });
 });

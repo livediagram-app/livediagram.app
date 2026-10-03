@@ -1,14 +1,16 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { LaidOutPage } from '@livediagram/document';
+import { elementPageSurfaces, type Element, type LaidOutPage } from '@livediagram/document';
+import { PageSurfacesProvider } from './CanvasSurfaceContext';
 
 // Infographic mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md "The
 // pages"): whatever hangs off a page is hidden, and cannot be pressed, as if the pages were the
 // only paper. A layer over the canvas world clipped to the pages, holding the element views only:
 // the selection grips are portalled to their own layer above it, so an element hanging off a page
 // still shows every handle. The layer takes no presses itself (globals.css [data-page-clip]), so a
-// press on the empty canvas still reaches the canvas.
+// press on the empty canvas still reaches the canvas. It also inks each element for the page it is
+// on (docs/specs/007-editor/infographic-pages.md "A dark page has light ink").
 
 /** The pages as one CSS clip path, in canvas coordinates (the world's origin). */
 export function pagesClipPath(pages: readonly LaidOutPage[]): string {
@@ -20,20 +22,24 @@ export function pagesClipPath(pages: readonly LaidOutPage[]): string {
 
 export function InfographicPageClip({
   pages,
+  elements,
   children,
 }: {
   // Absent outside Infographic mode, where nothing is clipped.
   pages: readonly LaidOutPage[] | null;
+  elements: Element[];
   children: ReactNode;
 }) {
   if (!pages) return <>{children}</>;
   return (
-    <div
-      data-page-clip=""
-      className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"
-      style={{ clipPath: pagesClipPath(pages) }}
-    >
-      {children}
-    </div>
+    <PageSurfacesProvider surfaces={elementPageSurfaces(elements, pages)}>
+      <div
+        data-page-clip=""
+        className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"
+        style={{ clipPath: pagesClipPath(pages) }}
+      >
+        {children}
+      </div>
+    </PageSurfacesProvider>
   );
 }

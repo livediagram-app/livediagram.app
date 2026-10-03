@@ -1,0 +1,261 @@
+'use client';
+
+// A page's panel (docs/specs/007-editor/infographic-pages.md "page panel"): opened from the cog
+// above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
+// Its name, size, orientation and background, then the page's actions. Every hover over a
+// background previews on the page itself. It closes on an outside press, Escape, or the canvas
+// panning or zooming under it (it would no longer sit by its cog).
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { PAGE_NAME_MAX, type LaidOutPage, type PageBackground } from '@livediagram/document';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DuplicateIcon,
+  Tooltip,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+} from '@livediagram/ui';
+import { Portal } from '@/components/primitives/Portal';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import type { InfographicPageEdits } from '@/hooks/editor/useInfographicPage';
+import {
+  BackgroundSection,
+  OrientationSection,
+  SizeSection,
+} from './infographic-page-panel-sections';
+
+const WIDTH = 304;
+const GAP = 6;
+// The sheets' own ease (InfographicPages).
+export const PAGE_EASE_MS = 200;
+
+export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
+
+export function InfographicPagePanel({
+  page,
+  count,
+  anchor,
+  edit,
+  onPreview,
+  onClose,
+}: {
+  page: LaidOutPage;
+  count: number;
+  anchor: HTMLElement;
+  edit: InfographicPageEdits;
+  onPreview: (preview: PagePreview) => void;
+  onClose: (restoreFocus: boolean) => void;
+}) {
+  const panel = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  const place = useCallback(() => {
+    const a = anchor.getBoundingClientRect();
+    const h = panel.current?.offsetHeight ?? 0;
+    // Beside the page (right of its cog, so the sheet stays in view for the previews) while
+    // there is room; else right-aligned under the cog.
+    const beside = a.right + GAP + WIDTH + EDGE <= window.innerWidth;
+    const left = beside
+      ? a.right + GAP
+      : Math.max(EDGE, Math.min(a.right - WIDTH, window.innerWidth - WIDTH - EDGE));
+    const want = beside ? a.top : a.bottom + GAP;
+    // As high as the window needs to fit it (it then scrolls).
+    const top = Math.max(EDGE, Math.min(want, window.innerHeight - h - EDGE));
+    setPos({ left, top });
+  }, [anchor]);
+  useLayoutEffect(() => {
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [place]);
+  // The page moved or changed size: follow its cog once the sheet has eased into place.
+  const { x, y, width } = page.rect;
+  useEffect(() => {
+    const t = window.setTimeout(place, PAGE_EASE_MS + 20);
+    return () => window.clearTimeout(t);
+  }, [place, x, y, width]);
+
+  useClickOutside(panel, () => onClose(false), true, '[data-page-panel-trigger]');
+  useEscape(() => onClose(true), { capture: true, stopPropagation: true });
+  // A wheel over the canvas pans or zooms it away from the cog: the panel goes with the gesture.
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (e.target instanceof Node && panel.current?.contains(e.target)) return;
+      onClose(false);
+    };
+    window.addEventListener('wheel', onWheel, { capture: true, passive: true });
+    return () => window.removeEventListener('wheel', onWheel, { capture: true });
+  }, [onClose]);
+  // The preview is the panel's: closing it puts the page back.
+  useEffect(() => () => onPreview(null), [onPreview]);
+
+  const preview = (patch: Partial<PageBackground> | null) =>
+    onPreview(patch ? { pageId: page.id, patch } : null);
+  const placeLabel = `Page ${page.index + 1}`;
+  const title = page.name ?? (count > 1 ? placeLabel : 'Page');
+  return (
+    <Portal>
+      <div
+        ref={panel}
+        role="dialog"
+        aria-label={`${title} settings`}
+        data-page-panel
+        onPointerDown={(e) => e.stopPropagation()}
+        className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white pb-1 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+        style={{
+          left: pos?.left ?? -9999,
+          top: pos?.top ?? -9999,
+          width: WIDTH,
+          maxHeight: `calc(100vh - ${2 * EDGE}px)`,
+        }}
+      >
+        <NameField
+          key={page.id}
+          name={page.name ?? ''}
+          placeholder={count > 1 ? placeLabel : 'Untitled page'}
+          onRename={(name) => edit.rename(page.id, name)}
+        />
+        <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
+        <OrientationSection page={page} onOrientation={(o) => edit.setOrientation(page.id, o)} />
+        <BackgroundSection
+          page={page}
+          onBackground={(patch) => {
+            edit.setBackground(page.id, patch);
+            onPreview(null);
+          }}
+          onPreview={preview}
+        />
+        <PageActions page={page} count={count} edit={edit} onClose={() => onClose(false)} />
+      </div>
+    </Portal>
+  );
+}
+
+// The page's name, renamed as you leave the field, press Enter or close the panel (an outside
+// press closes it before the field would blur, so the close commits it too).
+function NameField({
+  name,
+  placeholder,
+  onRename,
+}: {
+  name: string;
+  placeholder: string;
+  onRename: (name: string) => void;
+}) {
+  const [draft, setDraft] = useState(name);
+  // A rename from elsewhere (undo, a collaborator) replaces the field's text.
+  const [shown, setShown] = useState(name);
+  if (shown !== name) {
+    setShown(name);
+    setDraft(name);
+  }
+  const latest = useRef({ draft, name, onRename });
+  useEffect(() => {
+    latest.current = { draft, name, onRename };
+  });
+  const commit = () => {
+    const { draft: d, name: n, onRename: rename } = latest.current;
+    if (d.trim() !== n) rename(d);
+  };
+  useEffect(() => commit, []);
+  return (
+    <div className="border-b border-slate-100 px-3 pb-2.5 pt-3 dark:border-slate-800">
+      <input
+        type="text"
+        value={draft}
+        maxLength={PAGE_NAME_MAX}
+        placeholder={placeholder}
+        aria-label="Page name"
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+        className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-900 outline-none transition placeholder:font-medium placeholder:text-slate-400 hover:border-slate-200 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100 dark:text-slate-100 dark:hover:border-slate-700 dark:focus:bg-slate-900 dark:focus:ring-brand-500/30"
+      />
+    </div>
+  );
+}
+
+function ActionButton({
+  label,
+  onClick,
+  danger = false,
+  children,
+}: {
+  label: string;
+  onClick?: () => void;
+  danger?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        disabled={!onClick}
+        onClick={onClick}
+        className={`flex h-8 flex-1 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-transparent ${
+          danger
+            ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+        }`}
+      >
+        {children}
+      </button>
+    </Tooltip>
+  );
+}
+
+// Duplicate, move left, move right, delete: one row of icon buttons, each disabled where it has
+// nothing to do (the row's ends, the page limit, the last page).
+function PageActions({
+  page,
+  count,
+  edit,
+  onClose,
+}: {
+  page: LaidOutPage;
+  count: number;
+  edit: InfographicPageEdits;
+  onClose: () => void;
+}) {
+  const { duplicatePage, removePage } = edit;
+  return (
+    <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
+      <ActionButton
+        label="Duplicate page"
+        onClick={duplicatePage ? () => duplicatePage(page.id) : undefined}
+      >
+        <DuplicateIcon className="h-4 w-4" />
+      </ActionButton>
+      <ActionButton
+        label="Move page left"
+        onClick={page.index > 0 ? () => edit.movePage(page.id, -1) : undefined}
+      >
+        <ChevronLeftIcon className="h-4 w-4" />
+      </ActionButton>
+      <ActionButton
+        label="Move page right"
+        onClick={page.index < count - 1 ? () => edit.movePage(page.id, 1) : undefined}
+      >
+        <ChevronRightIcon className="h-4 w-4" />
+      </ActionButton>
+      <ActionButton
+        label="Delete page"
+        danger
+        onClick={
+          removePage
+            ? () => {
+                onClose();
+                removePage(page.id);
+              }
+            : undefined
+        }
+      >
+        <TrashIcon className="h-4 w-4" />
+      </ActionButton>
+    </div>
+  );
+}

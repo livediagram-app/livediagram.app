@@ -156,3 +156,20 @@ export function pageIsDark(page: Pick<InfographicPage, 'background'>): boolean {
   const fill = page.background?.fill;
   return !!fill && !isLightColor(pageFillTone(fill));
 }
+
+/** The surface of every element on a page with a fill of its own, by element id: what that
+ *  element's uncoloured parts are inked for. Elements on the paper, or on no page, are absent and
+ *  take the canvas's surface. */
+export function elementPageSurfaces(
+  elements: Element[],
+  pages: readonly LaidOutPage[],
+): Map<string, CanvasSurface> {
+  const out = new Map<string, CanvasSurface>();
+  if (!pages.some((p) => p.background?.fill)) return out;
+  for (const el of elements) {
+    const page = infographicPageAt(pages, elementAnchorPoint(el, elements));
+    const surface = page && pageSurface(page);
+    if (surface) out.set(el.id, surface);
+  }
+  return out;
+}

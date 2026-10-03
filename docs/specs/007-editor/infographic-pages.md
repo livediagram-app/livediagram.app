@@ -17,6 +17,20 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.     |
 | **page panel**      | The page's settings, opened from the cog above its top-right corner.                                      |
 
+## The page panel
+
+- Opens beside the page, to the right of its cog, so the sheet stays in view; where the window has
+  no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
+  than the window.
+- Top to bottom: the **name** field (placeholder `Page n`; renamed on Enter, on leaving the field,
+  or on closing the panel), **Size** tiles (each drawn to scale), **Orientation** (Portrait /
+  Landscape, absent for a square page), **Background** swatches, **Pattern** tiles, **Layouts**,
+  then the action row (Duplicate, Move left, Move right, Delete) as icon buttons with tooltips.
+- **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
+  at once; leaving the section puts the page back; a press commits.
+- Closes on an outside press, **Escape** (focus returns to the cog), or a wheel over the canvas (a
+  pan or zoom would leave it stranded from its cog). After a move the panel follows its cog.
+
 "Template" stays the name of a whole-tab starting point
 ([Templates](../008-canvas/canvas-and-palette.md)); what goes onto **one page** is a **layout**.
 
@@ -58,8 +72,8 @@ page with no valid `id` or `orientation` is skipped (as today).
   **Mint** `#dcfce7`, **Lavender** `#ede9fe`, **Blush** `#fce7f3`, **Sunshine** `#fef9c3`,
   **Ink** `#1e293b`, **Midnight** `#0f172a`, **Forest** `#14532d`, **Plum** `#3b0764`, and a
   **custom** colour (the system colour picker).
-- **Gradient**: two colours and an angle (`from`, `to`, `angle` in degrees, 0 to 359, 0 runs top
-  to bottom). Six presets: **Sunrise** (`#fde68a` to `#fca5a5`), **Ocean** (`#bae6fd` to
+- **Gradient**: two colours and an angle (`from`, `to`, `angle` in CSS degrees, 0 to 359: 180 runs
+  top to bottom). Six presets: **Sunrise** (`#fde68a` to `#fca5a5`), **Ocean** (`#bae6fd` to
   `#c7d2fe`), **Meadow** (`#bbf7d0` to `#a5f3fc`), **Peach** (`#fed7aa` to `#fecdd3`), **Dusk**
   (`#1e1b4b` to `#4c1d95`), **Night** (`#0f172a` to `#1e3a8a`), all at 160°.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
@@ -102,10 +116,12 @@ From the page panel's footer:
   pinned between the copies). Pages after it move along, their content with them.
 - **Move left** / **Move right**: swaps the page with its neighbour; both pages' content moves with
   them. Absent at the row's ends.
-- **Delete page**: as before, while there is more than one page.
+- **Delete page**: removes the page **and everything on it** (arrows pinned to it too); the pages
+  after it close the gap. Offered while there is more than one page.
 - **Rename**: the panel's name field; empty clears the name.
 - Each is one tab edit (one undo step, synced to everyone). At the page limit (20) Duplicate is
-  absent, like Add page.
+  disabled, like Add page is absent; Move left / right are disabled at the row's ends.
+- **A new page comes into view**: after Add page or Duplicate the view frames the new page.
 
 ## Getting around the pages
 

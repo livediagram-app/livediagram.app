@@ -1,37 +1,26 @@
-// Infographic mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the active tab's A4
-// pages laid out in their row, and the edits to them: turn a page, add one after the last, remove
-// one. Each is a tab edit like any other (one undo step, synced to everyone), and moves the
-// content of the pages it shifts along with them (withInfographicPages). It also centres the view
-// on the first page whenever the mode or the tab changes.
-import { useEffect, useEffectEvent, type RefObject } from 'react';
+// Infographic mode's pages (docs/specs/007-editor/infographic-pages.md): the active tab's pages
+// laid out in their row, the edits to them (infographic-page-edits) and framing one in the view. It
+// also centres the view on the first page whenever the mode or the tab changes.
+import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import {
   hasPageLook,
   infographicPageFitBox,
   infographicPagesOf,
   layOutInfographicPages,
-  MAX_INFOGRAPHIC_PAGES,
-  nextInfographicPageId,
-  withInfographicPages,
   type EditorMode,
-  type InfographicPage,
   type LaidOutPage,
-  type PageOrientation,
   type Tab,
 } from '@livediagram/document';
 import { computeFitBelow } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
-import { track } from '@/lib/telemetry';
+import { infographicPageEdits, type InfographicPageEdits } from './infographic-page-edits';
 
-export type InfographicPageEdits = {
-  setOrientation: (pageId: string, next: PageOrientation) => void;
-  // Absent at the page limit.
-  addPage?: () => void;
-  // Absent while there is only one page.
-  removePage?: (pageId: string) => void;
-};
+export type { InfographicPageEdits };
 
 export type InfographicPagesView = {
   pages: LaidOutPage[];
+  // Frames one page in the view (its label's press).
+  focusPage: (pageId: string) => void;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: InfographicPageEdits;
 };
@@ -63,69 +52,60 @@ export function useInfographicPage(deps: {
   const on = hasPageLook(mode);
   const tabId = activeTab.id;
 
-  // Centred on the first page, below a top strip: after the tab's own first fit (a frame later),
-  // so the page wins. The fit box holds either orientation, so turning it needs no refit.
-  const centre = useEffectEvent(() => {
+  // Frames a page (the first by default) below a top strip. The fit box holds either orientation,
+  // so turning a page needs no refit.
+  const frame = (page?: LaidOutPage) => {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
     const { zoom, offset } = computeFitBelow(
       { width: canvas.offsetWidth, height: canvas.offsetHeight },
-      infographicPageFitBox(),
+      infographicPageFitBox(page),
       inset,
     );
     deps.setViewportZoom(zoom);
     deps.setViewportOffset(offset);
-    debugLog('[infographic-page] centred', { tabId, inset, zoom });
-  });
+    debugLog('[infographic-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom });
+  };
+  // Centred on the first page after the tab's own first fit (a frame later), so the page wins.
+  const centre = useEffectEvent(() =>
+    frame(layOutInfographicPages(infographicPagesOf(activeTab))[0]),
+  );
   useEffect(() => {
     if (!on || !tabLoaded) return;
-    const frame = requestAnimationFrame(() => centre());
-    return () => cancelAnimationFrame(frame);
+    const raf = requestAnimationFrame(() => centre());
+    return () => cancelAnimationFrame(raf);
   }, [on, tabLoaded, tabId]);
+
+  // A page just added or duplicated: framed once it lands in the row (a frame later, as its
+  // sheet mounts).
+  const [goTo, setGoTo] = useState<string | null>(null);
+  const goToLanded = useEffectEvent(() => {
+    const page = layOutInfographicPages(infographicPagesOf(activeTab)).find((p) => p.id === goTo);
+    if (!page) return;
+    setGoTo(null);
+    frame(page);
+  });
+  const landed = goTo !== null && infographicPagesOf(activeTab).some((p) => p.id === goTo);
+  useEffect(() => {
+    if (!landed) return;
+    const raf = requestAnimationFrame(() => goToLanded());
+    return () => cancelAnimationFrame(raf);
+  }, [landed]);
 
   if (!on) return null;
   const current = infographicPagesOf(activeTab);
   const pages = layOutInfographicPages(current);
-  if (!canEdit || activeTab.locked === true) return { pages };
-
-  // One commit, re-reading the tab's pages at commit time so two quick edits compose.
-  const commitPages = (change: (pages: InfographicPage[]) => InfographicPage[] | null) =>
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== tabId) return t;
-        const next = change(infographicPagesOf(t));
-        return next ? withInfographicPages(t, next) : t;
-      }),
-    );
-
-  const setOrientation = (pageId: string, next: PageOrientation) => {
-    if (current.find((p) => p.id === pageId)?.orientation === next) return;
-    track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
-    commitPages((ps) => ps.map((p) => (p.id === pageId ? { ...p, orientation: next } : p)));
-    debugLog('[infographic-page] orientation set', { tabId, pageId, orientation: next });
-  };
-  // A new page takes the last page's orientation.
-  const addPage = () => {
-    track('Tab', 'Changed', 'PageAdded');
-    commitPages((ps) =>
-      ps.length >= MAX_INFOGRAPHIC_PAGES
-        ? null
-        : [...ps, { id: nextInfographicPageId(ps), orientation: ps[ps.length - 1]!.orientation }],
-    );
-    debugLog('[infographic-page] page added', { tabId, count: current.length + 1 });
-  };
-  const removePage = (pageId: string) => {
-    track('Tab', 'Changed', 'PageRemoved');
-    commitPages((ps) => (ps.length > 1 ? ps.filter((p) => p.id !== pageId) : null));
-    debugLog('[infographic-page] page removed', { tabId, pageId });
-  };
+  const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
+  if (!canEdit || activeTab.locked === true) return { pages, focusPage };
   return {
     pages,
-    edit: {
-      setOrientation,
-      addPage: current.length < MAX_INFOGRAPHIC_PAGES ? addPage : undefined,
-      removePage: current.length > 1 ? removePage : undefined,
-    },
+    focusPage,
+    edit: infographicPageEdits({
+      tabId,
+      current,
+      commitTabs,
+      onCreated: setGoTo,
+    }),
   };
 }
