@@ -7,6 +7,7 @@ import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
 import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReorderDrag';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
 import { InfographicPagePanel, type PagePanelTab, type PagePreview } from './InfographicPagePanel';
 
@@ -45,33 +46,31 @@ export function InfographicPages({
 }) {
   const { pages, focusPage } = view;
   const edit = bare ? undefined : view.edit;
-  // The open panel's page and the cog it hangs from.
-  const [opened, setOpened] = useState<{
-    id: string;
-    cog: HTMLButtonElement;
-    tab: PagePanelTab;
-  } | null>(null);
+  // The open panel's page and the tab it opened on. Its cog is looked up live (cogs), so a cog
+  // remounted by zen or a role change is the one the panel hangs from.
+  const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab } | null>(null);
   const cogs = useRef(new Map<string, HTMLButtonElement>());
+  const mobile = useIsMobileViewport();
   const [preview, setPreview] = useState<PagePreview>(null);
   const last = pages[pages.length - 1]!;
   // A label dragged sideways reorders the pages (usePageReorderDrag).
   const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
+  // The panel goes with its page, and with the right to edit (zen, a lock, a view role): it never
+  // comes back on its own, hung from a cog that is no longer there.
+  if (opened && !open) setOpened(null);
   const close = useCallback(
     (restoreFocus: boolean) => {
-      if (restoreFocus) opened?.cog.focus();
+      if (restoreFocus && opened) cogs.current.get(opened.id)?.focus();
       setOpened(null);
     },
     [opened],
   );
-  const toggle = (id: string, cog: HTMLButtonElement) =>
-    setOpened((o) => (o?.id === id ? null : { id, cog, tab: 'page' }));
+  const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
   // The empty page's own invitation opens its panel on Layouts.
-  const openLayouts = (id: string) => {
-    const cog = cogs.current.get(id);
-    if (cog) setOpened({ id, cog, tab: 'layouts' });
-  };
+  const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
+  const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
   return (
     <>
       {pages.map((page) => {
@@ -86,7 +85,7 @@ export function InfographicPages({
         const empty = !!edit && edit.contentCount(page.id) === 0;
         const invite = !empty
           ? null
-          : room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2
+          : !mobile && room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2
             ? 'wide'
             : room >= INVITE_ICON + COG_ROOM + LABEL_MIN
               ? 'icon'
@@ -155,7 +154,7 @@ export function InfographicPages({
                 <PageCog
                   name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
                   open={openId === page.id}
-                  onToggle={(cog) => toggle(page.id, cog)}
+                  onToggle={() => toggle(page.id)}
                   cogRef={(el) => {
                     if (el) cogs.current.set(page.id, el);
                     else cogs.current.delete(page.id);
@@ -184,9 +183,12 @@ export function InfographicPages({
       ) : null}
       {open && opened && edit ? (
         <InfographicPagePanel
+          // One panel per page: switching cogs starts the next page's panel afresh, its pending
+          // Replace and previews going with the last one.
+          key={open.id}
           page={open}
           count={pages.length}
-          anchor={opened.cog}
+          getAnchor={() => anchorOf(open.id)}
           initialTab={opened.tab}
           themeBackgrounds={view.themeBackgrounds}
           edit={edit}
@@ -233,7 +235,7 @@ function PageCog({
 }: {
   name: string;
   open: boolean;
-  onToggle: (cog: HTMLButtonElement) => void;
+  onToggle: () => void;
   cogRef: (el: HTMLButtonElement | null) => void;
 }) {
   return (
@@ -251,7 +253,7 @@ function PageCog({
           aria-haspopup="dialog"
           aria-expanded={open}
           data-page-panel-trigger
-          onClick={(e) => onToggle(e.currentTarget)}
+          onClick={() => onToggle()}
           className={`flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
             open ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-800 dark:text-slate-100' : ''
           }`}

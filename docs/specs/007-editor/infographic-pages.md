@@ -35,7 +35,10 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 - **On a phone** (the mobile viewport) the panel is a **bottom sheet** (up to 60% of the screen,
   swipe down or an outside press to close), the page above it; the layout invite in the title bar
   shows its icon only.
-- Closes on an outside press, **Escape** (focus returns to the cog), or a wheel over the canvas (a
+- Focus moves into the panel as it opens. One panel per page: pressing another page's cog opens
+  that page's panel afresh. It closes when its page goes or editing does (zen, a lock, a view
+  role), and never reopens on its own.
+- Closes on an outside press, **Escape** (focus returns to the cog; a typed name is kept), or a wheel over the canvas (a
   pan or zoom would leave it stranded from its cog). After a move the panel follows its cog.
 
 "Template" stays the name of a whole-tab starting point
@@ -51,7 +54,9 @@ is optional and absent on a page that never set it:
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
 
 A stored page that is malformed in any optional field keeps its valid fields and drops the rest; a
-page with no valid `id` or `orientation` is skipped (as today).
+page with no valid `id` or `orientation` is skipped (as today), as is a repeat of an id already read.
+A new page's id is random (`page-` and eight hex digits) and never one the tab's pages have had, so
+a page slide of a deleted page stays empty rather than finding a new page under the old id.
 
 ## Sizes
 
@@ -70,7 +75,8 @@ page with no valid `id` or `orientation` is skipped (as today).
 - **Changing size or orientation re-fits the page's content**: everything on the page before the
   change stays on it. Content that still fits the new margin box keeps its size, re-centred (and
   nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
-  one, about the page's centre, until it does, its text scaling with it. Nothing is cut off. The
+  one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
+  and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
 - The page label reads `<name or Page n> · <size label> · <Portrait|Landscape>`. Only the paper
   sizes (A4, US Letter, A3) add the orientation: a square has none, and the post, story and slide
@@ -82,7 +88,8 @@ page with no valid `id` or `orientation` is skipped (as today).
   default, no `background` stored), **Cream** `#fbf7ef`, **Mist** `#f1f5f9`, **Sky** `#e0f2fe`,
   **Mint** `#dcfce7`, **Lavender** `#ede9fe`, **Blush** `#fce7f3`, **Sunshine** `#fef9c3`,
   **Ink** `#1e293b`, **Midnight** `#0f172a`, **Forest** `#14532d`, **Plum** `#3b0764`, and a
-  **custom** colour (the system colour picker).
+  **custom** colour (the system colour picker: previewed while dragged, one edit when it
+  settles).
 - **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
   element stroke, else its first palette colour, else the brand blue) and a second colour (a
   multi-colour theme's next palette colour, else the accent deepened): **Theme wash** (accent
@@ -103,6 +110,7 @@ page with no valid `id` or `orientation` is skipped (as today).
   arrow's line and an icon's glyph that sit straight on the page and fall under 3:1 contrast with
   it are lightened (on a dark fill) or darkened (on a light one), keeping their hue, until they
   reach 4.5:1. Anything on a fill of its own (a card, a shape) is left alone. Same edit, one undo.
+- Re-inking against the plain **paper** measures it as white, the paper as printed and exported.
 - The page background is a page's, never the tab's: the surround (the tab's own canvas) is
   untouched.
 
@@ -168,7 +176,8 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
   less margins of 7% of its short side), so it fits any size and orientation.
 - **Onto an empty page** a layout is placed straight away. **Onto a page with content** the picker
   asks first, inline: **Replace this page's content?** with **Replace** and **Cancel**. Replace
-  removes every element whose centre is on the page (and arrows pinned to one), then places the
+  removes every element whose centre is on the page (and arrows pinned to one, and in turn arrows
+  riding a removed arrow), then places the
   layout. Either way it is one change: one undo step.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
@@ -228,7 +237,8 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
   the first by default.
 - Each page exports **exactly its sheet**: its size, its background and pattern, and the elements on
   it clipped to its edges, as the canvas shows them. The surround is not exported. The plain paper
-  exports white; elements are inked for the page's own surface.
+  exports white; elements are inked for the page's own surface. An element (an arrow by its
+  resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
 - The dialog shows a **Page** row: a picker for PNG / SVG, "All n pages, one PDF page each" (and a
   preview picker) for PDF. The Isometric and Background pattern options are not offered: a page is
@@ -259,7 +269,7 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
     above the row's first cluster's bottom), each row left to right.
   - Each cluster gets an **A4 page**, landscape when it is more than 1.1 times wider than tall,
     portrait otherwise; its content is centred on the page and, where it does not fit the margin
-    box, scaled down as one (text with it).
+    box, scaled down as one (text elements' text and arrows' bends with it).
   - At most 20 pages: clusters past the twentieth share the last page.
 - It is **one edit**: one undo puts the tab back. A toast says so: "Laid out into n pages. Undo
   puts it back." (or "Laid out onto a page." for one). Telemetry: `Tab · Changed · PagesLaidOut`.

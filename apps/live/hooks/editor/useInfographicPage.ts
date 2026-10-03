@@ -1,7 +1,7 @@
 // Infographic mode's pages (docs/specs/007-editor/infographic-pages.md): the active tab's pages
 // laid out in their row, the edits to them (infographic-page-edits) and framing one in the view. It
 // also centres the view on the first page whenever the mode or the tab changes.
-import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState, type RefObject } from 'react';
 import {
   hasPageLook,
   infographicPageFitBox,
@@ -105,10 +105,23 @@ export function useInfographicPage(deps: {
   });
   useEffect(() => {
     if (!on || !tabLoaded) return;
-    paginate();
     const raf = requestAnimationFrame(() => centre());
     return () => cancelAnimationFrame(raf);
   }, [on, tabLoaded, tabId]);
+  // Its own effect so an editor role that resolves after the tab has loaded still lays out.
+  useEffect(() => {
+    if (on && tabLoaded && canEdit) paginate();
+  }, [on, tabLoaded, tabId, canEdit]);
+
+  // The pages laid out once per change to the stored pages, so everything drawn from them (the
+  // Map's picture, the export preview) keeps its memo while the view pans and zooms.
+  const storedPages = activeTab.pages;
+  const legacyOrientation = activeTab.pageOrientation;
+  const current = useMemo(
+    () => infographicPagesOf({ pages: storedPages, pageOrientation: legacyOrientation }),
+    [storedPages, legacyOrientation],
+  );
+  const pages = useMemo(() => layOutInfographicPages(current), [current]);
 
   const [layoutPreview, setLayoutPreview] = useState<InfographicPagesView['layoutPreview']>(null);
   // A page just added or duplicated: framed once it lands in the row (a frame later, as its
@@ -128,8 +141,6 @@ export function useInfographicPage(deps: {
   }, [landed]);
 
   if (!on) return null;
-  const current = infographicPagesOf(activeTab);
-  const pages = layOutInfographicPages(current);
   const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
   const themeBackgrounds = themeBackgroundPresets(getTheme(activeTab.theme));
   const tabFont = activeTab.font;

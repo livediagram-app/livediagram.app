@@ -9,6 +9,7 @@ import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
+import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
@@ -538,14 +539,7 @@ export function EditorCanvasHost() {
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
         editorMode={editorMode.mode}
-        infographicPages={
-          infographicPages && presentingPageId
-            ? {
-                ...infographicPages,
-                pages: infographicPages.pages.filter((p) => p.id === presentingPageId),
-              }
-            : infographicPages
-        }
+        infographicPages={presentedPages(infographicPages, activeTab, presentingPageId)}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>

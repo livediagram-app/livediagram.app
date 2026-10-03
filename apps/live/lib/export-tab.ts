@@ -19,6 +19,7 @@ import {
   exportFontIds,
   visibleLayerElements,
   type BoxedElement,
+  type Element,
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
@@ -150,7 +151,7 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
   const frame = opts.page ? pageExportFrame(opts.page) : null;
-  const reaches = frame ? frame.reaches : () => true;
+  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
@@ -399,7 +400,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page ? pageExportFrame(opts.page) : null;
-  const reaches = frame ? frame.reaches : () => true;
+  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   const els = (
     opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
   ).filter(reaches);

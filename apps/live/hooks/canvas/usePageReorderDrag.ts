@@ -32,20 +32,26 @@ export function usePageReorderDrag({
 }) {
   const [reorder, setReorder] = useState<PageReorder | null>(null);
   const press = useRef<{ pageId: string; x: number; dragging: boolean } | null>(null);
-  // Set by a drag's release, so the click that follows it is not taken as a click on the label.
+  // Set by a drag's release (or its cancel), so the click that follows it is not taken as a click
+  // on the label.
   const dragged = useRef(false);
 
+  // Escape (or a cancelled pointer): no move. A drag under way is marked done, so the click that
+  // ends it is not taken as a click on the label either.
   const cancel = useCallback(() => {
+    if (press.current?.dragging) dragged.current = true;
     press.current = null;
     setReorder(null);
   }, []);
   useEffect(() => {
     if (!reorder) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') cancel();
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      cancel();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [reorder, cancel]);
 
   const slotAt = (pageId: string, screenDx: number) => {

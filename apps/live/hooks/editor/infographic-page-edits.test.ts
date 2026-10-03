@@ -81,9 +81,11 @@ describe('infographic page edits', () => {
   it('duplicates a page, announcing the copy', () => {
     const h = harness(twoPages());
     h.edits().duplicatePage!('page-1');
-    expect(infographicPagesOf(h.tab()).map((p) => p.id)).toEqual(['page-1', 'page-3', 'page-2']);
+    const ids = infographicPagesOf(h.tab()).map((p) => p.id);
+    expect(ids).toHaveLength(3);
+    expect([ids[0], ids[2]]).toEqual(['page-1', 'page-2']);
     expect(h.tab().elements).toHaveLength(3);
-    expect(h.onCreated).toHaveBeenCalledWith('page-3');
+    expect(h.onCreated).toHaveBeenCalledWith(ids[1]);
   });
 
   it('paints and clears a background', () => {
@@ -93,6 +95,10 @@ describe('infographic page edits', () => {
       pattern: 'dots',
     });
     expect(infographicPagesOf(h.tab())[1]!.background?.pattern).toBe('dots');
+    const commits = h.commitTabs.mock.calls.length;
+    // The same again is no edit.
+    h.edits().setBackground('page-2', { pattern: 'dots' });
+    expect(h.commitTabs.mock.calls.length).toBe(commits);
     h.edits().setBackground('page-2', { fill: undefined, pattern: undefined });
     expect(infographicPagesOf(h.tab())[1]!.background).toBeUndefined();
   });

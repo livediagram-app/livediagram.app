@@ -41,8 +41,11 @@ describe('withContentPaginated', () => {
     const out = withContentPaginated(tab)!;
     expect(out.pages.map((p) => p.orientation)).toEqual(['landscape', 'portrait']);
     const laid = layOutInfographicPages(out.pages);
-    expect([...elementIdsOnPage(out.elements, laid, 'page-1')]).toEqual(['wide1']);
-    expect([...elementIdsOnPage(out.elements, laid, 'page-2')].sort()).toEqual(['tall1', 'tall2']);
+    expect([...elementIdsOnPage(out.elements, laid, laid[0]!.id)]).toEqual(['wide1']);
+    expect([...elementIdsOnPage(out.elements, laid, laid[1]!.id)].sort()).toEqual([
+      'tall1',
+      'tall2',
+    ]);
     for (const el of out.elements as (Element & { x: number; width: number })[]) {
       const page = laid.find((p) => elementIdsOnPage(out.elements, laid, p.id).has(el.id))!;
       expect(el.x).toBeGreaterThanOrEqual(page.rect.x);
@@ -52,7 +55,7 @@ describe('withContentPaginated', () => {
 
   it('lays out content that spills over the first page onto one page, fitted', () => {
     const out = withContentPaginated({ elements: [box('big', -600, -100, 1200, 200)] })!;
-    expect(out.pages).toEqual([{ id: 'page-1', orientation: 'landscape' }]);
+    expect(out.pages.map((p) => p.orientation)).toEqual(['landscape']);
   });
 
   it('leaves alone a tab already inside its first page, or one with nothing', () => {
@@ -65,7 +68,7 @@ describe('withContentPaginated', () => {
       elements: [box('a', 5000, 0, 60, 200)],
       pages: [{ id: 'page-1', orientation: 'landscape' }],
     })!;
-    expect(out.pages).toEqual([{ id: 'page-1', orientation: 'portrait' }]);
+    expect(out.pages.map((p) => p.orientation)).toEqual(['portrait']);
   });
 
   it('with pages stored and in use, adds pages after them for stray content', () => {
@@ -73,10 +76,11 @@ describe('withContentPaginated', () => {
       elements: [box('kept', -50, -30), box('stray', 5000, 0)],
       pages: [{ id: 'page-1', orientation: 'portrait' }],
     })!;
-    expect(out.pages.map((p) => p.id)).toEqual(['page-1', 'page-2']);
+    expect(out.pages.map((p) => p.id)[0]).toBe('page-1');
+    expect(out.pages).toHaveLength(2);
     expect(out.elements[0]).toMatchObject({ x: -50, y: -30 });
     const laid = layOutInfographicPages(out.pages);
-    expect([...elementIdsOnPage(out.elements, laid, 'page-2')]).toEqual(['stray']);
+    expect([...elementIdsOnPage(out.elements, laid, laid[1]!.id)]).toEqual(['stray']);
   });
 
   it('counts a cluster mostly off the pages as stray, and keeps one mostly on', () => {
@@ -88,5 +92,34 @@ describe('withContentPaginated', () => {
     expect(withContentPaginated(tab)!.pages).toHaveLength(2);
     const bleed = { ...tab, elements: [tab.elements[0]!, box('bleed', 0, 300, 500, 100)] };
     expect(withContentPaginated(bleed)).toBeNull();
+  });
+
+  it('counts a lone straight line on a page as on it', () => {
+    const line = {
+      id: 'rule',
+      type: 'arrow',
+      from: { kind: 'free', x: -200, y: 0 },
+      to: { kind: 'free', x: 200, y: 0 },
+    } as Element;
+    expect(
+      withContentPaginated({
+        elements: [line],
+        pages: [{ id: 'page-1', orientation: 'portrait' }],
+      }),
+    ).toBeNull();
+  });
+
+  it('at the page limit, fits stray content onto the last page instead of adding one', () => {
+    const pages = Array.from({ length: 20 }, (_, i) => ({
+      id: `p${i}`,
+      orientation: 'portrait' as const,
+    }));
+    const out = withContentPaginated({
+      elements: [box('kept', -50, -30), box('stray', 0, 9000)],
+      pages,
+    })!;
+    expect(out.pages).toHaveLength(20);
+    const laid = layOutInfographicPages(out.pages);
+    expect(elementIdsOnPage(out.elements, laid, 'p19').has('stray')).toBe(true);
   });
 });

@@ -150,18 +150,45 @@ describe('page content', () => {
   });
 
   it('duplicates a page with its content, pinned arrows re-pinned to the copies', () => {
-    let n = 0;
-    const next = withDuplicatedPage(tab, 'a', 'page-9', () => `c${++n}`);
+    const next = withDuplicatedPage(tab, 'a', 'page-9');
     expect(next.pages.map((p) => p.id)).toEqual(['a', 'page-9', 'b']);
     expect(next.pages[1]!.name).toBe('Intro copy');
     const laid = layOutInfographicPages(next.pages);
-    const copies = next.elements.filter((el) => el.id.startsWith('c'));
+    const originals = new Set(tab.elements.map((el) => el.id));
+    const copies = next.elements.filter((el) => !originals.has(el.id));
     expect(copies).toHaveLength(3);
     const copiedArrow = copies.find((el) => el.type === 'arrow')!;
-    expect(copiedArrow.type === 'arrow' && copiedArrow.from).toMatchObject({ elementId: 'c1' });
+    const copiedBoxIds = new Set(copies.filter((el) => el.type !== 'arrow').map((el) => el.id));
+    expect(
+      copiedArrow.type === 'arrow' &&
+        copiedArrow.from.kind === 'pinned' &&
+        copiedBoxIds.has(copiedArrow.from.elementId),
+    ).toBe(true);
     // The copies sit on the copy; the page after moved along with its content.
-    expect([...elementIdsOnPage(next.elements, laid, 'page-9')].sort()).toEqual(['c1', 'c2', 'c3']);
+    expect([...elementIdsOnPage(next.elements, laid, 'page-9')].sort()).toEqual(
+      copies.map((el) => el.id).sort(),
+    );
     expect([...elementIdsOnPage(next.elements, laid, 'b')]).toEqual(['b1']);
+  });
+
+  it('removes arrows riding a removed arrow, in turn, with the page’s content', () => {
+    const rider = {
+      id: 'rider',
+      type: 'arrow',
+      from: { kind: 'on-arrow', arrowId: 'ar', t: 0.5 },
+      to: { kind: 'pinned', elementId: 'b1', anchor: 'w' },
+    } as Element;
+    const next = withPageContentReplaced({ ...tab, elements: [...tab.elements, rider] }, 'a', []);
+    expect(next.elements.map((el) => el.id)).toEqual(['b1']);
+  });
+
+  it('keeps a copied name within the name limit, and reads a repeated page id once', () => {
+    const long = { ...tab, pages: [{ ...pages[0]!, name: 'x'.repeat(60) }, pages[1]!] };
+    expect(withDuplicatedPage(long, 'a', 'p2').pages[1]!.name!.length).toBe(60);
+    expect(infographicPagesOf({ pages: [pages[0], pages[0], pages[1]] }).map((p) => p.id)).toEqual([
+      'a',
+      'b',
+    ]);
   });
 
   it('replaces a page’s content, arrows pinned to it going too', () => {

@@ -16,7 +16,6 @@ import {
   stampTabKind,
   isBoxed,
   resolveSlide,
-  slideBounds,
   slideFrame,
   stampNewElementLayers,
   voteHidesCursors,
@@ -1275,16 +1274,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // because a sparse canvas blown up looks broken in a workspace; a slide is
   // the only thing on a projector, so a one-box slide SHOULD be a big box —
   // unless the presenter has picked "Actual size" from the cog.
-  const frameSlide = useEffectEvent((elements: NonNullable<typeof presentingElements>) => {
-    // A page slide frames to its page (slideFrame); any other to what it shows.
-    const bounds = presentingStep
-      ? slideFrame(presentingStep.slide, presentingStep.tab)
-      : slideBounds(elements);
+  // A page slide frames to its page; any other to what it shows (slideFrame).
+  const frameSlide = useEffectEvent(() => {
+    if (!presentingStep) return;
+    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   const slideZoom = slideDeck.config.zoom;
   useLayoutEffect(() => {
-    if (presentingElements) frameSlide(presentingElements);
+    if (presentingElements) frameSlide();
   }, [presentingSlideId, presentingElements, slideZoom]);
 
   // ...and fit again whenever the canvas CHANGES SIZE while presenting.
@@ -2294,7 +2292,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
   const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit, elements: activeTab.elements });
+    useInlineIconMutators({ editsBlocked, commit, tick, elements: activeTab.elements });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See

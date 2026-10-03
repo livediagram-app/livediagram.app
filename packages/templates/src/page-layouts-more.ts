@@ -28,9 +28,15 @@ function poster(k: Kit): Element[] {
   const { u } = k;
   const lines = (x: number, y: number, w: number) => [
     k.title(x, y, w, u * 16, 'Make it bold'),
-    k.text(x, y + u * 18, w, u * 16, 'One line that makes people stop and look twice.', {
-      textSize: 'lg',
-    }),
+    // The lead takes the room left above the footer, so the two never meet.
+    k.text(
+      x,
+      y + u * 18,
+      w,
+      Math.max(u * 6, Math.min(u * 16, H - u * 8 - (y + u * 18))),
+      'One line that makes people stop and look twice.',
+      { textSize: 'lg' },
+    ),
     k.text(x, H - u * 6, w, u * 6, 'livediagram.app · 2026', { textBold: true }),
   ];
   if (k.wide) {

@@ -22,7 +22,7 @@ import {
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { buildPageLayout } from '@/lib/page-layout-build';
-import { withBackgroundPatch } from '@/lib/infographic-page-paint';
+import { sameFill, withBackgroundPatch } from '@/lib/infographic-page-paint';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -119,6 +119,12 @@ export function infographicPageEdits({
   // A new fill also re-inks the page's own-coloured text, lines and icons so they still read on it
   // (withPageInkFor), in the same edit.
   const setBackground = (pageId: string, patch: Partial<PageBackground>) => {
+    const target = page(pageId);
+    if (!target) return;
+    // Re-picking what the page already wears is no edit (no undo step, no event).
+    const was = target.background;
+    const next = withBackgroundPatch(target, patch);
+    if (sameFill(was?.fill, next?.fill) && was?.pattern === next?.pattern) return;
     track('Tab', 'Changed', 'fill' in patch ? 'PageBackground' : 'PagePattern');
     commitTab((t) => {
       const ps = infographicPagesOf(t);
@@ -172,18 +178,20 @@ export function infographicPageEdits({
     debugLog('[infographic-page] page added', { tabId, count: current.length + 1 });
   };
   const duplicatePage = (pageId: string) => {
+    if (!page(pageId)) return;
     track('Tab', 'Changed', 'PageDuplicated');
     const id = nextInfographicPageId(current);
     commitTab((t) => {
       const ps = infographicPagesOf(t);
       if (ps.length >= MAX_INFOGRAPHIC_PAGES || ps.some((p) => p.id === id)) return null;
-      return withDuplicatedPage(t, pageId, id, () => crypto.randomUUID());
+      return withDuplicatedPage(t, pageId, id);
     });
     onCreated(id);
     debugLog('[infographic-page] duplicated', { tabId, pageId });
   };
   // A deleted page takes its content with it; the pages after it close the gap.
   const removePage = (pageId: string) => {
+    if (!page(pageId) || current.length <= 1) return;
     track('Tab', 'Changed', 'PageRemoved');
     commitTab((t) => {
       const ps = infographicPagesOf(t);

@@ -3,7 +3,7 @@
 // The page panel's sections (docs/specs/007-editor/infographic-pages.md "Sizes", "Backgrounds"):
 // size tiles, the orientation switch and the background swatches. Each hover previews on the page
 // itself (`onPreview`), and a press commits; leaving the section drops the preview.
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import {
   PAGE_PATTERNS,
   PAGE_SIZE_IDS,
@@ -291,15 +291,10 @@ export function BackgroundSection({
                   'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)',
               }}
             >
-              <input
-                type="color"
-                aria-label="Custom background colour"
+              <CustomColourInput
                 value={hexish(custom ?? '#ffffff')}
-                onInput={(e) =>
-                  onPreview({ fill: { kind: 'solid', color: e.currentTarget.value } })
-                }
-                onChange={(e) => onBackground({ fill: { kind: 'solid', color: e.target.value } })}
-                className="absolute h-0 w-0 opacity-0"
+                onPreview={(color) => onPreview({ fill: { kind: 'solid', color } })}
+                onCommit={(color) => onBackground({ fill: { kind: 'solid', color } })}
               />
             </label>
           </Tooltip>
@@ -358,5 +353,42 @@ export function BackgroundSection({
         </div>
       </PanelSection>
     </div>
+  );
+}
+
+// The system colour picker: previews as the colour is dragged (`input`), commits once when the
+// picker settles (the native `change`, which React's onChange does not wait for), so a drag is one
+// edit, not one per tick.
+function CustomColourInput({
+  value,
+  onPreview,
+  onCommit,
+}: {
+  value: string;
+  onPreview: (color: string) => void;
+  onCommit: (color: string) => void;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+  const commit = useRef(onCommit);
+  useEffect(() => {
+    commit.current = onCommit;
+  });
+  useEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    const onChange = () => commit.current(el.value);
+    el.addEventListener('change', onChange);
+    return () => el.removeEventListener('change', onChange);
+  }, []);
+  return (
+    <input
+      ref={input}
+      type="color"
+      aria-label="Custom background colour"
+      defaultValue={value}
+      key={value}
+      onInput={(e) => onPreview(e.currentTarget.value)}
+      className="absolute h-0 w-0 opacity-0"
+    />
   );
 }

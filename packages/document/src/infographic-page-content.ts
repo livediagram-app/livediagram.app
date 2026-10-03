@@ -10,11 +10,13 @@ import {
   tint,
   type CanvasSurface,
 } from './colors';
+import { duplicateElements } from './duplicate';
 import { endpointPosition } from './geometry';
 import {
   infographicPageAt,
   infographicPagesOf,
   layOutInfographicPages,
+  PAGE_NAME_MAX,
   pageMargin,
   withInfographicPages,
   type InfographicPage,
@@ -48,20 +50,16 @@ export function elementIdsOnPage(
   return ids;
 }
 
-const pinnedTo = (ep: Endpoint): string | null => (ep.kind === 'pinned' ? ep.elementId : null);
-
 /**
  * The tab with a copy of a page right after it: the same size, orientation and background, its name
  * marked as a copy, and a copy of every element on it, moved onto the copy. Pages after it move
  * along with their content. An arrow pinned only to copied elements is copied pinned to the copies;
- * one pinned to anything off the page stays behind. `newPageId` names the copy; `newId` mints
- * element ids.
+ * one pinned to anything off the page stays behind. `newPageId` names the copy.
  */
 export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
   pageId: string,
   newPageId: string,
-  newId: () => string,
 ): T & { pages: InfographicPage[] } {
   const pages = infographicPagesOf(tab);
   const index = pages.findIndex((p) => p.id === pageId);
@@ -70,7 +68,7 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   const copy: InfographicPage = {
     ...source,
     id: newPageId,
-    ...(source.name ? { name: `${source.name} copy` } : {}),
+    ...(source.name ? { name: `${source.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
   };
   const next = [...pages.slice(0, index + 1), copy, ...pages.slice(index + 1)];
   const before = layOutInfographicPages(pages);
@@ -82,30 +80,16 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   const to = after[index + 1]!.rect;
   const dx = to.x + to.width / 2 - (from.x + from.width / 2);
   const dy = to.y + to.height / 2 - (from.y + from.height / 2);
-  const idMap = new Map<string, string>();
-  for (const el of tab.elements) if (onPage.has(el.id)) idMap.set(el.id, newId());
-  const shiftEnd = (ep: Endpoint): Endpoint | null => {
-    if (ep.kind === 'free') return { ...ep, x: ep.x + dx, y: ep.y + dy };
-    if (ep.kind === 'pinned') {
-      const id = idMap.get(ep.elementId);
-      return id ? { ...ep, elementId: id } : null;
-    }
-    return null;
-  };
-  const copies: Element[] = [];
-  for (const el of tab.elements) {
-    const id = idMap.get(el.id);
-    if (!id) continue;
-    if (isBoxed(el)) {
-      copies.push({ ...el, id, x: el.x + dx, y: el.y + dy } as Element);
-      continue;
-    }
-    const fromEnd = shiftEnd(el.from);
-    const toEnd = shiftEnd(el.to);
-    // An arrow tied to something left behind (or riding another arrow) stays with the original.
-    if (!fromEnd || !toEnd) continue;
-    copies.push({ ...el, id, from: fromEnd, to: toEnd });
-  }
+  // The shared duplication (ids, links, mind-map parents, portals, arrow-on-arrow ends remapped),
+  // less any arrow tied to something left behind: those stay with the original.
+  const pinnedOff = (ep: Endpoint) => ep.kind === 'pinned' && !onPage.has(ep.elementId);
+  const copied = new Set(
+    [...onPage].filter((id) => {
+      const el = tab.elements.find((e) => e.id === id);
+      return !el || isBoxed(el) || !(pinnedOff(el.from) || pinnedOff(el.to));
+    }),
+  );
+  const { newElements: copies } = duplicateElements(tab.elements, copied, dx, dy);
   return { ...moved, elements: [...moved.elements, ...copies] };
 }
 
@@ -121,13 +105,26 @@ export function withPageContentReplaced<T extends Pick<Tab, 'elements'>>(
 ): T {
   const pages = layOutInfographicPages(infographicPagesOf(tab));
   const gone = elementIdsOnPage(tab.elements, pages, pageId);
-  const kept = tab.elements.filter((el) => {
-    if (gone.has(el.id)) return false;
-    if (isBoxed(el)) return true;
-    const a = pinnedTo(el.from);
-    const b = pinnedTo(el.to);
-    return !(a && gone.has(a)) && !(b && gone.has(b));
-  });
+  // Arrows pinned to anything removed go too, and so, in turn, do arrows riding a removed arrow
+  // (on-arrow ends), until nothing more goes.
+  const ends = (el: Element) => (el.type === 'arrow' ? [el.from, el.to] : []);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const el of tab.elements) {
+      if (gone.has(el.id) || el.type !== 'arrow') continue;
+      const tied = ends(el).some(
+        (ep) =>
+          (ep.kind === 'pinned' && gone.has(ep.elementId)) ||
+          (ep.kind === 'on-arrow' && gone.has(ep.arrowId)),
+      );
+      if (tied) {
+        gone.add(el.id);
+        grew = true;
+      }
+    }
+  }
+  const kept = tab.elements.filter((el) => !gone.has(el.id));
   return { ...tab, elements: [...kept, ...placed] };
 }
 
@@ -341,7 +338,16 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
     }
     const end = (ep: Endpoint): Endpoint =>
       ep.kind === 'free' ? { ...ep, x: r(mapX(ep.x)), y: r(mapY(ep.y)) } : ep;
-    return { ...el, from: end(el.from), to: end(el.to) };
+    // Bends are deltas from the line, so they scale with it.
+    const bend = (d: { dx: number; dy: number }) => ({ dx: r(d.dx * s), dy: r(d.dy * s) });
+    return {
+      ...el,
+      from: end(el.from),
+      to: end(el.to),
+      ...(scaled && el.curveOffset ? { curveOffset: bend(el.curveOffset) } : {}),
+      ...(scaled && el.curvePoints ? { curvePoints: el.curvePoints.map(bend) } : {}),
+      ...(scaled && el.elbowOffset ? { elbowOffset: bend(el.elbowOffset) } : {}),
+    };
   });
   return { ...tab, elements };
 }

@@ -4,6 +4,7 @@
 // by the frame itself; and every element without colours of its own is inked for the page. The
 // background is one SVG fragment, so the SVG export and the PNG / PDF rasteriser paint the same.
 import {
+  endpointPosition,
   pageSurface,
   type CanvasSurface,
   type Element,
@@ -21,8 +22,9 @@ export type PageExportFrame = {
   surface: CanvasSurface;
   // The page's background as SVG markup in canvas coordinates (defs included).
   backgroundSvg: string;
-  // Whether an element reaches onto the page (the rest are left out).
-  reaches: (el: Element) => boolean;
+  // Whether an element reaches onto the page (the rest are left out); an arrow by its resolved
+  // ends, against the tab's elements.
+  reaches: (el: Element, elements: readonly Element[]) => boolean;
 };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -51,13 +53,21 @@ function patternTile(pattern: string, ink: string): string {
 
 export function pageExportFrame(
   page: LaidOutPage,
-  // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
-  // as the canvas shows it (the Map).
-  paper: string = EXPORT_PAPER,
+  {
+    paper = EXPORT_PAPER,
+    idPrefix = 'lvd-page',
+  }: {
+    // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
+    // as the canvas shows it (the Map).
+    paper?: string;
+    // Prefixes the gradient and pattern ids: pages of different tabs share ids (every tab's first
+    // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
+    idPrefix?: string;
+  } = {},
 ): PageExportFrame {
   const r = page.rect;
   const { fill, pattern } = page.background ?? {};
-  const id = `lvd-page-${page.id.replace(/[^a-zA-Z0-9-]/g, '')}`;
+  const id = `${idPrefix}-${page.id}`.replace(/[^a-zA-Z0-9-]/g, '');
   const rect = (paint: string) =>
     `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" fill="${paint}"/>`;
   const parts: string[] = [];
@@ -84,13 +94,17 @@ export function pageExportFrame(
     bounds: { x: r.x, y: r.y, w: r.width, h: r.height },
     surface: pageSurface(page) ?? 'light',
     backgroundSvg: parts.join(''),
-    reaches: (el) => {
-      if (el.type === 'arrow') return true;
-      return (
-        el.x < r.x + r.width &&
-        el.x + el.width > r.x &&
-        el.y < r.y + r.height &&
-        el.y + el.height > r.y
+    reaches: (el, elements) => {
+      const overlaps = (x: number, y: number, rr: number, b: number) =>
+        x <= r.x + r.width && rr >= r.x && y <= r.y + r.height && b >= r.y;
+      if (el.type !== 'arrow') return overlaps(el.x, el.y, el.x + el.width, el.y + el.height);
+      const a = endpointPosition(el.from, elements as Element[]);
+      const b = endpointPosition(el.to, elements as Element[]);
+      return overlaps(
+        Math.min(a.x, b.x),
+        Math.min(a.y, b.y),
+        Math.max(a.x, b.x),
+        Math.max(a.y, b.y),
       );
     },
   };

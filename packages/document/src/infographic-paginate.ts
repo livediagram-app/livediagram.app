@@ -66,7 +66,9 @@ export function contentClusters(elements: Element[], gap = PAGINATE_CLUSTER_GAP)
   const groups = new Map<number, number[]>();
   for (let i = 0; i < n; i += 1) {
     const root = find(i);
-    groups.set(root, [...(groups.get(root) ?? []), i]);
+    const group = groups.get(root);
+    if (group) group.push(i);
+    else groups.set(root, [i]);
   }
   const clusters = [...groups.values()].map((members) => {
     const box = members.reduce<Box>(
@@ -135,8 +137,10 @@ export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
   // A cluster less than half on the pages (by area) is stray: it gets a page of its own.
   const byId = new Map(tab.elements.map((el) => [el.id, el]));
   const strayIds = contentClusters(tab.elements).filter((ids) => {
-    const box = unionBox(ids.map((id) => boxOf(byId.get(id)!)));
-    const area = Math.max(1, (box.r - box.x) * (box.b - box.y));
+    // A line (a straight arrow, a rule) has no area: grown a pixel each way, so its share is real.
+    const raw = unionBox(ids.map((id) => boxOf(byId.get(id)!)));
+    const box = { x: raw.x - 1, y: raw.y - 1, r: raw.r + 1, b: raw.b + 1 };
+    const area = (box.r - box.x) * (box.b - box.y);
     const onPages = laid.reduce((sum, p) => sum + overlapArea(box, p.rect), 0);
     return onPages / area < STRAY_SHARE;
   });
@@ -155,7 +159,15 @@ function paginate<T extends Pick<Tab, 'elements'>>(
   content: Element[],
   kept: InfographicPage[],
 ): T & { pages: InfographicPage[] } {
-  const room = Math.max(1, MAX_INFOGRAPHIC_PAGES - kept.length);
+  const room = MAX_INFOGRAPHIC_PAGES - kept.length;
+  // No room for another page: the clusters share the last page, centred and fitted there.
+  if (room <= 0) {
+    const last = kept[kept.length - 1]!;
+    const out = { ...tab, pages: kept } as T & { pages: InfographicPage[] };
+    return withContentFittedToPage(out, new Set(content.map((el) => el.id)), last.id, {
+      centre: true,
+    });
+  }
   const clusters = contentClusters(content);
   const capped =
     clusters.length <= room

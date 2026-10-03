@@ -127,12 +127,18 @@ function parsePage(v: unknown): InfographicPage | undefined {
 }
 
 /** The tab's pages, in order: its stored ones, or one page in its legacy orientation (portrait
- *  unless it said landscape). Never empty; malformed entries are skipped. */
+ *  unless it said landscape). Never empty; malformed entries, and a repeat of an id already seen,
+ *  are skipped. */
 export function infographicPagesOf(
   tab: { pages?: unknown; pageOrientation?: unknown } | undefined,
 ): InfographicPage[] {
+  const seen = new Set<string>();
   const stored = Array.isArray(tab?.pages)
-    ? tab.pages.map(parsePage).filter((p): p is InfographicPage => p !== undefined)
+    ? tab.pages.map(parsePage).filter((p): p is InfographicPage => {
+        if (!p || seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      })
     : [];
   if (stored.length > 0) return stored.slice(0, MAX_INFOGRAPHIC_PAGES);
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
@@ -233,12 +239,15 @@ export function infographicPageAt(
   return pages.find((p) => contains(p.rect, point));
 }
 
-/** A new page's id: unique among the tab's pages. */
+/** A new page's id: never one a page has had before, so a page slide (Slide.pageId) of a deleted
+ *  page stays empty rather than finding a new page under its old id. Random, checked against the
+ *  tab's pages. */
 export function nextInfographicPageId(pages: readonly InfographicPage[]): string {
   const taken = new Set(pages.map((p) => p.id));
-  let n = pages.length + 1;
-  while (taken.has(`page-${n}`)) n += 1;
-  return `page-${n}`;
+  let id: string;
+  do id = `page-${crypto.randomUUID().slice(0, 8)}`;
+  while (taken.has(id));
+  return id;
 }
 
 /**

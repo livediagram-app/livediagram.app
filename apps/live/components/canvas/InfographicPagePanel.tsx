@@ -36,7 +36,7 @@ import {
 const WIDTH = 304;
 const GAP = 6;
 // The sheets' own ease (InfographicPages).
-export const PAGE_EASE_MS = 200;
+const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
 export type PagePanelTab = 'page' | 'layouts';
@@ -44,7 +44,7 @@ export type PagePanelTab = 'page' | 'layouts';
 export function InfographicPagePanel({
   page,
   count,
-  anchor,
+  getAnchor,
   initialTab,
   themeBackgrounds,
   edit,
@@ -54,7 +54,8 @@ export function InfographicPagePanel({
 }: {
   page: LaidOutPage;
   count: number;
-  anchor: HTMLElement;
+  // The cog the panel hangs from, looked up when placed.
+  getAnchor: () => HTMLElement | undefined;
   initialTab: PagePanelTab;
   themeBackgrounds: ThemeBackgroundPreset[];
   edit: InfographicPageEdits;
@@ -68,8 +69,15 @@ export function InfographicPagePanel({
   const [tab, setTab] = useState<PagePanelTab>(initialTab);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
+  // The anchor lookup is a fresh closure each render: read through a ref so placing stays stable.
+  const anchorRef = useRef(getAnchor);
+  useLayoutEffect(() => {
+    anchorRef.current = getAnchor;
+  });
   const place = useCallback(() => {
-    const a = anchor.getBoundingClientRect();
+    const el = anchorRef.current();
+    if (!el || !el.isConnected) return;
+    const a = el.getBoundingClientRect();
     const h = panel.current?.offsetHeight ?? 0;
     // Beside the page (right of its cog, so the sheet stays in view for the previews) while
     // there is room; else right-aligned under the cog.
@@ -80,8 +88,8 @@ export function InfographicPagePanel({
     const want = beside ? a.top : a.bottom + GAP;
     // As high as the window needs to fit it (it then scrolls).
     const top = Math.max(EDGE, Math.min(want, window.innerHeight - h - EDGE));
-    setPos({ left, top });
-  }, [anchor]);
+    setPos((p) => (p && p.left === left && p.top === top ? p : { left, top }));
+  }, []);
   useLayoutEffect(() => {
     place();
     window.addEventListener('resize', place);
@@ -93,6 +101,12 @@ export function InfographicPagePanel({
     const t = window.setTimeout(place, PAGE_EASE_MS + 20);
     return () => window.clearTimeout(t);
   }, [place, x, y, width]);
+
+  // Focus moves into the panel as it opens, so a keyboard user lands in it, not at the far end of
+  // the page it is portalled after.
+  useEffect(() => {
+    panel.current?.focus({ preventScroll: true });
+  }, []);
 
   useClickOutside(panel, () => onClose(false), true, '[data-page-panel-trigger]');
   useEscape(() => onClose(true), { capture: true, stopPropagation: true });
@@ -165,6 +179,7 @@ export function InfographicPagePanel({
         role="dialog"
         aria-label={label}
         data-page-panel
+        tabIndex={-1}
         onClose={() => onClose(false)}
         zClassName="z-[var(--z-overlay)]"
         onPointerDown={(e) => e.stopPropagation()}
@@ -180,8 +195,9 @@ export function InfographicPagePanel({
         role="dialog"
         aria-label={label}
         data-page-panel
+        tabIndex={-1}
         onPointerDown={(e) => e.stopPropagation()}
-        className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white pb-1 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+        className="fixed z-[var(--z-overlay)] flex outline-none animate-fade-in flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white pb-1 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
         style={{
           left: pos?.left ?? -9999,
           top: pos?.top ?? -9999,
@@ -205,8 +221,8 @@ function PanelTabs({ tab, onTab }: { tab: PagePanelTab; onTab: (t: PagePanelTab)
   return (
     <div className="px-3 pt-2">
       <div
-        role="tablist"
-        aria-label="Page panel"
+        role="group"
+        aria-label="Page panel section"
         className={`relative grid grid-cols-2 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
       >
         <SegmentSlider
@@ -218,8 +234,7 @@ function PanelTabs({ tab, onTab }: { tab: PagePanelTab; onTab: (t: PagePanelTab)
           <button
             key={id}
             type="button"
-            role="tab"
-            aria-selected={tab === id}
+            aria-pressed={tab === id}
             onClick={() => onTab(id)}
             className={`relative z-10 rounded-md py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
               tab === id

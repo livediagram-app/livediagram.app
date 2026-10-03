@@ -16,7 +16,7 @@ function setup(elements: Element[]) {
     current = map(current);
   };
   const { result } = renderHook(() =>
-    useInlineIconMutators({ editsBlocked: false, commit, elements }),
+    useInlineIconMutators({ editsBlocked: false, commit, tick: commit, elements }),
   );
   return { mutators: result.current, get: () => current };
 }

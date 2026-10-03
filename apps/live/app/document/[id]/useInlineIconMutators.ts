@@ -11,6 +11,9 @@ interface InlineIconMutatorsDeps {
   // History-aware element write (the page's `commit`): maps the LIVE element
   // list to a new one as a single undo block.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The gesture write (no history entry of its own): an icon element dropped at the end of a drag
+  // lands inside that drag's one undo step.
+  tick: (mapElements: (els: Element[]) => Element[]) => void;
   // The active tab's elements now: whether a drop lands on an icon (a swap) or a shape.
   elements: readonly Element[];
 }
@@ -18,8 +21,13 @@ interface InlineIconMutatorsDeps {
 // Inline-icon attach/detach mutators (docs/specs/008-canvas/canvas-and-palette.md icons). A shape can carry one
 // inline icon (`iconId` + `iconPosition`); these three handlers are the only
 // writers of that pair. Lifted out of useEditorState as a cohesive slice —
-// they close over nothing but `editsBlocked` + `commit`.
-export function useInlineIconMutators({ editsBlocked, commit, elements }: InlineIconMutatorsDeps) {
+// they close over nothing but `editsBlocked`, the two writes and the elements.
+export function useInlineIconMutators({
+  editsBlocked,
+  commit,
+  tick,
+  elements,
+}: InlineIconMutatorsDeps) {
   // Drop a palette icon onto a shape (drag-and-drop): set its inline
   // iconId + the side the icon landed on. History-aware via commit so
   // it's undoable like any other element edit. Guarded for read-only /
@@ -72,15 +80,15 @@ export function useInlineIconMutators({ editsBlocked, commit, elements }: Inline
 
   // Fold a dragged standalone icon ELEMENT into a shape: set the target's
   // inline icon to the dragged icon's glyph + side, and delete the
-  // standalone element — one commit so it's a single undo. Mirrors the
-  // palette drag, but the source is an existing canvas element.
+  // standalone element, written with the drag's own gesture write (tick) so the move and the fold
+  // are one undo. Mirrors the palette drag, but the source is an existing canvas element.
   const dropIconElementOnShape = (
     sourceId: string,
     targetId: string,
     position: 'left' | 'right' | 'above' | 'below',
   ) => {
     if (editsBlocked) return;
-    commit((els) => {
+    tick((els) => {
       const source = els.find((e) => e.id === sourceId);
       const glyph =
         source && source.type === 'shape' && source.shape === 'icon' ? source.iconId : undefined;

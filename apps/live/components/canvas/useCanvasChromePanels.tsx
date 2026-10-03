@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
@@ -262,15 +262,20 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
+  // The Slides popover belongs to Infographic mode's button: leaving the mode (Shift+D, a tab
+  // switch) closes it rather than leaving it floating with no button under it.
+  const slidesOpen = activeDockPanel === 'slides' && !!props.infographicPages;
+  useEffect(() => {
+    if (activeDockPanel === 'slides' && !props.infographicPages) closeDockPanel();
+  }, [activeDockPanel, props.infographicPages, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     stackBelowY,
     panelWiringFor,
-    slidesPopover:
-      activeDockPanel === 'slides'
-        ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
-        : null,
+    slidesPopover: slidesOpen
+      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+      : null,
   });
 
   const explorerEl = zenMode ? null : (
@@ -536,7 +541,7 @@ export function useCanvasChromePanels({
     spotlight: spotlightEl,
     eraser: eraserEl,
     // Over its cluster button (Infographic mode) it renders beside the corner layer, like Collaborate.
-    'slide-deck': activeDockPanel === 'slides' ? null : slideDeckEl,
+    'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };
   return {
@@ -545,7 +550,7 @@ export function useCanvasChromePanels({
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
     collaborateEl,
-    slidesPopoverEl: activeDockPanel === 'slides' ? slideDeckEl : null,
+    slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,

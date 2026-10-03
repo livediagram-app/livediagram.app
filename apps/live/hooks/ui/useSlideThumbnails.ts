@@ -60,7 +60,8 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       const page = slide.pageId
         ? layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === slide.pageId)
         : undefined;
-      if (page) parts.push(pageExportFrame(page).backgroundSvg);
+      if (page)
+        parts.push(pageExportFrame(page, { idPrefix: `lvd-slide-${slide.id}` }).backgroundSvg);
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(

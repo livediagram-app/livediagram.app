@@ -173,7 +173,7 @@ export function Minimap({
     for (const page of pages ?? []) {
       const { x, y, width, height } = page.rect;
       parts.push(
-        pageExportFrame(page, paper).backgroundSvg +
+        pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
           `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
       );
       corners.push({ x, y }, { x: x + width, y: y + height });
