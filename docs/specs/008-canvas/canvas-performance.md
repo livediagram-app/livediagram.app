@@ -69,6 +69,10 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
   colours are laid out per element change and cached per element identity, as arrow labels are
   today.
+- **A render that changes no element hands on the same board.** A pan, a zoom or a marquee frame
+  re-renders the editor without touching an element; every display projection of the board (stock
+  colours, hidden layers) then returns the same array it returned before, so nothing derived from
+  the board (the Map, the arrow frames, the endpoint spread) recomputes.
 
 ## Later
 

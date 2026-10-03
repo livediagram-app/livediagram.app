@@ -157,6 +157,19 @@ longest task fell 111 → 77 ms (whiteboard) and 210 → 151 ms (diagram), and t
 266 ms and 753 → 519 ms; the machine was busier for the first run, so part of that is noise. The
 Map now draws no labels.
 
+## The board lost its identity on whiteboards
+
+Measured 2026-10-03 on the reference board. `createStockColourProjector` returned a fresh array on
+every render whenever the board held a colour stored by name, as a whiteboard's pens and stickies
+do. Every render (each zoom tick, each marquee frame) then handed a "new" board to everything
+downstream: across five zooms the whiteboard's Map redrew 79 to 80 times, and across five marquees 6
+times; the diagram board, with no named colours, 0. The arrow frames and the endpoint spread
+recomputed with it, which is why they showed in the whiteboard's zoom profile and not the diagram's.
+Returning the same array for the same board took the redraws to 0 and the zoom's total long-task
+time from 1,702 to 1,630 ms at fit and 2,042 to 1,800 ms at 100% (machine under load, so read the
+redraw counts, not the milliseconds). The zoom's longest task did not move: it is the browser
+redrawing the board, not script.
+
 ## Not tried
 
 - `contain` / `content-visibility` on element wrappers, level of detail at low zoom, a raster
