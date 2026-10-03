@@ -43,6 +43,8 @@ export function useObjectDropCaret({
     const { target: t, selectedIds: ids } = latest.current;
     if (!t || t.zone.zone !== 'object' || ids.size !== 1) return;
     held.current = { ...t, elementId: [...ids][0]! };
+    let lastLeft = NaN;
+    let lastTop = NaN;
     let frame = requestAnimationFrame(function look() {
       frame = requestAnimationFrame(look);
       const h = held.current;
@@ -52,6 +54,10 @@ export function useObjectDropCaret({
         : null;
       if (!h || !pages?.length || !el) return;
       const r = el.getBoundingClientRect();
+      // Held still: nothing to look up again (the search runs over every block).
+      if (r.left === lastLeft && r.top === lastTop) return;
+      lastLeft = r.left;
+      lastTop = r.top;
       const at = canvasPointOf(
         pages[0]!,
         latest.current.zoom,

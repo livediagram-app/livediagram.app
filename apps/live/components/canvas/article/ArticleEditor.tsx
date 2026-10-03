@@ -56,7 +56,7 @@ import {
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import { articleStyleVars, type ArticleInk } from '@/lib/article/article-style-vars';
-import { snapshotBars, snapshotWriting } from '@/lib/article/article-snapshot';
+import { snapshotBars, snapshotWriting, type ArticleDrawOp } from '@/lib/article/article-snapshot';
 import {
   removeSlashQuery,
   slashKey,
@@ -155,6 +155,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     }, UNDO_SETTLE_MS);
   };
   const blurTimer = useRef<number | null>(null);
+  // The writing as soft bars, measured once per layout (handle.bars).
+  const barsCache = useRef<{ ink: string; ops: ArticleDrawOp[] } | null>(null);
   // The slash menu: open with its query and where the `/` is, and the entry highlighted.
   const [slash, setSlash] = useState<{
     query: string;
@@ -209,6 +211,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   };
 
   const measure = () => {
+    // A new layout: the bars measured from the last one are out of date.
+    barsCache.current = null;
     measureFrame.current = null;
     const view = viewRef.current;
     const p = latest.current;
@@ -714,16 +718,22 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         );
       },
       bars: (ink: string) => {
-        const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin);
-        const root = view.dom.getBoundingClientRect();
-        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
-        return snapshotBars(
-          view.dom,
-          (x, y) => ({ x: frame.x + (x - root.left) / z, y: frame.y + (y - root.top) / z }),
-          z,
-          ink,
-        );
+        // One walk of the writing per layout, whoever asks (the Map, every slide thumbnail).
+        if (barsCache.current?.ink === ink) return barsCache.current.ops;
+        const ops = (() => {
+          const p = latest.current;
+          const frame = flowFrame(p.pages, p.margin);
+          const root = view.dom.getBoundingClientRect();
+          const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+          return snapshotBars(
+            view.dom,
+            (x, y) => ({ x: frame.x + (x - root.left) / z, y: frame.y + (y - root.top) / z }),
+            z,
+            ink,
+          );
+        })();
+        barsCache.current = { ink, ops };
+        return ops;
       },
       focusAt: (clientX: number, clientY: number) => {
         const p = latest.current;

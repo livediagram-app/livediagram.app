@@ -625,6 +625,8 @@ function useHoveredArticlePage(
     let y = 0;
     const look = () => {
       frame = 0;
+      // Mid-gesture (a pan, a drag): the pointer is not choosing a page.
+      if (canvasGestureNow() !== 'idle') return;
       const page = latest.current.find((p) => onSheet(p.id, x, y, HOVER_SLACK));
       if (page) {
         window.clearTimeout(leave);
