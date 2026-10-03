@@ -139,6 +139,10 @@ describe('locationLabel', () => {
     );
   });
 
+  it('names the team of a team document the person owns', () => {
+    expect(locationLabel({ ...doc, via: 'own' })).toBe('Platform team');
+  });
+
   it('names the owner of a shared document', () => {
     expect(locationLabel({ ...doc, via: 'shared', teamName: null })).toBe('Shared by Priya');
     expect(locationLabel({ ...doc, via: 'shared', teamName: null, ownerName: null })).toBe(

@@ -289,7 +289,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   timeline: {
     title: 'Learn about Home',
-    description: 'Everything that has happened across your documents, teams and account.',
+    description: 'Jump back in, what others did while you were away, and your own Timeline.',
   },
   activity: {
     title: 'Learn about Activity',

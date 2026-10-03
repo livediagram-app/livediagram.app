@@ -387,7 +387,7 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 | Switch keys and ARIA; columns on wide                             | `apps/live/components/panels/home/HomePane.test.tsx`                          |
 | Routes, titles, crumbs                                            | `routes.test.ts`, `view-titles.test.ts`                                       |
 | Telemetry charted and explained                                   | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`       |
-| Real browser: guest and signed in, desktop and phone, dark        | `apps/live/e2e/explorer-home.spec.ts`, `e2e/clerk-stub/explorer-home.spec.ts` |
+| Real browser: guest and signed in, desktop and phone, dark        | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
 
 ## Constants and configuration
 

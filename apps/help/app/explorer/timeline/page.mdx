@@ -5,24 +5,52 @@ import { TimelineFeed, TimelineStacking } from '@/components/illustrations/explo
 export const metadata = helpMetadata({
   title: 'Home',
   description:
-    'The Explorer opens on Home, your Timeline: a day-by-day feed of everything that happened across your documents, teams, and account.',
+    'The Explorer opens on Home: the documents you return to most, what other people did while you were away, and your own Timeline, with All activity one link away.',
   path: '/help/explorer/timeline/',
 });
 
 <ArticleLayout
   title="Home"
-  description="A day-by-day feed of everything that has happened: comments, edits, team changes, invites, and what is about to expire."
+  description="The documents you return to most, what other people did while you were away, and your own Timeline, on one page."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Home** is the view the [Explorer](/explorer) opens on: the first row of the sidebar, and the page it opens is your **Timeline**. Where [Recent](/help/explorer/recent/) answers "what did I touch last", the Timeline answers a different question: **what has happened since I was last here**, including the things you did not do yourself.
+**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
+
+On a computer or a tablet, **Recent** sits on the left and your **Timeline** runs down the right. On a phone, a **Recent** / **Timeline** switch at the top shows one at a time, and Home always opens on Recent.
+
+## Jump back in
+
+The strip at the top of Recent holds the documents **you return to most**: not simply the last ones you touched, but the ones you open again and again, with recent days counting for more. Opening a document on ten days in a row keeps it near the front for weeks; one glance yesterday does not push it aside.
+
+Each document shows a picture of what is drawn on it, with its name underneath. Scroll the strip sideways (or Tab through it) to see up to twelve, and click one to open it. A document saved only in this browser wears the **Local only** pill and takes its place in the strip like any other, counted in this browser.
+
+## What happened
+
+Below the strip, **What happened** lists what **other people** did to documents you can open in the last two weeks, under day headings: comments and replies, threads resolved, a day of edits, [actions](/help/collaboration/assigned-actions/) assigned or completed, and documents shared into one of your teams. Each entry says who did it, what they did, which document, and where it lives, and opens the document when you click it.
+
+When several people worked on the same document on the same day, they share **one entry**: their pictures overlap and one sentence says what they did, such as "Priya, Sam and Lee commented, edited and assigned you an action in Payments architecture". Click it to see every action underneath, newest first.
+
+What happened has no filters, on purpose. Whether someone simply looked at a document is theirs to know, so opens never appear here.
+
+**See all activity**, beside the heading, opens **All activity**: everything that has happened, your own doings included, with filters and a calendar (below).
+
+## Your Timeline
+
+The column on the right is **your own** history: the documents you **created**, **updated** or **opened**, newest first, one entry per document per day. Each entry is a picture of the document on alternating sides of a line, with its name underneath, and a small mark on the line says what happened: a plus for created, a pencil for updated, an eye for opened. Scroll down and older days load on their own.
+
+Visiting Home counts as having caught up: the count on the sidebar's Home row clears, just as reading All activity clears it.
+
+## All activity
+
+**All activity** is the full feed of everything that has happened across your documents, teams and account, including what you did yourself. Open it from **See all activity** on Home; its breadcrumb leads back to Home.
 
 <Figure caption="One group per day, one card per event, colour-coded by the kind of thing that happened.">
   <TimelineFeed />
 </Figure>
 
-## What lands here
+### What lands here
 
 Every event on the feed comes from something that actually happened in your account. Nothing is guessed, and nothing is written by hand.
 
@@ -33,15 +61,15 @@ Every event on the feed comes from something that actually happened in your acco
 
 If a document lives in a team's shared library, everyone in that team sees its events. A personal document's events are yours alone.
 
-## What is new since you were last here
+### What is new since you were last here
 
-That is the question the Timeline exists to answer, so it keeps a watermark of when you last read it.
+That is the question All activity exists to answer, so it keeps a watermark of when you last read it.
 
-- **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's Timeline has its own.
-- **The sidebar's Timeline row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ renamed a document is not news.
-- The watermark moves forward when you read the feed, and only from the top of it, so paging back through last month never marks the month as read.
+- **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's has its own.
+- **The sidebar's Home row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ renamed a document is not news.
+- The watermark moves forward when you visit Home or read the feed, and only from the top of it, so paging back through last month never marks the month as read.
 
-## Reading a day
+### Reading a day
 
 Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each day's events are laid out as **cards**, the same cards [Recent](/help/explorer/recent/) uses, so you recognise a document by its picture before you read a word.
 
@@ -53,17 +81,17 @@ Click a card to go to whatever it is about: the document, the team, your invites
 
 **A document card has the same ⋯ menu as it does in Recent.** Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Take Offline or Sync, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
 
-**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over the Timeline.
+**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over All activity.
 
-**Deleting a document takes it off the Timeline entirely.** Every card about it goes, and nothing is written in its place: from the feed's point of view it never existed. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
+**Deleting a document takes it off All activity entirely.** Every card about it goes, and nothing is written in its place: from the feed's point of view it never existed. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
 
 **Every card's menu ends with "Remove from Timeline".** If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
 
 A document you created and then worked on the same day shows **one card, "Document Created"**, rather than a Created and an Updated card with the same picture. Editing a new document on the day you made it is not news.
 
-Anything that happened since you last opened the Timeline carries a **New** badge, and the sidebar shows a count of other people's activity waiting for you.
+Anything that happened since you last looked carries a **New** badge, and the sidebar shows a count of other people's activity waiting for you.
 
-### Colour tells you what kind of thing happened
+#### Colour tells you what kind of thing happened
 
 The colour of a row is about **what happened**, not which part of the product it happened in:
 
@@ -73,7 +101,7 @@ The colour of a row is about **what happened**, not which part of the product it
 
 Three colours rather than one per feature, because the question you are asking as you scan is "is any of this alarming?", and only that question has a useful colour answer.
 
-### Busy days collapse
+#### Busy days collapse
 
 A day where you renamed six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card that says how many there were.
 
@@ -88,46 +116,46 @@ Two kinds never collapse, because collapsing them would hide the thing you came 
 - **Comments** stay separate, so you can always read what was actually said.
 - **Deleted documents** stay separate, so a deletion can never hide inside a stack.
 
-## What is coming up
+### What is coming up
 
 Not everything on the feed is in the past. Anything with an expiry — an [API token](/help/account-and-data/api-tokens/) approaching its six-month limit, a [share link](/help/collaboration/sharing/share-link-expiry/) about to lapse — appears **above** today in an Upcoming band.
 
 <Tip>
-  This is the reason to open the Timeline before something breaks rather than after: a script that
+  This is the reason to open All activity before something breaks rather than after: a script that
   stops working next Tuesday says so this week.
 </Tip>
 
-## Calendar view
+### Calendar view
 
 Switch **Cards** to **Calendar** in the header to see the same events as a month grid. Each day carries one dot per colour present, with a number when there was more than one — so a red dot tells you something was deleted that day without opening anything. Click a dot to read that day's events of that kind, as the same cards the list shows.
 
 The arrows page one month at a time, empty or not, because the gaps are part of what you are looking at.
 
-## Filtering
+### Filtering
 
 The **Filter** button opens two things. **Activity by** switches the whole feed between **Everyone** and **Other people**, which is the one to reach for on a busy account where your own edits bury everyone else's. Events nobody performed, a token about to expire, survive that filter: no person did them, and they are exactly what "what did I miss" is asking about.
 
 Below it sits a chip per area — Documents, Teams, Account — and a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
 
-The Timeline is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
+All activity is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
 
-Filters and the calendar view are per visit. Come back tomorrow and the Timeline opens on Cards again.
+Filters and the calendar view are per visit. Come back tomorrow and All activity opens on Cards again.
 
-## Guests and signing in
+### Guests and signing in
 
-The Timeline works without an account, like the rest of the canvas. A guest sees their own document activity and comments on their documents; team, invite, and token events need an account, so they simply do not appear.
+Home and All activity work without an account, like the rest of the canvas. A guest sees their own document activity and comments on their documents; team, invite, and token events need an account, so they simply do not appear.
 
-**Your history follows you.** Signing up moves your Timeline to your new account alongside your documents, so a week of work as a guest is still there afterwards.
+**Your history follows you.** Signing up moves your history, and what you open, to your new account alongside your documents, so a week of work as a guest is still there afterwards.
 
-## Team and document histories
+### Team and document histories
 
 The same feed appears in two other places:
 
-- **A team's own activity**, on the team page. Unlike your personal Timeline, it goes back to the beginning of the team — so if you joined last month you can still read what happened before you arrived.
+- **A team's own activity**, on the team page. Unlike your own All activity, it goes back to the beginning of the team — so if you joined last month you can still read what happened before you arrived.
 - **One document's history**, from the **History** item in a document's menu. Everything that has happened to that document: created, renamed, commented on, shared, filed.
 
 <Tip>
-  The Timeline keeps a year of history. The per-document [Activity panel](/help/activity-panel/) is
+  All activity keeps a year of history. The per-document [Activity panel](/help/activity-panel/) is
   the other half of this: it records every individual element change on one document, and lets you
   undo them.
 </Tip>
