@@ -15,7 +15,9 @@ function setup(elements: Element[]) {
   const commit = (map: (els: Element[]) => Element[]) => {
     current = map(current);
   };
-  const { result } = renderHook(() => useInlineIconMutators({ editsBlocked: false, commit }));
+  const { result } = renderHook(() =>
+    useInlineIconMutators({ editsBlocked: false, commit, elements }),
+  );
   return { mutators: result.current, get: () => current };
 }
 
@@ -53,5 +55,19 @@ describe('useInlineIconMutators telemetry', () => {
     expect(get().map((e) => e.id)).toEqual(['s']);
     expect(get()[0]).toMatchObject({ iconId: 'star', iconPosition: 'right' });
     expect(trackMock).not.toHaveBeenCalled();
+  });
+
+  it('swaps an icon for one dropped from the palette, keeping its box and style', () => {
+    const { mutators, get } = setup([{ ...iconEl, strokeColor: '#ff0000' } as Element]);
+    mutators.dropIconOnElement('i', 'heart', 'left');
+    expect(get()[0]).toMatchObject({ id: 'i', iconId: 'heart', x: 200, strokeColor: '#ff0000' });
+    expect(trackMock.mock.calls).toEqual([['Element', 'Changed', 'IconSwapped']]);
+  });
+
+  it('swaps an icon for one dragged onto it, using the dragged one up', () => {
+    const dragged = { ...iconEl, id: 'd', iconId: 'zap', x: 210 };
+    const { mutators, get } = setup([iconEl as Element, dragged as Element]);
+    mutators.dropIconElementOnShape('d', 'i', 'left');
+    expect(get()).toEqual([{ ...iconEl, iconId: 'zap' }]);
   });
 });

@@ -11,13 +11,15 @@ interface InlineIconMutatorsDeps {
   // History-aware element write (the page's `commit`): maps the LIVE element
   // list to a new one as a single undo block.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The active tab's elements now: whether a drop lands on an icon (a swap) or a shape.
+  elements: readonly Element[];
 }
 
 // Inline-icon attach/detach mutators (docs/specs/008-canvas/canvas-and-palette.md icons). A shape can carry one
 // inline icon (`iconId` + `iconPosition`); these three handlers are the only
 // writers of that pair. Lifted out of useEditorState as a cohesive slice —
 // they close over nothing but `editsBlocked` + `commit`.
-export function useInlineIconMutators({ editsBlocked, commit }: InlineIconMutatorsDeps) {
+export function useInlineIconMutators({ editsBlocked, commit, elements }: InlineIconMutatorsDeps) {
   // Drop a palette icon onto a shape (drag-and-drop): set its inline
   // iconId + the side the icon landed on. History-aware via commit so
   // it's undoable like any other element edit. Guarded for read-only /
@@ -29,6 +31,16 @@ export function useInlineIconMutators({ editsBlocked, commit }: InlineIconMutato
     position: 'left' | 'right' | 'above' | 'below',
   ) => {
     if (editsBlocked) return;
+    const target = elements.find((e) => e.id === elementId);
+    // Onto an icon: the icon becomes the dropped one, keeping its box, place and style.
+    if (target?.type === 'shape' && target.shape === 'icon') {
+      if (target.iconId === iconId) return;
+      commit((els) =>
+        els.map((e) => (e.id === elementId && e.type === 'shape' ? { ...e, iconId } : e)),
+      );
+      track('Element', 'Changed', 'IconSwapped');
+      return;
+    }
     commit((els) =>
       els.map((e) =>
         e.id === elementId && e.type === 'shape' && e.shape !== 'icon'
@@ -75,11 +87,13 @@ export function useInlineIconMutators({ editsBlocked, commit }: InlineIconMutato
       if (!glyph) return els;
       return els
         .filter((e) => e.id !== sourceId)
-        .map((e) =>
-          e.id === targetId && e.type === 'shape' && e.shape !== 'icon'
-            ? { ...e, iconId: glyph, iconPosition: position }
-            : e,
-        );
+        .map((e) => {
+          if (e.id !== targetId || e.type !== 'shape') return e;
+          // Onto an icon: the dragged icon replaces its glyph; the target keeps its box,
+          // place and style, and the dragged one is used up.
+          if (e.shape === 'icon') return { ...e, iconId: glyph };
+          return { ...e, iconId: glyph, iconPosition: position };
+        });
     });
     // No `Element·Added` here: the glyph is an icon that was already counted
     // when it was first placed on the canvas, and this only moves it into a

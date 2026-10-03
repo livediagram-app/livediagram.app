@@ -3,7 +3,8 @@ import { acceptsInlineIcon, type Element, type IconPosition } from '@livediagram
 import { iconDropSide } from '@/lib/canvas';
 import { ICON_DND_MIME } from '@/lib/icons';
 
-// Dragging a palette icon ONTO a shape (docs/specs/008-canvas/canvas-and-palette.md inline icons): the drag
+// Dragging a palette icon ONTO a shape (docs/specs/008-canvas/canvas-and-palette.md inline icons), or onto
+// an icon, which it then replaces (docs/specs/008-canvas/canvas-and-palette.md "Swapping an icon"): the drag
 // handlers that mark an icon-capable element as a drop target, tracking
 // the side of the text nearest the cursor. `dropSide` drives the live
 // IconDropPreview below. Lifted out of BoxedElementView as one cohesive
@@ -14,14 +15,18 @@ export function useIconDropTarget(
   element: Element,
   onDropIcon: ((id: string, iconId: string, side: IconPosition) => void) | undefined,
 ) {
-  const acceptsIconDrop = !!onDropIcon && acceptsInlineIcon(element);
-  const [dropSide, setDropSide] = useState<IconPosition | null>(null);
+  // An icon takes a dropped icon too: it becomes it (no side; the whole icon rings).
+  const isIcon = element.type === 'shape' && element.shape === 'icon';
+  const acceptsIconDrop = !!onDropIcon && (acceptsInlineIcon(element) || isIcon);
+  const [dropSide, setDropSide] = useState<IconPosition | 'replace' | null>(null);
   const handleIconDragOver = (e: ReactDragEvent) => {
     if (!acceptsIconDrop || !e.dataTransfer.types.includes(ICON_DND_MIME)) return;
     // preventDefault marks this element as a valid drop target.
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
-    const side = iconDropSide(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
+    const side = isIcon
+      ? 'replace'
+      : iconDropSide(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
     setDropSide((prev) => (prev === side ? prev : side));
   };
   const handleIconDragLeave = () => setDropSide(null);
@@ -51,13 +56,15 @@ const DROP_BAND: Record<IconPosition, string> = {
   below: 'left-0 right-0 bottom-0 h-1/3',
 };
 
-export function IconDropPreview({ side }: { side: IconPosition }) {
+export function IconDropPreview({ side }: { side: IconPosition | 'replace' }) {
   return (
     <div
       className="pointer-events-none absolute inset-0 z-[var(--z-toolbar)] ring-2 ring-brand-400"
       style={{ borderRadius: 'inherit' }}
     >
-      <div className={`absolute bg-brand-400/25 ${DROP_BAND[side]}`} />
+      <div
+        className={`absolute bg-brand-400/25 ${side === 'replace' ? 'inset-0' : DROP_BAND[side]}`}
+      />
     </div>
   );
 }

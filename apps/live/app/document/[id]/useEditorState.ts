@@ -2291,10 +2291,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
-  // Cohesive slice extracted to useInlineIconMutators — closes over only
-  // editsBlocked + commit.
+  // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
   const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit });
+    useInlineIconMutators({ editsBlocked, commit, elements: activeTab.elements });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See

@@ -721,13 +721,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onIconElementDroppedOnShape) {
         const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;
         const dragged = d.activeTab.elements.find((el) => el.id === drag.primaryId);
-        if (
-          moved &&
-          dragged &&
-          dragged.type === 'shape' &&
-          dragged.shape === 'icon' &&
-          !isTechIconId(dragged.iconId)
-        ) {
+        if (moved && dragged && dragged.type === 'shape' && dragged.shape === 'icon') {
           for (const { id, host } of elementHostsAtPoint(e.clientX, e.clientY)) {
             if (id === drag.primaryId) continue;
             // First real element beneath the icon. Fold in only if it's a
@@ -735,7 +729,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // a frame); otherwise leave the icon as a plain move, so an icon
             // dropped on a frame lands inside it as a standalone element.
             const target = d.activeTab.elements.find((el) => el.id === id);
-            if (target && acceptsInlineIcon(target)) {
+            // Onto another icon: the dragged icon replaces it, keeping its box, place and style
+            // (docs/specs/008-canvas/canvas-and-palette.md "Swapping an icon"); any icon, a tech mark too.
+            if (target?.type === 'shape' && target.shape === 'icon') {
+              d.onIconElementDroppedOnShape(drag.primaryId, id, 'left');
+            } else if (target && acceptsInlineIcon(target) && !isTechIconId(dragged.iconId)) {
               const rect = host.getBoundingClientRect();
               const position = iconDropSide(e.clientX, e.clientY, rect);
               d.onIconElementDroppedOnShape(drag.primaryId, id, position);

@@ -173,6 +173,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
+  'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
   'Element|Changed|Animation':
     'Someone gave a selected element a looping animation, or turned it off.',
   'Element|Changed|AnimationRepeat':
