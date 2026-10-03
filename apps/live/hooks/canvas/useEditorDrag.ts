@@ -604,6 +604,24 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // fresh arrow already following — committing now would land it where
       // it spawned. The gesture ends at the NEXT placing click, not on up.
       if (drag?.kind === 'arrow-endpoint' && drag.following) return;
+      // A freshly DRAWN arrow (never a reposition) gets the one-shot collision-avoiding bow
+      // (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, folded into the
+      // gesture's result so the two land as the one write. Written afterwards through `commit`, it
+      // started from the document as last rendered, before the result had landed, and put the
+      // arrow's end back where the drag began. A touch tap that never moved places its end below
+      // instead, as it always has, with no bow.
+      const tapStill =
+        drag?.kind === 'arrow-endpoint' &&
+        !!drag.tapPlace &&
+        !drag.following &&
+        Math.hypot(
+          e.clientX - (drag.pressClientX ?? drag.startClientX),
+          e.clientY - (drag.pressClientY ?? drag.startClientY),
+        ) <= 6;
+      if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition && !tapStill) {
+        const arrowId = drag.arrowId;
+        previewTick((els) => applyCollisionAvoidance(els, arrowId));
+      }
       // The gesture's result, as the release logic below reads it, then written in one change before
       // anything else writes (docs/specs/008-canvas/drag-preview.md).
       const released = virtualTab();
@@ -652,14 +670,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           scheduleSnapTargets([]);
           return;
         }
-      }
-      // A freshly DRAWN arrow (never a reposition) gets the one-shot
-      // collision-avoiding bow (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, whether it
-      // ends here or chains below. Same commit stream as the drag ticks,
-      // so it folds into the gesture's single undo step.
-      if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition) {
-        const arrowId = drag.arrowId;
-        d.commit((els) => applyCollisionAvoidance(els, arrowId));
       }
       // Shift-release of a press-drag chains the next arrow (same rule as
       // the placing click below). The landed endpoint is already committed
@@ -794,13 +804,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // triggers would cancel it, leaving the endpoint a frame behind (and
       // unsnapped from the element under the cursor).
       flushMove();
-      commitPreview();
       // The landed arrow gets the one-shot collision-avoiding bow
-      // (docs/specs/008-canvas/arrow-collision-avoidance.md), same as the press-drag end in onUp above.
+      // (docs/specs/008-canvas/arrow-collision-avoidance.md), folded into the result before it is
+      // written, as the press-drag end in onUp above does.
       if (drag.end === 'to' && !drag.reposition) {
         const arrowId = drag.arrowId;
-        depsRef.current.commit((els) => applyCollisionAvoidance(els, arrowId));
+        previewTick((els) => applyCollisionAvoidance(els, arrowId));
       }
+      commitPreview();
       // The endpoint already tracks the cursor (last pointermove); this
       // click just lands it. Shift chains straight into the next arrow
       // from the same source (docs/specs/008-canvas/canvas-and-palette.md); otherwise clear and end.
