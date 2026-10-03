@@ -121,12 +121,12 @@ describe('ToolbarPalette', () => {
   });
 
   // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-  it('offers the mock-up kit in Infographic mode only', () => {
+  it('offers the mock-up kit and the charts in Infographic mode only', () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="devices"]')).toBeNull();
     expect(document.querySelector('[data-option-id="components"]')).toBeNull();
-    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).toBeNull();
     cleanup();
     show({ mode: 'infographic' });
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));

@@ -56,8 +56,8 @@ const EMBED_TILES = [
   'media:embed-website',
 ];
 
-// Diagram mode: every category but the mock-up kit (Components, Devices) and Infographic's
-// Popular, each with its own tiles but Media's embeds.
+// Diagram mode: every category but the mock-up kit (Components, Devices), the charts (Data) and
+// Infographic's Popular, each with its own tiles but Media's embeds.
 const DIAGRAM: PaletteLayout = {
   landing: 'favourites',
   categories: [
@@ -73,7 +73,6 @@ const DIAGRAM: PaletteLayout = {
     { id: 'technology' },
     // Image and Avatar; no embedded pages.
     { id: 'media', tiles: tilesExcept('media', ...EMBED_TILES) },
-    { id: 'data' },
     { id: 'behaviour' },
   ],
 };

@@ -32,7 +32,7 @@ describe('palette layouts', () => {
     }
   });
 
-  it('gives Diagram every category but the mock-up kit and Popular', () => {
+  it('gives Diagram every category but the mock-up kit, the charts and Popular', () => {
     expect(ids('diagram')).toEqual([
       'favourites',
       'shapes',
@@ -44,7 +44,6 @@ describe('palette layouts', () => {
       'stickers',
       'technology',
       'media',
-      'data',
       'behaviour',
     ]);
   });

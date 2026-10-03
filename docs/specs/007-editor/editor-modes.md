@@ -239,7 +239,7 @@ Docs, Website), keeping Image and Avatar.
 | Stickers       | yes     | yes         |
 | Tech           | yes     | no          |
 | Media          | yes     | yes         |
-| Data           | yes     | yes         |
+| Data           | no      | yes         |
 | Behaviours     | yes     | no          |
 
 - **The landing category** is Favourites in Diagram mode, **Popular** in
