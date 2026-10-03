@@ -36,7 +36,8 @@ import {
 import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab';
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
+import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
+import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // Deps are named exactly as the tab bodies' own props, and typed off those
@@ -96,6 +97,13 @@ export function paletteCategoryTabs(
   // adding a category is one edit rather than two that can disagree.
   const content: Record<string, React.ReactNode> = {
     favourites: <PaletteFavouritesTab pendingDraw={pendingDraw} actions={tileActions} />,
+    popular: (
+      <PaletteTileGrid
+        tiles={tilesForCategory('popular')}
+        actions={tileActions}
+        pendingDraw={pendingDraw}
+      />
+    ),
     shapes: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
     'my-shapes': <PaletteMyShapesTab onInsert={insertLibraryShape} />,
     build: <PaletteBuildTab pendingDraw={pendingDraw} actions={tileActions} />,

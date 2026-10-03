@@ -44,6 +44,7 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
+import { useInfographicPage } from '@/hooks/editor/useInfographicPage';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
@@ -1559,6 +1560,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     switchMode: editorMode.setMode,
   });
+  // Infographic mode's A4 page: its orientation toggle, and the view centred on it.
+  const infographicPage = useInfographicPage({
+    activeTab,
+    mode: editorMode.mode,
+    canEdit: !isReadOnly,
+    tabLoaded: loadedTabIds.has(activeId),
+    commitTabs,
+    canvasMainRef,
+    setViewportZoom,
+    setViewportOffset,
+  });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -2940,6 +2952,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
+    infographicPage,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livediagram/document';
+import { editorModeLabel, nextEditorMode } from '@livediagram/document';
 import { CheckIcon, ChevronDownIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
@@ -9,6 +9,7 @@ import {
   type EditorModeSwitchProps,
 } from './editor-mode-copy';
 import { ModeKeyHint } from './ModeKeyHint';
+import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
 // showing the current mode's glyph and a chevron (and, `labelled`, its name), that opens a menu DOWNWARD (it sits in
@@ -34,7 +35,9 @@ export function ModeMenuChip({
   const rows = useRef<(HTMLButtonElement | null)[]>([]);
   const Icon = EDITOR_MODE_ICON[mode];
   const label = editorModeLabel(mode);
-  const keyLeadsTo = nextEditorMode(mode);
+  // An experimental mode switched off in Settings is not offered (offered-editor-modes).
+  const modes = useOfferedEditorModes();
+  const keyLeadsTo = nextEditorMode(mode, 1, modes);
 
   // The zoom the chip's host draws at (the toolbar or panel UI scale, docs/specs/007-editor/ui-scale.md),
   // read when the menu opens; the menu undoes it, so it opens at design size like every menu
@@ -57,11 +60,11 @@ export function ModeMenuChip({
   // Opening lands focus on the checked row. Choosing closes the menu in the
   // same step, so the mode never changes while it is open.
   useEffect(() => {
-    if (open) rows.current[EDITOR_MODES.indexOf(mode)]?.focus();
-  }, [open, mode]);
+    if (open) rows.current[modes.indexOf(mode)]?.focus();
+  }, [open, mode, modes]);
 
   const onMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const count = EDITOR_MODES.length;
+    const count = modes.length;
     const at = rows.current.findIndex((row) => row === document.activeElement);
     const target =
       event.key === 'ArrowDown'
@@ -129,7 +132,7 @@ export function ModeMenuChip({
           style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
           className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-(--z-popover) mt-1.5 flex w-max min-w-36 animate-fade-in flex-col gap-px rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60`}
         >
-          {EDITOR_MODES.map((option, index) => {
+          {modes.map((option, index) => {
             const checked = option === mode;
             const RowIcon = EDITOR_MODE_ICON[option];
             return (

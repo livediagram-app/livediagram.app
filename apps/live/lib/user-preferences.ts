@@ -127,6 +127,10 @@ export type UserPreferences = {
   // syncs across their devices. Missing / undefined / false === full
   // motion (subject to the OS setting), the default.
   reduceMotion?: boolean;
+  // Infographic mode (Settings › Experimental, docs/specs/007-editor/editor-modes.md "Experimental
+  // modes"). When `true`, the editor offers Infographic mode. Missing / undefined / false === not
+  // offered, the default.
+  infographicModeEnabled?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
   // for consequential, otherwise-silent actions (a document moved to a

@@ -2497,7 +2497,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "EditorMode": {
     "enum": [
       "diagram",
-      "draw"
+      "draw",
+      "infographic"
     ],
     "type": "string"
   },
@@ -4122,6 +4123,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageOrientation": {
+    "enum": [
+      "portrait",
+      "landscape"
+    ],
+    "type": "string"
+  },
   "ParticipantRecord": {
     "additionalProperties": false,
     "properties": {
@@ -5570,6 +5578,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "opensIn": {
         "$ref": "#/components/schemas/EditorMode"
+      },
+      "pageOrientation": {
+        "$ref": "#/components/schemas/PageOrientation"
       },
       "patternColor": {
         "type": "string"

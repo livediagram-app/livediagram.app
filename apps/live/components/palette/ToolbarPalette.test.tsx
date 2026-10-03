@@ -7,6 +7,9 @@ import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add
 import { ToolbarPalette } from './ToolbarPalette';
 import type { EsBoardControls } from './EventStormingBoardRows';
 import { savePaletteFavourites } from '@/lib/palette-favourites';
+import type { EditorMode } from '@livediagram/document';
+import type { ReactNode } from 'react';
+import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
@@ -35,20 +38,36 @@ function handlers(): PaletteAddHandlers {
   ) as unknown as PaletteAddHandlers;
 }
 
-function show(
-  props: { esBoard?: boolean; hidden?: boolean; esBoardControls?: EsBoardControls } = {},
-) {
+// The palette reads the editor mode from the editor's provider; Diagram outside one.
+const inMode = (mode: EditorMode, node: ReactNode) => (
+  <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
+    {node}
+  </EditorModeProvider>
+);
+
+function show({
+  mode = 'diagram',
+  ...props
+}: {
+  esBoard?: boolean;
+  hidden?: boolean;
+  esBoardControls?: EsBoardControls;
+  mode?: EditorMode;
+} = {}) {
   const h = handlers();
   const onSetCanvasTool = vi.fn();
   const view = render(
-    <ToolbarPalette
-      canvasTool="select"
-      onSetCanvasTool={onSetCanvasTool}
-      canvasEmpty={false}
-      pendingDraw={null}
-      {...h}
-      {...props}
-    />,
+    inMode(
+      mode,
+      <ToolbarPalette
+        canvasTool="select"
+        onSetCanvasTool={onSetCanvasTool}
+        canvasEmpty={false}
+        pendingDraw={null}
+        {...h}
+        {...props}
+      />,
+    ),
   );
   return { ...view, h, onSetCanvasTool };
 }
@@ -81,7 +100,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('swaps the tiles when the category changes', () => {
-    show();
+    show({ mode: 'infographic' });
     pickCategory('devices');
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
@@ -94,9 +113,28 @@ describe('ToolbarPalette', () => {
     show();
     // Favourites always has More: its search and Edit live there.
     expect(screen.getByRole('button', { name: 'More Favourites' })).toBeTruthy();
+    cleanup();
     // Devices fits in the strip whole.
+    show({ mode: 'infographic' });
     pickCategory('devices');
     expect(screen.queryByRole('button', { name: /^More/ })).toBeNull();
+  });
+
+  // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
+  it('offers the mock-up kit in Infographic mode only', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="devices"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="components"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
+    cleanup();
+    show({ mode: 'infographic' });
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
   });
 
   it("opens the category's full body under More, and closes it when a tile is used", () => {
@@ -195,19 +233,22 @@ describe('ToolbarPalette', () => {
   });
 
   it('hides rather than unmounts, so the chosen category survives', () => {
-    const view = show();
+    const view = show({ mode: 'infographic' });
     pickCategory('devices');
     const h = handlers();
     const rerender = (hidden: boolean) =>
       view.rerender(
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          hidden={hidden}
-          {...h}
-        />,
+        inMode(
+          'infographic',
+          <ToolbarPalette
+            canvasTool="select"
+            onSetCanvasTool={vi.fn()}
+            canvasEmpty={false}
+            pendingDraw={null}
+            hidden={hidden}
+            {...h}
+          />,
+        ),
       );
     rerender(true);
     const root = document.querySelector('[data-toolbar-palette]') as HTMLElement;

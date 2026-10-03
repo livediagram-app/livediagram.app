@@ -137,7 +137,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw', fired before the mode applies.
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeInfographic', fired before the mode applies.
   'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path

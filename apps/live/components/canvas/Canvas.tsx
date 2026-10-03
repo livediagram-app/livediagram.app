@@ -87,6 +87,8 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { InfographicPage } from '@/components/canvas/InfographicPage';
+import { pressIsOffPage } from '@/hooks/canvas/infographic-page-guard';
 
 export function Canvas(props: CanvasProps) {
   const {
@@ -526,8 +528,11 @@ export function Canvas(props: CanvasProps) {
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
   });
+  // In Infographic mode a press off the page is claimed and dropped: nothing is made there.
+  const offPage = (e: { clientX: number; clientY: number }) =>
+    pressIsOffPage(props.infographicPage, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
+    offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
@@ -657,6 +662,7 @@ export function Canvas(props: CanvasProps) {
           // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
           // add-text double-click while the intent is armed.
           if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+          if (offPage(e)) return;
           surface.onWrapperDoubleClick(e);
         }}
         // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
@@ -721,6 +727,10 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
+        {/* Infographic mode's A4 page, under every element (InfographicPage). */}
+        {props.infographicPage ? (
+          <InfographicPage page={props.infographicPage} zoom={viewportZoom} />
+        ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
           {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}

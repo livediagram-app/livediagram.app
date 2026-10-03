@@ -79,6 +79,9 @@ export type CanvasProps = {
   // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
+  // Infographic mode's A4 page and its orientation toggle (docs/specs/007-editor/editor-modes.md
+  // "The page"), present only in that mode.
+  infographicPage?: import('@/hooks/editor/useInfographicPage').InfographicPageView | null;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;

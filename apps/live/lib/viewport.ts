@@ -54,6 +54,27 @@ export function computeFitToScreen(
   return { zoom, offset };
 }
 
+// Fit to the part of the canvas below `insetTop` screen px (a toolbar laid over the canvas's top
+// edge): the zoom fits the box into the remaining height, and the box centres in that band rather
+// than in the whole canvas. With the centred `scale(z) translate(offset)` transform a canvas y `c`
+// lands at screen `h/2 + z(c + offset.y - h/2)`, so centring on the band adds `insetTop / 2z`.
+export function computeFitBelow(
+  rect: Rect,
+  bbox: BBox,
+  insetTop: number,
+  maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
+): { zoom: number; offset: Offset } {
+  const inset = Math.max(0, Math.min(insetTop, rect.height / 2));
+  const { zoom } = computeFitToScreen({ ...rect, height: rect.height - inset }, bbox, maxZoom);
+  return {
+    zoom,
+    offset: {
+      x: rect.width / 2 - (bbox.x + bbox.width / 2),
+      y: rect.height / 2 - (bbox.y + bbox.height / 2) + inset / (2 * zoom),
+    },
+  };
+}
+
 // Canvas-coord position of the viewport centre. With transform
 // `scale(z) translate(offset)` centred on the wrapper, the canvas-
 // coord at viewport centre is just (canvasCentre - offset), because

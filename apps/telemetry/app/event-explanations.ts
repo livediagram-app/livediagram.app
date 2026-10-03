@@ -17,6 +17,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
+  'Editor|Changed|ModeInfographic':
+    'Someone switched a tab to Infographic mode, to lay out a page of icons, stickers, components and media.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -503,6 +505,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+  'Tab|Changed|PagePortrait': "Someone turned an infographic tab's A4 page to portrait.",
+  'Tab|Changed|PageLandscape': "Someone turned an infographic tab's A4 page to landscape.",
+  'Tab|Changed|OpensInInfographic':
+    'Someone set a tab to open in Infographic mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -903,6 +909,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|QuickAddHoverOn':
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
+  'UI|Toggled|InfographicModeOff':
+    'Someone turned off Infographic mode, in Settings > Experimental.',
+  'UI|Toggled|InfographicModeOn': 'Someone turned on Infographic mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',

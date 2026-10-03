@@ -18,6 +18,7 @@ import {
   DevicesTabIcon,
   DrawTabIcon,
   FavouritesTabIcon,
+  PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
   MyShapesTabIcon,
@@ -60,6 +61,16 @@ export const PALETTE_CATEGORIES: {
     description:
       'Your go-to tiles from every category in one grid. Edit to add or remove controls.',
     icon: <FavouritesTabIcon />,
+  },
+  {
+    // Popular (docs/specs/007-editor/editor-modes.md "The palette per mode"): Infographic mode's
+    // landing category in place of Favourites, twelve picks across the categories it offers.
+    id: 'popular',
+    label: 'Popular',
+    fullWidth: true,
+    description:
+      'The twelve tiles an infographic is most often built from: text, shapes, an image, a speech bubble, charts, a stat row, a process, a timeline and a callout.',
+    icon: <PopularTabIcon />,
   },
   {
     id: 'shapes',

@@ -1,4 +1,4 @@
-import { lucideWorkflow } from '@livediagram/icons/lucide';
+import { lucideChartColumn, lucideWorkflow } from '@livediagram/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
@@ -20,6 +20,9 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
 
 // Two steps joined by a connector.
 export const FlowchartIcon = lucideGlyph(lucideWorkflow, 16);
+
+// A column chart on its axes: Infographic mode's mark (docs/specs/007-editor/editor-modes.md).
+export const ChartIcon = lucideGlyph(lucideChartColumn, 16);
 
 // A hub with four branches, on a 16-unit grid.
 export function MindmapIcon({ size = 16, ...rest }: IconProps) {

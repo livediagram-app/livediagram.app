@@ -7,6 +7,7 @@ import { EditorModeSwitch } from '@/components/chrome/editor-mode/EditorModeSwit
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
+import { paletteLandingCategory } from './palette-mode-categories';
 
 export type { CanvasTool };
 
@@ -14,7 +15,7 @@ export function CommandPalette(props: CommandPaletteProps) {
   const { position, onMoveTo, onReset, esBoard, onSize, themeTint, dock, drawTools } = props;
   // Handlers, categories and the canvas-tool options are shared with the
   // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) — see usePaletteCatalogue.
-  const { tabs, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue(props);
+  const { tabs, editorMode, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue(props);
   const { canvasTool } = props;
   return (
     <MovablePanel
@@ -61,9 +62,11 @@ export function CommandPalette(props: CommandPaletteProps) {
               // an event-storming board (docs/specs/021-event-storming/event-storming.md), where the notation is the
               // whole point: it opens on the Event Storming category. Keyed so
               // crossing an ES / non-ES tab boundary re-lands on the right
-              // default rather than whatever was open on the other tab.
-              key={esBoard ? 'es-board' : 'standard'}
-              defaultOpenId={esBoard ? 'event-storming' : 'favourites'}
+              // default rather than whatever was open on the other tab. Keyed on the editor mode
+              // too: a mode offers its own categories, so a switch re-lands on Favourites rather
+              // than on a category the new mode leaves out.
+              key={esBoard ? 'es-board' : editorMode}
+              defaultOpenId={paletteLandingCategory(editorMode, !!esBoard)}
               // Distraction-free capture surface (docs/specs/021-event-storming/event-storming.md): an ES board hides
               // both dropdowns — the notation IS the palette there.
               hideHeader={esBoard}

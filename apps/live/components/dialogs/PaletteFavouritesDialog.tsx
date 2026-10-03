@@ -64,6 +64,7 @@ const OPEN_ENDED: string[] = ['icons', 'stickers', 'technology'];
 const CATEGORY_CHOICES: { id: string; label: string }[] = PALETTE_CATEGORIES.filter(
   (c) =>
     c.id !== 'favourites' &&
+    c.id !== 'popular' &&
     c.id !== 'event-storming' &&
     (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
 ).map((c) => ({ id: c.id, label: c.label }));

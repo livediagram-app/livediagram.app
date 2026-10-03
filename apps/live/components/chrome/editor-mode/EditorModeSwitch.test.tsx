@@ -6,20 +6,43 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EDITOR_MODES, ES_BOARD_LAYER_ID, type EditorMode, type Tab } from '@livediagram/document';
+import {
+  EDITOR_MODES,
+  ES_BOARD_LAYER_ID,
+  editorModeLabel,
+  type EditorMode,
+  type Tab,
+} from '@livediagram/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
+import { setInfographicModeEnabled } from '@/lib/offered-editor-modes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 beforeEach(() => {
+  // Every mode offered, the experimental one included (Settings › Experimental).
+  setInfographicModeEnabled(true);
   localStorage.clear();
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  setInfographicModeEnabled(false);
+});
+
+// Settings › Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes").
+describe('EditorModeSwitch with Infographic mode switched off', () => {
+  it('offers only Diagram and Draw', () => {
+    setInfographicModeEnabled(false);
+    renderSwitch('diagram');
+    fireEvent.click(chip());
+    expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
+      'Diagram',
+      'Draw⇧D',
+    ]);
+  });
 });
 
 function renderSwitch(mode: EditorMode, over: Partial<EditorModeState> = {}) {
@@ -40,9 +63,7 @@ const chip = () => screen.getByRole('button', { name: /^Editor mode:/ });
 describe('EditorModeSwitch chip', () => {
   it.each(EDITOR_MODES)('is a collapsed menu button named after %s', (mode) => {
     renderSwitch(mode);
-    expect(chip().getAttribute('aria-label')).toBe(
-      `Editor mode: ${mode === 'draw' ? 'Draw' : 'Diagram'}`,
-    );
+    expect(chip().getAttribute('aria-label')).toBe(`Editor mode: ${editorModeLabel(mode)}`);
     expect(chip().getAttribute('aria-haspopup')).toBe('menu');
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(chip().getAttribute('aria-keyshortcuts')).toBe('Shift+D');
@@ -64,8 +85,9 @@ describe('EditorModeSwitch chip', () => {
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Diagram/),
       expect.stringMatching(/^Draw/),
+      expect.stringMatching(/^Infographic/),
     ]);
-    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     expect(document.activeElement).toBe(rows[1]);
   });
 
@@ -76,6 +98,7 @@ describe('EditorModeSwitch chip', () => {
     expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
       'Diagram',
       'Draw⇧D',
+      'Infographic',
     ]);
   });
 
@@ -97,17 +120,19 @@ describe('EditorModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, infographic] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(infographic);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(draw);
+    expect(document.activeElement).toBe(infographic);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(draw);
+    expect(document.activeElement).toBe(infographic);
   });
 
   it.each([

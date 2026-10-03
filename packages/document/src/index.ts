@@ -13,6 +13,7 @@
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
+import type { PageOrientation } from './infographic-page';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -283,6 +284,9 @@ export type Tab = {
   // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
   // (read via `opensInOf`); switching never changes it.
   opensIn?: EditorMode;
+  // Infographic mode's page orientation (docs/specs/007-editor/editor-modes.md "The page"): the A4
+  // sheet everyone lays the tab out on. Absent = 'portrait' (read via `pageOrientationOf`).
+  pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
@@ -357,6 +361,7 @@ export type Tab = {
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
+export * from './infographic-page';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

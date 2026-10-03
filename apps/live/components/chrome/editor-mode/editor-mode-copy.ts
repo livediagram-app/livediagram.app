@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import type { EditorMode } from '@livediagram/document';
-import { FlowchartIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
+import { ChartIcon, FlowchartIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
 
 // What the editor's mode controls show for each editor mode beyond the words, which come from the
 // document's one mode catalogue (editorModeLabel / editorModeDescription), and the shortcut that
@@ -9,6 +9,7 @@ import { FlowchartIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
 export const EDITOR_MODE_ICON: Record<EditorMode, ComponentType<IconProps>> = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
+  infographic: ChartIcon,
 };
 
 // Shift+D, as `aria-keyshortcuts` spells it and as the interface shows it.

@@ -893,6 +893,25 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    // Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes"): ideas being
+    // tried out, each off until switched on here. Listed after AI Tools.
+    id: 'experimental',
+    label: 'Experimental',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'infographicModeEnabled',
+        keywords: 'infographic page a4 poster editor mode experiment labs beta',
+        label: 'Infographic Mode',
+        description:
+          'Adds Infographic mode to the editor mode switch: an A4 page to lay out icons, stickers, charts, components and media on. An experiment, so it may change or go away. Off by default.',
+        read: (p) => p.infographicModeEnabled === true,
+        write: (p, v) => ({ ...p, infographicModeEnabled: v }),
+        event: { category: 'UI', on: 'InfographicModeOn', off: 'InfographicModeOff' },
+      },
+    ],
+  },
+  {
     id: 'documents',
     label: 'Documents',
     // One row per default folder entry, in list order: guests have defaults too.

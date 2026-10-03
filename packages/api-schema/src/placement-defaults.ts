@@ -109,9 +109,12 @@ export function creationIntentOf(
   tab: { kind?: string; opensIn?: string; layers?: Layer[] } | undefined,
   templateFamily: TemplateFamily | null = null,
 ): CreationIntent {
-  const draw = tab?.kind === 'whiteboard' || tab?.opensIn === 'draw';
   const intent: CreationIntent = {
-    mode: draw ? 'draw' : 'diagram',
+    mode: isEditorMode(tab?.opensIn)
+      ? tab.opensIn
+      : tab?.kind === 'whiteboard'
+        ? 'draw'
+        : 'diagram',
     tabKind: isEventStormingTab(tab) ? 'event-storming' : 'diagram',
   };
   return templateFamily ? { ...intent, templateFamily } : intent;

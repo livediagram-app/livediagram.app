@@ -1,5 +1,5 @@
-// Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram or
-// Draw. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
+// Draw or Infographic. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode a person works in is theirs (the editor remembers it per tab, device-locally); the tab only
 // says which mode it OPENS in (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
@@ -10,6 +10,11 @@ import { isEventStormingTab } from './event-storming';
 export const EDITOR_MODE_CATALOGUE = [
   { id: 'diagram', label: 'Diagram', description: 'Shapes, arrows, the palette and snapping.' },
   { id: 'draw', label: 'Draw', description: 'Pens, the eraser and shape recognition.' },
+  {
+    id: 'infographic',
+    label: 'Infographic',
+    description: 'A page to lay out icons, stickers, components and media.',
+  },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 
 export type EditorMode = (typeof EDITOR_MODE_CATALOGUE)[number]['id'];
@@ -28,10 +33,15 @@ export function editorModeDescription(mode: EditorMode): string {
 
 export const DEFAULT_EDITOR_MODE: EditorMode = 'diagram';
 
-/** The mode `step` places along the catalogue from `mode`, wrapping at either end. */
-export function nextEditorMode(mode: EditorMode, step: 1 | -1 = 1): EditorMode {
-  const count = EDITOR_MODES.length;
-  return EDITOR_MODES[(EDITOR_MODES.indexOf(mode) + step + count) % count]!;
+/** The mode `step` places along `modes` (the catalogue unless narrowed) from `mode`, wrapping at
+ *  either end. A mode not in `modes` steps as if just before the first. */
+export function nextEditorMode(
+  mode: EditorMode,
+  step: 1 | -1 = 1,
+  modes: readonly EditorMode[] = EDITOR_MODES,
+): EditorMode {
+  const count = modes.length;
+  return modes[(modes.indexOf(mode) + step + count) % count]!;
 }
 
 export function isEditorMode(v: unknown): v is EditorMode {
@@ -64,4 +74,10 @@ export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: 
 // canvas pattern is the person's own (resolveViewBackdrop); everything else looks the same in both.
 export function hasBoardLook(mode: EditorMode): boolean {
   return mode === 'draw';
+}
+
+// Infographic mode draws the canvas as a page on a surround (docs/specs/007-editor/editor-modes.md
+// "The page"); a view of the tab, like the board look, never stored.
+export function hasPageLook(mode: EditorMode): boolean {
+  return mode === 'infographic';
 }
