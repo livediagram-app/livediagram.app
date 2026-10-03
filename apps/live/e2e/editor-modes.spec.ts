@@ -1,5 +1,11 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import {
+  chooseToolbarLayout,
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+} from './fixtures';
 
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip in the
 // Palette header switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
@@ -130,4 +136,27 @@ test.describe('editor modes', () => {
     await other.close();
     expectNoPageErrors(pageErrors);
   });
+
+  // A Draw tool in hand never takes the press meant for the switch, in either layout.
+  for (const layout of ['floating', 'toolbar'] as const) {
+    test(`switches back to Diagram with a marker in hand (${layout} layout)`, async ({
+      page,
+      pageErrors,
+    }) => {
+      if (layout === 'toolbar') await chooseToolbarLayout(page);
+      await openBlank(page);
+      await chooseMode(page, 'Draw');
+      await dock(page)
+        .getByRole('button', { name: /^Marker 2/ })
+        .click();
+      await expect(dock(page).getByRole('button', { name: /^Marker 2/ })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await chooseMode(page, 'Diagram');
+      await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+      await expect(sketches(page)).toHaveCount(0);
+      expectNoPageErrors(pageErrors);
+    });
+  }
 });
