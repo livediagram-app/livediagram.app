@@ -110,7 +110,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|FormatPainter':
     "Someone picked up the Format tool, ready to copy one element's style onto others by tapping them.",
   'Canvas|Used|Highlighter':
-    'Someone picked up the Highlighter, a see-through marker pen for annotating the canvas.',
+    'Someone picked up the Highlighter mode, a see-through marker pen for annotating the canvas. No longer recorded: the Highlighter is a Draw tile now, counted when a stroke is added.',
   'Canvas|Used|InsertBetween':
     'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':

@@ -692,9 +692,8 @@ and the dialog stays as the one complete, browsable index of them.
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two
   palette tiles, so no preference is set from a tool's own chrome any
-  more. The Highlighter Panel's Colour + Strength ([Highlighter](../008-canvas/highlighter.md)) are the
-  closest thing, and those are session-local editor state setting the
-  next stroke's style rather than a persisted preference.
+  more. The Highlighter ([Highlighter](../008-canvas/highlighter.md)) has no settings at all: every
+  stroke lands marker yellow at one width, recoloured afterwards like any element.
 
 ## Read / write helpers
 

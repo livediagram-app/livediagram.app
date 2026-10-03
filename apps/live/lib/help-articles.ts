@@ -41,7 +41,6 @@ export const HELP_ARTICLES = {
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  highlighter: 'selection-modes/highlighter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
   aiTools: 'tools/ai/ai-tools',
@@ -170,10 +169,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  highlighter: {
-    title: 'Learn about the Highlighter',
-    description: 'Tips for marking up the canvas with translucent strokes.',
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',

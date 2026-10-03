@@ -594,7 +594,6 @@ const MODE_TITLES: Record<string, string> = {
   Laser: 'Laser',
   Spotlight: 'Spotlight',
   Eraser: 'Eraser',
-  Highlighter: 'Highlighter',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
   AvatarMode: 'Avatar Mode',

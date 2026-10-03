@@ -64,6 +64,7 @@ export function usePaletteCatalogue({
   onAddImage,
   onAddArrow,
   onBeginFreehand,
+  onBeginHighlighter,
   onBeginShapePen,
   onBeginPolygon,
   pendingDraw,
@@ -124,6 +125,7 @@ export function usePaletteCatalogue({
   const addArrow = (ends?: import('@livediagram/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
+  const beginHighlighter = armed(onBeginHighlighter);
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
   const addImage = armed(() => onAddImage?.());
@@ -153,6 +155,7 @@ export function usePaletteCatalogue({
       addShape,
       addText,
       beginFreehand,
+      beginHighlighter,
       beginShapePen,
       beginPolygon,
       addArrow,

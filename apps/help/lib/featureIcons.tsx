@@ -98,16 +98,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // person glyphs (`chairs`, `roll-calls`, `search-teams`, `profile`,
   // `done-checks`) — every one of them a head-and-shoulders bust. So these two are
   // whole figures mid-stride, which is also what the feature is: walking.
-  //
-  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
-  // pencil, so the tip shape is what separates all three.
-  highlighter: (
-    <Glyph>
-      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" />
-      <path d="M8 13.5L6 17l5-1" />
-      <path d="M3.5 20.5h17" />
-    </Glyph>
-  ),
   'avatar-mode': (
     <Glyph>
       <Prims prims={lucideFootprints} />
@@ -300,6 +290,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   drawing: (
     <Glyph>
       <Prims prims={lucidePencilLine} />
+    </Glyph>
+  ),
+  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
+  // pencil, so the tip shape is what separates all three.
+  highlighter: (
+    <Glyph>
+      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" />
+      <path d="M8 13.5L6 17l5-1" />
+      <path d="M3.5 20.5h17" />
     </Glyph>
   ),
   'selecting-and-grouping': (

@@ -60,25 +60,6 @@ export function EraserGlyph({ on = false }: { on?: boolean }) {
   );
 }
 
-/** A chisel-tip marker over the band it lays down (Highlighter). The band is
- *  what tells it apart from a pen at this size, where both nibs are the same
- *  three strokes. */
-export function HighlighterGlyph({ on = false }: { on?: boolean }) {
-  return (
-    <g
-      className={on ? 'stroke-white' : 'stroke-slate-500'}
-      strokeWidth={1.5}
-      fill="none"
-      strokeLinejoin="round"
-      strokeLinecap="round"
-    >
-      <path d="M-5 3 L0 -2 L2.5 0.5 L-2.5 5.5 Z" />
-      <path d="M0 -2 L2 -4.5 L5 -1.5 L2.5 0.5" />
-      <path d="M-6 7 H1" strokeWidth={2.4} opacity={0.5} />
-    </g>
-  );
-}
-
 /** A paint-roller / brush glyph (Format Painter). */
 export function PainterGlyph({ on = false }: { on?: boolean }) {
   return (
@@ -187,7 +168,6 @@ export const MODES = [
   { key: 'hand', label: 'Hand', Glyph: HandGlyph },
   { key: 'eraser', label: 'Eraser', Glyph: EraserGlyph },
   { key: 'painter', label: 'Painter', Glyph: PainterGlyph },
-  { key: 'highlighter', label: 'Mark', Glyph: HighlighterGlyph },
   { key: 'laser', label: 'Laser', Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spot', Glyph: SpotlightGlyph },
   { key: 'avatar', label: 'Walk', Glyph: AvatarGlyph },

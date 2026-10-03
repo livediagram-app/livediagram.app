@@ -47,7 +47,7 @@ type Deps = {
   editsBlocked: boolean;
   // The raw setter: dock switches are not "picked a mode from the palette".
   setCanvasTool: (tool: CanvasTool) => void;
-  // The tracked setter, for the modes the palette also counts (eraser, highlighter).
+  // The tracked setter, for the modes the palette also counts (the eraser).
   selectCanvasTool: (tool: CanvasTool) => void;
   beginDraw: (intent: PendingDraw) => void;
   cancelDraw: () => void;
@@ -128,9 +128,9 @@ export function useWhiteboard(deps: Deps) {
     // A shape armed from the palette is Diagram mode's own: switching into Draw puts it down.
     const shapeCarried = switched && !!pendingDraw && !isWhiteboardOnlyIntent(pendingDraw);
     if (shapeCarried) cancelDraw();
-    // Draw mode has no highlighter or format painter, and the eraser does not come across a
-    // switch: each is put down, and the pen picked up in its place.
-    const heldElsewhere = canvasTool === 'highlighter' || canvasTool === 'format' || eraserCarried;
+    // Draw mode has no format painter, and the eraser does not come across a switch: each is
+    // put down, and the pen picked up in its place.
+    const heldElsewhere = canvasTool === 'format' || eraserCarried;
     if (!entered) return;
     if (heldElsewhere) setCanvasTool('select');
     if (editsBlocked || (pendingDraw && !shapeCarried)) return;

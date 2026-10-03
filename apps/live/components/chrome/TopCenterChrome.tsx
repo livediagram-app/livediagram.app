@@ -138,11 +138,9 @@ export function TopCenterChrome({
         ) : null}
 
         {/* The banner belongs to a one-shot ARM: "you picked a square, now
-            drag one out", with a Cancel because the intent is transient. The
-            highlighter is a held tool now (docs/specs/008-canvas/highlighter.md), so it is excluded here —
-            a mode does not need telling you it is on every time you look up,
-            and its colour + strength moved off this bar into the Highlighter
-            Panel, where every other tool keeps its settings. */}
+            drag one out", with a Cancel because the intent is transient. A
+            held pen (a whiteboard pen, the Path tool) is excluded: a tool in
+            the hand does not need telling you it is on every time you look up. */}
         {pendingDraw && !isHeldPenIntent(pendingDraw) ? (
           <ModeBanner
             icon={<DrawIcon />}

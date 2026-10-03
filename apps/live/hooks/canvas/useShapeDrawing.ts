@@ -29,17 +29,6 @@ import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 
-// The armed marker gesture. One frozen object so the effect below can compare
-// and re-set it without minting a new intent (and a new render) per pass.
-const MARKER_INTENT = { type: 'freehand', variant: 'highlighter' } as const satisfies PendingDraw;
-
-// Marker yellow (docs/specs/008-canvas/highlighter.md): the highlighter's default colour regardless
-// of theme; the banner's colour popover (and the Colours category on a
-// committed stroke) can override it.
-export const HIGHLIGHTER_DEFAULT_COLOR = '#fde047';
-// Default marker width in px; the banner's strength popover overrides.
-export const HIGHLIGHTER_DEFAULT_WIDTH = 14;
-
 type ShapeDrawingDeps = {
   editsBlocked: boolean;
   // The currently-selected element id, read at arm-time so a tap-to-drop
@@ -90,12 +79,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // the canvas intercepts the next pointer-down on its surface and uses the
   // drag's bounding box for the element's size. Escape clears it.
   const [pendingDraw, setPendingDraw] = useState<PendingDraw | null>(null);
-  // Highlighter banner settings (docs/specs/008-canvas/highlighter.md): the colour + stroke width the
-  // NEXT marker strokes commit with, adjusted from the mode banner's two
-  // popovers. Session-local by design — the marker resets to yellow /
-  // medium on a fresh editor load, like a real pen cup.
-  const [highlighterColor, setHighlighterColor] = useState(HIGHLIGHTER_DEFAULT_COLOR);
-  const [highlighterWidth, setHighlighterWidth] = useState(HIGHLIGHTER_DEFAULT_WIDTH);
   // The element selected when the gesture was armed, captured here because
   // beginDraw clears the selection (below). A tap-to-drop inherits this
   // element's size in commitDraw, preserving the old "new shapes match the
@@ -264,11 +247,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // intent so the canvas's pen-gesture effect picks up the next
   // drag. Clears selection like beginDrawIfEnabled does so the
   // selection popover doesn't hover over the about-to-be-drawn
-  // stroke. Both pens stay zero-arg (rather than taking the variant as a
-  // parameter) because they're passed straight into onClick slots, where a
-  // parameter would swallow the event object. The highlighter used to arm
-  // through here too; it is a held tool now (see holdingMarker below).
-  const armFreehand = (variant?: 'shape-pen') => {
+  // stroke. The highlighter (docs/specs/008-canvas/highlighter.md) is the same gesture with the
+  // marker variant riding the intent. The begin* entry points stay zero-arg
+  // (rather than taking the variant as a parameter) because they're passed
+  // straight into onClick slots, where a parameter would swallow the event object.
+  const armFreehand = (variant?: 'highlighter' | 'shape-pen') => {
     if (editsBlocked) return;
     setSelectedId(null);
     setMultiSelectedIds(new Set());
@@ -277,30 +260,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setPendingDraw(variant ? { type: 'freehand', variant } : { type: 'freehand' });
   };
   const beginFreehand = () => armFreehand();
-
-  // The highlighter is a MODE now (docs/specs/008-canvas/highlighter.md), not a one-shot arm: it lives in
-  // the tool dropdown beside the Eraser, so picking it holds the marker until
-  // you put it down. The gesture underneath is unchanged, so the mode is
-  // expressed by keeping the freehand-marker intent armed for as long as the
-  // tool is selected — entering re-arms it here, each committed stroke re-arms
-  // it in commitFreehand, and leaving drops it. Picking and putting down are
-  // adjusted while rendering, keyed on the tool (every setter here is state of
-  // the same editor component).
-  const holdingMarker = canvasTool === 'highlighter';
-  const [markerHeld, setMarkerHeld] = useState(holdingMarker);
-  if (holdingMarker !== markerHeld) {
-    setMarkerHeld(holdingMarker);
-    if (holdingMarker) {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      setEditingId(null);
-      setPendingDraw(MARKER_INTENT);
-    } else {
-      // Only the marker's own intent: leaving the tool must not cancel a draw
-      // the user armed from the palette while holding it.
-      setPendingDraw((p) => (p?.type === 'freehand' && p.variant === 'highlighter' ? null : p));
-    }
-  }
+  const beginHighlighter = () => armFreehand('highlighter');
 
   // The shape pen (docs/specs/008-canvas/two-pens.md): the same gesture, but the stroke is run through
   // shape recognition on release. Which pen you picked IS the setting.
@@ -321,14 +281,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // Canvas-driven commit for the pen gesture — see makeCommitFreehand.
   const commitFreehand = makeCommitFreehand({
     editsBlocked,
-    holdingMarker,
     activeTab,
     commit,
     pendingDraw,
     setPendingDraw,
     setSelectedId,
-    highlighterColor,
-    highlighterWidth,
     zoomRef,
     styleNewElement,
   });
@@ -361,13 +318,10 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     commitDraw,
     cancelDrawShape,
     beginFreehand,
+    beginHighlighter,
     beginShapePen,
     beginPolygon,
     commitFreehand,
     commitPolygon,
-    highlighterColor,
-    setHighlighterColor,
-    highlighterWidth,
-    setHighlighterWidth,
   };
 }

@@ -40,7 +40,6 @@ import {
   AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
-  HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -157,7 +156,6 @@ const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> 
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
-  highlighter: <HighlighterIcon />,
 };
 
 export function ElementDataSections({

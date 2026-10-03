@@ -199,14 +199,14 @@ describe('useWhiteboard', () => {
     });
   });
 
-  it('puts down a highlighter carried over from a diagram tab', () => {
-    const { deps } = setup(board(), null, 'highlighter' as never);
+  it('puts down a format painter carried over from a diagram tab', () => {
+    const { deps } = setup(board(), null, 'format' as never);
     expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
     expect(deps.beginDraw).toHaveBeenCalled();
   });
 
-  it('puts down a carried-over highlighter for Select on a whiteboard with content', () => {
-    const { deps } = setup(board('wb', { elements: [stroke] }), null, 'highlighter' as never);
+  it('puts down a carried-over format painter for Select on a whiteboard with content', () => {
+    const { deps } = setup(board('wb', { elements: [stroke] }), null, 'format' as never);
     expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
     expect(deps.beginDraw).not.toHaveBeenCalled();
   });

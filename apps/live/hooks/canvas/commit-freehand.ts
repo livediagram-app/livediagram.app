@@ -22,7 +22,7 @@ import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
 import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
+import { HIGHLIGHTER_COLOR } from '@/lib/highlighter-config';
 import { simplifyPenStroke } from '@/lib/pen-smoothing';
 import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-preview';
 
@@ -34,7 +34,7 @@ import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-p
 // recognise a real shape before falling back to a sketch.
 //
 // A factory called per render rather than a hook: it needs values that change
-// every render (the pending draw, the highlighter recipe, the live tab) and owns
+// every render (the pending draw, the live tab) and owns
 // no state of its own.
 //
 // Decision and effect are interleaved on purpose and stay that way. Each
@@ -47,10 +47,7 @@ export function makeCommitFreehand({
   commit,
   pendingDraw,
   setPendingDraw,
-  holdingMarker,
   setSelectedId,
-  highlighterColor,
-  highlighterWidth,
   zoomRef,
   styleNewElement = (el) => el,
 }: {
@@ -59,13 +56,7 @@ export function makeCommitFreehand({
   commit: (fn: (els: Element[]) => Element[]) => void;
   pendingDraw: PendingDraw | null;
   setPendingDraw: (p: PendingDraw | null) => void;
-  // True while the Highlighter TOOL is held (docs/specs/008-canvas/highlighter.md). A held marker re-arms
-  // after every stroke: a highlighter you have to re-pick between passages is
-  // a one-shot arm wearing a mode's clothes.
-  holdingMarker?: boolean;
   setSelectedId: (id: string | null) => void;
-  highlighterColor: string;
-  highlighterWidth: number;
   zoomRef: MutableRefObject<number> | { current: number };
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): a recognised shape or line is user-drawn, so
   // it takes the remembered style of its kind. A plain sketch is not a kind
@@ -90,13 +81,12 @@ export function makeCommitFreehand({
   //      commit an open stroke.
   //   3. createFreehand to mint the element + commit.
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, ink?: PenInk) => {
-    // Disarm on a gesture too short to be a stroke — unless the marker is
-    // HELD, where a stray tap must not silently put the tool down.
-    // A whiteboard pen is held too (docs/specs/023-draw-mode/draw-mode.md "Pens").
+    // Disarm on a gesture too short to be a stroke, unless a whiteboard pen is HELD
+    // (docs/specs/023-draw-mode/draw-mode.md "Pens"), where a stray tap must not silently put it down.
     const whiteboardPen =
       pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard' ? pendingDraw : null;
     const disarm = () => {
-      if (!holdingMarker && !whiteboardPen) setPendingDraw(null);
+      if (!whiteboardPen) setPendingDraw(null);
     };
     if (editsBlocked || rawPoints.length < 2) {
       disarm();
@@ -116,21 +106,17 @@ export function makeCommitFreehand({
     // skip both recognition and close-to-fill — a highlight is an
     // annotation gesture, not a sketch-a-shape one. Colour is fixed
     // marker yellow at creation (recolourable per element after);
-    // width + translucency live in the renderers' pen recipe.
+    // width + translucency live in the renderers' pen recipe. One-shot,
+    // like the pencil: the stroke is selected and the tile puts itself down.
     if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'highlighter') {
       const stroke = {
         ...createFreehand(simplified, false),
         pen: 'highlighter' as const,
-        strokeColor: highlighterColor,
-        ...(highlighterWidth !== HIGHLIGHTER_DEFAULT_WIDTH ? { penWidth: highlighterWidth } : {}),
+        strokeColor: HIGHLIGHTER_COLOR,
       };
       commit((els) => [...els, stroke]);
-      // Held marker: keep the stroke unselected and the tool armed, so the
-      // next drag highlights instead of dragging the stroke just drawn.
-      if (!holdingMarker) {
-        setSelectedId(stroke.id);
-        setPendingDraw(null);
-      }
+      setSelectedId(stroke.id);
+      setPendingDraw(null);
       track('Element', 'Added', 'Highlighter');
       return;
     }

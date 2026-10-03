@@ -17,8 +17,6 @@ export type CanvasTool =
   | 'eraser'
   | 'format'
   | 'isometric'
-  // The marker (docs/specs/008-canvas/highlighter.md): a persistent drawing mode, not a one-shot arm.
-  | 'highlighter'
   // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
   // Picking the tool does NOT start presenting; Start is a deliberate second
   // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
@@ -121,6 +119,7 @@ export type CommandPaletteProps = {
   onBeginFreehand: () => void;
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
+  onBeginHighlighter: () => void;
   onBeginShapePen: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;

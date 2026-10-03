@@ -16,6 +16,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'quick-controls': '#6366f1',
   'the-canvas': '#0ea5e9',
   drawing: '#f97316',
+  highlighter: '#eab308',
   'selecting-and-grouping': '#8b5cf6',
   'text-and-fonts': '#0891b2',
   themes: '#d946ef',
@@ -69,7 +70,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'layout-cleanup': '#2563eb',
   annotations: '#eab308',
   // Palette → Selection Modes
-  highlighter: '#eab308',
   'avatar-mode': '#ec4899',
   'walking-together': '#a855f7',
   'slide-deck': '#0ea5e9',

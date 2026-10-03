@@ -269,6 +269,12 @@ describe('opensForTyping', () => {
   });
 });
 
+describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
+  it('is a one-shot arm, not a held pen: it wears the mode banner', () => {
+    expect(isHeldPenIntent({ type: 'freehand', variant: 'highlighter' })).toBe(false);
+  });
+});
+
 describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
     expect(isHeldPenIntent({ type: 'path' })).toBe(true);

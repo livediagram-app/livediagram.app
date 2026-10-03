@@ -9,8 +9,8 @@ import { useShapeDrawing } from './useShapeDrawing';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// The Highlighter is a held tool (docs/specs/008-canvas/highlighter.md): picking it arms the marker and
-// clears the selection; putting it down drops only the marker's own intent.
+// The Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md): picking it arms the marker
+// for one stroke and clears the selection, like the pens. It is not a canvas tool.
 
 function setup() {
   return renderHook(
@@ -39,9 +39,9 @@ function setup() {
 }
 
 describe('useShapeDrawing highlighter', () => {
-  it('arms the marker and clears the selection when picked', () => {
-    const { result, rerender } = setup();
-    rerender({ tool: 'highlighter' });
+  it('arms the marker and clears the selection when the tile is picked', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginHighlighter());
     expect(result.current.drawing.pendingDraw).toEqual({
       type: 'freehand',
       variant: 'highlighter',
@@ -51,22 +51,14 @@ describe('useShapeDrawing highlighter', () => {
     expect(result.current.editingId).toBeNull();
   });
 
-  it('drops the marker when put down', () => {
-    const { result, rerender } = setup();
-    rerender({ tool: 'highlighter' });
-    rerender({ tool: 'select' });
-    expect(result.current.drawing.pendingDraw).toBeNull();
-  });
-
-  it('keeps a draw armed from the palette when the marker is put down', () => {
-    const { result, rerender } = setup();
-    rerender({ tool: 'highlighter' });
+  it('is replaced by the next tile picked, like any one-shot arm', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginHighlighter());
     act(() => result.current.drawing.beginPolygon());
-    rerender({ tool: 'select' });
     expect(result.current.drawing.pendingDraw).toEqual({ type: 'polygon' });
   });
 
-  it('leaves the selection alone for other tools', () => {
+  it('arms nothing on its own when a tool changes', () => {
     const { result, rerender } = setup();
     rerender({ tool: 'pan' });
     expect(result.current.selectedId).toBe('el-1');
