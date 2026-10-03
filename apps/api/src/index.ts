@@ -12,6 +12,7 @@ import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
 import {
   deleteOldEvents,
+  deleteOldChangesets,
   deleteOldSessionSightings,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -19,6 +20,7 @@ import {
 } from './db';
 import {
   apiRouteLabel,
+  CHANGESET_RETENTION_MS,
   bearerTokenOf,
   errorTypeToken,
   isClerkIdShape,
@@ -426,6 +428,16 @@ const worker = {
         'rows',
         now - TIMELINE_RETENTION_MS,
         deleteOldDocumentOpens,
+      );
+      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
+      // record exists, as long as the Trash keeps a document (CS28).
+      scheduleSweep(
+        ctx,
+        env,
+        'changesets',
+        'rows',
+        now - CHANGESET_RETENTION_MS,
+        deleteOldChangesets,
       );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.

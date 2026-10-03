@@ -25,10 +25,15 @@ const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
   order_index: 0,
   data: bodyJson(),
   updated_at: 1_700_000_000_000,
+  rev: 4,
   ...override,
 });
 
 describe('rowToTab', () => {
+  it('carries the tab revision from its column, never from the body (docs/specs/024-agents/agent-changesets.md)', () => {
+    expect(rowToTab(baseRow({ data: bodyJson({ rev: 99 }) })).rev).toBe(4);
+  });
+
   it('migrates a tab saved against the retired Charcoal scheme (docs/specs/011-theme/retired-schemes.md)', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const elements = [
@@ -122,6 +127,7 @@ describe('rowToTab', () => {
       name: 'Untitled',
       orderIndex: 0,
       updatedAt: 1_700_000_000_000,
+      rev: 4,
       elements: [],
     });
   });

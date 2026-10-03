@@ -15,6 +15,8 @@ export type TabRow = {
   order_index: number;
   data: string;
   updated_at: number;
+  // The tab revision (docs/specs/024-agents/agent-changesets.md "The tab revision").
+  rev: number;
   // Per-document folder name from the document_tabs link (docs/specs/006-document/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
@@ -50,6 +52,7 @@ export function rowToTab(row: TabRow): TabDTO {
     documentId: row.document_id,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
+    rev: row.rev,
     // Folder is link metadata, not body content — it overrides any
     // stale `folder` a forged data blob might carry (the client
     // strips it before persisting, so it should never be in `data`).
