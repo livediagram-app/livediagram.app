@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
+import { PageNavigator } from './PageNavigator';
 import {
   articleBodyLinePx,
   articleMarginPx,
@@ -235,6 +236,17 @@ export function IllustratePages({
                   }}
                 />
               </div>
+            ) : null}
+            {!bare && pages.length > 1 ? (
+              <PageNavigator
+                index={page.index}
+                count={pages.length}
+                zoom={zoom}
+                onGo={(i) => {
+                  const to = pages[i];
+                  if (to) focusPage(to.id);
+                }}
+              />
             ) : null}
             {choosing && edit ? (
               <FirstPageChoice

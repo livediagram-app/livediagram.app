@@ -278,6 +278,10 @@ article**, **Move article left / right**, **Delete article**.
   snaps to the edges, the centre lines and the margins (7% of the short side) of every page, with
   the same guides as element-to-element alignment (not to the pages' spacing: equal-spacing snaps
   stay element to element).
+- **The page navigator**: under each page, while there are two pages or more, a small bar at one
+  screen size: **Previous page**, the page's place ("2 of 5"), **Next page** (disabled at either
+  end). An arrow fits that neighbouring page in the view, as a press on its label does. For
+  everyone who can see the pages; not in zen or isometric view.
 - **A page is something in view**: the canvas's "Nothing's in view" nudge counts every page, an
   empty one or an article's, as content, so it never shows while a page is on screen.
 
