@@ -10,23 +10,27 @@
 // renamed something is noise — the question it answers is "did anything
 // happen while I was away", and your own work is not that.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiTimelineUnread } from '@/lib/api-client';
 
 export type TimelineUnread = {
   count: number;
-  /** Call after the Timeline is opened, so the badge clears. */
+  /** Call after Home or the feed is read, so the badge clears. */
   clear: () => void;
 };
 
 export function useTimelineUnread(ownerId: string | null): TimelineUnread {
   const [count, setCount] = useState(0);
+  // Bumped by every clear. A count asked for before the latest clear is older than the read that
+  // moved the mark (Home's or the feed's), so it must not draw the badge back.
+  const clears = useRef(0);
 
   useEffect(() => {
     if (!ownerId) return;
     let live = true;
+    const asked = clears.current;
     void apiTimelineUnread(ownerId).then((n) => {
-      if (live) setCount(n);
+      if (live && asked === clears.current) setCount(n);
     });
     // Guards a stale response from a previous owner id landing after a
     // guest signs in and the hook re-runs.
@@ -35,11 +39,14 @@ export function useTimelineUnread(ownerId: string | null): TimelineUnread {
     };
   }, [ownerId]);
 
-  // Cleared locally rather than re-fetched: the read that renders the
-  // Timeline is what moves the server's watermark, so asking again
+  // Cleared locally rather than re-fetched: the read that renders Home
+  // or the feed is what moves the server's watermark, so asking again
   // immediately would race it and could redraw the badge it just
   // cleared.
-  const clear = useCallback(() => setCount(0), []);
+  const clear = useCallback(() => {
+    clears.current += 1;
+    setCount(0);
+  }, []);
 
   return { count, clear };
 }
