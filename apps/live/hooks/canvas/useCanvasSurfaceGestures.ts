@@ -174,8 +174,7 @@ export function useCanvasSurfaceGestures({
     // draws. The pen itself, and a mouse, always ink.
     if (whiteboard && e.button === 0) {
       if (e.pointerType === 'pen') markPenSeen();
-      const inking =
-        canvasTool === 'eraser' || canvasTool === 'highlighter' || isHeldPenIntent(pendingDraw);
+      const inking = canvasTool === 'eraser' || isHeldPenIntent(pendingDraw);
       const route = whiteboardPointerRoute({
         pointerType: e.pointerType,
         penSeen: penSeen(),

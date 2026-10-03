@@ -632,8 +632,9 @@
   transform: none;
 }
 
-/* Mind-map tool picker: Highlighter while the swipe happens, then Laser
-   from the moment the pointer appears. */
+/* Mind-map tool picker: Select while the Highlighter swipe happens (the
+   marker is a Draw tile, not a mode), then Laser from the moment the
+   pointer appears. */
 .hero-tool-a,
 .hero-tool-b {
   opacity: 0;

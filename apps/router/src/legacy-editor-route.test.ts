@@ -82,6 +82,8 @@ describe('legacyHelpRedirect', () => {
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
       // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
+      // The Highlighter became a Draw tile again (docs/specs/008-canvas/highlighter.md "History").
+      ['/help/selection-modes/highlighter/', '/help/palette/tools/highlighter/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(new URL(`https://livediagram.app${from}`))!;

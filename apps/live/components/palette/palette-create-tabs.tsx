@@ -84,7 +84,7 @@ export function PaletteEventStormingTab({
   );
 }
 
-// The gesture tools (docs/specs/010-palette/palette-top-level-categories.md): Pencil, Highlighter, Polygon, Arrow. Separate
+// The gesture tools (docs/specs/010-palette/palette-top-level-categories.md): the three pens, Polygon, Arrow, Line. Separate
 // from Write because these are things you pick up and drag, not things you
 // drop and type into.
 export function PaletteDrawTab({ pendingDraw, actions }: TabProps) {

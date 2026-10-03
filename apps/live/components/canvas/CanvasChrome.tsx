@@ -135,13 +135,7 @@ type ChromeExtras = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, owned by
-  // useShapeDrawing (highlighterColor / highlighterWidth below) — the settings
-  // that used to hang off the top mode banner.
-  highlighterPanelPosition?: { x: number; y: number } | null;
-  onMoveHighlighterPanel?: (x: number, y: number) => void;
-  onResetHighlighterPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the seventh tool panel.
+  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
@@ -231,8 +225,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     penPoints,
     polygonVertices,
     polygonCursor,
-    highlighterColor,
-    highlighterWidth,
     readOnly,
     selfParticipant,
     settings,
@@ -471,8 +463,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         penPoints={penPoints}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
-        highlighterColor={highlighterColor}
-        highlighterWidth={highlighterWidth}
         pendingDraw={pendingDraw}
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
@@ -558,7 +548,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.spotlight}
           {panelEls.eraser}
           {panelEls.format}
-          {panelEls.highlighter}
           {panelEls['slide-deck']}
         </>
       )}

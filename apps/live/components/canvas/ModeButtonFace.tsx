@@ -23,7 +23,6 @@ import {
   AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
-  HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -42,7 +41,6 @@ const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
-  highlighter: <HighlighterIcon />,
 };
 
 // The mode names come from the shared table the export reads too

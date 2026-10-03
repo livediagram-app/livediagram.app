@@ -146,12 +146,9 @@ export function EditorCanvasHost() {
     beginErase,
     beginFormatPainter,
     beginFreehand,
+    beginHighlighter,
     beginShapePen,
     beginPolygon,
-    highlighterColor,
-    highlighterWidth,
-    setHighlighterColor,
-    setHighlighterWidth,
     broadcastAvatar,
     broadcastAvatarPush,
     avatarShove,
@@ -737,12 +734,9 @@ export function EditorCanvasHost() {
         onAddArrow={addArrow}
         reshapingArrowId={reshapingArrowId}
         onBeginFreehand={beginFreehand}
+        onBeginHighlighter={beginHighlighter}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
-        highlighterColor={highlighterColor}
-        highlighterWidth={highlighterWidth}
-        onSetHighlighterColor={setHighlighterColor}
-        onSetHighlighterWidth={setHighlighterWidth}
         pendingDraw={pendingDraw}
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}

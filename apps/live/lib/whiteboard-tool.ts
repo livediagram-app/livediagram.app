@@ -102,7 +102,7 @@ export function whiteboardTakesTyping(el: Pick<Element, 'type'>): boolean {
 // Microsoft Whiteboard's rule (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a
 // pen has been used on this device, a single finger pans rather than inks, so
 // a resting palm or a guiding finger never draws. `inking` is true while a pen,
-// the highlighter or the eraser is in hand.
+// the Path tool or the eraser is in hand.
 export function whiteboardPointerRoute(input: {
   pointerType: string;
   penSeen: boolean;

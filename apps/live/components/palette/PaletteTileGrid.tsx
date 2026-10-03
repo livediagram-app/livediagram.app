@@ -33,6 +33,7 @@ export type PaletteTileActions = {
   ) => void;
   addText: () => void;
   beginFreehand: () => void;
+  beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
   addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
@@ -74,6 +75,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.addText;
     case 'freehand':
       return actions.beginFreehand;
+    case 'highlighter':
+      return actions.beginHighlighter;
     case 'shape-pen':
       return actions.beginShapePen;
     case 'polygon':
@@ -133,6 +136,8 @@ export function tileActive(
     // payload — each tile lights only for its own arm (docs/specs/008-canvas/two-pens.md).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
+    case 'highlighter':
+      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     // The Media tab has a tile per service and they all arm one `video`

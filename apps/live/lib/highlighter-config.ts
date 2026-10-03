@@ -1,19 +1,12 @@
-// The highlighter's settings (docs/specs/008-canvas/highlighter.md): the colour and the stroke strength the
-// NEXT marker strokes commit with.
+// The highlighter's settings (docs/specs/008-canvas/highlighter.md "Settings"): the marker colours
+// and widths a stroke can take, shared by the Quick style panel's Highlighter rows, the commit
+// path and the live draw preview.
 //
-// Split out of HighlighterBannerControls when the marker became a held tool
-// rather than a one-shot arm, so its choices sit where the Eraser's, Laser's
-// and Spotlight's do — in a `lib/*-config` module the panel renders and the
-// commit path reads, rather than inside the one component that happened to
-// draw them first.
-//
-// Session-local by design, like the other tool panels: the marker resets to
-// yellow / medium on a fresh editor load, the way a real pen cup does. Nothing
-// here is stored on the document or sent to the api.
+// Fixed hexes, not theme colours: a highlight that changed colour with the tab's palette would
+// stop reading as a highlight.
 
-// The marker cup: yellow (the default) plus the classic set. Fixed hexes, not
-// theme colours — a highlighter that changed colour with the tab's palette
-// would stop being recognisable as a highlight.
+export type HighlighterWidthId = 'thin' | 'medium' | 'bold';
+
 export const HIGHLIGHTER_COLORS: readonly { id: string; label: string }[] = [
   { id: '#fde047', label: 'Yellow' },
   { id: '#86efac', label: 'Green' },
@@ -22,19 +15,25 @@ export const HIGHLIGHTER_COLORS: readonly { id: string; label: string }[] = [
   { id: '#fdba74', label: 'Orange' },
 ];
 
-// Stroke strengths, in canvas px.
-export const HIGHLIGHTER_WIDTHS: readonly { id: string; label: string; px: number }[] = [
-  { id: 'thin', label: 'Thin', px: 8 },
-  { id: 'medium', label: 'Medium', px: 14 },
-  { id: 'bold', label: 'Bold', px: 22 },
-];
+// Stroke widths, in canvas px.
+export const HIGHLIGHTER_WIDTHS: readonly { id: HighlighterWidthId; label: string; px: number }[] =
+  [
+    { id: 'thin', label: 'Thin', px: 8 },
+    { id: 'medium', label: 'Medium', px: 14 },
+    { id: 'bold', label: 'Bold', px: 22 },
+  ];
+
+// Marker yellow at Medium: where the highlighter starts on every fresh load.
+export const HIGHLIGHTER_COLOR = '#fde047';
+// The renderers' `penWidth ?? 14` fallback, so a Medium stroke never writes `penWidth`.
+export const HIGHLIGHTER_WIDTH = 14;
 
 /** The preset id for a width in px, or null when it sits off every preset. */
-export function highlighterWidthId(px: number): string | null {
+export function highlighterWidthId(px: number): HighlighterWidthId | null {
   return HIGHLIGHTER_WIDTHS.find((w) => w.px === px)?.id ?? null;
 }
 
-/** The px for a preset id, falling back to Medium for an unknown one. */
-export function highlighterWidthPx(id: string): number {
-  return HIGHLIGHTER_WIDTHS.find((w) => w.id === id)?.px ?? 14;
+/** The px for a preset id. */
+export function highlighterWidthPx(id: HighlighterWidthId): number {
+  return HIGHLIGHTER_WIDTHS.find((w) => w.id === id)!.px;
 }

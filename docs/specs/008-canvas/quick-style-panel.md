@@ -91,18 +91,20 @@ working from the context menu.
 
 Top to bottom, each a small title over one row of option buttons:
 
-| Section        | Applies to                                         | Options                            |
-| -------------- | -------------------------------------------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows                                    | 7 colours, then Ink                |
-| Background     | Shapes                                             | 7 colours                          |
-| Text colour    | Text elements                                      | 7 colours, then Ink                |
-| Stroke width   | Shapes + arrows                                    | Thin / Medium / Thick              |
-| Stroke style   | Shapes                                             | Solid / Dashed / Dotted            |
-|                | Arrows                                             | Solid / Dashed / Flowing           |
-| Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
-| Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
-| Corners        | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large      |
-| Actions        | Shapes + arrows + text elements                    | Clear styles                       |
+| Section            | Applies to                                         | Options                               |
+| ------------------ | -------------------------------------------------- | ------------------------------------- |
+| Stroke             | Shapes + arrows                                    | 7 colours, then Ink                   |
+| Background         | Shapes                                             | 7 colours                             |
+| Text colour        | Text elements                                      | 7 colours, then Ink                   |
+| Stroke width       | Shapes + arrows                                    | Thin / Medium / Thick                 |
+| Stroke style       | Shapes                                             | Solid / Dashed / Dotted               |
+|                    | Arrows                                             | Solid / Dashed / Flowing              |
+| Text alignment     | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal)    |
+| Icon alignment     | Shapes with icon                                   | Before / Above / After the label      |
+| Corners            | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large         |
+| Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
+| Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
+| Actions            | Shapes + arrows + text elements                    | Clear styles                          |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
@@ -119,6 +121,7 @@ Top to bottom, each a small title over one row of option buttons:
   holds for every other row. An element with no preset (its kind's default corner) marks none.
   On a whiteboard, Clear styles returns corners to the kind's default too, and the board's style
   memory remembers them for the next rectangle.
+- **Highlighter colour** and **Highlighter width** are the [Highlighter](highlighter.md)'s settings, shown above the other rows for selected highlight strokes, and on their own (captioned "Highlighter") while the Highlighter tile is armed with nothing selected, where they set the next stroke. Five colours and three widths: the marker's own set, not the theme's. The width row has no context-menu twin, a deliberate exception scoped to these rows ([Highlighter](highlighter.md) "Settings").
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
   arrangement, and a fourth option would break the row rhythm.

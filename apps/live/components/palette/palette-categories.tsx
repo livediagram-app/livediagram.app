@@ -88,7 +88,7 @@ export const PALETTE_CATEGORIES: {
     id: 'draw',
     label: 'Draw',
     group: 0,
-    description: 'The gesture tools: pencil, shape pen, polygon, and arrows.',
+    description: 'The gesture tools: pencil, shape pen, highlighter, polygon, and arrows.',
     icon: <DrawTabIcon />,
   },
   {

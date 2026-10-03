@@ -24,8 +24,8 @@ const pen: PendingDraw = {
 describe('activeWhiteboardTool', () => {
   it.each([
     ['eraser', null, 'eraser'],
-    // No highlighter on a whiteboard: a stray one reads as Select.
-    ['highlighter', { type: 'freehand', variant: 'highlighter' }, 'select'],
+    // No highlighter on a whiteboard: a stray marker arm reads as Select.
+    ['select', { type: 'freehand', variant: 'highlighter' }, 'select'],
     ['select', pen, 'pen'],
     ['pan', pen, 'pen'],
     ['select', { type: 'path' }, 'path'],

@@ -7,12 +7,11 @@ import { LaserPanel } from '@/components/panels/LaserPanel';
 import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
 import { EraserPanel } from '@/components/panels/EraserPanel';
 import { FormatPanel } from '@/components/panels/FormatPanel';
-import { HighlighterPanel } from '@/components/panels/HighlighterPanel';
 import { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// The seven tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
-// docs/specs/008-canvas/format-panel.md, docs/specs/008-canvas/highlighter.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
+// The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -20,7 +19,7 @@ import type { CanvasChromeProps } from './CanvasChrome';
 // because the tool itself is. Grouping them keeps that shared contract in
 // one place, and keeps the chrome host to the panels that are always
 // candidates to be on screen. Every one of them takes the identical
-// wiring bundle below, so a sixth tool panel is a copy of its neighbour.
+// wiring bundle below, so a seventh tool panel is a copy of its neighbour.
 export function useCanvasToolPanels({
   props,
   chromeHidden,
@@ -39,7 +38,6 @@ export function useCanvasToolPanels({
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
-  highlighterEl: ReactNode;
   slideDeckEl: ReactNode;
 } {
   const {
@@ -77,13 +75,6 @@ export function useCanvasToolPanels({
     formatPanelPosition,
     onMoveFormatPanel,
     onResetFormatPanel,
-    highlighterColor,
-    highlighterWidth,
-    onSetHighlighterColor,
-    onSetHighlighterWidth,
-    highlighterPanelPosition,
-    onMoveHighlighterPanel,
-    onResetHighlighterPanel,
     slideDeck,
     slideDeckPanelPosition,
     onMoveSlideDeckPanel,
@@ -92,7 +83,7 @@ export function useCanvasToolPanels({
     activeTabId,
     readOnly,
   } = props;
-  // Draw mode keeps its eraser and highlighter settings in the dock's flyouts
+  // Draw mode keeps its eraser settings in the dock's flyouts
   // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
 
@@ -110,9 +101,6 @@ export function useCanvasToolPanels({
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
-  );
-  const highlighterWiring = panelWiringFor('highlighter', highlighterPanelPosition ?? null, () =>
-    onResetHighlighterPanel?.(),
   );
   const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
     onResetSlideDeckPanel?.(),
@@ -204,27 +192,8 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, mounted only
-  // while the Highlighter tool is held. The one tool panel that replaced an
-  // existing surface rather than adding one — its two settings used to be
-  // popovers on the top mode banner, which covered the toolbar.
-  const highlighterEl =
-    !chromeHidden && !whiteboard && canvasTool === 'highlighter' ? (
-      <HighlighterPanel
-        color={highlighterColor}
-        width={highlighterWidth}
-        onSetColor={onSetHighlighterColor}
-        onSetWidth={onSetHighlighterWidth}
-        position={highlighterWiring.position}
-        stackBelowY={stackBelowY}
-        onMoveTo={(x, y) => onMoveHighlighterPanel?.(x, y)}
-        onReset={highlighterWiring.onReset}
-        dock={highlighterWiring.dock}
-      />
-    ) : null;
-
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
-  // started, mounted only while its tool is picked. The seventh, and the one
+  // started, mounted only while its tool is picked. The sixth, and the one
   // whose tool does not itself change the canvas — picking it opens the
   // workbench, and Start is a deliberate second act.
   const slideDeckEl =
@@ -242,5 +211,5 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl, slideDeckEl };
+  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
 }

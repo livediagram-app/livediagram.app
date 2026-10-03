@@ -117,7 +117,7 @@ editorMode.mode === 'draw'` in `useEditorState`, `editorMode` prop on `Canvas`):
 | Drawn shapes unpainted, Ink; sticky opens for typing  | `useShapeDrawing({ drawMode })`                   |
 | Text box placement writes `sizing`                    | `buildDrawnBoxed(..., drawMode)`                  |
 | Paste and import-into-tab profile                     | `useBoardSceneInsert`, `useBoardSceneImport`      |
-| Command palette hides highlighter and format painter  | `useEditorCommands` (`ctx.editorMode`)            |
+| Command palette hides the format painter              | `useEditorCommands` (`ctx.editorMode`)            |
 | Empty-canvas and theme-mode banners hidden            | `EditorView`                                      |
 | The person's Draw pattern                             | `resolveViewBackdrop(tab, { mode, drawPattern })` |
 
@@ -132,7 +132,7 @@ resize (`resizedElement`) and landed text (`hugLandedText`).
 - Leaving Draw: a Draw-only intent (`isWhiteboardOnlyIntent`: pen, Path tool, dock shape) is
   cancelled; on a switch, a held eraser becomes Select.
 - Entering Draw (a tab opened in Draw or a switch into it): on a switch a palette-armed
-  intent is cancelled; a held highlighter or format painter, and on a switch the eraser, become
+  intent is cancelled (a Highlighter arm among them); a held format painter, and on a switch the eraser, become
   Select; then, unless edits are blocked or a Draw intent is held, an empty tab gets the active
   pen in hand and a tab with content keeps Select.
 

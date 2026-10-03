@@ -241,7 +241,7 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), and **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), and the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
@@ -252,6 +252,7 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
 | `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
 | `/help/canvas/whiteboards/`                            | `/help/canvas/draw-mode/`                               |
+| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/highlighter/`                      |
 
 "Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
 <!-- /legacy-names -->
