@@ -4,7 +4,8 @@ Derived from [Explorer Home](../explorer-home.md) (Jump back in, What happened, 
 store of [Timeline](../timeline.md), the access set of [Activity page](../activity-page.md) §4, the identity rules of
 [Auth + guest access](../../014-identity/auth-and-guest-access.md) and the owner-keyed list of
 [API](../../015-api/api.md#owner-keyed-data). The spec decides; this file only adds engineering precision. This
-blueprint covers the data: recording opens, ranking, the reads and the wire. The view is a separate blueprint.
+blueprint covers the data: recording opens, ranking, the reads and the wire. The view, and this browser's own opens
+of its local documents, are [Explorer Home, view](explorer-home-view.md).
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
@@ -14,7 +15,7 @@ Scope, by file:
 | `packages/api-schema/src/home.ts`                                              | Wire types, verbs, limits, rejections, the open marker header                                |
 | `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource, `timeline` route word                                                       |
 | `apps/api/migrations/0063_document_opens.sql`                                  | `document_opens`, its two indexes, `timeline_events_actor_idx`                               |
-| `apps/api/src/home/frecency.ts`                                                | The half-life, `nextFrecencyKey`, `mergeFrecencyKeys`, `frecencyScore`                       |
+| `packages/api-schema/src/frecency.ts`                                          | The half-life, `nextFrecencyKey`, `mergeFrecencyKeys`, `frecencyScore`; shared with the view |
 | `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                  |
 | `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                         |
 | `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the fingerprints                                |
@@ -218,7 +219,11 @@ type HomeDocument = {
   savedAt: number; // the thumbnail's version
   empty: boolean; // nothing drawn: ask for no thumbnail
 };
-type HomeJumpBackInItem = HomeDocument & { lastOpenedAt: number; openDays: number };
+type HomeJumpBackInItem = HomeDocument & {
+  lastOpenedAt: number;
+  openDays: number;
+  frecencyKey: number; // the rank, so the view can place this browser's local documents among them
+};
 type HomeTimelineKind = 'created' | 'updated' | 'opened';
 type HomeTimelineEntry = HomeDocument & { id: string; kind: HomeTimelineKind; occurredAt: number };
 type HomeTimelinePage = { items: HomeTimelineEntry[]; nextCursor: string | null };
@@ -426,7 +431,7 @@ uses `GET /api/home/timeline` and never re-reads the rest. Thumbnails stay on th
 | Rule                                                                                                | Test                                                                                      |
 | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | Rejection tokens, the marker reader                                                                 | `packages/api-schema/src/home.test.ts`                                                    |
-| Frecency: first open, increment, ranking, merge, decay                                              | `apps/api/src/home/frecency.test.ts`                                                      |
+| Frecency: first open, increment, ranking, merge, decay                                              | `packages/api-schema/src/frecency.test.ts`                                                |
 | Time zone parse and local day                                                                       | `apps/api/src/home/local-day.test.ts`                                                     |
 | Verbs, grouping, summary, order, counts                                                             | `apps/api/src/home/what-happened.test.ts`                                                 |
 | Record, same-day skip, next day, race, private scope, failure log                                   | `apps/api/src/home/record-open.test.ts` (real SQLite)                                     |
@@ -449,7 +454,7 @@ uses `GET /api/home/timeline` and never re-reads the rest. Thumbnails stay on th
 
 | Constant                        | Value     | Where                                         | Provenance                                     | Safe range     |
 | ------------------------------- | --------- | --------------------------------------------- | ---------------------------------------------- | -------------- |
-| `FRECENCY_HALF_LIFE_MS`         | 14 days   | `apps/api/src/home/frecency.ts`               | Spec; a fortnight, the common iteration length | 7 to 30 days   |
+| `FRECENCY_HALF_LIFE_MS`         | 14 days   | `packages/api-schema/src/frecency.ts`         | Spec; a fortnight, the common iteration length | 7 to 30 days   |
 | `HOME_JUMP_BACK_IN_MAX`         | 12        | `packages/api-schema/src/home.ts`             | Spec                                           | 6 to 24        |
 | `HOME_TIMELINE_PAGE_SIZE`       | 30        | same                                          | Spec ("30 entries at a time")                  | 10 to 50       |
 | `HOME_TIMELINE_PAGE_MAX`        | 100       | same                                          | `D72`; bounds one read's walk                  | 30 to 200      |

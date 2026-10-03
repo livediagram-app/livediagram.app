@@ -4,6 +4,13 @@
 ([Explorer structure](explorer-structure.md)). It answers the two questions a returning person
 brings, in one screen: "what was I working on?" and "what happened while I was away?".
 
+## Route
+
+- Home lives at `/explorer/home`. `/explorer`, and any Explorer URL that names no view, lands on it.
+- The Timeline feed ([Timeline](timeline.md)) keeps its route, `/explorer/timeline`, under the page title **All
+  activity**. It has no sidebar row: it is reached from What happened's **See all activity** link, and its breadcrumb
+  leads back to Home (**Home › All activity**).
+
 ## Layout
 
 - **Desktop and tablet** (`md:` and wider): two columns side by side.
@@ -13,7 +20,10 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 - **Phone** (below `md:`): one column with a two-option switch, **Recent** and **Timeline**, at the top of the page.
   - **Recent** is shown by default on every visit.
   - The switch follows the WAI-ARIA tabs pattern: two tabs and one tab panel.
-- The page header carries **New document**, as every Explorer section does. Home has no other header actions.
+- The page header carries **New document**, as every Explorer section does, and the section's Help link, as every
+  section's header does ([Contextual help links](../018-help/contextual-help-links.md)). Home has no other header
+  actions: no import, no folder, no view switch.
+- The two columns scroll with the page; neither scrolls on its own.
 
 ## Recent
 
@@ -33,9 +43,13 @@ Recent holds two sections, top to bottom.
   before the document's first recorded open count, so a day is never counted twice and seeding again changes
   nothing. Bounded to their most recent edits.
 - A single row, a **scrolling strip** of small snapshot thumbnails, each with the document's name below it in a
-  small font, truncated to the thumbnail's width.
+  small font, truncated to the thumbnail's width. The full name is its tooltip and accessible name.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
-  edge fades to say there is more.
+  edge fades to say there is more, and only while there is more.
+- Activating a thumbnail opens the document.
+- A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) carries the **Local only**
+  pill on its thumbnail, as every other row and card of one does. It ranks among the rest by the same frecency,
+  counted in this browser ([Opens](#opens)).
 
 ### What happened
 
@@ -62,6 +76,8 @@ Recent holds two sections, top to bottom.
 - Opens are never listed here: whether someone looked at a document is theirs to know, not the reader's.
 - **No filter controls** sit in or above this section. It stays clean; the shared filters live on the other
   Explorer views ([Explorer filters](explorer-filters.md)).
+- A quiet **See all activity** link beside the section's heading opens the Timeline feed (**All activity**), where
+  everything that happened, the person's own doings included, can be filtered and paged.
 - Every entry is **spot on**. It names:
   - who acted;
   - what they did, as a plain verb phrase (commented, replied, resolved a thread, edited, assigned you an action,
@@ -78,6 +94,13 @@ Recent holds two sections, top to bottom.
   - the time of the latest action, and a chevron;
   - expanding lists every underlying action, newest first: avatar, who, what, a small icon for the kind, and time.
   - The entry is a disclosure button (`aria-expanded`); collapsed is the default, and the state is not remembered.
+  - Each expanded action opens the document.
+- A one-person entry is a link that opens the document. A comment or reply shows its words beneath, an action its
+  name, on one line.
+- "Where the document lives" reads **My documents** or the team's name, then `›` and the folder when it has one; a
+  document shared with the person reads **Shared by** and the owner's name.
+- A person without a known name is **Someone**. A summary names at most three people, then "and N others".
+- Times are the person's own clock times (`14:05`), under the day heading that dates them.
 
 ## Timeline
 
@@ -94,8 +117,13 @@ Recent holds two sections, top to bottom.
 - The document's name sits **below** its thumbnail in a small font. It never exceeds the thumbnail's width: a longer
   name is truncated with an ellipsis, and the full name is its accessible name and tooltip.
 - A small marker on the centre line says what happened (created, updated or opened). The marker is never colour
-  alone: the entry's accessible name states it.
+  alone: each kind has its own glyph (a plus, a pencil, an eye), and the entry's accessible name states it. The
+  entry's time sits on the other side of the line, level with the marker.
+- Day markers sit on the centre line: **Today**, **Yesterday**, then the date.
+- More entries load as the person scrolls towards the end of the column; a reserved slot at the foot holds the
+  loading row (or, when a page fails, **Try again**), so nothing moves when the page lands.
 - Activating an entry opens the document.
+- Documents stored only in this browser never reach the server, so they have no Timeline entries.
 
 ## Unread
 
@@ -116,8 +144,10 @@ An **open** is the editor loading a document for a person to look at.
 - Opens are **private**. Only the person who opened a document ever sees that they did: in their Jump back in and
   their Timeline, never in What happened, a document's History, a team's feed, or the Timeline feed
   ([Timeline](timeline.md)).
-- Offline Mode documents never reach the server, so their opens are not recorded, as with every other server-side
-  surface.
+- Offline Mode documents never reach the server, so the server records none of their opens. **This browser counts
+  them instead**: the editor opening a document stored only here adds an open day to that document's own record in
+  this browser, by the same once-per-UTC-day rule and the same frecency, so Jump back in ranks it among the rest. The
+  count lives and dies with the document's local record and never leaves the browser.
 
 ### Guests, sign-up and deletion
 
@@ -128,9 +158,41 @@ An **open** is the editor loading a document for a person to look at.
   the Trash only leaves Home until it is restored.
 - An open older than a year is forgotten, the Timeline's retention ([Timeline](timeline.md) §3.5).
 
+## States
+
+Every state keeps the layout it lands in: headings are in place from the first paint, and each section's skeleton
+has the size of what replaces it, so nothing shifts (CLS 0).
+
+| State                 | What shows                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| Loading               | Each section's skeleton: a strip of thumbnail boxes, three entry rows, four Timeline entries         |
+| Jump back in, empty   | "The documents you open most will gather here."                                                      |
+| What happened, empty  | "Nothing from others in the last 14 days." (See all activity stays.)                                 |
+| Timeline, empty       | "Documents you create, update or open will appear here."                                             |
+| Read failed           | "Home could not load. Check your connection and try again." with **Try again**, in place of the body |
+| A further page failed | "Could not load more." with **Try again**, in the Timeline's reserved slot                           |
+
+Under reduced motion nothing animates: no skeleton pulse, no chevron turn, no smooth scrolling.
+
+## Telemetry
+
+One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md)), never a name or an id:
+
+- `Home·Opened·Landing` / `Nav`: Home shown, as the page the Explorer opened on or after starting elsewhere.
+- `Home·Selected·JumpBackIn` / `Timeline` / `WhatHappened`: a document opened from that part of Home.
+- `Home·Opened·Group`: a summary entry expanded.
+- `Home·Loaded·More` / `Retry`: a further Timeline page loaded, or a failed read retried.
+
+## Help
+
+The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) article describes Home and All activity.
+
 ## Accessibility
 
-- Both columns are landmarks with headings (**Recent**, **Timeline**).
+- Both columns are landmarks with headings (**Recent**, **Timeline**). On a phone the switch's two tabs name them,
+  and the headings stay for assistive technology.
+- A summary entry's expanded list is the region its disclosure button controls (`aria-controls`).
+- The Timeline is a list; each entry is one link, whose name is the document, what happened and when.
 - Every thumbnail has a text alternative: the document name and what happened.
 - Keyboard order follows the reading order: Jump back in, What happened, then Timeline.
 - WCAG 2.2 AA: contrast, visible focus, and targets of at least 24 by 24 px.
