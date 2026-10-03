@@ -205,6 +205,11 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 `PageMoved`, `PageLayout`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`.
 Never a colour, name or layout content.
 
+## Chrome in Infographic mode
+
+- **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
+  layers); the tab's layers are untouched and come back in the other modes.
+
 ## Non-goals
 
 - Image backgrounds (an image element sent to the back does the job).

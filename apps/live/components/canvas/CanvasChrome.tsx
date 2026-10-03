@@ -250,7 +250,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    layers: panelEnabled(settings, 'layersPanelEnabled'),
+    // Not in Infographic mode: a page is laid out by its pages, not layers
+    // (docs/specs/007-editor/infographic-pages.md).
+    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.infographicPages,
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
