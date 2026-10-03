@@ -4,8 +4,11 @@
 // over the selection (one undo step), recorded into style memory, and counted
 // under its own telemetry token so panel use reads apart from menu use.
 
-import { useMemo } from 'react';
+import { useMemo, useReducer } from 'react';
+import type { PendingDraw } from '@/lib/draw-mode';
+import { toolCaption, toolPhantom } from '@/lib/quick-style-tool';
 import type {
+  PenColour,
   Element,
   QuickSwatchRole,
   QuickSwatchSlot,
@@ -14,6 +17,35 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { canvasSurface, isPenColourName, PEN_INK } from '@livediagram/document';
+import {
+  applyBoardStroke,
+  applyBoardTextColour,
+  applyQuickCorners,
+  clearQuickCorners,
+  onWhiteboard,
+} from '@/lib/quick-style-whiteboard';
+import { quickStyleApplicability, quickStyleCaption } from '@/lib/quick-style-applicability';
+import {
+  applyPenStyle,
+  heldPenStyle,
+  INK_CHOICE,
+  penWidthPx,
+  strokesPenStyle,
+  tabCustomColours,
+  type PenColourChoice,
+  type PenWidthId,
+} from '@/lib/quick-style-pen';
+import {
+  applyHighlighterStyle,
+  strokesHighlighterStyle,
+  toolHighlighterStyle,
+} from '@/lib/quick-style-highlighter';
+import { highlighterWidthPx, type HighlighterWidthId } from '@/lib/highlighter-config';
+import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import type { PenColourMemoryApi } from './usePenColourMemory';
+import { useAppearance } from '@/hooks/ui/useAppearance';
+import { resolveTabBackdrop } from '@/lib/themes';
 import {
   applyQuickFill,
   applyQuickIconAlign,
@@ -24,9 +56,11 @@ import {
   applyQuickWidth,
   clearQuickStyle,
   quickStyleView,
+  type QuickCorners,
   type QuickIconAlign,
   type QuickStrokeStyle,
   type QuickStyleView,
+  type QuickColourValue,
   type QuickSwatchValue,
   type QuickWidth,
 } from '@/lib/quick-style';
@@ -36,13 +70,25 @@ import type { SwatchOverridesApi } from './useSwatchOverrides';
 
 export type QuickStyleApi = {
   view: QuickStyleView | null;
-  setStroke: (slot: QuickSwatchValue) => void;
+  setStroke: (slot: QuickColourValue) => void;
   setBackground: (slot: QuickSwatchValue) => void;
-  setTextColour: (slot: QuickSwatchValue) => void;
+  setTextColour: (slot: QuickColourValue) => void;
   setWidth: (width: QuickWidth) => void;
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
   setIconAlign: (align: QuickIconAlign) => void;
+  // A whiteboard's Corners row (docs/specs/008-canvas/corner-radius.md).
+  setCorners: (corners: QuickCorners) => void;
+  // A whiteboard's Stroke and Text colour rows: the whiteboard's colours.
+  setBoardStroke: (colour: PenColourChoice) => void;
+  setBoardTextColour: (colour: PenColourChoice) => void;
+  // A whiteboard's pen rows: the selected strokes, else the pen in hand.
+  setPenColour: (colour: PenColourChoice) => void;
+  setPenWidth: (width: PenWidthId) => void;
+  // The Highlighter rows (docs/specs/008-canvas/highlighter.md "Settings"): the selected
+  // highlights, else the armed tile's next stroke.
+  setHighlighterColour: (colour: string) => void;
+  setHighlighterWidth: (width: HighlighterWidthId) => void;
   clearStyles: () => void;
   // Custom swatches (docs/specs/008-canvas/quick-style-panel.md): edit the palette, style nothing.
   setSwatchOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot, hex: string) => void;
@@ -51,6 +97,8 @@ export type QuickStyleApi = {
 
 export function useQuickStyle(deps: {
   activeTab: Tab;
+  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): the board rows show.
+  drawMode: boolean;
   theme: ThemeDefinition;
   selectionIds: ReadonlySet<string>;
   editsBlocked: boolean;
@@ -59,6 +107,24 @@ export function useQuickStyle(deps: {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   memory: StyleMemoryApi;
   swatchOverrides: SwatchOverridesApi;
+  // The whiteboard pen in hand (null when none is), and how its settings change.
+  pen?: {
+    held: WhiteboardPen | null;
+    update: (id: WhiteboardPenId, patch: { colour?: PenColour | null; width?: number }) => void;
+    // Your colours: a custom colour used from the panel moves to their front.
+    colours?: Pick<PenColourMemoryApi, 'remember'>;
+  };
+  // The highlighter's settings for the next stroke (useShapeDrawing), which the Highlighter rows
+  // show and set while its tile is armed with nothing selected.
+  highlighter?: {
+    colour: string;
+    width: number;
+    setColour: (colour: string) => void;
+    setWidth: (width: number) => void;
+  };
+  // The draw intent in hand: on a whiteboard, a shape, line, arrow or text tool
+  // with nothing selected makes the panel style what it draws next.
+  toolIntent?: PendingDraw | null;
 }): QuickStyleApi {
   const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
   const { overrides } = deps.swatchOverrides;
@@ -67,14 +133,106 @@ export function useQuickStyle(deps: {
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
-  const view = useMemo(
-    () => (editsBlocked ? null : quickStyleView(selected, theme, overrides)),
-    [editsBlocked, selected, theme, overrides],
+  // In Draw mode (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays") the
+  // defaults read as the board's ink, and the style memory is Draw mode's own
+  // (useStyleMemory's board scope), never Diagram mode's.
+  const whiteboard = deps.drawMode;
+  // The stock colours in their version for the canvas the tab paints
+  // (docs/specs/007-editor/editor-modes.md "One look"): the viewer's appearance on the Default
+  // theme, the theme's own canvas otherwise.
+  const { appearance } = useAppearance();
+  const board = canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor);
+  const ink = PEN_INK[board];
+  const held = deps.pen?.held ?? null;
+  // The custom colours used on this tab, the Marker colour row's second section.
+  const palette = useMemo(
+    () => ({
+      board,
+      ink,
+      custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
+    }),
+    [board, ink, whiteboard, activeTab.elements],
   );
+  // A tool's choices land in memory, not the document: a version to re-read it.
+  const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
+  const intent = deps.toolIntent ?? null;
+  const phantom = useMemo(() => {
+    if (!whiteboard || editsBlocked || selected.length > 0 || !intent) return null;
+    const plain = toolPhantom(intent, theme);
+    return plain ? memory.styleNewElement(plain) : null;
+    // toolVersion: memory changed under the same intent. memory.scope: another document's (or
+    // tab kind's) memory, whose style must never show as this one's next mark.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [whiteboard, editsBlocked, selected.length, intent, theme, toolVersion, memory.scope]);
+  // The Highlighter rows: the selected highlights first; with nothing selected, the armed tile.
+  const hlColour = deps.highlighter?.colour;
+  const hlWidth = deps.highlighter?.width;
+  const highlighter = useMemo(() => {
+    if (editsBlocked) return undefined;
+    const strokes = strokesHighlighterStyle(selected);
+    if (strokes) return strokes;
+    const armed = intent?.type === 'freehand' && intent.variant === 'highlighter';
+    return selected.length === 0 && armed && hlColour !== undefined && hlWidth !== undefined
+      ? toolHighlighterStyle(hlColour, hlWidth)
+      : undefined;
+  }, [editsBlocked, selected, intent, hlColour, hlWidth]);
+  const baseView = useMemo(() => {
+    if (editsBlocked) return null;
+    if (phantom && intent) {
+      const tool = onWhiteboard(
+        quickStyleView([phantom], theme, overrides, palette.ink),
+        [phantom],
+        palette,
+      );
+      return tool && { ...tool, caption: toolCaption(intent) };
+    }
+    const plain = quickStyleView(selected, theme, overrides, palette.ink);
+    if (!whiteboard) return plain;
+    const board = onWhiteboard(plain, selected, palette);
+    // Selected strokes first; with nothing selected, the pen in hand.
+    const pen =
+      strokesPenStyle(selected, palette) ??
+      (selected.length === 0 && held ? heldPenStyle(held, palette) : undefined);
+    // A mixed selection's caption counts what the rows style (docs/specs/008-canvas/quick-style-panel.md
+    // "Multi-selection"); strokes alone keep the pen rows' own name.
+    const caption = quickStyleCaption(quickStyleApplicability(selected));
+    return pen
+      ? { ...(board ?? { targetIds: [], sections: {} }), pen, ...(caption ? { caption } : {}) }
+      : board;
+  }, [editsBlocked, selected, theme, overrides, whiteboard, held, phantom, intent, palette]);
+  // The Highlighter rows join whatever else the panel shows; alone, they are the whole panel. A
+  // mixed selection's caption counts every styled element, highlights included.
+  const view = useMemo((): QuickStyleView | null => {
+    if (!highlighter) return baseView;
+    const styled =
+      (baseView?.targetIds.length ?? 0) +
+      (baseView?.pen?.subject.kind === 'strokes' ? baseView.pen.subject.ids.length : 0);
+    const caption =
+      highlighter.subject.kind === 'strokes' && styled > 0
+        ? `${styled + highlighter.subject.ids.length} elements`
+        : baseView?.caption;
+    return {
+      ...(baseView ?? { targetIds: [], sections: {} }),
+      highlighter,
+      ...(caption ? { caption } : {}),
+    };
+  }, [baseView, highlighter]);
+
+  // A custom colour used from the panel moves to the front of Your colours, as a marker's does.
+  const rememberCustom = (colour: PenColourChoice) => {
+    if (colour !== INK_CHOICE && !isPenColourName(colour)) deps.pen?.colours?.remember(colour);
+  };
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
     if (!view || editsBlocked) return;
+    if (phantom) {
+      // The tool's next mark: remembered for its kind, nothing on the board changes.
+      memory.recordEdit([phantom], [apply(phantom)]);
+      bumpTool();
+      track('Element', 'Changed', telemetryType);
+      return;
+    }
     const ids = new Set(view.targetIds);
     const before = liveElements();
     const map = (els: Element[]) => els.map((el) => (ids.has(el.id) ? apply(el) : el));
@@ -84,8 +242,61 @@ export function useQuickStyle(deps: {
     track('Element', 'Changed', telemetryType);
   };
 
+  const runPen = (
+    patch: { colour?: PenColourChoice; width?: PenWidthId },
+    telemetryType: string,
+  ) => {
+    const subject = view?.pen?.subject;
+    if (!subject || editsBlocked) return;
+    if (subject.kind === 'pen') {
+      // Choosing what the pen already has changes (and reports) nothing.
+      const pen = view!.pen!;
+      if (patch.colour !== undefined && patch.colour === pen.colour.value) return;
+      if (patch.width !== undefined && patch.width === pen.width.value) return;
+      // The pen's own setting, as its dock flyout sets it (and tracks it).
+      deps.pen?.update(subject.id, {
+        ...(patch.colour !== undefined
+          ? { colour: patch.colour === INK_CHOICE ? null : patch.colour }
+          : {}),
+        ...(patch.width !== undefined ? { width: penWidthPx(patch.width) } : {}),
+      });
+      return;
+    }
+    const ids = new Set(subject.ids);
+    commit((els) => els.map((el) => (ids.has(el.id) ? applyPenStyle(el, patch) : el)));
+    track('Element', 'Changed', telemetryType);
+    // A custom colour used here moves to the front of Your colours.
+    if (patch.colour !== undefined) {
+      deps.pen?.colours?.remember(patch.colour === INK_CHOICE ? null : patch.colour);
+    }
+  };
+
+  const runHighlighter = (patch: { colour?: string; width?: HighlighterWidthId }) => {
+    const style = view?.highlighter;
+    if (!style || editsBlocked) return;
+    if (style.subject.kind === 'tool') {
+      // The next stroke's setting, not a change to the board.
+      if (patch.colour !== undefined && patch.colour !== style.colour.value) {
+        track('UI', 'Changed', 'HighlighterColour');
+        deps.highlighter?.setColour(patch.colour);
+      }
+      if (patch.width !== undefined && patch.width !== style.width.value) {
+        track('UI', 'Changed', 'HighlighterWidth');
+        deps.highlighter?.setWidth(highlighterWidthPx(patch.width));
+      }
+      return;
+    }
+    const ids = new Set(style.subject.ids);
+    commit((els) => els.map((el) => (ids.has(el.id) ? applyHighlighterStyle(el, patch) : el)));
+    track('Element', 'Changed', patch.colour !== undefined ? 'QuickStroke' : 'QuickStrokeWidth');
+  };
+
   return {
     view,
+    setHighlighterColour: (colour) => runHighlighter({ colour }),
+    setHighlighterWidth: (width) => runHighlighter({ width }),
+    setPenColour: (colour) => runPen({ colour }, 'QuickStroke'),
+    setPenWidth: (width) => runPen({ width }, 'QuickStrokeWidth'),
     setStroke: (slot) => run((el) => applyQuickStroke(el, theme, slot, overrides), 'QuickStroke'),
     setBackground: (slot) =>
       run((el) => applyQuickFill(el, theme, slot, overrides), 'QuickBackground'),
@@ -95,15 +306,36 @@ export function useQuickStyle(deps: {
     setStrokeStyle: (style) => run((el) => applyQuickStrokeStyle(el, style), 'QuickStrokeStyle'),
     setTextAlign: (align) => run((el) => applyQuickTextAlign(el, align), 'QuickTextAlign'),
     setIconAlign: (align) => run((el) => applyQuickIconAlign(el, align), 'QuickIconAlign'),
+    setCorners: (corners) => run((el) => applyQuickCorners(el, corners), 'QuickCorners'),
+    setBoardStroke: (colour) => {
+      run((el) => applyBoardStroke(el, colour), 'QuickStroke');
+      rememberCustom(colour);
+    },
+    setBoardTextColour: (colour) => {
+      run((el) => applyBoardTextColour(el, colour), 'QuickTextColour');
+      rememberCustom(colour);
+    },
     clearStyles: () => {
       if (!view) return;
-      run((el) => clearQuickStyle(el, theme), 'QuickClearStyles');
+      if (phantom) {
+        const kind = styleKindOf(phantom, true);
+        if (kind) memory.forget([kind]);
+        bumpTool();
+        track('Element', 'Changed', 'QuickClearStyles');
+        return;
+      }
+      // On a whiteboard the corners are a quick-style field too (the Corners row).
+      run(
+        (el) =>
+          whiteboard ? clearQuickCorners(clearQuickStyle(el, theme)) : clearQuickStyle(el, theme),
+        'QuickClearStyles',
+      );
       // Forget every kind the selection styles, not only the ones that
       // changed: a shape already at the default can have a memory waiting.
       const targets = new Set(view.targetIds);
       const kinds = new Set<StyleKindKey>();
       for (const el of selected) {
-        const kind = targets.has(el.id) ? styleKindOf(el) : null;
+        const kind = targets.has(el.id) ? styleKindOf(el, whiteboard) : null;
         if (kind) kinds.add(kind);
       }
       memory.forget([...kinds]);

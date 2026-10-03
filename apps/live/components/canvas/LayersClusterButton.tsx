@@ -5,13 +5,12 @@ import { HoverCard } from '@livediagram/ui';
 
 // The Layers button in the bottom-right cluster (docs/specs/006-document/layers.md), in every layout.
 //
-// In the desktop docking layout the panel ships minimised into it, mirroring
-// the Activity strip, and the button un-minimises it (`onExpand`). In the dock
-// layouts (minimal, or a phone outside Toolbar) it opens the panel as a
+// In the Floating layout the panel ships minimised into it, and the button un-minimises it (`onExpand`). In the Toolbar
+// layout (docs/specs/007-editor/toolbar-layout.md) it opens the panel as a
 // popover hanging ABOVE it instead (`onTogglePopover`, handed the button to
 // anchor to), and shows pressed while that popover is open.
 //
-// `data-mobile-dock` makes a second press close the popover through the
+// `data-dock-button` makes a second press close the popover through the
 // toggle rather than the panel's outside-click closing it on pointer-down and
 // the click reopening it.
 export function LayersClusterButton({
@@ -21,7 +20,7 @@ export function LayersClusterButton({
 }: {
   popoverOpen: boolean;
   onExpand?: () => void;
-  // Set in the dock layouts: the button opens the popover rather than the
+  // Set in the Toolbar layout: the button opens the popover rather than the
   // docked panel.
   onTogglePopover?: (button: HTMLElement) => void;
 }) {
@@ -43,12 +42,12 @@ export function LayersClusterButton({
   );
   return (
     <div
-      data-mobile-dock=""
+      data-dock-button=""
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {/* No hover card while open: it would sit over the panel it names. */}
       {popoverOpen ? (

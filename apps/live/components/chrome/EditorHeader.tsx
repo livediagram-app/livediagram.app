@@ -32,7 +32,7 @@ type EditorHeaderProps = {
   // title badge to "Team" when the document has no share links.
   teamDocument?: boolean;
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
-  // to "Offline" (superseding "Private"); the caller also hides Share.
+  // to "Local only" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the document into the

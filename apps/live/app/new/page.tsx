@@ -13,26 +13,24 @@ import {
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDocumentSettings } from '@/components/palette/TemplatePicker';
+import { BlankCanvasScreen } from '@/components/chrome/BlankCanvasScreen';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
+import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
-import { usePlacementOptions } from './usePlacementOptions';
-import {
-  apiCreateDocument,
-  apiLoadSelf,
-  apiSaveSelf,
-  apiSetDocumentFolder,
-} from '@/lib/api-client';
+import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
+import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
+import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
+import { createFailureCopy, type CreateFailure } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
-import { accepted } from '@/lib/accepted';
 import {
   ensureGuestSelfId,
   getGuestSelfId,
@@ -40,11 +38,27 @@ import {
   markNameConfirmed,
 } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
-import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-document-params';
+import {
+  templateFamilyOf,
+  untitledNameForTemplate,
+  type TemplateKind,
+} from '@livediagram/templates';
+import { creationIntentOf } from '@livediagram/api-schema';
+import {
+  WIZARD_BYPASS_PARAMS,
+  choosePlacementAgainUrl,
+  wantsWelcome,
+  wizardBrowseCollection,
+  wizardBypassKind,
+} from '@/lib/new-document-params';
+import { markQuietLanding } from '@/lib/quiet-landing';
+import { backOutTarget } from '@/lib/back-out';
+import { QUIET_LANDING_ATTR, QUIET_LANDING_LOADER_CLASS } from '@/lib/quiet-landing-boot';
+import { CanvasLoader } from '@livediagram/ui';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@/lib/debug-log';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -53,7 +67,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 const loadEditor = () => import('@/app/document/[id]/editor-page');
 const EditorPage = dynamic(loadEditor, {
   ssr: false,
-  loading: () => <DocumentLoading stage="opening" />,
+  loading: () => <OpeningScreen />,
 });
 
 // The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-document-route.md). The URL does
@@ -61,6 +75,12 @@ const EditorPage = dynamic(loadEditor, {
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
+// The collection the wizard opens on (`?browse=`), read the same way.
+const browseFromUrl = () => wizardBrowseCollection(window.location.search);
+const noBrowse = () => null;
+const isBypassUrl = () => bypassKindFromUrl() !== null;
+const welcomeFromUrl = () => wantsWelcome(window.location.search);
+const noWelcome = () => false;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
@@ -108,11 +128,10 @@ export default function NewDocumentPage() {
   // RecentDocumentsCard's fetch; gates the interactive tour's welcome offer
   // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
   const [documentCount, setDocumentCount] = useState<number | null>(null);
-  // Set when the create POST fails (network / 5xx). Shows a retryable
-  // error instead of navigating to the editor for a document that was
-  // never persisted (which would 404). The ref keeps the last attempt's
-  // args so Retry can re-run the exact same create.
-  const [createError, setCreateError] = useState(false);
+  // Set when the create fails: the card's copy and action (create-failure.ts). Shows instead of
+  // navigating to the editor for a document that was never persisted (which would 404). The ref
+  // keeps the last attempt's args so Retry can re-run the exact same create.
+  const [createError, setCreateError] = useState<CreateFailure | null>(null);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
     name: string;
@@ -127,32 +146,25 @@ export default function NewDocumentPage() {
   // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Where this document can be filed, and the inline New Folder the Settings
-  // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
-    {
-      selfId: self.id,
-      clerkUserId,
-    },
-  );
-
   // Placement context from the URL: /new?folder=<id> (Explorer's "new document
   // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-documents.md)
   // pre-select the Save In picker, so what the Settings step highlights IS
   // what Create files into. The picker is the single source of truth from
   // here on; there is no separate commit-time fallback (it used to override
-  // an explicit "Unsorted" choice silently).
-  const [initialPlacement] = useState(() => {
-    if (typeof window === 'undefined') return 'unsorted';
+  // an explicit root choice silently).
+  // No context is no placement: the Location step then pre-selects the reader's default folder
+  // (docs/specs/013-workspace/default-folders.md "The New Document wizard"), else the root.
+  const [initialPlacement] = useState<string | undefined>(() => {
+    if (typeof window === 'undefined') return undefined;
     const params = new URLSearchParams(window.location.search);
     const folderId = params.get('folder');
     const teamId = params.get('team');
     if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
     if (folderId) return `folder:${folderId}`;
-    return 'unsorted';
+    return undefined;
   });
 
-  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Just Draw") and
+  // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard
   // entirely — the page commits that template (Default theme, the template's
   // default name) the moment it mounts and lands on the editor. The ?folder /
@@ -167,9 +179,56 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
+
+  // Where this document can be filed, and the inline New Folder the Settings
+  // step offers — see usePlacementOptions.
+  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
+    {
+      selfId: self.id,
+      clerkUserId,
+      // A bypass commits straight away and never shows the Settings step.
+      skip: isBypassUrl,
+    },
+  );
+  // The reader's default folders, per template, for the Location step.
+  const wizardDefaults = useWizardDefaults(self.id === 'pending' ? null : self.id, {
+    folders,
+    teams,
+    teamFolders,
+  });
+  // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
+  // grew into rather than the opening screen, so nothing else paints between the two.
+  const quietLanding = useSyncExternalStore(subscribeNever, welcomeFromUrl, noWelcome);
+  // BlankCanvasScreen now paints the canvas the guard painted; lift the guard so the body shows.
+  useLayoutEffect(() => {
+    if (quietLanding) document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
+  }, [quietLanding]);
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
+  // `?browse=<collection>` (docs/specs/007-editor/new-document-route.md): the same external-store read,
+  // and the same guard: the prerendered step is the category overview, so the
+  // wizard card stays hidden until the render that shows the collection (or,
+  // for an unknown one, at once), so the author never sees it swap.
+  const browseShelf = useSyncExternalStore(subscribeNever, browseFromUrl, noBrowse);
+  useLayoutEffect(() => {
+    if (browseFromUrl() === browseShelf) {
+      document.documentElement.removeAttribute('data-wizard-browse');
+    }
+  }, [browseShelf]);
+
+  const backOut = () => {
+    if (submitting) return;
+    const target = backOutTarget({
+      referrer: document.referrer,
+      origin: window.location.origin,
+      historyLength: window.history.length,
+    });
+    debugLog(`[new] back out ${target}`);
+    track('UI', 'Closed', 'NewDocument');
+    if (target === 'back') window.history.back();
+    else window.location.assign('/');
+  };
 
   useEffect(() => {
     document.title = 'New document | livediagram';
@@ -310,19 +369,34 @@ export default function NewDocumentPage() {
           Date.now(),
         );
       } else {
+        // "Always save <these> here" first (docs/specs/013-workspace/default-folders.md).
+        await applyAlwaysSave(settings.alwaysSave);
+        // Placement rides the create (docs/specs/007-editor/new-document-route.md): the Settings
+        // step's picker, pre-seeded from /new?folder= / ?team=, is filed by the same write, or the
+        // create is refused by name and nothing is written.
         await apiCreateDocument(who.id, {
           id: documentId,
           name: documentName,
           tabs: [tab],
+          // Passed through as given: absent is no choice (a default folder may answer), a null
+          // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
+          teamId: settings.teamId,
+          folderId: settings.folderId,
+          // What it opens as, captured now and never re-derived
+          // (docs/specs/013-workspace/default-folders.md): with no place chosen, the server files it
+          // in the person's default folder for it.
+          intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
         });
       }
-    } catch {
-      // Create FAILED (network / 5xx for cloud, or no IndexedDB for offline).
-      // Don't navigate to an editor for a document that was never persisted
-      // (that lands on a 404). Surface a retryable error card instead (Retry
-      // re-runs this exact create from lastCreateArgs).
+    } catch (err) {
+      // Create FAILED (network / 5xx / a refused placement for cloud, or no IndexedDB for
+      // offline). Don't navigate to an editor for a document that was never persisted (that
+      // lands on a 404). Surface the error card instead: Retry re-runs this exact create from
+      // lastCreateArgs; a refused placement offers another place.
+      const failure = createFailureCopy(err);
+      debugLog(`[new] create failed action=${failure.action}`);
       setSubmitting(false);
-      setCreateError(true);
+      setCreateError(failure);
       return;
     }
     // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a document was created. No id or name is
@@ -331,43 +405,35 @@ export default function NewDocumentPage() {
     track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
+    // A whiteboard tab born from the wizard (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
+    if (templateKind === 'whiteboard') track('Draw', 'Created', 'Template');
     cta.trackCreated();
-    // Placement. The Settings step's picker (docs/specs/006-document/offline-mode.md) is authoritative: the
-    // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
-    // on mount, so what the picker highlighted is exactly what gets filed.
-    // Done as a follow-up PUT so the create endpoint signature stays stable
-    // and placement can fail independently (a glitch just leaves it in the
-    // personal Unsorted, movable later). Offline documents have no server
-    // folder / team placement — skip it.
-    if (!offline) {
-      if (settings.teamId) {
-        // Created straight into a team library: the same Team·Added·Document
-        // an Explorer move into a team sends (docs/specs/017-telemetry/telemetry.md), and only once the
-        // placement landed (a failed PUT leaves it personal).
-        const placed = await accepted(
-          apiSetDocumentFolder(who.id, documentId, settings.folderId ?? null, settings.teamId),
-        );
-        if (placed) track('Team', 'Added', 'Document');
-      } else if (settings.folderId) {
-        await apiSetDocumentFolder(who.id, documentId, settings.folderId).catch(() => {});
-      }
-    }
+    // Created straight into a team library: the same Team·Added·Document an Explorer move into a
+    // team sends (docs/specs/017-telemetry/telemetry.md), only reached once the create, and so
+    // its placement, succeeded.
+    if (!offline && settings.teamId) track('Team', 'Added', 'Document');
     // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned documents)
     // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
-    if (documentCount === 0) {
+    // The hero's launch window (/new?blank=1&welcome=1) queues the offer too: its create fires
+    // before the count is known, and the synced tourSeen gate keeps it to people who haven't
+    // answered it. It also lands on the blank canvas the hero grew into (lib/quiet-landing.ts).
+    const welcome = templateKind === 'blank' && wantsWelcome(window.location.search);
+    if (documentCount === 0 || welcome) {
       markTourPending();
     }
+    if (welcome) markQuietLanding();
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
     document.documentElement.removeAttribute('data-just-draw');
+    document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
     window.history.replaceState(null, '', `/document/${documentId}`);
     setOpenedId(documentId);
   };
 
-  // Just-Draw fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
+  // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
   // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
   // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue
@@ -382,8 +448,10 @@ export default function NewDocumentPage() {
     const params = new URLSearchParams(window.location.search);
     void commitNewDocument(kind, '', 'brand', {
       saveLocation: DEFAULT_SAVE_LOCATION,
-      folderId: params.get('folder'),
-      teamId: params.get('team'),
+      // A missing param is no choice, not the root: a bypass link without context leaves room for a
+      // default folder (docs/specs/013-workspace/default-folders.md "Precedence").
+      folderId: params.get('folder') ?? undefined,
+      teamId: params.get('team') ?? undefined,
     });
   });
   useEffect(() => {
@@ -408,10 +476,17 @@ export default function NewDocumentPage() {
         />
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
-            title="Couldn’t create the document"
-            message="We couldn’t reach the server to create your document. Check your connection and try again."
+            eyebrow={createError.eyebrow}
+            title={createError.title}
+            message={createError.message}
+            retryLabel={createError.actionLabel}
             onRetry={() => {
-              setCreateError(false);
+              if (createError.action === 'choose') {
+                // The refused placement would be refused again: reopen the wizard without it.
+                window.location.assign(choosePlacementAgainUrl(window.location.search));
+                return;
+              }
+              setCreateError(null);
               const a = lastCreateArgs.current;
               if (a) void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
             }}
@@ -425,6 +500,7 @@ export default function NewDocumentPage() {
   // from mount to the handoff (docs/specs/007-editor/new-document-route.md). The editor's own load
   // renders the same screen, so create → open reads as one moment. Create failures fall through to
   // the retryable error card branch before this one.
+  if (quietLanding) return <BlankCanvasScreen />;
   if (bypassKind) return <DocumentLoading stage="creating" />;
 
   return (
@@ -439,10 +515,15 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('browse'))document.documentElement.setAttribute('data-wizard-browse','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
+      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-browse] [data-wizard-only]{visibility:hidden}`}</style>
+      {/* The quiet landing's loader, prerendered so it paints from the first frame on the
+          hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
+      <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
+        <CanvasLoader />
+      </div>
       <EditorHeader
         documentName="New document"
         hideTitle
@@ -475,6 +556,8 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              defaults={wizardDefaults}
+              initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}
@@ -490,6 +573,9 @@ export default function NewDocumentPage() {
                   saveLocation: DEFAULT_SAVE_LOCATION,
                 })
               }
+              // Escape backs out to the page that opened /new, creating nothing
+              // (docs/specs/007-editor/new-document-route.md "Escape backs out").
+              onBackOut={backOut}
             />
           </CustomThemeProvider>
         </div>

@@ -48,6 +48,10 @@ export type Participant = {
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: 'edit' | 'view';
+  // Their published profile picture (docs/specs/014-identity/profile-picture.md §5), as the room
+  // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
+  // screen. Our own entry carries our picture whatever the switch says.
+  picture?: string;
 };
 
 // How this participant is recorded in the document (docs/specs/012-collaboration/participant-responses.md). Falls back

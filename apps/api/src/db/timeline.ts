@@ -10,6 +10,7 @@
 // Emit is fire-and-forget from every call site (wrapped in waitUntil):
 // a missing timeline row is cosmetic, a failed document save is not.
 
+import { HOME_OPENED_EVENT_TYPE } from '@livediagram/api-schema';
 import type { TimelineEvent, TimelineScopeRef } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
@@ -24,6 +25,9 @@ export type TimelineEventDraft = {
   description?: string | null;
   occurredAt?: number;
   snapshot?: Record<string, unknown>;
+  // Leave an existing row for the same key untouched rather than updating it. For a
+  // reconstruction (the backfill's edit) that must never overwrite what really happened.
+  keepExisting?: boolean;
 };
 
 // The dedupe key for an event that should collapse to one row per
@@ -78,11 +82,15 @@ export async function emitTimelineEvent(
        (id, actor_id, source_type, source_id, event_type, dedupe_key,
         title, description, occurred_at, snapshot, created_at)
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-     ON CONFLICT (source_type, source_id, event_type, dedupe_key) DO UPDATE SET
+     ON CONFLICT (source_type, source_id, event_type, dedupe_key) ${
+       draft.keepExisting
+         ? 'DO NOTHING'
+         : `DO UPDATE SET
        title = excluded.title,
        description = excluded.description,
        snapshot = excluded.snapshot,
-       occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`,
+       occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`
+     }`,
   )
     .bind(
       id,
@@ -206,7 +214,10 @@ export type ReadTimelineResult = {
 // Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): entries show each
 // document's current name instead. Nothing records them any more; this keeps
 // the ones written before that out of every feed and count.
-const NOT_A_RENAME = `e.event_type <> 'document_renamed'`;
+// A person's own opens (docs/specs/013-workspace/explorer-home.md "Opens") sit in their user scope
+// for Home's Timeline column, and are not part of this feed either (docs/specs/013-workspace/timeline.md
+// §4.2): nothing renders them here, and an open is never news to anyone.
+const NOT_IN_FEED = `e.event_type NOT IN ('document_renamed', '${HOME_OPENED_EVENT_TYPE}')`;
 
 const NOT_IN_TRASH = `NOT (e.source_type = 'document' AND EXISTS (
   SELECT 1 FROM documents td
@@ -220,7 +231,7 @@ export async function readTimeline(
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
   // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
   // re-emit path can't resurrect it, but it is not part of the feed.
-  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_A_RENAME}`;
+  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_IN_FEED}`;
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -289,6 +300,8 @@ function parseCursor(raw: string): { occurredAt: number; id: string } | null {
 
 export type TimelineScopeState = {
   backfilledAt: number | null;
+  /** When Explorer Home seeded this person's Jump back in (user scope only). */
+  frecencySeededAt: number | null;
   /** When this scope was last READ by its owner — the unread watermark. */
   lastSeenAt: number | null;
 };
@@ -298,12 +311,20 @@ export async function getScopeState(
   scope: TimelineScopeRef,
 ): Promise<TimelineScopeState | null> {
   const row = await env.DB.prepare(
-    'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
+    'SELECT backfilled_at, frecency_seeded_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
   )
     .bind(scope.scopeType, scope.scopeId)
-    .first<{ backfilled_at: number | null; last_seen_at: number | null }>();
+    .first<{
+      backfilled_at: number | null;
+      frecency_seeded_at: number | null;
+      last_seen_at: number | null;
+    }>();
   if (!row) return null;
-  return { backfilledAt: row.backfilled_at, lastSeenAt: row.last_seen_at };
+  return {
+    backfilledAt: row.backfilled_at,
+    frecencySeededAt: row.frecency_seeded_at,
+    lastSeenAt: row.last_seen_at,
+  };
 }
 
 // Move the unread watermark to now. Called AFTER the read has captured
@@ -356,7 +377,7 @@ export async function countUnseen(
          JOIN timeline_events e ON e.id = s.event_id
         WHERE s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL
           AND ${NOT_IN_TRASH}
-          AND ${NOT_A_RENAME}
+          AND ${NOT_IN_FEED}
           AND e.occurred_at > ?3
           AND e.occurred_at <= ?5
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)
@@ -366,6 +387,16 @@ export async function countUnseen(
     .bind(scope.scopeType, scope.scopeId, since, cap + 1, now)
     .first<{ n: number }>();
   return row?.n ?? 0;
+}
+
+// Explorer Home seeded this person's Jump back in (docs/specs/013-workspace/explorer-home.md). A
+// statement, so the stamp lands in the same batch as the seed's writes.
+export function markFrecencySeeded(env: Env, personId: string, at: number): D1PreparedStatement {
+  return env.DB.prepare(
+    `INSERT INTO timeline_scope_state (scope_type, scope_id, frecency_seeded_at)
+     VALUES ('user', ?1, ?2)
+     ON CONFLICT (scope_type, scope_id) DO UPDATE SET frecency_seeded_at = excluded.frecency_seeded_at`,
+  ).bind(personId, at);
 }
 
 export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Promise<void> {
@@ -578,9 +609,8 @@ export async function migrateTimelineOwner(
     .run();
 }
 
-// Daily retention sweep (docs/specs/013-workspace/timeline.md §3.5). Runs alongside the change_log
-// prune in the same cron; 365 days here (TIMELINE_RETENTION_MS) against
-// that one's 90. Signature matches the other sweeps so it slots into
+// Daily retention sweep (docs/specs/013-workspace/timeline.md §3.5). Runs alongside the other
+// prunes in the same cron; 365 days here (TIMELINE_RETENTION_MS). Signature matches the other sweeps so it slots into
 // the shared `scheduleSweep` helper rather than growing its own.
 //
 // Guards on `occurred_at`, so the forward-dated expiry warnings are

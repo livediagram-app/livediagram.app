@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { migrateStoredTab } from './stored-tab';
+import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import type { Element, Tab } from './index';
 
 // Every tab-level migration on the way in, in one call (docs/specs/011-theme/retired-schemes.md): the api's
@@ -40,5 +40,31 @@ describe('migrateStoredTab', () => {
       elements: [{ id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1 } as Element],
     };
     expect(migrateStoredTab(tab)).toBe(tab);
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "Existing whiteboards": every entry point reads a stored
+// whiteboard as a general tab that opens in Draw.
+describe('a stored whiteboard tab', () => {
+  const whiteboard = () => ({
+    id: 't',
+    name: 'Board',
+    kind: 'whiteboard',
+    elements: [{ id: 's', type: 'shape', shape: 'circle', x: 0, y: 0, width: 1, height: 1 }],
+  });
+
+  it('opens in Draw from storage', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const out = migrateStoredTab(whiteboard() as unknown as Tab);
+    expect(out.kind).toBe('diagram');
+    expect(out.opensIn).toBe('draw');
+    expect(out.elements[0]).toMatchObject({ penColour: 'ink', fillColor: 'transparent' });
+  });
+
+  it('opens in Draw from outside (an api write, a peer, a file)', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const out = migrateIncomingTab(whiteboard()) as Tab;
+    expect(out.kind).toBe('diagram');
+    expect(out.opensIn).toBe('draw');
   });
 });

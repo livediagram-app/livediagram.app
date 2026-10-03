@@ -1,4 +1,5 @@
 import type { Tab } from '@livediagram/document';
+import { DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCreateDocument,
@@ -351,9 +352,8 @@ describe('response helpers (observed through api callers)', () => {
 //     (apiDismissSharedWith, apiDeleteImage) opted in to a stricter
 //     behaviour where 404 surfaces as a real error. The helper's
 //     `allow404: false` flag preserves that distinction.
-//   - share-code forwarding. The three DELETEs that take a
-//     `shareCode` (delete tab, delete change-log-for-tab, delete
-//     change-log entry) must round-trip the code as an
+//   - share-code forwarding. A DELETE that takes a `shareCode`
+//     (delete tab) must round-trip the code as an
 //     `X-Share-Code` request header, otherwise an edit-role
 //     visitor's revoke would 403 server-side.
 //
@@ -488,6 +488,62 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
   });
 });
 
+describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const sentBody = async (d: Parameters<typeof apiCreateDocument>[1]) => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ document: { id: 'd1' } }), { status: 201 }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await apiCreateDocument('owner', d);
+    const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    return JSON.parse(init.body as string) as Record<string, unknown>;
+  };
+
+  it('carries the team and folder in the create body', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N', teamId: 't1', folderId: 'f1' });
+    expect(body).toMatchObject({ teamId: 't1', folderId: 'f1' });
+  });
+
+  it('leaves placement out when none is chosen', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N' });
+    expect(body).not.toHaveProperty('teamId');
+    expect(body).not.toHaveProperty('folderId');
+  });
+
+  it('sends a null folder as the root chosen on purpose (docs/specs/013-workspace/default-folders.md)', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N', teamId: null, folderId: null });
+    expect(body).not.toHaveProperty('teamId');
+    expect(body).toHaveProperty('folderId', null);
+  });
+
+  it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
+    const intent = { mode: 'diagram', tabKind: 'diagram', templateFamily: 'kanban' } as const;
+    const body = await sentBody({ id: 'd1', name: 'N', intent });
+    expect(body.intent).toEqual(intent);
+  });
+
+  it('leaves the intent out when the create keeps a place', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N' });
+    expect(body).not.toHaveProperty('intent');
+  });
+
+  it('throws the refusal token for a refused placement', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ error: 'team_forbidden' }), { status: 403 }),
+        ),
+    );
+    await expect(
+      apiCreateDocument('owner', { id: 'd1', name: 'N', teamId: 't1' }),
+    ).rejects.toMatchObject({ status: 403, code: 'team_forbidden' });
+  });
+});
+
 describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -597,6 +653,36 @@ describe('apiLoadTab load boundary', () => {
     expect(table.cells.map((r) => r.length)).toEqual([2, 2]); // padded to the widest row
     expect(table.cells[1]).toEqual(['c', '']);
     expect(tab!.elements.find((e) => e.id === 's')).toEqual(shape); // unchanged
+  });
+
+  // docs/specs/013-workspace/explorer-home.md "Opens": only a read the editor declares counts.
+  function sentHeaders(): Headers {
+    const init = vi.mocked(fetch).mock.calls[0]![1] as RequestInit;
+    return new Headers(init.headers);
+  }
+
+  it('declares an open only when asked to', async () => {
+    stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
+    await apiLoadTab('owner', 'd1', 't-open', null, { open: true });
+    expect(sentHeaders().get(DOCUMENT_OPEN_HEADER)).toBe('1');
+  });
+
+  it('sends no open marker on an ordinary load', async () => {
+    stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
+    await apiLoadTab('owner', 'd1', 't-plain', null);
+    expect(sentHeaders().has(DOCUMENT_OPEN_HEADER)).toBe(false);
+  });
+
+  it('keeps a marked load apart from an unmarked one in flight', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ tab: { id: 't1', name: 'T', elements: [] } })),
+    );
+    await Promise.all([
+      apiLoadTab('owner', 'd1', 't-both', null),
+      apiLoadTab('owner', 'd1', 't-both', null, { open: true }),
+    ]);
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
   });
 });
 

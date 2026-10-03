@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { isValidTab, type Element } from '@livediagram/document';
-import { applyLayout, buildGraphTab, buildTab, landMcpArrivals } from './tab-builders';
+import { isValidTab, parseStrokePoints, type Element } from '@livediagram/document';
+import { TEMPLATES } from '@livediagram/templates';
+import {
+  applyLayout,
+  buildGraphTab,
+  buildTab,
+  buildTemplateTab,
+  landMcpArrivals,
+} from './tab-builders';
 
 // Graph-first authoring end-to-end (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph must
 // come out a valid, themed, auto-laid-out tab.
@@ -148,5 +155,38 @@ describe('landMcpArrivals', () => {
   it('leaves an ordinary tab exactly as the call wrote it', () => {
     const next = [note('a', 0, 130)];
     expect(landMcpArrivals({ elements: [] }, next, 'ops')).toBe(next);
+  });
+});
+
+// Templates drawn from sketches (the sailboat scene) carry freehand strokes: what the MCP writes
+// from a template must be a tab the api accepts, its strokes packed
+// (docs/specs/006-document/stroke-points.md).
+describe('buildTemplateTab', () => {
+  it('builds every template as a valid tab, with packed strokes', () => {
+    let strokes = 0;
+    for (const { kind } of TEMPLATES) {
+      const tab = buildTemplateTab(`tab-${kind}`, kind, kind);
+      expect(isValidTab(tab), kind).toBe(true);
+      for (const el of tab.elements) {
+        if (el.type !== 'freehand') continue;
+        strokes++;
+        expect(parseStrokePoints(el.packedPoints).ok, kind).toBe(true);
+      }
+    }
+    expect(strokes).toBeGreaterThan(0);
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md: the Whiteboard template makes a general tab that opens in
+// Draw mode; there is no whiteboard kind.
+describe('buildTemplateTab: the Whiteboard template', () => {
+  it('makes a general tab that opens in Draw', () => {
+    const tab = buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard');
+    expect(tab.kind).toBe('diagram');
+    expect(tab.opensIn).toBe('draw');
+  });
+
+  it('leaves every other template opening in Diagram', () => {
+    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBeUndefined();
   });
 });

@@ -14,7 +14,7 @@ import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGly
 // The open count rides on the button as a brand badge, so "something is
 // waiting" reads from across the screen without opening anything.
 //
-// `data-mobile-dock` makes a second press close the popover through the
+// `data-dock-button` makes a second press close the popover through the
 // toggle rather than the panel's outside-click closing it on pointer-down and
 // the click reopening it.
 export function CollaborateClusterButton({
@@ -48,12 +48,12 @@ export function CollaborateClusterButton({
   );
   return (
     <div
-      data-mobile-dock=""
+      data-dock-button=""
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {/* No hover card while open: it would sit over the panel it names. */}
       {popoverOpen ? (

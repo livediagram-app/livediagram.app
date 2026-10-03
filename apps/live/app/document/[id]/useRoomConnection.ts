@@ -8,18 +8,14 @@ import {
 } from 'react';
 import type { QaNote, Tab } from '@livediagram/document';
 import {
-  CHANGE_LOG_LIST_LIMIT,
   type AvatarPresence,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import {
-  apiCreateRoomTicket,
-  connectRoom,
-  type ChangeLogEntry,
-  type RoomHandlers,
-} from '@/lib/api-client';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
+import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import {
   createPresenceCoalescer,
@@ -30,8 +26,14 @@ import {
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
+import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { shareLinkOpEffect } from './share-link-ops';
+import {
+  endPeerDragPreview,
+  prunePeerDragPreviews,
+  receivePeerDragPreview,
+} from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 
 // Realtime room: one WebSocket per document, opened only while the
@@ -83,7 +85,6 @@ export function useRoomConnection(opts: {
   setRemoteViewports: Dispatch<
     SetStateAction<Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>>
   >;
-  setChangeLog: Dispatch<SetStateAction<ChangeLogEntry[]>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
@@ -151,7 +152,6 @@ export function useRoomConnection(opts: {
     setRemoteLaserTrails,
     setRemoteAvatars,
     setRemoteViewports,
-    setChangeLog,
     setDocumentName,
     setSelfParticipant,
     receiveAvatarPush,
@@ -170,15 +170,32 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
+  //
+  // A signed-in session joins with a room ticket so the room knows it is an account (the only kind
+  // that may publish a profile picture or see others'), and says hello with its published picture
+  // (docs/specs/014-identity/profile-picture.md §6).
+  const { isSignedIn } = useDeferredAuth();
+  const picture = usePublishedPicture();
+  const selfForRoom = () => ({
+    id: selfParticipant.id,
+    key: selfParticipant.key,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    ...(picture ? { picture } : {}),
+  });
   const connectAs = useEffectEvent(() => ({
-    self: {
-      id: selfParticipant.id,
-      key: selfParticipant.key,
-      name: selfParticipant.name,
-      color: selfParticipant.color,
-    },
+    self: selfForRoom(),
     shareCode: sessionShareCode,
+    signedIn: isSignedIn,
   }));
+  // The switch flipped, or the picture changed: tell the open room, which updates the roster in
+  // place (switch off = initials for everyone from this update on).
+  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
+  useEffect(() => {
+    announceSelf();
+  }, [picture]);
+  // Each peer's server-verified role by presence id, refreshed with every presence list.
+  const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
@@ -187,6 +204,9 @@ export function useRoomConnection(opts: {
   const roomPresence = useEffectEvent(
     (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
       const now = Date.now();
+      // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
+      // drawn (docs/specs/008-canvas/drag-preview.md).
+      roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
       setLivePresence(
         participants.map((p) => ({
           id: p.id,
@@ -210,6 +230,9 @@ export function useRoomConnection(opts: {
           // and stamped it onto the broadcast row). Optional on the
           // wire so a connection without role info still parses.
           ...(p.role ? { role: p.role } : {}),
+          // Only ever present when the room judged us an account session
+          // (docs/specs/014-identity/profile-picture.md §5).
+          ...(p.picture ? { picture: p.picture } : {}),
         })),
       );
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next
@@ -245,6 +268,7 @@ export function useRoomConnection(opts: {
       // longer connected. Stops stale presence indicators from
       // sticking after a tab close or network drop.
       const present = new Set(participants.map((p) => p.id));
+      prunePeerDragPreviews(present);
       // Drop tab-focus entries for people who left so their avatar
       // dot doesn't linger on a tab they no longer occupy, AND seed
       // from the presence list: the room echoes each peer's current
@@ -302,6 +326,8 @@ export function useRoomConnection(opts: {
         // change is known to be the peer's and is never saved or broadcast
         // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
         if (op.kind === 'document-meta') setDocumentName(op.name);
+        // A dragger's real change has arrived: their live preview has done its job.
+        endPeerDragPreview(from);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
         foldRemoteOpIntoBaseline(saveBaseline, op);
         // In the same batch as the tabs update, so the render that shows the op also counts it.
@@ -333,6 +359,9 @@ export function useRoomConnection(opts: {
           // from a newer client costs that field and not the trail.
           config: op.look ? parseLaserConfig(op.look) : undefined,
         });
+      } else if (op.kind === 'drag-preview') {
+        // A collaborator mid-drag (docs/specs/008-canvas/drag-preview.md): drawn, never written.
+        receivePeerDragPreview(from, op, (id) => roleByPresenceRef.current.get(id));
       } else if (op.kind === 'avatar') {
         // Latest-wins per peer (no accumulation, unlike laser points): the
         // character has one position at a time.
@@ -375,8 +404,8 @@ export function useRoomConnection(opts: {
         });
       } else if (op.kind === 'poll-start') {
         // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
-        // hook's memory and never touches tabs, autosave, or the change
-        // log, so there is nothing here to persist or undo.
+        // hook's memory and never touches tabs or autosave, so there is
+        // nothing here to persist or undo.
         receivePoll(op.poll);
       } else if (op.kind === 'poll-answer') {
         // `from` keys the answer so a peer changing their mind replaces
@@ -384,17 +413,6 @@ export function useRoomConnection(opts: {
         receivePollAnswer(from, op.pollId, op.value, op.key);
       } else if (op.kind === 'poll-end') {
         receivePollEnd(op.pollId);
-      } else if (op.kind === 'log') {
-        // Remote participant just emitted an audit entry. Prepend it
-        // to the local list (de-duped by id so a sender that round-
-        // trips its own op doesn't show a duplicate). Cap at the same
-        // limit the server hydrates so the panel stays consistent.
-        setChangeLog((prev) => {
-          if (prev.some((e) => e.id === op.entry.id)) return prev;
-          return [op.entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT);
-        });
-      } else if (op.kind === 'log-remove') {
-        setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
       } else if (op.kind === 'qa') {
         // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
         // sends it through /broadcast after the write is already in D1, and
@@ -465,6 +483,7 @@ export function useRoomConnection(opts: {
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
       setRemoteSelections(new Map());
+      prunePeerDragPreviews(new Set());
       return;
     }
     // Batched cursor / laser / avatar presence, committed one Map update
@@ -478,7 +497,9 @@ export function useRoomConnection(opts: {
 
     const handlers: RoomHandlers = {
       onPresence: (participants) => roomPresence(participants),
-      onOp: (from, op) => roomOp(from, op, presence),
+      // Elements in a former stored shape from a peer loaded before a deploy are migrated
+      // before anything applies them (docs/specs/006-document/stroke-points.md).
+      onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
       onFacilitator: (msg) => roomFacilitator(msg),
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       onDocumentTrashed: () => roomDocumentTrashed(),
@@ -487,7 +508,9 @@ export function useRoomConnection(opts: {
     };
     // Team documents need a one-time room ticket (docs/specs/015-api/api.md): membership is
     // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
-    // the ticket is minted over authenticated REST first. Personal /
+    // the ticket is minted over authenticated REST first. A signed-in
+    // session mints one too, because only a ticket can tell the room it is an
+    // account (docs/specs/014-identity/profile-picture.md §6). Guest personal /
     // share-code sessions skip the extra round trip — their legacy query
     // params (`o` exact-owner match, `s` share code) still resolve the
     // role. Connect is async only for the ticket fetch; `cancelled`
@@ -495,10 +518,11 @@ export function useRoomConnection(opts: {
     let cancelled = false;
     let openedRoom: ReturnType<typeof connectRoom> | null = null;
     void (async () => {
-      const { self, shareCode } = connectAs();
-      const ticket = documentTeamId
-        ? await apiCreateRoomTicket(self.id, documentId, shareCode)
-        : null;
+      const { self, shareCode, signedIn } = connectAs();
+      const ticket =
+        documentTeamId || signedIn
+          ? await apiCreateRoomTicket(self.id, documentId, shareCode)
+          : null;
       if (cancelled) return;
       openedRoom = connectRoom(
         documentId,

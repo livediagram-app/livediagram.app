@@ -62,7 +62,9 @@ An arrow with empty text has no entry.
    `W = LOCAL_DIRECTION_WINDOW_PX`, both clamped into `[0, L]`.
 6. **Block** for the span, direction `u` at its open-run centre:
    - `half = (s1 - s0) / 2`.
-   - Wrap at `cap = crossCapPx + (alongCapPx - crossCapPx) * u.x²` (D25). While `footprintAlong(block, u) > 2 * half` and the widest
+   - Wrap at `cap = arrow.labelMaxWidth ?? crossCapPx + (alongCapPx - crossCapPx) * u.x²` (D25); an
+     arrow's own `labelMaxWidth` (finite, > 0, validated) replaces the direction blend and is never
+     narrowed below itself by the run limit: a label that does not fit at it moves beside the line. While `footprintAlong(block, u) > 2 * half` and the widest
      line has more than one word, re-wrap at `block.textWidth - 1`. Still too long → beside.
    - Balance: binary search the smallest width in `[longestWord, found]` that keeps the same line
      count (8 iterations, D19).

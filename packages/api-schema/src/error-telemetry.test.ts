@@ -104,6 +104,9 @@ describe('apiRouteLabel', () => {
     );
     expect(apiRouteLabel('GET', '/api/custom-themes')).toBe('Get.CustomThemes');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
+    // Explorer Home (docs/specs/013-workspace/explorer-home.md): the read and its Timeline pages.
+    expect(apiRouteLabel('GET', '/api/home?tz=Europe%2FAmsterdam')).toBe('Get.Home');
+    expect(apiRouteLabel('GET', '/api/home/timeline?cursor=1:x')).toBe('Get.Home.Timeline');
   });
 
   it('never echoes a share code or an unknown resource', () => {

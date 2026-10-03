@@ -107,6 +107,18 @@ ends out along that anchor's edge:
 
 The fan is purely visual: stored anchors, snapping and the auto-rebind use the true anchor point.
 
+**Start at exact anchor** (per arrow, off by default): the Line menu of an arrow whose start is
+pinned, under **Pass behind boxes**, has a switch that keeps the arrow's **start** exactly on the anchor it is pinned to. Its
+start sits out of that anchor's fan (`exactStart: true` on the arrow); the other arrows there fan
+among themselves as if it were not there. Its far end still fans. Telemetry:
+`Element·Changed·ArrowExactStart`.
+
+**End at exact anchor** (`exactEnd: true`) is the same for the arrow's **end**. It has no switch:
+the draw.io import sets it, with `exactStart`, on every end it pins, since draw.io draws ends
+meeting at one point and running along one trunk ([draw.io import](../020-import-export/drawio-import.md)
+"Shared ends stay shared"). A user who re-pins that end clears it, so a hand-drawn connection fans
+as usual.
+
 ## Auto-rebind
 
 As elements move, a pinned end can end up on a side that makes its arrow run through a shape. The

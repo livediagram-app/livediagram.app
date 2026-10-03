@@ -3,6 +3,7 @@ import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
+  showProfilePictureEnabled,
   panelEnabled,
   resolvePanelLayout,
   withPanelLayout,
@@ -12,7 +13,31 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
+import {
+  UI_SCALE_MAX,
+  UI_SCALE_MIN,
+  UI_SCALE_STEP,
+  resolveUiScale,
+  resolveUiScalePart,
+  uiScalePartPatch,
+  uiScalePatch,
+  withUiScalePatch,
+  type UiScalePart,
+} from '@/lib/ui-scale';
+import { setUiScalePreview } from '@/lib/ui-scale-preview';
+import {
+  readWhiteboardDockPosition,
+  withWhiteboardDockPosition,
+  type WhiteboardDockPosition,
+} from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
+import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
+import {
+  CLOUD_SYNC_PROVIDERS,
+  CLOUD_SYNC_SECTION,
+  type CloudSyncProviderId,
+} from '@/lib/cloud-sync/providers';
 
 // The Settings dialog as DATA: the categories, and per category the rows
 // (docs/specs/007-editor/user-preferences.md). The dialog used to spell every row out as JSX inside one
@@ -27,7 +52,7 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // round-trip) in exactly one place per setting.
 //
 // EVERY preference has a row here, and for most this is now the ONLY control:
-// the Palette / Layers / Activity / AI / Map gear popovers that used to carry
+// the Palette / Layers / AI / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
 // popovers held, and the Slide Deck popover stays because its contents are
@@ -43,11 +68,18 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
+// `authEnabled` is whether this deployment offers sign-in at all
+// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth self-host they
+// are absent end to end rather than a sign-in prompt with nowhere to go
+// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
 export type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
+  authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
+  // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
+  cloudProviders?: readonly CloudSyncProviderId[];
 };
 
 type RowBase = {
@@ -123,6 +155,9 @@ export type SettingsSliderRowSpec = RowBase & {
   format: (value: number) => string;
   read: (prefs: UserPreferences) => number;
   write: (prefs: UserPreferences, next: number) => UserPreferences;
+  // Shows the value live while the thumb is dragged, before the release
+  // commits it; called with null once the drag ends. Absent = no live effect.
+  preview?: (value: number | null) => void;
   event: { category: TelemetryCategory; changed: string };
 };
 
@@ -132,16 +167,28 @@ export type SettingsSliderRowSpec = RowBase & {
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 
-// API tokens (docs/specs/015-api/public-api-and-tokens.md): a read-only listing plus a link out to the Explorer's
-// tokens page. Not a preference at all: it reads account state from the api
-//, so like the appearance row it carries no read/write pair.
+// API tokens (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
+// the whole manager, create, one-time reveal, list and revoke. Not a
+// preference at all: it reads account state from the api, so like the
+// appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
+
+// A way into another category of this same dialog, opened in place: the
+// setting lives there, and this is where a reader might look for it first.
+export type SettingsLinkRowSpec = RowBase & {
+  kind: 'link';
+  target: SettingsCategoryId;
+  // The link's own words, which name the destination ("Manage API Tokens").
+  cta: string;
+};
 
 // A card with no control: it stands in for settings the reader cannot use
 // yet and says why. A section whose rows all vanish would otherwise take the
 // section heading with it, so the reader never learns the settings exist ,
 // which is the opposite of what a "find everything here" panel is for.
-export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string };
+// `signIn` marks a note whose reason is "you need an account", which then
+// ends with the Sign In link (docs/specs/007-editor/user-preferences.md).
+export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string; signIn?: boolean };
 
 // Keyboard shortcuts, like appearance, are a PER-DEVICE localStorage toggle
 // rather than a synced preference (docs/specs/007-editor/live-app.md): whether you want Cmd-Z bound
@@ -169,25 +216,44 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
+// One Cloud Sync provider (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting"): its
+// connection, status and actions. Not a preference: it reads the provider's
+// own state, so it carries no read/write pair.
+export type SettingsCloudSyncRowSpec = RowBase & {
+  kind: 'cloudSync';
+  provider: CloudSyncProviderId;
+};
+
+// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
+// documents of that key go, with Change and Clear. Not a preference: it reads and writes
+// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
+export type SettingsPlacementDefaultRowSpec = RowBase & {
+  kind: 'placementDefault';
+  placementKey: PlacementDefaultKey;
+};
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
   | SettingsTokensRowSpec
+  | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsPresetSummaryRowSpec
+  | SettingsCloudSyncRowSpec
+  | SettingsPlacementDefaultRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
   // The top-level category this is a sub-category of (Panels holds one per
-  // panel). The list nests it, untiled and indented, beneath its
+  // panel, Editor one per mode with settings of its own). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
@@ -198,6 +264,37 @@ export type SettingsCategorySpec = {
 
 // A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
 // three of its rows are inert there and share this note.
+// What every UI scale slider shares (docs/specs/007-editor/ui-scale.md).
+const UI_SCALE_SLIDER = {
+  kind: 'slider',
+  desktopOnly:
+    'UI Scale is desktop only, so a phone always uses 100%. Your choice still applies on a larger screen.',
+  min: UI_SCALE_MIN,
+  max: UI_SCALE_MAX,
+  step: UI_SCALE_STEP,
+  format: (v: number) => `${Math.round(v * 100)}%`,
+} as const;
+
+// One part's slider, nested under UI Scale: it reads the part's own value or,
+// without one, the master's, and writes only its own.
+function uiScalePartRow(
+  part: UiScalePart,
+  copy: { label: string; keywords: string; description: string; changed: string },
+): SettingsSliderRowSpec {
+  return {
+    ...UI_SCALE_SLIDER,
+    key: `uiScale-${part}`,
+    parent: 'uiScale',
+    label: copy.label,
+    keywords: copy.keywords,
+    description: copy.description,
+    read: (p) => resolveUiScalePart(p, part),
+    write: (p, v) => withUiScalePatch(p, uiScalePartPatch(part, v)),
+    preview: (v) => setUiScalePreview(v === null ? null : uiScalePartPatch(part, v)),
+    event: { category: 'UI', changed: copy.changed },
+  };
+}
+
 const MINIMAP_DESKTOP_ONLY =
   'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
 
@@ -317,6 +414,36 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    // Settings that apply only in Draw mode (docs/specs/007-editor/user-preferences.md):
+    // a setting that acts in both modes stays on Editor itself. Named Draw, as the mode
+    // switch names it (docs/specs/007-editor/editor-modes.md "Naming in the interface").
+    // There is no Diagram sibling while no setting applies only to Diagram mode.
+    id: 'draw',
+    label: 'Draw',
+    parent: 'editor',
+    rows: [
+      {
+        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
+        // so only Draw mode moves with this.
+        kind: 'choice',
+        key: 'whiteboardDockPosition',
+        keywords:
+          'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
+        label: 'Dock Position',
+        description:
+          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
+        helpArticle: 'drawMode',
+        options: [
+          { id: 'top', label: 'Top' },
+          { id: 'bottom', label: 'Bottom' },
+        ],
+        read: readWhiteboardDockPosition,
+        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
+        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
+      },
+    ],
+  },
+  {
     id: 'appearance',
     label: 'Appearance',
     rows: [
@@ -330,6 +457,41 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
       },
+      // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
+      // never the canvas, dialogs or menus. The master sets every part; each
+      // part's row beneath it overrides that part alone.
+      {
+        ...UI_SCALE_SLIDER,
+        key: 'uiScale',
+        keywords:
+          'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+        label: 'UI Scale',
+        description:
+          'Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below.',
+        read: (p: UserPreferences) => resolveUiScale(p),
+        write: (p: UserPreferences, v: number) => withUiScalePatch(p, uiScalePatch(v)),
+        preview: (v) => setUiScalePreview(v === null ? null : uiScalePatch(v)),
+        event: { category: 'UI', changed: 'UiScale' },
+      },
+      uiScalePartRow('panels', {
+        label: 'Panel Scale',
+        keywords: 'panels explorer palette layers popover size bigger smaller zoom',
+        description: 'Every panel, floating or opened from a button, and the Quick Style panel.',
+        changed: 'UiScalePanels',
+      }),
+      uiScalePartRow('toolbar', {
+        label: 'Toolbar Scale',
+        keywords: 'toolbar strip top bar menu button size bigger smaller zoom',
+        description: 'The Toolbar layout’s strip and its menu button.',
+        changed: 'UiScaleToolbar',
+      }),
+      uiScalePartRow('cornerButtons', {
+        label: 'Corner Buttons Scale',
+        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller',
+        description:
+          'The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom.',
+        changed: 'UiScaleCornerButtons',
+      }),
     ],
   },
   {
@@ -363,21 +525,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Panels',
     rows: [
       {
-        // Three layouts, one choice (docs/specs/007-editor/toolbar-layout.md). Replaced the Minimal Panel
-        // Layout toggle when the Toolbar layout arrived; the key is new so
-        // the telemetry token is too, and the old On/Off tokens simply stop.
+        // Two layouts, one choice (docs/specs/007-editor/toolbar-layout.md).
         kind: 'choice',
         key: 'panelLayout',
-        keywords:
-          'minimal compact dock button bar hide panels layout tidy toolbar strip top bar excalidraw floating',
+        keywords: 'compact hide panels layout tidy toolbar strip top bar excalidraw floating',
         label: 'Panel Layout',
         description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
+          'Floating shows the Explorer, Palette and other panels over the canvas. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
         helpArticle: 'toolbarLayout',
         illustration: 'panelLayout',
         options: [
           { id: 'floating', label: 'Floating', desktopOnly: true },
-          { id: 'minimal', label: 'Minimal' },
           { id: 'toolbar', label: 'Toolbar' },
         ],
         read: (p, view) => resolvePanelLayout(p, view),
@@ -450,32 +608,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.layerHoverPreview !== false,
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
-      },
-    ],
-  },
-  {
-    id: 'activity',
-    label: 'Activity',
-    parent: 'panels',
-    rows: [
-      panelSwitch('activityPanelEnabled', {
-        label: 'Enable Activity Panel',
-        keywords: 'activity history panel hide show turn off remove',
-        description:
-          'Shows the Activity panel, the tab’s history of changes, and its button beside Undo and Redo. Turned off, Undo and Redo stay.',
-        event: { category: 'UI', on: 'ActivityPanelOn', off: 'ActivityPanelOff' },
-      }),
-      {
-        kind: 'toggle',
-        key: 'activityRevertHoverPreview',
-        parent: 'activityPanelEnabled',
-        keywords: 'undo history revert preview hover activity',
-        label: 'Preview Revert on Hover',
-        description:
-          'Shows what the canvas would look like after a revert while you hover that entry in the Activity panel, so you can check before committing to it.',
-        read: (p) => p.activityRevertHoverPreview !== false,
-        write: (p, v) => ({ ...p, activityRevertHoverPreview: v }),
-        event: { category: 'UI', on: 'ActivityRevertPreviewOn', off: 'ActivityRevertPreviewOff' },
       },
     ],
   },
@@ -589,6 +721,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Email',
         label: 'Email Notifications',
         note: 'Sign in to choose which emails you get.',
+        signIn: true,
         description:
           'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
@@ -746,16 +879,34 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
       },
       {
-        kind: 'tokens',
-        key: 'apiTokens',
+        kind: 'link',
+        key: 'apiTokensLink',
         keywords: 'api token key mcp integration script developer access',
         section: 'API Access',
         label: 'API Tokens',
+        cta: 'Manage API Tokens',
+        target: 'tokens',
         description:
-          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Each one expires six months after it is created, and you can revoke any of them at any time.',
-        alsoIn: 'the Explorer’s API Tokens page',
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. They have their own category in Settings.',
+        available: (ctx) => ctx.authEnabled === true,
       },
     ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    // One row per default folder entry, in list order: guests have defaults too.
+    rows: DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
+      kind: 'placementDefault',
+      key: `placementDefault-${entry.key}`,
+      placementKey: entry.key,
+      section: 'Where New Documents Go',
+      label: titleCase(entry.label),
+      keywords:
+        'default folder where new documents go save location place file automatically always save placement',
+      description: `Where new ${entry.noun} go when you create one without choosing a place.`,
+      helpArticle: 'defaultFolders',
+    })),
   },
   {
     id: 'account',
@@ -766,10 +917,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'identity',
         section: 'You',
         label: 'Guest',
-        keywords: 'account profile identity name email signed in sign in avatar joined',
+        keywords:
+          'account profile identity name email signed in sign in avatar picture photo google joined',
         description:
-          'Your name and email come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
+          'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
         helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'toggle',
+        key: 'showProfilePicture',
+        keywords: 'profile picture photo avatar google show hide privacy collaborators',
+        section: 'You',
+        label: 'Show My Profile Picture',
+        description:
+          'Signed-in collaborators see your picture on presence, cursors, comments and teams. People who open your share links without signing in always see your initials. You always see it yourself.',
+        available: (ctx) => ctx.signedIn,
+        read: (p) => showProfilePictureEnabled(p),
+        write: (p, v) => ({ ...p, showProfilePicture: v }),
+        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
       },
       {
         kind: 'trash',
@@ -782,6 +947,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
         helpArticle: 'trash',
       },
+      // One row per provider, from the Cloud Sync catalogue.
+      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
+        kind: 'cloudSync',
+        key: `cloudSync-${p.id}`,
+        provider: p.id,
+        section: CLOUD_SYNC_SECTION,
+        label: p.label,
+        keywords: p.keywords,
+        description: p.description,
+        helpArticle: p.helpArticle,
+        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
+      })),
       {
         kind: 'deleteAccount',
         key: 'deleteAccount',
@@ -790,6 +967,22 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
           'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+      },
+    ],
+  },
+  {
+    id: 'tokens',
+    label: 'API Tokens',
+    rows: [
+      {
+        kind: 'tokens',
+        key: 'apiTokens',
+        keywords: 'api token key mcp integration script developer access create revoke secret',
+        label: 'API Tokens',
+        description:
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Treat one like a password. Each expires six months after it is created, and you can revoke any of them at any time.',
+        helpArticle: 'apiTokens',
+        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },
@@ -812,6 +1005,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
 ];
+
+// Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
+function titleCase(label: string): string {
+  return label.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
+// (docs/specs/007-editor/user-preferences.md).
+export function settingsSectionId(section: string): string {
+  return section.trim().toLowerCase().replace(/\s+/g, '-');
+}
 
 // The categories actually offered right now, with each one's rows filtered to
 // those that apply. AI only appears when the api worker advertises the

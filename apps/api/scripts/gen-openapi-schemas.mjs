@@ -36,6 +36,8 @@ export const ROOT_TYPES = [
   'Folder',
   'CustomTheme',
   'CustomThemeDefinition',
+  'ShapeLibrary',
+  'ShapeLibraryItem',
   'ShareLink',
   'ShareLinkExpiry',
   'ShareRole',
@@ -43,9 +45,9 @@ export const ROOT_TYPES = [
   'TimelineEvent',
   'ActivityAction',
   'ActivityThread',
+  'HomeResponse',
+  'HomeTimelinePage',
   'ImageSummary',
-  'ChangeLogEntry',
-  'ChangeLogKind',
   'SharedWithItem',
   'ParticipantRecord',
   'Team',
@@ -62,6 +64,10 @@ export const ROOT_TYPES = [
   'ReadNotesResponse',
   'CapabilitiesResponse',
   'UnfurlResult',
+  'DriveConnection',
+  'DriveItem',
+  'DriveLease',
+  'DriveAccessToken',
 ];
 
 // Code names that differ from the published component name. The document's TypeScript type is

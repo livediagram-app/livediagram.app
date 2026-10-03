@@ -69,6 +69,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Auto-Attach Arrows',
       'Arrows re-attaching to the nearest shape.',
     ),
+    changed(
+      'WhiteboardDockPosition',
+      'Whiteboard Dock Position',
+      'A whiteboard dock moved to the top or the bottom.',
+    ),
     toggle(
       'UI',
       'PowerUserModeOn',
@@ -95,9 +100,18 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  changed('PanelLayout', 'Panel Layout', 'Floating, Minimal or Toolbar chrome.'),
+  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
+  changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),
+  changed('UiScalePanels', 'Panel Scale', 'The panels\u2019 own size slider.', true),
+  changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar\u2019s own size slider.', true),
+  changed(
+    'UiScaleCornerButtons',
+    'Corner Buttons Scale',
+    'The bottom-right buttons\u2019 own size slider.',
+    true,
+  ),
 ]);
 
 export const CONTROLS_SETTINGS = settingsStack(
@@ -130,7 +144,7 @@ export const KEYBOARD_SETTINGS = settingsStack(
 
 export const PANELS_SETTINGS = settingsStack(
   'Panels Settings',
-  'What the Layers, Activity and minimap panels show.',
+  'What the Layers and minimap panels show.',
   [
     toggle(
       'UI',
@@ -152,13 +166,6 @@ export const PANELS_SETTINGS = settingsStack(
       'LayerHoverPreviewOff',
       'Preview Layer on Hover',
       'Highlighting a layer\u2019s elements on hover.',
-    ),
-    toggle(
-      'UI',
-      'ActivityRevertPreviewOn',
-      'ActivityRevertPreviewOff',
-      'Preview Revert on Hover',
-      'Previewing a revert from the Activity panel.',
     ),
     toggle(
       'UI',
@@ -209,6 +216,13 @@ export const NOTIFICATION_SETTINGS = settingsStack(
       'NotifyActionAssignedOff',
       'Someone Assigns Me an Action',
       'The action-assigned email.',
+    ),
+    toggle(
+      'UI',
+      'ShowProfilePictureOn',
+      'ShowProfilePictureOff',
+      'Show My Profile Picture',
+      'Whether signed-in collaborators see your profile picture.',
     ),
     toggle(
       'UI',

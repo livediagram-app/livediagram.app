@@ -146,7 +146,6 @@ describe('SettingsDialog', () => {
     const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
     expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
       'Layers',
-      'Activity',
       'Map',
       'Collaborate',
       'Quick Style',

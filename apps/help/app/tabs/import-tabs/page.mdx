@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene (including a PNG or SVG exported with the scene) into the active tab, either by pasting the text or picking a file. Images in the file come across into your gallery. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene (including a PNG or SVG exported with the scene), or a draw.io diagram into the active tab, either by pasting the text or picking a file, or paste a drawing copied in Excalidraw straight onto the canvas. Images in the file come across into your gallery. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, or an Excalidraw scene, images included, into the active tab."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, or a draw.io diagram, images included, into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -25,9 +25,24 @@ From the tab ellipsis menu, expand the **Content** section and choose **Import**
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie, …) aren't supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
-- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, groups, freehand drawings, and images. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes.
+- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. In [Draw mode](/help/canvas/draw-mode/) it comes in as pen marks; in Diagram mode as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
+- **draw.io** reads a diagram from [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins): a `.drawio` or `.xml` file, compressed or not, or a PNG or SVG exported with **Include a copy of my diagram** ticked. See [Importing from draw.io](#importing-from-draw-io) below.
+
+## Paste from Excalidraw
+
+You don't need a file to bring a drawing across. In Excalidraw, select what you want and copy it (Ctrl+C, or Cmd+C on a Mac), then click into a livediagram tab and paste (Ctrl+V or Cmd+V). The drawing lands where your pointer is, or in the middle of the view, and stays selected so you can move or restyle it at once. One undo takes the whole paste back.
+
+- On a **whiteboard**, strokes become pen strokes, text becomes text boxes that fit their words, and Excalidraw's black ink follows the board: dark on a light board, light on a dark one. Its blue, green, red and orange become the matching pen colours.
+- On a **diagram tab**, the drawing comes in as diagram elements, just as importing the file would.
+- You can also **drag** a `.excalidraw` file, or a PNG or SVG exported from Excalidraw with **Embed scene** on, straight onto the canvas.
+
+When something couldn't come across exactly (Excalidraw groups, for example), a small note at the bottom of the canvas lists what changed. Pasting adds to the tab; it never replaces what is already there.
 
 Each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+
+## Excalidraw files as new documents
+
+To bring whole boards across without opening a document first, use the [Explorer page](/help/explorer/explorer-page/): next to **Help** at the top right, **Import from** has an **Excalidraw** button (hover it to see its name). Choose one or more `.excalidraw` files, or PNG or SVG images exported from Excalidraw with **Embed scene** on, or drop them onto the panel. Each file becomes **its own document** with one tab that opens in [Draw mode](/help/canvas/draw-mode/), named after the file. A file Excalidraw named for you, such as `Untitled-2026-04-12-1430`, becomes "Excalidraw board, 12 Apr 2026", dated when you saved it. From inside a folder, the new documents go into that folder. When the import finishes, it lists the new documents so you can open them, and any file it couldn't read, with the reason.
 
 ## Images in an imported file
 
@@ -37,13 +52,33 @@ While the images save, the panel counts them ("Importing images 3 of 12…"). Wh
 
 In an [offline document](/help/privacy-and-security/offline-mode/), images are kept inside the document in this browser instead of your gallery, up to a limit for each import.
 
-<Figure caption="The Content section of the tab menu opens Import, offering JSON, Mermaid, Markdown, and Excalidraw. Each opens a panel to paste the text or pick a file.">
+<Figure caption="The Content section of the tab menu opens Import, offering JSON, Mermaid, Markdown, Excalidraw, and draw.io. Each opens a panel to paste the text or pick a file.">
   <ImportMenu />
 </Figure>
 
+## Importing from draw.io
+
+To bring many draw.io files across at once, each as its own document, use [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page.
+
+A draw.io file can hold several pages. **The first page replaces the active tab, and every further page becomes a new tab** right after it, named after its page, so a three-page file arrives as three tabs. One undo takes the whole import back, new tabs included, and links between pages become links between the tabs.
+
+What carries over:
+
+- **Shapes** keep their kind, size, position, colours, borders, rounded corners, rotation, opacity and shadow. Flowchart shapes (process, decision, terminator, document, database, data) map one to one; less common ones come in as the nearest livediagram shape.
+- **Text** keeps its formatting: bold, italic, underline, colours, links, headings and lists in rich labels, plus font size and alignment.
+- **Connections** follow the route draw.io itself draws: the same corners, curves and shared trunks, attached to the shapes (or other connections) they join at the nearest connection point, with their arrowheads, line style and labels where draw.io puts them.
+- **Swimlanes** become lanes, with an upright title down the side where draw.io writes it upright, **UML classes and ER entities** become records with one row per field, **tables** become tables, and draw.io **layers** become the tab's layers, hidden and locked ones included.
+- **Cloud and network icons** (AWS, Azure, Kubernetes, servers, users and more) become the matching livediagram icon where there is a clear match. A stencil with no match comes in as a labelled box, so nothing disappears.
+- **Colours left at draw.io's default** take on your tab's theme, like anything drawn in livediagram, and so do near-black text and near-white panels, which draw.io's own dark mode turns too. Other colours you picked in draw.io stay as they were.
+- **Text keeps its room.** livediagram's text is a little larger than draw.io's, so the whole page is scaled up to match, and every label fits its shape as it did in draw.io.
+
+Pictures embedded in the diagram come across like any imported board's [images](#images-in-an-imported-file): resized and saved to your gallery. Pictures linked from the web, or from draw.io's own icon library, are never fetched; they come in as placeholders.
+
+When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), arrowheads livediagram draws differently, labels shortened to fit their shapes, hidden items left out, and so on.
+
 ## Import replaces the tab
 
-Importing **replaces the active tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with a warning naming the tab about to be overwritten, so you can back out before committing. If you want to keep the current canvas, add a new tab first and import into that.
+Importing **replaces the active tab's contents** with what comes in, it does not merge (a multi-page draw.io file also adds a tab for each further page). Because that is destructive, the dialog leads with a warning naming the tab about to be overwritten, so you can back out before committing. If you want to keep the current canvas, add a new tab first and import into that.
 
 Import is unavailable while a tab is locked, since a locked tab is protected from edits.
 

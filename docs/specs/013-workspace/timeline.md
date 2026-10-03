@@ -1,9 +1,10 @@
 # Timeline
 
-The Explorer's landing page becomes a chronological feed of everything
-that has happened across the user's documents, teams, and account —
-grouped by day as a grid of cards, stacked when a day gets busy, and
-switchable into a calendar month grid.
+The Timeline is a chronological feed of everything that has happened
+across the user's documents, teams, and account, grouped by day as a
+grid of cards, stacked when a day gets busy, and switchable into a
+calendar month grid. Its page is **All activity**, reached from Home
+([Explorer Home](explorer-home.md), §8).
 
 Modelled on the Timeline subsystem in the Manager Toolkit monorepo
 (`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
@@ -31,11 +32,11 @@ has happened since they were last here**, not just a list of files.
 
 ## Non-goals
 
-- **Not a replacement for the Activity Panel** ([Activity and audit log](../012-collaboration/activity-and-audit.md)). That panel is
-  element-level, tab-scoped, and revertable — a precision instrument for
-  one document. The Timeline never renders an element diff and never
-  offers Revert. Document editing appears here as one coalesced "worked
-  on" event per person per document per day (§4.2).
+- **Not an element-level audit log.** The Timeline never renders an
+  element diff and never offers Revert. Document editing appears here as
+  one coalesced "worked on" event per person per document per day (§4.2).
+  (The editor's per-tab Activity panel, which did keep element diffs with
+  per-entry revert, was removed on 2026-10-03.)
 - **Not realtime.** No Durable Object fan-out, no per-user socket. The
   feed is read on load, with a Refresh button and a stale-read refresh
   (§6.3). livediagram's realtime rooms are per-document; a per-user
@@ -89,8 +90,7 @@ v1 ships exactly one scope type: `user`, where `scopeId` is an owner id.
 The Timeline page reads `user:<caller>`.
 
 `scopeType` is a free-text column with no CHECK constraint, so a later
-per-document timeline (`document:<id>`, a natural second home for the
-Activity Panel's data) or a team activity feed (`team:<id>`) is a new
+per-document timeline (`document:<id>`) or a team activity feed (`team:<id>`) is a new
 scope value plus a renderer — no migration, no change to the read path.
 That is the whole reason for the join table below; see §3.4.
 
@@ -490,7 +490,11 @@ popover is clipped no matter its z-index.
   header carries one too (§2.3).
 - **Empty (all filtered out)**: "No events match these filters", with a
   Clear filters action. Distinct copy from the new-user case, so the
-  user isn't told they have no history when they do.
+  user isn't told they have no history when they do. The filters run on
+  the loaded pages only, so while the read still returns a cursor the
+  copy is "No matches in the events loaded so far" instead, and Show
+  more (§2.3) stays under it: claiming nothing matches while older
+  pages are unread is the same lie in a smaller voice.
 - **Failed**: "Couldn't load your timeline", with a Try again action.
   **A read that failed must never render as an empty feed.** The first
   version of this surface mapped every failure — offline, an expired
@@ -620,6 +624,11 @@ because _you_ renamed something is noise — and caps at 99.
 Only the `user` scope carries a watermark. A shared team feed has no
 single "here" to have been last at.
 
+Viewing [Explorer Home](explorer-home.md#unread) moves the same mark, by
+the same rules (once per 60-second visit window, returning the value
+from before the read): Home shows the same other-people news, so having
+read it there is having read it.
+
 ### 2.6 Motion
 
 Cards fan in rather than appearing at once: each starts pulled to the
@@ -729,14 +738,14 @@ team folder) gets the one-verb menu below.
 kind of thing**, resolved from the Explorer's own state and run through
 the Explorer's own handlers (`useTimelineEntityMenus`):
 
-| Card                                   | Verbs                                                                                  |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| API token (created, expiring)          | Open Tokens · **Revoke Token** (confirmed with the Tokens pane's own warning)          |
-| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                   |
-| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                  |
-| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme |
-| Images uploaded                        | Open Images                                                                            |
-| Document the Explorer can't resolve    | Open Document                                                                          |
+| Card                                   | Verbs                                                                                                    |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| API token (created, expiring)          | Open API Tokens (Settings, in place) · **Revoke Token** (confirmed with the token manager's own warning) |
+| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                                     |
+| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
+| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
+| Images uploaded                        | Open Images                                                                                              |
+| Document the Explorer can't resolve    | Open Document                                                                                            |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
 verbs last, red, under their own separator, the way the document menu
@@ -827,7 +836,7 @@ CREATE TABLE timeline_events (
   dedupe_key   TEXT NOT NULL DEFAULT '',  -- '' for one-shot events; see §4.2
   title        TEXT NOT NULL,
   description  TEXT,
-  occurred_at  INTEGER NOT NULL,          -- epoch ms, matching change_log
+  occurred_at  INTEGER NOT NULL,          -- epoch ms
   snapshot     TEXT NOT NULL,             -- JSON extras for the renderer
   created_at   INTEGER NOT NULL,
   UNIQUE (source_type, source_id, event_type, dedupe_key)
@@ -859,7 +868,7 @@ today. The idempotency the empty key buys — a retry or a backfill
 overlap landing on the existing row — only matters for events the
 backfill writes, and it writes none of these.
 
-`occurred_at` is epoch ms, matching `change_log` rather than the ISO
+`occurred_at` is epoch ms rather than the ISO
 strings Manager Toolkit uses. Manager Toolkit has a whole normalisation
 helper because SQLite defaults, `toISOString()`, and date-only columns
 produce three lexically-incomparable formats in one column. An integer
@@ -901,6 +910,7 @@ CREATE TABLE timeline_scope_state (
   scope_id         TEXT NOT NULL,
   backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
   last_refreshed_at INTEGER,
+  frecency_seeded_at INTEGER,             -- user scope only: Explorer Home seeded Jump back in (migration 0063)
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
@@ -915,10 +925,9 @@ The join table and the free-text `scope_type` were the forward plan, and
 two of the three have since shipped:
 
 - **A per-document timeline** (`scope_type = 'document'`) — every document
-  keeps its own history, surfaced from the row menu as **History**. The
-  Activity Panel's element diffs stay where they are; this carries the
-  _document-level_ events [Activity and audit log](../012-collaboration/activity-and-audit.md) explicitly lists as out of scope for
-  its V1 (rename, share toggle, theme change). Its read gate defers to
+  keeps its own history, surfaced from the row menu as **History**. It
+  carries _document-level_ events (rename, share toggle, theme change),
+  never element diffs. Its read gate defers to
   the document's OWN gate rather than re-deriving one, which is what lets
   a share-link visitor read the history of a document they can open but
   which sits in nobody's `user` scope.
@@ -1008,11 +1017,9 @@ Favourites are not built. Everything here is additive.
   `ON DELETE CASCADE` makes the order safe regardless; run them
   explicitly for clarity.
 - **Retention is 365 days.** A daily sweep deletes events older than
-  that. It joins the existing 03:00 UTC cron that already prunes
-  `change_log` at 90 days ([Activity and audit log](../012-collaboration/activity-and-audit.md)), running immediately after it.
-  365 rather than 90 because a timeline's value is partly "when did I
-  last touch this" and a year is the natural unit for that question,
-  where an element-level audit trail's value decays in weeks.
+  that. It runs on the api worker's daily 03:00 UTC cron. 365 days
+  because a timeline's value is partly "when did I last touch this" and
+  a year is the natural unit for that question.
 
 ## 4. Event catalogue
 
@@ -1106,9 +1113,8 @@ whatever the server held is gone, so its prior events would point at a 404.
 is the highest-volume write in the product and a naive emit would bury
 everything else even with stacking.
 
-- Emitted from the tab-save path (`upsertTab`), not from
-  `change_log` — the log is tab-scoped and 90-day, and reading it back
-  to derive a daily rollup would be a join per save.
+- Emitted from the tab-save path (`upsertTab`), the one write every
+  edit goes through.
 - `dedupe_key = "<actorId>:<YYYY-MM-DD>"` in UTC. The first save of the
   day inserts; every later save that day hits the `UNIQUE` constraint
   and **updates** `occurred_at` to now and bumps a `saves` counter in
@@ -1122,6 +1128,13 @@ everything else even with stacking.
   no user edits to preserve — nothing is attached to the row that a
   mutation could invalidate. If favourites ever land (§3.4), this
   event's mutation needs revisiting.
+
+**A person's own opens are recorded here but are not part of this feed.** [Explorer Home](explorer-home.md#opens)
+keeps a coalesced `document_opened` row per person per document per UTC day, in that person's `user` scope only
+(opens are private), so its Timeline column reads one table for created, updated and opened. It is outside the
+feed's vocabulary: `readTimeline` and `countUnseen` leave it out the way they leave out legacy renames, and no
+renderer, tone or chip knows it. Deletion, retention, the document sweep and sign-up migration treat it like every
+other row.
 
 Offline documents ([Offline Mode](../006-document/offline-mode.md)) live only in IndexedDB and never reach the
 worker, so they emit nothing. Their absence from the Timeline is
@@ -1160,6 +1173,11 @@ email notification in [Transactional & lifecycle email (Resend)](../014-identity
 comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
 as the document itself.)
+
+A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
+`action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no
+account yet). Both are what [Explorer Home](explorer-home.md)'s What happened needs to say "replied" and "assigned
+you an action"; rows written before them read as "commented" and "assigned an action".
 
 Assigned actions ([Assigned actions](../012-collaboration/assigned-actions.md)) are likewise element-JSON, diffed on save
 the same way. `apps/api/src/routes/team-action-routes.ts`'s
@@ -1299,7 +1317,14 @@ documents is a broken-looking feature. On the first read of a scope
 - For the caller's 200 most recently updated documents: a
   `document_created` event at `documents.created_at`, and a
   `document_edited` event at `updated_at` with the matching
-  `<actorId>:<date>` dedupe key.
+  `<actorId>:<date>` dedupe key. The worker cannot know who made that
+  last save, so the edit is a reconstruction: its snapshot carries
+  `backfilled: true`, and it never overwrites a real edit already
+  recorded for that day. A real edit landing on it later replaces the
+  snapshot and so the mark. [Explorer Home](explorer-home.md) counts
+  only real edits; rows backfilled before the mark existed were marked
+  once by migration 0063 (an edit stored more than a minute after the
+  time it claims to have happened).
 - For each team the caller has joined: a `team_member_joined` event at
   their `team_members.created_at`.
 - Nothing else. Comments and actions are inside tab JSON and
@@ -1400,7 +1425,7 @@ is the whole story.
 
 `TimelineEvent`, `TimelineScopeRef`, `TimelineReadResult`, and
 `TIMELINE_PAGE_SIZE` / `TIMELINE_PAGE_MAX` go in
-`@livediagram/api-schema` alongside `ChangeLogEntry`, per the existing
+`@livediagram/api-schema`, per the existing
 convention that every DTO the worker emits and the editor consumes
 lives there.
 
@@ -1454,9 +1479,8 @@ route. The one thing a renderer can't supply, the ⋯ menu, comes in
 through the separate `cardSlots` hook (§2.8), because it needs the
 Explorer's loaded lists and handlers rather than the event alone.
 
-This split is what lets a per-document timeline (§3.4) or the editor's
-Activity Panel adopt the same components later without either one
-inheriting Explorer-specific copy.
+This split is what lets a per-document timeline (§3.4) adopt the same
+components without inheriting Explorer-specific copy.
 
 **Colour.** Each tone gets a CSS variable pair
 (`--ld-timeline-<tone>` and `--ld-timeline-<tone>-soft`) defined in the
@@ -1476,69 +1500,56 @@ feed vanishing and coming back.
 
 ## 8. Explorer integration
 
-### 8.1 Timeline becomes the landing view
+### 8.1 Home is the landing view; the feed is All activity
 
-The default lands in three places, all of which must change together
-(they exist because a static export has no single entry point):
+The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. A static export has no single
+entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
+(`apps/live/lib/explorer-landing.ts`):
 
-1. `apps/live/src/worker.ts` — the `/explorer` → `/explorer/recent`
-   302 becomes `/explorer/timeline`.
-2. `apps/live/app/explorer/page.tsx` — the client `router.replace`
-   fallback for the dev server and direct asset hits.
-3. `apps/live/app/explorer/routes.ts` — `selectedFromRoute`'s
-   `default:` case, which catches mangled URLs and id-less
-   `folder`/`team` links, returns `{ kind: 'timeline' }`.
+1. `apps/live/src/worker.ts`: the `/explorer` 302.
+2. `apps/live/app/explorer/page.tsx`: the client `router.replace` fallback for the dev server and direct asset hits.
+3. `scripts/e2e-stack.mjs`: the end-to-end stack's stand-in for the worker.
 
-**Recent is not removed.** It keeps its route, its sidebar row, and its
-badge. It answers a different question ("what did I touch last") and
-answers it better than a feed does.
+`apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
+`folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
+
+The feed keeps its route, `/explorer/timeline`, and its page is titled **All activity** (heading, document title and
+breadcrumb, **Home › All activity**). Home says what the person was working on and what others did; All activity is
+the whole record, the person's own doings included, with its filters, calendar and paging.
+
+**Recent is not removed.** It keeps its route (`/explorer/recent`); it answers a different question ("what did I
+touch last"). It has no sidebar row.
 
 ### 8.2 Sidebar
 
-Quick find gains Timeline at the top and **Favourites moves into it**:
+The feed has **no sidebar row**. It is reached from Home: What happened's quiet **See all activity** link opens it.
+The sidebar's **Home** row ([Explorer structure](explorer-structure.md)) opens Home, and carries this feed's unread
+badge:
 
-```
-Quick find
-  ⏱  Timeline          ← new, and the landing view
-  🕐  Recent
-  ★  Favourites        ← moved up from Personal Space › Dynamic
-  ↗  Shared with you
-
-Personal Space
-  ⊞  Dynamic
-     ▫ Unsorted
-     ✨ Generated
-     ⬒  Offline
-  … root folders
+```text
+Overview
+  ⌂  Home              ← Home, the landing view; badge: unread feed events
+  ◔  Activity
+  ↗  Shared with me
 ```
 
-Favourites is a user's own curated shortlist, not a synthetic view of
-where a document happens to sit, so it belongs beside Recent rather than
-buried a level down among Unsorted / Generated / Offline. The Dynamic
-parent's badge stops adding `favouriteCount` when it does.
-
-Timeline **does** carry an unread badge. This section deferred it ("an
-unread count needs a per-user last-seen marker, which is a preference
-write on every visit"), and the objection turned out not to hold: the
-marker is `timeline_scope_state.last_seen_at`, a row the read already
-touches, so it costs no extra write — and without it the feed could not
-answer the question it exists for, since new and old looked identical.
-The badge counts only OTHER people's events (a number that rises because
-you renamed something is noise) and reads from its own cheap endpoint
-rather than a field on the feed, because it renders on every Explorer
-section and must not drag a feed nobody is looking at.
+The badge counts only OTHER people's events since the reader last looked (§2.5). Viewing Home counts as having
+looked, exactly as reading this feed does ([Explorer Home](explorer-home.md) "Unread"). The marker is
+`timeline_scope_state.last_seen_at`, a row the read already touches, so it costs no extra write; the badge reads from
+its own cheap endpoint rather than a field on the feed, because it renders on every Explorer section and must not
+drag a feed nobody is looking at.
 
 ### 8.3 The section checklist
 
-Adding the section touches the same files every Explorer section does:
+Adding an Explorer section touches the same files every section does:
 `views.tsx` (the `SelectedNode` union), `routes.ts` (both directions),
-`apps/live/app/explorer/timeline/page.tsx` (the route stub),
-`ExplorerSidebar.tsx`,
-`components/primitives/explorer-icons.tsx`, `useExplorerPane.ts` (pane content, title, crumbs),
-`ExplorerPane.tsx` (dispatch — Timeline is not a `BROWSE_KIND`),
+`apps/live/app/explorer/<section>/page.tsx` (the route stub),
+the sidebar group that holds its row, if it has one (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
+`components/primitives/explorer-icons.tsx`, `view-titles.ts` and `useExplorerPane.ts` (pane content, title, crumbs),
+`ExplorerPane.tsx` (dispatch; neither Home nor the feed is a `BROWSE_KIND`),
 `ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`.
 
-The pane is lazy-loaded like `ProfilePane` / `TeamPane`, so the
+The feed's pane is lazy-loaded like `ProfilePane` / `TeamPane`, so the
 calendar grid and mini-calendar chunk stays off the critical path for
 users who never switch modes.
 
@@ -1570,8 +1581,8 @@ New category `Timeline` in the closed enum in
 `@livediagram/api-schema` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Existing actions cover it:
 
 - `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
-  it was the default landing view, `Nav` when reached from the sidebar,
-  so the landing-page change is measurable.
+  the page load started on it, `Nav` when reached from elsewhere (Home's
+  See all activity link).
 - `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
 - `Timeline`/`Selected` with `type` the source type — a filter chip
   toggled.

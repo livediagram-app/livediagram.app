@@ -42,3 +42,12 @@ describe('Button label', () => {
     expect(container.querySelector('a > .text-optical-line')?.textContent).toBe('Start drawing');
   });
 });
+
+// A button busy with its own action keeps focus: `aria-disabled` looks
+// disabled without dropping focus the way `disabled` does.
+describe('Button aria-disabled', () => {
+  it('looks disabled', () => {
+    const { container } = render(<Button aria-disabled>Sync now</Button>);
+    expect(container.querySelector('button')!.className).toContain('aria-disabled:opacity-50');
+  });
+});

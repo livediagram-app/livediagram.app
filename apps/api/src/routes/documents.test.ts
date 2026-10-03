@@ -13,8 +13,8 @@ import type { DocumentDTO } from '../types';
 //     edit paths)
 //   - success with no body           -> 204
 // These cases pin that mapping across one representative route per
-// guard shape, so the requireOwner / requireOwnedDocument /
-// requireDocumentGrant extraction can't silently swap a 403 for a 404
+// guard shape, so the requireOwner / requireOwnedDocument
+// extraction can't silently swap a 403 for a 404
 // (which would leak existence) or drop a missingAuth (which would let
 // an unauthenticated caller through).
 
@@ -42,8 +42,6 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     getTab: vi.fn(),
     upsertTab: vi.fn(),
     getParticipant: vi.fn(),
-    listChangeLog: vi.fn(),
-    insertChangeLogEntry: vi.fn(),
     // Share-link create / extend surface (docs/specs/013-workspace/share-link-expiry.md).
     createShareLink: vi.fn(),
     generateShareCode: vi.fn(() => 'CODE2345'),
@@ -59,7 +57,6 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md).
     copyDocument: vi.fn(),
     listSharedWith: vi.fn(),
-    deleteChangeLogEntry: vi.fn(),
     deleteTabRow: vi.fn(),
     deleteShareLinksForTab: vi.fn(async (): Promise<string[]> => []),
     rescopeShareLink: vi.fn(),
@@ -188,7 +185,7 @@ describe('GET /documents/:id/thumbnail (docs/specs/006-document/document-snapsho
       makeCtx('GET', '/api/documents/d1/thumbnail', { owner: 'intruder' }),
     );
     expect(res.status).toBe(404);
-    expect(res.headers.get('Cache-Control')).toBeNull();
+    expect(res.headers.get('Cache-Control')).toBe('no-cache');
   });
 });
 
@@ -624,138 +621,6 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
   });
 });
 
-describe('handleDocuments gated change-log (GET/POST /documents/:id/log)', () => {
-  it('403 when the edit gate denies', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('someone-else'));
-    canEditDocument.mockResolvedValue(false);
-    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log'));
-    expect(res.status).toBe(403);
-  });
-
-  it('200 listing when the edit gate allows', async () => {
-    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-    canEditDocument.mockResolvedValue(true);
-    db.listChangeLog.mockResolvedValue([]);
-    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log'));
-    expect(res.status).toBe(200);
-  });
-
-  // A valid entry per parseChangeLogEntryBody; `summary` is where the bulk
-  // goes in these tests because nothing downstream bounds its length.
-  const logEntry = (summary: string) => ({
-    id: 'l1',
-    participantId: 'p1',
-    participantName: 'Ann',
-    participantColor: '#000000',
-    kind: 'edit',
-    summary,
-    elementIds: ['e1'],
-    beforeState: {},
-    afterState: {},
-  });
-
-  describe('per-entry byte cap', () => {
-    beforeEach(() => {
-      db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
-      canEditDocument.mockResolvedValue(true);
-      db.getParticipant.mockResolvedValue(null);
-      db.insertChangeLogEntry.mockResolvedValue(undefined);
-    });
-
-    it('413s an oversized entry that arrives without a Content-Length header', async () => {
-      // The regression. `Number(headers.get(absent))` is 0, which is finite,
-      // so `0 > cap` was false and a chunked POST bypassed the only cap on
-      // this route — there was no body-measured fallback at all. A Request
-      // built with a body carries no Content-Length, so this is the real shape.
-      const res = await handleDocuments(
-        makeCtx('POST', '/api/documents/d1/log', {
-          body: logEntry('x'.repeat(300 * 1024)),
-        }),
-      );
-      expect(res.status).toBe(413);
-      expect(await res.json()).toEqual({ error: 'payload_too_large' });
-      expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
-    });
-
-    it('413s before parsing when the caller declares an oversized length', async () => {
-      // The cheap pre-parse path, kept: a declared length over the cap is
-      // rejected without stringifying anything.
-      const res = await handleDocuments(
-        makeCtx('POST', '/api/documents/d1/log', {
-          body: logEntry('small'),
-          headers: { 'Content-Length': String(300 * 1024) },
-        }),
-      );
-      expect(res.status).toBe(413);
-      expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
-    });
-
-    it('still writes an ordinary entry that declares no Content-Length', async () => {
-      // Making the fallback reachable must not start rejecting the normal
-      // case, which is every entry the editor writes.
-      const res = await handleDocuments(
-        makeCtx('POST', '/api/documents/d1/log', { body: logEntry('Moved 1 element') }),
-      );
-      expect(res.status).toBe(201);
-      expect(db.insertChangeLogEntry).toHaveBeenCalled();
-    });
-  });
-});
-
-describe("POST /documents/:id/log checks the entry's tab belongs to the document", () => {
-  const entryOn = (tabId: string | null) => ({
-    id: 'l1',
-    tabId,
-    participantId: 'p1',
-    participantName: 'Ann',
-    participantColor: '#000000',
-    kind: 'edit',
-    summary: 'Moved 1 element',
-    elementIds: ['e1'],
-    beforeState: {},
-    afterState: {},
-  });
-  const withTabs = (ids: string[]) =>
-    ({ ...fakeDocument('owner-1'), tabs: ids.map((id) => ({ id })) }) as unknown as DocumentDTO;
-
-  beforeEach(() => {
-    canEditDocument.mockResolvedValue(true);
-    db.getParticipant.mockResolvedValue(null);
-    db.insertChangeLogEntry.mockResolvedValue(undefined);
-  });
-
-  it('409s tab_not_saved for a tab the document does not have yet, without writing', async () => {
-    // The production 500: the editor logs a new tab's first edit before the
-    // debounced autosave has created the tab row, and the insert failed its
-    // foreign key. Also the cross-document write: a tab from another document
-    // is not linked here either.
-    db.getDocument.mockResolvedValue(withTabs(['t1']));
-    const res = await handleDocuments(
-      makeCtx('POST', '/api/documents/d1/log', { body: entryOn('t-other') }),
-    );
-    expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({ error: 'tab_not_saved' });
-    expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
-  });
-
-  it("writes an entry on one of the document's own tabs", async () => {
-    db.getDocument.mockResolvedValue(withTabs(['t1']));
-    const res = await handleDocuments(
-      makeCtx('POST', '/api/documents/d1/log', { body: entryOn('t1') }),
-    );
-    expect(res.status).toBe(201);
-    expect(db.insertChangeLogEntry).toHaveBeenCalled();
-  });
-
-  it('writes a tab-less entry', async () => {
-    db.getDocument.mockResolvedValue(withTabs([]));
-    const res = await handleDocuments(
-      makeCtx('POST', '/api/documents/d1/log', { body: entryOn(null) }),
-    );
-    expect(res.status).toBe(201);
-  });
-});
-
 describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document/offline-mode.md)', () => {
   // The offline record is deleted once the create succeeds, so the deck and
   // folder have to arrive with it.
@@ -778,12 +643,55 @@ describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document
     expect(stored().folderId).toBe('f1');
   });
 
-  it("files into Unsorted rather than a folder that isn't theirs", async () => {
+  it("refuses a folder that isn't theirs by name, writing nothing", async () => {
+    // docs/specs/013-workspace/folders.md "Placement on create": never filed elsewhere instead.
+    // The sync itself refiles at the root on this refusal (lib/offline/offline-convert.ts).
     db.getDocument.mockResolvedValue(null);
     db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'someone-else', teamId: null });
     const res = await create({ folderId: 'f1' });
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'folder_not_found' });
+    expect(db.upsertDocumentMeta).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/015-api/api.md "Document dates": an imported board keeps its own dates.
+describe('POST /documents carrying its own dates', () => {
+  const create = (body: Record<string, unknown>) =>
+    handleDocuments(
+      makeCtx('POST', '/api/documents', { body: { id: 'd1', name: 'Doc', ...body } }),
+    );
+  const stored = () => db.upsertDocumentMeta.mock.calls[0]![1] as Record<string, unknown>;
+  const createdAt = Date.UTC(2020, 7, 14);
+  const savedAt = Date.UTC(2021, 1, 3);
+
+  it('stores the board’s created and modified dates', async () => {
+    db.getDocument.mockResolvedValue(null);
+    const res = await create({ createdAt, savedAt });
     expect(res.status).toBe(201);
-    expect(stored().folderId).toBeNull();
+    expect(stored()).toMatchObject({ createdAt, savedAt });
+  });
+
+  it('refuses invalid dates whole, writing nothing', async () => {
+    db.getDocument.mockResolvedValue(null);
+    for (const body of [
+      { createdAt: '2020-08-14' },
+      { createdAt: Date.UTC(1999, 11, 31) },
+      { createdAt: Date.now() + 3 * 86_400_000 },
+      { createdAt: savedAt, savedAt: createdAt },
+      { savedAt },
+    ]) {
+      const res = await create(body);
+      expect(res.status).toBe(400);
+    }
+    expect(db.upsertDocumentMeta).not.toHaveBeenCalled();
+  });
+
+  it('modifies a re-committed document now, whatever dates it sends', async () => {
+    db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
+    const before = Date.now();
+    await create({ createdAt, savedAt });
+    expect(stored().savedAt as number).toBeGreaterThanOrEqual(before);
   });
 });
 
@@ -837,46 +745,6 @@ describe('a tab-scoped visitor', () => {
     const res = await handleDocuments(makeCtx('DELETE', '/api/documents/d1/tabs/t2', visitor));
     expect(res.status).toBe(403);
     expect(db.deleteTabRow).not.toHaveBeenCalled();
-  });
-
-  it('lists the log of its tab only', async () => {
-    db.listChangeLog.mockResolvedValue([]);
-    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log', visitor));
-    expect(res.status).toBe(200);
-    expect(db.listChangeLog).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
-  });
-
-  it('cannot log on another tab', async () => {
-    const res = await handleDocuments(
-      makeCtx('POST', '/api/documents/d1/log', {
-        ...visitor,
-        body: {
-          id: 'l1',
-          tabId: 't1',
-          participantId: 'p',
-          participantName: 'A',
-          participantColor: '#000000',
-          kind: 'edit',
-          summary: 'x',
-          elementIds: [],
-          beforeState: {},
-          afterState: {},
-        },
-      }),
-    );
-    expect(res.status).toBe(404);
-    expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
-  });
-
-  it('removes log entries on its tab only', async () => {
-    await handleDocuments(makeCtx('DELETE', '/api/documents/d1/log/e1', visitor));
-    expect(db.deleteChangeLogEntry).toHaveBeenCalledWith(expect.anything(), 'd1', 'e1', 't2');
-  });
-
-  it('a view-role scoped visitor still cannot read the log', async () => {
-    resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
-    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/log', visitor));
-    expect(res.status).toBe(403);
   });
 
   it('copies its tab only', async () => {

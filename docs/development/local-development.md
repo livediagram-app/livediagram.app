@@ -78,22 +78,27 @@ Workspace names follow the pattern `@livediagram/<app-or-package-folder-name>`.
 
 Run from the repo root:
 
-| Command                                    | What it does                                                                                                                                                                                                                                                 |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `pnpm install`                             | Install all workspace deps.                                                                                                                                                                                                                                  |
-| `pnpm dev`                                 | Start all dev servers in parallel (`turbo run dev`).                                                                                                                                                                                                         |
-| `pnpm build`                               | Production build across the repo (`turbo run build`).                                                                                                                                                                                                        |
-| `pnpm lint`                                | ESLint across the repo (`turbo run lint`).                                                                                                                                                                                                                   |
-| `pnpm typecheck`                           | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                               |
-| `pnpm test`                                | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                             |
-| `pnpm --filter @livediagram/live test:e2e` | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit. |
-| `pnpm format`                              | Prettier write across the repo.                                                                                                                                                                                                                              |
-| `pnpm format:check`                        | Prettier check (this is what CI runs).                                                                                                                                                                                                                       |
-| `pnpm staging:check`                       | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                   |
-| `pnpm licences`                            | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                         |
-| `pnpm icons:vendor`                        | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                              |
-| `pnpm icons:sheet`                         | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                              |
-| `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                       |
+| Command                                                                 | What it does                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install`                                                          | Install all workspace deps.                                                                                                                                                                                                                                                                                                                                                           |
+| `pnpm dev`                                                              | Start all dev servers in parallel (`turbo run dev`).                                                                                                                                                                                                                                                                                                                                  |
+| `pnpm build`                                                            | Production build across the repo (`turbo run build`).                                                                                                                                                                                                                                                                                                                                 |
+| `pnpm lint`                                                             | ESLint across the repo (`turbo run lint`).                                                                                                                                                                                                                                                                                                                                            |
+| `pnpm typecheck`                                                        | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                                                                                                                                        |
+| `pnpm test`                                                             | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
+| `pnpm --filter @livediagram/live perf:canvas`                           | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/live/test-results/perf/`. Needs a fresh `next build`; set `E2E_LIVE_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
+| `pnpm --filter @livediagram/live test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
+| `pnpm --filter @livediagram/live test:e2e:clerk-stub`                   | The signed-in specs (`apps/live/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @livediagram/live build:clerk-stub` first. Boots its own stack on `:3015` / `:8788` / `:3016`.                                                                                                                                                                                  |
+| `cd apps/live && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                              |
+| `pnpm format`                                                           | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
+| `pnpm format:check`                                                     | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
+| `pnpm staging:check`                                                    | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                                                                                                                                            |
+| `pnpm licences`                                                         | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                                                                                                                                                  |
+| `pnpm icons:vendor`                                                     | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                                                                                                                                                       |
+| `pnpm icons:sheet`                                                      | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                                                                                                                                                       |
+| `pnpm demo:sticky-vision`                                               | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                                                                                                                                                |
+| `pnpm bench:stroke-points`                                              | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-document/stroke-points.md)).                                                                                                                                                                           |
+| `pnpm --filter @livediagram/document stroke-points <file.json>`         | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                             |
 
 Turbo caches results, so re-running with no changes is a no-op.
 
@@ -129,14 +134,16 @@ Without these set: the api worker silently treats every request as a guest (the 
 
 ## Enabling AI assistance locally (optional)
 
-The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has an OpenAI key. To turn it on locally:
+The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
 
 ```sh
-# apps/api/.dev.vars (gitignored)
-AI_API_KEY=...            # any OpenAI-compatible provider's key
-# AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai  # optional; defaults to OpenAI
-# AI_MODEL=gpt-4o              # optional; defaults to gpt-4o
-# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
+# apps/api/.dev.vars (gitignored). One key serves every AI feature.
+OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=..., or both:
+#                              # the assistant then runs on OpenAI, the reader on Google
+# AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
+# AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
+# AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
+# AI_VISION_MODEL=...          # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
 #                              # On Google this defaults to gemini-2.5-flash-lite,
 #                              # which reads handwriting better than the big model.
 ```
@@ -153,6 +160,27 @@ pnpm --filter @livediagram/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
+The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/live test:e2e:drive`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `CLERK_JWKS_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test serves the JWKS (port 8795) and the fake Google (8796) itself. Rebuild the live app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3002 first (or set `E2E_LIVE_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
+
+`pnpm --filter @livediagram/live test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
+
+## Enabling the Google Drive mirror locally (optional)
+
+The mirror needs a Google Cloud OAuth client (web application) with `http://localhost:3000/drive/connected` as an authorised redirect URI and `http://localhost:3000` as a JavaScript origin, and the Drive API enabled:
+
+```sh
+# apps/api/.dev.vars (gitignored)
+GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+DRIVE_TOKEN_KEY=...        # openssl rand -base64 32
+
+# apps/live/.env.local (gitignored)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
+NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
+```
+
+It is signed-in only, so Clerk must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
+
 ## Trying the photo import without an AI key
 
 The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
@@ -167,6 +195,10 @@ E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2
 `E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
 on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
+
+`E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
+`.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
+verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
 To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every

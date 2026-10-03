@@ -19,6 +19,8 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { SwatchOverrideStore } from './swatch-overrides';
+import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
+import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
@@ -66,8 +68,6 @@ export type UserPreferences = {
   // Layers: the panel, its cluster button, "Move to layer" in the element
   // menus and the export's "Hidden layers" row. Layers still apply.
   layersPanelEnabled?: boolean;
-  // Activity: the panel and its button. Undo / Redo stay.
-  activityPanelEnabled?: boolean;
   // Collaborate: the panel and its button. Comments and actions stay.
   collaboratePanelEnabled?: boolean;
   // Quick style: the selection's style panel. Style memory stays.
@@ -83,27 +83,29 @@ export type UserPreferences = {
   // popover can hide them. Missing / undefined / true === shown (the
   // default); an explicit false hides them.
   aiSuggestedPrompts?: boolean;
-  // Minimal panel layout (docs/specs/008-canvas/canvas-and-palette.md). When `true`, the floating panels
-  // (Explorer, Palette, Editor, AI) are replaced by a compact button
-  // row that opens each panel as a popover on click. Always active on
-  // mobile regardless of this setting. Missing / undefined / false ===
-  // standard floating panels on desktop. Legacy since docs/specs/007-editor/toolbar-layout.md: kept in
-  // step with `panelLayout` (true only for 'minimal') so older
-  // readers still see a sensible layout. Read the layout through
-  // `resolvePanelLayout`, never this flag directly.
-  minimalPanels?: boolean;
-  // Desktop panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (default), 'minimal' (the
-  // dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as a top strip, no Explorer
-  // panel). Missing → derived from `minimalPanels`.
+  // Panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the
+  // default) or 'toolbar' (the Palette as a top strip, no Explorer panel).
+  // Read it through `resolvePanelLayout`, which maps a retired or unknown
+  // value to the default.
   panelLayout?: PanelLayout;
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
   // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
   // focused. Applied via the `--lvd-panel-opacity` custom property (see
   // usePanelOpacity) on every `data-panel-translucent` surface. Buttons are
-  // not panels: the minimal dock bar and the cluster buttons stay opaque.
+  // not panels: the cluster buttons stay opaque.
   // Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
+  // UI scale (docs/specs/007-editor/ui-scale.md). The factor (0.8..1.2 in 0.05
+  // steps) the panels, the toolbar and the bottom-right corner buttons are
+  // drawn at, via CSS `zoom` on each surface; nothing else scales. Desktop
+  // only: a phone always draws at 1. `uiScale` is the master; each part's own
+  // key overrides it for that part, and setting the master clears them. Read
+  // through `resolveUiScales`, never directly. Missing === 1, the default.
+  uiScale?: number;
+  uiScalePanels?: number;
+  uiScaleToolbar?: number;
+  uiScaleCornerButtons?: number;
   // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
   // buttons open their menu on hover instead of requiring a click; moving
   // the pointer away closes it. The "+" buttons still only appear on the
@@ -142,21 +144,13 @@ export type UserPreferences = {
   middleMousePan?: boolean;
   // Minimap (docs/specs/008-canvas/minimap.md). When `false`, the bottom-left canvas minimap is hidden.
   // Missing / undefined / true === shown, the default (and even then only once
-  // the tab has a few elements, the Activity panel is minimised, and on
-  // desktop). The minimap's own close button writes an explicit `false`.
+  // the tab has a few elements, and on desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
   // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
   layerHoverPreview?: boolean;
-  // Activity panel revert hover-preview (docs/specs/012-collaboration/activity-and-audit.md). When `false`,
-  // resting the pointer on a revertable Activity row no longer
-  // previews the revert on the canvas (the Revert button itself is
-  // unaffected). Missing / undefined / true === on, the default.
-  // Flipped from the Activity panel's settings gear, mirroring
-  // `layerHoverPreview` above.
-  activityRevertHoverPreview?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from
@@ -175,6 +169,10 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
+  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
+  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
+  // always sees their own picture whatever this says.
+  showProfilePicture?: boolean;
   // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
@@ -216,6 +214,21 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
+  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
+  // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
+  // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
+  whiteboardPinnedShapes?: WhiteboardShapeKey[];
+  whiteboardShapePicks?: ShapePicks;
+  // The markers' Your colours (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): up to
+  // eight custom #rrggbb, newest first. Read and written through lib/pen-colour-memory, which parses
+  // them. Missing === none yet.
+  whiteboardYourColours?: string[];
+  // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+  // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
+  whiteboardDockPosition?: 'top' | 'bottom';
+  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
+  // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
+  drawPattern?: 'blank' | 'grid' | 'graph';
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200
@@ -246,15 +259,13 @@ export function toggleRecentExcluded(prefs: UserPreferences, documentId: string)
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
 
-// The three desktop panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers
-// them.
-export const PANEL_LAYOUTS = ['floating', 'minimal', 'toolbar'] as const;
+// The panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers them.
+export const PANEL_LAYOUTS = ['floating', 'toolbar'] as const;
 export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
 
-// The layout in force. `panelLayout` wins when it is one we know; otherwise
-// the legacy boolean decides, so nobody's layout moved when the choice
-// arrived. An unknown value (written by a newer client) reads as the default
-// rather than as a crash.
+// The layout in force. `panelLayout` wins when it is one we know; anything
+// else (unset, the retired 'minimal', or a value from a newer client) reads
+// as the default rather than as a crash.
 //
 // Pass `mobile` for the layout a phone actually shows: Floating is desktop
 // only, so there it (and so the unset default) becomes Toolbar (docs/specs/007-editor/toolbar-layout.md).
@@ -266,24 +277,26 @@ export function resolvePanelLayout(
 ): PanelLayout {
   const v = prefs.panelLayout;
   const stored =
-    v && (PANEL_LAYOUTS as readonly string[]).includes(v)
-      ? (v as PanelLayout)
-      : prefs.minimalPanels === true
-        ? 'minimal'
-        : 'floating';
-  return mobile && stored === 'floating' ? 'toolbar' : stored;
+    v && (PANEL_LAYOUTS as readonly string[]).includes(v) ? (v as PanelLayout) : 'floating';
+  return mobile ? 'toolbar' : stored;
 }
 
-// Write a layout, keeping the legacy flag in step: only Minimal docks the
-// panels, so an older reader treats Toolbar as Floating, whose panels it keeps.
 export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): UserPreferences {
-  return { ...prefs, panelLayout: layout, minimalPanels: layout === 'minimal' };
+  return { ...prefs, panelLayout: layout };
 }
 
 // The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
 // default, so only an explicit `false` turns the on-move rebind off. The
 // single home for the default: the Settings row and the editor-preferences
 // hook both call this instead of re-deriving it.
+/** The switch's default (docs/specs/014-identity/profile-picture.md §4): on, by operator decision. */
+export const SHOW_PROFILE_PICTURE_DEFAULT = true;
+
+/** Whether collaborators may see this account's profile picture. */
+export function showProfilePictureEnabled(prefs: UserPreferences): boolean {
+  return prefs.showProfilePicture ?? SHOW_PROFILE_PICTURE_DEFAULT;
+}
+
 export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
   return prefs.autoRebindArrows !== false;
 }
@@ -363,10 +376,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
 // on unless stored `false`, so the Settings row and every surface it gates
 // read one rule.
 export type PanelSwitch =
-  | 'layersPanelEnabled'
-  | 'activityPanelEnabled'
-  | 'collaboratePanelEnabled'
-  | 'quickStylePanelEnabled';
+  'layersPanelEnabled' | 'collaboratePanelEnabled' | 'quickStylePanelEnabled';
 export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
   return prefs?.[key] !== false;
 }

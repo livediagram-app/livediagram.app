@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { buildElementIndex, endpointPosition, isBoxed, type Element } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
@@ -41,6 +42,10 @@ type MarqueeState = {
   startY: number;
   currentX: number;
   currentY: number;
+  // Shift with Select on a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Selecting"): the box adds
+  // to the selection, and a click toggles `clickTarget` (the element pressed) instead of deselecting.
+  additive?: boolean;
+  clickTarget?: string | null;
 };
 
 type Deps = {
@@ -56,6 +61,9 @@ type Deps = {
   // the canvas-empty deselect path.
   onDeselect: () => void;
   onSelectMarquee: (hits: Set<string>) => void;
+  // For an additive marquee: toggle one element, and read what is selected now.
+  onShiftSelect?: (id: string) => void;
+  currentSelection?: () => Set<string>;
   // Suppresses pointer-driven pan updates while a 2-finger pinch is
   // active so the pan and pinch hooks don't fight over viewportOffset.
   isPinchingRef?: RefObject<boolean>;
@@ -85,6 +93,13 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   // tripped React's "Maximum update depth exceeded" loop (re-subscribe →
   // setState → re-render → re-subscribe).
   const depsRef = useLatest(deps);
+
+  // The canvas gestures (docs/specs/008-canvas/canvas-performance.md): open while a pan or a
+  // marquee is held, keyed on presence so a marquee's per-frame updates open nothing new.
+  const panning = pan !== null;
+  const marqueeing = marquee !== null;
+  useEffect(() => (panning ? beginCanvasGesture('pan') : undefined), [panning]);
+  useEffect(() => (marqueeing ? beginCanvasGesture('marquee') : undefined), [marqueeing]);
 
   // Held-Space modifier turns canvas drag into a pan instead of a
   // marquee. Tracked via a ref so the pointerdown handler always
@@ -203,7 +218,9 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       const dragWidth = Math.abs(m.currentX - m.startX);
       const dragHeight = Math.abs(m.currentY - m.startY);
       if (dragWidth < 4 && dragHeight < 4) {
-        d.onDeselect();
+        if (m.additive) {
+          if (m.clickTarget) d.onShiftSelect?.(m.clickTarget);
+        } else d.onDeselect();
         setMarquee(null);
         return;
       }
@@ -258,6 +275,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
             hits.add(el.id);
           }
         }
+        if (m.additive) for (const id of d.currentSelection?.() ?? []) hits.add(id);
         d.onSelectMarquee(hits);
       }
       setMarquee(null);

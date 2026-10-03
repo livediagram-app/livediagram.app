@@ -68,6 +68,8 @@ export function useEditorCommands(): {
   runCommand: (id: string) => void;
 } {
   const ctx = useEditorContext();
+  // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
+  const whiteboard = ctx.editorMode.mode === 'draw';
   const {
     isReadOnly,
     isOwner,
@@ -162,6 +164,7 @@ export function useEditorCommands(): {
       canvasEmpty,
       isMobile,
       esBoard,
+      whiteboard,
       photoImportAvailable,
     }),
     [
@@ -180,6 +183,7 @@ export function useEditorCommands(): {
       canvasEmpty,
       isMobile,
       esBoard,
+      whiteboard,
       photoImportAvailable,
     ],
   );

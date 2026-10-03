@@ -12,7 +12,6 @@ import {
   resolveTheme,
   switchThemeBackdrop,
   switchThemeElements,
-  THEMES,
 } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import type { Tab } from '@livediagram/document';
@@ -27,9 +26,8 @@ export function useTabTheme(deps: {
   activeId: string;
   activeTab: Tab;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string) => void;
 }) {
-  const { editsBlocked, activeId, activeTab, commitTabs, emitTabMeta } = deps;
+  const { editsBlocked, activeId, activeTab, commitTabs } = deps;
 
   // Applying a theme swaps backdrop colours/pattern, records the theme
   // id (so future element-create calls in `addBoxed` inherit the theme),
@@ -48,8 +46,6 @@ export function useTabTheme(deps: {
   const setTheme = (id: string) => {
     if (editsBlocked) return;
     const theme = getTheme(id);
-    // theme.label is the built-in label or the custom theme's name.
-    emitTabMeta(activeId, `Changed theme to ${theme.label}`);
     // Telemetry (docs/specs/017-telemetry/telemetry.md): `type` must stay a preset, never user content,
     // so a custom theme reports the fixed 'Custom' rather than its name.
     track('Theme', 'Changed', themeTelemetryLabel(id));
@@ -143,12 +139,7 @@ export function useTabTheme(deps: {
   const resetElementsToTheme = () => {
     if (editsBlocked) return;
     const theme = getTheme(activeTab.theme);
-    const themeId = activeTab.theme ?? 'brand';
-    const themeLabel =
-      THEMES.find((t) => t.id === themeId)?.label ??
-      themeId.charAt(0).toUpperCase() + themeId.slice(1);
     track('Theme', 'Changed', 'ResetElements'); // discrete one-shot recolour to theme
-    emitTabMeta(activeId, `Reset element colours to the ${themeLabel} theme`);
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;

@@ -16,8 +16,7 @@ to peers (`useRoomConnection` merges it). So **late-joiners and reloads see
 current state for free**, and persistence is automatic.
 
 `commitTabs` does **not** push undo history — starting a timer or placing a dot
-isn't undoable. The facilitator lifecycle actions emit a one-shot Activity-log
-line (`emitTabMeta`); the high-frequency vote casts deliberately don't log.
+isn't undoable.
 
 **One exception, learned the hard way: dots needed their own op.** Everything
 above holds for the timer and for a vote's lifecycle, which have a single
@@ -113,8 +112,7 @@ truncated in one surface and not the other.
   shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every floating
   top pill — follow-me pill, mode banners, timer,
   vote — as one non-overlapping column. The stack centres at the top from `sm:`
-  up but anchors to the top **left** on mobile, so it clears the mobile dock
-  buttons (Explorer / Palette) at the top right. The timer shares a row
+  up; on mobile it sits under the Toolbar strip ([Toolbar layout](../007-editor/toolbar-layout.md)). The timer shares a row
   with the active mode banner / selection toolbar: it sits to the **right** of
   it on desktop and **underneath** it on mobile rather than stacking on top.
 

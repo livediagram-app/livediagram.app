@@ -87,6 +87,10 @@ type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind; // 'diagram' | 'event-storming' (docs/specs/021-event-storming/event-storming.md); absent = 'diagram'
+  // The editor mode the tab opens in for someone who has not switched on it
+  // (docs/specs/007-editor/editor-modes.md); absent = 'diagram'. A stored kind 'whiteboard' reads as
+  // kind 'diagram' with opensIn 'draw'.
+  opensIn?: EditorMode; // 'diagram' | 'draw'
   elements: Element[];
   // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
 };
@@ -95,11 +99,14 @@ type Tab = {
 //   ShapeElement     (shape: square / circle / diamond / cylinder / parallelogram / hexagon
 //                            / document / stadium / actor / cloud / browser / monitor / laptop
 //                            / phone / tablet)
-//   TextElement
+//   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
+//                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
+//                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
 //   StickyElement    (optionally esKind — the event-storming note kind, docs/specs/021-event-storming/event-storming.md)
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
-//   FreehandElement  (boxed, carries a normalised polyline + optional auto-close flag for
+//   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,
+//                     + optional auto-close flag for
 //                     filled custom shapes; rendered as an SVG path inside its bounding box;
 //                     see docs/specs/008-canvas/canvas-and-palette.md's Pencil (freehand) subsection)
 //

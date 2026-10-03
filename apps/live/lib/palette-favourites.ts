@@ -17,9 +17,9 @@ const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 // are session tools a facilitator reaches for on purpose, so they live in
 // Collaborate rather than on everyone's first screen.
 //
-// The Highlighter used to hold the tenth slot. It moved to the tool dropdown
-// when it became a held mode (docs/specs/008-canvas/highlighter.md), so there is no tile to favourite any
-// more, and Table took the slot rather than leaving eleven and a ragged row.
+// The Highlighter used to hold the tenth slot. Table took it while the marker
+// was a held mode with no tile (docs/specs/008-canvas/highlighter.md), and kept it when the marker came
+// back as a Draw tile: the Shape Pen already speaks for drawing here.
 //
 // Every id here must exist in PALETTE_TILES; a stale one renders nothing and
 // silently costs the user a slot.

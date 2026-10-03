@@ -41,6 +41,7 @@ export async function recordTabSave(
         text: comment.text,
         authorName: comment.authorName,
         authorColor: comment.authorColor,
+        reply: comment.reply,
       },
       actorId,
     );

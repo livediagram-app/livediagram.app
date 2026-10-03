@@ -4,7 +4,7 @@ import { BoundaryRuntimeError, loadBoundaryRuntime, type BoundaryRuntime } from 
 
 // The boundary model's worker (docs/specs/021-event-storming/event-storming.md Phase 9): loads the runtime once, then
 // turns each working image into the cues the classical detector's hybrid rules
-// read. Only plain numbers go back to the page.
+// read. Only plain numbers go back to the page, which writes the trace lines.
 
 const scope = self as unknown as {
   postMessage: (message: WorkerResponse, transfer?: Transferable[]) => void;
@@ -15,7 +15,6 @@ let runtime: Promise<BoundaryRuntime> | null = null;
 
 function load(): Promise<BoundaryRuntime> {
   runtime ??= loadBoundaryRuntime().then((r) => {
-    console.info(`[photo-model] ready on ${r.backend}`);
     scope.postMessage({ type: 'ready', backend: r.backend });
     return r;
   });
@@ -42,7 +41,6 @@ scope.addEventListener('message', async ({ data: request }) => {
     const probs = await ready.predict(request.data, request.width, request.height);
     const cues = cuesOf(probs, request.width, request.height, CUE_OPTIONS);
     const ms = Math.round(performance.now() - started);
-    console.info(`[photo-model] ${cues.notes.length} notes on ${ready.backend} in ${ms} ms`);
     scope.postMessage({ type: 'cues', id: request.id, backend: ready.backend, cues, ms }, [
       cues.background.buffer,
     ]);

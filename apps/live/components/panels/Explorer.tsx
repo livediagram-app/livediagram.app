@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -11,13 +11,13 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
-import { DocumentRow } from '@/components/panels/explorer-views';
-import { ExplorerSections } from '@/components/panels/ExplorerSections';
+import { DocumentRow } from '@/components/panels/DocumentRow';
+import { PanelExplorerTree } from '@/components/panels/explorer-tree/PanelExplorerTree';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
-import { TEAM_TRASH_RESTORE_HINT, TRASH_RESTORE_HINT } from '@/lib/trash-copy';
+import { deleteConfirmationMessage } from '@/lib/delete-confirmation';
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -52,13 +52,11 @@ function ExplorerImpl({
   teamFolders = [],
   teamDocuments = [],
   onDismissShared,
-  onSize,
   dock,
-  mobileOpenOverride,
-  mobileTopOverridePx,
-  onMobileClose,
-  mobileDockAnchor,
-  forceDockMode,
+  popoverOpen,
+  onPopoverClose,
+  popoverAnchor,
+  asPopover,
   dismissOnOutside,
   recentExcludedIds,
   onToggleRecentExclusion,
@@ -80,8 +78,8 @@ function ExplorerImpl({
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
   const isMobile = useIsMobileViewport();
-  // Expansion state for each folder node + Unsorted (keyed by
-  // folder id, or the literal 'unsorted' for the synthetic bucket).
+  // Expansion state for each row of the tree (keyed by folder or team id, or
+  // a prefixed key such as `space:my-documents` for the fixed rows).
   // Team rows + team folders share this map too (ids are globally
   // unique). Defaults to all collapsed so the panel stays compact.
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
@@ -120,7 +118,6 @@ function ExplorerImpl({
     current,
     currentTeam,
     currentShared,
-    recents,
     foldersByTeam,
     documentsByTeam,
     foldersByParent,
@@ -134,11 +131,12 @@ function ExplorerImpl({
     teamFolders,
     teamDocuments,
     deletedTeamIds,
-    recentExcludedIds,
   });
 
   const toggleFolder = (key: string) =>
     setExpandedFolders((prev) => ({ ...prev, [key]: !prev[key] }));
+  // Stable, so a folder row's effect that clears the request runs once.
+  const clearPendingRename = useCallback(() => setPendingRenameFolderId(null), []);
 
   const handleCreateChild = async (parentId: string) => {
     if (!onCreateFolder) return;
@@ -190,21 +188,11 @@ function ExplorerImpl({
         />
       }
       {...dock}
-      onSize={onSize}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileTopOverridePx={mobileTopOverridePx}
-      onMobileClose={onMobileClose}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
+      popoverOpen={popoverOpen}
+      onPopoverClose={onPopoverClose}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
       dismissOnOutside={dismissOnOutside}
-      // Mobile auto-collapse fires on any tap outside the panel's
-      // DOM. Ellipsis menus (PortalMenu, role="menu") and confirm
-      // modals (ConfirmDialog, role="dialog") render via React
-      // portals into document.body, so a tap on "Rename" or "Delete"
-      // counts as outside and would collapse the panel just as the
-      // rename input is about to mount. Treat both ARIA roles as
-      // "inside" so the user can finish the action they started.
-      outsideExceptSelector='[role="menu"],[role="dialog"]'
       collapsible
     >
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1">
@@ -252,7 +240,7 @@ function ExplorerImpl({
                         : undefined
                     }
                     // Change Folder for a team document (docs/specs/013-workspace/team-shared-documents.md): opens the
-                    // move picker on this team's tree, with Personal Space + the
+                    // move picker on this team's tree, with My documents + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDocumentTo.
                     onMoveRequest={
@@ -280,51 +268,45 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* Recent / Personal Space / Teams as a single tab bar (was three
-            stacked accordions) so only one list takes vertical space.
-            Shared-with-you documents interleave into Recent (matching the
-            /explorer page); Personal Space holds the folder tree + Unsorted
-            (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-documents.md). The card owns
-            its own tab state and hides itself when no section has
-            anything to show — see ExplorerSections. */}
-        <ExplorerSections
-          loading={loading}
-          ownerId={ownerId}
-          recentExcludedIds={recentExcludedIds}
-          onToggleRecentExclusion={onToggleRecentExclusion}
-          favouriteIds={favouriteIds}
-          onToggleFavourite={onToggleFavourite}
-          currentDocumentId={currentDocumentId}
-          documents={liveDocs}
-          folders={folders}
-          teams={teams}
-          recents={recents}
-          foldersByParent={foldersByParent}
-          documentsByFolder={documentsByFolder}
+        {/* The sidebar's three groups, Overview, Spaces and More, built from the same rows and
+            keyboard model (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel). */}
+        <PanelExplorerTree
+          tree={{
+            ownerId,
+            currentDocumentId,
+            exitingDocumentIds,
+            expanded: expandedFolders,
+            onToggle: toggleFolder,
+            onOpenDocument,
+            onDeleteDocument: openDeleteConfirm,
+            onDuplicateDocument,
+            onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
+            // A team row's move opens the picker for that team; the pick then routes through
+            // the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
+            onMoveTeamDocumentRequest: onMoveDocumentTo
+              ? (id, teamId) => setMoveTarget({ id, teamId })
+              : undefined,
+            onMoveDocumentToFolder,
+            onDismissShared,
+            favouriteIds,
+            onToggleFavourite,
+            recentExcludedIds,
+            onToggleRecentExclusion,
+            pendingRenameFolderId,
+            onRenameFolderCommitted: clearPendingRename,
+            onRenameFolder,
+            onDeleteFolder,
+            onCreateChild: (parentId) => void handleCreateChild(parentId),
+            onTeamFolders,
+            onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
+          }}
+          busy={loading}
+          shared={shared}
+          ownIndex={{ foldersByParent, documentsByFolder }}
           offlineDocuments={offlineDocuments}
+          teams={teams}
           foldersByTeam={foldersByTeam}
           documentsByTeam={documentsByTeam}
-          expandedFolders={expandedFolders}
-          onToggleFolder={toggleFolder}
-          pendingRenameFolderId={pendingRenameFolderId}
-          onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
-          exitingDocumentIds={exitingDocumentIds}
-          onOpenDocument={onOpenDocument}
-          onDismissShared={onDismissShared}
-          onRenameFolder={onRenameFolder}
-          onDeleteFolder={onDeleteFolder}
-          onCreateChild={handleCreateChild}
-          onTeamFolders={onTeamFolders}
-          onCreateTeamChild={handleCreateTeamChild}
-          onDeleteDocument={openDeleteConfirm}
-          onDuplicateDocument={onDuplicateDocument}
-          onMoveDocumentRequest={onMoveDocumentToFolder ? openMovePicker : undefined}
-          // A team row's move opens the picker for that team; the pick then
-          // routes through the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
-          onMoveTeamDocumentRequest={
-            onMoveDocumentTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
-          }
-          onMoveDocumentToFolder={onMoveDocumentToFolder}
         />
 
         {/* Sign-in prompt for signed-out guests; an onboarding notice, so
@@ -335,7 +317,7 @@ function ExplorerImpl({
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDocumentTo wired (signed-in sessions with teams), the picker
-          offers every space — Personal Space plus each team — so a team document
+          offers every space — My documents plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDocumentToFolder path. */}
@@ -409,17 +391,19 @@ function ExplorerImpl({
       {deleteConfirm ? (
         <ConfirmPopover
           anchor={deleteConfirm.anchor}
-          message={`Delete "${
-            liveDocs.find((d) => d.id === deleteConfirm.id)?.name ||
-            teamDocuments.find((d) => d.id === deleteConfirm.id)?.name ||
-            'this document'
-          }"? Its share links stop working.${
-            deleteConfirm.notice ? ` ${deleteConfirm.notice}` : ''
-          } ${
-            teamDocuments.some((d) => d.id === deleteConfirm.id)
-              ? TEAM_TRASH_RESTORE_HINT
-              : TRASH_RESTORE_HINT
-          }`}
+          message={(() => {
+            const personal = liveDocs.find((d) => d.id === deleteConfirm.id);
+            const team = teamDocuments.find((d) => d.id === deleteConfirm.id);
+            const doc = personal ?? team;
+            return deleteConfirmationMessage({
+              name: doc?.name,
+              hasShareLinks: (doc?.shareCode ?? null) !== null,
+              sharedTabsNotice: deleteConfirm.notice,
+              team: !personal && !!team,
+            });
+          })()}
+          // The soft yellow, not red: a delete goes to the Trash.
+          tone="caution"
           confirmLabel="Delete"
           onConfirm={() => {
             const id = deleteConfirm.id;

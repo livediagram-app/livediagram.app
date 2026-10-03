@@ -226,7 +226,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
 });
 
 describe('resolveDocumentSession (owner / role / share-code security)', () => {
-  it('owner: always edit, no share code, can edit the log — even when arriving via a share URL', () => {
+  it('owner: always edit, no share code, even when arriving via a share URL', () => {
     const s = resolveDocumentSession({
       documentOwnerId: 'me',
       selfId: 'me',
@@ -236,10 +236,9 @@ describe('resolveDocumentSession (owner / role / share-code security)', () => {
     expect(s.isOwner).toBe(true);
     expect(s.sessionRole).toBe('edit');
     expect(s.sessionShareCode).toBeNull();
-    expect(s.canEditLog).toBe(true);
   });
 
-  it('edit-role visitor: inherits edit, carries their code, can edit the log', () => {
+  it('edit-role visitor: inherits edit, carries their code', () => {
     const s = resolveDocumentSession({
       documentOwnerId: 'someone-else',
       selfId: 'me',
@@ -249,10 +248,9 @@ describe('resolveDocumentSession (owner / role / share-code security)', () => {
     expect(s.isOwner).toBe(false);
     expect(s.sessionRole).toBe('edit');
     expect(s.sessionShareCode).toBe('CODE2345');
-    expect(s.canEditLog).toBe(true);
   });
 
-  it('view-role visitor: stays view, carries their code, CANNOT edit the log', () => {
+  it('view-role visitor: stays view, carries their code', () => {
     const s = resolveDocumentSession({
       documentOwnerId: 'someone-else',
       selfId: 'me',
@@ -262,7 +260,6 @@ describe('resolveDocumentSession (owner / role / share-code security)', () => {
     expect(s.isOwner).toBe(false);
     expect(s.sessionRole).toBe('view');
     expect(s.sessionShareCode).toBe('CODE2345');
-    expect(s.canEditLog).toBe(false);
   });
 });
 

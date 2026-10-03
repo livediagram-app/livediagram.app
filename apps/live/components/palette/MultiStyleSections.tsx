@@ -43,6 +43,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 // The multi-selection menu's style + motion sections (docs/specs/008-canvas/canvas-and-palette.md), each
 // applying selection-wide with display values read off the first
@@ -184,10 +185,13 @@ export function MultiStyleSections({
             <ColourRow
               label="Text"
               icon={<TextColourIcon />}
-              value={
-                (textSrc as { textColor?: string }).textColor ??
-                defaultTextColor(textSrc as BoxedElement, surface)
-              }
+              value={shownColour(
+                textSrc,
+                'text',
+                surface,
+                defaultTextColor(textSrc as BoxedElement, surface),
+              )}
+              ink={inkSwatch(textSrc, 'text', surface)}
               {...textColorHandlers}
               {...colorProps('m-text')}
               {...props.colourPalette}
@@ -207,7 +211,13 @@ export function MultiStyleSections({
             <ColourRow
               label="Border"
               icon={<BorderColourIcon />}
-              value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc, surface)}
+              value={shownColour(
+                strokeSrc,
+                'line',
+                surface,
+                defaultStrokeColor(strokeSrc, surface),
+              )}
+              ink={inkSwatch(strokeSrc, 'line', surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
               {...props.colourPalette}
@@ -220,7 +230,8 @@ export function MultiStyleSections({
             <ColourRow
               label="Line"
               icon={<BorderColourIcon />}
-              value={arrowSrc.strokeColor ?? defaultArrowStrokeColor(surface)}
+              value={shownColour(arrowSrc, 'line', surface, defaultArrowStrokeColor(surface))}
+              ink={inkSwatch(arrowSrc, 'line', surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
               {...props.colourPalette}

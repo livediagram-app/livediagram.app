@@ -29,7 +29,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Action:
     'Per-element assigned actions: assigning (with or without the email nudge), completing, reopening, editing / reassigning, deleting, opening the popover.',
   Search: 'Global search panel: open, query, picked-result kind.',
-  UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, Activity), share-link copy, welcome dismiss.',
+  UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, and the since-removed Activity panel), share-link copy, welcome dismiss.',
   Folder:
     'Folders: create, rename, delete, re-parent. Explorer folders of documents, or (type Tab) tab folders inside one document.',
   Layer:
@@ -44,16 +44,24 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
   Cta: 'The landing funnel: a call to action on a public page (the landing hero, a template card, a header button) brought somebody to the New Document page, and whether that visit created a document. Named by which button it was, never who pressed it.',
+  Home: "The Explorer's landing view: arriving on it (straight away, or after starting elsewhere), opening a document from Jump back in, What happened or the Timeline column, expanding a summary of several people's work, and loading more of the Timeline.",
   Timeline:
-    "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
+    "The Explorer's activity feed, All activity: opening it (split by whether the page load started on it or it was reached from Home), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
     "The Explorer's Activity page (open actions and comment threads across every document): opening it, clicking a row through to the document (split by action vs thread), and retrying a failed read.",
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
   Trash:
     'The Trash deleted documents wait in for 30 days: opened, restored from, deleted from for good, and emptied.',
+  Drive:
+    'The Google Drive mirror: connected, disconnected, needing reconnection, finishing its first copy, changes coming back from Drive, and files opened from Drive.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
+  Editor:
+    'Editor modes: a person switching a tab between Diagram mode (shapes, arrows and the palette) and Draw mode (freehand pens). Only the mode, never the tab or what is on it.',
+  Draw: 'Draw mode, drawn in with a dock of pens: a Whiteboard tab created (from the New Document wizard, as a new tab or by an import), a pen picked or given a new colour or width, the eraser mode or board background changed, and shape recognition switched on or off. Never what was drawn.',
+  Explorer:
+    "The Explorer's filters: which kind of filter a person reached for (words, Opens in, Kind, Template, Made by AI, Edited, People, Space), from a chip, a suggestion or a typed token. Never what they typed or picked.",
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
@@ -93,14 +101,25 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Distinct from Document's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',
+  // Indigo-violet: the landing view, apart from the Timeline's deep sky and Activity's amber.
+  Home: '#4f46e5',
   // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
   Activity: '#d97706',
   Token: '#d946ef',
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
+  // Deep brown: apart from the greens (Action, Element, Cta), Email's teal and
+  // Activity's amber.
+  Drive: '#854d0e',
   Mcp: '#f43f5e',
   Email: '#0d9488',
   Error: '#dc2626',
+  // Warm stone, the marker on a whiteboard: apart from every blue and green.
+  Draw: '#78716c',
+  // Deep violet: the mode switch, apart from Draw's stone beside it.
+  Editor: '#6d28d9',
+  // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
+  Explorer: '#155e75',
 };
 export const categoryColor = (c: string, appearance: Appearance = 'light') =>
   forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);

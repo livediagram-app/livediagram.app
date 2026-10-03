@@ -100,6 +100,8 @@ describe('error predicates', () => {
 
   it('treats a realtime resync as a recovery, not an exception', () => {
     expect(isRecovery('RealtimeResync')).toBe(true);
+    expect(isRecovery('StaleChunkReload')).toBe(true);
+    expect(isRecovery('Uncaught.Explorer.ChunkLoadError')).toBe(false);
     expect(isRecovery('Uncaught')).toBe(false);
     expect(isRecovery('Uncaught.Document.TypeError')).toBe(false);
     expect(isRecovery('Render.Canvas.Other')).toBe(false);

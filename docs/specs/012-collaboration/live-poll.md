@@ -16,7 +16,7 @@ and rely on a delete to clean up.
 
 So a poll lives **only in the realtime room**. It is carried by three new
 `RoomOp` kinds and held in connected clients' memory. Nothing is written to
-D1, nothing enters the change log, nothing is undoable, and no migration or
+D1, nothing is undoable, and no migration or
 schema change is needed anywhere.
 
 **The room remembers it while it runs** ([Collaboration race hardening](collab-race-hardening.md)). The Durable Object keeps
@@ -166,17 +166,13 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
      backdrop left to click, so Skip and Escape are the whole of it.
 
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
-   Collaborate / Layers / Activity: draggable, resettable, and dockable
+   Collaborate / Layers: draggable, resettable, and dockable
    into a corner stack, homed **top-right directly under the Palette**
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the
    only panel that isn't always present — it joins and leaves its corner
-   stack with the poll. In the dock layout (a phone, or the minimal panel
-   preference on desktop) it lives under the dock's **Poll** button like
-   every other panel and closes with it, and it **opens by itself** when a
-   poll starts or when you answer one (keyed on the poll id, so it opens
-   once per poll rather than fighting you after you close it). The Vote
-   panel follows the same rule for its **Vote** button. Shown to the host and to anyone who has responded — so
+   stack with the poll, in both panel layouts and on a phone. The Vote
+   panel follows the same rule. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.

@@ -159,10 +159,8 @@ export type TimelineReadResult = {
 export const TIMELINE_PAGE_SIZE = 50;
 export const TIMELINE_PAGE_MAX = 200;
 
-// How far back the feed goes before the daily sweep prunes it. A year,
-// where `change_log` keeps 90 days (docs/specs/012-collaboration/activity-and-audit.md): an element-level audit
-// trail decays in weeks, but "when did I last touch this" is a question
-// people ask across a year.
+// How far back the feed goes before the daily sweep prunes it. A year:
+// "when did I last touch this" is a question people ask across a year.
 export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 
 // Comment text rides along in the description so the feed is readable

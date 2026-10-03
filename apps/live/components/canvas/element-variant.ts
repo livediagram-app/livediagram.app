@@ -1,7 +1,9 @@
 import type { CSSProperties } from 'react';
 import {
   SELF_PAINTING_SHAPES,
-  BORDER_RADIUS_PX,
+  DEFAULT_BOX_RADIUS_PX,
+  MIND_NODE_RADIUS_PX,
+  cornerRadiusPx,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
@@ -98,13 +100,20 @@ export function describeVariant(
       // are part of the silhouette).
       const fixedRadius =
         element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
+      // Never more than a quarter of the shorter side (docs/specs/008-canvas/corner-radius.md),
+      // the kind's own default corner included.
       const userRadius =
-        element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : null;
+        element.borderRadius !== undefined
+          ? cornerRadiusPx(element.borderRadius, element.width, element.height, 0)
+          : null;
       // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
       // rounded enough to read as a node in a tree rather than a flowchart
       // box. Unlike the fixed silhouettes above it honours a radius pick, so a
       // full radius on a square node draws a bubble-map circle.
-      const mindRadius = element.shape === 'mind-node' ? `${userRadius ?? 12}px` : null;
+      const mindRadius =
+        element.shape === 'mind-node'
+          ? `${cornerRadiusPx(element.borderRadius, element.width, element.height, MIND_NODE_RADIUS_PX)}px`
+          : null;
       const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
       const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
       // The composite dash patterns can't be drawn by a CSS border, so
@@ -128,7 +137,9 @@ export function describeVariant(
         style: {
           ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius:
-            fixedRadius ?? mindRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
+            fixedRadius ??
+            mindRadius ??
+            `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, DEFAULT_BOX_RADIUS_PX)}px`,
           backgroundColor: fill,
           borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
@@ -208,7 +219,8 @@ export function describeVariant(
         },
       };
     }
-    case 'freehand': {
+    case 'freehand':
+    case 'path': {
       // The freehand element renders its SVG path as the child
       // content. The wrapper here just contributes the selection
       // ring + remote-selector outline, with a transparent
@@ -290,4 +302,15 @@ export function describeVariant(
       };
     }
   }
+}
+
+// How an element in its edit mode sits on the canvas. A label being typed rises above its
+// neighbours and wears the text cursor; a path in its edit mode (docs/specs/023-draw-mode/path-tool.md
+// "Editing") does neither: its points are edited, never typed, and its nodes must stay above it.
+export function editingLook(
+  element: { type: string },
+  isEditing: boolean,
+): { raise: boolean; textCursor: boolean } {
+  const typing = isEditing && element.type !== 'path';
+  return { raise: typing, textCursor: typing };
 }

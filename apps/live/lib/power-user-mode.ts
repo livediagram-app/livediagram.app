@@ -1,13 +1,11 @@
 import type { UserPreferences } from './user-preferences';
+import { debugLog } from '@/lib/debug-log';
 
 // Power user mode (docs/specs/007-editor/power-user-mode.md): a preset of recommended settings,
 // written once when the mode switches on. Switching off puts back the values
 // the preset replaced, for every setting still holding what the preset wrote.
-//
-// A setting may span several keys: the panel layout keeps its legacy
-// `minimalPanels` mirror in step, so the two are compared and restored as one.
 export const POWER_USER_PRESET = {
-  panelLayout: { panelLayout: 'toolbar', minimalPanels: false },
+  panelLayout: { panelLayout: 'toolbar' },
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
@@ -57,7 +55,7 @@ function switchOn(prefs: UserPreferences): Switched {
   }
   next.powerUserMode = true;
   next.powerUserBaseline = baseline;
-  console.info('[power-user] on', { applied: Object.keys(POWER_USER_PRESET) });
+  debugLog('[power-user] on', { applied: Object.keys(POWER_USER_PRESET) });
   return { prefs: next as UserPreferences, restored: [], kept: [] };
 }
 
@@ -88,6 +86,6 @@ function switchOff(prefs: UserPreferences): Switched {
   }
   delete next.powerUserMode;
   delete next.powerUserBaseline;
-  console.info('[power-user] off', { restored, kept });
+  debugLog('[power-user] off', { restored, kept });
   return { prefs: next as UserPreferences, restored, kept };
 }

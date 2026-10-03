@@ -6,6 +6,7 @@ import {
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
+  untilHydrated,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -16,18 +17,40 @@ import {
 test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('New Document', { exact: false })).toBeVisible();
-  // The Quick Start template grid is the client-rendered heart of the
-  // wizard; its presence proves the picker mounted, not just the shell.
-  await expect(page.getByText('Quick Start', { exact: false })).toBeVisible();
-  await expect(page.getByText('Blank diagram', { exact: false })).toBeVisible();
+  // The template shelf is the client-rendered heart of the wizard; its
+  // Popular heading proves the picker mounted, not just the shell.
+  await expect(page.getByRole('heading', { name: 'Popular' })).toBeVisible();
+  await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
+  expectNoPageErrors(pageErrors);
+});
+
+// The wizard dims nothing, so the header stays live beside it: the header's
+// apps menu must paint (and take clicks) in front of the wizard card, not
+// open invisibly behind it.
+test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
+  await page.goto('/new');
+  await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
+
+  const switcher = page.getByRole('button', { name: /^switch section/i });
+  await untilHydrated(switcher);
+  await switcher.click();
+  const menu = page.getByRole('menu');
+  await expect(menu).toBeVisible();
+  const menuOnTop = await menu.evaluate((panel) => {
+    const r = panel.getBoundingClientRect();
+    const hit = document.elementFromPoint(Math.round(r.right - 8), Math.round(r.y + r.height / 2));
+    return !!hit && panel.contains(hit);
+  });
+  expect(menuOnTop).toBe(true);
   expectNoPageErrors(pageErrors);
 });
 
 test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
-  // The sidebar's quick-find sections are always present for a guest.
-  await expect(page.getByText('Recent', { exact: false }).first()).toBeVisible();
-  await expect(page.getByText('Shared with you', { exact: false })).toBeVisible();
+  // The sidebar's Overview rows are always present for a guest
+  // (docs/specs/013-workspace/explorer-structure.md).
+  await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
+  await expect(page.getByRole('treeitem', { name: /^Shared with me/ })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -302,9 +325,8 @@ test.describe('mobile', () => {
     pageErrors,
   }) => {
     await startBlankDocument(page);
-    // A fresh guest gets the tour offer over a scrim that eats taps.
-    const declineTour = page.getByRole('button', { name: /^no thanks$/i });
-    if (await declineTour.count()) await declineTour.tap();
+    // A fresh guest gets the tour offer over a scrim that eats taps, a beat after the canvas.
+    await dismissQuickTour(page);
 
     await page.getByRole('button', { name: 'Tab menu' }).tap();
     const collaborate = page.getByRole('button', { name: /collaborate/i });

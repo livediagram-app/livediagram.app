@@ -52,7 +52,7 @@ collaborator to the owner's id:
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.
-- **Change-log / Activity**: `GET /documents/<id>/log` returned each entry's
+- **Change-log / Activity** (endpoint since removed with the Activity panel, 2026-10-03): `GET /documents/<id>/log` returned each entry's
   `participantId` unredacted to any **edit-access** collaborator (edit-share
   holders, joined team members). A static, reliable harvest.
 
@@ -77,8 +77,6 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
   `document-room-rules.ts`); a client never supplies or learns one.
-- **The change log is redacted.** `GET /documents/<id>/log` blanks
-  `participantId` for every caller but the document owner (`routes/documents.ts`).
 - **An account id is never a guest credential.** A Clerk-shaped `X-Owner-Id`
   is refused on every owner-scoped route with `401
 account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
@@ -202,25 +200,75 @@ runaway integration is throttled independently of the owner's interactive app
 use, and add a read limiter for token reads. Per-IP limits stay as the outer
 backstop.
 
-### 3.6 Management — a new Explorer library page
+### 3.6 Management — the Settings dialog's API Tokens category
 
-Tokens are created / named / revoked from a **new Explorer library section**,
-listed in the sidebar nav (`apps/live/app/explorer/ExplorerSidebar.tsx`)
-**directly under "Themes"** as its own entry (e.g. "API tokens",
-`go({ kind: 'tokens' })`). It renders a `TokensPane` that mirrors `ThemesPane`:
-a list of the user's tokens (name, created, expires, last-used) with a
-create-token action and a revoke per row. Same pattern, same place users
-already manage their other account-scoped library items.
+Tokens are created, viewed and revoked in the **Settings dialog**
+([User preferences](../007-editor/user-preferences.md)), in its own top-level
+category **API Tokens** (id `tokens`), which sits **between Account and
+Privacy**. It is account-scoped like its neighbours, and the dialog is reachable
+from both the Explorer and the editor, so the tokens are too. There is no
+Explorer page for them: the former `/explorer/tokens` route and its sidebar
+entry are gone, with no redirect (few people had used it).
+
+The category holds one row, the **token manager** (`kind: 'tokens'`), laid
+out top to bottom:
+
+- **Overview.** A key tile, the title, one line on what tokens are for, and the
+  **capacity meter**: "3 of 10" over ten pips, one per slot, filled for each
+  live token (brand; amber from 8; rose at the cap). A **New** button (accessible name "New token")
+  opens the composer; at the cap it is disabled and the meter says to revoke
+  one first.
+- **Composer.** Opens in place under the overview from New. A name
+  field (optional, up to 60 characters, focused when opened) with **suggestion chips** that fill it
+  ("Claude", "Cursor", "CI Bot", "Local Script"), a live line saying when the
+  token will expire (six months from today, as a date), then **Cancel** and
+  **Create Token**. Enter submits, Escape cancels.
+- **Reveal.** After a create, the composer becomes an emerald-edged "Token
+  Created" card that follows the theme (light in light mode): a "Shown once"
+  label and the secret in a monospace field with its `lvd_` prefix picked out.
+  The field copies the way the Share dialog's pass link does: an icon-only copy button inside the field's right edge, with
+  a tooltip, that turns into a check once the clipboard write resolves.
+  **Done** drops the secret for good; it becomes the primary action once the
+  secret has been copied.
+- **Token cards**, newest first. Each has a key tile tinted by status, the
+  name ("Untitled token" when unnamed), a Read-only badge where set, a meta
+  line (created date; last used, with a green dot when used in the last 24
+  hours, or "Never used"), and a **lifetime bar**: how much of the six months
+  has passed, tinted by status (Active / Expires soon inside 14 days /
+  Expired), labelled with the time left. A **Revoke** control per card opens
+  a confirmation popover with the revoke warning first.
+- **First run.** With no tokens, the composer is already open and is the
+  whole category: no New button, no meter, no Cancel, and no empty-list
+  card, so the one thing on screen is the form. It does not take focus on
+  load. Under it a single quiet line points readers who want to connect an AI
+  tool at the Connect an AI Tool guide, since that flow creates its own token.
+  Once a token exists the overview's meter and New button take over.
+
+"Edit" is exactly what the API supports: create and revoke. There is no rename
+or scope change; a token is replaced by creating a new one and revoking the old.
+
+**Links to it open the dialog, never navigate.** Everything in the app that
+points at tokens opens Settings on the API Tokens category in place: the
+AI Tools category's **Manage API Tokens** link row (which replaced the old
+read-only token list there), and the timeline's token cards and their
+**Open API Tokens** menu verb ([Timeline](../013-workspace/timeline.md)).
+Mail, which cannot open a dialog, links at the `?settings=tokens` deep link
+(`/explorer?settings=tokens`), which opens the Explorer with Settings on the
+category.
+
+**Guests** see the category with the manager replaced by
+"Sign in to create API tokens." and a **Sign In** link (see the Settings
+sign-in rule in [User preferences](../007-editor/user-preferences.md)).
 
 Behind it, a new `GET/POST/DELETE /api/tokens` surface, **gated exactly like
 the team routes** ([Teams](../013-workspace/teams.md)): it requires a verified Clerk
 identity and rejects a guest (`X-Owner-Id`-only) caller outright (`401`/`403`,
-mirroring `routes/teams.ts`) — so the section is hidden / inert for guests, the
+mirroring `routes/teams.ts`) — so the manager is inert for guests, the
 same way the rest of the signed-in surface is. A token can only ever be minted
 by, and act as, a signed-in account. Creation returns the secret **once**
-(shown in the pane to copy, never retrievable again); the row then shows only
+(shown in the manager to copy, never retrievable again); the row then shows only
 the public id + metadata. Revoke is immediate (the lookup filters
-`revoked = 0`). The pane states the fixed 6-month expiry ([§3.2](#32-storage-d1))
+`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage-d1))
 so rotation isn't a surprise.
 
 **Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
@@ -238,14 +286,14 @@ must delete the owner's `api_tokens` rows in the same cascade as their documents
 API tokens are gated on **auth being enabled**, exactly as teams and sign-in
 are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
 self-host that hasn't configured Clerk runs in pure-guest mode, and in that
-mode the feature is **absent end to end** — there is no tokens page to open and
-no way to mint one:
+mode the feature is **absent end to end** — there is no API Tokens category to
+open and no way to mint one:
 
-- **Frontend** — the Explorer "API tokens" section (and any token UI) renders
-  only when `clerkEnabled` (`apps/live/lib/clerk-config.ts`, derived from the
-  presence of `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`). This is the **same flag**
-  that already hides the teams / sign-in sections of the sidebar, so when auth
-  is off the section simply isn't in the nav.
+- **Frontend** — the Settings API Tokens category (and the AI Tools link row to
+  it) renders only when `clerkEnabled` (`apps/live/lib/clerk-config.ts`, derived
+  from the presence of `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`). This is the **same
+  flag** that already hides the teams / sign-in sections of the sidebar, so when
+  auth is off the category simply isn't in the list.
 - **Backend** — the `/api/tokens` routes require a verified Clerk identity, and
   with `CLERK_JWKS_URL` unset the worker resolves no Clerk identity at all
   ([`auth/clerk.ts`](../../../apps/api/src/auth/clerk.ts) returns null), so the
@@ -423,7 +471,7 @@ hardening landed first:
    even though §4 already neutralises a leaked id, because people WILL probe
    for it):
    - Redact `participantId` in the change-log read for non-owners (the static
-     harvest), the same way comment authors and the document `ownerId` already
+     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the document `ownerId` already
      are.
    - Give each realtime session a **room-scoped ephemeral presence id**
      (random per connection) for the broadcast presence / cursor frames,
@@ -442,8 +490,9 @@ hardening landed first:
 3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
    mint/verify (`auth/`), Clerk-gated `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
-4. ✅ The **Explorer "API tokens" section** under Themes (`TokensPane`, mirroring
-   `ThemesPane`) — the management UI ([§3.6](#36-management--a-new-explorer-library-page)),
+4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
+   UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
+   replaced the original Explorer "API tokens" page,
    rendered only when `clerkEnabled` so it's absent on a no-auth self-host
    ([§3.7](#37-self-hosting)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag

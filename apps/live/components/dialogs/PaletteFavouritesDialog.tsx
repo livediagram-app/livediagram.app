@@ -54,13 +54,18 @@ type PaletteFavouritesDialogProps = {
 // Two adjustments to the palette's list:
 //   - Favourites is dropped. It is what this dialog EDITS, so offering it as
 //     a source to pick from is circular.
+//   - Event Storming is dropped: it is the ES board's own category, never offered on the ordinary
+//     tabs this dialog is reached from (docs/specs/021-event-storming/event-storming.md).
 //   - Categories with no favouritable tiles are dropped, so a choice can never
 //     lead to an empty grid. Icons / Stickers / Technology are kept
 //     regardless: their catalogues are open-ended and load async, so they are
 //     empty at this moment rather than empty as such.
 const OPEN_ENDED: string[] = ['icons', 'stickers', 'technology'];
 const CATEGORY_CHOICES: { id: string; label: string }[] = PALETTE_CATEGORIES.filter(
-  (c) => c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
+  (c) =>
+    c.id !== 'favourites' &&
+    c.id !== 'event-storming' &&
+    (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
 ).map((c) => ({ id: c.id, label: c.label }));
 
 // One toggleable tile: glyph + caption with the add / remove corner badge.

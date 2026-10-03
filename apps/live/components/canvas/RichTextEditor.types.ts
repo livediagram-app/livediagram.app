@@ -5,6 +5,7 @@ import type {
   TextRun,
   TextSize,
 } from '@livediagram/document';
+import type { LabelPadding } from './label-style';
 
 export type RichTextEditorProps = {
   // The element being edited — its whole-element text* fields are the
@@ -20,7 +21,12 @@ export type RichTextEditorProps = {
   fitBox?: { width: number; height: number; padding: number };
   alignX: TextAlignX;
   alignY: TextAlignY;
-  padding: number;
+  padding: LabelPadding;
+  // A Shift-resized text box's scale on its text (docs/specs/023-draw-mode/draw-mode.md). Absent = 1.
+  textScale?: number;
+  // Called with the editor node on every change to its text (and once on opening), so a whiteboard
+  // text box can grow with what is typed (docs/specs/023-draw-mode/draw-mode.md "Text boxes").
+  onLiveText?: (editor: HTMLElement) => void;
   fontFamily?: string;
   multiline: boolean;
   // Paint the live text in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md). A
@@ -28,7 +34,6 @@ export type RichTextEditorProps = {
   // the auto-fit measures the caps so the size can't jump on commit.
   uppercase?: boolean;
   cursorAtEnd: boolean;
-  zoom: number;
   textClassName?: string;
   // When true, the editor lays out as a flex CHILD (it fills the slot it's
   // given) instead of an `absolute inset-0` fill of the whole element, and

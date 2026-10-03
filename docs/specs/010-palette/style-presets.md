@@ -70,9 +70,8 @@ out in whatever theme the tab is created with.
 On a desktop pointer, **hovering** a preset tile shows it **live** on the
 selected element(s) so the user can compare looks at a glance; the change only
 sticks on **click**. Moving the pointer off the tile reverts to the pre-hover
-look. The preview is ephemeral — it never lands an undo step or an activity-log
-entry, and is reverted before the click commits, so undo snapshots the true
-pre-hover state and the activity entry diffs from it correctly. Touch / pen
+look. The preview is ephemeral — it never lands an undo step, and is reverted
+before the click commits, so undo snapshots the true pre-hover state. Touch / pen
 input does not preview (a tap is the commit).
 
 ### Granular controls preview too
@@ -154,9 +153,9 @@ multi-selection the preset applies to every selected arrow at once.
   `resetArrowStyleSelected`). Hand-editing a
   colour or resetting clears the `colorPreset` binding there.
 - Hover preview is owned by `apps/live/hooks/canvas/useStylePreview.ts`: preview +
-  revert go through `tickTabs` (present-only, no history / no log); the click
+  revert go through `tickTabs` (present-only, no history); the click
   commit restores the originals into the present, then commits, so the undo
-  snapshot and activity diff are taken from the true pre-hover state. The
+  snapshot is taken from the true pre-hover state. The
   context menu wires the tiles' click → commit and pointer enter/leave →
   preview/revert (mouse pointers only).
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): applying / resetting a preset fires

@@ -4,7 +4,9 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE } from '@livediagram/document';
+import { canvasSurface, DEFAULT_BUTTON_MODE, PEN_INK } from '@livediagram/document';
+import { createStockColourProjector } from '@/lib/stock-colour-projector';
+import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -15,21 +17,25 @@ import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
-import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { resolveViewBackdrop } from '@/lib/view-backdrop';
+import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
+import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
+import { useStableCollab } from '@/components/canvas/element-layer-props';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
 // EditorContext — the same host pattern as EditorModals /
 // EditorContextMenuHost — plus the handful of locals only the Canvas
 // props consume (the quick-connect arrow starter, the memoised Explorer
-// / Activity list props, the owner-badge resolution).
+// list props, the owner-badge resolution).
 export function EditorCanvasHost() {
   const {
-    activeId,
     activeTab,
     scrollIntoView,
     activeTabLoadState,
@@ -38,8 +44,6 @@ export function EditorCanvasHost() {
     slideDeck,
     slideDeckPanelPosition,
     setSlideDeckPanelPosition,
-    activityMinimized,
-    activityPosition,
     layers,
     activeLayerId,
     layerInertIds,
@@ -113,10 +117,12 @@ export function EditorCanvasHost() {
     photoImportBlocked,
     openPhotoImport,
     readPhotoFile,
+    dropBoardFile,
     photoDraft,
     createBlocked,
     addTable,
     addTechIcon,
+    insertLibraryShape,
     addText,
     aiCapable,
     aiPanelPosition,
@@ -137,12 +143,9 @@ export function EditorCanvasHost() {
     beginErase,
     beginFormatPainter,
     beginFreehand,
+    beginHighlighter,
     beginShapePen,
     beginPolygon,
-    highlighterColor,
-    highlighterWidth,
-    setHighlighterColor,
-    setHighlighterWidth,
     broadcastAvatar,
     broadcastAvatarPush,
     avatarShove,
@@ -161,10 +164,7 @@ export function EditorCanvasHost() {
     canvasMainRef,
     canvasTool,
     castVote,
-    changeLog,
-    changeLogLoading,
     chooseTemplate,
-    clearActivityForActiveTab,
     clearTimer,
     clearVote,
     clerkDisplayName,
@@ -175,6 +175,9 @@ export function EditorCanvasHost() {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitPath,
+    commitPathEdit,
+    styleNewElement,
     commitLabel,
     commitTable,
     commitHeaderSize,
@@ -210,7 +213,6 @@ export function EditorCanvasHost() {
     folders,
     followLink,
     formatSourceId,
-    handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
@@ -258,18 +260,11 @@ export function EditorCanvasHost() {
     doneVoteReview,
     retryActiveTabLoad,
     revealVote,
-    revertChange,
-    previewRevert,
-    clearRevertPreview,
-    savedAt,
-    saveStatus,
     selectedId,
     selectElement,
     selectMarquee,
     confirm,
     selfParticipant,
-    setActivityMinimized,
-    setActivityPosition,
     setAiPanelPosition,
     exitAvatarTool,
     pressModeButton,
@@ -342,7 +337,35 @@ export function EditorCanvasHost() {
     viewportOffset,
     viewportZoom,
     zenMode,
+    whiteboardDock,
+    drag,
+    editorMode,
   } = useEditorContext();
+  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
+  // rules into focus; the board look keys on it through hasBoardLook.
+  const drawMode = editorMode.mode === 'draw';
+  // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
+  // owner's libraries, then placed at the drop point.
+  const { libraries } = useShapeLibraries();
+  const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
+    const item = libraries
+      .find((l) => l.id === ref.libraryId)
+      ?.items.find((i) => i.id === ref.itemId);
+    if (!item) {
+      console.warn('[shape-libraries] drop ignored', { reason: 'unknown shape' });
+      return;
+    }
+    insertLibraryShape(item, at);
+  };
+  // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
+  const reshapingArrowId =
+    drag &&
+    (drag.kind === 'arrow-bend' ||
+      drag.kind === 'arrow-curve' ||
+      drag.kind === 'arrow-elbow' ||
+      drag.kind === 'arrow-endpoint')
+      ? drag.arrowId
+      : null;
 
   // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
   // below fall away for everybody else, exactly as they do on a read-only
@@ -358,10 +381,9 @@ export function EditorCanvasHost() {
     at: { x: number; y: number };
     holders: LockHolder[];
   } | null>(null);
-  // Stable references for the two list-shaped props the Explorer +
-  // Activity panels take, so those (React.memo'd) panels don't
-  // re-render on every drag frame just because the editor re-rendered.
-  // Both recompute only when their real inputs change, not per frame.
+  // A stable reference for the list-shaped prop the Explorer takes, so the
+  // (React.memo'd) panel doesn't re-render on every drag frame just because
+  // the editor re-rendered. It recomputes only when its real input changes.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
   // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
@@ -376,7 +398,7 @@ export function EditorCanvasHost() {
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/live-app.md). Subscribing to the appearance here is what makes the
-  // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
+  // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   // The layout this viewport shows (a phone has no Floating, docs/specs/007-editor/toolbar-layout.md).
@@ -390,11 +412,17 @@ export function EditorCanvasHost() {
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
   };
-  const backdrop = resolveTabBackdrop(activeTab, appearance);
-  const activeTabChangeLog = useMemo(
-    () => changeLog.filter((entry) => entry.tabId === activeId),
-    [changeLog, activeId],
+  const backdrop = resolveViewBackdrop(
+    activeTab,
+    { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
+    appearance,
   );
+  // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
+  // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
+  // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
+  const [projectStockColours] = useState(createStockColourProjector);
+  const surface = canvasSurface(backdrop.backgroundColor);
+  const canvasElements = projectStockColours(presentingElements ?? activeTab.elements, surface);
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
@@ -411,13 +439,12 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
+    whiteboard: drawMode,
     setContextMenu,
   });
 
-  // Preference writes (Settings save + the two quick toggles) — see
-  // usePreferenceHandlers.
-  const { onChangeSettings, onToggleMinimalPanels } = usePreferenceHandlers({
-    userPreferences,
+  // Preference writes (the Settings save): see usePreferenceHandlers.
+  const { onChangeSettings } = usePreferenceHandlers({
     setUserPreferences,
     selfParticipantId: selfParticipant?.id ?? null,
   });
@@ -427,6 +454,51 @@ export function EditorCanvasHost() {
   const formatSource = formatSourceId
     ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
     : null;
+
+  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to
+  // docs/specs/012-collaboration/roll-call.md). One bag for all their faces; the write handlers drop out
+  // entirely for a view-role visitor. Held stable while nothing a face shows changes, so a render here
+  // does not re-render every element (docs/specs/008-canvas/canvas-performance.md).
+  const collab = useStableCollab({
+    // The document-write key, not the owner id — see CollabApi.selfKey.
+    selfKey: participantKey(selfParticipant),
+    // Ourselves first: livePresence is the REMOTE roster, and an estimate
+    // card that can't show your own avatar is showing the wrong room.
+    participants: [selfParticipant, ...livePresence],
+    tabTimer: activeTab.timer,
+    respond: isReadOnly ? undefined : collabElements.respond,
+    setResponsesRevealed:
+      isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
+    clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
+    chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
+    addIdea: isReadOnly ? undefined : collabElements.addIdea,
+    revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
+    clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
+    scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
+    pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+    takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
+    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
+    // view-role visitor: the server owns the board and gates them on
+    // read access, which is the point of the element. Running it is
+    // the facilitator's, else any editor's.
+    selfOwnerId: selfParticipant.id,
+    selfName: selfParticipant.name,
+    addQaNote: qaBoard.addQaNote,
+    voteQaNote: qaBoard.voteQaNote,
+    discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
+    closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
+    reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
+    removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
+    clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
+    // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
+    // editing and running the round are the facilitator's, else any editor's.
+    answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
+    startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
+    lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
+    revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
+    resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
+    saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
+  });
 
   return (
     <>
@@ -460,9 +532,21 @@ export function EditorCanvasHost() {
         // real canvas still draws them — a slide has to respond to clicks and
         // carry live element state, and there is then exactly one thing that
         // knows how an element looks.
-        elements={presentingElements ?? activeTab.elements}
+        elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
+        editorMode={editorMode.mode}
+        whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
+        whiteboardInk={PEN_INK[surface]}
+        previewDrawnArrow={(intent, startX, startY, endX, endY) =>
+          drawnArrowAsShown(intent, startX, startY, endX, endY, {
+            elements: activeTab.elements,
+            theme: getTheme(activeTab.theme),
+            whiteboard: drawMode,
+            styleNewElement,
+            surface,
+          })
+        }
         layerInertIds={layerInertIds}
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuides={snapGuides}
@@ -573,50 +657,7 @@ export function EditorCanvasHost() {
             : null
         }
         onStopFollowing={followMe.stopFollowing}
-        // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md). One prop for all
-        // five faces; the write handlers drop out entirely for a view-role
-        // visitor, so the faces render readable but inert rather than offering
-        // presses the room would discard.
-        collab={{
-          // The document-write key, not the owner id — see CollabApi.selfKey.
-          selfKey: participantKey(selfParticipant),
-          // Ourselves first: livePresence is the REMOTE roster, and an estimate
-          // card that can't show your own avatar is showing the wrong room.
-          participants: [selfParticipant, ...livePresence],
-          tabTimer: activeTab.timer,
-          respond: isReadOnly ? undefined : collabElements.respond,
-          setResponsesRevealed:
-            isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
-          clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
-          chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
-          addIdea: isReadOnly ? undefined : collabElements.addIdea,
-          revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
-          clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
-          scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
-          pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
-          takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-          // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
-          // view-role visitor: the server owns the board and gates them on
-          // read access, which is the point of the element. Running it is
-          // the facilitator's, else any editor's.
-          selfOwnerId: selfParticipant.id,
-          selfName: selfParticipant.name,
-          addQaNote: qaBoard.addQaNote,
-          voteQaNote: qaBoard.voteQaNote,
-          discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
-          closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
-          reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
-          removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
-          clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
-          // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
-          // editing and running the round are the facilitator's, else any editor's.
-          answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
-          startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
-          lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
-          revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
-          resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
-          saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
-        }}
+        collab={collab}
         onEraseStart={isReadOnly ? undefined : beginErase}
         onDuplicateMultiSelected={duplicateMultiSelected}
         onDeleteMultiSelected={deleteMultiSelected}
@@ -637,6 +678,7 @@ export function EditorCanvasHost() {
         onAddIcon={addIcon}
         onAddSticker={addSticker}
         onAddTechIcon={addTechIcon}
+        onInsertLibraryShape={(item) => void insertLibraryShape(item)}
         onDropIcon={isReadOnly ? undefined : dropIconOnElement}
         onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
         onAddTable={addTable}
@@ -666,28 +708,28 @@ export function EditorCanvasHost() {
         }}
         onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
+        onDropFile={isReadOnly ? undefined : dropBoardFile}
+        onDropLibraryShape={isReadOnly ? undefined : dropLibraryShape}
         createBlocked={createBlocked}
         onAddImage={addImage}
         onAddArrow={addArrow}
+        reshapingArrowId={reshapingArrowId}
         onBeginFreehand={beginFreehand}
+        onBeginHighlighter={beginHighlighter}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
-        highlighterColor={highlighterColor}
-        highlighterWidth={highlighterWidth}
-        onSetHighlighterColor={setHighlighterColor}
-        onSetHighlighterWidth={setHighlighterWidth}
         pendingDraw={pendingDraw}
         onCommitDraw={commitDraw}
         onCommitFreehand={commitFreehand}
         onCommitPolygon={commitPolygon}
+        onCommitPath={commitPath}
+        onCommitPathEdit={commitPathEdit}
+        onDressPath={styleNewElement}
         settings={userPreferences}
         onChangeSettings={onChangeSettings}
-        // Only Minimal docks the panels. Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's
-        // panels and swaps the Palette + Explorer for the strip and menu button.
-        // A phone resolves Floating to Toolbar, its default.
-        minimalPanels={panelLayout === 'minimal'}
+        // Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's panels and swaps the
+        // Palette + Explorer for the strip and menu button. A phone always shows it.
         toolbarLayout={panelLayout === 'toolbar'}
-        onToggleMinimalPanels={onToggleMinimalPanels}
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
         onRedo={redo}
@@ -703,10 +745,6 @@ export function EditorCanvasHost() {
         teamDocuments={teamDocuments}
         onDismissShared={dismissSharedDocument}
         documentListLoading={documentListLoading}
-        changeLog={activeTabChangeLog}
-        changeLogLoading={changeLogLoading}
-        activityPosition={activityPosition}
-        activityMinimized={activityMinimized}
         mapPosition={mapPosition}
         onMoveMap={(x, y) =>
           // Equality-guarded so a drag tick that resolves to the same spot
@@ -714,17 +752,6 @@ export function EditorCanvasHost() {
           setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
         }
         onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
-        onMoveActivity={(x, y) => setActivityPosition({ x, y })}
-        onToggleActivityMinimized={() => {
-          // Emit only the open transition (minimized -> expanded);
-          // closing isn't a feature-reach signal. The closure read is
-          // safe because this is a single user click, not a rapid
-          // race, so no stale-state risk. The dock / popover layouts
-          // open Activity through useCanvasMobileDock, which counts there.
-          if (activityMinimized) track('UI', 'Opened', 'Activity');
-          setActivityMinimized((v) => !v);
-        }}
-        onResetActivity={() => setActivityPosition(null)}
         layers={layers}
         activeLayerId={activeLayerId}
         layerCounts={layerCounts}
@@ -809,8 +836,8 @@ export function EditorCanvasHost() {
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
         onToggleLayersMinimized={() => {
-          // Emit only the open transition, matching the Activity dock
-          // (the dock / popover layouts count in useCanvasMobileDock).
+          // Emit only the open transition; closing isn't a feature-reach
+          // signal (the dock / popover layouts count in useDockPopovers).
           if (layersMinimized) track('Layer', 'Opened', 'Panel');
           setLayersMinimized((v) => !v);
         }}
@@ -860,13 +887,6 @@ export function EditorCanvasHost() {
             : (id, done, actionId) =>
                 done ? completeAction(id, actionId) : reopenAction(id, actionId)
         }
-        onRevertChange={revertChange}
-        onPreviewRevert={previewRevert}
-        onClearRevertPreview={clearRevertPreview}
-        onActivityRowClick={handleActivityRowClick}
-        onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
-        saveStatus={saveStatus}
-        savedAt={savedAt}
         currentDocumentId={documentId}
         onOpenDocument={openDocument}
         onNewDocument={newDocument}

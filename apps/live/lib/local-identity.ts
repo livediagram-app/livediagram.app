@@ -37,6 +37,11 @@ const KEYS = {
   // Absent for legacy guests created before signing shipped, or when the
   // worker has no GUEST_ID_HMAC_SECRET configured. See docs/specs/014-identity/auth-and-guest-access.md.
   selfSig: `${NS}self-sig`,
+  // An upgrade to a signed id that has been asked for but not yet adopted: {from, to, sig}.
+  // Written before the worker moves the data, cleared once the new id is kept, so a reload
+  // in between resumes the same upgrade instead of minting another id
+  // (docs/specs/014-identity/auth-and-guest-access.md, "An interrupted upgrade resumes").
+  pendingUpgrade: `${NS}pending-signed-id`,
   // Boolean flag — '1' once the user has confirmed their display
   // name via the welcome modal at least once. Used to suppress the
   // identity prompt on subsequent document opens. Only meaningful
@@ -90,6 +95,26 @@ export function clearGuestSelfId(): void {
   removeLocalStorageSafe(KEYS.selfId);
   removeLocalStorageSafe(KEYS.selfSig);
   notifyGuestId();
+}
+
+export type PendingGuestUpgrade = { from: string; to: string; sig: string };
+
+export function getPendingGuestUpgrade(): PendingGuestUpgrade | null {
+  const raw = readLocalStorageSafe(KEYS.pendingUpgrade);
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw) as Partial<PendingGuestUpgrade>;
+    return typeof v.from === 'string' && typeof v.to === 'string' && typeof v.sig === 'string'
+      ? { from: v.from, to: v.to, sig: v.sig }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setPendingGuestUpgrade(pending: PendingGuestUpgrade | null): void {
+  if (pending) writeLocalStorageSafe(KEYS.pendingUpgrade, JSON.stringify(pending));
+  else removeLocalStorageSafe(KEYS.pendingUpgrade);
 }
 
 export function getGuestSelfSig(): string | null {

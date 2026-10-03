@@ -20,6 +20,7 @@ export function SearchInput({
   clearDescription,
   onKeyDown,
   activeDescendantId,
+  listboxId,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -35,6 +36,9 @@ export function SearchInput({
   // The id of the currently walked result, for screen readers: focus stays in
   // the box while the highlight moves, which is the combobox pattern.
   activeDescendantId?: string;
+  // The results list this box drives, when it is always shown beneath it: the box becomes a
+  // combobox controlling that listbox (the whiteboard's More shapes search).
+  listboxId?: string;
 }) {
   return (
     <div className="relative flex-1">
@@ -46,6 +50,10 @@ export function SearchInput({
         placeholder={placeholder}
         aria-label={ariaLabel}
         aria-activedescendant={activeDescendantId}
+        role={listboxId ? 'combobox' : undefined}
+        aria-controls={listboxId}
+        aria-expanded={listboxId ? true : undefined}
+        aria-autocomplete={listboxId ? 'list' : undefined}
         className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
       />
       {value ? (

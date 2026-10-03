@@ -31,9 +31,12 @@ export function SnapWidth({
     const parent = outerRef.current?.parentElement;
     if (!inner) return;
     const measure = () => {
-      let w = Math.ceil(inner.getBoundingClientRect().width);
+      // Inside a UI-scaled surface (docs/specs/007-editor/ui-scale.md) the
+      // rects are screen px and the width written is the zoomed box's own px.
+      const zoom = currentZoom(inner);
+      let w = Math.ceil(inner.getBoundingClientRect().width / zoom);
       if (matchParentParity && parent) {
-        const pw = Math.round(parent.getBoundingClientRect().width);
+        const pw = Math.round(parent.getBoundingClientRect().width / zoom);
         if ((pw - w) % 2 !== 0) w += 1;
       }
       setWidth((prev) => (prev === w ? prev : w));
@@ -52,4 +55,11 @@ export function SnapWidth({
       </div>
     </div>
   );
+}
+
+// The element's effective CSS zoom; 1 where the browser predates
+// `currentCSSZoom`.
+function currentZoom(el: HTMLElement): number {
+  const zoom = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom;
+  return typeof zoom === 'number' && zoom > 0 ? zoom : 1;
 }

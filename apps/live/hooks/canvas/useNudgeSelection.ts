@@ -45,16 +45,8 @@ type NudgeDeps = {
   laneBoard: boolean;
   // History coalescing helpers from useDocumentHistory: the first
   // press of a burst takes a checkpoint, subsequent presses tick.
-  markCheckpoint: () => number;
+  markCheckpoint: () => void;
   tick: (mapElements: (els: Element[]) => Element[]) => void;
-  // Debounced activity-log emitter (see useActivityLogDebounce). Called
-  // on every press; the 500ms per-key window matches the burst window,
-  // so a run of arrow-key presses collapses into ONE "Moved X" entry
-  // rather than one per keystroke.
-  scheduleElementChangeLog: (
-    key: string,
-    opts?: { fillToken?: number; onWindowStart?: () => number },
-  ) => void;
   // Mutable mirror of the autoRebindArrows preference, kept in sync
   // with userPreferences upstream. Read through the ref so a flip
   // in Settings applies on the next press without re-mounting any
@@ -65,9 +57,6 @@ type NudgeDeps = {
 export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => void {
   const burstActiveRef = useRef(false);
   const burstTimerRef = useRef<number | null>(null);
-  // The burst's checkpoint token, so the debounced log entry fills THIS
-  // burst's undo step (see lib/entry-history).
-  const burstTokenRef = useRef<number | undefined>(undefined);
 
   // Clear any in-flight burst timer when the host unmounts so the
   // scheduled "close the burst" callback doesn't fire into a dead
@@ -96,7 +85,7 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
     // returns to the pre-nudge state, then only tick until idle.
     if (!burstActiveRef.current) {
       burstActiveRef.current = true;
-      burstTokenRef.current = deps.markCheckpoint();
+      deps.markCheckpoint();
       // Telemetry (docs/specs/017-telemetry/telemetry.md): one event per burst, not per press.
       // `type` is a preset, never user content.
       track('Element', 'Changed', 'Nudge');
@@ -127,10 +116,6 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
         ? rebindArrowAnchorsAfterMove(moved, movedBoxedIds)
         : moved;
     });
-    // Log the burst as one entry: the first press captures the
-    // pre-nudge snapshot, each press resets the 500ms window, and the
-    // single flush diffs against the settled position → "Moved X".
-    deps.scheduleElementChangeLog('element-nudge', { fillToken: burstTokenRef.current });
   };
 }
 

@@ -1,4 +1,11 @@
-import { ARROW_THICKNESS_PX, DEFAULT_ANIMATION_SPEED, type Element } from '@livediagram/document';
+import {
+  ARROW_THICKNESS_PX,
+  DEFAULT_ANIMATION_SPEED,
+  encodeStrokePoints,
+  freehandPressures,
+  type Element,
+  type FreehandElement,
+} from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {
@@ -27,6 +34,7 @@ const el = (type: string, over: Record<string, unknown> = {}): Element =>
     id: 'e',
     type,
     ...(type === 'shape' ? { shape: 'square' } : {}),
+    ...(type === 'freehand' ? { packedPoints: 'AQA=' } : {}),
     ...over,
   }) as unknown as Element;
 
@@ -227,6 +235,39 @@ describe('border field setters', () => {
     expect(applyBorderStyleToEl(el('shape'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
   });
 
+  it('lets a border width replace the pen width a stroke recorded', () => {
+    const pen = applyBorderStrokeToEl(el('freehand', { penWidth: 8 }), 'thin');
+    expect(pen).toMatchObject({ strokeWidth: 'thin' });
+    expect('penWidth' in pen).toBe(false);
+  });
+
+  it('drops a pen stroke\u2019s pressures and streamline with its pen width', () => {
+    const points = [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ];
+    const pen = applyBorderStrokeToEl(
+      el('freehand', {
+        penWidth: 2.5,
+        packedPoints: encodeStrokePoints(points, [0.2, 0.9]),
+        streamline: 0.2,
+      }),
+      'thin',
+    ) as FreehandElement;
+    // The same points, re-packed without their pressures.
+    expect(pen.packedPoints).toBe(encodeStrokePoints(points));
+    expect(freehandPressures(pen)).toBeUndefined();
+    expect('streamline' in pen).toBe(false);
+  });
+
+  it('keeps the width of a highlighter stroke, which the preset never drew', () => {
+    const marker = applyBorderStrokeToEl(
+      el('freehand', { pen: 'highlighter', penWidth: 20 }),
+      'thin',
+    );
+    expect(marker).toMatchObject({ penWidth: 20 });
+  });
+
   it('radius is shape-only', () => {
     expect(applyBorderRadiusToEl(el('shape'), 'full')).toMatchObject({ borderRadius: 'full' });
     const fh = el('freehand');
@@ -357,5 +398,54 @@ describe('applyIconWeightToEl', () => {
     expect(applyIconWeightToEl(tech, 'bold')).toBe(tech);
     const square = el('shape');
     expect(applyIconWeightToEl(square, 'thin')).toBe(square);
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "One look": the element menu's Ink swatch stores Ink by
+// name; any other colour replaces a stored name.
+describe('Ink by name from the colour rows', () => {
+  it('stores Ink as the line\u2019s name on a shape, an arrow and a pen stroke', () => {
+    for (const type of ['shape', 'arrow', 'freehand']) {
+      const out = applyStrokeColorToEl(el(type, { strokeColor: '#ff0000' }), 'ink') as {
+        strokeColor?: string;
+        penColour?: string;
+      };
+      expect(out.penColour, type).toBe('ink');
+      expect(out.strokeColor, type).toBeUndefined();
+    }
+  });
+
+  it('stores Ink as the text\u2019s name on a shape, a text box, a note and an arrow label', () => {
+    for (const type of ['shape', 'text', 'sticky', 'arrow']) {
+      const out = applyTextColorToEl(el(type, { textColor: '#ff0000' }), 'ink') as {
+        textColor?: string;
+        penTextColour?: string;
+      };
+      expect(out.penTextColour, type).toBe('ink');
+      expect(out.textColor, type).toBeUndefined();
+    }
+  });
+
+  it('lets a picked colour replace a stored name', () => {
+    const line = applyStrokeColorToEl(el('shape', { penColour: 'ink' }), '#00ff00') as {
+      penColour?: string;
+      strokeColor?: string;
+    };
+    expect(line.penColour).toBeUndefined();
+    expect(line.strokeColor).toBe('#00ff00');
+    const text = applyTextColorToEl(el('text', { penTextColour: 'blue' }), '#00ff00') as {
+      penTextColour?: string;
+    };
+    expect(text.penTextColour).toBeUndefined();
+  });
+});
+
+describe('Ink where no name can be stored', () => {
+  it('leaves a table and a note border as they are', () => {
+    const table = el('table', { strokeColor: '#123456', textColor: '#123456' });
+    expect(applyStrokeColorToEl(table, 'ink')).toBe(table);
+    expect(applyTextColorToEl(table, 'ink')).toBe(table);
+    const note = el('sticky', { strokeColor: '#123456' });
+    expect(applyStrokeColorToEl(note, 'ink')).toBe(note);
   });
 });

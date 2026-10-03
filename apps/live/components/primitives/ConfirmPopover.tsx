@@ -24,8 +24,9 @@ type ConfirmPopoverProps = {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
-  // Rose-tinted confirm button for destructive actions (the default).
-  danger?: boolean;
+  // The confirm button's intent: rose for destructive actions (the default),
+  // the soft yellow for one with a way back, brand for anything else.
+  tone?: 'danger' | 'caution' | 'neutral';
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -35,7 +36,7 @@ export function ConfirmPopover({
   message,
   confirmLabel,
   cancelLabel = 'Cancel',
-  danger = true,
+  tone = 'danger',
   onConfirm,
   onCancel,
 }: ConfirmPopoverProps) {
@@ -110,7 +111,7 @@ export function ConfirmPopover({
             }}
           />
         ) : null}
-        <p className="text-xs text-slate-700 dark:text-slate-200">{message}</p>
+        <p className="whitespace-pre-line text-xs text-slate-700 dark:text-slate-200">{message}</p>
         <div className="flex justify-end gap-2">
           {/* py-1 keeps the popover's tighter rhythm; the classes append
               after the size scale, so they win. */}
@@ -118,7 +119,7 @@ export function ConfirmPopover({
             {cancelLabel}
           </Button>
           <Button
-            variant={danger ? 'danger' : 'primary'}
+            variant={tone === 'neutral' ? 'primary' : tone}
             size="xs"
             autoFocus
             onClick={onConfirm}

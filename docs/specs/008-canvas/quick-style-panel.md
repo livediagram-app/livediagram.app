@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While one or more shapes, arrows and / or text elements are selected, a small panel on the right
+While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
 background, text colour (for text elements), stroke width, stroke style, text alignment and icon
 alignment, plus a Clear styles action. What you choose there
@@ -41,71 +41,39 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-The panel is **docked to the right side**, and each panel layout gives it the home that layout's
-chrome already implies.
+The panel sits **on the left edge of the canvas, vertically centred**, in every layout: one gap
+(12 px) in from the canvas's left. The left is out of the way of the Palette, which lives on the
+right.
 
-### Floating: the next panel under the Palette
-
-In the Floating layout the Palette is the right-hand floating panel, so the quick style panel
-joins it: **right beneath the Palette**, left edges aligned, the Palette's width, one corner-stack
-gap (16 px, [Panel corner docking](../007-editor/panel-docking.md)) below it. It wears the Palette's
-panel dress: the same surface, border, radius and shadow, a header with its title
-("Quick style") and a help link, and the panel-opacity preference
-([User preferences](../007-editor/user-preferences.md)). It is not draggable and has no collapse
-button of its own: it follows the Palette rather than being placed, and it leaves when the
-selection does.
-
-Reading it as the Palette's companion is the point: the place you pick a thing to draw and the
-place you dress what you drew sit together, and nothing new appears somewhere else on the canvas.
-
-- **The Palette collapses** to its banner: the panel rises with it, staying one gap below.
-- **The Palette moves**, docked to another corner or dragged free: the panel follows, live during
-  the drag, under wherever the Palette now is.
-- **Something is already stacked under the Palette** (Comments, AI): the panel steps down past it,
-  one gap below the lowest panel in the Palette's column.
-- **No room beneath** (a Palette docked at the bottom, or a short window): directly above the Palette
-  if it fits there whole; else it **stays docked and scrolls**: beneath the Palette with its height
-  capped to the room there and its body scrolling, as long as at least 96 px (the header and one
-  row) is free. Only below that does it fall back to the right-edge placement.
-
-  Staying docked is the decision, not a compromise: the panel's place is the Palette's stack, and a
-  panel that jumps into the middle of the canvas when the window is a little short covers the very
-  diagram it is styling and is no longer where the eye left it. A common case is a 900 px window
-  with the Palette open on Favourites, where the last row (Actions) scrolls into view; collapsing
-  the Palette gives the panel its full height back.
-
-- **No Palette on screen**: the right-edge placement below.
-
-### Toolbar and Minimal: the right edge
-
-In the Toolbar layout ([Toolbar layout](../007-editor/toolbar-layout.md)) the Palette is a strip
-across the top, so there is no panel to dock under. The quick style panel sits **on the right edge,
-vertically centred**, in its compact form (no header). Minimal does the same: its Palette is a
-popover that comes and goes, not a resting panel. The compact form is still a panel, so the
-panel-opacity preference ([User preferences](../007-editor/user-preferences.md)) fades it too.
-
-The compact form is **narrow** (184 px, against the Floating panel's Palette width), because on
-the right edge it stands alone over the canvas rather than inside a column of chrome, and a wide
-block there reads as a second sidebar. The colour swatches draw a little smaller (20 px) but each
-still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), seven to a row with the
-targets touching, so the row is exactly seven targets wide. The three-option rows share the same
-width.
+Each layout keeps its dress. In the Floating layout the panel wears the Palette's panel dress: the
+same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
+header with its title ("Quick style") and a help link. It is not draggable and has no collapse
+button of its own; it leaves when the selection does. In the Toolbar layout it is
+**compact** (no header, 210 px wide): the colour swatches draw a little smaller (20 px) but each
+still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), eight to a row with the
+targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
+rows change, nor when the editor mode changes: every colour row lays out on the same eight columns
+(the theme's seven and Ink in Diagram mode, Ink and the seven stock colours in Draw mode, a
+Background row's seven in the first seven), a row of swatches never wraps and is never clipped (the
+width counts the swatches, their gaps, the padding and the border exactly). In the Floating layout
+with no Palette on screen it is 242 px, room for eight swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
+Floating, and a 1 px border a side.) The panel-opacity preference
+([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
 
 ### Collisions
 
-Never over the Palette or the other floating chrome (panels, dock popovers, the Toolbar strip and
-its More popover, the bottom-right cluster). The right-edge placement tries fixed candidate spots in
-order and takes the first that overlaps none of them:
+Never over the Palette or the other floating chrome (panels, popovers, the Toolbar strip and
+its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
+takes the first that overlaps none of them:
 
-1. the right edge, centred;
-2. the right edge, just below an obstacle on that edge, the highest spot first;
-3. the right edge, just above an obstacle on that edge, the lowest spot first;
-4. directly left of the obstacles on the right edge, centred;
-5. the left edge, centred.
+1. the left edge, centred;
+2. the left edge, just below an obstacle on that edge (the Explorer), the highest spot first;
+3. the left edge, just above an obstacle on that edge, the lowest spot first;
+4. directly right of the obstacles on the left edge, centred;
+5. the right edge, centred.
 
-If none is clear, the first is used. The orders are fixed so the panel always lands in the same place
-for the same chrome, and the right edge is preferred because that is where people look for it.
-Placement is recomputed when the chrome moves or resizes, never on a timer.
+If none is clear, the first is used. The order is fixed so the panel always lands in the same place
+for the same chrome. Placement is recomputed when the chrome moves or resizes, never on a timer, and never while the chrome is still.
 
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.
@@ -123,21 +91,37 @@ working from the context menu.
 
 Top to bottom, each a small title over one row of option buttons:
 
-| Section        | Applies to                                        | Options                            |
-| -------------- | ------------------------------------------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows                                   | 7 colours                          |
-| Background     | Shapes                                            | 7 colours                          |
-| Text colour    | Text elements                                     | 7 colours                          |
-| Stroke width   | Shapes + arrows                                   | Thin / Medium / Thick              |
-| Stroke style   | Shapes                                            | Solid / Dashed / Dotted            |
-|                | Arrows                                            | Solid / Dashed / Flowing           |
-| Text alignment | Shapes whose label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
-| Icon alignment | Shapes with icon                                  | Before / Above / After the label   |
-| Actions        | Shapes + arrows + text elements                   | Clear styles                       |
+| Section            | Applies to                                         | Options                               |
+| ------------------ | -------------------------------------------------- | ------------------------------------- |
+| Stroke             | Shapes + arrows                                    | 7 colours, then Ink                   |
+| Background         | Shapes                                             | 7 colours                             |
+| Text colour        | Text elements                                      | 7 colours, then Ink                   |
+| Stroke width       | Shapes + arrows                                    | Thin / Medium / Thick                 |
+| Stroke style       | Shapes                                             | Solid / Dashed / Dotted               |
+|                    | Arrows                                             | Solid / Dashed / Flowing              |
+| Text alignment     | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal)    |
+| Icon alignment     | Shapes with icon                                   | Before / Above / After the label      |
+| Corners            | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large         |
+| Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
+| Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
+| Actions            | Shapes + arrows + text elements                    | Clear styles                          |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
+- **Corners** (Draw mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
+  every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
+  the web components with a rectangular surface) and leaves the rest. It earns its place on a
+  whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the
+  only place a board's corners can change, and every imported or drawn rectangle carries them.
+  On a diagram tab the menu's Border category already holds them and corners are not among the
+  most-used choices, so the row is not shown there. It offers four options, not three: dropping
+  None would leave no way back to square, and Full is a pill rather than a corner, so it stays in
+  the menu's set. That one row of four is the operator's decision; the rhythm rule below still
+  holds for every other row. An element with no preset (its kind's default corner) marks none.
+  On a whiteboard, Clear styles returns corners to the kind's default too, and the board's style
+  memory remembers them for the next rectangle.
+- **Highlighter colour** and **Highlighter width** are the [Highlighter](highlighter.md)'s settings, shown above the other rows for selected highlight strokes, and on their own (captioned "Highlighter") while the Highlighter tile is armed with nothing selected, where they set the next stroke. Five colours and three widths: the marker's own set, not the theme's. The width row has no context-menu twin, a deliberate exception scoped to these rows ([Highlighter](highlighter.md) "Settings").
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
   arrangement, and a fourth option would break the row rhythm.
@@ -146,7 +130,9 @@ Top to bottom, each a small title over one row of option buttons:
   label) and not on kinds with their own face (the collab panels such as the Q&A board and agenda,
   the session tools, the chair, the comment and action panels, the portal), whose label is a fixed
   title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livediagram/document`, gates both this panel and the
-  context menu's Text Alignment section, so the two can't disagree.
+  context menu's Text Alignment section, so the two can't disagree. The panel also waits for words:
+  a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is
+  nothing to align yet, and the row appears as soon as the shape is given text.
 - **Text colour** is the colour row a text element gets. A text element is its words, with no
   border or fill, so its colour is the one choice it has in common with the other rows, and without
   it a text element was the one kind the panel could not dress. The row is for text elements only:
@@ -155,7 +141,8 @@ Top to bottom, each a small title over one row of option buttons:
 - A section shows when at least one selected element supports it (a background for a shape that has
   one, a border for a shape that draws one, a label slot for alignment, text colour for a text
   element). Sticky notes, tables, images and the other non-shape elements are not styled by the
-  panel; a selection holding only those shows no panel.
+  panel; a selection holding only those shows no panel, and a selection mixing them with styled
+  elements styles the rest (see Multi-selection).
 
 ### Option counts and rhythm
 
@@ -185,6 +172,11 @@ The seven colours are **theme-relative**:
   a near-black one still yields visible strokes). That keeps every row genuinely on-theme (a Sand
   diagram's green is a muted green) while still offering six distinct colours, and it puts the six in
   the same order a multi-colour palette runs, so slot 4 means green everywhere.
+- **Then Ink**, on the Stroke and Text colour rows only, the eighth swatch
+  ([One look](../007-editor/editor-modes.md#one-look)): the same drawing colour on every theme,
+  stored by name (`ink`) and drawn in its version for the canvas, named "Ink" (its accessible name
+  and tooltip). It is not a theme colour, so it takes no custom colour in its place, and a fill
+  has none. Ink is marked when every styled element stores it.
 - **Text colours are readable on the canvas.** The Text colour row's first swatch is the theme's
   label colour. Its six are the same hues as the Stroke row (the palette's branch strokes, or the
   six toned hues), each stepped darker (or lighter, on dark paper) until it reads at 4.5:1 against
@@ -266,14 +258,39 @@ identity otherwise, and into this browser's cache either way.
 
 ## Multi-selection
 
-The panel styles every selected shape, arrow and text element at once, including mixed kinds:
-select three arrows, two rectangles and a circle, press green, and all six turn green. Add a text
-element to that selection and a Text colour row appears beside the others, styling only it.
+The panel styles every selected shape, arrow, path and text element at once, including mixed
+kinds: select three arrows, two rectangles and a circle, press green, and all six turn green. Add a
+text element to that selection and a Text colour row appears beside the others, styling only it.
+
+**Any mix works.** A selection may hold every kind at once (a whole pasted or imported board:
+marker strokes, shapes, lines, arrows, paths, text boxes, stickies, images, frames). Each row
+styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
+elements no row fits (stickies, images, frames, tables and the other non-shape kinds) are passed
+over, never refused, so they never hide the panel from the rest.
 
 - A section shows when **at least one** selected element supports it, and a choice applies only to
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
+- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the seven hued
+  colours and the tab's custom colours, as Marker colour offers them
+  ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
+  Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
+  A line with no colour of its own wears its theme default and marks none. Background keeps the
+  theme's fills.
+- **A colour stored by name** shown in Diagram mode matches no theme swatch, so it marks none;
+  choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
+  canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
+- **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
+  its marker strokes ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel
+  stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
+  style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
+  strokes; the others never touch a stroke.
+- **The caption** above the rows on a whiteboard names what they style when marker strokes are
+  among it: "Marker stroke" or "3 marker strokes" when only strokes are styled, and the count of
+  styled elements when strokes mix with other kinds ("12 elements"). Elements passed over are not
+  counted, and a selection without strokes keeps no caption: its rows name themselves. Power user
+  mode leaves it out, as it does every caption.
 - **Stroke style on a mixed selection** of shapes and arrows offers the shape row (Solid / Dashed /
   Dotted): each of those means something for both kinds (arrows draw dotted lines too), whereas
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
@@ -315,7 +332,7 @@ element of the same kind you draw.
 
 The Actions section's first button. It resets the selected elements' quick-style fields to the
 tab theme's default (stroke, background and label colour, width, style, text alignment, icon
-alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour) **and** forgets the memory of every
+alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour; on a whiteboard any stock colour stored by name, too) **and** forgets the memory of every
 kind it touched, so the next shape of those kinds is the default again. A one-off style stays a
 one-off: without the second half, clearing a shape would leave its style waiting in memory for the
 next one. One undo step.
@@ -363,7 +380,7 @@ WCAG 2.2 AA.
 Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), each panel choice emits
 `Element·Changed` with its own token, distinct from the context menu's, so panel use can be read
 against menu use (which is the evidence the Actions section asks for): `QuickStroke`,
-`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, and
+`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, `QuickCorners`, and
 `QuickClearStyles`. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
 when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared, both
 counted as Custom Swatches in the dashboard's Look & Feel stack.

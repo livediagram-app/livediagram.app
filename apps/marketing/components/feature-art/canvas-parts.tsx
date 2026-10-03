@@ -74,22 +74,6 @@ export function LinkIcon() {
   );
 }
 
-export function RevertIcon() {
-  return (
-    <svg
-      width="8"
-      height="8"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-    >
-      <path d="M3 8 a5 5 0 1 1 1.5 3.6" strokeLinecap="round" />
-      <path d="M3 4 L3 8 L7 8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 export function TeamIcon() {
   return (
     <svg

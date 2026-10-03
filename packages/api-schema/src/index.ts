@@ -12,7 +12,9 @@
 // The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
 // new code should prefer the canonical names here.
 
-import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
+import type { DriveMode } from './drive';
+import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
+import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -22,11 +24,11 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 
 // Full document payload returned by `GET /api/documents/:id`. After
 // per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
-// How a document came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
+// How a document came to exist (docs/specs/013-workspace/folders.md, docs/specs/015-api/mcp-server.md).
 // null = authored by a person in the editor; 'mcp' = created by an
 // external AI tool via the MCP server; 'ai' = created by the in-editor
-// AI assistant (reserved — no producer today). Drives the synthetic
-// "Generated" Explorer folder (source != null).
+// AI assistant (reserved — no producer today). The Explorer's Made by AI
+// filter and badge read it (source != null).
 export type DocumentSource = 'ai' | 'mcp';
 
 // (metadata only) — element content is fetched separately via
@@ -42,13 +44,13 @@ export type LiveDoc = {
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
-  // Folder placement. null means the document is in the conceptual
-  // Unsorted bucket. See docs/specs/013-workspace/folders.md.
+  // Folder placement. null means the document sits at the root of its
+  // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
   // Team library placement (docs/specs/013-workspace/team-shared-documents.md). null = the owner's personal
   // tree; non-null = this team's shared library (where folderId then
   // refers to one of THAT team's folders, or null for the team's
-  // Unsorted). Joined members of the team get edit access.
+  // root). Joined members of the team get edit access.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DocumentSource). Set on create, never rewritten by meta updates.
@@ -69,6 +71,17 @@ export type LiveDoc = {
   // hiding the badge in that case.
   ownerName: string | null;
   ownerColor: string | null;
+} & RecordedIntent;
+
+// The creation intent recorded on a document when it was created, written once by the create and
+// never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
+// is unknown (made before intents were recorded, or by a create without one), never Diagram, and
+// the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
+// `templateFamily` means made from no family.
+export type RecordedIntent = {
+  opensIn: EditorMode | null;
+  tabKind: CreationTabKind | null;
+  templateFamily: TemplateFamily | null;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -86,7 +99,10 @@ export type DocumentSummary = {
   source: DocumentSource | null;
   savedAt: number;
   createdAt: number;
-};
+  // Nothing drawn: the first tab has no elements, or there is no tab
+  // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
+  empty: boolean;
+} & RecordedIntent;
 
 // A document's shared tabs: how many of its tabs are also linked into another
 // document, and how many other documents hold them. What the delete and Take
@@ -123,6 +139,8 @@ export type SharedWithItem = {
   // the UI shows an "Unknown owner" placeholder.
   ownerName: string | null;
   ownerColor: string | null;
+  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see DocumentSummary.empty.
+  empty: boolean;
 };
 
 // ---------------------------------------------------------------------
@@ -289,6 +307,9 @@ export type TeamMember = {
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
   name: string | null;
+  // The joined member's published profile picture (docs/specs/014-identity/profile-picture.md §5), or
+  // null (pending invite, no picture, or the switch off).
+  pictureUrl: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -377,6 +398,10 @@ export type ParticipantRecord = {
   name: string;
   color: string;
   createdAt: number;
+  // The published profile picture (docs/specs/014-identity/profile-picture.md §6): set only by the
+  // participant's own verified Clerk session, null when they have none or turned it off, and
+  // returned only to signed-in callers (null for everyone else).
+  pictureUrl: string | null;
 };
 
 // What the realtime room broadcasts as presence. Identical shape to
@@ -419,6 +444,10 @@ export type ParticipantPresence = {
   // older client's hello still parses (the roster falls back to `id`, which
   // simply matches nothing — the behaviour before this field existed).
   key?: string;
+  // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
+  // room keeps it only from a verified account session and sends it only to account sessions;
+  // anonymous recipients get the roster without it.
+  picture?: string;
 };
 
 // ---------------------------------------------------------------------
@@ -439,50 +468,6 @@ export type ImageSummary = {
   createdAt: number;
 };
 
-// ---------------------------------------------------------------------
-// Change log (docs/specs/012-collaboration/activity-and-audit.md)
-// ---------------------------------------------------------------------
-
-export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
-
-// One row of the audit log. `beforeState` / `afterState` are objects
-// keyed by element id; a null on either side means the element didn't
-// exist on that side of the change (an add has before=null for that
-// id, a delete has after=null).
-export type ChangeLogEntry = {
-  id: string;
-  // Tab the change happened on. Nullable in the schema for legacy
-  // document-scoped entries; new entries always carry a real id
-  // (since #14 dropped the document_id column the tab id is now the
-  // canonical pointer into the change_log → tabs → document_tabs
-  // chain — see docs/specs/006-document/tab-document-many-to-many.md).
-  tabId: string | null;
-  participantId: string;
-  participantName: string;
-  participantColor: string;
-  kind: ChangeLogKind;
-  summary: string;
-  elementIds: string[];
-  beforeState: Record<string, unknown>;
-  afterState: Record<string, unknown>;
-  createdAt: number;
-};
-
-// How many of the most recent change-log entries the Activity Panel
-// surfaces (docs/specs/012-collaboration/activity-and-audit.md). Shared so the server hydrate (`GET .../log` LIMIT)
-// and the client's in-session list cap can't drift apart: the panel shows
-// "the most recent N", and if the client retained more than the server
-// hydrates, a reload would silently change how much history is visible.
-// Older entries stay in D1 for audit completeness; the UI just pages to N.
-export const CHANGE_LOG_LIST_LIMIT = 30;
-
-// The 409 `error` token `POST .../log` answers when the entry names a tab
-// that isn't (yet) linked to the document. The common cause is benign: the
-// editor logs an edit the moment it happens, but a brand-new tab only
-// reaches D1 on the debounced autosave, so the first edit on it can beat
-// its own tab row. The client retries that one quietly (docs/specs/012-collaboration/activity-and-audit.md).
-export const CHANGE_LOG_TAB_NOT_SAVED = 'tab_not_saved';
-
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
@@ -490,7 +475,7 @@ export { sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
-export { bytesToBase64, bytesToBase64Url } from './bytes';
+export { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
@@ -506,6 +491,10 @@ export {
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { titleCase } from './title-case';
+// The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
+export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
+// The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
+export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
 // so the two can't disagree on what a request presented (see ./request-auth.ts).
@@ -542,6 +531,9 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
+  // gets Google access tokens. Optional so an older worker parses as 'off'.
+  driveMode?: DriveMode;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -573,3 +565,29 @@ export * from './activity';
 export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
+export * from './drive';
+export * from './profile-picture';
+// A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
+// check, and the editor's before it sends an imported board's dates.
+export * from './document-dates';
+// A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
+// enforces it, the editor checks it before sending.
+export * from './tab-size';
+export * from './shape-libraries';
+
+// Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
+export {
+  PLACEMENT_REJECTIONS,
+  isPlacementRejection,
+  type DocumentPlacement,
+  type PlacementRejection,
+} from './placement';
+
+// Default folders: the keys in force and the creation intent a create carries
+// (docs/specs/013-workspace/default-folders.md).
+export * from './placement-defaults';
+// Explorer Home: opens, Jump back in, the own Timeline and What happened
+// (docs/specs/013-workspace/explorer-home.md).
+export * from './home';
+export * from './drag-preview';
+export * from './frecency';

@@ -38,8 +38,7 @@ function harness(elements: Element[], selection: Set<string>) {
       tickTabs: (map) => {
         committed = map([committed])[0]!;
       },
-      markCheckpoint: () => 1,
-      scheduleElementChangeLog: () => {},
+      checkpointBurst: () => {},
     }),
   ).result.current;
   return { style, result: () => committed.elements, tab: () => committed };

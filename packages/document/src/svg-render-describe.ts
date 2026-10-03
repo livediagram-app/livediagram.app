@@ -4,7 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
-import { BORDER_RADIUS_PX } from './border-style';
+import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { ownColours } from './behaviour-skin';
 import {
   defaultFillColor,
@@ -23,10 +23,15 @@ import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
+import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
+import { runFontPx } from './label-font';
+import { resolveStockColours } from './stock-colours';
+import { DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 
 export const EXPORT_PADDING = 32;
-export const EXPORT_BG = '#ffffff';
+// A tab that stores no canvas colour is on the Default theme: its light canvas.
+export const EXPORT_BG = DEFAULT_BACKGROUND_COLOR;
 export const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 export const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 export const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
@@ -123,15 +128,20 @@ export function exportFontIds(
   return fontIdsUsed(boxed, tabFont, boxed.map(eventStormingNoteFont));
 }
 
-export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions = {}): BoxedExport {
+export function describeBoxedExport(
+  source: BoxedElement,
+  opts: BoxedExportOptions = {},
+): BoxedExport {
   const surface = opts.surface ?? 'light';
+  // A stock colour stored by name is drawn in its version for this page.
+  const el = resolveStockColours(source, surface);
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
   const fontFamily = exportFontFamily(el, opts.tabFont);
   const opacity = el.opacity ?? 1;
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar
     // 'full' → circle), objectFit defaults to 'contain'.
-    const radius = el.borderRadius !== undefined ? BORDER_RADIUS_PX[el.borderRadius] : 4;
+    const radius = cornerRadiusPx(el.borderRadius, el.width, el.height, IMAGE_DEFAULT_RADIUS_PX);
     const objectFit = el.objectFit ?? 'contain';
     const href = el.imageId ? resolveImageHref?.(el.imageId) : undefined;
     return {
@@ -242,13 +252,15 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
   const multiline = el.type === 'sticky';
-  const baseSize = fontSizeFor(el.textSize, multiline);
+  // A Shift-resized text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  const textScale = el.type === 'text' ? (el.textScale ?? 1) : 1;
+  const baseSize = fontSizeFor(el.textSize, multiline) * textScale;
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
         text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
-        size: run.size ? fontSizeFor(run.size, multiline) : baseSize,
+        size: run.size ? runFontPx(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
       }))
@@ -269,6 +281,42 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   // A workshop note exports in capitals, exactly as the board paints it
   // (docs/specs/021-event-storming/event-storming.md) — a shared PNG that quietly restored sentence case would
   // stop being the board people were looking at.
+  const upright =
+    el.type === 'shape' && el.shape === 'lane' && isUprightTitle(el)
+      ? uprightTitleStrip(el, el.width, el.height)
+      : null;
+  if (upright && el.label) {
+    // The turned frame: as long as the strip is tall, as tall as it is thick, turned about its
+    // top-left corner (the strip's bottom-left).
+    const inset = Math.min(PADDING_PX.sm, pad);
+    const fx = el.x + upright.x;
+    const fy = el.y + upright.y + upright.height;
+    const along = upright.alongAlign;
+    return {
+      opacity,
+      shape,
+      label: {
+        text: el.label,
+        x:
+          along === 'right'
+            ? fx + upright.height - inset
+            : along === 'left'
+              ? fx + inset
+              : fx + upright.height / 2,
+        y: fy + upright.width / 2,
+        anchor: along === 'right' ? 'end' : along === 'left' ? 'start' : 'middle',
+        valign: 'middle',
+        maxWidth: Math.max(0, upright.height - 2 * inset),
+        color: baseColor,
+        size: baseSize,
+        bold: !!el.textBold,
+        italic: !!el.textItalic,
+        fontFamily,
+        runs,
+        turnAbout: { x: fx, y: fy },
+      },
+    };
+  }
   const label: ExportLabel | null = el.label
     ? {
         text: eventStormingLabelText(el, el.label),

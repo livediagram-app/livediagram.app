@@ -81,13 +81,13 @@ is.
 Grouped by priority; each links the keyed article.
 
 > **Floating-panel headers carry no help icon.** The Explorer, Palette,
-> Activity, Comments, and AI panels previously each had a bare-glyph
+> Activity (since removed), Comments, and AI panels previously each had a bare-glyph
 > `HelpArticleLink` in their header. These were removed: the editor header
 > already has a prominent global Help icon, and a `?` on every panel made the
 > canvas chrome noisy. Contextual links now live only in dialogs, in-panel
 > settings (the Settings dialog's rows), and **empty-state messages** (the
 > empty-canvas Quick Start banner keeps its link). The articles themselves
-> (`explorerPanel`, `palette`, `reverting-changes`, `comments`, `ai-tools`)
+> (`explorerPanel`, `palette`, `comments`, `ai-tools`)
 > stay in the registry, reachable from the help centre and the header.
 
 **High priority**
@@ -116,7 +116,7 @@ Grouped by priority; each links the keyed article.
 - Themes pane empty state -> `custom-themes`
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
-- Settings - minimal panels -> `minimal-panels`
+- Settings - panel layout -> `toolbar-layout`
 - Settings - telemetry -> `what-we-collect`
 
 **Onboarding / empty states**
@@ -144,12 +144,12 @@ chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`
 Declared on the shared component rather than left to each panel's own
 `headerActions`, so the affordance sits in the SAME place on every panel — a
 help button that moves around teaches people not to look for it. It renders in
-both the desktop header and the mobile / minimal band, and stops the pointer so
+both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
 Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
-the seven tool panels (Avatar, Laser, Spotlight, Eraser, Format, Highlighter,
-Slide Deck). This closed the gap the feature was written for and had never
+the six tool panels (Avatar, Laser, Spotlight, Eraser, Format, Slide Deck)
+(a seventh, the Highlighter's, went when the Highlighter became a Draw tile). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { isEventStormingTab, settleNotesOnLanes, type Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 // The one-time settle of an older event-storming board
 // (docs/specs/021-event-storming/event-storming.md "Always on a lane"). A board authored before lanes held notes can
@@ -23,7 +24,7 @@ export function useLaneSettle(deps: {
   // A view-only session, a locked tab, or a tab whose content is not loaded
   // yet: nothing may be written, and a half-loaded tab must not be marked.
   editsBlocked: boolean;
-  // One undoable step on the active tab, with its activity-log diff.
+  // One undoable step on the active tab.
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Set the mark without an undo step (a board with nothing to move).
   markSettled: (tabId: string) => void;
@@ -44,7 +45,7 @@ export function useLaneSettle(deps: {
     const d = depsRef.current;
     if (movedIds.length === 0) {
       d.markSettled(activeTab.id);
-      console.debug('[es-lanes] marked', { tabId: activeTab.id });
+      debugLog('[es-lanes] marked', { tabId: activeTab.id });
       return;
     }
     d.commitActiveTab((t) => ({
@@ -54,6 +55,6 @@ export function useLaneSettle(deps: {
     }));
     d.toastInfo(settleToast(movedIds.length));
     track('Canvas', 'Used', 'LanesSettled');
-    console.info('[es-lanes] settled', { tabId: activeTab.id, moved: movedIds.length });
+    debugLog('[es-lanes] settled', { tabId: activeTab.id, moved: movedIds.length });
   }, [activeTab, editsBlocked]);
 }

@@ -24,12 +24,14 @@ import {
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
   MCP_TOOL_CALLS,
+  DRIVE_MIRROR,
   OFFLINE_MODE,
   PAGE_VIEWS_BY_APP,
   PALETTE_USE,
   PANELS_OPENED,
   PHOTO_IMPORT,
   POLLS,
+  WHITEBOARDS,
   PRESENTATIONS,
   SETTINGS_CHANGED,
   SHARING_AND_JOINING,
@@ -39,10 +41,11 @@ import {
   TABLES,
   TEAM_ACTIVITY,
   TIMELINE_AND_ACTIVITY,
-  UNDO_AND_REVERT,
+  UNDO_AND_REDO,
   VOTING,
   WELCOME_TOUR,
   POWER_USER_OFFER,
+  NEW_VERSION_PROMPT,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { ViewKey } from './view-keys';
@@ -75,6 +78,7 @@ export const GROUPS: MetricGroup[] = [
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
       POWER_USER_OFFER,
+      NEW_VERSION_PROMPT,
     ],
   },
   {
@@ -86,7 +90,7 @@ export const GROUPS: MetricGroup[] = [
       ELEMENTS_ADDED,
       ELEMENT_EDITING,
       TABLES,
-      UNDO_AND_REVERT,
+      UNDO_AND_REDO,
       EXPORT_AND_IMPORT,
     ],
   },
@@ -95,6 +99,7 @@ export const GROUPS: MetricGroup[] = [
     metrics: [
       AI_ASSISTANCE,
       PHOTO_IMPORT,
+      WHITEBOARDS,
       OFFLINE_MODE,
       LAYERS_FEATURE,
       PALETTE_USE,
@@ -119,7 +124,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Connections',
-    metrics: [API_TOKEN_ACTIVITY, MCP_TOOL_CALLS],
+    metrics: [API_TOKEN_ACTIVITY, MCP_TOOL_CALLS, DRIVE_MIRROR],
   },
   {
     title: 'Health & support',

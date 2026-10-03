@@ -1,6 +1,6 @@
 // Barrel for the livediagram HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + documents / tabs / share /
-// change-log / folders / self / room / images / preferences / ai); this
+// folders / self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
 
@@ -9,8 +9,6 @@
 // `@livediagram/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
 export type {
-  ChangeLogEntry,
-  ChangeLogKind,
   Folder,
   ImageSummary,
   ShareLink,
@@ -36,6 +34,7 @@ export {
   API_BASE,
   DOCUMENT_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
+  registerTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,
   readCachedSharePassword,
@@ -46,9 +45,9 @@ export * from './api/documents';
 export * from './api/tabs';
 export * from './api/qa-board';
 export * from './api/share';
-export * from './api/change-log';
 export * from './api/folders';
 export * from './api/custom-themes';
+export * from './api/shape-libraries';
 export * from './api/teams';
 export * from './api/tokens';
 export * from './api/oauth';
@@ -56,9 +55,12 @@ export * from './api/self';
 export * from './api/room';
 export * from './api/images';
 export * from './api/favourites';
+export * from './api/placement-defaults';
 export * from './api/timeline';
 export * from './api/activity';
+export * from './api/home';
 export * from './api/preferences';
 export * from './api/ai';
 export * from './api/unfurl';
 export * from './api/trash';
+export * from './api/drive';

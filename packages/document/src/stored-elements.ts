@@ -3,8 +3,15 @@
 
 import { dropLegacyDocks } from './legacy-docks';
 import { migrateLegacyGroups } from './legacy-groups';
+import { migrateLegacyModeButtons } from './legacy-mode-buttons';
+import { migrateLegacyStrokePoints } from './legacy-stroke-points';
+import { migrateLegacyTextSizing } from './legacy-text-sizing';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
-  return dropLegacyDocks(migrateLegacyGroups(elements));
+  return migrateLegacyModeButtons(
+    migrateLegacyTextSizing(
+      migrateLegacyStrokePoints(dropLegacyDocks(migrateLegacyGroups(elements))),
+    ),
+  );
 }

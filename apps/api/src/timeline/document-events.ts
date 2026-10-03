@@ -6,7 +6,7 @@
 // categories that never carry user content, which is what lets four
 // bubbles collapse into one honest stacked headline (docs/specs/013-workspace/timeline.md §2.1).
 
-import { TIMELINE_COMMENT_MAX } from '@livediagram/api-schema';
+import { HOME_OPENED_EVENT_TYPE, TIMELINE_COMMENT_MAX } from '@livediagram/api-schema';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import { dedupeKeyForDay, dedupeKeyOnce } from '../db/timeline';
 import type { DocumentDTO, Env } from '../types';
@@ -154,9 +154,7 @@ export async function recordTeamDocumentRemoved(
 
 // The coalesced editing event (docs/specs/013-workspace/timeline.md §4.2).
 //
-// Emitted from the tab-save path rather than from `change_log`: the log
-// is tab-scoped and 90-day, and reading it back to derive a daily
-// rollup would be a join on every save. The dedupe key collapses a
+// Emitted from the tab-save path. The dedupe key collapses a
 // whole day of saves by one person on one document into a single row
 // whose occurred_at walks forward — otherwise the highest-volume write
 // in the product would bury every other event kind, stacking or not.
@@ -189,7 +187,8 @@ export async function recordDocumentEdited(
 export async function recordCommentAdded(
   env: Env,
   liveDoc: DocumentRef,
-  comment: { id: string; text: string; authorName: string; authorColor?: string },
+  // `reply`: not the first comment of its thread (Explorer Home says "replied").
+  comment: { id: string; text: string; authorName: string; authorColor?: string; reply: boolean },
   actorId: string,
 ): Promise<void> {
   await record(
@@ -208,6 +207,7 @@ export async function recordCommentAdded(
         ...documentSnapshot(liveDoc),
         authorName: comment.authorName,
         authorColor: comment.authorColor ?? null,
+        reply: comment.reply,
       },
     },
     await audienceForDocument(env, liveDoc),
@@ -261,6 +261,8 @@ export async function recordActionAssigned(
         ...documentSnapshot(liveDoc),
         actionName: action.name,
         assigneeName: action.assigneeName,
+        // Who it went to, so Explorer Home can say "assigned you an action" to them alone.
+        assigneeId: action.assigneeId,
       },
     },
     mergeScopes(
@@ -383,6 +385,34 @@ export async function recordDocumentSynced(
       snapshot: documentSnapshot(liveDoc),
     },
     await audienceForDocument(env, liveDoc),
+  );
+}
+
+// A person opened a document (docs/specs/013-workspace/explorer-home.md "Opens"). Private: scoped
+// to the person alone, never the document's history or a team's feed, and left out of the
+// Timeline feed (docs/specs/013-workspace/timeline.md §4.2); Home's Timeline column reads it by
+// actor. Called once per person per document per UTC day, by recordDocumentOpen, which owns the
+// dedupe; the day key makes a retry land on the same row.
+export async function recordDocumentOpened(
+  env: Env,
+  liveDoc: DocumentRef,
+  personId: string,
+  at: number,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId: personId,
+      sourceType: 'document',
+      sourceId: liveDoc.id,
+      eventType: HOME_OPENED_EVENT_TYPE,
+      dedupeKey: dedupeKeyForDay(personId, at),
+      title: 'Document Opened',
+      description: liveDoc.name,
+      occurredAt: at,
+      snapshot: documentSnapshot(liveDoc),
+    },
+    [userScope(personId)],
   );
 }
 

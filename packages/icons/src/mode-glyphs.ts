@@ -2,7 +2,8 @@
 // the editor's palette and Mode button (through <Prims>) and the export (through
 // iconPrimsMarkup) all render, so an exported Mode button shows the same glyph
 // as the canvas. Keyed by the mode ids in @livediagram/document's SELECTION_MODES
-// (a test there checks every mode has one); `units` is the glyph's viewBox.
+// (a test there checks every mode has one), plus the Highlighter, a former mode whose
+// glyph its Draw tile kept; `units` is the glyph's viewBox.
 
 import {
   lucideFootprints,
@@ -74,7 +75,8 @@ export const MODE_GLYPHS: Record<string, ModeGlyph> = {
       { t: 'path', d: 'M13.2 4.8v5.4L8 13.2' },
     ],
   },
-  // A marker over a faint, heavy stroke of highlight.
+  // A marker over a faint, heavy stroke of highlight. Not a selection mode any more: the
+  // Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md), which keeps this drawing.
   highlighter: {
     units: 16,
     prims: [

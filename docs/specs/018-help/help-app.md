@@ -52,18 +52,16 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `canvas`               | Canvas               | frame     | feature |
 | `tabs`                 | Tabs                 | tabs      | feature |
 | `collaboration`        | Collaboration        | users     | feature |
-| `activity-panel`       | Activity Panel       | activity  | feature |
 | `tools`                | Tools                | tools     | feature |
 | `search-panel`         | Search Panel         | search    | feature |
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Recent, Shared with you, Personal Space and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar section.
-- **Palette** — the floating palette, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per gear-menu setting: Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset Palette Position).
-- **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28).
+- **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared with me, My documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
+- **Palette** — the floating palette, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout, Reset Palette Position).
+- **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Activity Panel** — the per-document change log (12) promoted to its own category: What it is, How it works, Undo, Redo, and Reverting a change, one guide each.
 - **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
@@ -241,7 +239,7 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** became **Draw mode** when whiteboarding became an editor mode ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the **Highlighter** moved from Selection Modes to the palette's Tools when it became a Draw tile ([Highlighter](../008-canvas/highlighter.md)), and the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo); each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
@@ -251,13 +249,21 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
 | `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
 | `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
+| `/help/canvas/whiteboards/`                            | `/help/canvas/draw-mode/`                               |
+| `/help/selection-modes/highlighter/`                   | `/help/palette/tools/highlighter/`                      |
+| `/help/activity-panel/`                                | `/help/canvas/undo/`                                    |
+| `/help/activity-panel/what-it-is/`                     | `/help/canvas/undo/`                                    |
+| `/help/activity-panel/how-it-works/`                   | `/help/canvas/undo/`                                    |
+| `/help/activity-panel/undo/`                           | `/help/canvas/undo/`                                    |
+| `/help/activity-panel/redo/`                           | `/help/canvas/redo/`                                    |
+| `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
 
 "Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
 <!-- /legacy-names -->
 
 ## Header
 
-The help centre's header is the shared `SiteHeader` from `@livediagram/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand + the apps menu (keyed to Help) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and one primary **Start drawing** CTA (`/new`) on the right in place of marketing's Just Draw / Choose Template pair. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
+The help centre's header is the shared `SiteHeader` from `@livediagram/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand + the apps menu (keyed to Help) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and one primary **Start drawing** CTA (`/new`) on the right in place of marketing's Start Blank / Choose Template pair. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
 
 ## SEO
 

@@ -12,13 +12,7 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/document';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
-import {
-  effectiveRunStyle,
-  elementRunDefaults,
-  FIXED_FONT_PX,
-  MULTI_FONT_PX,
-  MULTI_RUN_PX,
-} from './label-style';
+import { effectiveRunStyle, elementRunDefaults, labelBasePx, labelRunPx } from './label-style';
 import { offsetsToDomRange, selectRange } from '@/components/rich-text/rich-text-dom';
 import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
 import { track } from '@/lib/telemetry';
@@ -29,6 +23,8 @@ export function useRichTextSession({
   initialLabel,
   initialRuns,
   textSize,
+  textScale = 1,
+  onLiveText,
   fitBox,
   multiline,
   uppercase,
@@ -42,6 +38,8 @@ export function useRichTextSession({
   | 'initialLabel'
   | 'initialRuns'
   | 'textSize'
+  | 'textScale'
+  | 'onLiveText'
   | 'fitBox'
   | 'multiline'
   | 'uppercase'
@@ -62,12 +60,8 @@ export function useRichTextSession({
   // mount effect. Consumed by the first beforeinput.
   const needsEndCaretRef = useRef(false);
 
-  const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
-  const staticBasePx = multiline
-    ? MULTI_FONT_PX[textSize]
-    : textSize === 'scale'
-      ? 16
-      : FIXED_FONT_PX[textSize];
+  const runSizePx = labelRunPx(multiline, textScale);
+  const staticBasePx = labelBasePx(multiline, textSize) * textScale;
 
   const doc = useRichTextDocument({
     initialRuns: initialRuns && initialRuns.length ? initialRuns : runsFromPlainText(initialLabel),
@@ -161,6 +155,13 @@ export function useRichTextSession({
     refreshActive();
   });
   useLayoutEffect(() => mountSession(), []);
+
+  // The live text, out to a text box that grows with it (docs/specs/023-draw-mode/draw-mode.md
+  // "Text boxes"): after every change to the text or its formatting, before the frame paints, so
+  // the box never trails what was typed.
+  useLayoutEffect(() => {
+    if (editorRef.current) onLiveText?.(editorRef.current);
+  }, [liveText, active, onLiveText, editorRef]);
 
   useEffect(() => {
     // Clear the toolbar-interaction flag once the pointer is released, so a

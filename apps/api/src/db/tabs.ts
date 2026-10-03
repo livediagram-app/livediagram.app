@@ -3,6 +3,17 @@
 
 import { capElementActions, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';
+import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
+
+// Every write of a tab's data meets this first (docs/specs/015-api/api.md "Tab size"): data over the
+// cap would fail in D1 with a generic error (and pass locally, where the row cap isn't enforced), so
+// it is refused here, logged, and nothing is written.
+function assertTabDataFits(tabId: string, data: string, write: string): void {
+  const bytes = byteLength(data);
+  if (bytes <= MAX_TAB_BYTES) return;
+  logTabRefused(write, tabId, bytes);
+  throw new TabTooLargeError(tabId, bytes, write);
+}
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
@@ -34,18 +45,52 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
 // no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
-export async function getFirstTabData(env: Env, documentId: string): Promise<string | null> {
+// The `empty` column of a document list (docs/specs/006-document/document-snapshots.md): the element
+// count of the document's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
+// count each tab write binds (migration 0059), never a tab body. NULL = no tab, -1 = not yet known.
+export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | null = null): string {
+  const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
+  return `(SELECT COALESCE(t.element_count, -1)
+             FROM document_tabs dt
+             JOIN tabs t ON t.id = dt.tab_id
+            WHERE dt.document_id = ${documentIdSql}${scope}
+            ORDER BY dt.order_index ASC
+            LIMIT 1) AS first_tab_count`;
+}
+
+// No tab, or a counted tab with no elements. A count not yet known is not empty: its thumbnail is asked for.
+export function isEmptyCount(firstTabCount: number | null | undefined): boolean {
+  return firstTabCount == null || firstTabCount === 0;
+}
+
+// A stored tab body with its id and its element count (null until known, migration 0059).
+export type StoredTabBody = { id: string; data: string; elementCount: number | null };
+
+// The document's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
+export async function getTabBody(
+  env: Env,
+  documentId: string,
+  tabId: string | null = null,
+): Promise<StoredTabBody | null> {
   const row = await env.DB.prepare(
-    `SELECT t.data
+    `SELECT t.id, t.data, t.element_count
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ?
+      WHERE dt.document_id = ?${tabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC
       LIMIT 1`,
   )
-    .bind(documentId)
-    .first<{ data: string }>();
-  return row?.data ?? null;
+    .bind(...(tabId === null ? [documentId] : [documentId, tabId]))
+    .first<{ id: string; data: string; element_count: number | null }>();
+  return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
+}
+
+// The lazy backfill (migration 0059): a reader that has parsed a body whose count is still unknown
+// records it. Only ever fills a null, so it can never undo a write's own count.
+export async function stampTabElementCount(env: Env, tabId: string, count: number): Promise<void> {
+  await env.DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
+    .bind(count, tabId)
+    .run();
 }
 
 // The raw `tabs.data` JSON for a SPECIFIC tab in a document, or null when
@@ -86,6 +131,7 @@ export async function upsertTab(
   const tab = { ...input, elements: capElementActions(input.elements) };
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
+  assertTabDataFits(id, data, 'upsertTab');
   const now = Date.now();
   // The body goes to `tabs`, this document's position to its `document_tabs`
   // link (docs/specs/006-document/tab-document-many-to-many.md). The two writes
@@ -96,13 +142,14 @@ export async function upsertTab(
   // serial D1 hops were the single largest latency item on the path.
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO tabs (id, name, data, updated_at)
-       VALUES (?, ?, ?, ?)
+      `INSERT INTO tabs (id, name, data, updated_at, element_count)
+       VALUES (?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          data = excluded.data,
-         updated_at = excluded.updated_at`,
-    ).bind(id, name, data, now),
+         updated_at = excluded.updated_at,
+         element_count = excluded.element_count`,
+    ).bind(id, name, data, now, tab.elements.length),
     env.DB.prepare(
       `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
@@ -127,22 +174,34 @@ export async function upsertTab(
 // way costs ~3K serial round trips. Here we collect every insert and
 // submit one batch, then bump saved_at exactly once. Same ON CONFLICT
 // semantics as upsertTab so a retried create stays idempotent.
-export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promise<void> {
+// `savedAt`: the document's last-modified date after seeding, its own when a create carried one
+// (docs/specs/015-api/api.md "Document dates"); absent, now.
+export async function seedTabs(
+  env: Env,
+  documentId: string,
+  tabs: Tab[],
+  savedAt?: number,
+): Promise<void> {
   if (tabs.length === 0) return;
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
+  // Every tab measured before any is written: a create seeds all or none.
+  for (const { id, name: _name, ...rest } of capped) {
+    assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
+  }
   const stmts = capped.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
     const data = JSON.stringify(rest);
     return [
       env.DB.prepare(
-        `INSERT INTO tabs (id, name, data, updated_at)
-         VALUES (?, ?, ?, ?)
+        `INSERT INTO tabs (id, name, data, updated_at, element_count)
+         VALUES (?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            name = excluded.name,
            data = excluded.data,
-           updated_at = excluded.updated_at`,
-      ).bind(id, name, data, now),
+           updated_at = excluded.updated_at,
+           element_count = excluded.element_count`,
+      ).bind(id, name, data, now, tab.elements.length),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
@@ -151,7 +210,10 @@ export async function seedTabs(env: Env, documentId: string, tabs: Tab[]): Promi
     ];
   });
   stmts.push(
-    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
+    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(
+      savedAt ?? now,
+      documentId,
+    ),
   );
   // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
@@ -188,12 +250,6 @@ export async function tabIdsHeldElsewhere(
 // an unlink from one of their containing documents so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
-//
-// change_log entries follow the tabs row: they live on the tab id
-// (per #14 in docs/specs/006-document/tab-document-many-to-many.md), so they get dropped only when the tab
-// itself goes away. Cascading the log on every unlink would wipe
-// the audit panel for every other document that still surfaces the
-// shared tab.
 export async function deleteTabRow(env: Env, documentId: string, tabId: string): Promise<void> {
   await env.DB.prepare('DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?')
     .bind(documentId, tabId)
@@ -206,7 +262,6 @@ export async function deleteTabRow(env: Env, documentId: string, tabId: string):
     await env.DB.batch([
       imageRefPruneTabStatement(env, tabId),
       env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
-      env.DB.prepare('DELETE FROM change_log WHERE tab_id = ?').bind(tabId),
     ]);
   }
 }
@@ -357,15 +412,15 @@ export async function swapTabData(
   tabId: string,
   expectedData: string,
   nextData: string,
+  // `nextData`'s element count, from the tab the caller parsed to build it (migration 0059).
+  nextElementCount: number,
 ): Promise<boolean> {
+  assertTabDataFits(tabId, nextData, 'swapTabData');
   const now = Date.now();
   const [res] = await env.DB.batch([
-    env.DB.prepare('UPDATE tabs SET data = ?, updated_at = ? WHERE id = ? AND data = ?').bind(
-      nextData,
-      now,
-      tabId,
-      expectedData,
-    ),
+    env.DB.prepare(
+      'UPDATE tabs SET data = ?, updated_at = ?, element_count = ? WHERE id = ? AND data = ?',
+    ).bind(nextData, now, nextElementCount, tabId, expectedData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;

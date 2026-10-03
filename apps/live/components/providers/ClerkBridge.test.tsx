@@ -14,7 +14,13 @@ const clerk = vi.hoisted(() => ({
   reverified: (() => Promise.resolve()) as () => Promise<void>,
   auth: { getToken: async () => 'jwt', isLoaded: true, isSignedIn: true, userId: 'u1' },
   signOut: async () => {},
-  user: { id: 'u1', delete: async () => {} },
+  user: {
+    id: 'u1',
+    delete: async () => {},
+    hasImage: false,
+    imageUrl: 'https://img.clerk.com/default-avatar',
+    externalAccounts: [{ provider: 'google', imageUrl: 'https://img.clerk.com/google-picture' }],
+  },
 }));
 vi.mock('@clerk/react', () => ({
   ClerkProvider: ({ children }: { children: ReactNode }) => children,
@@ -43,5 +49,11 @@ describe('ClerkBridge', () => {
 
     await onState.mock.lastCall![0].deleteAccount!();
     expect(newest).toHaveBeenCalledOnce();
+  });
+
+  it('publishes the resolved profile picture (docs/specs/014-identity/profile-picture.md)', () => {
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<ClerkBridge onState={onState} />);
+    expect(onState.mock.lastCall![0].user?.pictureUrl).toBe('https://img.clerk.com/google-picture');
   });
 });

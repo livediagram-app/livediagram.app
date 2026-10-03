@@ -20,7 +20,7 @@ export type FolderRow = {
 // Pure mapper from D1 folder row to wire-format DTO. Pulled out of
 // db.ts so the shape has its own test surface without dragging the
 // rest of the D1 module along (same pattern as tab-row.ts,
-// change-log-row.ts, share-link-row.ts, image-strip.ts, image-sniff.ts).
+// share-link-row.ts, image-strip.ts, image-sniff.ts).
 //
 // The two fields that matter most for safety are `owner_id` (every
 // folder endpoint gates on it) and `parent_id` (drives the

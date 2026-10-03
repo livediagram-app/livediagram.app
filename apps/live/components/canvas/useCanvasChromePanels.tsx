@@ -2,11 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useMemo, type ReactNode } from 'react';
-import { track } from '@/lib/telemetry';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
 import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
@@ -45,11 +43,10 @@ const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m)
 
 // The floating panels as elements (docs/specs/007-editor/panel-docking.md), lifted out of CanvasChrome:
 // the stable handler bundles for the memo'd panels, the docking-aware
-// wiring per panel, the palette's theme tint + dock-mode
-// reopen-after-draw behaviour, and each panel's element with its own
-// visibility gate. CanvasChrome distributes the returned map into the
-// corner stacks (docking) or renders the elements inline (mobile /
-// minimal / zen). The five tool-config panels, on screen only while
+// wiring per panel, the palette's theme tint, and each panel's element with
+// its own visibility gate. CanvasChrome distributes the returned map into
+// the corner stacks (docking) or renders the elements inline (zen). The
+// tool-config panels, on screen only while
 // their own tool is active, live in useCanvasToolPanels.
 export function useCanvasChromePanels({
   props,
@@ -64,39 +61,33 @@ export function useCanvasChromePanels({
   chromeHidden: boolean;
   isMobile: boolean;
   dockingActive: boolean;
-  // Toolbar layout on desktop (docs/specs/007-editor/toolbar-layout.md): the strip stands in for the
+  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the strip stands in for the
   // Palette, and the Explorer opens as a popover under the menu button
   // instead of floating in its corner.
   toolbarActive: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
   // Which panels are on in Settings (docs/specs/007-editor/user-preferences.md), read by CanvasChrome
   // so each panel and its cluster button agree.
-  panelsOn: { activity: boolean; layers: boolean; collaborate: boolean };
+  panelsOn: { layers: boolean; collaborate: boolean };
 }): {
   panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, when it belongs to the Toolbar layout's menu button rather
   // than to a corner (then panelEls.explorer is null).
   toolbarExplorerEl: ReactNode;
-  // Activity + Layers in the Toolbar layout: popovers over their cluster
-  // buttons, rendered outside the corner layer (then their panelEls are null).
+  // Layers in the Toolbar layout: a popover over its cluster button,
+  // rendered outside the corner layer (then its panelEl is null).
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
-  // True when Layers + Activity open as popovers over their cluster buttons
-  // (every layout but desktop Floating).
+  // True when Layers opens as a popover over its cluster button
+  // (Toolbar, and zen).
   clusterPopovers: boolean;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
     activeDockAnchor,
-    activeMobilePanel,
-    activityMinimized,
-    activityPosition,
+    activeDockPanel,
     aiPanel,
-    canRedo,
-    canUndo,
     canvasTool,
-    changeLog,
-    changeLogLoading,
     actionRows,
     commentRows,
     commentsPanelPosition,
@@ -104,11 +95,8 @@ export function useCanvasChromePanels({
     documentList,
     documentListLoading,
     elements,
-    explorerBottomY,
     explorerPosition,
     folders,
-    handleDockButtonClick,
-    minimalPanels,
     layers,
     activeLayerId,
     layerCounts,
@@ -149,18 +137,14 @@ export function useCanvasChromePanels({
     onClearLayer,
     onHideOtherLayers,
     onPreviewLayer,
-    onActivityRowClick,
     esBoard,
     esBoardControls,
     onChangeSettings,
-    onClearActivity,
-    onClearRevertPreview,
     onCreateFolder,
     onDeleteDocument,
     onDeleteFolder,
     onDismissShared,
     onDuplicateDocument,
-    onMoveActivity,
     onMoveCommentsPanel,
     onMoveDocumentToFolder,
     onMoveDocumentTo,
@@ -172,35 +156,24 @@ export function useCanvasChromePanels({
     onToggleActionDone,
     onOpenCommentsForElement,
     onOpenDocument,
-    onRedo,
     onRenameCurrent,
     onRenameFolder,
     onTeamFolders,
-    onResetActivity,
     onResetCommentsPanel,
     onResetExplorer,
     onResetPalette,
-    onRevertChange,
-    onPreviewRevert,
     onSetCanvasTool,
     onExitAvatarMode,
-    onToggleActivityMinimized,
-    onToggleMinimalPanels,
-    onUndo,
     paletteBottomY,
     palettePosition,
     pendingDraw,
     readOnly,
-    savedAt,
-    saveStatus,
     selfParticipant,
     setActiveDockAnchor,
-    setActiveMobilePanel,
-    setExplorerBottomY,
+    setActiveDockPanel,
     setPaletteBottomY,
     settings,
     sharedDocuments,
-    tabLocked,
     tabName,
     tabThemeId,
     teamDocuments,
@@ -210,13 +183,12 @@ export function useCanvasChromePanels({
     zenMode,
     onToggleZen,
   } = props;
-  // Stable handler identities for the two React.memo'd panels (Explorer,
-  // ActivityPanel) so they skip re-rendering on every drag frame even
+  // Stable handler identities for the React.memo'd Explorer so it skips re-rendering on every drag frame even
   // though this chrome host re-renders with the canvas. useStableCallbacks
   // keeps each reference fixed while always invoking the latest prop, so
   // there's no stale-closure risk despite the parent's per-frame churn.
   // (The panels' data props are already stable: list state doesn't change
-  // mid-drag, and EditorView memoises the `teams` / change-log arrays.)
+  // mid-drag, and EditorView memoises the `teams` array.)
   const explorerHandlers = useStableCallbacks({
     onDismissShared,
     onMoveExplorer,
@@ -252,56 +224,22 @@ export function useCanvasChromePanels({
     [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings],
   );
 
-  const activityHandlers = useStableCallbacks({
-    onUndo,
-    onRedo,
-    onRevertChange,
-    onPreviewRevert,
-    onClearRevertPreview,
-    onActivityRowClick,
-    onClearActivity,
-    onMoveActivity,
-    onResetActivity,
-    onToggleActivityMinimized,
-    onSetRevertHoverPreview: (v: boolean) => {
-      // Settings flip fires BEFORE the persist (docs/specs/017-telemetry/telemetry.md).
-      track('UI', 'Toggled', v ? 'ActivityRevertPreviewOn' : 'ActivityRevertPreviewOff');
-      onChangeSettings({ ...settings, activityRevertHoverPreview: v });
-    },
-  });
-  const onExplorerSize = useCallback(
-    (size: { width: number; height: number; bottomY: number }) => setExplorerBottomY(size.bottomY),
-    [setExplorerBottomY],
-  );
-  const closeMobilePanel = useCallback(() => {
-    setActiveMobilePanel(null);
+  const closeDockPanel = useCallback(() => {
+    setActiveDockPanel(null);
     setActiveDockAnchor(null);
-  }, [setActiveMobilePanel, setActiveDockAnchor]);
-  // Palette chrome behaviours (dock-mode reopen-after-draw + the theme
-  // tint for the tiles) — see usePaletteChrome.
-  const { paletteTheme, paletteTint, onPaletteDrawArmed } = usePaletteChrome({
-    tabThemeId,
-    pendingDraw,
-    minimalPanels,
-    activeMobilePanel,
-    handleDockButtonClick,
-  });
+  }, [setActiveDockPanel, setActiveDockAnchor]);
+  // The theme tint for the palette tiles: see usePaletteChrome.
+  const { paletteTheme, paletteTint } = usePaletteChrome({ tabThemeId });
 
   // --- Floating panels as elements (docs/specs/007-editor/panel-docking.md) ---
-  // Built once with docking-aware wiring, then rendered either inline
-  // (legacy: mobile / minimal / zen) or distributed into corner stacks
-  // (desktop docking). Each keeps its own visibility gate.
+  // Built once with docking-aware wiring, then rendered either inline (zen)
+  // or distributed into corner stacks. Each keeps its own visibility gate.
   const explorerWiring = panelWiringFor(
     'explorer',
     explorerPosition,
     explorerHandlers.onResetExplorer,
   );
   const paletteWiring = panelWiringFor('palette', palettePosition, onResetPalette);
-  const activityWiring = panelWiringFor(
-    'activity',
-    activityPosition,
-    activityHandlers.onResetActivity,
-  );
   const collaborateWiring = panelWiringFor(
     'collaborate',
     commentsPanelPosition,
@@ -320,16 +258,14 @@ export function useCanvasChromePanels({
       : paletteBottomY;
 
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
-  // highlighter), see useCanvasToolPanels. They share one contract: on screen
+  // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl, slideDeckEl } =
-    useCanvasToolPanels({
-      props,
-      chromeHidden,
-      stackBelowY,
-      panelWiringFor,
-      closeMobilePanel,
-    });
+  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+    props,
+    chromeHidden,
+    stackBelowY,
+    panelWiringFor,
+  });
 
   const explorerEl = zenMode ? null : (
     <Explorer
@@ -363,25 +299,23 @@ export function useCanvasChromePanels({
       onTeamFolders={onTeamFolders}
       onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
       onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
-      onSize={onExplorerSize}
-      mobileOpenOverride={activeMobilePanel === 'explorer'}
-      mobileDockAnchor={activeDockAnchor ?? undefined}
+      popoverOpen={activeDockPanel === 'explorer'}
+      popoverAnchor={activeDockAnchor ?? undefined}
       // Toolbar layout: a popover under the menu button, the dock's path.
-      forceDockMode={!!minimalPanels || toolbarActive}
+      asPopover={toolbarActive}
       dismissOnOutside={toolbarActive}
-      onMobileClose={closeMobilePanel}
+      onPopoverClose={closeDockPanel}
     />
   );
 
-  // Layers + Activity open as popovers over their bottom-right cluster
-  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
-  // Toolbar (docs/specs/007-editor/toolbar-layout.md); only the desktop Floating layout docks them as
-  // corner panels that minimise into those buttons.
+  // Layers opens as a popover over its bottom-right cluster button in
+  // Toolbar (docs/specs/007-editor/toolbar-layout.md); the Floating layout docks it as a corner panel
+  // that minimises into that button.
   const clusterPopovers = !dockingActive || toolbarActive;
 
   // Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5): a popover hanging above its
   // cluster button after Layers, in every layout (the button opens it through
-  // the dock's one-open-at-a-time slot; mobileOpenOverride gates the render).
+  // the dock's one-open-at-a-time slot; popoverOpen gates the render).
   // Mounted only while the tab has a thread or an action, the button's gate,
   // and never while its Settings switch is off (docs/specs/007-editor/user-preferences.md).
   const collaborateEl =
@@ -396,18 +330,18 @@ export function useCanvasChromePanels({
         // would cover the card you just went to.
         onCommentRowClick={(id) => {
           onOpenCommentsForElement(id);
-          closeMobilePanel();
+          closeDockPanel();
         }}
         onActionRowClick={(id) => {
           onOpenActionForElement(id);
-          closeMobilePanel();
+          closeDockPanel();
         }}
         onToggleActionDone={onToggleActionDone}
-        mobileOpenOverride={activeMobilePanel === 'collaborate'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode
+        popoverOpen={activeDockPanel === 'collaborate'}
+        popoverAnchor={activeDockAnchor ?? undefined}
+        asPopover
         dismissOnOutside
-        onMobileClose={closeMobilePanel}
+        onPopoverClose={closeDockPanel}
       />
     ) : null;
 
@@ -419,56 +353,14 @@ export function useCanvasChromePanels({
         stackBelowY={stackBelowY}
         tabName={tabName}
         settings={settings}
-        minimalPanels={!!minimalPanels}
-        activeMobilePanel={activeMobilePanel}
-        activeDockAnchor={activeDockAnchor ?? undefined}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
-
-  // Off in Settings (docs/specs/007-editor/user-preferences.md): no panel; Undo / Redo stay in the
-  // cluster strip, which CanvasChrome then shows in every layout.
-  const activityEl =
-    chromeHidden || !panelsOn.activity ? null : (
-      <ActivityPanel
-        position={activityWiring.position}
-        // As a popover there is no minimised panel to expand: the cluster
-        // button opens it (mobileOpenOverride) instead.
-        minimized={clusterPopovers ? false : activityMinimized}
-        tabLocked={tabLocked}
-        entries={changeLog}
-        loading={changeLogLoading}
-        readOnly={readOnly}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={activityHandlers.onUndo}
-        onRedo={activityHandlers.onRedo}
-        onRevert={activityHandlers.onRevertChange}
-        onPreviewRevert={activityHandlers.onPreviewRevert}
-        onClearRevertPreview={activityHandlers.onClearRevertPreview}
-        revertHoverPreview={settings?.activityRevertHoverPreview !== false}
-        onRowClick={activityHandlers.onActivityRowClick}
-        onClearActivity={activityHandlers.onClearActivity}
-        saveStatus={saveStatus}
-        savedAt={savedAt}
-        onMoveTo={activityHandlers.onMoveActivity}
-        onReset={activityWiring.onReset}
-        dock={clusterPopovers ? undefined : activityWiring.dock}
-        onToggleMinimized={activityHandlers.onToggleActivityMinimized}
-        mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={clusterPopovers}
-        // A press on the canvas (anywhere outside) puts the popover away.
-        dismissOnOutside={clusterPopovers}
-        onMobileClose={closeMobilePanel}
-      />
-    );
 
   // Layers panel (docs/specs/006-document/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). Floating: hidden while minimised into its bottom-right cluster
   // button. As a popover (clusterPopovers): always mounted so that button can
-  // pop it open (mobileOpenOverride gates the actual render).
+  // pop it open (popoverOpen gates the actual render).
   // Its Settings switch removes it outright; layers themselves keep applying.
   const layersEl =
     !chromeHidden && !readOnly && panelsOn.layers && (clusterPopovers ? true : !layersMinimized) ? (
@@ -483,11 +375,11 @@ export function useCanvasChromePanels({
         onReset={layersWiring.onReset}
         dock={clusterPopovers ? undefined : layersWiring.dock}
         onMinimize={onToggleLayersMinimized}
-        mobileOpenOverride={activeMobilePanel === 'layers'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={clusterPopovers}
+        popoverOpen={activeDockPanel === 'layers'}
+        popoverAnchor={activeDockAnchor ?? undefined}
+        asPopover={clusterPopovers}
         dismissOnOutside={clusterPopovers}
-        onMobileClose={closeMobilePanel}
+        onPopoverClose={closeDockPanel}
         onSelectLayer={onSelectLayer}
         onAddLayer={onAddLayer}
         onRemoveLayer={onRemoveLayer}
@@ -507,7 +399,8 @@ export function useCanvasChromePanels({
     ) : null;
 
   const paletteEl =
-    chromeHidden || readOnly || toolbarActive ? null : (
+    // Draw mode draws from its dock, not the palette (docs/specs/023-draw-mode/draw-mode.md).
+    chromeHidden || readOnly || toolbarActive || props.editorMode === 'draw' ? null : (
       <CommandPalette
         position={paletteWiring.position}
         canvasTool={canvasTool}
@@ -517,8 +410,6 @@ export function useCanvasChromePanels({
         onMoveTo={onMovePalette}
         onReset={paletteWiring.onReset}
         dock={paletteWiring.dock}
-        minimalPanels={minimalPanels}
-        onToggleMinimalPanels={onToggleMinimalPanels}
         settings={settings}
         onChangeSettings={onChangeSettings}
         canvasEmpty={elements.length === 0}
@@ -528,34 +419,26 @@ export function useCanvasChromePanels({
         pendingDraw={pendingDraw}
         themeTint={paletteTint}
         onSize={(size) => setPaletteBottomY(size.bottomY)}
-        mobileTopOverridePx={explorerBottomY > 0 ? explorerBottomY + 4 : undefined}
-        mobileOpenOverride={activeMobilePanel === 'palette'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onDrawArmed={onPaletteDrawArmed}
-        onMobileClose={() => {
-          setActiveMobilePanel(null);
-          setActiveDockAnchor(null);
-        }}
       />
     );
 
   // Minimap (docs/specs/008-canvas/minimap.md) routed through docking like the other panels: it
-  // stacks with Activity in the bottom-left and snaps / persists the same
-  // way (the old "defer to Activity at the default corner" gate is gone —
-  // stacking handles their coexistence). Desktop-only, gated on the map
+  // docks in the bottom-left and snaps / persists the same way. Desktop-only, gated on the map
   // setting + a few elements; hidden in zen / welcome (chromeHidden).
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
   // Hidden layers (docs/specs/006-document/layers.md) drop out of the miniature too, so the map
-  // matches the canvas. Not rendered at all in the minimal panel layout
-  // (docs/specs/008-canvas/minimap.md): minimal collapses panels to dock buttons, and a
-  // free-floating map contradicts that.
+  // matches the canvas. Memoised: with a hidden layer the filter returns a new array, which would
+  // rebuild the Map's whole drawing on every render (docs/specs/008-canvas/canvas-performance.md).
+  const mapElements = useMemo(
+    () => visibleLayerElements(elements, props.tabLayers),
+    [elements, props.tabLayers],
+  );
   const minimapEl =
-    !chromeHidden && !isMobile && !minimalPanels && mapEnabled && elements.length >= 4 ? (
+    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
       <Minimap
-        elements={visibleLayerElements(elements, props.tabLayers)}
+        elements={mapElements}
         tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
@@ -590,10 +473,6 @@ export function useCanvasChromePanels({
         onMoveTo={onMovePollPanel}
         onReset={pollWiring.onReset}
         dock={pollWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'poll'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -617,10 +496,6 @@ export function useCanvasChromePanels({
         onMoveTo={onMoveVotePanel}
         onReset={voteWiring.onReset}
         dock={voteWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'vote'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
         readOnly={!!readOnly}
       />
     ) : null;
@@ -632,7 +507,6 @@ export function useCanvasChromePanels({
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
     ai: aiEl,
-    activity: toolbarActive ? null : activityEl,
     minimap: minimapEl,
     layers: toolbarActive ? null : layersEl,
     poll: pollEl,
@@ -641,7 +515,6 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    highlighter: highlighterEl,
     'slide-deck': slideDeckEl,
     format: formatEl,
   };
@@ -651,12 +524,7 @@ export function useCanvasChromePanels({
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
     collaborateEl,
-    toolbarClusterEls: toolbarActive ? (
-      <>
-        {activityEl}
-        {layersEl}
-      </>
-    ) : null,
+    toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,
   };

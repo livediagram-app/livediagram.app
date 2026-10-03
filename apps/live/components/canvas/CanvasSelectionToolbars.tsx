@@ -6,6 +6,7 @@ import {
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import type { deriveCanvasSelection } from '@/lib/canvas-selection';
+import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
@@ -42,7 +43,11 @@ export function CanvasSelectionToolbars({
   // canvas. They fade out the same way they do for a quick-connect ring, and
   // come back the moment the drag ends.
   const insertionOpen = useInsertionSlot() !== null;
-  const toolbarsStale = quickRingOpen || insertionOpen;
+  // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
+  // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
+  const moving = selectionMoving(useCanvasGesture());
+  const toolbarsStale = quickRingOpen || insertionOpen || moving;
+  const multiStale = insertionOpen || moving;
   const {
     elements,
     readOnly,
@@ -93,6 +98,7 @@ export function CanvasSelectionToolbars({
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
+            suspended={moving}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
@@ -110,6 +116,16 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
+            // A path's points (docs/specs/023-draw-mode/path-tool.md "Editing"): its edit mode, the
+            // Path tool put down first when it is still in hand.
+            onEditPoints={
+              !readOnly && !selectedLocked && selected?.type === 'path'
+                ? () => {
+                    if (props.pendingDraw) props.onCancelDraw();
+                    props.onBeginEdit(selected.id);
+                  }
+                : undefined
+            }
             // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
             // for Tab / Enter. Not on a locked node: growing re-lays the map.
             {...(!readOnly && !selectedLocked && selected && isMindNode(selected)
@@ -168,8 +184,8 @@ export function CanvasSelectionToolbars({
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
             transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
-            opacity: insertionOpen ? 0 : 1,
-            visibility: insertionOpen ? 'hidden' : 'visible',
+            opacity: multiStale ? 0 : 1,
+            visibility: multiStale ? 'hidden' : 'visible',
             transition:
               'opacity var(--transition-duration-micro) ease, visibility var(--transition-duration-micro) ease',
           }}
@@ -178,6 +194,7 @@ export function CanvasSelectionToolbars({
             bounds={multiToolbarBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
+            suspended={moving}
             title={`Selected Elements (${multiSelectedIds.size})`}
           >
             <MultiSelectionToolbar

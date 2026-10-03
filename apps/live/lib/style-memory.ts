@@ -4,6 +4,8 @@
 // owns the state and the storage.
 import {
   SHAPE_KINDS,
+  BORDER_RADIUS_PX,
+  isPenColourName,
   isQuickSwatchSlot,
   rederiveColorPresetForTheme,
   rederiveQuickSwatches,
@@ -14,16 +16,24 @@ import { safeJson } from './local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
 // `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every
-// text element.
-export type StyleKindKey = `shape:${string}` | 'arrow' | 'text';
+// text element; `board:` before any of them on a whiteboard, which keeps a memory
+// of its own (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays").
+type BaseKindKey = `shape:${string}` | 'arrow' | 'text' | 'path';
+export type StyleKindKey = BaseKindKey | `board:${BaseKindKey}`;
+const BOARD_PREFIX = 'board:';
+const baseOf = (kind: string): string =>
+  kind.startsWith(BOARD_PREFIX) ? kind.slice(BOARD_PREFIX.length) : kind;
 export type RememberedStyle = Record<string, string | number>;
 export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 
 // The fields memory records and applies. The label colour and a preset's
 // binding ride with the colours, so a remembered background never lands under
 // unreadable text and a remembered preset look follows the theme.
+// `penColour` / `penTextColour`: a whiteboard stock colour stored by name (docs/specs/023-draw-mode/
+// draw-mode.md "The quick style panel stays"), checked against the names when read.
 const SHAPE_MEMORY_FIELDS = {
   strokeColor: 'string',
+  penColour: 'string',
   strokeSwatch: 'number',
   fillColor: 'string',
   fillSwatch: 'number',
@@ -36,13 +46,25 @@ const SHAPE_MEMORY_FIELDS = {
 } as const;
 const ARROW_MEMORY_FIELDS = {
   strokeColor: 'string',
+  penColour: 'string',
   strokeSwatch: 'number',
   strokeWidth: 'number',
   strokeStyle: 'string',
   flow: 'string',
 } as const;
+// A path (docs/specs/023-draw-mode/path-tool.md "Style"): its line and its fill.
+const PATH_MEMORY_FIELDS = {
+  strokeColor: 'string',
+  penColour: 'string',
+  strokeSwatch: 'number',
+  fillColor: 'string',
+  fillSwatch: 'number',
+  strokeWidth: 'string',
+  strokeStyle: 'string',
+} as const;
 const TEXT_MEMORY_FIELDS = {
   textColor: 'string',
+  penTextColour: 'string',
   textSwatch: 'number',
 } as const;
 type FieldTypes = Readonly<Record<string, 'string' | 'number'>>;
@@ -57,20 +79,36 @@ const THEME_VALUE_OF: Readonly<Record<string, 'elementFill' | 'elementStroke' | 
 const STORAGE_PREFIX = 'livediagram:v2:style-memory:';
 export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
 
-export function styleKindOf(el: Element): StyleKindKey | null {
-  if (el.type === 'arrow') return 'arrow';
-  if (el.type === 'text') return 'text';
-  if (el.type === 'shape') return `shape:${el.shape}`;
-  return null;
+export function styleKindOf(el: Element, board = false): StyleKindKey | null {
+  const base: BaseKindKey | null =
+    el.type === 'arrow'
+      ? 'arrow'
+      : el.type === 'text'
+        ? 'text'
+        : el.type === 'path'
+          ? 'path'
+          : el.type === 'shape'
+            ? `shape:${el.shape}`
+            : null;
+  return base && board ? `${BOARD_PREFIX}${base}` : base;
 }
 
-function fieldsFor(kind: StyleKindKey): FieldTypes {
+// A board's shapes also remember their corners (the Corners row, whiteboards only:
+// docs/specs/008-canvas/quick-style-panel.md "Corners"); a diagram's do not.
+const BOARD_SHAPE_MEMORY_FIELDS = { ...SHAPE_MEMORY_FIELDS, borderRadius: 'string' } as const;
+
+function fieldsFor(scoped: StyleKindKey): FieldTypes {
+  const kind = baseOf(scoped);
+  if (scoped.startsWith(BOARD_PREFIX) && kind.startsWith('shape:'))
+    return BOARD_SHAPE_MEMORY_FIELDS;
   if (kind === 'arrow') return ARROW_MEMORY_FIELDS;
+  if (kind === 'path') return PATH_MEMORY_FIELDS;
   return kind === 'text' ? TEXT_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
 }
 
-function isKnownKind(key: string): key is StyleKindKey {
-  if (key === 'arrow' || key === 'text') return true;
+function isKnownKind(scoped: string): scoped is StyleKindKey {
+  const key = baseOf(scoped);
+  if (key === 'arrow' || key === 'text' || key === 'path') return true;
   return key.startsWith('shape:') && SHAPE_KINDS.has(key.slice('shape:'.length));
 }
 
@@ -88,13 +126,14 @@ export function recordStyleEdit(
   before: readonly Element[],
   after: readonly Element[],
   theme: ThemeDefinition,
+  board = false,
 ): StyleMemory {
   const previous = new Map(before.map((el) => [el.id, el]));
   let next: StyleMemory | null = null;
   for (const el of after) {
     const was = previous.get(el.id);
     if (!was || !isQuickStyleTarget(el)) continue;
-    const kind = styleKindOf(el)!;
+    const kind = styleKindOf(el, board)!;
     for (const field of Object.keys(fieldsFor(kind))) {
       const value = (el as unknown as Record<string, unknown>)[field];
       if (value === (was as unknown as Record<string, unknown>)[field]) continue;
@@ -115,8 +154,9 @@ export function applyStyleMemory<T extends Element>(
   el: T,
   memory: StyleMemory,
   theme: ThemeDefinition,
+  board = false,
 ): T {
-  const kind = styleKindOf(el);
+  const kind = styleKindOf(el, board);
   const entry = kind ? memory[kind] : undefined;
   if (!entry) return el;
   let dressed: Element = { ...el, ...entry } as Element;
@@ -146,6 +186,9 @@ export function parseStyleMemory(raw: string | null): StyleMemory {
     for (const [field, value] of Object.entries(fields as Record<string, unknown>)) {
       if (types[field] !== typeof value) continue;
       if (field.endsWith('Swatch') && !isQuickSwatchSlot(value)) continue;
+      if (field.startsWith('pen') && !isPenColourName(value)) continue;
+      if (field === 'borderRadius' && !(typeof value === 'string' && value in BORDER_RADIUS_PX))
+        continue;
       entry[field] = value as string | number;
     }
     if (Object.keys(entry).length > 0) out[kind] = entry;

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Folder } from '@livediagram/api-schema';
-import { FolderRow, SkeletonRows, UnsortedRow } from '@/app/explorer/views';
+import { FolderRow, SkeletonRows } from '@/app/explorer/views';
+import { scopeDocuments, type LibraryLens } from '@/app/explorer/lens/pane-lens';
+import { FilteredEmpty, LensAnnouncer } from '@/app/explorer/lens/LensStates';
 import { EmptyState } from '@livediagram/ui';
 import { FolderSolidIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { CardView } from '@/app/explorer/CardView';
@@ -20,18 +22,23 @@ import { apiCreateFolder } from '@/lib/api-client';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
-import { TEAM_TRASH_RESTORE_HINT } from '@/lib/trash-copy';
+import { deleteConfirmation } from '@/lib/delete-confirmation';
+import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
+import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
+import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
+import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
+
+const NO_FOLDERS: readonly Folder[] = [];
 
 // "Shared documents" on the team page (docs/specs/013-workspace/team-shared-documents.md): the team's folder
 // tree + documents, navigated with a small breadcrumb instead of a
 // sidebar. The concept (and most of the row components) is the
 // personal explorer's, just team-scoped: every joined member can
 // create / rename / move / delete folders, re-folder documents, and
-// remove a document from the team (back to its owner's personal
-// Unsorted). The Unsorted bucket is synthetic and undeletable, same
-// as the personal tree.
+// remove a document from the team. The root lists the team's root folders, then its root
+// documents, as the personal tree's does (docs/specs/013-workspace/explorer-structure.md).
 
-type Spot = { kind: 'root' } | { kind: 'unsorted' } | { kind: 'folder'; id: string };
+type Spot = { kind: 'root' } | { kind: 'folder'; id: string };
 
 export function TeamSharedDocuments({
   ownerId,
@@ -39,6 +46,7 @@ export function TeamSharedDocuments({
   teamName,
   moveDests,
   onMoveDocumentTo,
+  lens,
 }: {
   ownerId: string;
   teamId: string;
@@ -58,8 +66,19 @@ export function TeamSharedDocuments({
   // `moveDocumentTo`, which picks the right API call from the document's
   // current placement. Same-team picks keep using lib.moveDocument.
   onMoveDocumentTo?: (id: string, dest: MoveDestination) => void;
+  // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md): while it is set, the
+  // library lists every matching document at or below the open spot, its folders stepping aside.
+  lens?: LibraryLens;
 }) {
   const lib = useTeamLibrary(ownerId, teamId);
+  // Default folders (docs/specs/013-workspace/default-folders.md): a joined member may send new
+  // documents to this team's folders.
+  const teamFolderLists = useMemo(() => ({ [teamId]: lib.folders }), [teamId, lib.folders]);
+  const defaultFolders = useDefaultFolderMenus(ownerId, {
+    personal: NO_FOLDERS,
+    team: teamFolderLists,
+    teams: useMemo(() => [{ id: teamId, name: teamName ?? 'Team' }], [teamId, teamName]),
+  });
   // Deep link: /explorer/team?id=<team>&folder=<id> opens with that
   // folder focused (the search panel's team-folder results navigate
   // here). Safe to read window in the initialiser: the explorer
@@ -81,25 +100,34 @@ export function TeamSharedDocuments({
   // Explorer browse views use, so a card-view user gets cards here too.
   const [viewMode, setViewMode] = useExplorerViewMode();
 
-  const unsorted = lib.documentsByFolder.get(null) ?? [];
   const currentFolderId = spot.kind === 'folder' ? spot.id : null;
-  const visibleFolders =
-    spot.kind === 'root'
-      ? lib.rootFolders
-      : spot.kind === 'folder'
-        ? (lib.childrenByParent.get(spot.id) ?? [])
-        : [];
-  const visibleDocuments =
-    spot.kind === 'unsorted'
-      ? unsorted
-      : spot.kind === 'folder'
-        ? (lib.documentsByFolder.get(spot.id) ?? [])
-        : [];
+  // What the open spot holds directly: its folders, then its documents.
+  const directFolders =
+    spot.kind === 'root' ? lib.rootFolders : (lib.childrenByParent.get(spot.id) ?? []);
+  const directDocuments = lib.documentsByFolder.get(currentFolderId) ?? [];
+  const bare = directFolders.length === 0 && directDocuments.length === 0;
+  // A set lens reaches every subfolder of the spot and steps the folder rows aside.
+  const lensed = lens?.active === true;
+  const reach = lensed
+    ? scopeDocuments(currentFolderId, lib.childrenByParent, lib.documentsByFolder)
+    : directDocuments;
+  const visibleFolders = lensed ? [] : directFolders;
+  const visibleDocuments = lens ? lens.narrow(reach) : reach;
+  // A lensed row from a subfolder names its folder, opening it (recent-folder-chip.md).
+  const folderChipFor = (d: { folderId: string | null }) => {
+    if (!lensed || d.folderId === currentFolderId) return null;
+    const folderId = d.folderId;
+    if (folderId === null)
+      return { label: 'Team documents', onOpen: () => setSpot({ kind: 'root' }) };
+    const folder = lib.folders.find((f) => f.id === folderId);
+    return folder
+      ? { label: folder.name, onOpen: () => setSpot({ kind: 'folder', id: folder.id }) }
+      : null;
+  };
 
   const crumbs: { label: string; onClick?: () => void }[] = (() => {
     const root = { label: 'Team documents', onClick: () => setSpot({ kind: 'root' }) };
     if (spot.kind === 'root') return [{ label: 'Team documents' }];
-    if (spot.kind === 'unsorted') return [root, { label: 'Unsorted' }];
     const chain = lib.breadcrumb(spot.id);
     return [
       root,
@@ -115,6 +143,7 @@ export function TeamSharedDocuments({
   // menu passes it) but the move flow is a centred modal now and
   // ignores it.
   const folderActions = (f: Folder, _anchor: HTMLElement | null) => ({
+    defaults: defaultFolders.forFolder({ id: f.id, teamId }),
     rename: () => setRenamingFolderId(f.id),
     newSubfolder: () =>
       void lib.createFolder(f.id).then((created) => {
@@ -127,11 +156,14 @@ export function TeamSharedDocuments({
       setMoveTarget({ kind: 'folder', id: f.id });
     },
     delete: async () => {
-      const ok = await confirm({
-        title: 'Delete team folder?',
-        message: `"${f.name || 'This folder'}" will be deleted. Its subfolders move to the top level and its documents move to the team's Unsorted.`,
-        confirmLabel: 'Delete folder',
-      });
+      const ok = await confirm(
+        folderDeleteConfirmation({
+          name: f.name,
+          parentName: lib.folders.find((p) => p.id === f.parentId)?.name ?? null,
+          scope: 'team',
+          defaultKeys: folderDefaultKeys(f.id, placementDefaultsSnapshot().defaults),
+        }),
+      );
       if (!ok) return;
       await lib.deleteFolder(f.id);
       if (spot.kind === 'folder' && spot.id === f.id) setSpot({ kind: 'root' });
@@ -168,17 +200,14 @@ export function TeamSharedDocuments({
   const deleteDocument = async (id: string) => {
     const d = lib.documents.find((x) => x.id === id);
     const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
-    const ok = await confirm({
-      title: 'Delete team document?',
-      message: [
-        `"${d?.name || 'This document'}" will be deleted for the whole team.`,
-        notice,
-        TEAM_TRASH_RESTORE_HINT,
-      ]
-        .filter(Boolean)
-        .join(' '),
-      confirmLabel: 'Delete',
-    });
+    const ok = await confirm(
+      deleteConfirmation({
+        name: d?.name,
+        hasShareLinks: (d?.shareCode ?? null) !== null,
+        sharedTabsNotice: notice,
+        team: true,
+      }),
+    );
     if (ok) void lib.deleteDocument(id);
   };
 
@@ -197,11 +226,16 @@ export function TeamSharedDocuments({
       />
 
       {/* ---------- Rows ---------- */}
+      {lens ? (
+        <LensAnnouncer input={lens.input} shown={visibleDocuments.length} total={reach.length} />
+      ) : null}
       {lib.loading ? (
         <SkeletonRows count={2} framed={false} />
-      ) : visibleFolders.length === 0 &&
-        visibleDocuments.length === 0 &&
-        !(spot.kind === 'root' && unsorted.length > 0) ? (
+      ) : lens && lensed && !bare && visibleDocuments.length === 0 ? (
+        <div className="p-3">
+          <FilteredEmpty issues={lens.issues} onClear={lens.clear} />
+        </div>
+      ) : bare ? (
         // The Explorer's empty-state card (docs/specs/013-workspace/folders.md), inset so its border
         // sits inside this section's own.
         <div className="p-3">
@@ -229,9 +263,6 @@ export function TeamSharedDocuments({
             folders={visibleFolders}
             documents={visibleDocuments}
             ownerId={ownerId}
-            showUnsortedRow={spot.kind === 'root' && unsorted.length > 0}
-            unsortedCount={unsorted.length}
-            onOpenUnsorted={() => setSpot({ kind: 'unsorted' })}
             onOpenFolder={(id) => setSpot({ kind: 'folder', id })}
             onCommitRenameFolder={commitRenameFolder}
             onCancelRenameFolder={() => setRenamingFolderId(null)}
@@ -253,13 +284,11 @@ export function TeamSharedDocuments({
               documents: lib.documentsByFolder.get(id) ?? [],
             })}
             showVisibilityBadge={false}
+            folderChipFor={folderChipFor}
           />
         </div>
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
-          {spot.kind === 'root' && unsorted.length > 0 ? (
-            <UnsortedRow count={unsorted.length} onOpen={() => setSpot({ kind: 'unsorted' })} />
-          ) : null}
           {visibleFolders.map((f) => (
             <FolderRow
               key={f.id}
@@ -284,6 +313,7 @@ export function TeamSharedDocuments({
               ownerId={ownerId}
               renaming={renamingDocumentId === d.id}
               showVisibility={false}
+              folderChip={folderChipFor(d)}
               onMove={() => setMoveTarget({ kind: 'document', id: d.id })}
               onStartRename={() => startRenameDocument(d.id)}
               onCommitRename={(name) => commitRenameDocument(d.id, name)}
@@ -298,7 +328,7 @@ export function TeamSharedDocuments({
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (docs/specs/013-workspace/folders.md). With
           `moveDests` (the explorer page supplies it) a DOCUMENT move offers
-          every space — Personal Space plus each team — so a team document can be
+          every space — My documents plus each team — so a team document can be
           re-homed back to the personal tree or on to another team from
           right here; the space overview + back bar come with it. This
           team's own folders come from the live lib (fresher than the
@@ -362,7 +392,7 @@ export function TeamSharedDocuments({
               void lib.moveDocument(moveTarget.id, dest.folderId);
               return;
             }
-            // Leaving this team (to Personal Space or another team): route via the
+            // Leaving this team (to My documents or another team): route via the
             // explorer's placement-aware mover, then refresh this library so
             // the row disappears once the move lands.
             void Promise.resolve(onMoveDocumentTo?.(moveTarget.id, dest)).then(() => lib.refresh());

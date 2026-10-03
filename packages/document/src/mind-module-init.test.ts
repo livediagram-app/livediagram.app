@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+// Transformed once at collection; the test still evaluates a fresh registry from mind-flow, and
+// no longer pays the package's cold transform inside its timeout.
+import './index';
 
 // mind-flow reaches the barrel (via anchor-choice -> geometry -> index), and the barrel re-exports
 // mind-layout, so a bundler that enters the package at mind-flow evaluates mind-layout while

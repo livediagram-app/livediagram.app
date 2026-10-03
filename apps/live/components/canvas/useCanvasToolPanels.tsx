@@ -7,12 +7,11 @@ import { LaserPanel } from '@/components/panels/LaserPanel';
 import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
 import { EraserPanel } from '@/components/panels/EraserPanel';
 import { FormatPanel } from '@/components/panels/FormatPanel';
-import { HighlighterPanel } from '@/components/panels/HighlighterPanel';
 import { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// The seven tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
-// docs/specs/008-canvas/format-panel.md, docs/specs/008-canvas/highlighter.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
+// The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -20,13 +19,12 @@ import type { CanvasChromeProps } from './CanvasChrome';
 // because the tool itself is. Grouping them keeps that shared contract in
 // one place, and keeps the chrome host to the panels that are always
 // candidates to be on screen. Every one of them takes the identical
-// wiring bundle below, so a sixth tool panel is a copy of its neighbour.
+// wiring bundle below, so a seventh tool panel is a copy of its neighbour.
 export function useCanvasToolPanels({
   props,
   chromeHidden,
   stackBelowY,
   panelWiringFor,
-  closeMobilePanel,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
@@ -34,21 +32,16 @@ export function useCanvasToolPanels({
   // offset that keeps these panels clear of the palette above them.
   stackBelowY: number | undefined;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
-  closeMobilePanel: () => void;
 }): {
   avatarEl: ReactNode;
   laserEl: ReactNode;
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
-  highlighterEl: ReactNode;
   slideDeckEl: ReactNode;
 } {
   const {
-    activeDockAnchor,
-    activeMobilePanel,
     canvasTool,
-    minimalPanels,
     selfParticipant,
     avatarConfig,
     onChangeAvatarField,
@@ -82,13 +75,6 @@ export function useCanvasToolPanels({
     formatPanelPosition,
     onMoveFormatPanel,
     onResetFormatPanel,
-    highlighterColor,
-    highlighterWidth,
-    onSetHighlighterColor,
-    onSetHighlighterWidth,
-    highlighterPanelPosition,
-    onMoveHighlighterPanel,
-    onResetHighlighterPanel,
     slideDeck,
     slideDeckPanelPosition,
     onMoveSlideDeckPanel,
@@ -97,6 +83,9 @@ export function useCanvasToolPanels({
     activeTabId,
     readOnly,
   } = props;
+  // Draw mode keeps its eraser settings in the dock's flyouts
+  // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  const whiteboard = props.editorMode === 'draw';
 
   const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
     onResetAvatarPanel?.(),
@@ -113,17 +102,13 @@ export function useCanvasToolPanels({
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
   );
-  const highlighterWiring = panelWiringFor('highlighter', highlighterPanelPosition ?? null, () =>
-    onResetHighlighterPanel?.(),
-  );
   const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
     onResetSlideDeckPanel?.(),
   );
 
   // Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet, mounted only while Avatar
   // mode is active — so it joins and leaves its corner stack the way the
-  // session-tool panels do. Available to view-role too (the mode is), and on
-  // mobile / minimal it opens from its dock button like every other panel.
+  // session-tool panels do. Available to view-role too (the mode is).
   const avatarEl =
     !chromeHidden && canvasTool === 'avatar' && avatarConfig ? (
       <AvatarPanel
@@ -138,16 +123,12 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveAvatarPanel?.(x, y)}
         onReset={avatarWiring.onReset}
         dock={avatarWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'avatar'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
   // tool is active — the avatar panel's twin in every respect, including the
-  // view-role availability (the laser is theirs too) and the dock button.
+  // view-role availability (the laser is theirs too).
   const laserEl =
     !chromeHidden && canvasTool === 'laser' && laserConfig ? (
       <LaserPanel
@@ -159,10 +140,6 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveLaserPanel?.(x, y)}
         onReset={laserWiring.onReset}
         dock={laserWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'laser'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -180,17 +157,13 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveSpotlightPanel?.(x, y)}
         onReset={spotlightWiring.onReset}
         dock={spotlightWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'spotlight'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, mounted only while the
   // Eraser tool is active.
   const eraserEl =
-    !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
+    !chromeHidden && !whiteboard && canvasTool === 'eraser' && eraserConfig ? (
       <EraserPanel
         config={eraserConfig}
         onChange={(field, value) => onChangeEraserField?.(field, value)}
@@ -199,17 +172,13 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveEraserPanel?.(x, y)}
         onReset={eraserWiring.onReset}
         dock={eraserWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'eraser'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, mounted only while the
   // Format tool is active.
   const formatEl =
-    !chromeHidden && canvasTool === 'format' && formatConfig ? (
+    !chromeHidden && !whiteboard && canvasTool === 'format' && formatConfig ? (
       <FormatPanel
         config={formatConfig}
         onToggleGroup={(group) => onToggleFormatGroup?.(group)}
@@ -220,38 +189,11 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveFormatPanel?.(x, y)}
         onReset={formatWiring.onReset}
         dock={formatWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'format'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
-      />
-    ) : null;
-
-  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, mounted only
-  // while the Highlighter tool is held. The one tool panel that replaced an
-  // existing surface rather than adding one — its two settings used to be
-  // popovers on the top mode banner, which covered the toolbar.
-  const highlighterEl =
-    !chromeHidden && canvasTool === 'highlighter' ? (
-      <HighlighterPanel
-        color={highlighterColor}
-        width={highlighterWidth}
-        onSetColor={onSetHighlighterColor}
-        onSetWidth={onSetHighlighterWidth}
-        position={highlighterWiring.position}
-        stackBelowY={stackBelowY}
-        onMoveTo={(x, y) => onMoveHighlighterPanel?.(x, y)}
-        onReset={highlighterWiring.onReset}
-        dock={highlighterWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'highlighter'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
-  // started, mounted only while its tool is picked. The seventh, and the one
+  // started, mounted only while its tool is picked. The sixth, and the one
   // whose tool does not itself change the canvas — picking it opens the
   // workbench, and Start is a deliberate second act.
   const slideDeckEl =
@@ -266,12 +208,8 @@ export function useCanvasToolPanels({
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
         onReset={slideDeckWiring.onReset}
         dock={slideDeckWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'slide-deck'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl, slideDeckEl };
+  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
 }

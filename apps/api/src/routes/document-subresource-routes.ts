@@ -1,17 +1,18 @@
 // /api/documents — document metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
-// upgrade, and the change-log. The largest resource: every sub-path
+// upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
 import {
   applyElementDelta,
   isValidTab,
+  migrateIncomingTab,
   preferNewerQaAll,
   sanitizeMentions,
 } from '@livediagram/document';
 import { broadcastShareOp, mergeRoomLedger, relayElementDelta } from '../room-client';
-import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
+import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import {
   findCommentHost,
@@ -43,8 +44,11 @@ import {
   payloadTooLarge,
 } from '../responses';
 import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
+import { DOCUMENT_OPEN_HEADER, readDocumentOpen } from '@livediagram/api-schema';
+import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
+import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import {
   gateEdit,
   gateGrant,
@@ -64,6 +68,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;
+  // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
+  const commentPictures = await handleCommentPicturesRoute(ctx);
+  if (commentPictures) return commentPictures;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -121,6 +128,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
           ),
         );
       }
+      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
+      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the
+      // Drive mirror and an embed read the same tab and are not opens. The read gate above has
+      // already admitted the reader, and the open is theirs whoever they are.
+      if (readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
+        ctx.waitUntil?.(recordDocumentOpen(env, existing, owner, Date.now()));
+      }
       return json({ tab: safe });
     }
 
@@ -129,7 +143,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
     if (request.method === 'PUT') {
-      const received = (await request.json()) as Tab;
+      // A former stored shape (freehand points before docs/specs/006-document/stroke-points.md,
+      // from a browser loaded before a deploy or an API-token script) is migrated, not refused.
+      const received = migrateIncomingTab(await request.json()) as Tab;
       // Structural schema gate (shared with the app, @livediagram/document):
       // discriminant, required fields, endpoints, array bounds + unique ids.
       if (!isValidTab(received)) {
@@ -192,8 +208,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // match the resolved owner's participant record. Without
       // this the client can claim any authorName / authorColor
       // and impersonate another participant in the comment
-      // thread (see the docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md security audit
-      // thread). Existing comments preserve their original
+      // thread (see the docs/specs/014-identity/auth-and-guest-access.md security audit). Existing comments preserve their original
       // authors (compared by id against the prior tab).
       // getDocument already joined the owner's participant row — reuse it
       // when the writer IS the owner (the common autosave case) instead
@@ -207,6 +222,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
               // createdAt satisfies the ParticipantRecord shape; the
               // rewrite only reads id/name/color.
               createdAt: existing.createdAt,
+              pictureUrl: null,
             }
           : await getParticipant(env, owner);
       const sanitised = writerParticipant
@@ -220,7 +236,11 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
             ),
           }
         : body;
-      await upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex);
+      // The merged tab (room ledger, server-stamped authors) may outgrow the request: the storage
+      // layer measures what it stores (docs/specs/015-api/api.md "Tab size").
+      if (!(await storeTab(() => upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex)))) {
+        return payloadTooLarge();
+      }
       // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the
       // save added that the feed cares about (comments, thread
       // resolutions, assigned + completed actions). Diffed against the
@@ -338,7 +358,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     const updatedElements = tab.elements.map((el) =>
       el.id === elementId ? applyElementDelta(el, { kind: 'comment-add', comment }) : el,
     );
-    await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    if (
+      !(await storeTab(() =>
+        upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex),
+      ))
+    ) {
+      return payloadTooLarge();
+    }
     // Tell the room, so editors see it now and their next save keeps it
     // (docs/specs/012-collaboration/collab-race-hardening.md). Off the response path. WITHOUT the author id: it is the
     // visitor's owner id, which a GET redacts for everyone but its author
@@ -356,8 +382,17 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // can't autosave, so this endpoint is their only way to persist a
     // comment — and without an emit here their comments would be the
     // one kind missing from the feed.
+    // A reply when the thread already held a comment (Explorer Home's "replied").
+    const reply =
+      ((target as { commentThread?: { comments?: unknown[] } }).commentThread?.comments?.length ??
+        0) > 0;
     ctx.waitUntil?.(
-      recordCommentAdded(env, existing, { id: comment.id, text, authorName, authorColor }, owner),
+      recordCommentAdded(
+        env,
+        existing,
+        { id: comment.id, text, authorName, authorColor, reply },
+        owner,
+      ),
     );
     // docs/specs/014-identity/transactional-email.md (#1): a view-role visitor's comment notifies the owner immediately.
     if (emailEnabled(env) && owner !== existing.ownerId) {
@@ -402,7 +437,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // can see the comment exists, they just can't delete it.
     if (found.authorId !== owner) return forbidden();
     const updatedElements = removeComment(tab.elements, commentId);
-    await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    if (
+      !(await storeTab(() =>
+        upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex),
+      ))
+    ) {
+      return payloadTooLarge();
+    }
     // Same as the add: without it, an editor's next save put it back.
     ctx.waitUntil?.(
       relayElementDelta(env, existing, tabId, host.elementId, {

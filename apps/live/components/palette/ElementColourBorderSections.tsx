@@ -38,6 +38,7 @@ import { ShadowSection } from '@/components/palette/ShadowSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -100,7 +101,8 @@ export function ElementColourBorderSections({
           <ColourRow
             label="Line"
             icon={<BorderColourIcon />}
-            value={target.strokeColor ?? defaultArrowStrokeColor(surface)}
+            value={shownColour(target, 'line', surface, defaultArrowStrokeColor(surface))}
+            ink={inkSwatch(target, 'line', surface)}
             {...strokeColorHandlers}
             {...colorProps('border')}
             {...props.colourPalette}
@@ -138,10 +140,13 @@ export function ElementColourBorderSections({
             <ColourRow
               label="Text"
               icon={<TextColourIcon />}
-              value={
-                (target as { textColor?: string }).textColor ??
-                defaultTextColor(target as BoxedElement, surface)
-              }
+              value={shownColour(
+                target,
+                'text',
+                surface,
+                defaultTextColor(target as BoxedElement, surface),
+              )}
+              ink={inkSwatch(target, 'text', surface)}
               {...textColorHandlers}
               {...colorProps('text')}
               {...props.colourPalette}
@@ -182,10 +187,13 @@ export function ElementColourBorderSections({
               <ColourRow
                 label={isIcon ? 'Icon' : 'Border'}
                 icon={<BorderColourIcon />}
-                value={
-                  (target as { strokeColor?: string }).strokeColor ??
-                  defaultStrokeColor(target as BoxedElement, surface)
-                }
+                value={shownColour(
+                  target,
+                  'line',
+                  surface,
+                  defaultStrokeColor(target as BoxedElement, surface),
+                )}
+                ink={inkSwatch(target, 'line', surface)}
                 {...strokeColorHandlers}
                 {...colorProps('border')}
                 {...props.colourPalette}

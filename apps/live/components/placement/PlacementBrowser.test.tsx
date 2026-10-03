@@ -57,24 +57,24 @@ function Harness({
 
 const radio = (name: RegExp) => screen.getByRole('radio', { name });
 // The browser opens on the space overview even with one space; most of
-// these tests are about the levels inside Personal Space.
-const enterPersonal = () => fireEvent.click(radio(/^Personal Space/));
+// these tests are about the levels inside My documents.
+const enterPersonal = () => fireEvent.click(radio(/^My documents/));
 const staggerIndex = (el: HTMLElement) => el.style.getPropertyValue('--stagger-i');
 
 afterEach(cleanup);
 
 describe('the bar above the rows', () => {
-  it('opens on the space overview even when Personal Space is the only space', () => {
+  it('opens on the space overview even when My documents is the only space', () => {
     render(<Harness />);
     // A heading, not a back button: there is no level above the overview.
     expect(screen.getByText('Choose a Space').closest('button')).toBeNull();
-    expect(radio(/^Personal Space/).textContent).toContain('Your folders');
+    expect(radio(/^My documents/).textContent).toContain('Your folders');
     // Nothing inside the space is listed until it is chosen.
     expect(screen.queryByRole('radio', { name: /^Alpha/ })).toBeNull();
 
     enterPersonal();
     const back = screen.getByRole('button', { name: /All spaces/ });
-    expect(back.textContent).toContain('Personal Space');
+    expect(back.textContent).toContain('My documents');
     fireEvent.click(back);
     expect(screen.getByText('Choose a Space')).toBeTruthy();
   });
@@ -112,7 +112,7 @@ describe('the bar above the rows', () => {
     render(<Harness />);
     enterPersonal();
     fireEvent.click(radio(/^Alpha/));
-    const back = screen.getByRole('button', { name: /Personal Space/ });
+    const back = screen.getByRole('button', { name: /My documents/ });
     expect(back.textContent).toContain('Alpha');
     fireEvent.click(radio(/^Gamma/));
     expect(screen.getByRole('button', { name: /Alpha/ }).textContent).toContain('Gamma');
@@ -124,7 +124,7 @@ describe('subfolder badges', () => {
     render(<Harness />);
     enterPersonal();
     // The save-here card at the root: two root folders.
-    expect(radio(/^Personal Space/).textContent).toContain('2 Subfolders');
+    expect(radio(/^My documents/).textContent).toContain('2 Subfolders');
     expect(radio(/^Alpha/).textContent).toContain('2 Subfolders');
     expect(radio(/^Epsilon/).textContent).not.toMatch(/\d+ Subfolder/);
 
@@ -139,7 +139,7 @@ describe('subfolder badges', () => {
     render(
       <Harness teams={[TEAM]} teamFolders={{ t1: [{ id: 'x', name: 'Ex', parentId: null }] }} />,
     );
-    expect(radio(/^Personal Space/).textContent).toContain('2 Subfolders');
+    expect(radio(/^My documents/).textContent).toContain('2 Subfolders');
     expect(radio(/^Team One/).textContent).toContain('1 Subfolder');
   });
 });
@@ -240,7 +240,7 @@ describe('the New Folder tile', () => {
     fireEvent.keyDown(screen.getByPlaceholderText('Folder name'), { key: 'Enter' });
     // The browser is now inside Epsilon (the bar names it), and the new
     // folder is the selected row rather than hidden behind its parent.
-    const back = await screen.findByRole('button', { name: /Personal Space/ });
+    const back = await screen.findByRole('button', { name: /My documents/ });
     expect(back.textContent).toContain('Epsilon');
     expect(screen.getByRole('radio', { name: /^Zeta/ }).getAttribute('aria-checked')).toBe('true');
   });
@@ -250,7 +250,7 @@ describe('the New Folder tile', () => {
     enterPersonal();
     fireEvent.click(radio(/^Epsilon/));
     expect(screen.getByRole('button', { name: /New Subfolder/ })).toBeTruthy();
-    fireEvent.click(radio(/^Personal Space/));
+    fireEvent.click(radio(/^My documents/));
     expect(screen.getByRole('button', { name: /New Folder/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /New Subfolder/ })).toBeNull();
   });
@@ -290,5 +290,97 @@ describe('the New Team tile', () => {
     expect(here.textContent).toContain('Design');
     expect(here.getAttribute('aria-checked')).toBe('true');
     expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain('Design');
+  });
+});
+
+describe('opening where its selection is', () => {
+  // A host that can also change the placement from outside, as the wizard does when a default
+  // resolves late or is changed through Change default.
+  function Opened({ initial, folders = FOLDERS }: { initial: string; folders?: PickerFolder[] }) {
+    const [placement, setPlacement] = useState(initial);
+    return (
+      <>
+        <button type="button" onClick={() => setPlacement('folder:b')}>
+          outside to Beta
+        </button>
+        <output data-testid="placement">{placement}</output>
+        <PlacementBrowser
+          placement={placement}
+          onPlacement={setPlacement}
+          folders={folders}
+          teams={[]}
+          teamFolders={{}}
+          layout="list"
+        />
+      </>
+    );
+  }
+  const checked = () =>
+    screen
+      .getAllByRole('radio')
+      .filter((r) => r.getAttribute('aria-checked') === 'true')
+      .map((r) => r.textContent ?? '');
+
+  it('opens at the level that lists a selected folder, its card checked', () => {
+    render(<Opened initial="folder:d" />);
+    // Inside My documents > Alpha > Gamma: Delta is listed and is the only checked radio.
+    expect(screen.queryByText('Choose a Space')).toBeNull();
+    expect(screen.getByRole('button', { name: /Alpha/ }).textContent).toContain('Gamma');
+    expect(checked()).toHaveLength(1);
+    expect(checked()[0]).toMatch(/^Delta/);
+  });
+
+  it('opens the space root for a top-level folder', () => {
+    render(<Opened initial="folder:e" />);
+    expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain(
+      'My documents',
+    );
+    expect(checked()[0]).toMatch(/^Epsilon/);
+  });
+
+  it('still opens the overview for the root', () => {
+    render(<Opened initial="unsorted" />);
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+  });
+
+  it('backs out of the opened level to the space, then the overview', () => {
+    render(<Opened initial="folder:b" />);
+    fireEvent.click(screen.getByRole('button', { name: /My documents/ }));
+    // Back at the root of My documents, Alpha still holds the choice.
+    expect(checked()[0]).toMatch(/^Alpha/);
+    fireEvent.click(screen.getByRole('button', { name: /All spaces/ }));
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+  });
+
+  it('opens the level once the folders arrive', () => {
+    const { rerender } = render(<Opened initial="folder:b" folders={[]} />);
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+    rerender(<Opened initial="folder:b" folders={FOLDERS} />);
+    expect(checked()[0]).toMatch(/^Beta/);
+  });
+
+  it('follows a selection changed from outside', () => {
+    render(<Opened initial="folder:d" />);
+    fireEvent.click(screen.getByRole('button', { name: 'outside to Beta' }));
+    expect(screen.getByRole('button', { name: /My documents/ }).textContent).toContain('Alpha');
+    expect(checked()[0]).toMatch(/^Beta/);
+  });
+
+  it('stays where the reader takes it', () => {
+    render(<Opened initial="folder:b" />);
+    // Choosing the open folder itself does not jump to the level that lists it.
+    fireEvent.click(radio(/^Alpha/));
+    expect(screen.getByTestId('placement').textContent).toBe('folder:a');
+    expect(radio(/^Beta/)).toBeTruthy();
+    expect(checked()[0]).toMatch(/^Alpha/);
+  });
+
+  it('follows an outside change again after the reader has moved', () => {
+    render(<Opened initial="folder:d" />);
+    fireEvent.click(screen.getByRole('button', { name: /Alpha/ }));
+    fireEvent.click(screen.getByRole('button', { name: /My documents/ }));
+    fireEvent.click(radio(/^Epsilon/));
+    fireEvent.click(screen.getByRole('button', { name: 'outside to Beta' }));
+    expect(checked()[0]).toMatch(/^Beta/);
   });
 });

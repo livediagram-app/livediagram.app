@@ -8,7 +8,7 @@ import type {
   TextElement,
 } from '@livediagram/document';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from '@livediagram/document';
+import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
 import {
   THEMES,
   deriveNewBoxedColours,
@@ -34,6 +34,7 @@ import {
   registerCustomTheme,
   unregisterCustomTheme,
 } from './custom-theme-registry';
+import { encodeStrokePoints } from '@livediagram/document';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {
@@ -370,10 +371,10 @@ describe('recolourElementForTheme', () => {
     y: 0,
     width: 100,
     height: 100,
-    points: [
+    packedPoints: encodeStrokePoints([
       { nx: 0, ny: 0 },
       { nx: 1, ny: 1 },
-    ],
+    ]),
     closed: true,
   };
 
@@ -440,7 +441,7 @@ describe('switchThemeBackdrop', () => {
   const prev: ThemeDefinition = {
     id: 'brand',
     label: 'Brand',
-    backgroundColor: '#ffffff',
+    backgroundColor: DEFAULT_BACKGROUND_COLOR,
     backgroundPattern: 'grid',
     patternColor: '#cbd5e1',
     elementFill: null,
@@ -641,10 +642,10 @@ describe('switchThemeElement', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: true,
       fillColor: '#ff00ff', // customised: must survive
       strokeColor: prev.elementStroke ?? undefined, // on old theme: must flip
@@ -806,10 +807,10 @@ describe('resetThemeElement', () => {
       y: 0,
       width: 100,
       height: 100,
-      points: [
+      packedPoints: encodeStrokePoints([
         { nx: 0, ny: 0 },
         { nx: 1, ny: 1 },
-      ],
+      ]),
       closed: true,
       fillColor: '#ff00ff',
       strokeColor: '#003366',

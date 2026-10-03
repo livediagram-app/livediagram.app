@@ -47,10 +47,11 @@ import {
   type CustomThemeDraft,
 } from '@/components/panels/ThemeBuilderModal';
 import { teamDeleteCopy, teamRemovalCopy } from '@/components/panels/team-removal';
-import { TOKEN_REVOKE_MESSAGE } from '@/components/panels/token-copy';
+import { TOKEN_REVOKE_MESSAGE } from '@/components/dialogs/settings/token-copy';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
+import { requestOpenSettings } from '@/lib/open-settings';
 import { useExplorer } from '../ExplorerContext';
 import type { TimelineMenuItem } from './TimelineCardMenu';
 
@@ -298,7 +299,11 @@ export function useTimelineEntityMenus(): {
       if (sourceType === 'account') {
         if (TOKEN_EVENTS.has(eventType)) {
           const items: TimelineMenuItem[] = [
-            { label: 'Open Tokens', icon: <KeyIcon />, onClick: () => go({ kind: 'tokens' }) },
+            {
+              label: 'Open API Tokens',
+              icon: <KeyIcon />,
+              onClick: () => requestOpenSettings('tokens'),
+            },
           ];
           const token = tokens.list?.find((t) => t.id === event.sourceId);
           if (token) {

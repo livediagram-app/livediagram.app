@@ -71,3 +71,5 @@ jobs:
       CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL_STAGING }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET_STAGING }}
       INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY_STAGING }}
+      # Staging's own Google Cloud project (docs/specs/022-drive-mirror/drive-mirror.md).
+      NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY_STAGING }}

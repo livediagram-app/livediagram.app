@@ -110,8 +110,8 @@ than the canvas. On submit it calls `setSessionSharePassword(pw)` and re-runs
 the bootstrap (a retry counter in the bootstrap effect's deps); the retried
 `apiLoadShared` now carries the password and either hydrates the editor or
 re-shows the gate with `invalid`. Once past the gate the password is on every
-HTTP call (via `apiHeaders`) and the WS (`connectRoom`), so reads, writes, the
-change log, images, and realtime all stay authorised.
+HTTP call (via `apiHeaders`) and the WS (`connectRoom`), so reads, writes,
+images, and realtime all stay authorised.
 
 Existing viewers when the owner sets or changes a password: their next API call
 fails the gate and they are re-prompted. We do not actively kick them mid-session

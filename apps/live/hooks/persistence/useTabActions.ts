@@ -3,9 +3,9 @@
 // linking a tab into another document, and clearing a tab's content.
 //
 // This is the busiest of the extracted hooks because tab lifecycle
-// genuinely touches a lot: history (`commit` / `commitTabs`), the
-// activity log (`emitTabMeta`), selection state, telemetry, the
-// confirm dialog + toasts, the change-log panel, and the document list.
+// genuinely touches a lot: history (`commit` / `commitTabs`),
+// selection state, telemetry, the confirm dialog + toasts, and the
+// document list.
 // The deps object reflects that — the page still owns all that state;
 // this hook only relocates the handlers verbatim so the logic lives in
 // one auditable place. No behaviour change.
@@ -19,19 +19,24 @@ import {
   normalizeFolderOrder,
   tabFolderName,
   truncateName,
+  type EditorMode,
   type Element,
   type Tab,
 } from '@livediagram/document';
-import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
+import { apiLinkTab } from '@/lib/api-client';
+import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
+import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintElementIds, useTabImport } from './useTabImport';
-import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
+import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
+  // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md).
+  editorMode: EditorMode;
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
@@ -45,7 +50,6 @@ type TabActionsDeps = {
   createTab: (name: string) => Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string) => void;
   // Mark a freshly-created tab as loaded so the lazy per-tab fetch
   // (docs/specs/006-document/per-tab-storage.md) skips it — a locally-created tab has no server row to
   // pull, so without this the canvas would flash its loading overlay
@@ -67,8 +71,6 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Drops change-log rows for a deleted tab from the visible panel.
-  setChangeLog: (update: (prev: ChangeLogEntry[]) => ChangeLogEntry[]) => void;
   // Re-pulls the owner's document list after a cross-document tab link.
   refreshDocumentList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
@@ -85,7 +87,6 @@ export function useTabActions(deps: TabActionsDeps) {
     createTab,
     commit,
     commitTabs,
-    emitTabMeta,
     markTabLoaded,
     isTabLoaded,
     setActiveId,
@@ -95,37 +96,19 @@ export function useTabActions(deps: TabActionsDeps) {
     setTemplatePickerMode,
     setImportError,
     requestFit,
-    setChangeLog,
     refreshDocumentList,
     confirm,
     toast,
   } = deps;
 
   const addTab = () => {
-    // Seed the new tab with the current tab's theme + canvas styling
-    // so a user mid-diagram who hits "+ tab" doesn't lose their
-    // visual context. Each tab still has its own independent
-    // styling once created (changing the new tab's theme doesn't
-    // affect the source). Skips when activeTab can't be resolved
-    // (the hook is mid-mount or the active id points at a tab
-    // that's been removed in another window), falling back to
-    // brand defaults the same way Tab 1 does.
-    const activeTab = tabs.find((t) => t.id === activeId);
-    const seed: Partial<Tab> = activeTab
-      ? {
-          theme: activeTab.theme,
-          backgroundPattern: activeTab.backgroundPattern,
-          backgroundColor: activeTab.backgroundColor,
-          backgroundOpacity: activeTab.backgroundOpacity,
-          patternColor: activeTab.patternColor,
-          // Carry the font + default text size too so tabs in one document
-          // stay visually consistent instead of each reverting to default.
-          // Fall back to small (docs/specs/004-interface-design/fonts.md) when the active tab has no explicit
-          // size, so a new tab still defaults to small rather than md.
-          font: activeTab.font,
-          defaultTextSize: activeTab.defaultTextSize ?? 'sm',
-        }
-      : {};
+    // The new tab takes the active tab's look and the creator's current editor mode (newTabSeed).
+    // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
+    // window), falling back to brand defaults the same way Tab 1 does.
+    const seed = newTabSeed(
+      tabs.find((t) => t.id === activeId),
+      deps.editorMode,
+    );
     const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
@@ -143,8 +126,10 @@ export function useTabActions(deps: TabActionsDeps) {
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
   // lives in useTabImport; remintElementIds is shared with the
   // cross-document link below.
-  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
+  const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
     tabs,
+    createTab,
+    markTabLoaded,
     ownerId,
     documentId,
     activeId,
@@ -154,6 +139,19 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    // Declared below; called only once an import runs, after this render has defined it.
+    importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
+  });
+  // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
+  // active tab, or open each board as a new whiteboard tab.
+  const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
+    tabs,
+    activeId,
+    drawMode: deps.editorMode === 'draw',
+    ownerId,
+    documentId,
+    replaceActiveTabContent,
+    onDocumentsCreated: () => refreshDocumentList(ownerId),
   });
 
   const toggleActiveTabLock = () => {
@@ -161,7 +159,6 @@ export function useTabActions(deps: TabActionsDeps) {
     if (!target) return;
     const next = !target.locked;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)));
-    emitTabMeta(activeId, next ? 'Locked tab' : 'Unlocked tab');
     track('Tab', next ? 'Locked' : 'Unlocked');
     if (next) {
       // Drop any in-progress UI state that would be useless on a
@@ -180,10 +177,6 @@ export function useTabActions(deps: TabActionsDeps) {
     const trimmed = truncateName(name);
     if (trimmed === previous.trim()) return;
     commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
-    emitTabMeta(
-      id,
-      previous ? `Renamed tab '${previous}' to '${trimmed}'` : `Renamed tab to '${trimmed}'`,
-    );
     track('Tab', 'Renamed');
   };
 
@@ -281,16 +274,6 @@ export function useTabActions(deps: TabActionsDeps) {
           }),
         })),
     );
-    // Local cascade: drop audit-log entries for the gone tab from the
-    // visible panel immediately. The server-side cascade lives inside
-    // deleteTabRow (apps/api/src/db.ts): it only drops the change_log
-    // rows when the underlying `tabs` row is itself dropped, so a
-    // shared tab unlinked from this document keeps its history in any
-    // document that still surfaces it (per docs/specs/006-document/tab-document-many-to-many.md). The previous
-    // client-side apiDeleteChangeLogForTab call wiped the log
-    // globally, which silently broke the audit panel for every other
-    // document sharing the tab.
-    setChangeLog((prev) => prev.filter((entry) => entry.tabId !== id));
     if (activeId === id) {
       const fallback = tabs[idx + 1] ?? tabs[idx - 1];
       if (fallback) setActiveId(fallback.id);
@@ -309,7 +292,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // loose tabs makes it loose, and dropping onto the folder chip (which
     // targets the run's first member) joins too. So one drag both reorders
     // AND moves the tab in / out of a folder. (Closure values drive the
-    // telemetry / activity log below; the mutation itself recomputes from
+    // telemetry below; the mutation itself recomputes from
     // live state inside the commit.)
     const srcFolder = tabFolderName(tabs[srcIdx0]!);
     const targetFolder = tabFolderName(tabs[tgtIdx0]!);
@@ -338,7 +321,6 @@ export function useTabActions(deps: TabActionsDeps) {
     // as `Tab·Removed`, which made "how do people manage tab folders?"
     // unanswerable from the numbers.)
     if (srcFolder !== targetFolder) {
-      emitTabMeta(sourceId, tabFolderTransitionSummary(srcFolder, targetFolder));
       trackTabFolderTransition(srcFolder, targetFolder);
     } else {
       track('Tab', 'Reordered');
@@ -366,6 +348,8 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importSceneIntoActiveTab,
+    importScenesAsNewDocuments,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

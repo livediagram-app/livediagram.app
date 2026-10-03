@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { BEND_T_MIN, applyArrowBend, planArrowBend } from './arrow-bend';
+import {
+  BEND_T_MIN,
+  applyArrowBend,
+  arrowBendVertices,
+  otherArrowBends,
+  planArrowBend,
+} from './arrow-bend';
 import type { ArrowElement } from './index';
 
 const free = (x: number, y: number) => ({ kind: 'free' as const, x, y });
@@ -72,13 +78,29 @@ describe('applyArrowBend', () => {
     expect(p.y).toBeCloseTo(-50);
   });
 
-  it('leaves an existing bow where it was when the pointer has not moved', () => {
+  // docs/specs/008-canvas/arrow-bending.md "Curved arrow with a single bow": grabbing its line
+  // adds a point. The bow becomes a bend point at its apex and the grab is inserted beside it.
+  it('turns a single bow into its apex plus a new point where the line was grabbed', () => {
     const a = arrow([0, 0], [200, 0], { arrowStyle: 'curved', curveOffset: { dx: 0, dy: -80 } });
-    // The curve's apex: control (100, -80) puts t = 0.5 at (100, -40).
-    const plan = planArrowBend(a, [], { x: 100, y: -40 });
-    const patch = applyArrowBend(plan, { x: 0, y: 0 });
-    expect(patch.curveOffset!.dx).toBeCloseTo(0);
-    expect(patch.curveOffset!.dy).toBeCloseTo(-80);
+    // Control (100, -80): the apex (t = 0.5) is at (100, -40), so its delta from the chord
+    // middle (100, 0) is (0, -40). Grabbing at t = 0.25, (50, -30), puts the new point first.
+    const grab = quad({ x: 0, y: 0 }, { x: 100, y: -80 }, { x: 200, y: 0 }, 0.25);
+    const plan = planArrowBend(a, [], grab);
+    const patch = applyArrowBend(plan, { x: 0, y: -10 });
+    expect(patch.arrowStyle).toBe('curved');
+    expect(patch.curveOffset).toBeUndefined();
+    expect(patch.curvePoints).toHaveLength(2);
+    expect(patch.curvePoints![0]!.dx).toBeCloseTo(grab.x - 100);
+    expect(patch.curvePoints![0]!.dy).toBeCloseTo(grab.y - 10);
+    expect(patch.curvePoints![1]).toEqual({ dx: 0, dy: -40 });
+  });
+
+  it('inserts after the apex when grabbed past the middle', () => {
+    const a = arrow([0, 0], [200, 0], { arrowStyle: 'curved', curveOffset: { dx: 0, dy: -80 } });
+    const grab = quad({ x: 0, y: 0 }, { x: 100, y: -80 }, { x: 200, y: 0 }, 0.75);
+    const patch = applyArrowBend(planArrowBend(a, [], grab), { x: 0, y: 0 });
+    expect(patch.curvePoints![0]).toEqual({ dx: 0, dy: -40 });
+    expect(patch.curvePoints![1]!.dx).toBeCloseTo(grab.x - 100);
   });
 
   it('inserts the new point under the pointer, relative to the chord middle', () => {
@@ -126,5 +148,34 @@ describe('applyArrowBend', () => {
       { dx: -35, dy: -100 },
       { dx: -35, dy: 100 },
     ]);
+  });
+});
+
+// docs/specs/008-canvas/arrow-bending.md "Bends line up": what a dragged bend snaps to.
+describe('arrowBendVertices', () => {
+  it('is an angled arrow\u2019s corners, a curve\u2019s bend points, and nothing for a straight one', () => {
+    const angled = arrow([0, 0], [200, 100], {
+      arrowStyle: 'angled',
+      curvePoints: [
+        { dx: 0, dy: -50 },
+        { dx: 0, dy: 50 },
+      ],
+    });
+    expect(arrowBendVertices(angled, [])).toEqual([
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ]);
+    const curved = arrow([0, 0], [200, 0], {
+      arrowStyle: 'curved',
+      curvePoints: [{ dx: 0, dy: -40 }],
+    });
+    expect(arrowBendVertices(curved, [])).toEqual([{ x: 100, y: -40 }]);
+    expect(arrowBendVertices(arrow([0, 0], [200, 0]), [])).toEqual([]);
+  });
+
+  it('leaves the dragged arrow out of the others', () => {
+    const a = arrow([0, 0], [200, 0], { arrowStyle: 'curved', curvePoints: [{ dx: 0, dy: -40 }] });
+    const b = { ...a, id: 'b' };
+    expect(otherArrowBends('a', [a, b])).toEqual([{ x: 100, y: -40 }]);
   });
 });

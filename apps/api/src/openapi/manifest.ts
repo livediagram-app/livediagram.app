@@ -118,7 +118,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Create a document, optionally seeding it with tabs.',
+    summary:
+      'Create a document, optionally seeding it with tabs and filing it in a team and/or folder. ' +
+      'An invalid placement refuses the whole create by name (placement_invalid, team_forbidden, ' +
+      'folder_not_found, folder_scope_mismatch) or a malformed intent (intent_invalid); nothing is ' +
+      'written.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -127,13 +131,42 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         id: { type: 'string' },
         name: nameField,
         tabs: { type: 'array', items: ref('Tab') },
-        folderId: { type: ['string', 'null'] },
-        teamId: { type: ['string', 'null'] },
+        // Placement (docs/specs/013-workspace/folders.md "Placement on create").
+        teamId: {
+          type: ['string', 'null'],
+          description:
+            "The team library to file into; absent or null = the caller's My documents. " +
+            'Requires a signed-in caller (or API token) who has joined the team.',
+        },
+        folderId: {
+          type: ['string', 'null'],
+          description:
+            "A folder of the chosen space. null, present, is that space's root chosen on " +
+            'purpose; absent with no teamId is no choice, where a default folder may answer.',
+        },
+        // The creation intent (docs/specs/013-workspace/default-folders.md).
+        intent: {
+          type: ['object', 'null'],
+          description:
+            'What the new document is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
+            "With no choice of place, the document lands in the caller's default folder for it: " +
+            'the tab kind default, else the template family default, else the mode default, else ' +
+            'the root of My documents. Malformed: intent_invalid (400).',
+          properties: {
+            mode: ref('EditorMode'),
+            tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },
+            templateFamily: { anyOf: [ref('TemplateFamily'), { type: 'null' }] },
+          },
+          required: ['mode'],
+        },
+        // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
+        createdAt: { type: 'integer' },
+        savedAt: { type: 'integer' },
       },
       required: ['id', 'name'],
     },
     responseSchema: wrap('document', 'Document'),
-    statuses: [201, 400, 401, 403, 410, 413],
+    statuses: [201, 400, 401, 403, 404, 410, 413],
   },
   {
     method: 'GET',
@@ -268,7 +301,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { elementId: { type: 'string' }, text: { type: 'string' } },
       required: ['elementId', 'text'],
     },
-    statuses: [201, 400, 401, 403, 404, 410],
+    statuses: [201, 400, 401, 403, 404, 410, 413],
   },
   {
     method: 'DELETE',
@@ -277,7 +310,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Documents',
     summary: 'Delete a comment.',
     auth: 'guest-or-clerk',
-    statuses: [204, 401, 403, 404, 410],
+    statuses: [204, 401, 403, 404, 410, 413],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
+    },
+    statuses: [200, 403, 404],
   },
   {
     method: 'POST',
@@ -466,50 +513,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     ],
     statuses: [101, 403, 404],
   },
-  {
-    method: 'GET',
-    path: '/documents/{id}/log',
-    segment: 'documents',
-    tag: 'Activity',
-    summary: "List a document's change-log entries.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('entries', 'ChangeLogEntry'),
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/log',
-    segment: 'documents',
-    tag: 'Activity',
-    summary: 'Append a change-log entry.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: 'ChangeLogEntry',
-    responseSchema: wrap('entry', 'ChangeLogEntry'),
-    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/log/{entryId}',
-    segment: 'documents',
-    tag: 'Activity',
-    summary: 'Delete one change-log entry.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 410],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/log/tab/{tabId}',
-    segment: 'documents',
-    tag: 'Activity',
-    summary: "Clear a tab's change-log entries.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 410],
-  },
-
   // ---- Folders ----
   {
     method: 'GET',
@@ -689,6 +692,68 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404],
   },
 
+  // ---- Shape libraries ----
+  {
+    method: 'GET',
+    path: '/shape-libraries',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: "List the caller's shape libraries, newest first.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: listOf('libraries', 'ShapeLibrary'),
+    statuses: [200, 401],
+  },
+  {
+    method: 'POST',
+    path: '/shape-libraries',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: 'Create a shape library; a name already in use is suffixed.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        source: { type: 'string', enum: ['drawio'] },
+        items: { type: 'array', items: ref('ShapeLibraryItem') },
+      },
+      required: ['id', 'name', 'source', 'items'],
+    },
+    responseSchema: wrap('library', 'ShapeLibrary'),
+    statuses: [201, 400, 401, 409, 413],
+  },
+  {
+    method: 'PUT',
+    path: '/shape-libraries/{id}',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: 'Rename a shape library, or replace its items.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        items: { type: 'array', items: ref('ShapeLibraryItem') },
+      },
+    },
+    responseSchema: wrap('library', 'ShapeLibrary'),
+    statuses: [200, 400, 401, 403, 404, 409, 413],
+  },
+  {
+    method: 'DELETE',
+    path: '/shape-libraries/{id}',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary: 'Delete a shape library. Placed shapes stay in their documents.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404],
+  },
+
   // ---- API tokens ----
   {
     method: 'GET',
@@ -797,9 +862,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/participants/{id}',
     segment: 'participants',
     tag: 'Participants',
-    summary: "Get a participant's display name and colour.",
+    summary:
+      "Get a participant's display name and colour; their published picture only for a signed-in caller. Your own id before you have saved a profile answers { participant: null }.",
     auth: 'public',
-    responseSchema: wrap('participant', 'ParticipantRecord'),
+    responseSchema: {
+      type: 'object',
+      properties: { participant: { oneOf: [ref('ParticipantRecord'), { type: 'null' }] } },
+      required: ['participant'],
+    },
     statuses: [200, 404],
   },
   {
@@ -815,6 +885,25 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
+    statuses: [200, 400, 401, 403, 404],
+  },
+  {
+    method: 'PUT',
+    path: '/participants/{id}/picture',
+    segment: 'participants',
+    tag: 'Participants',
+    summary:
+      'Set or clear your published profile picture (a Clerk image URL; signed-in session only).',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { pictureUrl: { type: ['string', 'null'] } },
+      required: ['pictureUrl'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { pictureUrl: { type: ['string', 'null'] } },
+    },
     statuses: [200, 400, 401, 403, 404],
   },
 
@@ -877,6 +966,61 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401],
   },
 
+  // ---- Default folders (docs/specs/013-workspace/default-folders.md) ----
+  {
+    method: 'GET',
+    path: '/placement-defaults',
+    segment: 'placement-defaults',
+    tag: 'Folders',
+    summary:
+      "The caller's default folders, one per key (mode:diagram, mode:draw, kind:event-storming, " +
+      'template:retrospective, template:kanban), dangling ones included.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: {
+      type: 'object',
+      properties: {
+        defaults: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { key: { type: 'string' }, folderId: { type: 'string' } },
+            required: ['key', 'folderId'],
+          },
+        },
+      },
+    },
+    statuses: [200, 401],
+  },
+  {
+    method: 'PUT',
+    path: '/placement-defaults/{key}',
+    segment: 'placement-defaults',
+    tag: 'Folders',
+    summary:
+      "Set the caller's default folder for a key: their own personal folder or a folder of a team " +
+      'they have joined. Refusals: default_key_invalid, default_folder_invalid (400), ' +
+      'folder_not_found (404).',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { folderId: { type: 'string', minLength: 1 } },
+      required: ['folderId'],
+    },
+    statuses: [204, 400, 401, 404, 429],
+  },
+  {
+    method: 'DELETE',
+    path: '/placement-defaults/{key}',
+    segment: 'placement-defaults',
+    tag: 'Folders',
+    summary: "Clear the caller's default folder for a key. Idempotent; default_key_invalid (400).",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 400, 401, 429],
+  },
+
   // ---- Trash (docs/specs/013-workspace/trash.md) ----
   {
     method: 'GET',
@@ -912,7 +1056,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Restore a document from the Trash to its folder, or Unsorted when that folder is gone.',
+      'Restore a document from the Trash to its folder, or the root of its space when that folder is gone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('document', 'Document'),
@@ -1012,6 +1156,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['actions', 'threads'],
     },
     statuses: [200, 400, 401],
+  },
+
+  // ---- Explorer Home (docs/specs/013-workspace/explorer-home.md) ----
+  {
+    method: 'GET',
+    path: '/home',
+    segment: 'home',
+    tag: 'Account',
+    summary:
+      "The Explorer's Home in one read: Jump back in (the caller's most-returned-to documents, by frecency, at most 12), the first page of their own Timeline (created, updated and opened), and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC), `limit` (1 to 100, default 30). 400 `tz_invalid` / `limit_invalid` / `cursor_invalid`.",
+    auth: 'guest-or-clerk',
+    responseSchema: { $ref: '#/components/schemas/HomeResponse' },
+    statuses: [200, 400, 401, 429],
+  },
+  {
+    method: 'GET',
+    path: '/home/timeline',
+    segment: 'home',
+    tag: 'Account',
+    summary:
+      "The next page of the caller's own Home Timeline, newest first. Keyset-paginated: pass the previous page's `nextCursor` as `cursor`. 400 `limit_invalid` / `cursor_invalid`.",
+    auth: 'guest-or-clerk',
+    responseSchema: { $ref: '#/components/schemas/HomeTimelinePage' },
+    statuses: [200, 400, 401, 429],
   },
 
   // ---- Account ----
@@ -1328,6 +1496,156 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [{ name: 'url', required: true, description: 'The URL to unfurl.' }],
     responseSchema: 'UnfurlResult',
     statuses: [200, 400, 429],
+  },
+
+  // ---- Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md) ----
+  // Every route needs a Clerk SESSION: the guest header and API tokens are both
+  // refused, and each answers 503 drive_not_configured when the deployment has
+  // no GOOGLE_CLIENT_ID. First-party only; the mirror runs in the user's browser.
+  {
+    method: 'POST',
+    path: '/drive/state',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Mint the signed consent `state` for a redirect URI (broker mode). Clerk session only.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { redirectUri: { type: 'string' } },
+      required: ['redirectUri'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { state: { type: 'string' } },
+      required: ['state'],
+    },
+    statuses: [200, 400, 401, 503],
+  },
+  {
+    method: 'POST',
+    path: '/drive/connect',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Redeem a Google consent code: the refresh token is sealed and stored, never returned. Clerk session only.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { code: { type: 'string' }, state: { type: 'string' } },
+      required: ['code', 'state'],
+    },
+    responseSchema: wrap('connection', 'DriveConnection'),
+    statuses: [200, 400, 401, 502, 503],
+  },
+  {
+    method: 'POST',
+    path: '/drive/token',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Mint a one-hour Google access token from the stored refresh token. 409 drive_needs_reconnect when Google revoked the grant; 429 drive_token_rate_limited past 10 a minute.',
+    auth: 'clerk',
+    responseSchema: 'DriveAccessToken',
+    statuses: [200, 401, 404, 409, 429, 502, 503],
+  },
+  {
+    method: 'GET',
+    path: '/drive/connection',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: "The caller's Drive connection summary, or null.",
+    auth: 'clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { connection: { oneOf: [ref('DriveConnection'), { type: 'null' }] } },
+      required: ['connection'],
+    },
+    statuses: [200, 401, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/drive/connection',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Record the mirror root folder and changes page token. In browser mode this also creates the connection.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        rootFolderId: { type: ['string', 'null'] },
+        pageToken: { type: 'string' },
+      },
+    },
+    responseSchema: wrap('connection', 'DriveConnection'),
+    statuses: [200, 400, 401, 404, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/connection',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Disconnect: revoke the grant at Google and delete the stored token and mirror rows. Drive files stay.',
+    auth: 'clerk',
+    statuses: [204, 401, 503],
+  },
+  {
+    method: 'GET',
+    path: '/drive/items',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: "The caller's mirrored documents and folders with the Drive state last written.",
+    auth: 'clerk',
+    responseSchema: listOf('items', 'DriveItem'),
+    statuses: [200, 401, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/drive/items',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary:
+      'Upsert up to 100 mirrored items. 409 drive_item_conflict when a Drive file id is already held.',
+    auth: 'clerk',
+    requestSchema: listOf('items', 'DriveItem'),
+    responseSchema: listOf('items', 'DriveItem'),
+    statuses: [200, 400, 401, 404, 409, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/items/{kind}/{ldId}',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: 'Forget one mirrored item (`kind` is `document` or `folder`).',
+    auth: 'clerk',
+    statuses: [204, 400, 401, 503],
+  },
+  {
+    method: 'POST',
+    path: '/drive/lease',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: 'Take or renew the cross-device write lease for this holder.',
+    auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { holder: { type: 'string' } },
+      required: ['holder'],
+    },
+    responseSchema: 'DriveLease',
+    statuses: [200, 400, 401, 404, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/drive/lease',
+    segment: 'drive',
+    tag: 'Google Drive',
+    summary: 'Release the write lease, if this holder has it.',
+    auth: 'clerk',
+    query: [{ name: 'holder', required: true, description: 'The device id holding the lease.' }],
+    statuses: [204, 400, 401, 503],
   },
 
   // ---- Telemetry ----

@@ -1,7 +1,5 @@
 # Chair
 
-Status: **implemented**.
-
 A Behaviour element an Avatar-mode character **sits down in** when it walks
 into one.
 
@@ -33,7 +31,7 @@ button, portal, session button, reveal zone and picker.
 - **No settings `…` on its face.** Every other Behaviours card carries the
   shared ellipsis in its corner ([Canvas and palette](../008-canvas/canvas-and-palette.md)); a chair is furniture, not a card,
   and its one setting is set once from the element menu, so an ellipsis over
-  the backrest only read as a control on the seat.
+  the backrest only reads as a control on the seat.
 - Its `label` is optional and renders under the chair: "Scribe", "Facilitator",
   "Alex" — a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
@@ -42,8 +40,7 @@ button, portal, session button, reveal zone and picker.
   headless render (`svg-render-faces.ts`) both draw from `CHAIR_GEOMETRY` in
   `packages/document/src/shape-geometry.ts`, and share its facing rotation and
   seat rule (`chairSeatFill`: the element's fill, or with the default
-  `transparent` a wash of its stroke). An exported chair used to ignore its
-  facing and paint its seat with that literal `transparent`.
+  `transparent` a wash of its stroke).
 - **Animations ([Canvas and palette](../008-canvas/canvas-and-palette.md)) run on the drawing, not the box.** The element box is
   transparent, so the box versions of glow / pulse / trace / gradient would
   ring and fill a rectangle around nothing. Those four ride the chair's own
@@ -72,7 +69,7 @@ there).
 
 ## Occupancy is presence, never document state
 
-Who is in a chair rides the existing `avatar` RoomOp, as a new
+Who is in a chair rides the `avatar` RoomOp, as
 `seatedOn: elementId | null` on `AvatarPresence`. **Nothing is written to the
 document.**
 
@@ -80,7 +77,7 @@ This is the rule that makes the feature safe, and it is [Avatar mode](../008-can
 unchanged: everyone's character is authoritative on its owner's machine. So a
 chair cannot be left permanently occupied by someone who closed their laptop, a
 chair's occupancy cannot conflict between two clients, and no seating state
-reaches D1, the change log or undo.
+reaches D1 or undo.
 
 - The chair renders **occupied** — a soft ring in the sitter's presence colour
   and their name under it — derived from the peer presence the canvas already

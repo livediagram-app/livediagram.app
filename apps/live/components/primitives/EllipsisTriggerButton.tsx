@@ -42,9 +42,21 @@ export const EllipsisTriggerButton = forwardRef<
     tuck?: boolean;
     onPointerDown?: (e: PointerEvent<HTMLButtonElement>) => void;
     className?: string;
+    // -1 inside a composite widget (the sidebar tree) that owns the tab stop.
+    tabIndex?: number;
   }
 >(function EllipsisTriggerButton(
-  { label, onClick, expanded, size = 'lg', reveal = false, tuck = false, onPointerDown, className },
+  {
+    label,
+    onClick,
+    expanded,
+    size = 'lg',
+    reveal = false,
+    tuck = false,
+    onPointerDown,
+    className,
+    tabIndex,
+  },
   ref,
 ) {
   const revealClass = reveal
@@ -58,6 +70,7 @@ export const EllipsisTriggerButton = forwardRef<
       type="button"
       onClick={onClick}
       onPointerDown={onPointerDown}
+      tabIndex={tabIndex}
       aria-label={label}
       aria-haspopup="menu"
       aria-expanded={expanded}

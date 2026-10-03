@@ -63,6 +63,12 @@ The maximum width follows the local direction:
 A label is never wider than a cap, which is wider along a horizontal run than across a vertical one, so a very long arrow still gets a readable label rather than one long strip. The caps are 120px across a vertical run and 240px along a horizontal one; the stub is a named constant in the blueprint.
 Explicit line breaks the author types are kept, and each explicit line still wraps to the width.
 
+An arrow may carry its own **label width** (`labelMaxWidth`, px), which replaces both caps: the
+label wraps at that width and no narrower, wherever it sits. Nothing in the editor sets it; imports
+do, so a caption the source drew on one long line keeps that line
+([draw.io import](../020-import-export/drawio-import.md) "Labels"). The open-run limit still applies
+to where the label may sit, not to its width.
+
 ## Knockout
 
 - The gap is the label's box plus a small padding, with rounded corners.

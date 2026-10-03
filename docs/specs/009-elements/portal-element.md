@@ -1,7 +1,5 @@
 # Portal element
 
-Status: **implemented**.
-
 A **Portal**: a standing ring of energy on the canvas, linked to another one. Click it — or walk an [Avatar-mode](../008-canvas/avatar-mode.md) character into it — and you come out of the portal it is linked to, on this tab or another.
 
 ## Why
@@ -17,7 +15,7 @@ A big canvas is a place, and places have shortcuts. Two portals turn "scroll acr
 
 ## The name is menu-only
 
-A portal has no caption on the canvas: a label across the energy read as a sticker on a window, and the ring is recognisable without one. The name lives in the element menu (**Portal → Name**), and shows in the travel tooltip and in the picker.
+A portal has no caption on the canvas: a label across the energy read as a sticker on a window, and the ring is recognisable without one. The name lives in the element menu (**Portal → Name**), and shows in the travel hover card and in the picker.
 
 New portals arrive **unlabelled** and are named **positionally** — "Portal 1", "Portal 2", in tab order — so a canvas full of them is navigable without anyone typing a thing. A typed name wins over the number.
 
@@ -60,11 +58,11 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## Implementation shape
 
-- **`apps/live/lib/portals.ts`** — the pure half: `portalsOnTab`, `portalName`, `portalSites` + `resolvePortalSite` (the cross-tab pair), `resolvePortalTarget`, `portalExitPoint`, and `viewportOffsetCentredOn`. Unit-tested, including every way a link can be broken.
+- **`apps/live/lib/portals.ts`** — the pure half: `portalsOnTab`, `portalName`, `portalSites` + `resolvePortalSite` (the cross-tab pair), `resolvePortalTarget`, `resolvePortalDestination`, `portalExitPoint`, and `viewportOffsetCentredOn`. Unit-tested, including every way a link can be broken.
 - **`apps/live/components/canvas/PortalFace.tsx`** — the ring, its lit / dead states, and the press.
 - **`apps/live/components/palette/PortalMenuSection.tsx`** — name, candidates, create.
 - **`apps/live/hooks/canvas/usePortalSetters.ts`** — the setters, off the style hook because they commit across tabs.
-- **`Canvas.tsx`** owns `enterPortal` (it has the viewport, the tabs, and the avatar hook) and hands the same action to both the portal's click and the walk-in, so the two can never drift. The walk hook gains `teleportTo` and an on-arrival portal callback; the two meet through a ref, because each needs the other.
+- **`apps/live/components/canvas/portal-travel.ts`**: `usePortalTravel`, a hook that owns no state, builds `enterPortal`; **`Canvas.tsx`** calls it (it has the viewport, the tabs, and the avatar hook) and hands the same action to both the portal's click and the walk-in, so the two can never drift. The walk hook exposes `teleportTo` and an on-arrival portal callback; the two meet through a ref, because each needs the other.
 - Wiring: the `portal` kind in `packages/document` (union, `SHAPE_KINDS`, default size, factory, `portalTarget` validation), the self-painted render path, the palette tile in **Behaviour**, and the telemetry token.
 
 ## Out of scope

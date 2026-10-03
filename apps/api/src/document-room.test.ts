@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import type { ParticipantPresence } from '@livediagram/api-schema';
 import {
   MUTATION_OP_KINDS,
@@ -348,6 +349,30 @@ describe('DocumentRoom hello frame role forcing', () => {
     expect(stored?.id).toBeTruthy();
   });
 
+  it('tells a joining socket the document format number', () => {
+    // docs/specs/016-platform/new-version-prompt.md: a deploy restarts the room, so every editor
+    // hears the server's number again on reconnect.
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
+    const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT });
+  });
+
+  it('adds the live build id when the deploy set one', () => {
+    // docs/specs/016-platform/stale-builds.md "Knowing which build is live".
+    const room = new DocumentRoom(
+      makeState() as unknown as DurableObjectState,
+      { BUILD_ID: 'abc123' } as unknown as Env,
+    );
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
+    const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, build: 'abc123' });
+  });
+
   it('replaces the client participant id with a server-assigned ephemeral id', () => {
     const { room } = newRoom();
     const ws = makeSocket();
@@ -522,7 +547,12 @@ describe('DocumentRoom op-role enforcement', () => {
   // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
   // below), so "a peer received it" is not the right assertion for it.
   const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
-  for (const kind of [...PRESENCE_OP_KINDS].filter((k) => !ADDRESSED_PRESENCE_KINDS.includes(k))) {
+  // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
+  // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
+  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
+  for (const kind of [...PRESENCE_OP_KINDS].filter(
+    (k) => !ADDRESSED_PRESENCE_KINDS.includes(k) && !EDITOR_ONLY_PRESENCE_KINDS.includes(k),
+  )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
       const editor = connect(room, 'editor', 'edit');
@@ -579,6 +609,7 @@ describe('DocumentRoom op-role enforcement', () => {
   // the gate, or renamed, this fails rather than silently excluding nothing.
   it('excludes only kinds that really are in the presence set', () => {
     expect(ADDRESSED_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
+    expect(EDITOR_ONLY_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
   });
 
   // The dangerous direction. Everything in PRESENCE_OP_KINDS is relayed from a
@@ -646,6 +677,25 @@ describe('DocumentRoom op-role enforcement', () => {
     // would push every real mutation out of the 256-slot catch-up log within
     // half a minute of somebody scrolling, forcing the next reconnecting peer
     // into a full D1 re-hydrate.
+    expect(received[0]).not.toHaveProperty('seq');
+  });
+
+  // docs/specs/008-canvas/drag-preview.md: an editor's live drag relays unordered, and a viewer's never
+  // relays at all — a viewer must not make others' elements appear to move.
+  it("relays an editor's drag preview unordered, and drops a viewer's", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    const op = { kind: 'drag-preview', tabId: 't', patches: [{ id: 'a', x: 10, y: 20 }] };
+
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(other.ws)).toHaveLength(0);
+
+    sendFrame(room, editor.ws, { kind: 'op', op });
+    const received = opsReceived(other.ws);
+    expect(received).toHaveLength(1);
     expect(received[0]).not.toHaveProperty('seq');
   });
 
@@ -1840,5 +1890,94 @@ describe('DocumentRoom tab-scoped sessions', () => {
       () => {};
     room.acceptSession(asWs(ws), 'view', false, 't2', 'CODE2345');
     expect(ws.attachment).toMatchObject({ tabScope: 't2', shareCode: 'CODE2345' });
+  });
+});
+
+// Profile pictures on the roster (docs/specs/014-identity/profile-picture.md §5, §6): kept only
+// from a verified account session, sent only to account sessions, updated by a repeat hello.
+describe('DocumentRoom profile pictures', () => {
+  const PICTURE = 'https://img.clerk.com/eyJ0eXBlIjoicHJveHkifQ?width=96&height=96&fit=crop';
+  const hello = (picture?: string) => ({
+    kind: 'hello',
+    participant: { id: 'x', name: 'Ann', color: '#f00', ...(picture ? { picture } : {}) },
+  });
+  const lastRoster = (s: FakeSocket) =>
+    (
+      JSON.parse(s.sent.filter((m) => m.includes('"kind":"presence"')).at(-1)!) as {
+        participants: ParticipantPresence[];
+      }
+    ).participants;
+
+  it('keeps a picture from an account session and drops one from anyone else', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room } = newRoom();
+    const account = makeSocket();
+    const anonymous = makeSocket();
+    room.acceptSession(asWs(account), 'edit', false, null, null, true);
+    room.acceptSession(asWs(anonymous), 'view', false, null, 'CODE', false);
+    sendFrame(room, account, hello(PICTURE));
+    sendFrame(room, anonymous, hello(PICTURE));
+    expect(storedPresence(account)?.picture).toBe(PICTURE);
+    expect(storedPresence(anonymous)?.picture).toBeUndefined();
+  });
+
+  it("drops a picture that is not on Clerk's image host", () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit', false, null, null, true);
+    sendFrame(room, ws, hello('https://evil.example/me.png'));
+    expect(storedPresence(ws)?.picture).toBeUndefined();
+  });
+
+  it('sends pictures to account sessions only: an anonymous share visitor sees none', () => {
+    const { room } = newRoom();
+    const ann = makeSocket();
+    const bob = makeSocket();
+    const visitor = makeSocket();
+    room.acceptSession(asWs(ann), 'edit', false, null, null, true);
+    room.acceptSession(asWs(bob), 'edit', false, null, null, true);
+    room.acceptSession(asWs(visitor), 'view', false, null, 'CODE', false);
+    sendFrame(room, ann, hello(PICTURE));
+    sendFrame(room, bob, hello());
+    sendFrame(room, visitor, hello());
+    expect(lastRoster(bob).find((p) => p.name === 'Ann' && p.picture)?.picture).toBe(PICTURE);
+    expect(lastRoster(visitor).some((p) => 'picture' in p)).toBe(false);
+    expect(visitor.sent.join('\n')).not.toContain('img.clerk.com');
+  });
+
+  it('an identity update replaces the picture and rebroadcasts, without re-running the join', () => {
+    const { room } = newRoom();
+    const ann = makeSocket();
+    const bob = makeSocket();
+    room.acceptSession(asWs(ann), 'edit', false, null, null, true);
+    room.acceptSession(asWs(bob), 'edit', false, null, null, true);
+    sendFrame(room, ann, hello(PICTURE));
+    sendFrame(room, bob, hello());
+    const annCursorFrames = () => ann.sent.filter((m) => m.includes('"kind":"cursor"')).length;
+    const before = annCursorFrames();
+    sendFrame(room, ann, { ...hello(), kind: 'identity' });
+    expect(storedPresence(ann)?.picture).toBeUndefined();
+    expect(lastRoster(bob).some((p) => 'picture' in p)).toBe(false);
+    expect(annCursorFrames()).toBe(before);
+  });
+});
+
+describe('DocumentRoom identity updates', () => {
+  it('are ignored before hello, and keep the tab the session is on', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit', false, null, null, true);
+    sendFrame(room, ws, {
+      kind: 'identity',
+      participant: { id: 'x', name: 'Early', color: '#000' },
+    });
+    expect(storedPresence(ws)).toBeNull();
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'x', name: 'Ann', color: '#f00', tabId: 't2' },
+    });
+    sendFrame(room, ws, { kind: 'identity', participant: { id: 'x', name: 'Ann', color: '#f00' } });
+    expect(storedPresence(ws)?.tabId).toBe('t2');
   });
 });

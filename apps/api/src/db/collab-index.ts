@@ -12,6 +12,7 @@
 import type { Element } from '@livediagram/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livediagram/api-schema';
 import { collabIndexRowsFromElements } from '../collab-index/rows';
+import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
@@ -127,39 +128,18 @@ export function collabIndexCopyStatements(
 // scoped to (docs/specs/013-workspace/tab-scoped-share-links.md): the code picked has exactly that scope,
 // and the reads keep only that tab's rows.
 //
-// Binds: ?1 = ownerId, ?2 = now (share-link expiry), ?3 = limit.
+// Binds: ?1 = ownerId, ?2 = now (share-link expiry), ?3 = limit. `visible` (and `my_teams`)
+// come from the one shared definition (db/document-visibility.ts), which Explorer Home reads too.
 const SCOPE_CTES = `
   WITH me(id) AS (
     SELECT ?1
     UNION
     SELECT alias_id FROM owner_aliases WHERE owner_id = ?1
   ),
-  my_teams(team_id) AS (
-    SELECT team_id FROM team_members WHERE user_id = ?1 AND status = 'joined'
-  ),
   my_members(id) AS (
     SELECT id FROM team_members WHERE user_id = ?1
   ),
-  visible AS (
-    SELECT d.id, d.name, d.owner_id, d.team_id,
-           CASE WHEN d.owner_id = ?1 THEN 'own'
-                WHEN d.team_id IN (SELECT team_id FROM my_teams) THEN 'team'
-                ELSE 'shared' END AS via,
-           CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
-                ELSE (SELECT sl.code FROM share_links sl
-                       WHERE sl.document_id = d.id AND sl.role = s.role
-                         AND sl.tab_id IS s.tab_id
-                         AND (sl.expires_at IS NULL OR sl.expires_at > ?2)
-                       ORDER BY sl.created_at ASC LIMIT 1) END AS share_code,
-           CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
-                ELSE s.tab_id END AS scope_tab_id
-      FROM documents d
-      LEFT JOIN shared_with s ON s.document_id = d.id AND s.owner_id = ?1
-     WHERE d.trashed_at IS NULL
-       AND (d.owner_id = ?1
-            OR d.team_id IN (SELECT team_id FROM my_teams)
-            OR (s.owner_id IS NOT NULL AND d.shareable = 1))
-  )`;
+  ${VISIBLE_DOCUMENTS_CTES}`;
 
 type PlaceRow = {
   tab_id: string;

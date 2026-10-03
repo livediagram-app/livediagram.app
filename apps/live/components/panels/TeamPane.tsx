@@ -34,6 +34,7 @@ export function TeamPane({
   onLoadResult,
   moveDests,
   onMoveDocumentTo,
+  lens,
 }: {
   ownerId: string;
   teamId: string;
@@ -51,9 +52,11 @@ export function TeamPane({
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-documents
   // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
-  // so a team document can be re-homed to Personal Space / another team.
+  // so a team document can be re-homed to My documents / another team.
   moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
+  // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
+  lens?: ComponentProps<typeof TeamSharedDocuments>['lens'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -331,12 +334,13 @@ export function TeamPane({
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
       <TeamSharedDocuments
-        key={teamId}
+        key={`library-${teamId}`}
         ownerId={ownerId}
         teamId={teamId}
         teamName={team.name}
         moveDests={moveDests}
         onMoveDocumentTo={onMoveDocumentTo}
+        lens={lens}
       />
 
       <TeamFormModal
@@ -360,8 +364,10 @@ export function TeamPane({
           switching teams is a query-string navigation on this route, so
           without it the feed stays mounted and carries team A's view
           settings into team B — the category chips, the Everyone/Other
-          people filter, and the calendar month it was parked on. */}
-      <TeamTimeline key={teamId} ownerId={ownerId} teamId={teamId} />
+          people filter, and the calendar month it was parked on. Its key
+          differs from the library's: they are siblings, and React needs
+          sibling keys to be unique. */}
+      <TeamTimeline key={`timeline-${teamId}`} ownerId={ownerId} teamId={teamId} />
 
       <TeamInviteLinkDialog
         open={linkOpen}

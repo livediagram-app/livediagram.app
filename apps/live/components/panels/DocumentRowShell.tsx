@@ -1,6 +1,6 @@
 // The list item a document row sits in, across every list in the Explorer
-// panel: the sidebar tree's folders, the synthetic Unsorted and Offline
-// buckets, the current-document row, and the Recent sections.
+// panel: the sidebar tree's folders, My documents and This browser
+// rows, the current-document row, and the Recent sections.
 //
 // It exists for one behaviour that all five had written out longhand — a row
 // being deleted plays out rather than vanishing. `useExplorerRowDelete` keeps

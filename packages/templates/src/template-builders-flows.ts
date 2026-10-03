@@ -9,7 +9,11 @@ import {
 // Process-style template builders (swimlane, decision tree, approval
 // workflow). Split out of template-builders.ts; each is pure
 // (cx, cy) -> Element[]. The data-flow diagram lives in
-// ./template-builders-dataflow. See docs/specs/008-canvas/canvas-and-palette.md.
+// ./template-builders-dataflow and the decision tree in
+// ./template-builders-decision-tree (re-exported here). See
+// docs/specs/008-canvas/canvas-and-palette.md.
+export { buildDecisionTree } from './template-builders-decision-tree';
+
 export function buildBlank(): Element[] {
   return [];
 }
@@ -142,62 +146,6 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
     track,
     received,
   ];
-}
-
-// Decision tree (docs/specs/008-canvas/canvas-and-palette.md): a root question that branches yes / no, with one
-// branch posing a further question — outcomes cascade downward.
-export function buildDecisionTree(cx: number, cy: number): Element[] {
-  const dW = 130;
-  const dH = 84;
-  const bW = 130;
-  const bH = 56;
-  const top = cy - 190;
-  // A realistic bug-triage decision so the structure reads as a real tree:
-  // the No branch closes out, the Yes branch poses a follow-up question. Root's
-  // two children sit symmetric about the centre (±180); the follow-up's own
-  // children fan out to its right.
-  const root = {
-    ...createShape('diamond', cx - dW / 2, top),
-    width: dW,
-    height: dH,
-    label: 'Bug valid?',
-    // Root question of the tree → strongest preset.
-    colorPreset: 'bold',
-  };
-  const a = {
-    ...createShape('square', cx - 180 - bW / 2, top + 150),
-    width: bW,
-    height: bH,
-    label: 'Close ticket',
-  };
-  const elseD = {
-    ...createShape('diamond', cx + 180 - dW / 2, top + 150 - (dH - bH) / 2),
-    width: dW,
-    height: dH,
-    label: 'Critical?',
-    // The follow-up decision: a tint marks it as the second-level question.
-    colorPreset: 'soft',
-  };
-  const b = {
-    ...createShape('square', cx + 70 - bW / 2, top + 320),
-    width: bW,
-    height: bH,
-    label: 'Escalate now',
-  };
-  const c = {
-    // A touch wider than the shared bW: "Add to backlog" wraps at 130.
-    ...createShape('square', cx + 290 - 75, top + 320),
-    width: 150,
-    height: bH,
-    label: 'Add to backlog',
-  };
-  const arrows = [
-    { ...createPinnedArrow(root.id, 'sw', a.id, 'n'), label: 'No' },
-    { ...createPinnedArrow(root.id, 'se', elseD.id, 'n'), label: 'Yes' },
-    { ...createPinnedArrow(elseD.id, 'sw', b.id, 'n'), label: 'Yes' },
-    { ...createPinnedArrow(elseD.id, 'se', c.id, 'n'), label: 'No' },
-  ];
-  return [...arrows, root, a, elseD, b, c];
 }
 
 // Approval workflow (docs/specs/008-canvas/canvas-and-palette.md): a purchase request's two-stage sign-off,

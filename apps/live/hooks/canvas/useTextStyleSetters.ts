@@ -1,16 +1,22 @@
 import {
   isBoxed,
   type Element,
+  type Tab,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { hugsText, hugTextSize } from '@/lib/text-hug';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 
 type TextStyleSetterDeps = {
   currentSelectionIds: () => Set<string>;
   selectionPrimary: () => Element | null;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The tab being edited, for its font. A text box that fits or wraps hugs its text through every
+  // change to how it is drawn (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+  activeTab: Pick<Tab, 'font'>;
 };
 
 // The selection-wide label text setters (size / font / alignment + the
@@ -22,14 +28,33 @@ export function useTextStyleSetters({
   currentSelectionIds,
   selectionPrimary,
   commit,
+  activeTab,
 }: TextStyleSetterDeps) {
+  // A text-metrics change, committed with every hugging text box it touched re-hugged to its text
+  // in the same step.
+  const commitHugging = (ids: Set<string>, map: (els: Element[]) => Element[]) => {
+    const measure = measureDrawnText(activeTab.font);
+    commit((els) =>
+      map(els).map((el) =>
+        ids.has(el.id) && hugsText(el) ? { ...el, ...hugTextSize(el, measure(el)) } : el,
+      ),
+    );
+  };
+
   const setTextSizeSelected = (size: TextSize) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && (isBoxed(el) || el.type === 'arrow') ? { ...el, textSize: size } : el,
-      ),
+    commitHugging(ids, (els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
+        // A picked size is the size: it replaces a Shift-resize scale.
+        if (el.type === 'text') {
+          const { textScale: _scale, ...rest } = el;
+          void _scale;
+          return { ...rest, textSize: size };
+        }
+        return { ...el, textSize: size };
+      }),
     );
     track('Element', 'Changed', 'TextSize');
   };
@@ -40,7 +65,7 @@ export function useTextStyleSetters({
   const setFontSelected = (font: string | null) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
+    commitHugging(ids, (els) =>
       els.map((el) => {
         if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
         if (!font) {
@@ -65,6 +90,23 @@ export function useTextStyleSetters({
     track('Element', 'Changed', 'TextAlign');
   };
 
+  // A lane title turned upright in its side strip, or back across (docs/specs/009-elements/lane.md
+  // "Upright titles"). Lanes only; one commit.
+  const setLaneUprightTitleSelected = (upright: boolean) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'lane') return el;
+        if (upright) return { ...el, titleOrientation: 'upright' as const };
+        const { titleOrientation: _turned, ...across } = el;
+        void _turned;
+        return across;
+      }),
+    );
+    track('Element', 'Changed', 'LaneUprightTitle');
+  };
+
   // Generic helper for the inline label styles. Each toggle flips the
   // matching boolean on every member of the current selection. We
   // derive the next value from the primary so a partially-applied
@@ -76,7 +118,7 @@ export function useTextStyleSetters({
     if (!primary || !(isBoxed(primary) || primary.type === 'arrow')) return;
     const next = !(primary[field] ?? false);
     const ids = currentSelectionIds();
-    commit((els) =>
+    commitHugging(ids, (els) =>
       els.map((el) =>
         ids.has(el.id) && (isBoxed(el) || el.type === 'arrow') ? { ...el, [field]: next } : el,
       ),
@@ -85,5 +127,11 @@ export function useTextStyleSetters({
     // Strikethrough) — `field` minus its 'text' prefix, title-cased.
     track('Element', 'Toggled', field.replace(/^text/, ''));
   };
-  return { setTextSizeSelected, setFontSelected, setTextAlignSelected, toggleTextStyleSelected };
+  return {
+    setTextSizeSelected,
+    setFontSelected,
+    setTextAlignSelected,
+    setLaneUprightTitleSelected,
+    toggleTextStyleSelected,
+  };
 }

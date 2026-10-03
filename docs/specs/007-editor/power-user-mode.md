@@ -36,8 +36,8 @@ Panel opacity is not part of the preset. Motion is not part of the mode: every t
   (`powerUserBaseline`). "Did the user change it?" is answered by comparing the current value with the value written,
   so it holds whichever surface made the change (Settings, the tour's layout picker, another device). A setting changed
   and then changed back to the preset's value counts as untouched.
-- **One setting can span several keys.** The panel layout writes `panelLayout` and its legacy mirror `minimalPanels`
-  together ([Toolbar layout](toolbar-layout.md)); they are compared and restored together, so the two never disagree.
+- **One setting can span several keys.** A preset setting names the keys it writes; they are compared and restored
+  together, so they never disagree. Every setting in today's preset writes one key.
 - **Switching on while already on does nothing**, and switching off while off does nothing. Switching on again after
   switching off records a fresh baseline.
 
@@ -74,7 +74,7 @@ the interface, and leaves the controls:
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Search, Settings and appearance controls show their icons only.
 - **The "Tabs" label** before the tab pills is hidden.
-- **Panel titles and help buttons.** Floating panels (Explorer, Palette, Map, Layers, Activity, ...) hide their
+- **Panel titles and help buttons.** Floating panels (Explorer, Palette, Map, Layers, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.
@@ -90,6 +90,12 @@ Kept as they are:
 - Keyboard shortcut hints inside hover cards and tooltips.
 - Every control. Minimal chrome hides words, not abilities.
 - The empty-canvas banner ("Tab 1 is empty"): it holds actions (Help, Quick Start), so it is a control, not a hint.
+
+The mode also drops, whatever the Minimal chrome option says:
+
+- **The More button** (`⋯`) in the selection toolbars, on desktop: a power user opens the element menu with a
+  right-click ([Canvas and palette](../008-canvas/canvas-and-palette.md#selection-popover)). Touch devices keep it:
+  they cannot right-click.
 
 #### Accessibility of hidden labels
 
@@ -119,6 +125,39 @@ Other consumers:
   title and help button Minimal chrome would hide) but **keeps its section titles**: they name what each row changes,
   and two rows of coloured squares are otherwise indistinguishable at a glance. Words that teach go; words that name
   what a control changes stay.
+
+### Quick appearance switch
+
+While the mode is on, the status bar's **Appearance** control ([Appearance](../004-interface-design/appearance.md#the-control))
+switches between Light and Dark instead of cycling through System, so the everyday flip is one click:
+
+- **Click** switches to the opposite of what the chrome is painted as: Light goes to Dark, Dark to Light, and System
+  goes to the opposite of what the device currently resolves to. Every click visibly changes the chrome.
+- **Right-click** (the context menu gesture: right-click, the Menu key or Shift+F10, a long press where the device
+  maps it to a context menu) sets **System** and opens no browser menu. On System already, it changes nothing.
+- **Its name says both.** The accessible name reads where you are, where a click goes, and that a right-click follows
+  the device ("Appearance: Dark. Switch to Light. Right-click to follow your device."). The hover card's description
+  says the same.
+- It applies wherever the control reads the mode: the editor's status bar and the Explorer's bottom bar. It is not a
+  Minimal chrome behaviour: it holds with Minimal chrome off.
+- The public sites (the home page, help centre and dashboard) have no power user mode, so their control keeps the
+  three-step cycle whatever the preference holds.
+- The Settings **Appearance** row is unchanged: it offers all three settings.
+- Telemetry is the control's existing `UI / Toggled / <setting>` event, whichever gesture made the pick.
+
+### Quick mode switch
+
+While the mode is on, the tab bar's **editor mode switch** ([Editor modes](editor-modes.md#the-mode-switch)) is a
+segmented pill of **icons only** instead of the dropdown chip, so switching is one press:
+
+- One segment per editor mode, from the same catalogue as the chip's menu; the current one sits on a raised thumb,
+  marked by the thumb, its border and weight, never by colour alone.
+- **The words come back on hover and focus**: each segment's tooltip names the mode, says what it is for and shows
+  **Shift+D** ("Draw: pens, the eraser and shape recognition · Shift+D"), and the segment keeps the mode's name as
+  its accessible name.
+- Semantics: a `radiogroup` named "Editor mode" of `radio` segments with a roving focus; arrow keys move and select.
+- Fixed width, so switching between modes never moves anything beside it.
+- Telemetry is the switch's existing `Editor / Changed / Mode*` event.
 
 ## Discovery: the offer
 

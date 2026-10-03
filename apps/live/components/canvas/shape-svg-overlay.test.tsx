@@ -48,6 +48,32 @@ describe('ShapeSvgOverlay draws the shared table', () => {
     );
   });
 
+  it.each(['diamond', 'parallelogram', 'hexagon', 'document', 'cylinder', 'cloud'] as const)(
+    'insets the %s by half its stroke so it stays inside the box',
+    (shape) => {
+      const { container } = render(
+        <ShapeSvgOverlay shape={shape} fill="#fff" stroke="#000" strokeWidth={4} />,
+      );
+      const style = container.querySelector('svg')!.style;
+      expect([style.left, style.top]).toEqual(['2px', '2px']);
+      expect([style.width, style.height]).toEqual(['calc(100% - 4px)', 'calc(100% - 4px)']);
+    },
+  );
+
+  it('draws an actor figure in its own rect, clear of the name', () => {
+    const { container } = render(
+      <ShapeSvgOverlay
+        shape="actor"
+        fill="#fff"
+        stroke="#000"
+        figure={{ x: 0, y: 4, width: 120, height: 80 }}
+      />,
+    );
+    const svg = container.querySelector('svg')!;
+    expect(svg.style.top).toBe('4px');
+    expect(svg.style.height).toBe('80px');
+  });
+
   it('paints a frame with its fill, like every other shape', () => {
     const { container } = render(<ShapeSvgOverlay shape="frame" fill="#fef3c7" stroke="#000" />);
     expect(container.querySelector('rect')!.getAttribute('fill')).toBe('#fef3c7');
@@ -56,7 +82,7 @@ describe('ShapeSvgOverlay draws the shared table', () => {
 
 describe('the fixed-pixel drawings read the table too', () => {
   it('BrowserChrome draws the table nav glyphs', () => {
-    const { container } = render(<BrowserChrome stroke="#000" zoom={1} />);
+    const { container } = render(<BrowserChrome stroke="#000" />);
     expect(marks(container.querySelector('svg')!)).toEqual([...BROWSER_CHROME.nav.paths]);
   });
 

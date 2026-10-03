@@ -14,8 +14,8 @@ const header = (page: Page) => page.locator('header');
 
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
+  await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }
@@ -132,7 +132,8 @@ test.describe('Power user mode', () => {
     await page.mouse.click(640, 420);
     const shape = page.locator('[data-element-id]').first();
     await expect(shape).toBeVisible();
-    await shape.click();
+    // Placing selects the square; a click on it now would deselect it
+    // (docs/specs/008-canvas/canvas-and-palette.md "Click the selected element again").
     const toolbar = page.getByRole('toolbar', { name: 'Selected Square' });
     await expect(toolbar).toBeVisible();
     await expect(page.getByText('Selected Square', { exact: true })).toHaveCount(0);
@@ -182,7 +183,7 @@ test.describe('Power user mode', () => {
 
     // Change one preset setting while the mode is on, reached from the readout.
     await dialog(page).getByRole('button', { name: 'Change Panel Layout in Panels' }).click();
-    await dialog(page).getByRole('radio', { name: 'Minimal' }).click();
+    await dialog(page).getByRole('radio', { name: 'Floating' }).click();
     await dialog(page).getByRole('button', { name: 'Editor' }).click();
     const readout = dialog(page).getByRole('list', { name: 'Set By Power User Mode' });
     await expect(readout.getByRole('listitem').first()).toContainText(
@@ -200,9 +201,53 @@ test.describe('Power user mode', () => {
     // Untouched: back to what it was.
     expect(prefs.alignmentGuides).toBe(false);
     // Changed: the user's change stays.
-    expect(prefs.panelLayout).toBe('minimal');
+    expect(prefs.panelLayout).toBe('floating');
     // Minimal chrome is off with the mode.
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('the Appearance control flips on click and follows the device on right-click', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openEditor(page);
+    const appearance = tabBar(page).getByRole('button', { name: /^Appearance: / });
+    const painted = () =>
+      page.evaluate(() => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'));
+    // Outside the mode: the three-step cycle, System first on this dark device.
+    await expect(appearance).toHaveAccessibleName('Appearance: System. Switch to Light.');
+
+    await setPowerUserMode(page, true);
+    await closeSettings(page);
+    await expect(appearance).toHaveAccessibleName(
+      'Appearance: System. Switch to Light. Right-click to follow your device.',
+    );
+
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Light\. Switch to Dark\./);
+    expect(await painted()).toBe('light');
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Dark\. Switch to Light\./);
+    expect(await painted()).toBe('dark');
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Light\./);
+
+    // Right-click: back to System, which paints this device's dark, and no browser menu.
+    await appearance.click({ button: 'right' });
+    await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
+    expect(await painted()).toBe('dark');
+    expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:ui-mode'))).toBe(
+      'system',
+    );
+    await expect(page.getByRole('menu')).toHaveCount(0);
+
+    // The keyboard reaches System too: Shift+F10 on the focused control.
+    await appearance.click();
+    await expect(appearance).toHaveAccessibleName(/^Appearance: Light\./);
+    await appearance.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
     expectNoPageErrors(pageErrors);
   });
 });

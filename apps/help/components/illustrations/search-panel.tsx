@@ -281,7 +281,7 @@ export function SearchDocuments() {
           rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
-          title: 'Personal Space',
+          title: 'My documents',
           rows: [{ icon: <FolderIcon accent />, label: 'Onboarding', meta: 'folder' }],
         },
         {

@@ -38,6 +38,46 @@ describe('arrowEndpointSpread', () => {
     expect(r).toEqual({ x: 7, y: 0 });
   });
 
+  // docs/specs/008-canvas/arrow-anchors.md "Converging-fan rendering": an arrow set to start at
+  // its exact anchor sits out of the fan; the others fan without it.
+  it('leaves an exact-start arrow on its anchor and fans the rest without it', () => {
+    const hub = box('hub', 400, 100);
+    const exact: ArrowElement = {
+      ...arrow(pinned('hub', 's'), { kind: 'free', x: 100, y: 400 }, 'exact'),
+      exactStart: true,
+    };
+    const b = arrow(pinned('hub', 's'), { kind: 'free', x: 500, y: 400 }, 'b');
+    const c = arrow(pinned('hub', 's'), { kind: 'free', x: 800, y: 400 }, 'c');
+    const elements: Element[] = [hub, exact, b, c];
+    expect(arrowEndpointSpread('exact', 'from', elements)).toEqual({ x: 0, y: 0 });
+    expect(arrowEndpointSpread('b', 'from', elements)).toEqual({ x: -7, y: 0 });
+    expect(arrowEndpointSpread('c', 'from', elements)).toEqual({ x: 7, y: 0 });
+  });
+
+  it('still fans an exact-start arrow\u2019s far end, which only its start opts out', () => {
+    const hub = box('hub', 400, 100);
+    const a = {
+      ...arrow({ kind: 'free', x: 100, y: 400 }, pinned('hub', 's'), 'a'),
+      exactStart: true,
+    };
+    const b = arrow({ kind: 'free', x: 800, y: 400 }, pinned('hub', 's'), 'b');
+    expect(arrowEndpointSpread('a', 'to', [hub, a, b])).toEqual({ x: -7, y: 0 });
+  });
+
+  it('keeps an exact end on its anchor, and fans the others among themselves', () => {
+    const hub = box('hub', 400, 100);
+    const exact = {
+      ...arrow({ kind: 'free', x: 100, y: 400 }, pinned('hub', 's'), 'exact'),
+      exactEnd: true,
+    };
+    const b = arrow({ kind: 'free', x: 500, y: 400 }, pinned('hub', 's'), 'b');
+    const c = arrow({ kind: 'free', x: 800, y: 400 }, pinned('hub', 's'), 'c');
+    const elements: Element[] = [hub, exact, b, c];
+    expect(arrowEndpointSpread('exact', 'to', elements)).toEqual({ x: 0, y: 0 });
+    expect(arrowEndpointSpread('b', 'to', elements)).toEqual({ x: -7, y: 0 });
+    expect(arrowEndpointSpread('c', 'to', elements)).toEqual({ x: 7, y: 0 });
+  });
+
   it('orders slots by where each arrow comes from so lines do not cross', () => {
     const hub = box('hub', 400, 100);
     // Declared right-source first: order in the array must not matter.

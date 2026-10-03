@@ -1,10 +1,10 @@
 'use client';
 
 // Measures the canvas, the chrome and the quick style panel, and places the
-// panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): docked under the Palette in the
-// Floating layout, on the right edge otherwise, clear of the chrome either way.
+// panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge, vertically centred,
+// clear of the chrome.
 // Re-runs when the chrome moves or resizes, coalesced to one run per frame;
-// never on a timer.
+// never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import {
@@ -12,10 +12,10 @@ import {
   type QuickStyleLayout,
   type Rect,
 } from '@/lib/quick-style-placement';
+import { debugLog } from '@/lib/debug-log';
 
 const AREA_SELECTOR = 'main[data-canvas-a11y-root]';
-// The floating Palette panel: the one the Floating layout docks under. In the
-// Toolbar layout the same id marks the strip, which the layout rule ignores.
+// The floating Palette panel, whose width the Floating layout's panel wears.
 const PALETTE_SELECTOR = '[data-tour-id="palette"][data-floating-panel]';
 // The Palette in each of its forms, every other floating panel or dock
 // popover, the Toolbar strip's More popover and the bottom-right cluster.
@@ -32,10 +32,8 @@ const toRect = (r: DOMRect): Rect => ({
 export type QuickStyleSpot = {
   left: number;
   top: number;
-  // Docked under the Palette, the panel takes the Palette's width.
+  // In the Floating layout, the panel takes the Palette's width.
   width: number | null;
-  // Docked into too short a space, the panel caps its height and scrolls.
-  maxHeight: number | null;
 };
 
 export function useQuickStylePlacement(
@@ -73,36 +71,41 @@ export function useQuickStylePlacement(
       const natural = body ? box.height - body.clientHeight + body.scrollHeight : box.height;
       const width = anchor ? anchor.width : null;
       const placed = placeQuickStylePanel({
-        layout,
         area: toRect(area.getBoundingClientRect()),
         panel: { width: width ?? box.width, height: natural },
         obstacles,
-        anchor,
       });
       if (placed.fallback) {
-        console.debug('[quick-style] placement fallback', { layout, obstacles: obstacles.length });
+        debugLog('[quick-style] placement fallback', { layout, obstacles: obstacles.length });
       }
-      const maxHeight = placed.maxHeight ?? null;
       setSpot((prev) =>
-        prev &&
-        prev.left === placed.left &&
-        prev.top === placed.top &&
-        prev.width === width &&
-        prev.maxHeight === maxHeight
+        prev && prev.left === placed.left && prev.top === placed.top && prev.width === width
           ? prev
-          : { left: placed.left, top: placed.top, width, maxHeight },
+          : { left: placed.left, top: placed.top, width },
       );
       // Watch whatever chrome exists now; a panel that mounts later arrives
-      // with a pointer or key gesture, which re-runs this.
-      resizeObserver.disconnect();
-      for (const el of [area, panel, ...obstacleEls()]) resizeObserver.observe(el);
+      // with a pointer or key gesture, which re-runs this. Only newly seen
+      // elements are observed: observe() always delivers an initial
+      // notification, so re-observing every pass would re-run this forever.
+      watchResizes(new Set<Element>([area, panel, ...obstacleEls()]));
       // A dragged Palette moves by its inline style: follow it live.
-      mutationObserver.disconnect();
-      if (palette)
-        mutationObserver.observe(palette, {
-          attributes: true,
-          attributeFilter: ['style', 'class'],
-        });
+      if (palette !== watchedPalette) {
+        mutationObserver.disconnect();
+        watchedPalette = palette;
+        if (palette)
+          mutationObserver.observe(palette, {
+            attributes: true,
+            attributeFilter: ['style', 'class'],
+          });
+      }
+    };
+
+    let resizeWatched = new Set<Element>();
+    let watchedPalette: HTMLElement | null = null;
+    const watchResizes = (next: Set<Element>) => {
+      for (const el of resizeWatched) if (!next.has(el)) resizeObserver.unobserve(el);
+      for (const el of next) if (!resizeWatched.has(el)) resizeObserver.observe(el);
+      resizeWatched = next;
     };
 
     let frame = 0;
@@ -118,14 +121,24 @@ export function useQuickStylePlacement(
     measure();
     const events = ['resize', 'livediagram:panel-layout-changed'] as const;
     for (const ev of events) window.addEventListener(ev, schedule);
-    const captured = ['pointerup', 'keyup', 'transitionend'] as const;
+    const captured = ['pointerup', 'keyup'] as const;
     for (const ev of captured) window.addEventListener(ev, schedule, true);
+    // A transition re-places only when it ran on the chrome itself: one ending anywhere on the
+    // canvas (a fading toolbar, a hover) moves nothing this watches, and must not cost a layout
+    // read mid-gesture (docs/specs/008-canvas/canvas-performance.md).
+    const onTransitionEnd = (e: Event) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (panel.contains(target) || target.closest(OBSTACLE_SELECTOR)) schedule();
+    };
+    window.addEventListener('transitionend', onTransitionEnd, true);
     return () => {
       if (frame) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       mutationObserver.disconnect();
       for (const ev of events) window.removeEventListener(ev, schedule);
       for (const ev of captured) window.removeEventListener(ev, schedule, true);
+      window.removeEventListener('transitionend', onTransitionEnd, true);
     };
   }, [active, panelRef, layout]);
 

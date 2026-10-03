@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
 import { extractExcalidrawScene } from './excalidraw-embedded';
 
 const SCENE = JSON.stringify({
@@ -207,5 +208,23 @@ describe('real Excalidraw exports', () => {
     expect(scene.type).toBe('excalidraw');
     expect(scene.elements.map((e) => e.type).sort()).toEqual(['rectangle', 'text']);
     expect(scene.elements.find((e) => e.type === 'text')?.text).toBe('Imported from Excalidraw');
+  });
+});
+
+describe('extractExcalidrawScene on hostile SVG', () => {
+  it('reads a payload marker followed by a long run of spaces in linear time', async () => {
+    const svg = `<svg><!-- payload-type:application/vnd.excalidraw+json --><!-- payload-start -->${' '.repeat(200_000)}x`;
+    let read: Awaited<ReturnType<typeof extractExcalidrawScene>> | undefined;
+    const spent = await cpuMsOfAsync(async () => {
+      read = await extractExcalidrawScene(svg);
+    });
+    expect(read?.ok).toBe(false);
+    expect(spent).toBeLessThan(50);
+  });
+
+  it('treats an empty payload as no payload', async () => {
+    const svg =
+      '<svg><!-- payload-type:application/vnd.excalidraw+json --><!-- payload-start -->   <!-- payload-end --></svg>';
+    expect(await extractExcalidrawScene(svg)).toMatchObject({ ok: false });
   });
 });

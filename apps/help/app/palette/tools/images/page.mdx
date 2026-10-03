@@ -6,7 +6,7 @@ import { ImageElement, ImagePicker } from '@/components/illustrations/palette-to
 export const metadata = helpMetadata({
   title: 'Images',
   description:
-    'Drop an image onto the canvas, upload the file once, and reuse anything you have uploaded before from your personal gallery.',
+    'Drop an image onto the canvas, upload the file once or search for an openly licensed one, and reuse anything from your personal gallery.',
   path: '/help/palette/tools/images/',
 });
 
@@ -36,11 +36,30 @@ The Image tool drops an image element you then attach a file to.
 
 You can also paste an image straight onto the canvas with the usual paste shortcut, and it lands as a new image element.
 
-An image is a boxed element, so it moves, locks, groups, links, and layers like everything else. Resizing keeps the original aspect ratio by default so the picture is not squashed. Hold Shift while dragging a corner to resize freely.
+An image is a boxed element, so it moves, locks, groups, links, and layers like everything else. Resizing keeps the original aspect ratio by default so the picture is not squashed. To stretch it freely, turn off **Lock aspect ratio** (see [Size](/help/canvas/size/)); holding Shift never unlocks it, because Shift keeps the proportions of anything you resize.
 
 <Figure caption="A placed image element behaves like any boxed element, with selection handles to resize it.">
   <ImageElement />
 </Figure>
+
+## Searching for an image
+
+Don't have the picture you need? The image picker's **Search** tab finds openly licensed photos and illustrations from [Openverse](https://openverse.org), a free search engine over Creative Commons and public-domain works.
+
+<Step n={1}>Open the image picker and choose the **Search** tab.</Step>
+
+<Step n={2}>
+  Type what you're looking for, such as "server rack" or "team meeting", and press Enter. Hover a
+  result to see who made it and its licence, and use **Load more** for further results.
+</Step>
+
+<Step n={3}>
+  Click a picture. It is added to your gallery and attached to the image, just like an upload.
+</Step>
+
+- **Safe to reuse.** Search only shows pictures whose licence allows both commercial use and changes (CC0, public domain, CC BY and CC BY-SA), so you can use them in a diagram for work and crop or resize them freely.
+- **The credit comes with it.** Many of these licences ask you to credit the creator. The image's **Image** section in its menu shows the credit, with links to the picture's source and its licence, so you can copy it into your diagram wherever you share it.
+- **Privacy.** Your search goes straight from your browser to Openverse, so Openverse sees the words you search for and your IP address. livediagram's servers never see the search.
 
 ## Accepted formats
 

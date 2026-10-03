@@ -3,6 +3,7 @@ import {
   bestAnchorTowards,
   isBoxed,
   type ArrowElement,
+  type ArrowEnds,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -37,7 +38,7 @@ export function useArrowConnect({
   activeTab: Tab;
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
-  beginDraw: (intent: { type: 'arrow' }) => void;
+  beginDraw: (intent: { type: 'arrow'; ends?: ArrowEnds }) => void;
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): the connecting arrow is user-drawn.
   styleNewElement: <T extends Element>(el: T) => T;
@@ -47,19 +48,26 @@ export function useArrowConnect({
   // pinned arrow. `connectSourceId` holds that armed source; null when
   // not connecting. The canvas / Escape clear it (see EditorView).
   const [connectSourceId, setConnectSourceId] = useState<string | null>(null);
+  // The armed connector's heads: the Arrow tool's pointer at its end, the Line tool's none
+  // (docs/specs/008-canvas/canvas-and-palette.md "Arrows and lines").
+  const [connectEnds, setConnectEnds] = useState<ArrowEnds>('to');
   const cancelConnect = () => setConnectSourceId(null);
 
   // Arm connect-from-selection when a shape is selected; otherwise fall
   // back to the draw-to-place connector (free endpoints, dragged onto
   // shapes later). The palette + the A shortcut both route here.
-  const addArrow = () => {
+  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool. Guarded,
+  // because a button can hand its click event in as the first argument.
+  const addArrow = (ends?: ArrowEnds) => {
     if (editsBlocked) return;
+    const heads: ArrowEnds = typeof ends === 'string' ? ends : 'to';
     const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
     if (sel && isBoxed(sel)) {
       setConnectSourceId(sel.id);
+      setConnectEnds(heads);
       return;
     }
-    beginDraw({ type: 'arrow' });
+    beginDraw({ type: 'arrow', ends: heads });
   };
 
   // Complete the connect gesture: draw a pinned arrow from the armed
@@ -95,6 +103,7 @@ export function useArrowConnect({
         anchor: bestAnchorTowards(to, fromCenter),
       },
       ...(stroke ? { strokeColor: stroke } : {}),
+      ...(connectEnds === 'to' ? {} : { arrowEnds: connectEnds }),
     });
     commitTabs((ts) =>
       ts.map((t) =>
@@ -102,7 +111,7 @@ export function useArrowConnect({
       ),
     );
     setSelectedId(arrow.id);
-    track('Element', 'Added', 'Arrow');
+    track('Element', 'Added', connectEnds === 'none' ? 'Line' : 'Arrow');
   };
   return { connectSourceId, cancelConnect, addArrow, connectArrowTo };
 }

@@ -5,6 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Element, StickyElement, Tab } from '@livediagram/document';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
 import { track } from '@/lib/telemetry';
+import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -45,6 +46,7 @@ function harness(
     get activeTab() {
       return { id: 't', name: 'Tab', elements } as Tab;
     },
+
     zoomRef: { current: opts.zoom ?? 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),
@@ -73,7 +75,6 @@ function harness(
     cancelToCheckpoint: () => {
       elements = history.pop() ?? elements;
     },
-    scheduleElementChangeLog: vi.fn(),
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: true },
     isPinchingRef: { current: false },
@@ -85,6 +86,11 @@ function harness(
     },
   } as unknown as EditorDragDeps;
 
+  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  const shown = () => {
+    const o = localPreview();
+    return o ? applyOverlay(elements, o) : elements;
+  };
   const view = renderHook(() => useEditorDrag(deps));
   return {
     ...view,
@@ -96,8 +102,8 @@ function harness(
     get checkpoints() {
       return history.length;
     },
-    xOf: (id: string) => (elements.find((el) => el.id === id) as StickyElement | undefined)?.x,
-    yOf: (id: string) => (elements.find((el) => el.id === id) as StickyElement | undefined)?.y,
+    xOf: (id: string) => (shown().find((el) => el.id === id) as StickyElement | undefined)?.x,
+    yOf: (id: string) => (shown().find((el) => el.id === id) as StickyElement | undefined)?.y,
   };
 }
 
@@ -165,6 +171,7 @@ beforeEach(() => {
   vi.stubGlobal('cancelAnimationFrame', () => {});
 });
 afterEach(() => {
+  resetDragPreviewForTests();
   vi.unstubAllGlobals();
   // A test that ends mid-drag leaves the hook mounted, and a mounted drag
   // keeps its window listeners — so the next test's pointer events would be

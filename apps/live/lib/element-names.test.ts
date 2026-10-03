@@ -2,15 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   createAnnotation,
   createFreehand,
+  createPath,
   createShape,
   createSticky,
   createText,
 } from '@livediagram/document';
 import { describeMany, describeOne, elementAriaLabel, kindLabel } from './element-names';
 
-// Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md + docs/specs/012-collaboration/activity-and-audit.md): the change log and the
-// canvas aria-labels / announcements read the same names. These tests
-// pin the formats both surfaces rely on.
+// Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md): the canvas aria-labels /
+// announcements and the other surfaces that name an element read the same
+// names. These tests pin the formats they rely on.
 
 const square = (label?: string) => ({ ...createShape('square', 0, 0), label });
 const arrow = (label?: string) => ({
@@ -66,5 +67,15 @@ describe('elementAriaLabel', () => {
     expect(elementAriaLabel(square('  '))).toBe('Square');
     expect(elementAriaLabel(arrow('yes'))).toBe('Arrow "yes"');
     expect(elementAriaLabel(createSticky(0, 0))).toBe('Sticky note');
+  });
+});
+
+describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () => {
+  const corner = (x: number, y: number) => ({ x, y, mode: 'corner' as const });
+  it('is named by its points, open or closed', () => {
+    const open = createPath([corner(0, 0), corner(10, 0), corner(10, 10)], false);
+    expect(kindLabel(open)).toBe('Path');
+    expect(elementAriaLabel(open)).toBe('Path, 3 points');
+    expect(elementAriaLabel({ ...open, closed: true })).toBe('Closed path, 3 points');
   });
 });

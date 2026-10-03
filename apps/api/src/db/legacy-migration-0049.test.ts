@@ -114,7 +114,8 @@ function snapshot(sql: DatabaseSync) {
 
 describe('migration 0049 (drop tabs.diagram_id + tabs.order_index)', () => {
   it('drops both legacy columns and their index', () => {
-    const { sql } = sqliteD1();
+    // The schema 0049 leaves, before a later migration adds a column of its own.
+    const { sql } = sqliteD1({}, { before: '0050' });
 
     const columns = sql
       .prepare('PRAGMA table_info(tabs)')

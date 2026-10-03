@@ -9,7 +9,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
-| **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, change log, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                        |
+| **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                                    |
 | **Durable Object namespace**         | `apps/api`        | One stateful room per document for realtime presence + ops.                                                                                                                                                                                                                                                                                |
 | **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
 | **Rate Limiter bindings** (optional) | `apps/api`        | Six abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                                             |
@@ -18,7 +18,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 What you do NOT need:
 
 - Clerk: auth is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With Clerk configured, the api worker reaches `CLERK_JWKS_URL` to verify Bearer tokens — an outbound call only on the auth path.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)) and OpenAI for the AI assistant ([AI Assistance](../specs/007-editor/ai-assistance.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), OpenAI for the AI assistant ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -101,7 +101,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
    echo "$(date +%s000)" | pnpm --filter @livediagram/api exec wrangler secret put GUEST_SIG_ENFORCE_AFTER
    ```
 
-6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the Explorer "API tokens" section automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
+6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
 
 7. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the live app alongside the publishable key:
 
@@ -134,12 +134,15 @@ pnpm --filter @livediagram/api exec wrangler deploy
 pnpm --filter @livediagram/router exec wrangler deploy   # last, depends on the five above
 ```
 
+Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
+
 Deploy order matters: the router's service bindings reference the five other workers, so it can't deploy until they exist; the optional `mcp` worker deploys after `api` (it binds to it). The GitHub Actions deploy workflow encodes this as job dependencies.
 
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
 - `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and push.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
+- `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
 - `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all seven workers (marketing, live, telemetry, help, api, mcp, router) in the right order. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
@@ -173,8 +176,8 @@ nothing. To run it:
 
 3. **Deploy after the api worker** (it reaches api over a service binding). The
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP
-   are ordinary `lvd_` API tokens — they appear in the Explorer's API tokens
-   page and are revocable there.
+   are ordinary `lvd_` API tokens — they appear in the API Tokens category of
+   Settings and are revocable there.
 
 4. **Only if you've turned telemetry on:** set the same `INTERNAL_EVENTS_KEY` on
    both workers — see [Telemetry](#telemetry-off-by-default-for-self-hosters)
@@ -193,14 +196,15 @@ If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret
 
 ## AI assistance: off by default, needs an OpenAI key
 
-The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has an OpenAI key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
+The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
 
 To turn it on, set the key as a worker secret:
 
 ```bash
-# Pick ONE, whichever provider you use:
+# One key serves every AI feature:
 pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
-# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars])
+# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars]).
+# Set both named keys to split them: the assistant on OpenAI, the reader on Google.
 ```
 
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
@@ -208,16 +212,20 @@ Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, o
 The provider is inferred from WHICH key you set ([AI Assistance](../specs/007-editor/ai-assistance.md)): a Google AI Studio
 key means Google, an OpenAI key means OpenAI, and `AI_API_KEY` means "anything
 else that speaks the OpenAI wire" — which needs `AI_BASE_URL` too (a local
-llama.cpp is `http://127.0.0.1:8080/v1`). Set exactly one key: two of them is
-refused rather than guessed at.
+llama.cpp is `http://127.0.0.1:8080/v1`). Each AI feature picks its own
+provider from the keys you set: the assistant prefers OpenAI, the sticky-note
+reader prefers Google, each falling back to whichever key exists, and
+`AI_API_KEY` is used only when neither named key is set.
 
-- `AI_MODEL`: overrides the preset's default model (`gemini-3.6-flash` for
-  Google, `gpt-4o` for OpenAI). Required when using `AI_API_KEY`.
+- `AI_MODEL`: the assistant's model, overriding its preset default
+  (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). The reader uses it
+  too when both features run on the same provider. Required when using
+  `AI_API_KEY`.
 - `AI_VISION_MODEL`: model id for reading sticky-note crops
   (`POST /api/ai/read-notes`, [Event storming](../specs/021-event-storming/event-storming.md)). On Google this defaults to
   `gemini-2.5-flash-lite` rather than the assistant's model — it reads
-  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). If you
-  set `AI_MODEL` yourself, the reader uses that unless you set this too.
+  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
+  single provider, setting `AI_MODEL` moves the reader too unless you set this.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 
@@ -239,6 +247,30 @@ Optional knobs (plain `[vars]`):
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livediagram.app`.
 
 If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
+
+## Google Drive mirror (optional, needs Clerk)
+
+Signed-in users can mirror My documents to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
+
+1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
+2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livediagram+json`, default extension `livediagram`.
+3. Set the client id on the api worker as a `[vars]` entry `GOOGLE_CLIENT_ID`, and build the live app with the same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+4. For syncing without a click every hour, also set two worker secrets (without them the browser holds hour-long tokens and asks the user to **Resume sync**):
+
+```sh
+pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_CLIENT_SECRET
+pnpm --filter @livediagram/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
+```
+
+5. Optional: `NEXT_PUBLIC_GOOGLE_API_KEY`, a browser API key (restricted by HTTP referrer) for the Google Picker, which lets users show livediagram a folder they made in Drive. Without it the mirror works and that one step is not offered.
+
+**More than one environment** (a staging beside production): give each its **own Google Cloud project**. A project has one Drive UI integration Open URL, so a shared project could only ever open files on one host; `drive.file` access is per project, so files stay apart; and consent screens and test users stay apart. Each environment then has its own client id (worker var and live build, the same value within an environment), client secret, `DRIVE_TOKEN_KEY` and Picker key. livediagram.app does exactly this: its client ids sit per environment in `apps/api/hosted-vars.json` (`environments.production` / `environments.staging`, empty until set, which keeps the mirror off there), its Picker keys are the `NEXT_PUBLIC_GOOGLE_API_KEY` and `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` GitHub secrets, and every deploy checks that the worker and the live build carry the same client id.
+
+If your site redirects one host to another (livediagram.app sends the apex to `www`), register both as JavaScript origins with `/drive/connected` redirect URIs: the consent flow uses whichever host the app actually runs on.
+
+The mirror's root folder in each user's Drive is named **`livediagram (self-hosted)`** on your deployment (livediagram.app's own is `livediagram`, its staging and local development `livediagram (staging)`), so a user of both never gets two folders of the same name. There is no setting: the name comes from the host, is given only when the folder is created, and users may rename or move it freely.
+
+`DRIVE_TOKEN_KEY` seals the stored refresh tokens; changing it turns every connection into **Needs reconnecting**. Files a different deployment's Google project created are foreign to yours and import as copies. Your privacy policy must describe the Google user data you handle; livediagram.app's is in the help centre under Policies.
 
 ## Per-owner image gallery caps
 

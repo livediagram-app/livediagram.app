@@ -369,5 +369,4 @@ token. No user content, no names — [Telemetry + public transparency dashboard]
 - **Request facilitation** (raise a hand and let the holder accept). Worth
   having; not worth blocking this on.
 - **Per-tab facilitators.** One per document: a session has one pace.
-- **Facilitator in the activity log.** It changes nothing in the document.
 - **Making it a real permission.** See "How it is enforced, honestly".

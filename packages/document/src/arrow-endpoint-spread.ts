@@ -99,6 +99,9 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
     if (el.type !== 'arrow') continue;
     const arrow = el as ArrowElement;
     for (const end of ['from', 'to'] as const) {
+      // An end set exactly at its anchor (exactStart, exactEnd) sits out of that anchor's fan.
+      if (end === 'from' && arrow.exactStart === true) continue;
+      if (end === 'to' && arrow.exactEnd === true) continue;
       const endpoint = arrow[end];
       const key = pinKey(endpoint);
       if (!key) continue;

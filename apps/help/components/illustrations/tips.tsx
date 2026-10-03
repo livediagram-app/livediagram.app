@@ -69,7 +69,7 @@ export function ShortcutsToggle() {
         <circle cx={310} cy={72} r={7} className="fill-white" />
         <line x1={102} y1={112} x2={318} y2={112} className="stroke-slate-200" strokeWidth={1.5} />
         <Label x={102} y={132} size={10} weight={600} tone="strong">
-          Minimal panel layout
+          Reduce motion
         </Label>
         {/* Toggle switch, set off */}
         <rect x={284} y={122} width={36} height={20} rx={10} className="fill-slate-200" />

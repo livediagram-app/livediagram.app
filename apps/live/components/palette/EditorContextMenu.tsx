@@ -364,6 +364,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   style={arrowStyleOf(target)}
                   strokeStyle={target.strokeStyle ?? 'solid'}
                   routeBehind={arrowRoutesBehind(target)}
+                  // Only an arrow whose start is pinned has a fan to sit out of.
+                  exactStart={target.from.kind === 'pinned' ? target.exactStart === true : null}
+                  onSetExactStart={props.onSetArrowExactStart}
                   onSetThickness={props.onSetArrowThickness}
                   onSetStyle={props.onSetArrowStyle}
                   onSetStrokeStyle={props.onSetArrowStrokeStyle}

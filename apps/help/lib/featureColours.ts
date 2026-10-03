@@ -16,11 +16,13 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'quick-controls': '#6366f1',
   'the-canvas': '#0ea5e9',
   drawing: '#f97316',
+  highlighter: '#eab308',
   'selecting-and-grouping': '#8b5cf6',
   'text-and-fonts': '#0891b2',
   themes: '#d946ef',
   templates: '#14b8a6',
   'event-storming-boards': '#d97706',
+  'draw-mode': '#78716c',
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
   'live-presence': '#06b6d4',
@@ -57,18 +59,14 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'multi-select': '#8b5cf6',
   'link-cards': '#10b981',
   'choosing-fonts': '#0284c7',
-  // Activity Panel category
-  'what-it-is': '#94a3b8',
-  'how-it-works': '#64748b',
+  // Canvas category: Undo / Redo
   undo: '#0ea5e9',
   redo: '#06b6d4',
-  'reverting-changes': '#f43f5e',
   'data-elements': '#22c55e',
   'style-presets': '#e11d48',
   'layout-cleanup': '#2563eb',
   annotations: '#eab308',
   // Palette → Selection Modes
-  highlighter: '#eab308',
   'avatar-mode': '#ec4899',
   'walking-together': '#a855f7',
   'slide-deck': '#0ea5e9',
@@ -180,7 +178,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'quick-add-on-hover': '#10b981',
   'auto-attach-arrows': '#10b981',
   'alignment-guides': '#22c55e',
-  'minimal-panels': '#64748b',
   'toolbar-layout': '#0ea5e9',
   'reset-palette-position': '#475569',
   // Explorer section guides
@@ -188,7 +185,8 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   timeline: '#8b5cf6',
   activity: '#f43f5e',
   folders: '#f59e0b',
-  unsorted: '#94a3b8',
+  'default-folders': '#f59e0b',
+  filters: '#6366f1',
   profile: '#0891b2',
   recent: '#0ea5e9',
   'shared-with-you': '#10b981',
@@ -200,6 +198,9 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'linking-tabs': '#10b981',
   'add-to-document': '#6366f1',
   'import-tabs': '#0891b2',
+  'shape-libraries': '#7c3aed',
+  'drawio-import': '#ea580c',
+  'microsoft-whiteboard-import': '#0d9488',
   'export-tabs': '#0284c7',
   'tab-cleanup': '#2563eb',
   // Search Panel guides
@@ -234,7 +235,6 @@ export const FEATURE_CATEGORY_HEX: Record<string, string> = {
   tools: '#475569',
   'search-panel': '#0891b2',
   'selection-modes': '#8b5cf6',
-  'activity-panel': '#14b8a6',
 };
 
 /** Default colour used when no slug match is found. */

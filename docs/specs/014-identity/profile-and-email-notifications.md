@@ -23,7 +23,8 @@ retired and its three parts redistributed:
 
 - **Identity** (avatar, name, email, joined) is the `identity` row in the
   **Account** category. Read from Clerk on the client, never written: names
-  and emails are managed in Clerk itself, so it is a card, not a form. A
+  and emails are managed in Clerk itself, so it is a card, not a form. The
+  avatar is the [Profile picture](profile-picture.md) when there is one. A
   guest sees a card explaining that they are working as a guest.
 - **Email notifications** are the six rows in **Notifications > Email**
   (§3). Absent unless Resend is configured AND the reader is signed in, since
@@ -42,8 +43,6 @@ directly.
 
 ### Reaching it
 
-- **Sidebar** - the "Hi {name}" greeting at the top of `ExplorerSidebar`
-  opens the Settings dialog.
 - **Header account menu** - `AuthControls`' dropdown has an **Account** item
   deep-linking `/explorer?settings=account`, so it is reachable from anywhere
   the header chrome renders (editor + explorer).

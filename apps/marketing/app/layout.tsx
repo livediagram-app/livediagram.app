@@ -12,6 +12,7 @@ import {
   SITE_NAME,
   SITE_URL,
 } from '@livediagram/ui';
+import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -133,12 +134,14 @@ const JSON_LD = {
 const VIEW_TRANSITION_OPT_IN =
   '@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }';
 
+// VIEW_TRANSITION_GUARD_SCRIPT skips that transition when the link leaves for another app.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // suppressHydrationWarning: the pre-paint script may add `dark` to <html>.
     <html lang="en-GB" suppressHydrationWarning>
       <head>
         <style>{VIEW_TRANSITION_OPT_IN}</style>
+        <script dangerouslySetInnerHTML={{ __html: VIEW_TRANSITION_GUARD_SCRIPT }} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}

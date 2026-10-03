@@ -27,10 +27,10 @@ minutes after the session, which is precisely when anyone reads it.
 
 ## Names are copied, deliberately
 
-The change log went the other way: migration `0013` ([Activity and audit log](activity-and-audit.md)) **dropped** its
-denormalised `participant_name` / `participant_color` and now joins to the live
-participants table, so a rename shows through and a deleted participant
-degrades to "Unknown".
+The since-removed change log went the other way: migration `0013` **dropped** its
+denormalised `participant_name` / `participant_color` and joined to the live
+participants table, so a rename showed through and a deleted participant
+degraded to "Unknown".
 
 A roll call is the opposite kind of record and takes the opposite decision. It
 is minutes: a statement about a past moment. Someone who has since left the

@@ -168,7 +168,7 @@ describe('restoreDocument', () => {
     expect((await getDocument(env, 'A'))?.folderId).toBe('F');
   });
 
-  it('lands in Unsorted when its folder was deleted meanwhile', async () => {
+  it('lands at the root when its top-level folder was deleted meanwhile', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'F');
     liveDoc(sql, 'A', { folder: 'F' });
@@ -180,7 +180,21 @@ describe('restoreDocument', () => {
     expect((await getDocument(env, 'A'))?.folderId).toBeNull();
   });
 
-  it('lands in Unsorted when its folder is no longer in its scope', async () => {
+  it('lands in the deleted folder’s parent when that folder was nested', async () => {
+    const { env, sql } = sqliteD1();
+    folder(sql, 'P');
+    folder(sql, 'F');
+    sql.prepare("UPDATE folders SET parent_id = 'P' WHERE id = 'F'").run();
+    liveDoc(sql, 'A', { folder: 'F' });
+    await trashDocument(env, 'A', T0);
+    await deleteFolder(env, 'F');
+
+    await restoreDocument(env, 'A', T0 + DAY);
+
+    expect((await getDocument(env, 'A'))?.folderId).toBe('P');
+  });
+
+  it('lands at the root when its folder is no longer in its scope', async () => {
     // Belt and braces: a folder_id that names a folder of another owner or
     // another team must not come back as the document's place.
     const { env, sql } = sqliteD1();

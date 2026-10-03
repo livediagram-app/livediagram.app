@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const track = vi.fn();
 vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => track(...args) }));
 
-import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
+import { trackTabFolderTransition } from './tab-folder-reporting';
 import { useTabFolders } from './useTabFolders';
 
 beforeEach(() => track.mockReset());
@@ -45,16 +45,6 @@ describe('trackTabFolderTransition', () => {
   });
 });
 
-describe('tabFolderTransitionSummary', () => {
-  it('names the destination when the tab landed in a folder', () => {
-    expect(tabFolderTransitionSummary(null, 'Research')).toBe("Moved tab to folder 'Research'");
-  });
-
-  it('names the folder left behind when the tab became loose', () => {
-    expect(tabFolderTransitionSummary('Research', null)).toBe("Removed tab from folder 'Research'");
-  });
-});
-
 // useTabFolders holds no React state of its own (it returns closures over the
 // deps object), so the folder-lifecycle events can be driven directly without a
 // renderer. Only the telemetry triples are asserted here — the membership
@@ -67,8 +57,7 @@ describe('useTabFolders folder lifecycle', () => {
 
   // Named as a hook so react-hooks/rules-of-hooks accepts the call site; it is
   // one, it just happens to be exercised without a renderer.
-  const useFolderActions = () =>
-    useTabFolders({ tabs, activeId: 't1', commitTabs: () => {}, emitTabMeta: () => {} });
+  const useFolderActions = () => useTabFolders({ tabs, commitTabs: () => {} });
 
   it('a brand-new folder name emits the folder creation AND the tab move', () => {
     useFolderActions().moveTabToFolder('t1', 'Archive');

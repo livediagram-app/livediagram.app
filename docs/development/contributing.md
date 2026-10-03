@@ -99,6 +99,8 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It is **deliberately off the per-PR gate** because a browser run costs real CI minutes; it runs on push to `main` and on demand (the `E2E Smoke` workflow, `.github/workflows/e2e.yml`).
 
+A change to shared chrome (a Settings row, a panel, the top or bottom bars) can move what a smoke spec measures without failing any PR check, so run the suite on the branch before merging: `gh workflow run e2e.yml --ref <branch>`.
+
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3002` / `:8787`):
 
 ```sh
@@ -106,6 +108,13 @@ pnpm --filter @livediagram/live test:e2e
 ```
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/live/out`, which it never rebuilds: run `pnpm --filter @livediagram/live build` first, or it exits naming the missing build.
+
+The signed-in specs (`apps/live/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+
+```sh
+pnpm --filter @livediagram/live build:clerk-stub
+pnpm --filter @livediagram/live test:e2e:clerk-stub
+```
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3002` is already taken (a second checkout, a worktree):
 

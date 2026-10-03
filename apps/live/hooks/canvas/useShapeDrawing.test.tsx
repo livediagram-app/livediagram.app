@@ -9,8 +9,8 @@ import { useShapeDrawing } from './useShapeDrawing';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// The Highlighter is a held tool (docs/specs/008-canvas/highlighter.md): picking it arms the marker and
-// clears the selection; putting it down drops only the marker's own intent.
+// The Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md): picking it arms the marker
+// for one stroke and clears the selection, like the pens. It is not a canvas tool.
 
 function setup() {
   return renderHook(
@@ -24,6 +24,7 @@ function setup() {
         canvasTool: tool,
         setCanvasTool: vi.fn(),
         activeTab: { id: 't1', name: 'Tab', elements: [] } as unknown as Tab,
+        drawMode: false,
         commit: vi.fn(),
         setSelectedId,
         setMultiSelectedIds,
@@ -38,34 +39,49 @@ function setup() {
 }
 
 describe('useShapeDrawing highlighter', () => {
-  it('arms the marker and clears the selection when picked', () => {
-    const { result, rerender } = setup();
-    rerender({ tool: 'highlighter' });
+  it('arms the marker and clears the selection when the tile is picked', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginHighlighter());
+    // Armed in the highlighter's current colour and width: Yellow / Medium on a fresh load.
     expect(result.current.drawing.pendingDraw).toEqual({
       type: 'freehand',
       variant: 'highlighter',
+      colour: '#fde047',
+      width: 14,
     });
     expect(result.current.selectedId).toBeNull();
     expect(result.current.multi.size).toBe(0);
     expect(result.current.editingId).toBeNull();
   });
 
-  it('drops the marker when put down', () => {
-    const { result, rerender } = setup();
-    rerender({ tool: 'highlighter' });
-    rerender({ tool: 'select' });
-    expect(result.current.drawing.pendingDraw).toBeNull();
+  // docs/specs/008-canvas/highlighter.md "Settings": a choice made while armed reaches the armed
+  // stroke, and every later arm.
+  it('carries a colour or width chosen while armed into the arm and the next one', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginHighlighter());
+    act(() => result.current.drawing.highlighter.setColour('#93c5fd'));
+    act(() => result.current.drawing.highlighter.setWidth(22));
+    expect(result.current.drawing.pendingDraw).toMatchObject({ colour: '#93c5fd', width: 22 });
+    act(() => result.current.drawing.beginPolygon());
+    act(() => result.current.drawing.beginHighlighter());
+    expect(result.current.drawing.pendingDraw).toMatchObject({ colour: '#93c5fd', width: 22 });
   });
 
-  it('keeps a draw armed from the palette when the marker is put down', () => {
-    const { result, rerender } = setup();
-    rerender({ tool: 'highlighter' });
+  it('leaves another arm alone when a setting changes', () => {
+    const { result } = setup();
     act(() => result.current.drawing.beginPolygon());
-    rerender({ tool: 'select' });
+    act(() => result.current.drawing.highlighter.setColour('#93c5fd'));
     expect(result.current.drawing.pendingDraw).toEqual({ type: 'polygon' });
   });
 
-  it('leaves the selection alone for other tools', () => {
+  it('is replaced by the next tile picked, like any one-shot arm', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginHighlighter());
+    act(() => result.current.drawing.beginPolygon());
+    expect(result.current.drawing.pendingDraw).toEqual({ type: 'polygon' });
+  });
+
+  it('arms nothing on its own when a tool changes', () => {
     const { result, rerender } = setup();
     rerender({ tool: 'pan' });
     expect(result.current.selectedId).toBe('el-1');

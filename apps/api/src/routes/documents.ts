@@ -1,38 +1,32 @@
 // /api/documents — document metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
-// upgrade, and the change-log. The largest resource: every sub-path
+// upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
-import { isValidTab } from '@livediagram/document';
+import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
 import {
-  MAX_CHANGE_LOG_ENTRY_BYTES,
   MAX_DECK_LEN,
   MAX_TAB_BYTES,
-  byteLength,
-  bodyExceedsCap,
-  declaredBodyBytes,
+  TabTooLargeError,
+  logTabRefused,
+  tabDataBytes,
 } from '../limits';
 import {
-  CHANGE_LOG_TAB_NOT_SAVED,
   DOCUMENT_CONVERSION_HEADER,
+  INTENT_INVALID,
+  readCreationIntent,
   readDocumentConversion,
 } from '@livediagram/api-schema';
-import { parseChangeLogEntryBody } from '../change-log-body';
 import {} from '../comments';
 import {
   copyDocument,
-  deleteChangeLogEntry,
-  deleteChangeLogForTab,
   getDocument,
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
-  getFolder,
   countDocumentsByOwner,
   getParticipant,
-  insertChangeLogEntry,
-  listChangeLog,
   listDocumentsByOwner,
   listSharedWith,
   reorderTabs,
@@ -43,15 +37,14 @@ import {
 } from '../db';
 import {
   badRequest,
-  conflict,
   documentTrashed,
   forbidden,
   json,
-  noContent,
   notFound,
   payloadTooLarge,
   svgImage,
 } from '../responses';
+import { documentDates } from '@livediagram/api-schema';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { emailEnabled } from '../email/client';
@@ -68,13 +61,21 @@ import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { forkTakenTabIds } from '../tab-id-fork';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
-import type { ChangeLogEntryDTO, DocumentDTO } from '../types';
+import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
+import { placementLookups } from '../placement/placement-lookups';
+import {
+  logDefaultSkipped,
+  logPlacementRejected,
+  logPlacementResolved,
+  logPlacementSkipped,
+  placementScope,
+} from '../placement/placement-log';
+import { intentRejected, placementRejected } from '../placement/placement-response';
+import type { DocumentDTO } from '../types';
 import {
   gateEdit,
   gateGrant,
   missingDocument,
-  requireDocumentGrant,
-  requireOwnedDocument,
   requireOwner,
   shareCodeOf,
   type RouteContext,
@@ -93,18 +94,44 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       const body = (await request.json()) as Omit<Partial<DocumentDTO>, 'tabs'> & {
         tabs?: Tab[];
+        intent?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
       if (!body.id || typeof body.name !== 'string') {
         return badRequest('missing id/name');
       }
+      // The document's own dates (docs/specs/015-api/api.md "Document dates"), refused whole when
+      // invalid, before anything is written.
+      const dates = documentDates(body, Date.now());
+      if (!dates.ok) return badRequest('invalid document dates');
+      // Placement (docs/specs/013-workspace/folders.md "Placement on create"): read up front so a
+      // malformed one is refused before anything else is looked at.
+      const requested = parsePlacement(body);
+      if (!requested) {
+        logPlacementRejected('placement_invalid', placementScope(body.teamId));
+        return placementRejected('placement_invalid');
+      }
+      // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
+      // create at the root of My documents lands in. Malformed, it refuses the create.
+      const intent = readCreationIntent(body.intent);
+      if (!intent.ok) {
+        logPlacementRejected(INTENT_INVALID, placementScope(body.teamId));
+        return intentRejected();
+      }
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
       if (Array.isArray(body.tabs)) {
+        // Former stored shapes (a Google Drive copy, an offline sync, an API-token script) are
+        // migrated before validation, as every tab read migrates them (docs/specs/015-api/api.md).
+        body.tabs = body.tabs.map((tab) => migrateIncomingTab(tab) as Tab);
         for (const tab of body.tabs) {
           if (!isValidTab(tab)) return badRequest('invalid tab');
-          if (byteLength(JSON.stringify(tab)) > MAX_TAB_BYTES) {
+          // The cap D1's row sets (docs/specs/015-api/api.md "Tab size"), measured as stored,
+          // before anything is written, so a create never leaves a document without its tabs.
+          const bytes = tabDataBytes(tab);
+          if (bytes > MAX_TAB_BYTES) {
+            logTabRefused('create', tab.id, bytes);
             return payloadTooLarge();
           }
         }
@@ -140,15 +167,27 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
       }
-      // A seeded folder must be one of the caller's own personal folders, the
-      // same scope rule PUT /folder applies. Anything else (a folder deleted
-      // since an offline document was filed in it, someone else's) lands the
-      // document in Unsorted rather than failing the create: this is how an
-      // Offline Mode sync carries its placement (docs/specs/006-document/offline-mode.md).
-      let folderId = typeof body.folderId === 'string' ? body.folderId : null;
-      if (folderId !== null) {
-        const folder = await getFolder(env, folderId);
-        if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
+      // Where the document is filed, decided before the write and written by it
+      // (docs/specs/013-workspace/folders.md "Placement on create"). An invalid placement refuses
+      // the create by name; it never files the document somewhere else. A re-commit of the
+      // caller's own id keeps the placement it already has.
+      let placement = { teamId: clash?.teamId ?? null, folderId: clash?.folderId ?? null };
+      if (clash) {
+        logPlacementSkipped();
+      } else {
+        const outcome = await resolvePlacement(
+          requested,
+          { ownerId: owner, verifiedUserId: ctx.verifiedUserId },
+          placementLookups(env),
+          intent.intent,
+        );
+        if (!outcome.ok) {
+          logPlacementRejected(outcome.rejection, placementScope(requested.teamId));
+          return placementRejected(outcome.rejection);
+        }
+        for (const skip of outcome.skipped) logDefaultSkipped(skip);
+        logPlacementResolved(outcome.placement, outcome);
+        placement = outcome.placement;
       }
       // A seeded tab whose id another document holds is created under a fresh
       // id, never upserted over it: that is how a synced-back offline copy of a
@@ -165,7 +204,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
             ),
           )
         : null;
-      const now = Date.now();
+      // Only a genuine create takes the body's dates: a re-commit keeps the stored created date
+      // (the upsert never rewrites it) and is modified now.
+      const savedAt = clash ? Date.now() : dates.savedAt;
       // Document meta first so the FK in tabs can resolve.
       await upsertDocumentMeta(env, {
         id: body.id,
@@ -173,10 +214,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         name,
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
-        folderId,
-        // Documents are always created personal; they move into a
-        // team library via PUT /folder afterwards (docs/specs/013-workspace/team-shared-documents.md).
-        teamId: null,
+        folderId: placement.folderId,
+        teamId: placement.teamId,
         // Usually none. An Offline Mode sync carries the deck it built
         // offline (docs/specs/006-document/offline-mode.md), which would otherwise be lost with the local copy.
         presentation:
@@ -185,15 +224,25 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
-        savedAt: now,
-        createdAt: body.createdAt ?? now,
+        savedAt,
+        createdAt: dates.createdAt,
+        // The creation intent, recorded once (docs/specs/013-workspace/default-folders.md
+        // "Recorded intent"); null without one. A re-commit's upsert never rewrites it.
+        opensIn: intent.intent?.mode ?? null,
+        tabKind: intent.intent?.tabKind ?? null,
+        templateFamily: intent.intent?.templateFamily ?? null,
       });
       // Seed tabs if the caller provided them. The live app's
       // welcome flow uses this when it commits a fresh document
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
       if (seeded) {
-        await seedTabs(env, body.id, seeded.tabs);
+        try {
+          await seedTabs(env, body.id, seeded.tabs, savedAt);
+        } catch (error) {
+          if (error instanceof TabTooLargeError) return payloadTooLarge();
+          throw error;
+        }
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A
@@ -335,8 +384,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   // caller's own files. Accepted from (a) the owner — same as
   // any other "duplicate" path; (b) a visitor with an active
   // `shared_with` row for the source; (c) a visitor providing
-  // a valid X-Share-Code for the source. Skips share_links /
-  // change_log on the copy by design (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md) so
+  // a valid X-Share-Code for the source. Skips share_links on the
+  // copy by design (docs/specs/014-identity/auth-and-guest-access.md) so
   // the new document reads as the visitor's own clean workspace.
   if (segments.length === 4 && segments[3] === 'copy') {
     const id = segments[2]!;
@@ -455,111 +504,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   // the Durable Object upgrade — see document-room-routes.ts.
   const roomResp = await handleDocumentRoomRoutes(ctx);
   if (roomResp) return roomResp;
-
-  // /api/documents/<id>/log — owner OR edit-role share-code holder.
-  //   GET  → newest-first list of audit entries (capped at 200).
-  //   POST → append a new entry. Body is a ChangeLogEntryDTO.
-  // See docs/specs/012-collaboration/activity-and-audit.md.
-  if (segments.length === 4 && segments[3] === 'log') {
-    const id = segments[2]!;
-    // A tab-scoped edit visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads and writes their
-    // tab's entries only.
-    const granted = await requireDocumentGrant(ctx, id, 'edit');
-    if (granted instanceof Response) return granted;
-    const { document: access, grant } = granted;
-
-    if (request.method === 'GET') {
-      const entries = await listChangeLog(env, id, grant.tabScope);
-      // Redact each entry's author owner id for non-owners (docs/specs/015-api/public-api-and-tokens.md §6): it's
-      // the same value a token / X-Owner-Id authenticates with, so a non-owner
-      // edit collaborator must not be able to harvest it from the audit trail.
-      // The owner still sees the real ids; display name / colour are untouched
-      // (mirrors redactCommentAuthorIds + the document-DTO ownerId redaction).
-      const isOwner = ctx.resolveOwner() === access.ownerId;
-      const safe = isOwner ? entries : entries.map((e) => ({ ...e, participantId: '' }));
-      return json({ entries: safe });
-    }
-    if (request.method === 'POST') {
-      // Per-entry byte cap: only the 8MB outer body cap applied before, so 30
-      // huge entries could balloon the capped list response. Nothing
-      // downstream measures anything — parseChangeLogEntryBody copies summary
-      // and the before/after payloads straight through — so this cap is the
-      // only bound on what an edit-access caller can write, and every
-      // collaborator refetches up to 30 of them per GET.
-      //
-      // Checked twice on purpose: a declared length lets us reject a hostile
-      // entry BEFORE parsing it, and bodyExceedsCap then re-checks the parsed
-      // body for the request shapes no header can size. The second call costs
-      // nothing when a header was present.
-      const declared = declaredBodyBytes(request);
-      if (declared !== null && declared > MAX_CHANGE_LOG_ENTRY_BYTES) {
-        return payloadTooLarge();
-      }
-      const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
-      if (bodyExceedsCap(request, body, MAX_CHANGE_LOG_ENTRY_BYTES)) {
-        return payloadTooLarge();
-      }
-      const entry = parseChangeLogEntryBody(body);
-      if (!entry) return badRequest('missing change_log fields');
-      if (grant.tabScope !== null && entry.tabId !== grant.tabScope) return notFound();
-      // The entry's tab must belong to THIS document. The log is listed by
-      // joining through document_tabs, so an unchecked tab id let an editor of
-      // one document write rows into another document's activity panel. It is
-      // also what turned a brand-new tab's first edit (logged before the
-      // debounced autosave created the tab row) into a foreign-key 500: that
-      // case now answers a 409 the editor retries.
-      if (entry.tabId && !access.tabs.some((t) => t.id === entry.tabId)) {
-        return conflict(CHANGE_LOG_TAB_NOT_SAVED);
-      }
-      // Stamp the author from the resolved caller's participant record
-      // rather than trusting the body, so a client can't forge
-      // participantId / participantName / participantColor and frame
-      // another collaborator in the audit trail — the same defence the
-      // comment-write paths apply. requireDocumentGrant already proved
-      // the caller is identified, so resolveOwner() is non-null here.
-      const caller = ctx.resolveOwner()!;
-      const writer = await getParticipant(env, caller);
-      const stamped = {
-        ...entry,
-        participantId: caller,
-        participantName: writer?.name ?? entry.participantName,
-        participantColor: writer?.color ?? entry.participantColor,
-      };
-      await insertChangeLogEntry(env, stamped);
-      return json({ entry: stamped }, { status: 201 });
-    }
-  }
-
-  // /api/documents/<id>/log/<entryId> — owner OR edit-role share
-  // visitor. DELETE drops a single log entry; called by Revert
-  // and by the symmetric Undo path so the entry vanishes on the
-  // canvas of every connected client.
-  if (segments.length === 5 && segments[3] === 'log') {
-    const id = segments[2]!;
-    const entryId = segments[4]!;
-    const granted = await requireDocumentGrant(ctx, id, 'edit');
-    if (granted instanceof Response) return granted;
-
-    if (request.method === 'DELETE') {
-      await deleteChangeLogEntry(env, id, entryId, granted.grant.tabScope);
-      return noContent();
-    }
-  }
-
-  // /api/documents/<id>/log/tab/<tabId> — owner-only DELETE that
-  // drops every log entry for a tab. Called by the live app when
-  // it deletes a tab so the per-tab audit dies with the tab.
-  if (segments.length === 6 && segments[3] === 'log' && segments[4] === 'tab') {
-    const id = segments[2]!;
-    const tabId = segments[5]!;
-    const access = await requireOwnedDocument(ctx, id);
-    if (access instanceof Response) return access;
-
-    if (request.method === 'DELETE') {
-      await deleteChangeLogForTab(env, id, tabId);
-      return noContent();
-    }
-  }
 
   return notFound();
 }

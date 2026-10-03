@@ -5,11 +5,13 @@ import {
   type Element,
   type FreehandElement,
   type Padding,
+  type PathElement,
   type ShapeElement,
   type TextAlignX,
   type TextAlignY,
 } from './index';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
+import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 
@@ -25,6 +27,7 @@ export function defaultPadding(element: BoxedElement): Padding {
     case 'image':
       return 'none';
     case 'freehand':
+    case 'path':
       return 'none';
     case 'table':
       return 'sm';
@@ -229,15 +232,18 @@ function behaviourSkin(
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.text;
+  // Text with no colour of its own is written in Ink, on every theme and in either editor mode
+  // (docs/specs/007-editor/editor-modes.md "One look").
+  if (element.type === 'text') return PEN_INK[surface];
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
   if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
-      case 'text':
       case 'image':
       case 'freehand':
+      case 'path':
       case 'table':
       case 'annotation':
         return DARK_INK.text;
@@ -252,11 +258,10 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       return '#075985'; // brand-800
     case 'sticky':
       return '#451a03'; // amber-950-ish
-    case 'text':
-      return '#1e293b'; // slate-800
     case 'image':
       return '#1e293b'; // slate-800 (only used for alt-text rendering)
     case 'freehand':
+    case 'path':
       return '#1e293b'; // slate-800 (no inline label today, future-proof)
     case 'table':
       return '#1e293b'; // slate-800
@@ -329,6 +334,7 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
       case 'sticky':
       case 'link-card':
       case 'video':
+      case 'path':
         break; // transparent, or a fill that is the element's identity
     }
   }
@@ -340,6 +346,9 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
     case 'text':
       return 'transparent';
     case 'image':
+      return 'transparent';
+    // A path is plain ink, unfilled until a fill is chosen (docs/specs/023-draw-mode/path-tool.md "Style").
+    case 'path':
       return 'transparent';
     case 'freehand':
       // Closed freehand paths fill with a faint brand tint to match
@@ -363,10 +372,14 @@ export function defaultStrokeColor(
 ): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.stroke;
+  // A pen stroke with no colour of its own is drawn in Ink (docs/specs/007-editor/editor-modes.md
+  // "One look"); a highlighter keeps its own recipe.
+  if (element.type === 'freehand' && element.pen !== 'highlighter') return PEN_INK[surface];
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
       case 'freehand':
+      case 'path':
       case 'table':
       case 'annotation':
         return DARK_INK.stroke;
@@ -388,6 +401,7 @@ export function defaultStrokeColor(
     case 'image':
       return 'transparent';
     case 'freehand':
+    case 'path':
       return '#0ea5e9'; // brand-500, same accent as shapes
     case 'table':
       return '#94a3b8'; // slate-400 grid lines
@@ -445,6 +459,7 @@ export function supportsColours(element: Element): boolean {
     element.type === 'sticky' ||
     element.type === 'arrow' ||
     element.type === 'freehand' ||
+    element.type === 'path' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
@@ -467,8 +482,10 @@ export function supportsColours(element: Element): boolean {
 // distinct from ArrowElement's `strokeWidth: number` (raw px). A
 // non-narrowing predicate would let setters that write a BorderStroke
 // land on arrows, which TS would (correctly) reject.
-export function supportsBorder(element: Element): element is ShapeElement | FreehandElement {
-  return element.type === 'shape' || element.type === 'freehand';
+export function supportsBorder(
+  element: Element,
+): element is ShapeElement | FreehandElement | PathElement {
+  return element.type === 'shape' || element.type === 'freehand' || element.type === 'path';
 }
 
 // Whether the element exposes the Border CONTROLS (strength / pattern /
@@ -496,8 +513,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // strokeStyle. They were the drift this list was created to stop, recurring:
   // added to isSelfDrawingShape and not here, so the Border accordion kept
   // offering Strength and Pattern on them. Not merely inert — the pick was
-  // committed, so it wrote to the element, autosaved, appended a change-log
-  // entry and broadcast an op to every peer in the room, for no visual change
+  // committed, so it wrote to the element, autosaved and broadcast an op to every peer in the room, for no visual change
   // at any zoom.
   'progress-bar',
   'progress-ring',

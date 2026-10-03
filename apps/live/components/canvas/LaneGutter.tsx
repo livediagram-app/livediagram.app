@@ -9,6 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/document';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
 // divider where it meets the body.
@@ -45,11 +46,11 @@ export function LaneGutter({
   stroke,
   headerFill,
   headerSize,
+  titleOrientation,
   alignX,
   alignY,
   width,
   height,
-  zoom,
   onCommitSize,
   onSnapSeam,
   elementId,
@@ -64,13 +65,14 @@ export function LaneGutter({
   // Thickness in element-space px, from dragging the seam. Unset uses the
   // default for this orientation.
   headerSize?: number;
+  // An upright title's strip is one line thick by default (docs/specs/009-elements/lane.md).
+  titleOrientation?: 'upright';
   alignX: TextAlignX;
   alignY: TextAlignY;
   // The lane's own size, to clamp the seam against.
   width: number;
   height: number;
   // Canvas scale, so a pixel of pointer travel is a pixel of gutter.
-  zoom: number;
   // Commit on release. Absent (read-only, exports, the minimap) leaves the
   // seam inert and undraggable, which is what those surfaces want.
   onCommitSize?: (px: number) => void;
@@ -87,6 +89,7 @@ export function LaneGutter({
   elementX: number;
   elementY: number;
 }) {
+  const zoom = useCanvasZoom();
   // The gutter FOLLOWS the title. Pinning it left while the text moved right
   // left the strip sitting behind nothing and the title floating over the
   // work — the tinted band is the title's backdrop, so it goes where the
@@ -110,7 +113,8 @@ export function LaneGutter({
     setDragSize(px);
   };
   const size =
-    dragSize ?? laneSizeOfElement({ textAlignX: alignX, textAlignY: alignY, headerSize });
+    dragSize ??
+    laneSizeOfElement({ textAlignX: alignX, textAlignY: alignY, headerSize, titleOrientation });
   const maxSize = Math.max(MIN_GUTTER_PX, (band ? height : width) - MIN_GUTTER_PX);
 
   // Only an edge-hugging gutter inherits the lane's corner radius; a centred

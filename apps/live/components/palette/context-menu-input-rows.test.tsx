@@ -83,3 +83,33 @@ describe('ColourRow', () => {
     expect(screen.getByTestId('category-icon')).toBeTruthy();
   });
 });
+
+// docs/specs/007-editor/editor-modes.md "One look": Ink is the swatch after the theme's colours.
+describe('ColourRow with Ink', () => {
+  it('offers Ink after the presets and before your colours, named and with a tooltip', () => {
+    renderRow({ ink: '#1c1917' });
+    const ink = screen.getByRole('button', { name: 'Ink' });
+    const lastPreset = screen.getByRole('button', { name: '#0ea5e9' });
+    const custom = screen.getByRole('button', { name: /#ff0055/ });
+    expect(lastPreset.compareDocumentPosition(ink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(ink.compareDocumentPosition(custom) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(ink.style.backgroundColor).toBe('rgb(28, 25, 23)');
+  });
+
+  it('chooses Ink by name, and never adds it to your colours', () => {
+    const { onCommit, onAddCustom } = renderRow({ ink: '#1c1917' });
+    fireEvent.click(screen.getByRole('button', { name: 'Ink' }));
+    expect(onCommit).toHaveBeenCalledWith('ink');
+    expect(onAddCustom).not.toHaveBeenCalled();
+  });
+
+  it('marks Ink when the row shows it', () => {
+    renderRow({ ink: '#1c1917', value: '#1C1917' });
+    expect(screen.getByRole('button', { name: 'Ink' }).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('shows no Ink where the row cannot store it', () => {
+    renderRow();
+    expect(screen.queryByRole('button', { name: 'Ink' })).toBeNull();
+  });
+});

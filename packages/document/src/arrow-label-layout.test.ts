@@ -124,6 +124,14 @@ describe('layoutArrowLabels: width', () => {
     expect(l.width).toBeLessThanOrEqual(240 + 8);
   });
 
+  it('takes the own label width of an arrow over the caps', () => {
+    const long = 'a caption that goes on and on well beyond any sensible single line';
+    const l = layoutOf([arrow('a', [0, 0], [3000, 0], long, { labelMaxWidth: 1000 })], 'a', {
+      alongCapPx: 240,
+    });
+    expect(l.lines).toEqual([long]);
+  });
+
   it('keeps explicit line breaks', () => {
     expect(layoutOf([arrow('a', [0, 0], [0, 600], 'Speech\nto text')], 'a').lines).toEqual([
       'Speech',

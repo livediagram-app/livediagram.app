@@ -1,6 +1,6 @@
 import type { BoxedElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { describeVariant } from '@/components/canvas/element-variant';
+import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 
 const shape = (over: Record<string, unknown> = {}): BoxedElement =>
   ({
@@ -75,6 +75,20 @@ describe('describeVariant — per-type body styling', () => {
     const { style } = describeVariant(shape({ shape: 'diamond' }), false, false, null);
     expect(style.backgroundColor).toBeUndefined();
     expect(style.borderRadius).toBe('4px');
+  });
+
+  // docs/specs/008-canvas/corner-radius.md: a corner is never more than a quarter of the shorter side.
+  it('rounds a small rectangle by a quarter of its side, a large one by its preset', () => {
+    const small = shape({ width: 14, height: 14, borderRadius: 'lg' });
+    expect(describeVariant(small, false, false, null).style.borderRadius).toBe('3.5px');
+    const large = shape({ width: 200, height: 120, borderRadius: 'lg' });
+    expect(describeVariant(large, false, false, null).style.borderRadius).toBe('24px');
+    const unset = shape({ width: 16, height: 40 });
+    expect(describeVariant(unset, false, false, null).style.borderRadius).toBe('4px');
+    const pill = shape({ width: 14, height: 14, borderRadius: 'full' });
+    expect(describeVariant(pill, false, false, null).style.borderRadius).toBe('9999px');
+    const node = shape({ shape: 'mind-node', width: 20, height: 20 });
+    expect(describeVariant(node, false, false, null).style.borderRadius).toBe('5px');
   });
 
   it('circle and stadium use fixed silhouette radii', () => {
@@ -220,5 +234,16 @@ describe('describeVariant — element shadows (docs/specs/008-canvas/element-sha
     const { style } = describeVariant(make('text', { shadow }), false, false, null);
     expect(style.boxShadow).toBeUndefined();
     expect(style.filter).toBeUndefined();
+  });
+});
+
+describe('editingLook (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
+  it('raises a label being typed and shows the text cursor on it', () => {
+    expect(editingLook({ type: 'shape' }, true)).toEqual({ raise: true, textCursor: true });
+    expect(editingLook({ type: 'shape' }, false)).toEqual({ raise: false, textCursor: false });
+  });
+
+  it('never gives a path in its edit mode a text cursor, nor lifts it over its own nodes', () => {
+    expect(editingLook({ type: 'path' }, true)).toEqual({ raise: false, textCursor: false });
   });
 });

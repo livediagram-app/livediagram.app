@@ -16,6 +16,8 @@
 // 1 Decorate, 2 Dynamic).
 
 import { PALETTE_CATEGORIES } from './palette-categories';
+import { PaletteMyShapesTab } from './PaletteMyShapesTab';
+import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
@@ -62,6 +64,8 @@ export function paletteCategoryTabs(
     // Board-level switches for the Event Storming category (docs/specs/021-event-storming/event-storming.md),
     // supplied only when the active tab IS one of those boards.
     esBoardControls?: EsBoardControls;
+    // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
+    insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
     StickerDeps &
     TechDeps,
@@ -70,6 +74,7 @@ export function paletteCategoryTabs(
     pendingDraw,
     tileActions,
     esBoardControls,
+    insertLibraryShape,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -92,6 +97,7 @@ export function paletteCategoryTabs(
   const content: Record<string, React.ReactNode> = {
     favourites: <PaletteFavouritesTab pendingDraw={pendingDraw} actions={tileActions} />,
     shapes: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
+    'my-shapes': <PaletteMyShapesTab onInsert={insertLibraryShape} />,
     build: <PaletteBuildTab pendingDraw={pendingDraw} actions={tileActions} />,
     write: <PaletteWriteTab pendingDraw={pendingDraw} actions={tileActions} />,
     draw: <PaletteDrawTab pendingDraw={pendingDraw} actions={tileActions} />,

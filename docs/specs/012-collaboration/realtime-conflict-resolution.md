@@ -35,8 +35,8 @@ relays them; it does not merge them.
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   `tab` op (back-compat fallback). `ElementOp` (add / update / remove / reorder)
   lives in `@livediagram/document` so it's shared and unit-tested off-socket.
-- Derivation is free: the editor already diffs before/after on every commit for
-  the change log; `diffToElementOps(before, after)` reuses that same diff. Apply
+- Derivation is free: `diffToElementOps(before, after)` diffs the tab's
+  elements before and after each commit. Apply
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
   safe no-op.
 - `update` replaces the whole element by id (simple + correct). Two peers editing
@@ -52,6 +52,12 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   travels by name in the `tab-meta` op's `clear` list. It used to force a
   whole-`tab` op too, and Clear Timer / Clear Vote then replaced every element
   on every receiver ([Collaboration race hardening](collab-race-hardening.md)).
+
+### Live drags
+
+A drag writes nothing until it ends; while it lasts, the dragger's preview travels as presence (a
+`drag-preview` op: unordered, never logged or replayed) and collaborators draw it without writing
+it. The real change follows on release as ordinary element ops ([Drag preview](../008-canvas/drag-preview.md)).
 
 ### Ordered room + reconnect catch-up
 

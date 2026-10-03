@@ -11,6 +11,7 @@ import {
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
+  type TextElement,
 } from '@livediagram/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
@@ -25,6 +26,7 @@ import {
   defaultIconAnimation,
   snapToArrowPoint,
   type ArrowElement,
+  type ArrowEnds,
   type ComponentKind,
   type Element,
   type Endpoint,
@@ -36,6 +38,8 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
+import { placedTextBox } from '@/lib/text-hug';
+import { boardShape } from '@/lib/whiteboard-tool';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -146,6 +150,9 @@ export function buildDrawnArrow(
   endY: number,
   elements: Element[],
   theme: ThemeDefinition,
+  // The whiteboard's Line / Arrow shapes (docs/specs/023-draw-mode/draw-mode.md): their heads, and
+  // no colour so the board's ink shows.
+  opts: { ends?: ArrowEnds; unpainted?: boolean } = {},
 ): ArrowElement {
   const isClick = isDrawTap(startX, startY, endX, endY);
   const arrowStartX = isClick ? startX - 80 : startX;
@@ -161,9 +168,31 @@ export function buildDrawnArrow(
     type: 'arrow',
     from: snapDrawn(arrowStartX, startY),
     to: snapDrawn(arrowEndX, arrowEndY),
-    arrowEnds: 'none',
-    strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK,
+    arrowEnds: opts.ends ?? 'none',
+    ...(opts.unpainted
+      ? {}
+      : { strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK }),
   };
+}
+
+// The arrow a draw gesture lands, dressed as it lands (docs/specs/023-draw-mode/draw-mode.md
+// "Shapes"): unpainted on a whiteboard so the board's ink shows, then in its tool's remembered
+// style. The live preview and the commit both build it here, so what the drag shows is what the
+// release lands, down to the stroke width and the arrowhead.
+export function buildDressedDrawnArrow(
+  intent: Extract<PendingDraw, { type: 'arrow' }>,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  board: { elements: Element[]; theme: ThemeDefinition; whiteboard: boolean },
+  styleNewElement: <T extends Element>(el: T) => T,
+): ArrowElement {
+  const drawn = buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, {
+    ends: intent.ends,
+    unpainted: board.whiteboard,
+  });
+  return styleNewElement(board.whiteboard ? boardShape(drawn) : drawn);
 }
 
 // Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's
@@ -215,6 +244,8 @@ export function buildDrawnBoxed(
   endY: number,
   inheritFrom: Element | null,
   activeTab: Tab,
+  // Drawn in Draw mode (docs/specs/007-editor/editor-modes.md): a text box hugs its text.
+  drawMode = false,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
   // Event-storming stationery (docs/specs/021-event-storming/event-storming.md): on an ES board every sticky has a
@@ -266,6 +297,18 @@ export function buildDrawnBoxed(
     theme: activeTab.theme,
   });
   // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
+  const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
+  // A text box placed in Draw mode hugs its text (docs/specs/023-draw-mode/draw-mode.md "Text
+  // boxes"): it lands empty, one line tall, caret-sized at a click or at the dragged width.
+  const hugged =
+    base.type === 'text' && drawMode
+      ? placedTextBox(
+          { ...base, ...textSize } as TextElement,
+          isTap,
+          { x: startX, y: startY },
+          dragBox,
+        )
+      : {};
   return {
     ...base,
     ...colours,
@@ -273,7 +316,8 @@ export function buildDrawnBoxed(
     y,
     width,
     height,
-    ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+    ...textSize,
+    ...hugged,
     // Icon draw intent: carry the chosen glyph id + seed label onto the
     // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
     // size like any shape, see draw-mode.ts).

@@ -61,6 +61,8 @@ import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from '
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type MultiSelectionContextMenuProps = {
   props: EditorContextMenuProps;
@@ -81,6 +83,7 @@ export function MultiSelectionContextMenu({
 }: MultiSelectionContextMenuProps) {
   const scaffold = useContextMenuScaffold(props);
   const { sectionProps, flyoutProps, colorProps, textColorHandlers } = scaffold;
+  const surface = useCanvasSurface();
   // The selection toolbar carries Duplicate / Group / Lock / Export /
   // Delete, so this menu is purely the type-aware formatting categories
   // its ellipsis opens. It always renders: the placement band (Layer /
@@ -351,6 +354,8 @@ export function MultiSelectionContextMenu({
                       // reflecting one arrow's state, and arrows in the
                       // selection can disagree. Set it per arrow.
                       routeBehind={null}
+                      exactStart={null}
+                      onSetExactStart={props.onSetArrowExactStart}
                       onSetStrokeStyle={props.onSetArrowStrokeStyle}
                       onSetRouteBehind={props.onSetArrowRouteBehind}
                     />
@@ -427,7 +432,8 @@ export function MultiSelectionContextMenu({
                 <ColourRow
                   label="Colour"
                   icon={<TextColourIcon />}
-                  value={contentTextSrc.textColor ?? '#0f172a'}
+                  value={shownColour(contentTextSrc, 'text', surface, '#0f172a')}
+                  ink={inkSwatch(contentTextSrc, 'text', surface)}
                   {...textColorHandlers}
                   {...colorProps('m-content-text')}
                   {...props.colourPalette}

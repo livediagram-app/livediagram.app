@@ -146,6 +146,25 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     glyph:
       '<rect x="7.5" y="11" width="9" height="7" rx="1.2"/><path d="M9.5 11V9a2.5 2.5 0 0 1 5 0v2"/>',
   },
+  {
+    id: 'aws-lake-formation',
+    label: 'Lake Formation',
+    short: 'Data Lake',
+    provider: 'aws',
+    keywords: 'amazon data lake analytics storage',
+    color: '#8C4FFF',
+    glyph:
+      '<ellipse cx="10.33" cy="7.67" rx="5" ry="2"/><path d="M5.33 7.67v9c0 1.1 2.2 2 5 2M15.33 7.67v3.5"/><path d="M11.83 14.17c1.2-1 2.3-1 3.5 0s2.3 1 3.5 0M11.83 17.67c1.2-1 2.3-1 3.5 0s2.3 1 3.5 0"/>',
+  },
+  {
+    id: 'aws-msk',
+    label: 'MSK',
+    provider: 'aws',
+    keywords: 'amazon managed streaming kafka events queue analytics',
+    color: '#8C4FFF',
+    glyph:
+      '<circle cx="12" cy="7.17" r="2"/><circle cx="7" cy="17.17" r="2"/><circle cx="17" cy="17.17" r="2"/><path d="M11.1 8.97 7.9 15.37M12.9 8.97l3.2 6.4M9 17.17h6"/>',
+  },
   // ---- Azure --------------------------------------------------------------
   {
     id: 'azure-vm',

@@ -12,9 +12,26 @@ import type {
   TabResponse,
 } from '@livediagram/api-schema';
 import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/document';
-import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
-import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { TRASH_RETENTION_DAYS, type TrashedDocument } from '@livediagram/api-schema';
+import {
+  lanesToFront,
+  mergeElementUpdate,
+  normaliseElement,
+  normaliseElements,
+} from './element-normalise';
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  templateFamilyOf,
+  templateCategory,
+  type TemplateKind,
+} from '@livediagram/templates';
+import {
+  TRASH_RETENTION_DAYS,
+  creationIntentOf,
+  type LiveDoc,
+  type TrashedDocument,
+} from '@livediagram/api-schema';
+import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDocuments } from './find-documents';
@@ -172,8 +189,10 @@ export function registerTools(server: McpServer, env: Env): void {
         'Pass one tab, or several to build a multi-tab document in one call (an ' +
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
-        'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
-        '"Generated" folder, and returns the link + an inline PNG of the first tab.',
+        "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
+        "files it at the root of the user's My documents (or in their default folder for what that " +
+        'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
+        'PNG of the first tab.',
       inputSchema: createDocumentShape,
       outputSchema: createDocumentOutput,
     },
@@ -185,6 +204,8 @@ export function registerTools(server: McpServer, env: Env): void {
         return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
       }
       const tabs: Tab[] = [];
+      // The template the first tab is made from, for the creation intent.
+      let firstTemplate: TemplateKind | null = null;
       for (const t of inputTabs) {
         const tabId = crypto.randomUUID();
         // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
@@ -197,6 +218,7 @@ export function registerTools(server: McpServer, env: Env): void {
                 `${validTemplateKinds()}.`,
             );
           }
+          if (tabs.length === 0) firstTemplate = kind;
           tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
           continue;
         }
@@ -224,20 +246,27 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
-      // Tag the document as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
-      // synthetic "Generated" folder over source != null, so there's no
-      // real folder to create / place it in.
-      await apiJson(env, token, '/documents', {
-        method: 'POST',
-        body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp' }),
-      });
+      // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
+      // filter and badge read source != null, wherever the document is filed.
+      // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
+      // server files the document in the user's default folder for it, when they have one.
+      const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
+      const { document: created } = await apiJson<{ document?: LiveDoc }>(
+        env,
+        token,
+        '/documents',
+        {
+          method: 'POST',
+          body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp', intent }),
+        },
+      );
       return imageResult(
         {
           id,
           name: args.name,
           tabCount: tabs.length,
           tabIds: tabs.map((t) => t.id),
-          folder: 'Generated',
+          folder: await createdFolderLabel(env, token, created),
           url: deepLink(id),
         },
         tabs[0]!,
@@ -368,8 +397,7 @@ export function registerTools(server: McpServer, env: Env): void {
             byId.set(el.id, el);
             touched.add(el.id);
           } else if (op.op === 'update' && op.elementId) {
-            const prev = (byId.get(op.elementId) as Record<string, unknown>) ?? {};
-            byId.set(op.elementId, { ...prev, ...(el ?? {}) });
+            byId.set(op.elementId, mergeElementUpdate(byId.get(op.elementId), el));
             touched.add(op.elementId);
           }
         }
@@ -586,7 +614,7 @@ export function registerTools(server: McpServer, env: Env): void {
       behaviour: 'write',
       title: 'Restore a document from the Trash',
       description:
-        'Bring a deleted document back from the Trash, to the folder it was in (or Unsorted ' +
+        'Bring a deleted document back from the Trash, to the folder it was in (or the root of its space ' +
         'if that folder is gone), with its tabs and share links. Find it with list_trash.',
       inputSchema: restoreDocumentShape,
       outputSchema: restoreDocumentOutput,

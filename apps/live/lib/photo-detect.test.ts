@@ -2,11 +2,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PHOTO_MAX_EDGE_PX } from '@livediagram/api-schema';
 import { eventStormingNote } from '@livediagram/document';
+import { detectStickies } from '@livediagram/sticky-vision';
 import { cropBoxes, detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
 import { boundaryCuesFor } from './photo-model/client';
 
 // The boundary model runs in a worker jsdom does not have; its answer is
 // stubbed per test, and by default it is unavailable.
+// The real detector, behind a spy, so a test can see the image it was handed.
+vi.mock('@livediagram/sticky-vision', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@livediagram/sticky-vision')>();
+  return { ...real, detectStickies: vi.fn(real.detectStickies) };
+});
+
 vi.mock('./photo-model/client', () => ({
   boundaryCuesFor: vi.fn(),
   warmBoundaryModel: vi.fn(),
@@ -144,9 +151,17 @@ describe('detectAndCrop', () => {
   });
 
   it('detects on a downscaled working copy, keeping the aspect', async () => {
+    // Geometry only: the detector answers "none" here, so the full pipeline over 750k pixels
+    // (seconds on a loaded CI runner) is left to the small-photo tests below.
+    vi.mocked(detectStickies).mockReturnValueOnce([]);
     const out = await withStub({ width: 4000, height: 3000 }, oneSticky(400, 300));
-    expect(out.imageSize.width).toBe(PHOTO_MAX_EDGE_PX);
-    expect(out.imageSize.height).toBe(Math.round((PHOTO_MAX_EDGE_PX * 3000) / 4000));
+    const working = {
+      width: PHOTO_MAX_EDGE_PX,
+      height: Math.round((PHOTO_MAX_EDGE_PX * 3000) / 4000),
+    };
+    expect(out.imageSize).toEqual(working);
+    const [image] = vi.mocked(detectStickies).mock.lastCall!;
+    expect({ width: image.width, height: image.height }).toEqual(working);
   });
 
   it('never upscales a small photo', async () => {

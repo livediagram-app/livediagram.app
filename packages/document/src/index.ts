@@ -12,6 +12,7 @@
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
+import type { EditorMode } from './editor-mode';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -36,19 +37,32 @@ import type {
   StickyElement,
   ImageElement,
   FreehandElement,
+  PathElement,
   AnnotationElement,
   LinkCardElement,
   VideoElement,
 } from './element-types';
+export {
+  IMAGE_CREDIT_TEXT_MAX,
+  IMAGE_CREDIT_URL_MAX,
+  isCreditUrl,
+  isImageCredit,
+  type ImageCredit,
+} from './image-credit';
 export type {
   ChartLegendPosition,
   ShapeElement,
   TextElement,
+  TextSizing,
   TableCellStyle,
   TableElement,
   StickyElement,
   ImageElement,
   FreehandElement,
+  PathElement,
+  PathHandleMode,
+  PathNode,
+  PathPoint,
   AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
@@ -237,6 +251,7 @@ export type BoxedElement =
   | StickyElement
   | ImageElement
   | FreehandElement
+  | PathElement
   | TableElement
   | AnnotationElement
   | LinkCardElement
@@ -264,6 +279,10 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
+  // The editor mode a general tab OPENS in (docs/specs/007-editor/editor-modes.md "Where the mode
+  // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
+  // (read via `opensInOf`); switching never changes it.
+  opensIn?: EditorMode;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
@@ -308,8 +327,7 @@ export type Tab = {
   templateChosen?: boolean;
   // True when the tab is locked: every element becomes read-only,
   // adds via the palette are blocked, theme / background mutations
-  // are blocked, and the Activity panel hides its Revert + Undo
-  // buttons for as long as this tab is active. Toggled from the
+  // are blocked for as long as this tab is active. Toggled from the
   // tab ellipsis menu.
   locked?: boolean;
   // Per-document folder name (docs/specs/006-document/tab-folders.md). Tabs sharing a name render
@@ -338,6 +356,8 @@ export type Tab = {
 
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
+export * from './editor-mode';
+export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
@@ -347,6 +367,7 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'sticky' ||
     element.type === 'image' ||
     element.type === 'freehand' ||
+    element.type === 'path' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
@@ -430,6 +451,7 @@ export * from './collab-shapes';
 // Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
 export * from './quiz';
 export * from './shape-geometry';
+export * from './actor-figure';
 export * from './color-wash';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
@@ -453,10 +475,22 @@ export * from './event-storming-lanes';
 export * from './event-storming-lane-landing';
 export * from './event-storming-next';
 export * from './event-storming-photo';
+export * from './whiteboard';
+export * from './whiteboard-stroke';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
+export * from './pen-stroke';
+export * from './stroke-points';
+export * from './stroke-points-cache';
+export * from './freehand-points';
+export * from './stroke-points-debug';
+export * from './pen-colours';
+export * from './stock-colours';
+export * from './snap-colours';
+export * from './path-geometry';
+export * from './path-element';
 export * from './component-factories';
 export * from './table';
 
@@ -498,6 +532,7 @@ export * from './anchors';
 export * from './anchor-layouts';
 export * from './shape-outline';
 export * from './svg-path-outline';
+export * from './shape-hit';
 export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-path-hits';
@@ -507,6 +542,7 @@ export * from './arrow-orthogonal';
 export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
+export * from './element-grid';
 // Tab + document name length cap (docs/specs/006-document/name-length.md).
 export * from './names';
 export * from './geometry-snapping';
@@ -518,6 +554,7 @@ export * from './geometry-guides';
 export * from './layer-order';
 export * from './legacy-groups';
 export * from './legacy-docks';
+export * from './legacy-stroke-points';
 export * from './stored-elements';
 export * from './stored-tab';
 export { retiredSchemeOf, migrateRetiredScheme, type RetiredScheme } from './retired-schemes';

@@ -1,11 +1,9 @@
 # The lane
 
-Status: shipped
-
 ## What
 
 A **Lane**: a horizontal band with a titled gutter down its left edge, for
-swimlane diagrams — a role, a team, or a system per band, with the steps laid
+swimlane documents: a role, a team, or a system per band, with the steps laid
 inside it.
 
 Dragging a lane carries everything inside it, exactly as a frame does.
@@ -32,7 +30,7 @@ users doing.
 
 `shape: 'lane'`, and one predicate change. `withFrameContents`
 (`apps/live/lib/canvas.ts`) already answers "which elements travel with this
-container", including the two rules that make it correct — a container only
+container", including the two rules that make it correct: a container only
 carries a box it FULLY contains, and an element overlapped by two containers
 belongs to the backmost one. Lanes join that predicate rather than getting
 their own copy, so both kinds share the containment rules and can't drift
@@ -42,29 +40,28 @@ What differs from a frame is presentation only:
 
 - **900 × 200** by default: a band, not a box.
 - **A gutter** down the left (`LANE_GUTTER_PX`, 132) on a tinted strip, with a
-  divider line where it meets the body. The title lives in the gutter, which is
-  why the swimlane template needed separate cells before.
+  divider line where it meets the body. The title lives in the gutter, so a swimlane needs no
+  separate title cells.
 
   Both the gutter's **colour** and its **thickness** are the user's:
 
   - **Heading** in the context menu's Colours section sets `headerFill`. Unset
-    keeps the historical look, a 10% wash of the lane's own stroke, so a
+    paints a 10% wash of the lane's own stroke, so a
     recoloured lane carries its gutter with it. The field is shared with a
     table's header row, because a heading band is one idea wearing two
     silhouettes.
   - **Dragging the seam** between the gutter and the body sets `headerSize`.
-    132 and 64 were only ever the sizes that suited the titles they were
-    measured against; a lane holding "Q3 Marketing Programme" wants more than
+    132 and 64 suit only the titles they were measured against; a lane holding "Q3 Marketing Programme" wants more than
     one holding "Q3". One commit per gesture, so a drag is one undo step, and
     the seam is clamped so a gutter can neither vanish nor eat the lane.
 
-    The live size during a drag is held in a ref as well as in state. Release
-    used to commit from inside a `setState` UPDATER, which React runs during
-    the render phase: committing there updates the page while the gutter is
-    rendering, and React says so. Reading the effect's closed-over state
-    instead would be wrong a different way, since `pointermove` is not a
-    discrete event and its re-render may not have flushed by the time the
-    release arrives.
+    The live size during a drag is held in a ref as well as in state, and
+    release commits from the ref. Committing from inside a `setState`
+    UPDATER is wrong, because React runs it during the render phase and the
+    commit would update the page while the gutter is rendering. Reading the
+    effect's closed-over state is wrong a different way, since `pointermove`
+    is not a discrete event and its re-render may not have flushed by the time
+    the release arrives.
 
     The drag **snaps**, to the ordinary alignment grid AND to **other lanes'
     seams** (`lane-seam-snapping.ts`). The second is the one that matters: a
@@ -81,7 +78,7 @@ What differs from a frame is presentation only:
 ## Aligning the title re-orients the lane
 
 The gutter is the title's backdrop, so it runs along whichever **edge the
-title is pinned to** (`laneGutterEdge`, `LaneGutter.tsx`):
+title is pinned to** (`laneGutterEdge` in `packages/document/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
 
 | Title alignment           | Gutter                                          |
 | ------------------------- | ----------------------------------------------- |
@@ -92,11 +89,10 @@ title is pinned to** (`laneGutterEdge`, `LaneGutter.tsx`):
 A horizontal pin wins whenever there is one: a title reading down the leading
 edge is the swimlane idiom, and nudging it up or down that edge must not
 re-orient the band. Only a title with no horizontal edge to hug lets the
-vertical pin decide — and that is the point of the rule. **Centring the title
+vertical pin decide, and that is the point of the rule. **Centring the title
 at the top or bottom turns the lane into a vertical one**, a column with a
 header band, which is how you build a board of columns rather than a stack of
-rows. Before, the strip stayed vertical down the middle with the words perched
-at its top: the lane still read as horizontal while its title read as a header.
+rows.
 
 The band is 64 rather than 132 because the job differs by axis. 132 buys room
 for words across; a band only has to hold one line down, which is the `lg`
@@ -112,3 +108,26 @@ what I arranged" problem [The mind node](mind-node.md) avoids for mind nodes.
 Their borders no longer double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
+
+## Upright titles
+
+A swimlane drawn as a stack of wide rows often reads its titles **upright**, turned a quarter to
+read from bottom to top in a thin strip down the leading edge, as draw.io, Visio and BPMN tools draw
+them. The strip then only has to hold one line across its thickness, so the rows keep their width
+for the work.
+
+- `titleOrientation: 'upright'` turns the title; absent means across, as every lane drawn so far.
+- An upright title reads from bottom to top, centred along its strip by default; its alignment
+  along the strip follows the vertical pin (top, middle, bottom), so the gutter rule above still
+  places the strip by the horizontal pin.
+- The strip is `LANE_BAND_PX` (64) thick by default, the same one-line band a column's header uses,
+  and the seam drag sizes it like any gutter (`headerSize`).
+- Only a strip down a side turns its title: a band across the top or bottom always reads across, so
+  turning a column's header has no effect and the toggle is not offered there.
+- A title longer than the strip is tall wraps across the strip's thickness; what does not fit is
+  clipped. The strip's padding is at most the small padding, so a one-line strip keeps its line.
+- The context menu's Text section carries **Upright title** for a lane with a side strip; one commit,
+  one undo step.
+- Export (SVG, PNG, PDF) draws the turned title exactly as the canvas does; screen readers read the
+  title as text, unaffected by its turn.
+- The [draw.io import](../020-import-export/drawio-import.md) uses it for every `horizontal=0` lane.

@@ -12,11 +12,21 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
+import { isLocalOnly } from '@/lib/document-space';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
-import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
+import {
+  FavouriteMarker,
+  FolderChip,
+  VisibilityBadge,
+  isMirrorable,
+  useIconOnlyBadges,
+} from './document-badges';
+import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
+import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
+import { FolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
@@ -53,18 +63,6 @@ export function CardView(props: CardViewProps) {
   } = props;
   return (
     <div className={`lvd-cascade ${CARD_GRID}`}>
-      {visibleSyntheticFolders(props).map((e) => {
-        const { Icon, label } = SYNTHETIC_FOLDERS[e.kind];
-        return (
-          <SyntheticFolderCard
-            key={e.kind}
-            icon={<Icon />}
-            label={label}
-            count={e.count}
-            onOpen={e.onOpen}
-          />
-        );
-      })}
       {folders.map((f) => (
         <FolderCard
           key={f.id}
@@ -129,6 +127,7 @@ function DocumentCard(
     favourite,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
+  const iconOnlyBadges = useIconOnlyBadges();
   const href = hrefForDocument(liveDoc);
   const ownerLabel = showOwner ? ownerLabelFor(liveDoc) : null;
   const thumbnail = (
@@ -136,6 +135,7 @@ function DocumentCard(
       ownerId={ownerId}
       documentId={liveDoc.id}
       version={liveDoc.savedAt}
+      empty={liveDoc.empty}
       shareCode={liveDoc.shared?.shareCode}
       offline={liveDoc.ownerId === OFFLINE_OWNER_ID}
       className="h-full w-full"
@@ -176,11 +176,31 @@ function DocumentCard(
           )}
         </div>
         {/* Keep every column the list shows: owner, visibility, updated. */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          {showVisibilityBadge ? <VisibilityBadge document={liveDoc} /> : null}
+        {/* One line: the badges keep their size, the time gives way with an
+            ellipsis, the sync mark holds the right edge. */}
+        <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
+          {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
+          {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
+          {showVisibilityBadge ? (
+            <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />
+          ) : null}
           {favourite ? <FavouriteMarker /> : null}
+          <DriveNoticeMarker documentId={liveDoc.id} />
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
-          <RelativeTimeChip at={liveDoc.savedAt} />
+          {/* A flex box, so the time centres on the row like its neighbours;
+              the time truncates itself. */}
+          <span className="flex min-w-0 !shrink items-center">
+            <RelativeTimeChip at={liveDoc.savedAt} />
+          </span>
+          {/* A flex box, not an inline span: an inline wrapper sits the mark on
+              the text baseline and lifts it off the row's centre. */}
+          <span className="ml-auto flex items-center">
+            <DocumentSyncMark
+              documentId={liveDoc.id}
+              savedAt={liveDoc.savedAt}
+              mirrorable={isMirrorable(liveDoc)}
+            />
+          </span>
         </div>
         {ownerLabel ? (
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{ownerLabel}</span>

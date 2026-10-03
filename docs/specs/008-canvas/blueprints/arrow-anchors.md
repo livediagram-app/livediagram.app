@@ -266,6 +266,12 @@ Invariants, each asserted by a test:
      traded path `pathPassesThrough` a shape of its own pinned ends;
    - apply, update `index`, log O2.
 
+**Exact ends.** `arrowEndpointSpread` skips a `from` end when `exactStart === true` and a `to` end
+when `exactEnd === true`: those ends draw at their anchor and take no slot; the other ends at that
+anchor fan among themselves. Re-pinning the `to` end by hand (dragging it to another anchor or element) removes `exactEnd`; the
+auto-rebind keeps it. `exactStart` stays the user's switch. `exactEnd` is validated like `exactStart` (boolean, absent =
+fanned).
+
 ## Interfaces and contracts
 
 ```ts

@@ -18,9 +18,11 @@
 // `schemaVersion` so a future breaking change can be refused with a clear
 // message instead of pasting nonsense.
 
-import { isValidElement, type Element } from '@livediagram/document';
+import { isValidElement, migrateIncomingElements, type Element } from '@livediagram/document';
 
-export const CLIPBOARD_SCHEMA_VERSION = 1;
+// 2: freehand points are packed (docs/specs/006-document/stroke-points.md); an older editor
+// refuses a version 2 payload rather than pasting strokes it cannot draw.
+export const CLIPBOARD_SCHEMA_VERSION = 2;
 export const CLIPBOARD_KIND = 'livediagram.elements';
 
 // A ceiling on what a paste will accept. The tab cap is 10,000 elements
@@ -115,8 +117,11 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
 
   // Per-element validation, dropping failures rather than refusing the payload:
   // one unreadable element out of forty should cost you that element, not the
-  // paste. isValidElement is the same guard the api and the AI ingest path use.
-  const elements = env.elements.slice(0, MAX_CLIPBOARD_ELEMENTS).filter(isValidElement);
+  // paste. isValidElement is the same guard the api and the AI ingest path use. A payload from an
+  // older editor carries former stored shapes, migrated first (docs/specs/006-document/stroke-points.md).
+  const elements = migrateIncomingElements(env.elements.slice(0, MAX_CLIPBOARD_ELEMENTS)).filter(
+    isValidElement,
+  );
   if (elements.length === 0) return null;
 
   // Duplicate ids would make the id-remap ambiguous (and a tab with two

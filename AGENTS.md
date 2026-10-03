@@ -50,7 +50,7 @@ Further details below.
 
 ### Plans
 
-- Plans live as a single Markdown file in the project's `plans/` folder, numbered `0001-<topic>.md`.
+- Plans live as a single Markdown file in the main checkout's `plans/` folder, numbered `0001-<topic>.md`.
 - They live inside the `plans/` folder, which MAY be **gitignored** (recommended).
 - Plans describe **work**, split into sequenced **phases** of checkboxed **steps**:.
   - **work** includes research, specification, building, testing, verification, definition of done, and anything else that's needed.
@@ -181,6 +181,14 @@ Treat them as part of the change, not an afterthought:
 
 Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
 
+## Domain language
+
+See [Domain language](docs/specs/003-system-architecture/domain-language.md).
+
+- **Mode** is how a tab is worked on (Diagram, Draw); per person, never a type of document or tab.
+- **Kind** is what a tab is; only Event Storming differs from the general diagram tab.
+- **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
+
 ## Repo layout
 
 ```
@@ -199,6 +207,7 @@ packages/
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
+  explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
@@ -300,6 +309,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
+- This is a public repo, rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.

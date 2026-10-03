@@ -8,9 +8,9 @@ import {
   createText,
   type Element,
   type ShapeElement,
-  type ShapeKind,
 } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { uiAt } from './template-wireframe-kit';
 
 // Laptop wireframe: a believable analytics dashboard where the screen is the
 // star. The laptop is drawn front-on from three plain shapes (the lid with
@@ -49,20 +49,7 @@ export function buildLaptopWireframe(cx: number, cy: number): Element[] {
     ...extra,
   });
   // Offsets below are relative to the display's top-left.
-  const ui = (
-    kind: ShapeKind,
-    rx: number,
-    ry: number,
-    w: number,
-    h: number,
-    extra: Partial<ShapeElement> = {},
-  ): Element => ({
-    ...createShape(kind, sx + rx, sy + ry),
-    width: w,
-    height: h,
-    layerId: TEMPLATE_CONTENT_LAYER_ID,
-    ...extra,
-  });
+  const ui = uiAt(sx, sy);
   const small = { textSize: 'sm' as const };
   const left = { textAlignX: 'left' as const };
 

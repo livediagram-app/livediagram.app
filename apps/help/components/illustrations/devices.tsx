@@ -1,6 +1,6 @@
 // Supported-devices illustrations (docs/specs/018-help/help-app.md): the editor framed inside a desktop
 // monitor, a tablet, and a phone, each with the chrome that screen size brings
-// (full floating palette on desktop, a compact dock on mobile). Composed only
+// (full floating palette on desktop, the Toolbar strip on mobile). Composed only
 // from the shared primitives so the house style holds.
 
 import { type ReactNode } from 'react';
@@ -223,12 +223,12 @@ export function TabletLandscape() {
   );
 }
 
-/** Rotating a tablet between portrait (compact dock) and landscape (full panels),
+/** Rotating a tablet between portrait (the Toolbar strip) and landscape (full panels),
  *  with a rotate arrow between the two states. */
 export function TabletRotate() {
   return (
     <Scene w={420} h={220} bg="plain">
-      {/* Portrait tablet with a compact dock */}
+      {/* Portrait tablet with the Toolbar strip */}
       <g>
         <rect
           x={30}
@@ -240,24 +240,26 @@ export function TabletRotate() {
           strokeWidth={2.5}
         />
         <rect x={40} y={42} width={88} height={132} rx={5} className="fill-slate-50" />
-        {/* compact dock, top corner */}
+        {/* the Toolbar strip across the top: menu button, then tiles */}
         <rect
           x={46}
           y={48}
-          width={48}
+          width={76}
           height={16}
           rx={5}
           className="fill-white stroke-slate-200"
           strokeWidth={1.5}
         />
-        <circle cx={55} cy={56} r={3} className="fill-brand-400" />
-        <circle cx={70} cy={56} r={3} className="fill-slate-300" />
-        <circle cx={85} cy={56} r={3} className="fill-slate-300" />
+        <path d="M51 53h6M51 56h6M51 59h6" className="stroke-slate-400" strokeWidth={1.2} />
+        <circle cx={69} cy={56} r={3} className="fill-brand-400" />
+        <circle cx={82} cy={56} r={3} className="fill-slate-300" />
+        <circle cx={95} cy={56} r={3} className="fill-slate-300" />
+        <circle cx={108} cy={56} r={3} className="fill-slate-300" />
         <g transform="translate(44 76) scale(0.42)">
           <MiniFlow x={0} y={0} showLabels={false} />
         </g>
         <Label x={84} y={208} anchor="middle" size={10} weight={600} tone="muted">
-          Portrait: dock
+          Portrait: strip
         </Label>
       </g>
       {/* Rotate arrow */}

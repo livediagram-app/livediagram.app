@@ -84,10 +84,10 @@ Invariants:
   only. A trashed document is reachable solely through `db/trash.ts`.
 - **I2** `purgeDocuments` only ever removes trashed rows (`trashedIdsIn` filters its input), so no caller can
   skip the Trash by naming an id. The permanent path trashes first.
-- **I3** Trashing touches no child row: tabs, links, share links, stars, change log, collaboration index,
+- **I3** Trashing touches no child row: tabs, links, share links, stars, collaboration index,
   Timeline events and image references all stay until the purge.
 - **I4** Restore returns the document to `folder_id` only when that folder still exists in its scope (the
-  owner's personal tree, or its team's); otherwise Unsorted. `team_id` and `owner_id` are unchanged.
+  owner's personal tree, or its team's); otherwise the root of that space. `team_id` and `owner_id` are unchanged.
 - **I5** A trashed document cannot be written: every write door answers 410, the room refuses the upgrade,
   and the client stops its autosave (`writesForbiddenRef`) on the first 410.
 - **I6** The local Trash follows the same clock: `isTrashExpired(trashedAt, now)`.
@@ -147,7 +147,9 @@ the rest. Deleting a team re-homes its trashed documents to their owners' person
 
 - **E1** Trash an already-trashed document: 410, `trashed_at` unchanged.
 - **E2** Restore a live or missing id: 404; the offline form throws `not in the local Trash`.
-- **E3** Restore after the folder was deleted: Unsorted (I4). After the team was deleted: the document is
+- **E3** Restore after the folder was deleted: the folder's parent, where the folder delete moved the
+  trashed document ([Folders: Deleting a folder](../folders.md#deleting-a-folder)); the root only when
+  that folder too is gone (I4). After the team was deleted: the document is
   in its owner's personal Trash and restores there.
 - **E4** Snapshot (R2) delete fails during a purge: the purge stands; `[trash] snapshot delete failed` warns.
 - **E5** The room is unreachable when trashing: logged `[room-broadcast] document-trashed did not reach the
@@ -185,7 +187,7 @@ room`; open sessions still stop at their next save (I5).
   working, and visitors see that it was deleted." The "Document deleted" toast is unchanged.
 - Settings › Account, section "Your Data", row "Trash" with an "Open Trash" link and the footnote "Deleted
   documents wait here for 30 days before they are removed for good. Restore one to put it back where it was."
-- Trash view: intro, in an `InfoNote` (the small info-glyph note the Dynamic folders use), "Deleted documents wait here for 30 days, then they are removed for good. Restoring one
+- Trash view: intro, in an `InfoNote` (the small info-glyph note the Explorer's views use), "Deleted documents wait here for 30 days, then they are removed for good. Restoring one
   puts it back where it was." Groups "Your documents", each team by name (A to Z), "This browser only" with
   "Offline documents, kept only in this browser." Row: name, "Deleted {d MMM} · {n} days left" ("1 day left",
   "Removed at the next clean-up" at 0). Actions "Restore" (no confirmation), "Delete permanently" and

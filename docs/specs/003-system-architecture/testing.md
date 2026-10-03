@@ -54,12 +54,26 @@ export default defineProject({ test: { environment: 'jsdom' } });
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter, the sticky detector) measures it with
-  `cpuMsOf` from `@livediagram/vitest-config/cpu-time`, never
+  `cpuMsOf` (or `cpuMsOfAsync`) from `@livediagram/vitest-config/cpu-time`, never
   `performance.now()`. Turbo runs every package's suite at once, and a
   wall-clock budget also counts the time a test waits for a core, which made
   those tests flake on a busy machine. CPU time still catches the regression
   the budget is for. The one exception is a test that asserts nothing WAITS
   (no sleep, no retry delay): only wall-clock time can see a wait.
+- **A test never pays a cold module load.** When the code under test imports
+  a module lazily (`await import(...)`), the test file also imports it
+  statically, so its transform happens at collection, outside every test's
+  timeout; a cold load inside the first test timed out on a busy CI runner
+  and broke the rest of the file with it.
+- **A test never waits out a real delay.** A retry pause, backoff or flush
+  timer runs under `vi.useFakeTimers()`, settled with `vi.runAllTimersAsync()`.
+- **A guard that scans source files filters by text before parsing.** It
+  skips a file that lacks a token every violation needs, and parses each file
+  once per test file, never once per test.
+- **Tampering is done on bytes, not on encoded text.** A test that tampers
+  with a base64 value decodes it, flips a bit, and re-encodes: the last
+  base64 character carries padding bits, so editing the text can decode to the
+  very same bytes.
 - **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
   with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
@@ -152,7 +166,7 @@ v5 test runner with every check green: nothing invoked the broken path.
     event-storming lanes + photo placement, names, themes, element shadows,
     the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
-    auto-align, canvas geometry + backgrounds, change-log, export/import,
+    auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
     placement, help deep links, the photo-model worker's plumbing), the pure
     helpers behind hooks, and a large jsdom layer of hook and component tests
@@ -177,6 +191,10 @@ v5 test runner with every check green: nothing invoked the broken path.
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
     shapes, error telemetry and page views.
+  - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
+    enforced by its config: the token grammar and every rejection, canonical
+    form and chip writes, matching per dimension, suggestions and their marks,
+    view-model copy, `?q=` and carry-over, the telemetry facets.
   - `packages/sticky-vision`: the classical sticky-note detector for the photo
     import ([Event storming](../021-event-storming/event-storming.md)): colour
     classification, contours, seams, necks and spill, the boundary-model hybrid,
@@ -218,7 +236,9 @@ v5 test runner with every check green: nothing invoked the broken path.
   - `apps/help`: the article registry's consistency with the
     filesystem (slugs ↔ `page.mdx`, per-category counts), the internal-link,
     UI-label, template and shortcut guards over article text, search and
-    article telemetry, and the schema.org JSON-LD builders.
+    article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
+    `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
+    index entry is unique, so a merge that keeps both sides of one fails a test.
 
 - **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test

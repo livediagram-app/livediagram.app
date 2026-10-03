@@ -108,8 +108,8 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
     return () => window.removeEventListener('keydown', onKey);
   }, [ref]);
 
-  // Announce selection changes: single ("Selected 'Login'"), multi (the
-  // change-log style summary), and clearing. Keyed on a stable string so
+  // Announce selection changes: single ("Selected 'Login'"), multi (a
+  // counted summary), and clearing. Keyed on a stable string so
   // reorderings of the same multi-selection don't re-announce.
   const selectionKey =
     deps.multiSelectedIds.size > 0

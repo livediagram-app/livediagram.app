@@ -1,3 +1,5 @@
+import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
@@ -9,12 +11,14 @@ import type {
   EsSide,
   EventStormingNoteKind,
   FrameHandle,
+  RecognisedShape,
 } from '@livediagram/document';
 import type {
   AlignmentGuide,
   BackgroundPattern,
   DistributionGuide,
   TabKind,
+  EditorMode,
   Element,
   Layer,
   IconPosition,
@@ -27,7 +31,7 @@ import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
-import type { ChangeLogEntry, DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
@@ -72,6 +76,13 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
+  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
+  editorMode?: EditorMode;
+  // The whiteboard dock's model and the board's ink for this appearance
+  // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
+  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
+  whiteboardInk?: string;
   // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
   // undefined: a note dragged in from the palette snaps onto it, and the
   // overlay lights the lane it is landing on.
@@ -228,12 +239,6 @@ export type CanvasProps = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): where it sits. Its two settings ride
-  // highlighterColor / highlighterWidth below, which already crossed this
-  // boundary for the mode banner the panel replaced.
-  highlighterPanelPosition?: { x: number; y: number } | null;
-  onMoveHighlighterPanel?: (x: number, y: number) => void;
-  onResetHighlighterPanel?: () => void;
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
   // is picked. The deck itself rides `slideDeck`.
   slideDeckPanelPosition?: { x: number; y: number } | null;
@@ -304,6 +309,9 @@ export type CanvasProps = {
   onAddSticker: (stickerId: string) => void;
   // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
   onAddTechIcon: (iconId: string) => void;
+  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
+  // middle of the view.
+  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
@@ -333,6 +341,12 @@ export type CanvasProps = {
   // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
   // Present only on an event-storming board with the model configured.
   onDropPhoto?: (file: File) => void;
+  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
+  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
+  onDropFile?: (file: File, at: { x: number; y: number }) => void;
+  // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
+  // Absent where nothing can be placed.
+  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.
@@ -341,19 +355,17 @@ export type CanvasProps = {
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
-  onAddArrow: () => void;
+  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
+  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
+  // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
+  reshapingArrowId?: string | null;
   onBeginFreehand: () => void;
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
+  onBeginHighlighter: () => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
-  // Highlighter banner settings (docs/specs/008-canvas/highlighter.md): the colour + stroke width the
-  // next marker strokes commit with, plus their setters for the banner's
-  // two popovers. Session-local editor state, not a persisted preference.
-  highlighterColor: string;
-  highlighterWidth: number;
-  onSetHighlighterColor: (color: string) => void;
-  onSetHighlighterWidth: (width: number) => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
@@ -379,22 +391,41 @@ export type CanvasProps = {
   // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
   // through recogniseShape and may mint a real shape primitive instead of a
   // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone.
-  onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
+  // preference — the toggle that used to set it is gone. A whiteboard pen's points are its raw
+  // samples, landed as they are with their `ink` (pressures, streamline; lib/live-stroke).
+  onCommitFreehand: (
+    points: { x: number; y: number }[],
+    recogniseShapes: boolean,
+    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke).
+    ink?: { pressures?: number[]; streamline?: number; snapped?: RecognisedShape },
+  ) => void;
   // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // Minimal panel layout preference (docs/specs/007-editor/user-preferences.md). When true, the floating
-  // panels render as dock popovers on desktop too (always on mobile).
-  minimalPanels?: boolean;
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn or continued path lands, an
+  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
+  // drawn shows the style it will land with.
+  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
+  onCommitPathEdit: (
+    id: string,
+    next: { anchors: import('@livediagram/document').PathAnchor[]; closed: boolean },
+    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
+  ) => void;
+  onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
+  // The line or arrow a draw would land if released now, as the canvas would show it
+  // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
+  // is in flight. From lib/drawn-arrow-preview.
+  previewDrawnArrow?: (
+    intent: Extract<PendingDraw, { type: 'arrow' }>,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+  ) => import('@livediagram/document').ArrowElement;
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Palette as a top strip and a menu button
-  // in place of the Explorer. Implies `minimalPanels` for every other panel.
-  // Desktop only; the chrome falls back to the mobile dock below `sm`.
+  // in place of the Explorer. Always on below `sm`, where Floating is not offered.
   toolbarLayout?: boolean;
-  // Toggle the minimal-panel layout. Surfaced in the Palette header
-  // (desktop) as the one-click normal <-> minimal switch.
-  onToggleMinimalPanels?: () => void;
   // Lifted user preferences + a write-through setter, forwarded to the
   // Palette settings popover (docs/specs/007-editor/user-preferences.md). Holds the canvas-behaviour
   // toggles (auto-attach arrows, alignment guides) that the popover edits.
@@ -430,21 +461,14 @@ export type CanvasProps = {
   teamFolders?: TeamFolderRow[];
   teamDocuments?: TeamDocumentRow[];
   documentListLoading: boolean;
-  changeLog: ChangeLogEntry[];
-  changeLogLoading: boolean;
-  activityPosition: { x: number; y: number } | null;
-  activityMinimized: boolean;
   // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
   onResetMap: () => void;
-  onMoveActivity: (x: number, y: number) => void;
-  onToggleActivityMinimized: () => void;
-  onResetActivity: () => void;
   // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
   // field for the render-order helpers. Minimised by default into a
-  // bottom-right dock button, mirroring Activity.
+  // bottom-right dock button.
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
@@ -455,7 +479,7 @@ export type CanvasProps = {
   onToggleLayersMinimized: () => void;
   // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running,
   // so `poll` null means it isn't rendered at all — there is no minimised
-  // state to keep, unlike Layers / Activity.
+  // state to keep, unlike Layers.
   pollPanel: {
     poll: import('@livediagram/api-schema').LivePoll;
     answers: Map<string, string | null>;
@@ -526,15 +550,6 @@ export type CanvasProps = {
   // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
   // (done) or reopen the action in place. Absent for a read-only visitor.
   onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
-  onRevertChange: (entry: ChangeLogEntry) => void;
-  // Hover-to-preview for a row's Revert (docs/specs/012-collaboration/activity-and-audit.md): enter shows the
-  // revert result live on the canvas, leave restores. Nothing commits.
-  onPreviewRevert: (entry: ChangeLogEntry) => void;
-  onClearRevertPreview: () => void;
-  onActivityRowClick: (entry: ChangeLogEntry) => void;
-  onClearActivity?: () => void;
-  saveStatus: import('@/components/chrome/EditorHeader').SaveStatus;
-  savedAt: number | null;
   currentDocumentId: string | null;
   onOpenDocument: (id: string, shareCode?: string) => void;
   onNewDocument: () => void;
@@ -571,7 +586,13 @@ export type CanvasProps = {
   // active. The canvas intercepts it in the capture phase (before element
   // select/drag) and hands the screen coords here to start an erase
   // gesture; the gesture's move/release are tracked by useCanvasEraser.
-  onEraseStart?: (clientX: number, clientY: number) => void;
+  // `frame`: where the canvas sits on screen at the press (the whiteboard's
+  // geometric erase, docs/specs/023-draw-mode/draw-mode.md).
+  onEraseStart?: (
+    clientX: number,
+    clientY: number,
+    frame?: { left: number; top: number; zoom: number },
+  ) => void;
   // Right-click on an element. Forwarded from BoxedElementView's
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.

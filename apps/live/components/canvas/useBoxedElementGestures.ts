@@ -4,12 +4,13 @@ import { opensInlineLabelEditor } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
+import { armPlainClick } from '@/lib/selection-click';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 // The boxed element's press / double-click / context-menu routing,
 // lifted out of BoxedElementView: which gesture wins for this element
 // kind and session state (dot-vote cast, shift multi-select toggle,
-// drag, per-kind double-click actions, the beside-the-element context
+// drag, the plain click on a selected element, per-kind double-click actions, the beside-the-element context
 // menu and its touch long-press twin). The view owns the wrapper node
 // and mounts the returned handlers; every callback comes from its
 // props unchanged.
@@ -19,13 +20,14 @@ export function useBoxedElementGestures({
   isEditing,
   remotelyLocked,
   isAnnotation,
-  multiSelectActive,
   isMultiSelected,
   isSelected,
+  isPaintMode,
   vote,
   votableInVote,
   onCastVote,
   onShiftSelect,
+  onPlainClick,
   onBeginDrag,
   onBeginEdit,
   onEditLink,
@@ -41,6 +43,7 @@ export function useBoxedElementGestures({
   | 'votableInVote'
   | 'onCastVote'
   | 'onShiftSelect'
+  | 'onPlainClick'
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
@@ -54,12 +57,18 @@ export function useBoxedElementGestures({
   // select / drag / edit outright.
   remotelyLocked: boolean;
   isAnnotation: boolean;
-  multiSelectActive: boolean;
   isMultiSelected: boolean;
   // Single-selection state, so a shift press on the selected element can
   // start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md) instead of only toggling.
   isSelected: boolean;
+  // The format painter is armed: a press paints, so it never settles a click.
+  isPaintMode: boolean;
 }) {
+  // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection", "Marquee
+  // box-select"): the host settles a plain click on a selected element (deselect it, or
+  // select a multi-selection member alone), and reselects on a double-click's second press.
+  // A selected table takes a click as a cell pick (TableCellView), never as a click on the table.
+  const settlesClick = !isPaintMode && onPlainClick !== undefined && element.type !== 'table';
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
     // Secondary / middle button: not a select, not a drag. The right button
@@ -96,7 +105,15 @@ export function useBoxedElementGestures({
       y: e.clientY,
       wasSelected: isSelected,
     });
-    if (verdict.pairs) return;
+    if (verdict.pairs) {
+      // A path opens its edit mode on the pair itself: a double-tap brings no reliable dblclick
+      // (docs/specs/023-draw-mode/path-tool.md "Editing").
+      if (element.type === 'path') onBeginEdit(element.id);
+      // A double-click's first click deselected the only selected element; its
+      // second selects it again, as the editor opens.
+      if (!isSelected && settlesClick) onPlainClick?.(element.id);
+      return;
+    }
     // Shift modifier: on an element that is NOT part of the selection it
     // stays the immediate selection toggle (add to the marquee set), the
     // convention every drawing tool uses. On an element that IS selected
@@ -110,29 +127,15 @@ export function useBoxedElementGestures({
         onShiftSelect?.(element.id);
         return;
       }
-      const startX = e.clientX;
-      const startY = e.clientY;
-      const onUp = (ue: PointerEvent) => {
-        window.removeEventListener('pointerup', onUp);
-        // Same engage threshold as the drag machinery (DRAG_ENGAGE_PX).
-        if (Math.hypot(ue.clientX - startX, ue.clientY - startY) <= 4) {
-          onShiftSelect?.(element.id);
-        }
-      };
-      window.addEventListener('pointerup', onUp);
+      armPlainClick(e, () => onShiftSelect?.(element.id));
       onBeginDrag(element.id, 'move', e);
       return;
     }
-    // While a multi-selection is already active, a plain click on a
-    // non-member promotes it into the marquee set instead of
-    // collapsing back to single-select. Lets the user drag a box and
-    // then refine the selection one element at a time without having
-    // to remember the Shift modifier. Clicks on existing members
-    // still start a drag — that's how the whole bundle gets moved.
-    if (multiSelectActive && !isMultiSelected) {
-      onShiftSelect?.(element.id);
-      return;
-    }
+    // A plain press selects and drags. Outside a multi-selection it selects
+    // this element alone (the drag starter drops the set); on a member it
+    // drags the whole set. On an element already selected, a release without
+    // a drag is a click the host settles.
+    if (isSelected && settlesClick) armPlainClick(e, () => onPlainClick?.(element.id));
     onBeginDrag(element.id, 'move', e);
   };
 

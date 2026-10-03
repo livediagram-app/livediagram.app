@@ -111,6 +111,10 @@ function liveDoc(id: string) {
     createdAt: 0,
     ownerName: null,
     ownerColor: null,
+    // No recorded creation intent (docs/specs/013-workspace/default-folders.md).
+    opensIn: null,
+    tabKind: null,
+    templateFamily: null,
   };
 }
 
@@ -444,6 +448,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       name: 'Ada',
       color: '#f00',
       createdAt: 0,
+      pictureUrl: null,
     });
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);

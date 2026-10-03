@@ -6,7 +6,6 @@ import type { useToast } from '@/hooks/ui/useToast';
 import {
   apiListDocuments,
   apiListSharedWith,
-  type ChangeLogEntry,
   type DocumentListItem,
   type SharedWithItem,
   DOCUMENT_LIST_LOAD_SAFETY_MS,
@@ -14,13 +13,12 @@ import {
 
 // Persistence-facing state for the editor: the autosave status pill, the
 // document name (mirrored into the browser tab title), the Explorer's
-// owned + shared document lists, the activity/audit change log, and the
-// transient import-error toast. Plus the two list-refresh helpers the
+// owned + shared document lists, and the transient import-error toast. Plus the two list-refresh helpers the
 // hydration + autosave paths call. A cohesive slice lifted out of
 // useEditorState — same pattern as usePanelLayout / useEditorDialogs.
 //
 // The values render the header pill, footer "Saved X ago", Explorer
-// lists and Activity panel; the setters are written by the autosave,
+// lists; the setters are written by the autosave,
 // hydration/bootstrap and room-op paths via the returned setters.
 export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useToast> }) {
   // Surfaced in the footer (bottom-right of the TabBar). The autosave
@@ -58,11 +56,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // owned-document list and refreshed when the owner opens a new
   // share link in this tab.
   const [sharedDocuments, setSharedDocuments] = useState<SharedWithItem[]>([]);
-  // Per-document audit log surfaced in the Activity Panel. Newest first.
-  // Hydrated from the API for existing documents; appended to on every
-  // commit. See docs/specs/012-collaboration/activity-and-audit.md.
-  const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
-  const [changeLogLoading, setChangeLogLoading] = useState(true);
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this
   // editor understands. Rendered as a transient toast under the
@@ -161,10 +154,6 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     setDocumentListLoading,
     sharedDocuments,
     setSharedDocuments,
-    changeLog,
-    setChangeLog,
-    changeLogLoading,
-    setChangeLogLoading,
     importError,
     setImportError,
     refreshDocumentList,

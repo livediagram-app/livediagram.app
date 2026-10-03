@@ -33,7 +33,7 @@ exhaustive — each file lands in the bucket that owns its concern):
   `LinkCardView`, …), overlays, marquee, layers.
 - `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
   `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
-- `panels/` — side/floating panels (`ActivityPanel`, `CollaboratePanel`,
+- `panels/` — side/floating panels (`CollaboratePanel`,
   `AiPanel`, `GalleryPane`, Explorer surfaces).
 - `palette/` — palette + context-menu tiles/rows.
 - `chrome/` — header, toolbars, docks, tab bar.
@@ -45,7 +45,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `canvas/` — drag, eraser, marquee, element style, keyboard shortcuts.
 - `persistence/` — folders, teams, capabilities, custom themes, share links.
 - `ui/` — confirm, toast, panel layout, escape/click-outside.
-- `collab/` — room connection, presence, change log.
+- `collab/` — room connection, presence.
 
 Rules:
 

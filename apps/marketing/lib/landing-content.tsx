@@ -1,6 +1,5 @@
 import {
   AccountSyncArt,
-  ActivityArt,
   AiAssistArt,
   AlignmentGuidesArt,
   AnimatedIconsArt,
@@ -41,6 +40,7 @@ import {
   LinkCardArt,
   LivingBackgroundArt,
   NotesArt,
+  PanelLayoutArt,
   PresentLocallyArt,
   PresenterNotesArt,
   LockArt,
@@ -48,7 +48,6 @@ import {
   MermaidArt,
   MarqueeArt,
   McpArt,
-  MinimalPanelArt,
   PencilArt,
   MitArt,
   MultiplayerArt,
@@ -140,7 +139,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/collaboration/sharing/',
         title: 'Multiplayer, no setup',
         description:
-          'Share one link and the whole team is on the canvas live, with cursors, presence, comments, and an activity log you can rewind. No seats to buy, no setup.',
+          'Share one link and the whole team is on the canvas live, with cursors, presence, and comments. No seats to buy, no setup.',
       },
       {
         art: <MarkdownImportArt />,
@@ -211,7 +210,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on a Timeline: a day-by-day feed of comments left on your documents, actions assigned to you, teammates joining, invites, and what is about to expire. Anything new since your last visit is marked, and the sidebar carries a count so you can tell without looking.',
+          'The Explorer opens on Home: the documents you return to most, what your teammates commented, edited and assigned you while you were away, and your own Timeline. All activity holds the full feed, and the sidebar carries a count so you can tell without looking.',
       },
       {
         art: <CommentsArt />,
@@ -387,9 +386,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Fifty starter templates',
+        title: 'Sixty-two starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -550,12 +549,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Set the editor to light, dark, or your device setting with one toggle. It starts on your device setting, so a dark machine opens a dark editor. Toolbars, panels, dialogs, and menus all come along, the choice sticks per device, and tabs on the Default theme follow it. The canvas stays crisp either way.',
       },
       {
-        art: <MinimalPanelArt />,
+        art: <PanelLayoutArt />,
         href: '/help/palette/toolbar-layout/',
         group: 'Your workspace',
         title: 'Panels your way',
         description:
-          'Three layouts, one setting. Floating keeps the panels over the canvas. Minimal collapses them into a compact dock with pop-out panels, the same tidy chrome you get on mobile. Toolbar puts the palette in a single strip across the top and the Explorer behind a menu button. The choice sticks per device.',
+          'Two layouts, one setting. Floating keeps the panels over the canvas. Toolbar puts the palette in a single strip across the top and the Explorer behind a menu button, and it is what a phone uses.',
       },
     ],
   },
@@ -631,17 +630,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <UndoRedoArt />,
-        href: '/help/activity-panel/undo/',
+        href: '/help/canvas/undo/',
         title: 'Undo and redo',
         description:
-          'Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. For anything older, the activity log can revert a specific change.',
-      },
-      {
-        art: <ActivityArt />,
-        href: '/help/activity-panel/reverting-changes/',
-        title: 'Activity log with one-click revert',
-        description:
-          'Every tab keeps a running log of who changed what. Hit revert on any entry to undo just that change, even after later edits, without disturbing the rest.',
+          "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo never reaches into anyone else's work.",
       },
       {
         art: <AccountSyncArt />,

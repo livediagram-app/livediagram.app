@@ -2,10 +2,12 @@
 // its own route under /explorer so sections are linkable, the browser
 // back button works, and new sections keep landing as new pages:
 //
-//   timeline → /explorer/timeline        recent  → /explorer/recent
-//   unsorted → /explorer/unsorted        shared  → /explorer/shared
+//   home     → /explorer/home            recent  → /explorer/recent
+//   timeline → /explorer/timeline (All activity)
+//   search   → /explorer/search          shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
+//   shape-libraries → /explorer/shape-libraries
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
 //   trash    → /explorer/trash (Library sidebar row + Settings › Account)
 //
@@ -22,6 +24,8 @@ import type { SelectedNode } from './views';
 
 export function explorerPathFor(node: SelectedNode): string {
   switch (node.kind) {
+    case 'home':
+      return '/explorer/home';
     case 'timeline':
       return '/explorer/timeline';
     case 'activity':
@@ -30,24 +34,20 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/recent';
     case 'all':
       return '/explorer/all';
-    case 'unsorted':
-      return '/explorer/unsorted';
     case 'favourites':
       return '/explorer/favourites';
-    case 'generated':
-      return '/explorer/generated';
     case 'offline':
       return '/explorer/offline';
-    case 'dynamic':
-      return '/explorer/dynamic';
+    case 'search':
+      return '/explorer/search';
     case 'shared':
       return '/explorer/shared';
     case 'gallery':
       return '/explorer/images';
     case 'themes':
       return '/explorer/themes';
-    case 'tokens':
-      return '/explorer/tokens';
+    case 'shape-libraries':
+      return '/explorer/shape-libraries';
     case 'trash':
       return '/explorer/trash';
     case 'invites':
@@ -62,56 +62,58 @@ export function explorerPathFor(node: SelectedNode): string {
 // Inverse: which section a URL shows. `pathname` arrives without the
 // /live basePath (usePathname strips it); trailing slashes from the
 // static export are tolerated. Unknown paths and id-less folder/team
-// URLs fall back to `timeline` — the section /explorer itself redirects
-// to (docs/specs/013-workspace/timeline.md §8.1) — so a mangled link degrades to the default view,
+// URLs fall back to `home`, the section /explorer itself redirects to
+// (docs/specs/013-workspace/timeline.md §8.1), so a mangled link degrades to the default view,
 // never a crash.
 export function selectedFromRoute(pathname: string, search: URLSearchParams): SelectedNode {
   const path = pathname.replace(/\/+$/, '');
   switch (path) {
+    case '/explorer/home':
+      return { kind: 'home' };
     case '/explorer/timeline':
       return { kind: 'timeline' };
     case '/explorer/activity':
       return { kind: 'activity' };
-    // Explicit, not left to the default. Recent used to BE the default,
-    // so it round-tripped for free; now that the default is the
-    // Timeline (docs/specs/013-workspace/timeline.md §8.1), /explorer/recent without its own case
-    // would resolve to the Timeline and the sidebar would highlight
-    // the wrong row.
+    // Explicit, not left to the default: without its own case /explorer/recent would resolve
+    // to Home (docs/specs/013-workspace/timeline.md §8.1) and the sidebar would highlight the
+    // wrong row.
     case '/explorer/recent':
       return { kind: 'recent' };
     case '/explorer/all':
       return { kind: 'all' };
+    // The retired buckets (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
+    // their pages replace themselves with these views, so the sidebar highlights the row at once.
     case '/explorer/unsorted':
-      return { kind: 'unsorted' };
+    case '/explorer/dynamic':
+      return { kind: 'all' };
+    case '/explorer/generated':
+    case '/explorer/search':
+      return { kind: 'search' };
     case '/explorer/favourites':
       return { kind: 'favourites' };
-    case '/explorer/generated':
-      return { kind: 'generated' };
     case '/explorer/offline':
       return { kind: 'offline' };
-    case '/explorer/dynamic':
-      return { kind: 'dynamic' };
     case '/explorer/shared':
       return { kind: 'shared' };
     case '/explorer/images':
       return { kind: 'gallery' };
     case '/explorer/themes':
       return { kind: 'themes' };
-    case '/explorer/tokens':
-      return { kind: 'tokens' };
+    case '/explorer/shape-libraries':
+      return { kind: 'shape-libraries' };
     case '/explorer/trash':
       return { kind: 'trash' };
     case '/explorer/invites':
       return { kind: 'invites' };
     case '/explorer/folder': {
       const id = search.get('id');
-      return id ? { kind: 'folder', id } : { kind: 'timeline' };
+      return id ? { kind: 'folder', id } : { kind: 'home' };
     }
     case '/explorer/team': {
       const id = search.get('id');
-      return id ? { kind: 'team', id } : { kind: 'timeline' };
+      return id ? { kind: 'team', id } : { kind: 'home' };
     }
     default:
-      return { kind: 'timeline' };
+      return { kind: 'home' };
   }
 }

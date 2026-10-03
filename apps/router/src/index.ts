@@ -3,6 +3,7 @@
 // don't exist and each app is a plain HTTP origin to proxy instead.
 // See docs/specs/016-platform/router-app.md.
 
+import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 
@@ -56,7 +57,6 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
-  'activity-panel',
   'canvas',
   'collaboration',
   'contact',
@@ -144,12 +144,21 @@ function markNoIndex(response: Response): Response {
   return tagged;
 }
 
+// The caching rules (docs/specs/016-platform/stale-builds.md "Caching rules"), for every site the
+// router fronts: pages never stale, build assets immutable, a missing asset an honest 404. The api
+// sets its own caching, so its responses pass as they are.
+async function withCachePolicy(request: Request, env: Env): Promise<Response> {
+  const { pathname } = new URL(request.url);
+  const response = await route(request, env);
+  return hasPrefix(pathname, API_PATH) ? response : applyCachePolicy(response, pathname);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (env.DEPLOY_ENV === 'staging') {
-      return markNoIndex(await route(request, env));
+      return markNoIndex(await withCachePolicy(request, env));
     }
-    return route(request, env);
+    return withCachePolicy(request, env);
   },
 } satisfies ExportedHandler<Env>;
 

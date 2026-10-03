@@ -1,215 +1,235 @@
 // Live-session boards built around the Q&A board (docs/specs/012-collaboration/qa-board.md): Lean Coffee
 // and a Town Hall Q&A. Unlike the workshop boards next door these are RUN
 // rather than filled in, so their centre is a live element the room writes
-// into, flanked by the session tools the format calls for (a timer, a
-// keep-going poll, an agenda) and a checklist for what comes out of it.
+// into, flanked by the session tools the format calls for and a checklist for
+// what comes out of it. Every tool sits next to the words that say when to
+// press it, so a first-time facilitator can run the session from the board.
 //
-// The boards start EMPTY on purpose. A session template is used live, and a
-// board seeded with example questions is the first thing a facilitator has to
-// delete in front of the room; the board's own empty state already says what
-// to do.
+// The Q&A boards start EMPTY on purpose. A session template is used live, and
+// a board seeded with example questions is the first thing a facilitator has
+// to delete in front of the room; the board's own empty state already says
+// what to do. The scaffolding around it (steps, panel, agenda) is what carries
+// the worked example instead.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/document';
+import {
+  BUTTON_H,
+  BUTTON_W,
+  GAP,
+  HEAD_GAP,
+  SECTION_H,
+  SUBTITLE_H,
+  TITLE_H,
+  checklist,
+  heading,
+  note,
+  section,
+} from './template-session-parts';
 
-const GAP = 40;
-const TITLE_H = 48;
-const SUBTITLE_H = 28;
-const HEAD_GAP = 28;
-
-// A checklist has no title of its own and grows no taller than its rows, so
-// each one in these boards gets a heading and a hint above it, and is sized
-// to what it holds rather than left as a tall empty panel.
-const CHECK_ROW_H = 40;
-function checklistBlock(
-  x: number,
-  y: number,
-  width: number,
-  title: string,
-  hint: string,
-  items: string[],
-): Element[] {
-  return [
-    {
-      ...createText(x, y),
-      width,
-      height: 32,
-      label: title,
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'left',
-    },
-    {
-      ...createText(x, y + 32),
-      width,
-      height: 44,
-      label: hint,
-      textSize: 'sm',
-      textColor: '#64748b',
-      textAlignX: 'left',
-      textAlignY: 'top',
-    },
-    {
-      ...createShape('checklist', x, y + 84),
-      width,
-      height: items.length * CHECK_ROW_H + 24,
-      checklistItems: items.map((text) => ({ text, done: false })),
-    },
-  ];
-}
-
-// The title + one-line subtitle every session board opens with.
-function heading(x: number, y: number, width: number, title: string, subtitle: string): Element[] {
-  return [
-    { ...createText(x, y), width, height: TITLE_H, label: title, textSize: 'lg', textBold: true },
-    {
-      ...createText(x, y + TITLE_H),
-      width,
-      height: SUBTITLE_H,
-      label: subtitle,
-      textSize: 'sm',
-      textColor: '#64748b',
-    },
-  ];
-}
+// The Town Hall lives in its own module; re-exported so build-template keeps
+// importing both session boards from here.
+export { buildTownHall } from './template-builders-town-hall';
 
 // Lean Coffee: an agenda-less meeting. Everyone proposes topics, the room
-// upvotes them, and the top topic gets a short timebox; when it rings the room
-// votes to keep going or move on. The Q&A board IS that loop (add, upvote,
-// spotlight, Done, next), so it sits in the middle, with the timer and the
-// keep-going poll beside it and a checklist for the takeaways.
+// upvotes them, the top topic gets a short timebox, and when it rings the room
+// votes to keep going or move on. The loop is drawn as four tinted step cards
+// down the left, joined by arrows, with a loop-back arrow from the last step
+// to the discuss step ("next topic"), so the ritual's shape is visible before
+// anyone reads a word. The Topics board (the Q&A board IS that loop: add,
+// upvote, spotlight, Done, next) sits in the middle. On the right, the
+// facilitator's kit is laid out in the order it is pressed: the 8-minute
+// timebox, the keep-going poll, the 4-minute extension. Takeaways close it.
+type Step = { n: string; title: string; hint: string; icon: string; fill: string; ink: string };
+
+const LEAN_COFFEE_STEPS: Step[] = [
+  {
+    n: '1',
+    title: 'Propose',
+    hint: 'Everyone adds topics to the board, one per note.',
+    icon: 'edit',
+    fill: '#e0f2fe',
+    ink: '#0369a1',
+  },
+  {
+    n: '2',
+    title: 'Vote',
+    hint: 'Upvote what you want to talk about. The board sorts itself.',
+    icon: 'thumbs-up',
+    fill: '#ede9fe',
+    ink: '#6d28d9',
+  },
+  {
+    n: '3',
+    title: 'Discuss',
+    hint: 'Spotlight the top topic and start the 8-minute timer.',
+    icon: 'message',
+    fill: '#fef3c7',
+    ink: '#b45309',
+  },
+  {
+    n: '4',
+    title: 'Keep going?',
+    hint: 'When it rings, poll the room: 4 more minutes, or Done, next.',
+    icon: 'refresh-cw',
+    fill: '#dcfce7',
+    ink: '#15803d',
+  },
+];
+
 export function buildLeanCoffee(cx: number, cy: number): Element[] {
-  const stepsW = 300;
-  const boardW = 400;
-  const boardH = 620;
-  const sideW = 300;
-  const totalW = stepsW + boardW + sideW + GAP * 2;
-  const bodyTop = TITLE_H + SUBTITLE_H + HEAD_GAP;
-  const x0 = cx - totalW / 2;
-  const y0 = cy - (bodyTop + boardH) / 2;
-  const top = y0 + bodyTop;
-  const boardX = x0 + stepsW + GAP;
-  const sideX = boardX + boardW + GAP;
-  const buttonW = (sideW - 20) / 2;
-
-  return [
-    ...heading(
-      x0,
-      y0,
-      totalW,
-      'Lean Coffee',
-      'No agenda: the room brings the topics and votes on what to talk about.',
-    ),
-    {
-      ...createText(x0, top),
-      width: stepsW,
-      height: 40,
-      label: 'How it works',
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'left',
-    },
-    {
-      ...createText(x0, top + 48),
-      width: stepsW,
-      height: 300,
-      label: [
-        '1. Everyone adds topics to the board.',
-        '2. Upvote the ones you want to talk about. The most wanted rise to the top.',
-        '3. Discuss the top topic and start the 8-minute timer.',
-        '4. When it rings, run the poll: keep going, or move on?',
-        '5. Done, next brings up the next most-wanted topic.',
-      ].join('\n\n'),
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-    },
-    { ...createShape('qa-board', boardX, top), width: boardW, height: boardH, label: 'Topics' },
-    {
-      ...createShape('session-button', sideX, top),
-      width: buttonW,
-      height: 96,
-      session: { tool: 'timer', minutes: 8 },
-    },
-    {
-      ...createShape('session-button', sideX + buttonW + 20, top),
-      width: buttonW,
-      height: 96,
-      session: { tool: 'poll', question: 'Keep going on this topic?', style: 'yesNo' },
-    },
-    ...checklistBlock(
-      sideX,
-      top + 96 + GAP,
-      sideW,
-      'Takeaways and actions',
-      'One line per topic, with an owner for anything that needs doing.',
-      ['First takeaway', 'Action and owner'],
-    ),
-  ];
-}
-
-// Town Hall Q&A: an all-hands or panel where the audience asks and upvotes
-// questions, often from a view-only link, which the Q&A board allows
-// (docs/specs/012-collaboration/qa-board.md). The agenda keeps the session to time, the timer runs the Q&A
-// block, and anything the panel can't answer live goes on the follow-ups
-// checklist with an owner.
-export function buildTownHall(cx: number, cy: number): Element[] {
+  const stepsW = 320;
+  const stepH = 124;
+  const stepGap = 36;
+  const loopRoom = 64; // right of the step cards, where the loop-back bows out
+  const boardW = 420;
   const sideW = 330;
-  const boardW = 440;
-  const boardH = 680;
-  const followW = 320;
-  const totalW = sideW + boardW + followW + GAP * 2;
-  const bodyTop = TITLE_H + SUBTITLE_H + HEAD_GAP;
+  const bodyH = SECTION_H + 12 + LEAN_COFFEE_STEPS.length * (stepH + stepGap) - stepGap;
+  const totalW = stepsW + loopRoom + GAP + boardW + GAP + sideW;
   const x0 = cx - totalW / 2;
-  const y0 = cy - (bodyTop + boardH) / 2;
-  const top = y0 + bodyTop;
-  const boardX = x0 + sideW + GAP;
-  const followX = boardX + boardW + GAP;
-  const agendaH = 300;
+  const y0 = cy - (TITLE_H + SUBTITLE_H + HEAD_GAP + bodyH) / 2;
+  const top = y0 + TITLE_H + SUBTITLE_H + HEAD_GAP;
+  const boardX = x0 + stepsW + loopRoom + GAP;
+  const sideX = boardX + boardW + GAP;
 
-  return [
+  const elements: Element[] = [
     ...heading(
       x0,
       y0,
       totalW,
-      'Town Hall',
-      'Ask anything, named or anonymous. Upvote the questions you most want answered.',
+      'Lean Coffee · Product crew, Thursday 9:30',
+      650,
+      'emoji-coffee',
+      'No agenda: the room brings the topics, votes on them, and talks the favourites through in short timeboxes.',
     ),
-    {
-      ...createShape('agenda', x0, top),
-      width: sideW,
-      height: agendaH,
-      label: 'Agenda',
-      agendaItems: [
-        { label: 'Welcome', minutes: 5 },
-        { label: 'Updates from the team', minutes: 15 },
-        { label: 'Open Q&A', minutes: 30 },
-        { label: 'Wrap-up', minutes: 5 },
-      ],
-    },
-    // The Q&A block's timer, at the button's own width: stretched to the
-    // agenda's it read as an empty bar.
-    {
-      ...createShape('session-button', x0, top + agendaH + GAP),
-      width: 180,
-      height: 96,
-      session: { tool: 'timer', minutes: 30 },
-    },
-    {
-      ...createShape('qa-board', boardX, top),
-      width: boardW,
-      height: boardH,
-      label: 'Questions for the panel',
-    },
-    ...checklistBlock(
-      followX,
-      top,
-      followW,
-      'Follow-ups',
-      'Anything the panel can’t answer live, with an owner and a date.',
-      ['Question to follow up', 'Owner and date'],
-    ),
+    section(x0, top, stepsW, 'How it flows'),
   ];
+
+  // The loop: four step cards, each a tinted card with a number disc, glyph,
+  // name and one line of how.
+  const stepIds: string[] = [];
+  LEAN_COFFEE_STEPS.forEach((s, i) => {
+    const y = top + SECTION_H + 12 + i * (stepH + stepGap);
+    const card = {
+      ...createShape('square', x0, y),
+      width: stepsW,
+      height: stepH,
+      fillColor: s.fill,
+      strokeColor: s.ink,
+    };
+    stepIds.push(card.id);
+    const disc = 36;
+    elements.push(
+      card,
+      {
+        ...createShape('circle', x0 + 16, y + 16),
+        width: disc,
+        height: disc,
+        label: s.n,
+        textSize: 'md',
+        textBold: true,
+        padding: 'none',
+        fillColor: s.ink,
+        strokeColor: '#ffffff',
+        textColor: '#ffffff',
+        themeLockFill: true,
+      },
+      {
+        ...createText(x0 + 16 + disc + 12, y + 16),
+        width: stepsW - 32 - disc - 12 - 40,
+        height: disc,
+        label: s.title,
+        textSize: 'md',
+        textBold: true,
+        textAlignX: 'left',
+        textColor: s.ink,
+      },
+      {
+        ...createShape('icon', x0 + stepsW - 16 - 32, y + 18),
+        width: 32,
+        height: 32,
+        iconId: s.icon,
+        strokeColor: s.ink,
+      },
+      {
+        ...createText(x0 + 16, y + 16 + disc + 8),
+        width: stepsW - 32,
+        height: stepH - 16 - disc - 8 - 12,
+        label: s.hint,
+        textSize: 'sm',
+        textAlignX: 'left',
+        textAlignY: 'top',
+      },
+    );
+  });
+  for (let i = 0; i < stepIds.length - 1; i++) {
+    elements.push(createPinnedArrow(stepIds[i]!, 's', stepIds[i + 1]!, 'n'));
+  }
+  // Back round the loop: Keep going? returns to Discuss with the next topic.
+  elements.push({
+    ...createPinnedArrow(stepIds[3]!, 'e', stepIds[2]!, 'e'),
+    arrowStyle: 'curved',
+    curveOffset: { dx: 90, dy: 0 },
+    label: 'Next topic',
+  });
+
+  elements.push({
+    ...createShape('qa-board', boardX, top),
+    width: boardW,
+    height: bodyH,
+    label: 'Topics',
+  });
+
+  // The kit, top to bottom in the order it is pressed.
+  const kit = (y: number, button: ReturnType<typeof createShape>, text: string): Element[] => [
+    { ...button, x: sideX, y },
+    note(sideX + BUTTON_W + 16, y, sideW - BUTTON_W - 16, BUTTON_H, text),
+  ];
+  const kitTop = top + SECTION_H + 12;
+  const kitPitch = BUTTON_H + 20;
+  elements.push(
+    section(sideX, top, sideW, 'Facilitator kit'),
+    ...kit(
+      kitTop,
+      {
+        ...createShape('session-button', 0, 0),
+        width: BUTTON_W,
+        height: BUTTON_H,
+        session: { tool: 'timer', minutes: 8 },
+      },
+      'Step 3: start the timebox as the top topic is spotlit.',
+    ),
+    ...kit(
+      kitTop + kitPitch,
+      {
+        ...createShape('session-button', 0, 0),
+        width: BUTTON_W,
+        height: BUTTON_H,
+        session: { tool: 'poll', question: 'Keep going on this topic?', style: 'yesNo' },
+      },
+      'Step 4: when it rings, ask the room.',
+    ),
+    ...kit(
+      kitTop + kitPitch * 2,
+      {
+        ...createShape('session-button', 0, 0),
+        width: BUTTON_W,
+        height: BUTTON_H,
+        session: { tool: 'timer', minutes: 4 },
+      },
+      'A yes buys 4 more minutes. A no: Done, next.',
+    ),
+  );
+  const takeawaysY = kitTop + kitPitch * 3 + 12;
+  elements.push(
+    section(sideX, takeawaysY, sideW, 'Takeaways'),
+    checklist(sideX, takeawaysY + SECTION_H + 8, sideW, [
+      'One line per topic discussed',
+      'Action · owner · by when',
+    ]),
+  );
+
+  return elements;
 }

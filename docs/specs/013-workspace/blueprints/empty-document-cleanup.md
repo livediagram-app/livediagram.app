@@ -32,7 +32,7 @@ Scope, by file:
 | Stale window     | `EMPTY_DOCUMENT_STALE_DAYS` / `EMPTY_DOCUMENT_STALE_MS` | 30 days                                               |
 
 `trash_reason` is NULL for a delete and `'empty'` for the sweep in the database; the wire maps NULL to
-`'deleted'` so a client never sees a null (D8). Banned: "auto-delete", "expired", "abandoned", "inactive"
+`'deleted'` so a client never sees a null (D127). Banned: "auto-delete", "expired", "abandoned", "inactive"
 (that word belongs to share links).
 
 ## Behaviour and state
@@ -54,7 +54,7 @@ Invariants:
   predicate is evaluated inside the write, so a save committed before the statement keeps the document.
 - **C3** Only live rows are selected (`trashed_at IS NULL`); a document already in the Trash keeps its
   first time and reason.
-- **C4** A tab row whose `data` is not valid JSON counts as content (D9): the sweep fails safe.
+- **C4** A tab row whose `data` is not valid JSON counts as content (D128): the sweep fails safe.
 - **C5** The sweep writes nothing else: no child row, no Timeline event, no room broadcast, no email.
 - **C6** Offline Mode records never reach the server, so the sweep cannot see them.
 
@@ -107,7 +107,7 @@ No new route, no new error.
 | `TrashedDocument.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
 Migration 0056 adds the nullable column with no backfill: every row already in the Trash was deleted by a
-person, which NULL means (D7). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
+person, which NULL means (D126). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
 cost every autosave a write to save a once-a-day scan (Performance). Account deletion and purges remove the row with the rest; guest-to-account
 migration moves `owner_id` only. Restore clears the column, so a live row's value is always NULL.
 
@@ -185,11 +185,11 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 | Constant                    | Value | Provenance                                        | Safe range |
 | --------------------------- | ----- | ------------------------------------------------- | ---------- |
 | `EMPTY_DOCUMENT_STALE_DAYS` | 30    | Operator decision                                 | 7 to 90    |
-| `EMPTY_SWEEP_BATCH`         | 500   | One bounded UPDATE; measured scan cost (D10)      | 50 to 1000 |
+| `EMPTY_SWEEP_BATCH`         | 500   | One bounded UPDATE; measured scan cost (D129)     | 50 to 1000 |
 | `EMPTY_SWEEP_MAX_BATCHES`   | 4     | 2,000 moves a run, the purge's order of magnitude | 1 to 20    |
 
 No new environment variable or binding; self-hosting needs only the migration.
 
 ## Defaults ledger
 
-D7 to D10 in [DEFAULTS.md](DEFAULTS.md).
+D126 to D129 in [DEFAULTS.md](DEFAULTS.md).

@@ -210,6 +210,70 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
+// Draw mode (docs/specs/023-draw-mode/draw-mode.md): Whiteboard tabs made, and which of the dock's
+// choices people reach for. Headed by the boards made; the rest are settings.
+export const WHITEBOARDS_CREATED = chart(
+  'Draw',
+  'Created',
+  'Whiteboards Created',
+  'A whiteboard tab made, from the New Document wizard or as a new tab.',
+);
+
+export const WHITEBOARD_PENS = chart(
+  'Draw',
+  'Selected',
+  'Pens Picked',
+  'A whiteboard pen picked up: the main, second or third pen.',
+);
+
+export const WHITEBOARD_SETTINGS = chart(
+  'Draw',
+  'Changed',
+  'Pens, Eraser and Background',
+  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
+);
+
+export const WHITEBOARD_RECOGNITION = chart(
+  'Draw',
+  'Toggled',
+  'Shape Recognition',
+  'Shape recognition switched on or off on a whiteboard.',
+);
+
+// Editor modes (docs/specs/007-editor/editor-modes.md): switches between Diagram and Draw.
+export const EDITOR_MODE_SWITCHES = chart(
+  'Editor',
+  'Changed',
+  'Editor Mode Switches',
+  'A tab switched to Diagram mode or Draw mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw'] },
+);
+
+// The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
+export const TAB_OPENS_IN = chart(
+  'Tab',
+  'Changed',
+  'Opening Modes Set',
+  'A tab set to open in Diagram mode or Draw mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw'] },
+);
+
+export const WHITEBOARDS: MetricStack = {
+  stack: true,
+  title: 'Draw Mode',
+  blurb:
+    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+  members: [
+    WHITEBOARDS_CREATED,
+    EDITOR_MODE_SWITCHES,
+    TAB_OPENS_IN,
+    WHITEBOARD_PENS,
+    WHITEBOARD_SETTINGS,
+    WHITEBOARD_RECOGNITION,
+  ],
+  headline: WHITEBOARDS_CREATED,
+};
+
 // Layers (docs/specs/006-document/layers.md): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
   category: 'Layer',
@@ -357,7 +421,7 @@ export const DOCUMENTS_FILED: Metric = {
   // stack (Taken Offline, Saved to Cloud).
   typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
   title: 'Documents Filed',
-  blurb: 'A document moved into a folder, or back to Unsorted.',
+  blurb: 'A document moved into a folder, or back to the top level.',
 };
 
 export const NOTES: MetricStack = {
@@ -385,10 +449,52 @@ export const ASSIGNED_ACTIONS: MetricStack = {
   headline: ACTIONS_ASSIGNED,
 };
 
+// The Explorer sidebar and the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md):
+// UI·Selected·Sidebar.<Row> / ExplorerPanel.<Row>, one per row activated, by kind (never a name).
+export const EXPLORER_SIDEBAR_PICKS = chart(
+  'UI',
+  'Selected',
+  'Explorer Sidebar Picks',
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Activity, a space or folder, This browser, the Library pages, or Trash.",
+  {
+    typeIn: (type) =>
+      (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
+    rising: 'neutral',
+  },
+);
+
+// The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"):
+// Explorer·Selected·<Facet>, one per filter that gained a value, by kind (never what was picked).
+export const EXPLORER_FILTERS_PICKED = chart(
+  'Explorer',
+  'Selected',
+  'Explorer Filters Used',
+  'A filter reached for in the Explorer, by kind: words, Opens in, Kind, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
+  { rising: 'good' },
+);
+
+// Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
+export const DEFAULT_FOLDERS_SET = chart(
+  'Folder',
+  'Changed',
+  'Default Folders Set',
+  'A folder chosen as where new documents of one kind land: from a folder menu, the New Document wizard or Settings.',
+  { rising: 'good' },
+);
+
+export const DEFAULT_FOLDERS_CLEARED = chart(
+  'Folder',
+  'Cleared',
+  'Default Folders Cleared',
+  'A default folder cleared, so new documents of that kind land in My documents again.',
+  { rising: 'neutral' },
+);
+
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
-  blurb: 'Folders made and nested, tab folders, and tabs and documents filed.',
+  blurb:
+    'Folders made and nested, tab folders, tabs and documents filed, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -398,6 +504,10 @@ export const ORGANISATION: MetricStack = {
     FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,
+    EXPLORER_SIDEBAR_PICKS,
+    EXPLORER_FILTERS_PICKED,
+    DEFAULT_FOLDERS_SET,
+    DEFAULT_FOLDERS_CLEARED,
   ],
 };
 
@@ -484,7 +594,6 @@ const MODE_TITLES: Record<string, string> = {
   Laser: 'Laser',
   Spotlight: 'Spotlight',
   Eraser: 'Eraser',
-  Highlighter: 'Highlighter',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
   AvatarMode: 'Avatar Mode',
@@ -523,14 +632,6 @@ export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on
   rising: 'neutral',
 });
 
-export const MINIMAL_PANELS = chart(
-  'UI',
-  'Toggled',
-  'Minimal Panels',
-  'The panels collapsed to their minimal form, or back.',
-  { types: ['MinimalPanelsOn', 'MinimalPanelsOff'], rising: 'neutral' },
-);
-
 export const PANELS_DOCKED = chart(
   'UI',
   'Moved',
@@ -552,7 +653,7 @@ export const EDITOR_CHROME: MetricStack = {
   title: 'Editor Chrome',
   blurb:
     'Getting around and arranging the workspace: zoom, zen mode, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, MINIMAL_PANELS, PANELS_DOCKED, EXPLORER_VIEW],
+  members: [CANVAS_ZOOMS, ZEN_MODE, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.
@@ -599,12 +700,6 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
-export const ACTIVITY_PANEL_OPENED = opened(
-  'Activity Panel Opened',
-  'The Activity panel expanded from minimised, or opened from the mobile dock. Its mounting also counts in Timeline & Activity.',
-  (t) => t === 'Activity',
-);
-
 export const TOUR_OFFERED = opened(
   'Tour Offered',
   'The welcome tour offered.',
@@ -617,6 +712,14 @@ export const POWER_USER_OFFERED = opened(
   'Power User Mode Offered',
   'The offer shown, after 20 editing days or 50 shortcuts on one device.',
   (t) => t === 'PowerUserOffer',
+);
+
+// The new version prompt (docs/specs/016-platform/new-version-prompt.md); charted with its reloads
+// on the Visitors tab.
+export const NEW_VERSION_OFFERED = opened(
+  'New Version Offered',
+  'An open editor heard the server serves a newer document format, and offered a reload.',
+  (t) => t === 'NewVersionPrompt',
 );
 
 export const SLIDE_DECK_OPENED = opened(
@@ -664,7 +767,6 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
-    ACTIVITY_PANEL_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { view: 'editing', label: 'See Each Dialog on the Editing Tab' },
@@ -720,6 +822,16 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
+// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
+// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
+export const HIGHLIGHTER_SETTINGS = chart(
+  'UI',
+  'Changed',
+  'Highlighter Settings',
+  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
+  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -732,6 +844,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
+    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { view: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },

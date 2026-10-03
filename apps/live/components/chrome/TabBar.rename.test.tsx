@@ -4,34 +4,9 @@
 // `renameActiveNonce` (docs/specs/007-editor/live-app.md).
 
 import { cleanup, render, screen } from '@testing-library/react';
-import type { ComponentProps } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import { afterEach, describe, expect, it } from 'vitest';
 import { TabBar } from './TabBar';
-
-type Props = ComponentProps<typeof TabBar>;
-
-const tabs: Tab[] = [
-  { id: 't1', name: 'First', elements: [] },
-  { id: 't2', name: 'Second', elements: [] },
-];
-
-// Every callback a no-op; only the data the bar renders is real.
-function props(over: Partial<Props>): Props {
-  const base = {
-    tabs,
-    activeId: 't1',
-    activeTabHasContent: false,
-    otherDocuments: [],
-    participantsByTab: new Map(),
-    selfId: 'me',
-    ...over,
-  };
-  return new Proxy(base, {
-    get: (target, key) => (key in target ? target[key as keyof typeof target] : vi.fn()),
-    has: () => true,
-  }) as unknown as Props;
-}
+import { tabBarProps as props } from './TabBar.test-props';
 
 const editing = () => screen.queryByRole('textbox');
 

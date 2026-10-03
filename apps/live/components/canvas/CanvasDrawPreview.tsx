@@ -1,28 +1,31 @@
 import type { RefObject } from 'react';
-import { isSelfDrawingShape } from '@livediagram/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
-import type { PendingDraw } from '@/lib/draw-mode';
+import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
+import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   penPoints: { x: number; y: number }[] | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
-  // The highlighter banner's live settings (docs/specs/008-canvas/highlighter.md), so the in-flight
-  // preview matches what will commit.
-  highlighterColor: string;
-  highlighterWidth: number;
   pendingDraw: PendingDraw | null;
   // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4), when the tile is a
   // stamp rather than a draw-to-size. It replaces the size box entirely.
   stamp: StampGhost | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
+  // The view the wrapper sits in (useCanvasClientOrigin).
+  viewKey: string;
+  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
+  // previews in. Absent elsewhere.
+  whiteboardInk?: string;
 };
 
 // Live previews shown while a draw gesture is in flight: the freehand pen
@@ -33,18 +36,28 @@ export function CanvasDrawPreview({
   penPoints,
   polygonVertices,
   polygonCursor,
-  highlighterColor,
-  highlighterWidth,
   pendingDraw,
   stamp,
   viewportZoom,
   wrapperRef,
+  viewKey,
+  whiteboardInk,
 }: CanvasDrawPreviewProps) {
-  const showsPen = !!penPoints && pendingDraw?.type === 'freehand' && penPoints.length >= 2;
+  // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
+  // "Shapes"): in the board's ink, solid, unfilled.
+  const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
+  // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
+  const showsPen =
+    !isWhiteboardPenIntent(pendingDraw) &&
+    !!penPoints &&
+    pendingDraw?.type === 'freehand' &&
+    penPoints.length >= 2;
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
-  const showsBox = !!drawDrag && !!pendingDraw && !stamp;
+  // A line or an arrow previews as the element it lands, in the canvas layer
+  // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
+  const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
-  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox);
+  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
   return (
     <>
       {stamp && pendingDraw?.type === 'sticky' ? (
@@ -66,12 +79,11 @@ export function CanvasDrawPreview({
           The three simple kinds (square / circle / stadium) bypass
           SVG and use border-radius on the wrapping div, matching
           how BoxedElementView renders them at rest. */}
-      {/* Pen-gesture live preview. While the user is drawing freehand,
-          paint the in-progress polyline as a brand-tinted stroke so
-          they can see what they're sketching. Sits on the same z-[var(--z-chrome)]
-          overlay layer as the draw-to-size box preview. Switches to
-          the committed FreehandSvg after release (the next render
-          tick once the new element lands in `elements`). */}
+      {/* Pen-gesture live preview for the diagram pencil and the highlighter. While the user
+          is drawing freehand, paint the in-progress polyline so they can see what they're
+          sketching. Sits on the same z-[var(--z-chrome)] overlay layer as the draw-to-size box
+          preview. Switches to the committed FreehandSvg after release (the next render tick
+          once the new element lands in `elements`). */}
       {showsPen && penPoints && pendingDraw?.type === 'freehand'
         ? (() => {
             const rect = origin;
@@ -81,17 +93,17 @@ export function CanvasDrawPreview({
             // wrapper rect + zoom so the overlay aligns with the
             // canvas content.
             const d = penPoints
-              .map(
-                (p, i) =>
-                  `${i === 0 ? 'M' : 'L'} ${rect.left + p.x * viewportZoom} ${
-                    rect.top + p.y * viewportZoom
-                  }`,
-              )
+              .map((p, i) => {
+                const x = rect.left + p.x * viewportZoom;
+                const y = rect.top + p.y * viewportZoom;
+                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+              })
               .join(' ');
             // The highlighter variant previews with the committed
-            // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
-            // what you see while dragging is what lands.
-            const isHighlighter = pendingDraw.variant === 'highlighter';
+            // marker recipe (wide translucent, in the arm's colour and width,
+            // docs/specs/008-canvas/highlighter.md) so what you see while dragging is what lands.
+            const marker = pendingDraw.variant === 'highlighter' ? pendingDraw : null;
+            const isHighlighter = marker !== null;
             return (
               <svg
                 aria-hidden
@@ -100,8 +112,8 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke={isHighlighter ? highlighterColor : 'rgb(14, 165, 233)'}
-                  strokeWidth={isHighlighter ? highlighterWidth : 2}
+                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'rgb(14, 165, 233)'}
+                  strokeWidth={marker ? (marker.width ?? HIGHLIGHTER_WIDTH) : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
                   strokeLinecap="round"
@@ -170,33 +182,6 @@ export function CanvasDrawPreview({
         ? (() => {
             const rect = origin;
             if (!rect) return null;
-            // Arrow intent: render the drag as a line from the start
-            // point to the current point, with a small chevron-like
-            // arrowhead near the end so the user sees the direction
-            // they've drawn (the committed arrow defaults to no
-            // arrowheads; this is just preview chrome).
-            if (pendingDraw.type === 'arrow') {
-              const x1 = rect.left + drawDrag.startX * viewportZoom;
-              const y1 = rect.top + drawDrag.startY * viewportZoom;
-              const x2 = rect.left + drawDrag.currentX * viewportZoom;
-              const y2 = rect.top + drawDrag.currentY * viewportZoom;
-              return (
-                <svg
-                  aria-hidden
-                  className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
-                >
-                  <line
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke="rgb(14, 165, 233)"
-                    strokeWidth={1.5}
-                    strokeDasharray="4 3"
-                  />
-                </svg>
-              );
-            }
             // The box the commit will actually mint, not the raw drag: an
             // embed is fitted to 16:9 inside it (docs/specs/009-elements/youtube-video.md), so the outline
             // has to be the fitted one or the user sizes against a rectangle
@@ -248,7 +233,17 @@ export function CanvasDrawPreview({
                   height: heightPx,
                 }}
               >
-                {usesSvg && pendingDraw.type === 'shape' ? (
+                {pendingDraw.type === 'shape' && pendingDraw.board ? (
+                  <PenShapePreview
+                    kind={pendingDraw.kind}
+                    colour={inkOf(null)}
+                    widthPx={BORDER_STROKE_PX[DEFAULT_BORDER_STROKE]}
+                    usesSvg={usesSvg}
+                    radius={radius}
+                    zoom={viewportZoom}
+                    aspect={heightPx > 0 ? widthPx / heightPx : 1}
+                  />
+                ) : usesSvg && pendingDraw.type === 'shape' ? (
                   <ShapeSvgOverlay
                     shape={pendingDraw.kind}
                     fill="rgba(14, 165, 233, 0.10)"

@@ -11,7 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import { upgradeStores } from './legacy-offline-store';
-import type { ChangeLogEntry, LiveDoc, DocumentSummary, TabSummary } from '@livediagram/api-schema';
+import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { DocumentTrashedError } from '../document-trashed';
@@ -34,10 +34,6 @@ export type OfflineDocumentRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Activity / change log, newest first (docs/specs/006-document/offline-mode.md: local-only, kept in the
-  // document record). Optional so records written before the field existed
-  // stay valid. Managed by ./offline-change-log.ts.
-  log?: ChangeLogEntry[];
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
   // decks for the same reason they get everything else: Offline Mode is the
   // whole product minus the server, not a reduced one. Optional so records
@@ -52,6 +48,18 @@ export type OfflineDocumentRecord = {
   // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
+  // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
+  // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
+  opens?: LocalOpens;
+};
+
+// A local document's opens, counted like the server's (once per UTC day, the same frecency key).
+export type LocalOpens = {
+  openDays: number;
+  // `YYYY-MM-DD`, UTC: the day the last counted open fell on.
+  lastOpenDay: string;
+  lastOpenedAt: number;
+  frecencyKey: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -75,6 +83,10 @@ export function tabToSummary(
   return summary;
 }
 
+// No creation intent is recorded in the browser: unknown, never Diagram
+// (docs/specs/013-workspace/default-folders.md "Recorded intent").
+const UNKNOWN_INTENT: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
+
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
 // provenance, no owner join) — offline documents are private by construction.
@@ -94,11 +106,12 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     createdAt: rec.createdAt,
     ownerName: null,
     ownerColor: null,
+    ...UNKNOWN_INTENT,
   };
 }
 
 // Project a record into a list row (drops tab bodies).
-function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
+export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,
@@ -108,8 +121,10 @@ function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     folderId: rec.folderId,
     teamId: null,
     source: null,
+    ...UNKNOWN_INTENT,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
+    empty: (rec.tabs[0]?.elements.length ?? 0) === 0,
   };
 }
 
@@ -294,8 +309,8 @@ function forgetId(id: string): void {
 // ---------------------------------------------------------------------------
 
 // Every mutation below rewrites the WHOLE record after reading it, so two
-// concurrent ops (a tab autosave racing a change-log append, or a revert's
-// log wipe racing the reverted tab's save) could each read the same snapshot
+// concurrent ops (two tab autosaves, or a tab save racing a rename) could
+// each read the same snapshot
 // and the later put would silently drop the earlier write. One module-level
 // chain serialises all read-modify-write ops; each is a couple of IndexedDB
 // round-trips, so queueing adds no perceptible latency.
@@ -336,16 +351,19 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
   return tab ? migrateStoredTab(tab) : null;
 }
 
+// `extra`: a document's own created and last-modified dates (an imported board,
+// docs/specs/015-api/api.md "Document dates"), absent now; the personal folder it is filed in.
 export async function offlineCreateDocument(
   d: { id: string; name: string; tabs?: Tab[] },
   now: number,
+  extra: { createdAt?: number; savedAt?: number; folderId?: string | null } = {},
 ): Promise<LiveDoc> {
   const rec: OfflineDocumentRecord = {
     id: d.id,
     name: d.name,
-    folderId: null,
-    createdAt: now,
-    savedAt: now,
+    folderId: extra.folderId ?? null,
+    createdAt: extra.createdAt ?? now,
+    savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
   };
   await backend.put(rec);

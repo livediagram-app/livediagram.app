@@ -36,6 +36,9 @@ export function SettingsRowShell({
   // choice) sits BESIDE the label; a whole-row switch wraps the lot, and
   // passes its own button in as `wrapper` instead.
   wrapper,
+  // The description with inline content (a link), where the plain text of
+  // `row.description` is not enough. `row.description` stays the searchable text.
+  descriptionContent,
 }: {
   // Only the presentational half is read here (label, description, help,
   // illustration), so every row kind satisfies it.
@@ -51,6 +54,7 @@ export function SettingsRowShell({
   illustrationDisabled?: readonly string[];
   notice?: ReactNode;
   wrapper?: (children: ReactNode) => ReactNode;
+  descriptionContent?: ReactNode;
 }) {
   const label = (
     <span className="min-w-0 text-sm font-medium text-slate-800 dark:text-slate-100">
@@ -96,7 +100,7 @@ export function SettingsRowShell({
         id={`${row.key}-description`}
         className="mt-1.5 px-3.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400"
       >
-        {row.description}
+        {descriptionContent ?? row.description}
         {row.helpArticle ? (
           <>
             {' '}

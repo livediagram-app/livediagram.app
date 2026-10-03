@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Privacy Policy" description="What the hosted livediagram service does, and does not do, with your data." categoryTitle="Policies" categorySlug="policies">
 
-_Last updated: 29 September 2026._
+_Last updated: 1 October 2026._
 
 livediagram is built to need as little of your data as possible, and the whole codebase is public so you can check that for yourself. This policy explains what the hosted service at **livediagram.app** does with your data. It sits alongside our [Terms of Service](/help/policies/terms/). If you self-host livediagram, you are responsible for your own deployment and this policy does not apply to it.
 
@@ -20,9 +20,22 @@ livediagram is built to need as little of your data as possible, and the whole c
 - **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
 - **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
 - **Account details, if you sign in.** Sign-in is handled by our authentication provider, Clerk. If you create an account we receive your email address, and, if you choose Google sign-in, basic profile details from Google. We use these to identify your account and to send you the account and onboarding emails described under **Emails we send** below.
+- **Your profile picture's address, if you sign in.** Your profile picture is a picture you uploaded to your account, or your Google picture. We store only its web address (hosted by Clerk), never the image, so we can show it to the people you collaborate with who are signed in: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials. Turn it off in **Settings > Account > Show My Profile Picture**; it is removed when you delete your account.
 - **API tokens, if you create them.** If you create an [API token](/help/account-and-data/api-tokens/) to call the API from your own scripts, we store a one-way hash of it (never the token itself), its name, and a last-used timestamp, so the token can be verified and you can see when it was last active. Tokens are a signed-in-only feature, expire after six months, and are deleted when you delete your account.
 - **Connecting an AI tool, if you do.** If you connect an AI tool via our [MCP server](/help/account-and-data/connect-ai-mcp/), we briefly store the state needed to complete the connection handshake (the app's registration plus short-lived authorization sessions and codes), which expires automatically within minutes. The connection itself is an API token, covered above, and you can revoke it any time.
+- **Google Drive, if you connect it.** If you [mirror your documents to Google Drive](/help/account-and-data/google-drive/), we store an encrypted refresh token from Google, the ids of the files and folders livediagram created in your Drive, and the state livediagram last wrote to them. See **Google user data** below.
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
+
+## Google user data
+
+If you connect Google Drive, livediagram asks Google for access to **only the files it creates, or that you open with it** (the `drive.file` scope), and to appear in Drive's **Open with** menu (`drive.install`). It cannot see any other file in your Drive.
+
+- **What we read and write.** Your browser writes your documents to the `.livediagram` files in your Drive, reads the names, folders and bin state of those files to keep livediagram in step, and reads a file you choose to open or import with livediagram. The traffic goes straight from your browser to Google; the contents of your Drive never pass through our servers.
+- **What we store.** An encrypted refresh token (so the mirror keeps working without asking you every hour), the ids of the files and folders livediagram created, and the state it last wrote to them. The refresh token is never shown to anyone, including you.
+- **What we never do.** We use Google user data only to provide the mirror you asked for. We do not use it for advertising, we do not sell it, we do not use it to train AI models, and nobody at livediagram reads it unless you ask us to for support, it is needed for security, or the law requires it.
+- **Disconnecting.** Disconnecting, or deleting your account, revokes livediagram's access at Google and deletes the token and the file ids we stored. Your files stay in your Drive. You can also remove livediagram's access at any time from your Google account's security settings.
+
+livediagram's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
 ## What we do not do
 
@@ -53,9 +66,12 @@ We rely on a small number of providers to run the service:
 
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (only if you sign in).
+- **Google**, for the Google Drive mirror (only if you connect it); your browser talks to Google directly.
 - **Resend**, for delivering the account and onboarding emails described above (only if you have an account).
 
 These providers process data on our behalf so that we can run the service.
+
+One more service is involved only when you use it: **Openverse**, run by the WordPress Foundation, answers searches in the image picker's Search tab. Your browser sends your search words to Openverse directly, so Openverse sees them and your IP address under its own privacy policy; our servers never see the search. A picture you pick is then stored like any image you upload.
 
 ## Sharing and visibility
 

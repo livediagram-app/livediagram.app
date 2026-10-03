@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
 import type { SettingsCategoryId } from './settings-icons';
 
@@ -11,8 +11,12 @@ import { SettingsShortcutsRow } from './SettingsShortcutsRow';
 import { SettingsShortcutListRow } from './SettingsShortcutListRow';
 import { SettingsSliderRow } from './SettingsSliderRow';
 import { SettingsNoteRow } from './SettingsNoteRow';
+import { SettingsLinkRow } from './SettingsLinkRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
+import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
+import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
+import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
@@ -20,6 +24,7 @@ import { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 import type { AppearanceSetting } from '@livediagram/ui';
 import {
   choiceTelemetryType,
+  settingsSectionId,
   type SettingsAppearanceRowSpec,
   type SettingsCategorySpec,
   type SettingsRowSpec,
@@ -36,7 +41,10 @@ export function SettingsCategoryPane({
   onChange,
   focusRowKey = null,
   onGoToRow,
+  onOpenCategory,
   offeredRowKeys,
+  focusSectionId = null,
+  owner = null,
 }: {
   category: SettingsCategorySpec;
   settings: UserPreferences;
@@ -45,10 +53,23 @@ export function SettingsCategoryPane({
   focusRowKey?: string | null;
   // Go to a row, possibly in another category (the power user preset readout).
   onGoToRow?: (categoryId: SettingsCategoryId, rowKey: string) => void;
+  // Open another category in place, for a link row.
+  onOpenCategory?: (categoryId: SettingsCategoryId) => void;
   // Row keys the dialog offers right now, across every category.
   offeredRowKeys?: ReadonlySet<string>;
+  // Section to scroll to and focus the heading of (settingsSectionId).
+  focusSectionId?: string | null;
+  // Who is reading: the Documents rows list their folders (docs/specs/013-workspace/default-folders.md).
+  owner?: { ownerId: string; clerkUserId: string | null } | null;
 }) {
   const isMobile = useIsMobileViewport();
+  // The folders the Documents rows choose from and name, fetched only for a pane that shows them.
+  const showsDefaults = category.rows.some((r) => r.kind === 'placementDefault');
+  const placementLists = usePlacementOptions({
+    selfId: owner?.ownerId ?? 'pending',
+    clerkUserId: owner?.clerkUserId ?? null,
+    skip: useCallback(() => !showsDefaults, [showsDefaults]),
+  });
   // Group CONSECUTIVE rows by section, so a category holding several
   // clusters (Editor's Power User rows) gets a heading
   // per cluster instead of one undifferentiated list. Consecutive rather than
@@ -69,11 +90,16 @@ export function SettingsCategoryPane({
   return (
     <div className="flex flex-col gap-6">
       {groups.map((group, groupIndex) => (
-        <section key={group.section ?? groupIndex} className="flex flex-col gap-5">
+        <section
+          key={group.section ?? groupIndex}
+          className="flex flex-col gap-5"
+          {...(group.section ? { 'data-settings-section': settingsSectionId(group.section) } : {})}
+        >
           {group.section ? (
-            <h3 className="-mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
-              {group.section}
-            </h3>
+            <SectionHeading
+              name={group.section}
+              focused={settingsSectionId(group.section) === focusSectionId}
+            />
           ) : null}
           {group.rows.map((row) => {
             const children = childrenOf(row);
@@ -159,6 +185,8 @@ export function SettingsCategoryPane({
         return (
           <SettingsSliderRow
             row={row}
+            disabled={inert}
+            notice={inert ? row.desktopOnly : undefined}
             value={row.read(settings)}
             onCommit={(next) => {
               track(row.event.category, 'Changed', row.event.changed);
@@ -170,6 +198,8 @@ export function SettingsCategoryPane({
         return <AppearanceRow row={row} />;
       case 'tokens':
         return <SettingsTokensRow row={row} />;
+      case 'link':
+        return <SettingsLinkRow row={row} onOpenCategory={onOpenCategory} />;
       case 'note':
         return <SettingsNoteRow row={row} />;
       case 'shortcuts':
@@ -182,6 +212,10 @@ export function SettingsCategoryPane({
         return <SettingsDeleteAccountRow row={row} />;
       case 'trash':
         return <SettingsTrashRow row={row} />;
+      case 'cloudSync':
+        return <SettingsCloudSyncRow row={row} />;
+      case 'placementDefault':
+        return <SettingsPlacementDefaultRow row={row} lists={placementLists} />;
       case 'presetSummary':
         return (
           <SettingsPresetSummaryRow
@@ -193,6 +227,36 @@ export function SettingsCategoryPane({
         );
     }
   }
+}
+
+// A section's heading. When Settings was opened on this section, it scrolls
+// to the top of the pane and takes focus, so a keyboard or screen reader user
+// lands on it too (docs/specs/007-editor/user-preferences.md).
+function SectionHeading({ name, focused }: { name: string; focused: boolean }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (!focused) return;
+    // A frame later: the dialog's focus trap runs after this effect, focuses
+    // its first control and remembers what to hand focus back to on close.
+    const frame = requestAnimationFrame(() => {
+      const heading = ref.current;
+      if (!heading) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      heading.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+      heading.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focused]);
+  return (
+    <h3
+      ref={ref}
+      id={`settings-section-${settingsSectionId(name)}`}
+      tabIndex={-1}
+      className="-mb-1.5 scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
+    >
+      {name}
+    </h3>
+  );
 }
 
 // Rings the row a search result pointed at, and scrolls it into view. One

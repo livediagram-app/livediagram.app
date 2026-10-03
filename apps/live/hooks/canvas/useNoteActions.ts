@@ -18,7 +18,7 @@ import { track } from '@/lib/telemetry';
 // The note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md): add the next note
 // beside one (Phase 7), and change a note's kind. Each is ONE undoable step
 // through the ordinary commit choke point, so layer stamping, board-kind
-// stamping, the activity log, autosave and realtime all happen exactly as they
+// stamping, autosave and realtime all happen exactly as they
 // do for any other change.
 //
 // The note is minted through the ONE builder every other entry point uses, so

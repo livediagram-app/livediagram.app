@@ -4,9 +4,12 @@
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
+import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-opens';
 import { thumbnailKey } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
+import { disconnectDrive } from '../drive/disconnect';
+import { uniqueLibraryName } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
@@ -30,7 +33,7 @@ const R2_DELETE_CHUNK = 1000;
 // D1 wipe + bulk-delete from R2 + then drop the rows.
 //
 // Returns `{ documents, folders, images }` change counts for the
-// audit log. Idempotent: re-running with the same owner id is a
+// caller's log line. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
   env: Env,
@@ -98,6 +101,8 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
   // custom_themes (docs/specs/011-theme/custom-themes.md): this owner's saved themes go too.
   await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
+  // shape_libraries (docs/specs/013-workspace/shape-libraries.md): this owner's libraries go too.
+  await env.DB.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
   // api_tokens (docs/specs/015-api/public-api-and-tokens.md): no API credential outlives the account.
   await env.DB.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
   // email_lifecycle (docs/specs/014-identity/transactional-email.md): drop the onboarding-email row so the address
@@ -105,6 +110,10 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
+  // at Google and drop the connection and every mirror row. The Drive files are
+  // the user's and stay.
+  await disconnectDrive(env, ownerId);
   // shared_with rows POINTING AT this owner's documents die with the
   // documents (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's documents are keyed on their owner_id and
@@ -114,6 +123,8 @@ export async function deleteAccount(
   // shared_with. Stars on this owner's documents cascade; the stars they put on
   // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
+  // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
+  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
@@ -121,6 +132,10 @@ export async function deleteAccount(
   // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
   // rows themselves went with the tabs documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
+  // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
+  // people's opens of this owner's documents went with the documents (foreign key cascade);
+  // the document_opened events went with deleteTimelineForOwner above.
+  await deleteDocumentOpensForOwner(env, ownerId);
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
@@ -157,7 +172,7 @@ export async function deleteAccount(
 // stops showing up there, which is the right outcome (the Clerk
 // twin is identical bytes anyway).
 //
-// Other tables (`change_log`, `share_links`, `tabs`) don't carry
+// Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.
@@ -213,6 +228,18 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(fromOwnerId).run();
+  // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
+  // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
+  // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
+     SELECT ?, default_key, folder_id, updated_at
+     FROM placement_defaults
+     WHERE owner_id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(fromOwnerId).run();
   // participants: the guest's name and colour. The id IS the owner id, so an
   // account that already has a row keeps it (a signed-in name comes from Clerk
   // anyway); the guest row goes, since nothing reads a retired guest id.
@@ -237,6 +264,10 @@ export async function migrateOwnerId(
   // identity is recorded as an alias of the new one and the Activity
   // read matches both. Cheaper and safer than touching every tab.
   await recordOwnerAlias(env, toOwnerId, fromOwnerId);
+  // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): the guest's opens follow
+  // them, and a document opened under both identities keeps both histories.
+  const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId, Date.now());
+  console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
   // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays
@@ -253,10 +284,42 @@ export async function migrateOwnerId(
   await env.DB.prepare('UPDATE custom_themes SET owner_id = ? WHERE owner_id = ?')
     .bind(toOwnerId, fromOwnerId)
     .run();
+  await migrateShapeLibraries(env, fromOwnerId, toOwnerId);
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
     shared: sharedInsertRes.meta.changes ?? 0,
     images: imagesRes.meta.changes ?? 0,
   };
+}
+
+// shape_libraries (docs/specs/013-workspace/shape-libraries.md): the guest's libraries move onto the
+// account; one whose name the account already uses takes the next free " (n)" first, so the account
+// never holds two libraries of one name. The cap applies to creates, never to this move.
+async function migrateShapeLibraries(env: Env, fromOwnerId: string, toOwnerId: string) {
+  const names = async (owner: string) =>
+    (
+      await env.DB.prepare(
+        'SELECT id, name FROM shape_libraries WHERE owner_id = ? ORDER BY created_at',
+      )
+        .bind(owner)
+        .all<{ id: string; name: string }>()
+    ).results ?? [];
+  const guest = await names(fromOwnerId);
+  if (guest.length === 0) return;
+  const taken = (await names(toOwnerId)).map((r) => r.name);
+  let renamed = 0;
+  for (const row of guest) {
+    const name = uniqueLibraryName(row.name, taken);
+    taken.push(name);
+    if (name === row.name) continue;
+    renamed++;
+    await env.DB.prepare('UPDATE shape_libraries SET name = ? WHERE id = ?')
+      .bind(name, row.id)
+      .run();
+  }
+  await env.DB.prepare('UPDATE shape_libraries SET owner_id = ? WHERE owner_id = ?')
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  console.info('[shape-libraries] migrated', { moved: guest.length, renamed });
 }

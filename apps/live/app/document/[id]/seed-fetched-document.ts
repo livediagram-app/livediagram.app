@@ -14,10 +14,12 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // eager first-tab fetch, the autosave "last saved" mirror, the document
 // name, the #t=<id> hash tab pick, and the shareable / team / owner
 // fields. The branches keep what genuinely differs — isOwner / session
-// role / share-code bookkeeping, the change-log fetch, and the
-// identity-prompt rules.
+// role / share-code bookkeeping and the identity-prompt rules.
 export function makeSeedFetchedDocument(deps: {
   activeId: string;
+  // Whether this editor's first-tab read is an open of the document, for the reader's Home
+  // (docs/specs/013-workspace/explorer-home.md "Opens"): true in the editor, false in an embed.
+  recordOpen: boolean;
   resetTabs: Dispatch<SetStateAction<Tab[]>>;
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   lastSavedNameRef: MutableRefObject<string>;
@@ -37,6 +39,7 @@ export function makeSeedFetchedDocument(deps: {
 }) {
   const {
     activeId,
+    recordOpen,
     resetTabs,
     lastSavedTabsRef,
     lastSavedNameRef,
@@ -73,7 +76,9 @@ export function makeSeedFetchedDocument(deps: {
     const firstId = firstTabToLoad(fetched.tabs, tabScope);
     const firstIndex = placeholderTabs.findIndex((t) => t.id === firstId);
     if (firstId && firstIndex >= 0) {
-      const first = await apiLoadTab(selfId, fetched.id, firstId, tabShareCode).catch(() => null);
+      const first = await apiLoadTab(selfId, fetched.id, firstId, tabShareCode, {
+        open: recordOpen,
+      }).catch(() => null);
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
       // a request that raced ahead of the Clerk token / session

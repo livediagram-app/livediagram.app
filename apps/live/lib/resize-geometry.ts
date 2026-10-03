@@ -23,10 +23,11 @@ export type ShapeBounds = Rect;
 // inverted the zoom) into a fresh ShapeBounds for the given drag mode.
 //
 // `move` translates the shape uniformly. Each `resize-*` mode pulls
-// the matching corner; `aspectLocked` collapses the two-axis input
-// onto a single dominant axis (the one whose delta is larger) so the
-// width:height ratio survives the gesture. Both branches floor each
-// side at `MIN_SIZE` so a shape can't be dragged down to a pinprick.
+// the matching corner or edge, flooring each side at `MIN_SIZE` so a
+// shape can't be dragged down to a pinprick. `aspectLocked` (the
+// element's lock, a locked member of a selection, or Shift) hands the
+// gesture to `constrainedBounds`, which keeps the width:height ratio
+// from every handle.
 export function nextBounds(
   start: ShapeBounds,
   mode: DragMode,
@@ -36,27 +37,16 @@ export function nextBounds(
 ): ShapeBounds {
   const { x, y, width, height } = start;
   if (mode === 'move') return { x: x + dx, y: y + dy, width, height };
+  if (aspectLocked) return constrainedBounds(start, mode, dx, dy);
 
-  const freeForCorner = (signX: number, signY: number) => {
+  const compute = (signX: number, signY: number) => {
     const newW = Math.max(MIN_SIZE, width + signX * dx);
     const newH = Math.max(MIN_SIZE, height + signY * dy);
     return { newW, newH };
   };
 
-  const lockedForCorner = (signX: number, signY: number) => {
-    const candW = Math.max(MIN_SIZE, width + signX * dx);
-    const candH = Math.max(MIN_SIZE, height + signY * dy);
-    const ratio = width / height;
-    const useW = Math.abs(candW - width) >= Math.abs(candH - height);
-    const newW = useW ? candW : candH * ratio;
-    const newH = useW ? candW / ratio : candH;
-    return { newW: Math.max(MIN_SIZE, newW), newH: Math.max(MIN_SIZE, newH) };
-  };
-
-  const compute = aspectLocked ? lockedForCorner : freeForCorner;
-
   switch (mode) {
-    // Edge handles resize a single axis only (aspect-lock doesn't apply).
+    // Unconstrained, an edge handle resizes its own axis only.
     case 'resize-e':
       return { x, y, width: Math.max(MIN_SIZE, width + dx), height };
     case 'resize-w': {
@@ -88,14 +78,114 @@ export function nextBounds(
   }
 }
 
+// The axis a constrained resize is led by: the edge handle's own axis, or
+// for a corner the axis the pointer has moved further along (in canvas
+// px). The other side follows from the ratio.
+export type ResizeAxis = 'x' | 'y';
+export function leadingAxis(mode: Exclude<DragMode, 'move'>, dx: number, dy: number): ResizeAxis {
+  if (mode === 'resize-e' || mode === 'resize-w') return 'x';
+  if (mode === 'resize-n' || mode === 'resize-s') return 'y';
+  return Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+}
+
+// The smallest uniform scale a constrained resize may reach: the shorter
+// side stops at MIN_SIZE, and a side that began below MIN_SIZE (a thin
+// stroke) never shrinks further, so the ratio holds all the way down.
+export function minUniformScale({ width, height }: { width: number; height: number }): number {
+  const floorFor = (side: number) => (side >= MIN_SIZE ? MIN_SIZE / side : 1);
+  return Math.max(floorFor(width), floorFor(height));
+}
+
+// Signs of the dragged side per handle: +1 when it moves right / down.
+const HANDLE_SIGN: Record<ResizeSnapMode, { x: number; y: number }> = {
+  n: { x: 0, y: -1 },
+  s: { x: 0, y: 1 },
+  e: { x: 1, y: 0 },
+  w: { x: -1, y: 0 },
+  ne: { x: 1, y: -1 },
+  nw: { x: -1, y: -1 },
+  se: { x: 1, y: 1 },
+  sw: { x: -1, y: 1 },
+};
+
+// Lay a new size out around a resize's anchor: the corner opposite a
+// corner handle, or for an edge handle the opposite edge, with the
+// other axis centred on it (the Figma convention).
+function anchoredBounds(
+  start: ShapeBounds,
+  handle: ResizeSnapMode,
+  width: number,
+  height: number,
+): ShapeBounds {
+  const sign = HANDLE_SIGN[handle];
+  const x =
+    sign.x > 0
+      ? start.x
+      : sign.x < 0
+        ? start.x + start.width - width
+        : start.x + (start.width - width) / 2;
+  const y =
+    sign.y > 0
+      ? start.y
+      : sign.y < 0
+        ? start.y + start.height - height
+        : start.y + (start.height - height) / 2;
+  return { x, y, width, height };
+}
+
+// A resize that keeps the start ratio (docs/specs/008-canvas/canvas-and-palette.md
+// "Resize"), from any handle: the leading axis sets one uniform scale,
+// floored at `minScale` (by default where the shorter side meets
+// MIN_SIZE), and the anchor stays put. A degenerate start box has no ratio
+// to keep and resizes freely.
+export function constrainedBounds(
+  start: ShapeBounds,
+  mode: Exclude<DragMode, 'move'>,
+  dx: number,
+  dy: number,
+  minScale: number = minUniformScale(start),
+): ShapeBounds {
+  if (start.width <= 0 || start.height <= 0) return nextBounds(start, mode, dx, dy, false);
+  const handle = snapModeOf(mode) as ResizeSnapMode;
+  const sign = HANDLE_SIGN[handle];
+  const scale =
+    leadingAxis(mode, dx, dy) === 'x'
+      ? (start.width + sign.x * dx) / start.width
+      : (start.height + sign.y * dy) / start.height;
+  const s = Math.max(minScale, scale);
+  return anchoredBounds(start, handle, start.width * s, start.height * s);
+}
+
+// Snap a constrained box on its leading axis only, then re-derive the other
+// side from the box's ratio around the same anchor, so the snap never bends
+// the ratio. `snapEdge` snaps the one dragged edge it is given (a
+// `snapResizeBounds` call in single-edge mode); `minScale` floors the
+// re-derived scale relative to `candidate`.
+export function snapLeadingAxis(
+  candidate: ShapeBounds,
+  handle: ResizeSnapMode,
+  lead: ResizeAxis,
+  snapEdge: (candidate: ShapeBounds, edge: 'n' | 's' | 'e' | 'w') => ShapeBounds,
+  minScale = 0,
+): ShapeBounds {
+  if (candidate.width <= 0 || candidate.height <= 0) return candidate;
+  const sign = HANDLE_SIGN[handle];
+  const edge = lead === 'x' ? (sign.x < 0 ? 'w' : 'e') : sign.y < 0 ? 'n' : 's';
+  const snapped = snapEdge(candidate, edge);
+  const scale = lead === 'x' ? snapped.width / candidate.width : snapped.height / candidate.height;
+  const s = Math.max(minScale, scale);
+  return anchoredBounds(candidate, handle, candidate.width * s, candidate.height * s);
+}
+
 // Group-resize math: given the union bounding box at drag start,
 // the same union after `nextBounds` runs against the drag, and the
 // corner the user is pulling, scale a single member's start bounds
 // proportionally around the corner opposite the drag handle (the
 // fixed anchor). Width / height are floored at MIN_SIZE so tiny
 // members inside a large union don't collapse when sx / sy round
-// down hard. Pure function (no React, no element types), so it
-// stays trivially testable.
+// down hard; a side that began below MIN_SIZE is floored where it
+// began instead, never bumped up. Pure function (no React, no element
+// types), so it stays trivially testable.
 export function unionResizeMember(
   member: ShapeBounds,
   unionStart: ShapeBounds,
@@ -116,8 +206,8 @@ export function unionResizeMember(
   return {
     x: anchorX + (member.x - anchorX) * sx,
     y: anchorY + (member.y - anchorY) * sy,
-    width: Math.max(MIN_SIZE, member.width * sx),
-    height: Math.max(MIN_SIZE, member.height * sy),
+    width: Math.max(Math.min(MIN_SIZE, member.width), member.width * sx),
+    height: Math.max(Math.min(MIN_SIZE, member.height), member.height * sy),
   };
 }
 

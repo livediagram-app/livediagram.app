@@ -20,7 +20,6 @@ export type {
   ParticipantPresence,
   ShareRole,
   ShareLink as ShareLinkDTO,
-  ChangeLogEntry as ChangeLogEntryDTO,
   ServerMessage,
   ClientMessage,
 } from '@livediagram/api-schema';
@@ -30,6 +29,10 @@ export type {
 export type Env = {
   DB: D1Database;
   DOCUMENT_ROOM: DurableObjectNamespace;
+  // The live build id: the deploy's commit, the same one baked into the editor build as
+  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
+  // sets neither) leaves it off the server release signal.
+  BUILD_ID?: string;
   // Clerk JWKS URL: when set, the request handler verifies Bearer
   // tokens against it via `src/auth/clerk.ts` and prefers the
   // resulting userId over `X-Owner-Id`. When unset, the worker stays
@@ -83,6 +86,11 @@ export type Env = {
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
   // absent (self-host) → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Tokens"): each call reaches Google's token endpoint, so it gets a far
+  // tighter bound than the general write limiter. Keyed on the Clerk user id.
+  // Optional: absent (self-host) → "allow".
+  DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
@@ -110,8 +118,9 @@ export type Env = {
   APP_BASE_URL?: string;
   // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
   // these keys is set, because a key is provider-specific and its name should
-  // say so — see ai-provider.ts. Exactly one may be set; none = the whole AI
-  // surface is hidden (capabilities reports aiEnabled:false and the AI routes
+  // say so — see ai-provider.ts. Each feature takes its own provider from them
+  // (the assistant prefers OpenAI, the crop reader Google); one key serves
+  // both. None = the whole AI surface is hidden (capabilities reports aiEnabled:false and the AI routes
   // answer 503), which is the self-host default.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
@@ -122,15 +131,18 @@ export type Env = {
   // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
   AI_API_KEY?: string;
   AI_BASE_URL?: string;
-  // Overrides the preset's default model for any provider.
+  // The assistant's model, overriding its provider's default. Reaches the
+  // reader only when the reader runs on the same provider.
   AI_MODEL?: string;
-  // Overrides it for the crop reader only (docs/specs/021-event-storming/event-storming.md Phase 8); defaults to the
-  // resolved AI_MODEL, so a deployment only sets it to split the two apart.
+  // The crop reader's model (docs/specs/021-event-storming/event-storming.md Phase 8), beating every default.
   AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
   // per IP so a single client can't exhaust the operator's model budget.
   // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
+  // (a self-host) allows every read.
+  HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
@@ -170,4 +182,18 @@ export type Env = {
   // Unset or non-positive = no limit. Hosted livediagram.app sets
   // this to "104857600" (100 MB).
   IMAGE_MAX_BYTES_PER_OWNER?: string;
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
+  // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
+  // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
+  // refresh tokens, otherwise the browser holds its own short-lived tokens.
+  // Unset = every /api/drive route answers 503 drive_not_configured.
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  // base64 of 32 random bytes (`openssl rand -base64 32`): seals refresh
+  // tokens (AES-GCM) and, through HKDF, signs the consent state.
+  DRIVE_TOKEN_KEY?: string;
+  // Test-only: where the token exchange and revoke go instead of
+  // https://oauth2.googleapis.com (the e2e suite's fake Google). Never set
+  // by a real deployment.
+  GOOGLE_OAUTH_BASE_URL?: string;
 };

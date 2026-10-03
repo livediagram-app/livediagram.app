@@ -1,7 +1,8 @@
 import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
-import type { ChangeLogEntry, ParticipantPresence } from './index';
+import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
+import type { DragPreviewPatch } from './drag-preview';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -42,7 +43,7 @@ export type AvatarPresence = {
   // Occupancy rides HERE, on ephemeral presence, and is deliberately never
   // written to the document: a chair therefore cannot be left permanently
   // occupied by somebody who closed their laptop, cannot conflict between two
-  // clients, and reaches D1, the change log and undo not at all. Optional so a
+  // clients, and reaches D1 and undo not at all. Optional so a
   // packet from an older client still parses as "standing".
   seatedOn?: string | null;
 };
@@ -108,6 +109,11 @@ export const PRESENCE_OP_KINDS = [
   // is: a request to look somewhere is about a moment, and one replayed to a
   // late joiner is answering a sentence nobody is still saying.
   'focus-here',
+  // A dragger's preview (docs/specs/008-canvas/drag-preview.md): where the elements they are moving are
+  // right now, at cursor rates, writing nothing; the real change follows on release as element ops.
+  // The room relays it only from an editor (receivers check too): a viewer must never make others'
+  // elements appear to move.
+  'drag-preview',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -129,8 +135,6 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
-  'log',
-  'log-remove',
   'poll-start',
   'poll-end',
 ] as const;
@@ -282,9 +286,15 @@ export type ServerMessage =
   // replayed its own ops back at it (and, having heard nothing, the whole log).
   // Harmless for idempotent element ops; a `vote` op is a delta, so every
   // replayed dot was counted twice.
-  | CursorMessage;
+  | CursorMessage
+  | FormatMessage;
 
 export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
+
+// The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
+// each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
+// `build`: the live build id when the deploy set one (docs/specs/016-platform/stale-builds.md).
+export type FormatMessage = { kind: 'format'; format: number; build?: string };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
@@ -301,7 +311,11 @@ export type ClientMessage =
   // Sent right after re-connecting (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): "here's the last
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
-  | { kind: 'sync'; epoch: string | null; lastSeq: number };
+  | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  // An identity update over an open socket (docs/specs/014-identity/profile-picture.md §4): the
+  // same participant fields as `hello`, re-read by the same rules, without re-joining. Today it
+  // carries a profile picture switched on or off. Ignored before the session's hello.
+  | { kind: 'identity'; participant: ParticipantPresence };
 
 // ---------------------------------------------------------------------
 // Realtime room — op vocabulary (client view)
@@ -316,14 +330,6 @@ export type ClientMessage =
 // kinds grow this union (and matching handlers in the editor) —
 // nothing in the api worker changes.
 export type RoomOp =
-  // A new audit-log entry just landed. Used to mirror activity into
-  // every connected client's panel without a round-trip through D1.
-  // The owner of the document is the persistent writer; everyone else
-  // updates their local list when this op arrives.
-  | { kind: 'log'; entry: ChangeLogEntry }
-  // The named log entry was removed (e.g. via Undo or Revert). Other
-  // clients drop it from their local list so the panel stays in sync.
-  | { kind: 'log-remove'; entryId: string }
   // The sender just switched to (or initially focused) a tab. Drives
   // the per-tab avatar dots in the TabBar so collaborators can see at
   // a glance which tab each peer is working on.
@@ -461,6 +467,10 @@ export type RoomOp =
   // over empty canvas. The reaction rides along so a peer plays the right one
   // even if the pad's field changed under them mid-flight.
   | { kind: 'reaction'; tabId: string; elementId: string; reaction: string }
+  // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
+  // element; `end` says the preview is over, `landed` that it was written (the real change follows as
+  // element ops, after the autosave's wait), so receivers keep drawing it until then.
+  | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no
@@ -489,7 +499,7 @@ export type RoomOp =
   | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
   // --- Live poll (docs/specs/012-collaboration/live-poll.md) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
-  // ephemeral, so nothing here reaches D1, the change log, or undo. The
+  // ephemeral, so nothing here reaches D1 or undo. The
   // room keeps the running poll and its answers in its own storage and
   // replays them on hello (docs/specs/012-collaboration/live-poll.md).
   // `poll-start` / `poll-end` are sequenced mutations; `poll-answer` relays
@@ -537,6 +547,7 @@ export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
   | { kind: 'op'; op: RoomOp }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | { kind: 'identity'; participant: ParticipantPresence }
   | ({ kind: 'facilitator' } & FacilitatorAction);
 
 export type RoomIncoming =
@@ -558,4 +569,5 @@ export type RoomIncoming =
     }
   // Addressed by being sent at all — see ServerMessage above.
   | { kind: 'selection-released'; elementId: string; by: string }
-  | CursorMessage;
+  | CursorMessage
+  | FormatMessage;

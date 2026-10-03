@@ -1,8 +1,11 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/document';
-import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
+import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
+import { isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -69,6 +72,20 @@ export function useCanvasDrawGesture({
   // reconciliation). Null when no pen drag is active.
   const [penPoints, setPenPoints] = useState<{ x: number; y: number }[] | null>(null);
 
+  // Drawing is a stroke gesture (docs/specs/008-canvas/canvas-performance.md), press to release.
+  const drawing = drawDrag !== null || penPoints !== null;
+  useEffect(() => (drawing ? beginCanvasGesture('stroke') : undefined), [drawing]);
+
+  // A whiteboard pen draws through the live stroke pipeline instead (its own hook: coalesced
+  // samples, no React state per sample; docs/specs/023-draw-mode/draw-mode.md "Pens").
+  const { penStroke, beginWhiteboardStroke } = useWhiteboardPenGesture({
+    pendingDraw,
+    wrapperRef,
+    viewportZoom,
+    isPinchingRef,
+    onCommitFreehand,
+  });
+
   // Snap a draw gesture's START point to nearby element edge / centre
   // lines the same way the moving corner snaps: a 0×0 candidate snaps
   // each axis independently to the nearest line within the same
@@ -97,7 +114,10 @@ export function useCanvasDrawGesture({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return false;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    if (pendingDraw.type === 'freehand') {
+    if (isWhiteboardPenIntent(pendingDraw)) {
+      // A whiteboard pen starts where it touches (no guides for pens).
+      beginWhiteboardStroke(e, { x: sx, y: sy });
+    } else if (pendingDraw.type === 'freehand') {
       // Snap the first stroke point to nearby alignments (same as a shape's
       // first corner) so the sketch can begin from an aligned start.
       const start = snapDrawStart(sx, sy);
@@ -125,7 +145,9 @@ export function useCanvasDrawGesture({
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   // A stamp has its own ghost (useStampGhost); the corner-snap dot is for
   // shapes drawn to size. Out of that state, the dot goes at once.
-  const hoverSnaps = !!pendingDraw && !drawDrag && !penPoints && !stampAt;
+  // A whiteboard pen draws freely: no start snap, so no dot either.
+  const hoverSnaps =
+    !!pendingDraw && !drawDrag && !penPoints && !stampAt && !isWhiteboardPenIntent(pendingDraw);
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;
@@ -190,8 +212,12 @@ export function useCanvasDrawGesture({
     // shift while drawing to get a perfect square / circle. Picks
     // the dominant axis (the one the user moved further) and
     // matches the other to it, preserving the drag's direction so
-    // the box still grows where the cursor is.
-    if (e.shiftKey) {
+    // the box still grows where the cursor is. Read on every move, so
+    // pressing or releasing Shift mid-drag lands on the next one.
+    const square = e.shiftKey;
+    const lead: 'x' | 'y' =
+      Math.abs(rawX - latest.startX) >= Math.abs(rawY - latest.startY) ? 'x' : 'y';
+    if (square) {
       const dx = endX - latest.startX;
       const dy = endY - latest.startY;
       const absMax = Math.max(Math.abs(dx), Math.abs(dy));
@@ -215,14 +241,14 @@ export function useCanvasDrawGesture({
           : endY >= latest.startY
             ? 'sw'
             : 'nw';
-      const snapped = snapResizeBounds(
-        { x, y, width, height },
-        mode,
-        elements,
-        EMPTY_ID_SET,
-        snapPx,
-        1,
-      );
+      // Square: the snap applies on the leading axis only and the other
+      // side follows, so it stays square (docs/specs/008-canvas/canvas-and-palette.md
+      // "Resize"). Free: each moving edge snaps on its own.
+      const snapped = square
+        ? snapLeadingAxis({ x, y, width, height }, mode, lead, (c, edge) =>
+            snapResizeBounds(c, edge, elements, EMPTY_ID_SET, snapPx, 1),
+          )
+        : snapResizeBounds({ x, y, width, height }, mode, elements, EMPTY_ID_SET, snapPx, 1);
       endX = mode === 'se' || mode === 'ne' ? snapped.x + snapped.width : snapped.x;
       endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
     } else {
@@ -301,8 +327,8 @@ export function useCanvasDrawGesture({
     };
   }, [dragging, pendingDraw]);
 
-  // Pen-gesture sampling loop. While penPoints is non-null and the
-  // freehand intent is the active pendingDraw, accumulate pointer
+  // Pen-gesture sampling loop (the diagram pencil and the highlighter). While
+  // penPoints is non-null and the freehand intent is the active pendingDraw, accumulate pointer
   // samples into the polyline. Pointermove writes to a local mirror
   // and schedules ONE setPenPoints per requestAnimationFrame, so a
   // 120 Hz pointer doesn't pump thousands of React renders. On
@@ -359,5 +385,5 @@ export function useCanvasDrawGesture({
     };
   }, [penning, pendingDraw]);
 
-  return { drawDrag, penPoints, drawHover, beginPendingDrawGesture };
+  return { drawDrag, penPoints, penStroke, drawHover, beginPendingDrawGesture };
 }

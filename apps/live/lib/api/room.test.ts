@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 import { connectRoom, roomQueryString } from './room';
 
 describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
@@ -65,6 +67,30 @@ describe('connectRoom reconnect cursor', () => {
     vi.unstubAllGlobals();
   });
 
+  // An identity update (docs/specs/014-identity/profile-picture.md §4): sent over the open socket,
+  // and what the next hello says after a reconnect.
+  it('sends a picture change as an identity frame and says hello with it after a reconnect', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const first = FakeSocket.all[0]!;
+    first.fire('open');
+    const picture = 'https://img.clerk.com/me';
+    room.updateSelf({ id: 'me', name: 'Me', color: '#000', picture });
+    expect(first.sent.at(-1)).toEqual({
+      kind: 'identity',
+      participant: { id: 'me', name: 'Me', color: '#000', picture },
+    });
+    first.fire('close');
+    vi.runOnlyPendingTimers();
+    const second = FakeSocket.all[1]!;
+    second.fire('open');
+    expect(second.sent[0]).toMatchObject({ kind: 'hello', participant: { picture } });
+    room.close();
+  });
+
   function reconnectSync(frames: unknown[]) {
     const room = connectRoom(
       'd1',
@@ -98,6 +124,22 @@ describe('connectRoom reconnect cursor', () => {
       epoch: 'E',
       lastSeq: 7,
     });
+  });
+
+  it('notes the document format number the room sends on joining', () => {
+    // docs/specs/016-platform/new-version-prompt.md.
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    socket.fire('message', { kind: 'format', format: DOCUMENT_FORMAT + 1, build: 'b2' });
+    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+    expect(serverBuild()).toBe('b2');
+    room.close();
+    resetServerReleaseForTests();
   });
 
   it("ignores another epoch's cursor, leaving the catch-up to reconcile", () => {

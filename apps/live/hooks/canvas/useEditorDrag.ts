@@ -18,7 +18,7 @@
 // gives the effect a stable hook (one attach per drag start) plus a
 // fresh view of the parent state on every fire.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
   anchorOutward,
@@ -45,14 +45,20 @@ import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
 import { applyShiftDuplicateSwap, type ShiftDupSwap } from './shift-duplicate-swap';
 import {
+  resizedElement,
   resolveBoxedMove,
   resolveBoxedResize,
   translateBoxedSelection,
 } from './boxed-drag-resolve';
+import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@/lib/debug-log';
+import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
+import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
 
 // Screen-pixel distance the pointer must travel before a body drag
 // actually starts moving the element. Below this a press (even one that
@@ -95,21 +101,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // selects an element — or a press on a locked element / tab that never
   // mutates — leaves the undo history untouched. Taking the checkpoint at
   // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
-  // every click, evicting real states under the 3-deep HISTORY_LIMIT.
+  // every click, evicting real states from the bounded HISTORY_LIMIT.
   const checkpointPendingRef = useRef(false);
   // One-shot guard so an arrow-to-arrow connection (docs/specs/008-canvas/arrow-to-arrow.md) is tracked once
   // per endpoint drag, not on every pointer-move tick. Reset on drag start.
   const arrowConnectTrackedRef = useRef(false);
-  // True for the duration of a gesture that edits EXISTING elements
-  // (move / resize / rotate / arrow-handle), gating the activity-log
-  // emit. Set when the armed checkpoint is flushed on the first real
-  // tick; reset on pointer-up. Stays false for arrow creation-on-drag
-  // (beginAnchorDrag), which never arms a checkpoint because it already
-  // logged an "Added" entry via `commit` — so we don't double-log it.
-  const logGestureRef = useRef(false);
-  // The undo-marker token of the current gesture's checkpoint, handed
-  // to the debounced log so its flush fills the right step.
-  const gestureTokenRef = useRef<number | undefined>(undefined);
   // Shift-duplicate ghosting (docs/specs/008-canvas/shift-drag-duplicate.md). Holding Shift during a boxed move
   // swaps identities: the ORIGINAL elements park back at their start
   // position (keeping their ids, so every arrow pinned to them stays put),
@@ -132,6 +128,54 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
   const depsRef = useLatest(deps);
+  // The gesture's preview (docs/specs/008-canvas/drag-preview.md): every write a drag makes lands
+  // here, not in the document, and the document changes once, on release. `base` is the board as
+  // the gesture found it (the overlay is what the gesture changed relative to it, so a
+  // collaborator's change to another element is never undone), `virtual` the gesture's own result,
+  // which the drag logic reads in place of the written document. Kept across the effect's re-runs
+  // within one gesture (a quick-connect arrow turning to follow the pointer).
+  const previewRef = useRef<{ tabId: string; base: Element[]; virtual: Element[] } | null>(null);
+  const virtualTab = useEffectEvent(() => {
+    const tab = depsRef.current.activeTab;
+    const p = previewRef.current;
+    return p && p.tabId === tab.id ? { ...tab, elements: p.virtual } : tab;
+  });
+  const previewTick = useEffectEvent((mapper: (els: Element[]) => Element[]) => {
+    const tab = depsRef.current.activeTab;
+    let p = previewRef.current;
+    if (!p) {
+      p = { tabId: tab.id, base: tab.elements, virtual: tab.elements };
+      previewRef.current = p;
+      debugLog('[drag-preview] begin', { tab: tab.id });
+    }
+    const next = { ...p, virtual: mapper(p.virtual) };
+    previewRef.current = next;
+    setLocalPreview(next.tabId, next.virtual, next.base);
+  });
+  // The preview becomes the document in one change: one checkpoint (for an edit of existing
+  // elements; a creation drag never arms one), one write.
+  const commitPreview = useEffectEvent(() => {
+    const p = previewRef.current;
+    previewRef.current = null;
+    const overlay = localPreview();
+    const count = overlay ? overlay.changed.size + overlay.removed.size + overlay.added.length : 0;
+    clearLocalPreview(count > 0 ? 'landed' : 'cancelled');
+    if (!p || !overlay || count === 0) return;
+    if (checkpointPendingRef.current) {
+      depsRef.current.markCheckpoint();
+      checkpointPendingRef.current = false;
+    }
+    depsRef.current.tick((els) => applyOverlay(els, overlay));
+    debugLog('[drag-preview] commit', { count });
+  });
+  const cancelPreview = useEffectEvent(() => {
+    if (!previewRef.current) return;
+    previewRef.current = null;
+    clearLocalPreview('cancelled');
+    debugLog('[drag-preview] cancel');
+  });
+  // The canvas going away mid-gesture writes nothing.
+  useEffect(() => () => cancelPreview(), []);
 
   const { beginDrag, beginAnchorDrag } = useBoxedDragHandlers({
     depsRef,
@@ -161,10 +205,22 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // through depsRef so an external state change (zoom, selection,
   // active-tab swap) is reflected without re-attaching.
   useEffect(() => {
-    if (!drag) return;
+    // A gesture that ended by a route that neither committed nor cancelled keeps its result, as when
+    // every tick was a write.
+    if (!drag) {
+      commitPreview();
+      return;
+    }
     // Each new gesture starts un-engaged: a body move must cross
     // DRAG_ENGAGE_PX before it nudges anything (see the move branch).
     dragEngagedRef.current = false;
+    // The canvas gesture this drag is (docs/specs/008-canvas/canvas-performance.md): opened once it
+    // engages, closed with the drag.
+    let endGesture: (() => void) | null = null;
+    const engageGesture = () => {
+      endGesture ??= beginCanvasGesture(gestureOfDrag(drag));
+    };
+    if (!dragWaitsToEngage(drag)) engageGesture();
     // Tell the canvas a drag that could open a slot is in hand — for the whole
     // gesture rather than just while Alt is down, because the board's easing
     // must still be mounted when the slot CLOSES (or it snaps shut) and
@@ -174,7 +230,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const movingOneNote =
       drag.kind === 'boxed' &&
       drag.mode === 'move' &&
-      isSingleNoteDrag(depsRef.current.activeTab.elements, drag.primaryId, drag.startBounds);
+      isSingleNoteDrag(virtualTab().elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
     // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) apply to ANY notes being moved on one
     // of these boards, one or many: a selection snaps by the note in hand and
@@ -185,7 +241,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       drag.mode === 'move' &&
       depsRef.current.insertGate.esBoard &&
       [...drag.startBounds.keys()].every(
-        (id) => depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
+        (id) => virtualTab().elements.find((el) => el.id === id)?.type === 'sticky',
       );
     // Always on a lane (docs/specs/021-event-storming/event-storming.md): a WORKSHOP note has no y tolerance.
     // A selection is snapped by the note in hand; when that is a plain
@@ -193,7 +249,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // note in it stays on a lane.
     const laneAnchorId = (() => {
       if (drag.kind !== 'boxed') return null;
-      const els = depsRef.current.activeTab.elements;
+      // The previewed board: after a Shift-duplicate the note in hand is a clone only the preview has.
+      const els = virtualTab().elements;
       const isWorkshop = (id: string) => {
         const el = els.find((e) => e.id === id);
         return !!el && isEventStormingNote(el);
@@ -209,12 +266,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // next gesture — once drag is null this effect tears down and onUp
     // never runs for this gesture).
     const cancelDrag = () => {
+      cancelPreview();
       setDrag(null);
       scheduleGuides([]);
       scheduleSnapTargets([]);
       checkpointPendingRef.current = false;
-      logGestureRef.current = false;
-      gestureTokenRef.current = undefined;
       // An open insertion offer dies with the gesture. Only the preview is
       // being discarded here — the dragged note's live position is restored
       // by the checkpoint, and the other notes never moved for real.
@@ -229,7 +285,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (swap) {
         dupSwapRef.current = null;
         setShiftDupGhostIds(null);
-        depsRef.current.tick((els) => els.filter((el) => !swap.cloneIds.has(el.id)));
         depsRef.current.setSelectedId(swap.origSelectedId);
         depsRef.current.setMultiSelectedIds(swap.origMultiIds);
       }
@@ -257,34 +312,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         metaKey: e.metaKey,
         shiftKey: e.shiftKey,
       };
-      const { activeTab, zoomRef } = depsRef.current;
-      // Flush the armed checkpoint on the FIRST real mutation of the
-      // gesture (every branch below writes through this `tick`), so a
-      // press that never mutates leaves history untouched. After the
-      // first flush it's a plain passthrough for the rest of the drag.
-      const tick = (mapper: (els: Element[]) => Element[]) => {
-        if (checkpointPendingRef.current) {
-          // Keep the checkpoint's marker token so the debounced log
-          // entry fills THIS gesture's undo step, even if another step
-          // lands before the 500ms flush (see lib/entry-history).
-          gestureTokenRef.current = depsRef.current.markCheckpoint();
-          checkpointPendingRef.current = false;
-          // A checkpoint was armed → this is an edit of existing
-          // elements, so it earns an activity-log entry. (Arrow
-          // creation-on-drag never arms one; it stays out.)
-          logGestureRef.current = true;
-        }
-        depsRef.current.tick(mapper);
-        // Re-arm the 500ms debounce on every mutating tick so the entry
-        // lands once, after the gesture settles, diffing pre-gesture vs
-        // final state. One shared key per drag → distinct gestures stay
-        // distinct unless they overlap the window.
-        if (logGestureRef.current) {
-          depsRef.current.scheduleElementChangeLog('element-drag', {
-            fillToken: gestureTokenRef.current,
-          });
-        }
-      };
+      const activeTab = virtualTab();
+      const { zoomRef } = depsRef.current;
+      // Every branch below writes through this: into the gesture's preview, never the document.
+      const tick = previewTick;
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
       const dx = (e.clientX - drag.startClientX) / zoomRef.current;
@@ -306,6 +337,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             );
             if (travelled < DRAG_ENGAGE_PX) return;
             dragEngagedRef.current = true;
+            engageGesture();
           }
           // Insert between (docs/specs/021-event-storming/event-storming.md): while Alt is held on an event-storming
           // board, a single sticky offers to take its place BETWEEN two notes
@@ -428,11 +460,21 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
+          // A lone text box that fits or wraps hugs its text through the resize, in either
+          // editor mode (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+          const textHug =
+            drag.startBounds.size === 1
+              ? {
+                  mode: drag.mode,
+                  constrain: drag.aspectLocked || e.shiftKey,
+                  measure: measureDrawnText(activeTab.font),
+                }
+              : null;
           tick((els) =>
             els.map((el) => {
               if (!isBoxed(el)) return el;
               const next = resize.boundsById.get(el.id);
-              return next ? { ...el, ...next } : el;
+              return next ? resizedElement(el, next, textHug) : el;
             }),
           );
         }
@@ -448,8 +490,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         const travelled = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY);
         if (travelled < DRAG_ENGAGE_PX) return;
         dragEngagedRef.current = true;
+        engageGesture();
         if (drag.kind === 'arrow-bend') {
-          console.debug('[arrow-bend]', drag.arrowId, drag.plan.kind);
+          debugLog('[arrow-bend]', drag.arrowId, drag.plan.kind);
           track('Element', 'Changed', 'ArrowBend');
         }
       }
@@ -523,7 +566,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // this a fast release drops up to one frame of movement, so the element
       // finishes a few pixels behind the cursor.
       flushMove();
-      const d = depsRef.current;
       // Quick-connect arrow "click to place": if the arrow was started by a
       // click (clickToPlace) and this release ends a gesture that never
       // really moved, don't commit — flip into `following` so the endpoint
@@ -539,6 +581,34 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           return;
         }
       }
+      // Follow mode rides THROUGH pointer-ups: after a shift-chained
+      // placing click, the release of that same click arrives here with the
+      // fresh arrow already following — committing now would land it where
+      // it spawned. The gesture ends at the NEXT placing click, not on up.
+      if (drag?.kind === 'arrow-endpoint' && drag.following) return;
+      // A freshly DRAWN arrow (never a reposition) gets the one-shot collision-avoiding bow
+      // (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, folded into the
+      // gesture's result so the two land as the one write. Written afterwards through `commit`, it
+      // started from the document as last rendered, before the result had landed, and put the
+      // arrow's end back where the drag began. A touch tap that never moved places its end below
+      // instead, as it always has, with no bow.
+      const tapStill =
+        drag?.kind === 'arrow-endpoint' &&
+        !!drag.tapPlace &&
+        !drag.following &&
+        Math.hypot(
+          e.clientX - (drag.pressClientX ?? drag.startClientX),
+          e.clientY - (drag.pressClientY ?? drag.startClientY),
+        ) <= 6;
+      if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition && !tapStill) {
+        const arrowId = drag.arrowId;
+        previewTick((els) => applyCollisionAvoidance(els, arrowId));
+      }
+      // The gesture's result, as the release logic below reads it, then written in one change before
+      // anything else writes (docs/specs/008-canvas/drag-preview.md).
+      const released = virtualTab();
+      commitPreview();
+      const d = { ...depsRef.current, activeTab: released };
       // Touch quick-connect tap (docs/specs/008-canvas/canvas-and-palette.md): the gesture entered a real drag so
       // a finger CAN drag to a target, but this release never moved. Attach
       // the far end to whatever sits on that side, or fall back to the short
@@ -583,19 +653,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           return;
         }
       }
-      // Follow mode rides THROUGH pointer-ups: after a shift-chained
-      // placing click, the release of that same click arrives here with the
-      // fresh arrow already following — committing now would land it where
-      // it spawned. The gesture ends at the NEXT placing click, not on up.
-      if (drag?.kind === 'arrow-endpoint' && drag.following) return;
-      // A freshly DRAWN arrow (never a reposition) gets the one-shot
-      // collision-avoiding bow (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, whether it
-      // ends here or chains below. Same commit stream as the drag ticks,
-      // so it folds into the gesture's single undo step.
-      if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition) {
-        const arrowId = drag.arrowId;
-        d.commit((els) => applyCollisionAvoidance(els, arrowId));
-      }
       // Shift-release of a press-drag chains the next arrow (same rule as
       // the placing click below). The landed endpoint is already committed
       // by the drag ticks; close this gesture's bookkeeping and follow on.
@@ -603,7 +660,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         scheduleGuides([]);
         scheduleSnapTargets([]);
         checkpointPendingRef.current = false;
-        logGestureRef.current = false;
         return;
       }
       // Shift-duplicate finalisation (docs/specs/008-canvas/shift-drag-duplicate.md). The identity swap already
@@ -711,11 +767,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // Disarm any checkpoint the gesture never used (a click that
       // selected without moving), so it can't attach to a later one.
       checkpointPendingRef.current = false;
-      // Close the log gesture so the next drag starts clean. The
-      // pending debounce timer (if any) still flushes the entry; this
-      // only stops a later gesture from inheriting this one's "log it"
-      // flag. (Cancelling the flush isn't wanted — that's the entry.)
-      logGestureRef.current = false;
     };
     // Quick-connect arrow follow mode: the placing click. Captured on the
     // way DOWN (capture phase) so it commits the endpoint and is swallowed
@@ -730,11 +781,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // unsnapped from the element under the cursor).
       flushMove();
       // The landed arrow gets the one-shot collision-avoiding bow
-      // (docs/specs/008-canvas/arrow-collision-avoidance.md), same as the press-drag end in onUp above.
+      // (docs/specs/008-canvas/arrow-collision-avoidance.md), folded into the result before it is
+      // written, as the press-drag end in onUp above does.
       if (drag.end === 'to' && !drag.reposition) {
         const arrowId = drag.arrowId;
-        depsRef.current.commit((els) => applyCollisionAvoidance(els, arrowId));
+        previewTick((els) => applyCollisionAvoidance(els, arrowId));
       }
+      commitPreview();
       // The endpoint already tracks the cursor (last pointermove); this
       // click just lands it. Shift chains straight into the next arrow
       // from the same source (docs/specs/008-canvas/canvas-and-palette.md); otherwise clear and end.
@@ -762,15 +815,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         cancelDrag();
         return;
       }
-      // An edit gesture that already mutated (move / resize / rotate /
-      // arrow-handle — its armed checkpoint was flushed on the first
-      // tick): restore the pre-drag state and discard the step, so the
-      // element snaps back to where the grab started and no undo entry
-      // is left behind. A press that never moved (checkpoint still
-      // armed) or a creation drag (never arms one) just ends the mode.
-      if (logGestureRef.current && !checkpointPendingRef.current) {
-        depsRef.current.cancelToCheckpoint();
-      }
+      // Nothing was written while the gesture lasted, so cancelling drops its preview and the
+      // elements are where the grab started, with no undo step left behind.
       cancelDrag();
     };
     // Alt pressed or released with the hand held still (docs/specs/021-event-storming/event-storming.md): the slot
@@ -846,6 +892,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     window.addEventListener('keydown', onAltChange);
     window.addEventListener('keyup', onAltChange);
     return () => {
+      endGesture?.();
       if (moveRaf !== null) cancelAnimationFrame(moveRaf);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onUp);

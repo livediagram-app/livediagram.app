@@ -12,6 +12,7 @@ import type { TimelineEvent } from '@livediagram/ui';
 import { ExplorerProvider } from '../ExplorerContext';
 import type { ExplorerStateValue } from '../useExplorerState';
 import { useTimelineEntityMenus } from './useTimelineEntityMenus';
+import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/api-client', () => ({
@@ -79,14 +80,24 @@ function menuFor(value = explorer()) {
 const labels = (m: ReturnType<ReturnType<typeof menuFor>>) => m?.items.map((i) => i.label);
 
 describe('useTimelineEntityMenus', () => {
-  it('offers Revoke on a token the Explorer still holds, and only Open Tokens on one it does not', () => {
+  it('offers Revoke on a token the Explorer still holds, and only Open API Tokens on one it does not', () => {
     const m = menuFor();
     const live = m(event({ sourceId: 'tok1', snapshot: { tokenName: 'CI' } }));
-    expect(labels(live)).toEqual(['Open Tokens', 'Revoke Token']);
+    expect(labels(live)).toEqual(['Open API Tokens', 'Revoke Token']);
     expect(live?.subject).toBe('CI');
     expect(live?.items[1]?.danger).toBe(true);
     const gone = m(event({ sourceId: 'tok-old', eventType: 'token_revoked' }));
-    expect(labels(gone)).toEqual(['Open Tokens']);
+    expect(labels(gone)).toEqual(['Open API Tokens']);
+  });
+
+  it('opens Settings on API Tokens in place rather than navigating', () => {
+    const heard = vi.fn();
+    const onOpen = (e: Event) => heard((e as CustomEvent<string>).detail);
+    window.addEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    menuFor()(event({ sourceId: 'tok1' }))?.items[0]?.onClick();
+    window.removeEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    expect(heard).toHaveBeenCalledWith('tokens');
+    expect(go).not.toHaveBeenCalled();
   });
 
   it('gives an admin Edit and Delete on their team, a member only Leave', () => {

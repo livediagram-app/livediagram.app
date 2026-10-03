@@ -88,13 +88,19 @@ export function useTeamLibrariesSweep(
               teamId: team.id,
               teamName: team.name,
             })),
-            documents: lib.documents.map((d) => ({
+            documents: lib.documents.map((d): TeamDocumentRow => ({
               id: d.id,
               name: d.name,
               folderId: d.folderId,
               savedAt: d.savedAt,
+              empty: d.empty,
               shareCode: d.shareCode,
               ownerId: d.ownerId,
+              // What the Explorer filters and the Made by AI badge read (explorer-filters.md).
+              source: d.source,
+              opensIn: d.opensIn,
+              tabKind: d.tabKind,
+              templateFamily: d.templateFamily,
               team: { id: team.id, name: team.name },
             })),
           };

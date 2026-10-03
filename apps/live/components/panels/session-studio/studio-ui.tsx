@@ -9,7 +9,13 @@
 import type { ReactNode } from 'react';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import type { StudioTool, StudioToolStatus } from './session-studio';
-import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import {
+  ACTIVE_SEGMENT,
+  SEGMENT_TRACK,
+  SOLID_BRAND_DARK,
+  SOLID_BRAND_DARK_CONTROL,
+  Glyph,
+} from '@livediagram/ui';
 
 const TOOL_META: Record<StudioTool, { label: string; icon: ReactNode }> = {
   timer: { label: 'Timer', icon: <TimerMenuIcon /> },
@@ -35,7 +41,7 @@ export function StudioSwitcher({
     <div
       role="tablist"
       aria-label="Session tools"
-      className="grid gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+      className={`grid gap-0.5 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
       style={{ gridTemplateColumns: `repeat(${tools.length}, minmax(0, 1fr))` }}
     >
       {tools.map((t) => {
@@ -50,7 +56,7 @@ export function StudioSwitcher({
             onClick={() => onChange(t)}
             className={`relative flex items-center justify-center gap-1.5 rounded-md px-1.5 py-1.5 text-[11px] font-semibold transition ${
               on
-                ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-900 dark:text-brand-200'
+                ? ACTIVE_SEGMENT
                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
             }`}
           >

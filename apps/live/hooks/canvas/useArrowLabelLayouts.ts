@@ -7,6 +7,7 @@
 // (sameLabelRender), so an arrow whose label did not move does not re-render.
 
 import { useMemo, useState } from 'react';
+import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import {
   DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   arrowLabelFontStack,
@@ -84,14 +85,16 @@ export function useArrowLabelLayouts(
 
   // Lays out an arrow's label for text being typed, against the other labels
   // as placed, so the editor sits and wraps where the label will land.
-  const draftLayout = useMemo(() => {
+  const latestDraftLayout = useMemo(() => {
     const claimed = (id: ElementId) =>
       [...renders]
         .filter(([other]) => other !== id)
         .flatMap(([, r]) => (r.layout ? [r.layout.knockout ?? labelPlate(r.layout)] : []));
-    return (arrow: ArrowElement, text: string): ArrowLabelLayout | null =>
+    // `over`: the elements as a drag preview draws them (docs/specs/008-canvas/drag-preview.md), for a
+    // previewed arrow's label.
+    return (arrow: ArrowElement, text: string, over?: Element[]): ArrowLabelLayout | null =>
       layoutArrowLabel(arrow, text, {
-        elements,
+        elements: over ?? elements,
         claimed: claimed(arrow.id),
         options: {
           ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
@@ -101,6 +104,9 @@ export function useArrowLabelLayouts(
         },
       });
   }, [renders, elements, tabFont, stableOptions, fontsReady]);
+  // One identity for the editor's lifetime, laying out against the newest pass, so every ArrowView's
+  // memo holds across element changes (docs/specs/008-canvas/canvas-performance.md).
+  const { draftLayout } = useStableHandlers({ draftLayout: latestDraftLayout });
 
   // Stable per layout pass: the selection derivation is memoised on it.
   return useMemo(

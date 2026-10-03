@@ -87,8 +87,9 @@ semantic colour:
   `tools:es-<kind>` prefix — Favourites persist ids, so a rename would
   silently drop saved favourites ([Palette Favourites](../010-palette/palette-favourites.md)). **On an event-storming board
   the palette OPENS on this category** instead of Favourites (keyed on
-  the board-ness of the active tab); everywhere else Favourites stays
-  the landing view. Help article: `palette/event-storming` (registered,
+  the board-ness of the active tab), and it is the board's only category. **On any other tab
+  the category picker does not offer it**, nor does the Edit Favourites dialog: the notation
+  belongs to the event-storming mode. Favourites stays the landing view there. Help article: `palette/event-storming` (registered,
   with card art).
 - **The kind is stored.** Every note carries `esKind` on the element: the
   colour says it visually, but the kind is domain data — it names the
@@ -386,13 +387,10 @@ board's behaviour changes at all.
   the preview promised.
 - **One undoable step.** The ripple and the new note are one commit
   through the ordinary choke point, so layer stamping, board-kind
-  stamping, the activity-log entry and autosave all happen as usual, and
+  stamping and autosave all happen as usual, and
   a single Undo restores the board exactly. The ripple runs against the
   tab as it is at drop time, not the snapshot the drag started from, so
   a peer's mid-drag edit is not reverted by the drop that follows it.
-  The activity log names the act ("Inserted a Sticky note, moving 2
-  Sticky notes right") rather than listing an add and some unrelated
-  edits.
 - **Never offered where the drop would be refused**: a view-only
   session, a locked tab, or a hidden / locked active layer sees no
   preview at all. `canInsertBetweenOn(gate, altHeld)` is ONE predicate
@@ -539,8 +537,7 @@ cascade). x is untouched.
 parked between lanes. The first time it is opened by someone who can edit it
 (not a view-only visitor, not a locked tab), every workshop note that is not on
 a lane moves to its nearest lane: y only, x untouched, nothing pushed, and a
-locked note stays where it is. It is ONE undoable step, named in the activity
-log, and a toast says how many notes moved. The board then carries
+locked note stays where it is. It is ONE undoable step, and a toast says how many notes moved. The board then carries
 `esLanesSettled: true` and is never settled again, so a note free-placed
 afterwards stays free. Undo puts the notes back but keeps the mark (it is
 grafted across undo like the session tools' state): an author who undoes the
@@ -920,17 +917,19 @@ low-threshold capture surface can least afford.
   different, the review SHOWS it ("on the board as …") and leaves it. The board
   is the record; the photo is a reading of one moment of the wall.
 - **The photo is never stored, and never even sent.** Not R2, not D1, not
-  IndexedDB, not the change log — and not the api either. The browser decodes
+  IndexedDB — and not the api either. The browser decodes
   it (honouring the EXIF orientation flag), detects on a downscaled working
   copy, cuts each detected sticky out of the full-resolution bitmap and
   re-encodes that CROP as a small JPEG (which drops EXIF with it). Only the
   crops leave the machine, to `POST /api/ai/read-notes`, which forwards them to
   the model and discards them. Whoever is standing in front of the wall, and
   whatever else is in the room, stays in the browser.
-- **Gated on the model key exactly as [AI Assistance](../007-editor/ai-assistance.md) is.** No `AI_API_KEY` = no photo
+- **Gated on the model key exactly as [AI Assistance](../007-editor/ai-assistance.md) is.** No model key = no photo
   UI anywhere, and a self-host without one loses nothing else. It is NOT gated
-  on the AI-panel preference: this is not the assistant. The provider is
-  whatever `AI_BASE_URL` points at — any OpenAI-compatible endpoint, which is
+  on the AI-panel preference: this is not the assistant. The reader resolves
+  its own provider, preferring `GOOGLE_AI_STUDIO_API_KEY` and falling back to
+  whichever key is set ([AI Assistance](../007-editor/ai-assistance.md), "Each feature has its own
+  provider") — any OpenAI-compatible endpoint, which is
   Gemini on the hosted site and can be a local llama.cpp on a laptop.
 
   _(Phase 9 makes the READER pluggable and adds an in-browser OCR reader, so
@@ -1753,7 +1752,7 @@ truth for what the type IS at any moment.
 
 ## Counts
 
-The catalogue is pinned at **50 templates (10 default + 40 extra)** —
+The catalogue is pinned at **63 templates (11 default + 52 extra)** —
 `templates.test.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), [Marketing assets](../019-marketing/marketing-assets.md), the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

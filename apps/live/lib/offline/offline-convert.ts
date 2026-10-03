@@ -40,18 +40,30 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
   // reporting a brand-new document (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
   // Everything the record holds besides tabs travels too: the local copy is
   // deleted next, so a deck or placement left behind is gone for good.
-  await apiCreateDocument(
-    ownerId,
-    {
-      id: rec.id,
-      name: rec.name,
-      tabs,
-      folderId: rec.folderId,
-      createdAt: rec.createdAt,
-      presentation: rec.presentation ?? null,
-    },
-    { conversion: 'sync' },
-  );
+  const upload = (folderId: string | null) =>
+    apiCreateDocument(
+      ownerId,
+      {
+        id: rec.id,
+        name: rec.name,
+        tabs,
+        folderId,
+        createdAt: rec.createdAt,
+        presentation: rec.presentation ?? null,
+      },
+      { conversion: 'sync' },
+    );
+  try {
+    await upload(rec.folderId ?? null);
+  } catch (err) {
+    // The server refuses a folder deleted since, or not the caller's, by name and writes nothing
+    // (docs/specs/013-workspace/folders.md "Placement on create"). The sync files the document in
+    // the root of My documents instead, on its own say-so, rather than losing the conversion over a folder.
+    const code = err instanceof ApiError ? err.code : null;
+    if (code !== 'folder_not_found' && code !== 'folder_scope_mismatch') throw err;
+    console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);
+    await upload(null);
+  }
   await offlineDeleteDocument(rec.id);
   // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
   // on the server AFTER the delete: while the id is still registered offline,
@@ -116,7 +128,7 @@ export async function takeCloudOffline(
     name: liveDoc.name,
     // Keep its place and its deck: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
-    // offline record lives in, so a team document lands in Unsorted.
+    // offline record lives in, so a team document lands at the root of My documents.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,

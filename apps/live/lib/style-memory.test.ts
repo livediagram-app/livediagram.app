@@ -1,5 +1,6 @@
 import {
   THEMES,
+  createPath,
   quickSwatchColor,
   shapeColorPresets,
   type ArrowElement,
@@ -94,6 +95,55 @@ describe('recordStyleEdit', () => {
   });
 });
 
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a board remembers a stock
+// colour by name, so the next shape adapts per board too.
+describe('whiteboard stock colours in memory', () => {
+  it('remembers a named colour and drops the hex it replaced', () => {
+    const first = recordStyleEdit(
+      {},
+      [shape('a', 'square')],
+      [{ ...shape('a', 'square'), strokeColor: '#ff6b00' }],
+      forest,
+      true,
+    );
+    const next = recordStyleEdit(
+      first,
+      [{ ...shape('a', 'square'), strokeColor: '#ff6b00' }],
+      [{ ...shape('a', 'square'), penColour: 'blue' }],
+      forest,
+      true,
+    );
+    expect(next).toEqual({ 'board:shape:square': { penColour: 'blue' } });
+    expect(applyStyleMemory(shape('b', 'square'), next, forest, true)).toMatchObject({
+      penColour: 'blue',
+    });
+  });
+});
+
+// docs/specs/008-canvas/quick-style-panel.md "Corners": a board remembers a rectangle's corners for
+// its next one; a diagram's memory does not take them.
+describe('corners in memory', () => {
+  it('remembers a board rectangle’s corners, never a diagram one’s', () => {
+    const before = [shape('a', 'square')];
+    const after = [{ ...shape('a', 'square'), borderRadius: 'sm' as const }];
+    const board = recordStyleEdit({}, before, after, forest, true);
+    expect(board).toEqual({ 'board:shape:square': { borderRadius: 'sm' } });
+    expect(applyStyleMemory(shape('b', 'square'), board, forest, true)).toMatchObject({
+      borderRadius: 'sm',
+    });
+    expect(recordStyleEdit({}, before, after, forest, false)).toEqual({});
+  });
+
+  it('reads back only a real corner preset', () => {
+    const raw = JSON.stringify({
+      'board:shape:square': { borderRadius: 'lg' },
+      'board:shape:circle': { borderRadius: 'huge' },
+      'shape:square': { borderRadius: 'lg' },
+    });
+    expect(parseStyleMemory(raw)).toEqual({ 'board:shape:square': { borderRadius: 'lg' } });
+  });
+});
+
 describe('applyStyleMemory', () => {
   const memory: StyleMemory = {
     'shape:circle': { strokeColor: '#ff0000', strokeWidth: 'thick', textAlignX: 'left' },
@@ -160,6 +210,18 @@ describe('parseStyleMemory', () => {
     });
   });
 
+  it('keeps a whiteboard stock colour by name, never an unknown name', () => {
+    const raw = JSON.stringify({
+      'board:shape:square': { penColour: 'blue' },
+      'board:arrow': { penColour: 'nope' },
+      'board:text': { penTextColour: 'green' },
+    });
+    expect(parseStyleMemory(raw)).toEqual({
+      'board:shape:square': { penColour: 'blue' },
+      'board:text': { penTextColour: 'green' },
+    });
+  });
+
   it('reads garbage as empty', () => {
     expect(parseStyleMemory(null)).toEqual({});
     expect(parseStyleMemory('{nope')).toEqual({});
@@ -193,5 +255,70 @@ describe('text elements', () => {
   it('survive a parse round trip', () => {
     const memory = { text: { textColor: '#aa0000' } };
     expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
+  });
+});
+
+// docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a whiteboard keeps its own
+// memory, so a board's styles never dress a diagram tab's next shape, nor the other way round.
+describe('the board scope', () => {
+  it('keys a whiteboard element apart from a diagram one', () => {
+    expect(styleKindOf(shape('a', 'square'), true)).toBe('board:shape:square');
+    expect(styleKindOf(arrow('a'), true)).toBe('board:arrow');
+  });
+
+  it('records and applies within its own scope only', () => {
+    const board = recordStyleEdit(
+      {},
+      [shape('a', 'square')],
+      [shape('a', 'square', { strokeColor: '#ff0000' })],
+      forest,
+      true,
+    );
+    expect(board).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+    expect(applyStyleMemory(shape('n', 'square'), board, forest, true).strokeColor).toBe('#ff0000');
+    expect(applyStyleMemory(shape('n', 'square'), board, forest).strokeColor).toBeUndefined();
+  });
+
+  it('survives a round trip through storage', () => {
+    const raw = JSON.stringify({ 'board:shape:square': { strokeColor: '#ff0000' } });
+    expect(parseStyleMemory(raw)).toEqual({ 'board:shape:square': { strokeColor: '#ff0000' } });
+  });
+});
+
+describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
+  const path = createPath(
+    [
+      { x: 0, y: 0, mode: 'corner' },
+      { x: 40, y: 0, mode: 'corner' },
+    ],
+    false,
+  );
+
+  it('is its own kind, scoped on a board', () => {
+    expect(styleKindOf(path)).toBe('path');
+    expect(styleKindOf(path, true)).toBe('board:path');
+  });
+
+  it('remembers and applies its line style', () => {
+    const m = recordStyleEdit(
+      {},
+      [path],
+      [{ ...path, strokeColor: '#ff0000', strokeWidth: 'thick' }],
+      forest,
+      true,
+    );
+    expect(m).toEqual({ 'board:path': { strokeColor: '#ff0000', strokeWidth: 'thick' } });
+    const next = createPath(
+      [
+        { x: 5, y: 5, mode: 'corner' },
+        { x: 9, y: 9, mode: 'corner' },
+      ],
+      false,
+    );
+    expect(applyStyleMemory(next, m, forest, true)).toMatchObject({
+      strokeColor: '#ff0000',
+      strokeWidth: 'thick',
+    });
+    expect(parseStyleMemory(JSON.stringify(m))).toEqual(m);
   });
 });

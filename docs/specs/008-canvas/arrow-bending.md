@@ -27,8 +27,12 @@ undo step.
 - **Straight arrow**: becomes a curved arrow with one smooth bow that passes through the pointer,
   at the point along the line where it was grabbed. The bow is stored as `curveOffset`, the same
   field the curve handle writes.
-- **Curved arrow with a single bow**: the bow reshapes so the curve passes through the pointer at
-  the grabbed point.
+- **Curved arrow with a single bow**: grabbing the line **adds a point**. The bow becomes a bend
+  point at its apex (where the curve passes at its middle) and a second bend point is inserted
+  where the line was grabbed, before or after the apex, and dragged; the bow's `curveOffset` goes.
+  From then on it is a curved arrow with bend points (below), so each grab adds another. The bow's
+  own curve handle still reshapes the single bow, without adding a point. (Grabbing the line only
+  reshaped the bow, so a curved arrow could never gain a second bend.)
 - **Curved arrow with bend points** (`curvePoints`): grabbing a bend point's handle drags that point,
   as before. Grabbing the line elsewhere inserts a bend point where it was grabbed, in the segment
   it was grabbed on, and drags it.
@@ -42,6 +46,29 @@ not produce a violent bow.
 The curve and elbow handles stay: they are the precise controls. The "+" add-point handles are
 removed. Right-clicking a bend point still deletes it, and deleting the last one still reverts the
 arrow to a straight line.
+
+## Angled legs stay square
+
+An angled arrow's bend points are stored as deltas from its chord midpoint, so moving an end
+(snapping it onto an anchor, the fan, the box it is pinned to moving) shifts every corner by half
+that move. The leg into a box then slanted and its head pointed in at an angle. So wherever an
+angled arrow's corners are worked out (`angledCornerPoints`: the drawn path, its handles, the
+export, hit-testing), the corner next to each **pinned** end is lined up with that end on the leg's
+axis: an end on a top or bottom edge leaves vertically, one on a side horizontally. Only that one
+coordinate moves, so the next segment keeps its direction. A free end's leg is drawn as stored.
+
+## Bends line up
+
+A dragged bend snaps to **other arrows' bends**, so a set of angled arrows can turn on the same line:
+an angled arrow's corners and a curve's bend points (`arrowBendVertices`) are alignment targets,
+beside the element edges and centres and the arrow's own neighbouring points that a bend already
+snapped to, within the usual threshold (`ALIGN_SNAP_THRESHOLD`) and with the usual guide.
+
+- **A bend or elbow handle** dragged: its x and y each snap to the nearest such line.
+- **An angled segment slid** by its line: the segment's sideways position snaps (a horizontal
+  segment to a y, a vertical one to an x), and only that axis's guide shows. It never moves along
+  itself.
+- Holding the no-snap modifier, or alignment guides switched off, behaves as for every other snap.
 
 ## Moving and scaling a free arrow
 
@@ -57,6 +84,11 @@ handles.
   arrow never flips or collapses through itself.
 - An axis with no extent (a perfectly horizontal or vertical arrow) shows no edge handles for it,
   since there is nothing to scale.
+- **The frame stands down while a handle reshapes the arrow** (a bend, curve, elbow or endpoint
+  drag) and comes back when the drag ends: it grew with every bend and read as a selection box
+  being dragged out. Nor does any focus outline show: a handle focused by the press (whose node
+  React may reuse as a plain group mid-drag) shows no ring unless focused from the keyboard
+  (`svg :focus:not(:focus-visible)`), where it drew a dark box round the whole arrow.
 - Arrow keys still nudge a selected free arrow. Arrows with an attached end have no frame, as
   before, since they follow their elements.
 

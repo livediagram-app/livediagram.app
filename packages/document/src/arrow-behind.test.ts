@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTE_BEHIND_MARGIN, arrowRoutesBehind, routeBehindHoles } from './arrow-behind';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import {
+  ROUTE_BEHIND_MARGIN,
+  arrowRoutesBehind,
+  routeBehindHoles,
+  routeBehindQueryRect,
+} from './arrow-behind';
+import { buildElementGrid, queryElementGrid } from './element-grid';
+import { createShape } from './shape-factory';
+import { createArrow } from './factories';
+import type { ArrowElement, Element, PathElement, ShapeElement } from './index';
+import { encodeStrokePoints } from './stroke-points';
 
 const M = ROUTE_BEHIND_MARGIN;
 
@@ -142,5 +151,87 @@ describe('routeBehindHoles', () => {
       to: { kind: 'free', x: 200, y: 100 },
     };
     expect(routeBehindHoles(arrow(), from, to, [other])).toEqual([]);
+  });
+
+  it('ignores a freehand stroke: ink is not a box to hide behind', () => {
+    const stroke = {
+      id: 'f1',
+      type: 'freehand',
+      x: 200,
+      y: 0,
+      width: 100,
+      height: 100,
+      packedPoints: encodeStrokePoints([
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 1 },
+      ]),
+      closed: false,
+      penWidth: 1.5,
+    } as Element;
+    expect(routeBehindHoles(arrow(), from, to, [stroke])).toEqual([]);
+  });
+
+  it('ignores a shape with no fill, such as a whiteboard outline', () => {
+    const outline = box('o', 200, 0, { fillColor: 'transparent' });
+    expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
+  });
+
+  describe('a path', () => {
+    const path = (over: Partial<PathElement> = {}): PathElement => ({
+      id: 'p1',
+      type: 'path',
+      x: 200,
+      y: 0,
+      width: 100,
+      height: 100,
+      nodes: [
+        { nx: 0, ny: 0, mode: 'corner' },
+        { nx: 0.5, ny: 1, mode: 'corner' },
+        { nx: 1, ny: 0, mode: 'corner' },
+      ],
+      closed: false,
+      ...over,
+    });
+
+    it('ignores an open path: a curve paints no fill to hide behind', () => {
+      expect(routeBehindHoles(arrow(), from, to, [path({ fillColor: '#ffffff' })])).toEqual([]);
+    });
+
+    it('ignores a closed path with no fill', () => {
+      const outline = path({ closed: true, fillColor: 'transparent' });
+      expect(routeBehindHoles(arrow(), from, to, [outline])).toEqual([]);
+    });
+
+    it('cuts around a closed, filled path', () => {
+      const holes = routeBehindHoles(arrow(), from, to, [
+        path({ closed: true, fillColor: '#ffffff' }),
+      ]);
+      expect(holes).toHaveLength(1);
+    });
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: an arrow asks the element grid for its neighbours.
+// The holes from the grid's candidates are exactly the holes from the whole board.
+describe('route-behind holes from the element grid', () => {
+  it('match the whole board over randomised boards and arrows', () => {
+    let seed = 11;
+    const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let board = 0; board < 20; board++) {
+      const els = Array.from({ length: 80 }, () => {
+        const el = createShape('square', rand() * 3000, rand() * 2000);
+        return { ...el, width: 40 + rand() * 300, height: 40 + rand() * 200, fillColor: '#ffffff' };
+      });
+      const grid = buildElementGrid(els);
+      for (let n = 0; n < 15; n++) {
+        const from = { x: rand() * 3000, y: rand() * 2000 };
+        const to = { x: rand() * 3000, y: rand() * 2000 };
+        const arrow = createArrow(from.x, from.y, to.x, to.y);
+        const near = queryElementGrid(grid, routeBehindQueryRect(from, to));
+        expect(routeBehindHoles(arrow, from, to, near)).toEqual(
+          routeBehindHoles(arrow, from, to, els),
+        );
+      }
+    }
   });
 });

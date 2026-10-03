@@ -39,14 +39,36 @@ async function scrollToEnd(page: Page, scroller: Locator): Promise<void> {
   );
 }
 
+// Wheel the pane until the row's top sits `depth` px above the pane's top edge, deep inside the
+// row, however many rows the category holds above or below it.
+async function scrollDeepInto(
+  page: Page,
+  scroller: Locator,
+  key: string,
+  depth: number,
+): Promise<void> {
+  const row = scroller.locator(`[data-settings-row="${key}"]`);
+  const offset = () =>
+    row.evaluate((el) => {
+      const pane = el.closest('[class*="overflow-y-auto"]')!;
+      return Math.round(el.getBoundingClientRect().top - pane.getBoundingClientRect().top);
+    });
+  await scroller.hover();
+  await page.mouse.wheel(0, (await offset()) + depth);
+  await expect.poll(offset).toBe(-depth);
+  await page.evaluate(
+    () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+  );
+}
+
 test('Settings reopens on the last category and row, across a resize', async ({
   page,
   pageErrors,
 }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
+  await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 
@@ -92,13 +114,13 @@ test('Settings reopens on the last category and row, across a resize', async ({
 // anchor on the first frames of that (a ResizeObserver fires on observe).
 // Rects are shrunk by the scale but scrollTop is not, so an unscaled measure
 // lands short by 4% of how far the row's top sits above the pane: several
-// pixels deep inside a tall row, as Editor's Alignment Guides row (with its
-// drawing) is once the pane is scrolled to the end.
+// pixels deep inside a tall row, such as Editor's Alignment Guides row (with its drawing), 160px
+// into it: deep, yet still the top row (it is about 200px tall).
 test('Settings reopens deep inside a tall row without drifting', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.goto('/new');
-  await page.getByRole('button', { name: /^just draw$/i }).click();
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
+  await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 
@@ -108,11 +130,7 @@ test('Settings reopens deep inside a tall row without drifting', async ({ page, 
     .locator('[data-settings-row]')
     .first()
     .locator('xpath=ancestor::div[contains(@class, "overflow-y-auto")][1]');
-  await scroller.hover();
-  await scrollToEnd(page, scroller);
-  await page.evaluate(
-    () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
-  );
+  await scrollDeepInto(page, scroller, 'alignmentGuides', 160);
   const leftAt = await topRow(scroller);
   expect(leftAt.key).toBe('alignmentGuides');
   expect(leftAt.offset).toBeLessThan(-120);

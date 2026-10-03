@@ -105,8 +105,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 8,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
@@ -173,15 +173,15 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 14,
+    articleCount: 17,
     kind: 'feature',
   },
   {
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Highlighter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
-    articleCount: 11,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -189,15 +189,15 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 26,
+    articleCount: 25,
     kind: 'feature',
   },
   {
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 21,
+      'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
+    articleCount: 24,
     kind: 'feature',
   },
   {
@@ -214,14 +214,6 @@ export const categories: Category[] = [
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
     articleCount: 7,
-    kind: 'feature',
-  },
-  {
-    slug: 'activity-panel',
-    title: 'Activity Panel',
-    description:
-      'The running record of every change to a document, with undo, redo, and reverting a single change.',
-    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -316,7 +308,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
+      'settings preferences options config configure gear cog toggles panel layout floating toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -326,7 +318,7 @@ export const articles: Article[] = [
     title: 'Power User Mode',
     description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
     keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings',
+      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -383,7 +375,7 @@ export const articles: Article[] = [
     title: 'The Welcome Tour',
     description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
     keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar minimal floating',
+      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar floating',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -509,8 +501,10 @@ export const articles: Article[] = [
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest documents.',
-    keywords: 'login log in sign up register email code google oauth account create migrate',
+    description:
+      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+    keywords:
+      'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -552,6 +546,15 @@ export const articles: Article[] = [
     title: 'Connect an AI tool (MCP)',
     description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
     keywords: 'claude chatgpt cursor model context protocol ai integration assistant llm connector',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'google-drive',
+    title: 'Google Drive',
+    description: 'Sync My documents to your own Google Drive, both ways.',
+    keywords:
+      'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -632,7 +635,8 @@ export const articles: Article[] = [
     slug: 'offline-mode',
     title: 'Offline Mode',
     description: 'Save a document only in this browser, and move it to or from your account.',
-    keywords: 'local only browser private no sync device localstorage disconnect save location',
+    keywords:
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -731,8 +735,9 @@ export const articles: Article[] = [
   {
     slug: 'missing-changes',
     title: 'My Changes Are Missing',
-    description: 'How autosave works and how to recover with history.',
-    keywords: 'lost work autosave recover restore disappeared gone save history',
+    description: 'How autosave works and how to recover with undo.',
+    keywords:
+      'lost work autosave recover restore disappeared gone save history new version reload update',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
@@ -794,15 +799,6 @@ export const articles: Article[] = [
     title: 'Eraser',
     description: 'Click or drag across elements to delete them quickly.',
     keywords: 'delete remove rub out erase clear wipe',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'highlighter',
-    title: 'Highlighter',
-    description: 'Mark up the canvas with a wide translucent marker in five colours.',
-    keywords:
-      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color strength thin medium bold review workshop',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -1146,20 +1142,11 @@ export const articles: Article[] = [
     group: 'Palette Settings',
   },
   {
-    slug: 'minimal-panels',
-    title: 'Minimal Panels',
-    description: 'Swap floating panels for a compact button bar.',
-    keywords: 'compact dock hide chrome small collapse reduce clutter',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Palette Settings',
-  },
-  {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
     description: 'The palette as one strip across the top of the canvas.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles recent recently used order reorder',
+      'toolbar strip top bar excalidraw panel layout floating compact menu button explorer more tiles recent recently used order reorder',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1211,7 +1198,8 @@ export const articles: Article[] = [
     slug: 'templates',
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
-    keywords: 'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start',
+    keywords:
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1224,6 +1212,16 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     parentSlug: 'templates',
+  },
+  {
+    slug: 'draw-mode',
+    title: 'Draw mode',
+    description:
+      'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, erasers and shapes.',
+    keywords:
+      'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
+    category: 'Canvas',
+    categorySlug: 'canvas',
   },
   {
     slug: 'using-tabs',
@@ -1269,9 +1267,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene or PNG / SVG export, images included, into the active tab (it replaces the contents).',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw file paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene',
+      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1337,8 +1335,40 @@ export const articles: Article[] = [
   {
     slug: 'explorer-page',
     title: 'Explorer Page',
-    description: 'The full-page library: the sidebar sections, list view, and folders.',
-    keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    description:
+      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
+    keywords:
+      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'shape-libraries',
+    title: 'Shape libraries',
+    description:
+      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
+    keywords:
+      'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'drawio-import',
+    title: 'Importing draw.io files',
+    description:
+      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own document with a tab per page.',
+    keywords:
+      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'microsoft-whiteboard-import',
+    title: 'Importing Microsoft Whiteboard boards',
+    description:
+      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
+    keywords:
+      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1346,9 +1376,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer for switching documents without leaving the canvas.',
+      'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
     keywords:
-      'sidebar switch documents diagrams files library in editor open more menu new share export github',
+      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor open more menu new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1362,10 +1392,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'timeline',
-    title: 'Timeline',
-    description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
+    title: 'Home',
+    description:
+      'The Explorer\u2019s landing view: the documents you return to most, what others did, and your Timeline.',
     keywords:
-      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+      'home jump back in frecency most opened return often strip what happened others teammates summary expand see all activity all activity your timeline created updated opened phone switch tabs timeline landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1384,15 +1415,15 @@ export const articles: Article[] = [
     title: 'Recent Documents',
     description: 'The default view: the documents you opened or edited most recently.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed unsorted breadcrumb diagrams',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'shared-with-you',
-    title: 'Shared With You',
+    title: 'Shared With Me',
     description: 'Documents other people have shared with you, collected in one place.',
-    keywords: 'received from others incoming shares collaborations',
+    keywords: 'shared with me received from others incoming shares collaborations',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1405,28 +1436,40 @@ export const articles: Article[] = [
     categorySlug: 'explorer',
   },
   {
-    slug: 'unsorted',
-    title: 'The Unsorted Folder',
-    description: 'The catch-all for documents that are not filed in any folder yet.',
-    keywords: 'inbox uncategorised uncategorized catch all unfiled bucket',
+    slug: 'default-folders',
+    title: 'Default Folders',
+    description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
+    keywords:
+      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents',
+    category: 'Explorer',
+    categorySlug: 'explorer/folders',
+    parentSlug: 'folders',
+  },
+  {
+    slug: 'filters',
+    title: 'Search and Filter Documents',
+    description:
+      'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
+    keywords:
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'personal-space',
-    title: 'Personal Space and Folders',
+    title: 'My Documents and Folders',
     description:
-      'Your own library: the Unsorted and Favourites buckets, and the folders you create.',
+      'Your own library: the folders you create, and your unfiled documents at its root.',
     keywords:
-      'personal library my work your documents your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'The teams you belong to, their shared folders, and your pending invites.',
-    keywords: 'teams shared workspace invites membership group',
+    description: 'Each team as a space beside My documents, its shared folders, and your invites.',
+    keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1624,7 +1667,7 @@ export const articles: Article[] = [
     title: 'Quick Style Panel',
     description: 'Restyle a selection in one click; the next shape of that kind remembers it.',
     keywords:
-      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand',
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1633,6 +1676,22 @@ export const articles: Article[] = [
     title: 'Locking Elements',
     description: 'Protect an element from accidental moves, resizes, and deletion.',
     keywords: 'lock protect freeze prevent editing pin fixed immovable',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'undo',
+    title: 'Undo',
+    description: 'Step back your most recent change, with a keyboard shortcut and a button.',
+    keywords: 'ctrl z cmd z revert back mistake reverse cancel history',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'redo',
+    title: 'Redo',
+    description: 'Re-apply a change you just undid.',
+    keywords: 'ctrl y cmd shift z repeat restore forward again history',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1737,10 +1796,21 @@ export const articles: Article[] = [
     parentSlug: 'tools',
   },
   {
+    slug: 'highlighter',
+    title: 'Highlighter',
+    description: 'Lay a wide, translucent marker stroke from the Draw category, in five colours.',
+    keywords:
+      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color width thin medium bold strength quick style review workshop underline circle',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+  },
+  {
     slug: 'images',
     title: 'Images',
-    description: 'Add images to the canvas from your per-owner gallery.',
-    keywords: 'picture photo upload png jpg insert logo screenshot',
+    description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
+    keywords:
+      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1839,7 +1909,7 @@ export const articles: Article[] = [
     title: 'Selection Mode Buttons',
     description: 'A button that hands whoever presses it a selection mode.',
     keywords:
-      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric highlighter control bar press leave walkthrough read-only',
+      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -2135,48 +2205,6 @@ export const articles: Article[] = [
     category: 'Tools',
     categorySlug: 'tools/ai',
     parentSlug: 'ai',
-  },
-
-  // ---- Activity Panel (feature category landings) ----
-  {
-    slug: 'what-it-is',
-    title: 'What the Activity Panel Is',
-    description: 'A running record of every change to a document: who did what, and when.',
-    keywords: 'history log changes record audit trail events',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'how-it-works',
-    title: 'How the Activity Panel Works',
-    description: 'Per-tab entries, real-time updates, jumping to an element, and clearing history.',
-    keywords: 'history log entries realtime jump clear changes',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'undo',
-    title: 'Undo',
-    description: 'Step back your most recent change, with a keyboard shortcut and a button.',
-    keywords: 'ctrl z cmd z revert back mistake reverse cancel',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'redo',
-    title: 'Redo',
-    description: 'Re-apply a change you just undid.',
-    keywords: 'ctrl y cmd shift z repeat restore forward again',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'reverting-changes',
-    title: 'Reverting a Change',
-    description: 'Cancel one specific past change without disturbing later edits.',
-    keywords: 'rollback undo history restore specific single revert',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
   },
 
   // ---- Sub-articles: Session Tools ----

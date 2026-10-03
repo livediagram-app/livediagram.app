@@ -16,6 +16,7 @@
 import {
   hasRichFormatting,
   isEventStormingNote,
+  LABEL_FONT_PX,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -25,6 +26,7 @@ import {
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
+import type { TextHugLabel } from './useTextHug';
 
 export function renderLabel(
   element: BoxedElement,
@@ -39,9 +41,6 @@ export function renderLabel(
   onCommitLabel: (label: string, runs: TextRun[]) => void,
   onCancelEdit: () => void,
   editCursorAtEnd: boolean,
-  // Canvas zoom, so the floating edit toolbar counter-scales to a constant
-  // on-screen size inside the world transform.
-  zoom: number,
   fontFamily?: string,
   // Whole-element alignment setter surfaced in the edit toolbar (docs/specs/008-canvas/canvas-and-palette.md).
   // Operates on the current selection = the editing element.
@@ -56,15 +55,22 @@ export function renderLabel(
   // element's invisible bounding box. Set only for text elements (see
   // isTextNativeAnim in BoxedElementView); undefined otherwise.
   labelAnimClass?: string,
+  // A whiteboard text box hugging its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+  // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
+  // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
+  hug?: TextHugLabel,
 ) {
   const isSticky = element.type === 'sticky';
+  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  const textScale = element.type === 'text' ? (element.textScale ?? 1) : 1;
+  const textPadding = hug ? hug.padding : padding;
   // Shape elements don't carry a placeholder during edit. The user
   // is already mid-double-click on a visible shape, so the empty
   // input doesn't need "Label" filler nudging them; the surrounding
   // shape silhouette communicates context already. Sticky notes
   // and standalone text elements DO get a placeholder because their
   // pre-edit affordance is just an empty rectangle / nothing.
-  const placeholder = element.type === 'text' ? 'Text' : isSticky ? 'Note' : '';
+  const placeholder = element.type === 'text' ? (hug ? '' : 'Text') : isSticky ? 'Note' : '';
 
   // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — a presentation rule,
   // so it rides the label STYLE (and the fit below) rather than touching the
@@ -108,8 +114,9 @@ export function renderLabel(
     // Per-element placeholder colour: typed text inherits the element's
     // resolved textColor via currentColor (set on the parent view), so the
     // editor matches the committed label instead of snapping to a default.
+    // A note's placeholder is its own ink, faded.
     const textClass = isSticky
-      ? 'text-amber-950'
+      ? 'placeholder:opacity-50'
       : element.type === 'text'
         ? 'placeholder:text-slate-400'
         : 'placeholder:text-brand-300';
@@ -123,12 +130,13 @@ export function renderLabel(
         fitBox={fitBox}
         alignX={alignX}
         alignY={alignY}
-        padding={padding}
+        padding={textPadding}
+        textScale={textScale}
+        onLiveText={hug?.onLiveText}
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
         cursorAtEnd={editCursorAtEnd}
-        zoom={zoom}
         textClassName={textClass}
         onCommit={onCommitLabel}
         onCancel={onCancelEdit}
@@ -150,11 +158,11 @@ export function renderLabel(
         textSize={textSize}
         alignX={alignX}
         alignY={alignY}
-        padding={padding}
+        padding={textPadding}
+        textScale={textScale}
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
-        className={isSticky ? 'text-amber-950' : ''}
         animClass={labelAnimClass}
       />
     );
@@ -170,13 +178,12 @@ export function renderLabel(
         alignX={alignX}
         alignY={alignY}
         padding={padding}
-        className="text-amber-950"
         style={textStyle}
       />
     );
   }
 
-  if (textSize === 'scale') {
+  if (textSize === 'scale' && !hug) {
     if (!label) return null;
     return (
       <ScalingLabel
@@ -196,10 +203,10 @@ export function renderLabel(
   return (
     <FixedSizeLabel
       text={label}
-      size={textSize}
+      px={hug ? hug.fontPx : LABEL_FONT_PX[textSize] * textScale}
       alignX={alignX}
       alignY={alignY}
-      padding={padding}
+      padding={textPadding}
       style={textStyle}
       animClass={labelAnimClass}
     />

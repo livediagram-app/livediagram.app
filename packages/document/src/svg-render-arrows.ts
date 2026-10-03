@@ -3,7 +3,13 @@
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
 // paths. svg-render re-exports everything so importers keep resolving.
-import { angledElbow, arrowPathD, curveAnchorPoints, curveControlPoint } from './arrow-path';
+import {
+  angledElbow,
+  arrowPathD,
+  angledCornerPoints,
+  curveAnchorPoints,
+  curveControlPoint,
+} from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
   arrowheadShapeOf,
@@ -12,11 +18,14 @@ import {
   type ArrowheadShape,
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
-import { ROUTE_BEHIND_MARGIN, routeBehindHoles } from './arrow-behind';
+import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
+import { elementGridFor, queryElementGrid } from './element-grid';
 import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
+import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
@@ -33,7 +42,10 @@ export function arrowHeadRefs(
   const style = arrowStyleOf(arrow);
   const pts = arrow.curvePoints;
   if (pts && pts.length > 0 && (style === 'curved' || style === 'angled')) {
-    const anchors = curveAnchorPoints(from, to, pts);
+    const anchors =
+      style === 'angled'
+        ? angledCornerPoints(from, to, pts, arrow.from, arrow.to)
+        : curveAnchorPoints(from, to, pts);
     return { toRef: anchors[anchors.length - 1]!, fromRef: anchors[0]! };
   }
   if (style === 'curved') {
@@ -57,6 +69,8 @@ export function svgArrowhead(
   // into generic filled triangles. Defaults match the canvas defaults.
   shape: ArrowheadShape = 'triangle',
   sizePx: number = ARROWHEAD_SIZE_PX.medium,
+  // What a hollow head is filled with: the paper beneath, as on the canvas.
+  paper = '#ffffff',
 ): string {
   const angle = Math.atan2(to.y - from.y, to.x - from.x);
   // The legacy export drew an 8px triangle for the 6px (medium) marker
@@ -66,7 +80,7 @@ export function svgArrowhead(
   const uy = Math.sin(angle);
   const fill = xmlEscape(color);
   // Hollow variants paint white over the line beneath; `line` is an open V.
-  const hollow = ` fill="#ffffff" stroke="${fill}" stroke-width="1.5" stroke-linejoin="round"`;
+  const hollow = ` fill="${xmlEscape(paper)}" stroke="${fill}" stroke-width="1.5" stroke-linejoin="round"`;
   const pt = (x: number, y: number) => `${r2(x)},${r2(y)}`;
   const tip = pt(to.x, to.y);
   const wingA = pt(
@@ -111,7 +125,7 @@ export function svgArrowhead(
 }
 
 export function svgArrow(
-  arrow: ArrowElement,
+  source: ArrowElement,
   elements: Element[],
   surface: CanvasSurface = 'light',
   // The tab's font, for a caption that has not chosen one of its own
@@ -129,7 +143,12 @@ export function svgArrow(
   // that leaves hidden layers out must not break a line around a box that
   // isn't in the picture. Defaults to every element.
   occluders: Iterable<Element> = elements,
+  // The paper a hollow head is filled with; the surface's default canvas colour unless the caller
+  // knows the tab's own background.
+  paper: string = surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR,
 ): string {
+  // A stock colour stored by name is drawn in its version for this page.
+  const arrow = resolveStockColours(source, surface);
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
   const rawFrom = endpointPosition(arrow.from, elements);
@@ -160,7 +179,10 @@ export function svgArrow(
   // (docs/specs/008-canvas/arrow-route-behind.md), and around the label knockouts. Both go in one
   // mask, the same one ArrowView mints, so the export shows the same gaps.
   const holes = [
-    ...routeBehindHoles(arrow, from, to, occluders).map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
+    ...routeBehindHoles(arrow, from, to, nearOccluders(occluders, from, to)).map((h) => ({
+      ...h,
+      rx: ROUTE_BEHIND_MARGIN,
+    })),
     ...labels.knockoutsOf(arrow.id).map((k) => ({ ...k, rx: KNOCKOUT_RADIUS_PX })),
   ];
   const maskId =
@@ -175,9 +197,9 @@ export function svgArrow(
   const headShape = arrowheadShapeOf(arrow);
   const headSize = ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
   if (ends === 'to' || ends === 'both')
-    parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize));
+    parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize, paper));
   if (ends === 'from' || ends === 'both')
-    parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize));
+    parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize, paper));
   const layout = labels.layouts.get(arrow.id);
   if (layout) {
     // The caption as it is actually styled (docs/specs/008-canvas/arrow-labels.md): laid out by the
@@ -233,4 +255,16 @@ function svgArrowMask(id: string, rects: (Rect & { rx: number })[]): string {
     `<mask id="${xmlEscape(id)}" maskUnits="userSpaceOnUse" x="${MASK_ORIGIN}" y="${MASK_ORIGIN}" width="${MASK_SIZE}" height="${MASK_SIZE}">` +
     `<rect x="${MASK_ORIGIN}" y="${MASK_ORIGIN}" width="${MASK_SIZE}" height="${MASK_SIZE}" fill="white"/>${holes}</mask>`
   );
+}
+
+// The occluders worth testing for one arrow: from a list, its neighbours through the list's element
+// grid, so a render of every arrow costs each arrow its neighbourhood rather than the whole board
+// (docs/specs/008-canvas/canvas-performance.md).
+function nearOccluders(
+  occluders: Iterable<Element>,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): Iterable<Element> {
+  if (!Array.isArray(occluders)) return occluders;
+  return queryElementGrid(elementGridFor(occluders), routeBehindQueryRect(from, to));
 }

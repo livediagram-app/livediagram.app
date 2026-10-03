@@ -22,6 +22,7 @@ import {
   type TableElement,
   type TextElement,
 } from './index';
+import { packFreehandPoints } from './freehand-points';
 
 // The shape kind table + createShape live in './shape-factory'. Re-exported
 // here so every existing `from './factories'` import (graph-authoring) and the
@@ -174,61 +175,20 @@ export function createImage(x: number, y: number): ImageElement {
   };
 }
 
-// Mints a freehand element from raw canvas-coord points. Caller is
-// responsible for the simplification + smoothing decision (see
-// `simplifyPolyline` and `catmullRomToBezierPath` below); this just
-// computes the bounding box and normalises the points into [0..1]
-// inside it so the saved element resizes proportionally without the
-// renderer needing the original canvas coords back. A degenerate
-// (single-point) gesture returns a 1x1 box with one normalised point
-// at the origin, which the caller can detect and reject.
+// Mints a freehand element from raw canvas-coord points (freehandGeometry). The
+// caller decides the simplification and smoothing (see `simplifyPolyline` and
+// `catmullRomToBezierPath`). A degenerate (single-point) gesture returns a box
+// with one normalised point, which the caller can detect and reject.
+// A pen's pressures (one per point, 0 to 1) are packed with the points.
 export function createFreehand(
-  rawPoints: { x: number; y: number }[],
+  rawPoints: readonly { x: number; y: number }[],
   closed: boolean,
+  pressures?: readonly number[],
 ): FreehandElement {
-  if (rawPoints.length === 0) {
-    return {
-      id: crypto.randomUUID(),
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 1,
-      height: 1,
-      points: [],
-      closed,
-    };
-  }
-  let minX = rawPoints[0]!.x;
-  let maxX = rawPoints[0]!.x;
-  let minY = rawPoints[0]!.y;
-  let maxY = rawPoints[0]!.y;
-  for (const p of rawPoints) {
-    if (p.x < minX) minX = p.x;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.y > maxY) maxY = p.y;
-  }
-  // Pad the box by a single pixel on each side so a perfectly
-  // straight line (zero width OR zero height) still has a non-zero
-  // dimension to normalise against. Without this, dividing by 0
-  // produces NaN points and the renderer breaks.
-  const PAD = 1;
-  const width = Math.max(1, maxX - minX + PAD * 2);
-  const height = Math.max(1, maxY - minY + PAD * 2);
-  const ox = minX - PAD;
-  const oy = minY - PAD;
-  const points = rawPoints.map((p) => ({
-    nx: (p.x - ox) / width,
-    ny: (p.y - oy) / height,
-  }));
   return {
     id: crypto.randomUUID(),
     type: 'freehand',
-    x: ox,
-    y: oy,
-    width,
-    height,
-    points,
+    ...packFreehandPoints(rawPoints, pressures),
     closed,
   };
 }

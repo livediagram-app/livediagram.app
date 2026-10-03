@@ -21,10 +21,16 @@ import {
 import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
 import { markDocumentDeleted } from '@/lib/document-tombstones';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
-import { TRASH_RESTORE_HINT } from '@/lib/trash-copy';
+import { deleteConfirmation, lookUpShareLinks } from '@/lib/delete-confirmation';
+import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
+import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
+import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
+
+// A personal folder as a delete needs it: its name and where it sits.
+export type FolderNode = { id: string; name: string; parentId: string | null };
 
 type DocumentListActionsDeps = {
   // The resolved owner id. Null / placeholder while identity is still
@@ -42,11 +48,13 @@ type DocumentListActionsDeps = {
   // errors always surface (see useToast).
   toast: ReturnType<typeof useToast>;
   // useFolders' delete. deleteFolder below chains the document-side
-  // re-bucket cascade in front of it so rows visibly fall to
-  // Unsorted instead of waiting for the next list refresh. Only
-  // DIRECT children re-bucket, mirroring the server (subfolders are
-  // promoted to root, so documents inside them stay put).
+  // cascade in front of it so rows visibly move up to the deleted folder's
+  // parent instead of waiting for the next list refresh. Only DIRECT
+  // children move, mirroring the server (docs/specs/013-workspace/folders.md
+  // "Deleting a folder": subfolders keep their own contents).
   deleteFolderFromHook: (id: string) => void;
+  // The personal folders, so the confirmation names the parent. Absent = [].
+  folders?: readonly FolderNode[];
   // The document currently open in the editor, if the surface has
   // one. deleteDocument redirects to /live/explorer when deleting it
   // (the editor would otherwise stare at a row that no longer
@@ -70,6 +78,7 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     confirm,
     toast,
     deleteFolderFromHook,
+    folders = [],
     currentDocument = null,
     afterDuplicate,
     sharedDocuments = [],
@@ -138,23 +147,17 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   ) => {
     if (typeof window === 'undefined' || !ownerId) return;
     if (!opts?.skipConfirm) {
-      const target =
-        id === currentDocument?.id
-          ? { name: currentDocument.name }
-          : documentList.find((d) => d.id === id);
-      // Tabs also in other documents stay there; say so before it happens.
-      const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
-      const ok = await confirm({
-        title: `Delete "${target?.name || 'this document'}"?`,
-        message: [
-          'Its share links stop working, and visitors see that it was deleted.',
-          notice,
-          TRASH_RESTORE_HINT,
-        ]
-          .filter(Boolean)
-          .join(' '),
-        confirmLabel: 'Delete document',
-      });
+      const listed = documentList.find((d) => d.id === id);
+      const name = id === currentDocument?.id ? currentDocument.name : listed?.name;
+      // Tabs also in other documents stay there, and share links stop working:
+      // said only when they apply (lib/delete-confirmation.ts).
+      const [notice, hasShareLinks] = await Promise.all([
+        fetchSharedTabsNotice(ownerId, id, 'delete'),
+        listed ? Promise.resolve(listed.shareCode !== null) : lookUpShareLinks(ownerId, id),
+      ]);
+      const ok = await confirm(
+        deleteConfirmation({ name, hasShareLinks, sharedTabsNotice: notice }),
+      );
       if (!ok) return;
     }
     // Tombstone first, ALWAYS: the open editor's autosave (debounce + the
@@ -188,21 +191,28 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     toast.success('Document deleted');
   };
 
-  // Delete a folder (docs/specs/013-workspace/folders.md): confirm, re-bucket its direct
-  // documents to Unsorted locally, then let useFolders handle the
-  // folder rows + the API call. `name` personalises the confirm
+  // Delete a folder (docs/specs/013-workspace/folders.md "Deleting a folder"): confirm (naming
+  // where the contents go, and warning when it is one of the reader's default folders), move its
+  // direct documents up to its parent locally, then let useFolders handle the folder rows + the
+  // API call. `name` personalises the confirm
   // title when the caller has it. Returns whether the delete went
   // through, so callers with selection state (the /explorer sidebar)
   // can bounce focus only on an actual delete.
   const deleteFolder = async (id: string, name?: string): Promise<boolean> => {
-    const ok = await confirm({
-      title: name ? `Delete "${name}"?` : 'Delete this folder?',
-      message:
-        'Documents inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
-      confirmLabel: 'Delete folder',
-    });
+    const folder = folders.find((f) => f.id === id);
+    const parentId = folder?.parentId ?? null;
+    const ok = await confirm(
+      folderDeleteConfirmation({
+        name: name ?? folder?.name ?? '',
+        parentName: folders.find((f) => f.id === parentId)?.name ?? null,
+        scope: 'personal',
+        defaultKeys: folderDefaultKeys(id, placementDefaultsSnapshot().defaults),
+      }),
+    );
     if (!ok) return false;
-    setDocumentList((prev) => prev.map((d) => (d.folderId === id ? { ...d, folderId: null } : d)));
+    setDocumentList((prev) =>
+      prev.map((d) => (d.folderId === id ? { ...d, folderId: parentId } : d)),
+    );
     deleteFolderFromHook(id);
     return true;
   };
@@ -214,9 +224,9 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
     void apiSetDocumentFolder(ownerId, id, folderId)
       .then(() => {
         // The row leaves the current view (it's now under the target
-        // folder / Unsorted), so confirm where it went — only once the
+        // folder / the root), so confirm where it went — only once the
         // server actually accepted the move.
-        toast.success(folderId ? 'Moved to folder' : 'Moved to Unsorted');
+        toast.success(folderId ? 'Moved to folder' : 'Moved to My documents');
         track('Document', 'Moved');
       })
       .catch(() => {

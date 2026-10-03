@@ -32,11 +32,9 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(opForScope({ kind: 'select', elementId: 'e1', tabId: SCOPE }, SCOPE)).not.toBeNull();
   });
 
-  it('delivers log entries of its own tab only', () => {
-    expect(opForScope({ kind: 'log', entry: { tabId: SCOPE } }, SCOPE)).not.toBeNull();
-    expect(opForScope({ kind: 'log', entry: { tabId: 't1' } }, SCOPE)).toBeNull();
-    expect(opForScope({ kind: 'log', entry: { tabId: null } }, SCOPE)).toBeNull();
-    expect(opForScope({ kind: 'log' }, SCOPE)).toBeNull();
+  it('withholds the retired activity-log ops a stale client may still send', () => {
+    expect(opForScope({ kind: 'log', entry: { tabId: SCOPE } }, SCOPE)).toBeNull();
+    expect(opForScope({ kind: 'log-remove', entryId: 'e1' }, SCOPE)).toBeNull();
   });
 
   it('redacts document-meta the way the REST document is redacted', () => {
@@ -60,7 +58,6 @@ describe('opForScope (what a scoped session receives)', () => {
 
   it('delivers the tab-less session ops', () => {
     for (const kind of [
-      'log-remove',
       'poll-start',
       'poll-answer',
       'poll-end',
@@ -88,13 +85,11 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
 
   it('lets it act on its own tab', () => {
     expect(scopedSenderMayRelay({ kind: 'el', tabId: SCOPE }, SCOPE)).toBe(true);
-    expect(scopedSenderMayRelay({ kind: 'log', entry: { tabId: SCOPE } }, SCOPE)).toBe(true);
   });
 
   it('refuses any other tab', () => {
     expect(scopedSenderMayRelay({ kind: 'el', tabId: 't1' }, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay({ kind: 'tab-focus', tabId: 't1' }, SCOPE)).toBe(false);
-    expect(scopedSenderMayRelay({ kind: 'log', entry: { tabId: 't1' } }, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay({ kind: 'select', elementId: 'e1' }, SCOPE)).toBe(false);
   });
 
@@ -103,7 +98,7 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
   });
 
   it('lets it take part in the session', () => {
-    for (const kind of ['poll-answer', 'poll-start', 'poll-end', 'log-remove']) {
+    for (const kind of ['poll-answer', 'poll-start', 'poll-end']) {
       expect(scopedSenderMayRelay({ kind }, SCOPE), kind).toBe(true);
     }
   });

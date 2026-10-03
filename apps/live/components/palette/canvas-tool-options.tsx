@@ -2,7 +2,6 @@ import {
   AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
-  HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -14,7 +13,7 @@ import {
 import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
 
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
-// Highlighter / Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives
+// Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
 // Eraser and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
@@ -54,15 +53,6 @@ export function buildCanvasToolOptions({
       icon: <FormatPainterIcon />,
       group: 0,
       disabled: canvasEmpty,
-    },
-    // The marker (docs/specs/008-canvas/highlighter.md). An editing tool, in the Edit band with the eraser
-    // it undoes: unlike everything below it, the highlighter MAKES content, so
-    // it is the one tool here that stays live on an empty canvas.
-    {
-      id: 'highlighter',
-      label: 'Highlighter',
-      icon: <HighlighterIcon />,
-      group: 0,
     },
     {
       id: 'laser',

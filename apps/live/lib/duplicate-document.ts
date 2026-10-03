@@ -23,13 +23,40 @@
 // the helper deliberately doesn't touch state outside the api
 // round-trip so it can stand alone.
 
+import type { CreationIntent, DocumentPlacement, RecordedIntent } from '@livediagram/api-schema';
 import { remapTabLinks, type Tab } from '@livediagram/document';
 import { apiCreateDocument, apiLoadDocument, apiLoadTab, apiSaveDocumentMeta } from './api-client';
+import { ApiError } from './api/core';
 import { isOfflineId, offlineCreateDocument } from './offline/offline-store';
 
+// The refusals that mean "not beside the source for this person", where the copy is filed at the
+// explicit root of My documents instead (docs/specs/013-workspace/default-folders.md "Duplicate").
+const PLACE_REFUSALS: ReadonlySet<string> = new Set([
+  'team_forbidden',
+  'folder_not_found',
+  'folder_scope_mismatch',
+]);
+const EXPLICIT_ROOT: DocumentPlacement = { teamId: null, folderId: null };
+
+// The source's recorded creation intent, carried unchanged; none when it is unknown.
+function recordedIntentOf(src: RecordedIntent): CreationIntent | undefined {
+  if (!src.opensIn || !src.tabKind) return undefined;
+  return {
+    mode: src.opensIn,
+    tabKind: src.tabKind,
+    ...(src.templateFamily ? { templateFamily: src.templateFamily } : {}),
+  };
+}
+
+// `placement` files the copy in the create itself (docs/specs/013-workspace/folders.md "Placement
+// on create"). Absent, the copy goes beside its source: the source's own team and folder. Either way
+// it is an explicit placement (`folderId` always sent, null being the root chosen on purpose), so a
+// Duplicate is never routed by a default folder; it records the source's recorded intent unchanged
+// (docs/specs/013-workspace/default-folders.md "Duplicate").
 export async function duplicateDocument(
   ownerId: string,
   sourceId: string,
+  placement?: DocumentPlacement,
 ): Promise<string | undefined> {
   const src = await apiLoadDocument(ownerId, sourceId).catch(() => null);
   if (!src) return undefined;
@@ -70,14 +97,27 @@ export async function duplicateDocument(
   // A failed create must return undefined per the contract above —
   // returning the id anyway made callers toast "Document duplicated"
   // and navigate to a document that doesn't exist.
-  try {
-    await apiCreateDocument(ownerId, {
+  const intent = recordedIntentOf(src);
+  const create = (place: DocumentPlacement) =>
+    apiCreateDocument(ownerId, {
       id: newId,
       name: `${src.name} copy`,
       tabs: remappedTabs,
+      teamId: place.teamId,
+      folderId: place.folderId,
+      ...(intent ? { intent } : {}),
     });
-  } catch {
-    return undefined;
+  try {
+    await create(placement ?? { teamId: src.teamId, folderId: src.folderId });
+  } catch (error) {
+    const code = error instanceof ApiError ? error.code : null;
+    if (code === null || !PLACE_REFUSALS.has(code)) return undefined;
+    console.warn(`[duplicate] placement refused reason=${code}, filed at the root`);
+    try {
+      await create(EXPLICIT_ROOT);
+    } catch {
+      return undefined;
+    }
   }
   // Tab-folder structure (docs/specs/006-document/tab-folders.md) doesn't ride the create — the seed
   // path strips per-tab `folder` — so it's re-applied via the same meta

@@ -32,7 +32,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-  lucideWorkflow,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -98,16 +97,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // person glyphs (`chairs`, `roll-calls`, `search-teams`, `profile`,
   // `done-checks`) — every one of them a head-and-shoulders bust. So these two are
   // whole figures mid-stride, which is also what the feature is: walking.
-  //
-  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
-  // pencil, so the tip shape is what separates all three.
-  highlighter: (
-    <Glyph>
-      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" />
-      <path d="M8 13.5L6 17l5-1" />
-      <path d="M3.5 20.5h17" />
-    </Glyph>
-  ),
   'avatar-mode': (
     <Glyph>
       <Prims prims={lucideFootprints} />
@@ -302,6 +291,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucidePencilLine} />
     </Glyph>
   ),
+  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
+  // pencil, so the tip shape is what separates all three.
+  highlighter: (
+    <Glyph>
+      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" />
+      <path d="M8 13.5L6 17l5-1" />
+      <path d="M3.5 20.5h17" />
+    </Glyph>
+  ),
   'selecting-and-grouping': (
     <Glyph>
       <path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3" />
@@ -332,6 +330,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="2.5" y="4" width="8" height="8" rx="1" transform="rotate(-4 6.5 8)" />
       <rect x="13.5" y="3.5" width="8" height="8" rx="1" transform="rotate(5 17.5 7.5)" />
       <rect x="8" y="13.5" width="8" height="8" rx="1" transform="rotate(-3 12 17.5)" />
+    </Glyph>
+  ),
+  // A board on its stand with a marker scribble.
+  'draw-mode': (
+    <Glyph>
+      <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
+      <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
+      <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
   'using-tabs': (
@@ -1096,18 +1102,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M16.8 14.8h4.4" />
     </Glyph>
   ),
-  // Activity Panel category.
-  'what-it-is': (
-    <Glyph>
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M8 9h8M8 13h8M8 17h5" />
-    </Glyph>
-  ),
-  'how-it-works': (
-    <Glyph>
-      <Prims prims={lucideWorkflow} />
-    </Glyph>
-  ),
+  // Canvas category: Undo / Redo.
   undo: (
     <Glyph>
       <path d="M9 7L4 12l5 5" />
@@ -1118,12 +1113,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M15 7l5 5-5 5" />
       <path d="M20 12H9a5 5 0 000 10h1" />
-    </Glyph>
-  ),
-  'reverting-changes': (
-    <Glyph>
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5M12 7v5l4 2" />
     </Glyph>
   ),
   'session-tools': (
@@ -1193,12 +1182,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3v18" />
       <rect x="4" y="6" width="6" height="4" rx="1" />
       <rect x="14" y="14" width="6" height="4" rx="1" />
-    </Glyph>
-  ),
-  'minimal-panels': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 8h18M6 14h4M6 17h7" />
     </Glyph>
   ),
   // The strip across the top of a window, with the menu button's three bars
@@ -1329,10 +1312,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideMagnet} />
     </Glyph>
   ),
-  // Explorer section guides — the five landing cards. `folders` and `unsorted`
-  // are the awkward pair: the Explorer's own CATEGORY glyph is a folder tree, so
-  // these two have to be folders that are unmistakably about something else —
-  // nesting for one, and being outside a folder for the other.
+  // Explorer section guides. The Explorer's own CATEGORY glyph is a folder tree, so
+  // `folders` has to be a folder that is unmistakably about nesting.
   'list-and-card-views': (
     <Glyph>
       <path d="M3 7h6M3 12h6M3 17h6" />
@@ -1367,12 +1348,18 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 12.5A1.5 1.5 0 0110.5 11h2l1.5 1.5h4a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 019 19z" />
     </Glyph>
   ),
-  // Loose documents sitting OUTSIDE the folder, which is what Unsorted holds.
-  unsorted: (
+  // A new document dropping into its folder: where things go without being told.
+  'default-folders': (
     <Glyph>
-      <path d="M3 13.5A1.5 1.5 0 014.5 12h3L9 13.5h9a1.5 1.5 0 011.5 1.5v4A1.5 1.5 0 0118 20.5H4.5A1.5 1.5 0 013 19z" />
-      <rect x="6.5" y="3.5" width="6" height="4.5" rx="1" />
-      <rect x="14" y="5.5" width="6" height="4.5" rx="1" />
+      <path d="M3 10.5A1.5 1.5 0 014.5 9h3L9 10.5h10.5A1.5 1.5 0 0121 12v6.5a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.5z" />
+      <path d="M12 3v8.5" />
+      <path d="M9 8.5l3 3 3-3" />
+    </Glyph>
+  ),
+  // A funnel: a list, narrowed.
+  filters: (
+    <Glyph>
+      <path d="M3 4.5h18l-7 8v6l-4 2v-8z" />
     </Glyph>
   ),
   // An account, not a person in a list: the head sits in its avatar ring.
@@ -1444,6 +1431,29 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />
       <path d="M12 3v9M9 9l3 3 3-3" />
+    </Glyph>
+  ),
+  // A stack of cards with a shape on the top one: a set of shapes that is yours.
+  'shape-libraries': (
+    <Glyph>
+      <path d="M6 5h12a1.5 1.5 0 0 1 1.5 1.5V17" />
+      <rect x="3.5" y="8" width="13" height="12" rx="1.5" />
+      <circle cx="10" cy="14" r="3" />
+    </Glyph>
+  ),
+  // A diagram's box and decision, joined by a bent connector, arriving as a document.
+  'drawio-import': (
+    <Glyph>
+      <rect x="3" y="4" width="8" height="5" rx="1" />
+      <path d="M7 9v6h4" />
+      <path d="M16.5 11.5l3.5 3.5-3.5 3.5-3.5-3.5z" />
+    </Glyph>
+  ),
+  // A board's ink arriving in a tab.
+  'microsoft-whiteboard-import': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
     </Glyph>
   ),
   'export-tabs': (
@@ -1598,13 +1608,6 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
       <path d="M4 7V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V7M20 15v3.5a1.5 1.5 0 01-1.5 1.5H16" />
       <path d="M4 12v3" />
       <path d="M9 11l6.5 3-2.7 1 1.6 3-1.6.8-1.6-3-1.9 1.9z" />
-    </Glyph>
-  ),
-  // A panel with a pulse: what just happened.
-  'activity-panel': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M6 13h3l1.5-3 2 6 1.5-3h3" />
     </Glyph>
   ),
 };

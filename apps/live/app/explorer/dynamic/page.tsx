@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
+import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/dynamic — the parent view for the synthetic folders (Unsorted,
-// Generated, Offline): live views over your documents, grouped under one
-// "Dynamic" folder so Personal Space stays tidy. The layout's ExplorerShell
-// provides the chrome + state; this page only pins the route and the tab
-// title (docs/specs/013-workspace/folders.md, routes.ts).
+// /explorer/dynamic is retired (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
+// it replaces itself with its successor, so links to it keep working.
 export const metadata: Metadata = {
-  title: 'Dynamic | livediagram',
+  title: 'Explorer | livediagram',
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return <RetiredViewRedirect from="dynamic" />;
 }

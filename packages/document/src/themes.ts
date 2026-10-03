@@ -218,6 +218,9 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
     { element: 'fillColor', theme: 'elementFill' },
     { element: 'strokeColor', theme: 'elementStroke' },
   ],
+  // A path themes its line only: a fill would close over an open path's bowl
+  // (docs/specs/023-draw-mode/path-tool.md "Style").
+  path: [{ element: 'strokeColor', theme: 'elementStroke' }],
   text: [{ element: 'textColor', theme: 'elementText' }],
   // Tables theme their grid lines + cell text, but keep cells
   // transparent (no fill mapping) so the grid reads as a grid.

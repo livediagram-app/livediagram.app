@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 Documentation for livediagram, the open-source real-time diagram editor.
 
-livediagram is a multiplayer canvas in the browser: teams build diagrams and mindmaps together in real time, with shared cursors, live selections and a per-tab activity log with revert. The canvas works without signing in, so starting is "open the link, start drawing". The hosted product runs free at [livediagram.app](https://livediagram.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
+livediagram is a multiplayer canvas in the browser: teams build diagrams and mindmaps together in real time, with shared cursors and live selections. The canvas works without signing in, so starting is "open the link, start drawing". The hosted product runs free at [livediagram.app](https://livediagram.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
 
 These docs are the practical guide: what the app does, how to run it locally, how to host it on your own Cloudflare account, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
 

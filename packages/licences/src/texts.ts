@@ -123,6 +123,11 @@ export const TEXT_SOURCES: readonly TextSource[] = [
     sha256: 'b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57',
   },
   {
+    file: 'drawio-31.7.0-LICENSE.txt',
+    sources: ['https://raw.githubusercontent.com/jgraph/drawio/v31.7.0/LICENSE'],
+    sha256: 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
+  },
+  {
     file: 'feather-4.29.2-LICENSE.txt',
     sources: ['https://raw.githubusercontent.com/feathericons/feather/v4.29.2/LICENSE'],
     sha256: '308028e93fcf84972523cdf6e616f73168546b4953895f516d01287f16fe7bee',

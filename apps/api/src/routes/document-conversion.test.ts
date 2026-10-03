@@ -41,8 +41,6 @@ const db = vi.hoisted(() => ({
   getTab: vi.fn(),
   upsertTab: vi.fn(),
   getParticipant: vi.fn(),
-  listChangeLog: vi.fn(),
-  insertChangeLogEntry: vi.fn(),
   createShareLink: vi.fn(),
   generateShareCode: vi.fn(() => 'CODE2345'),
   getShareLinkIncludingExpired: vi.fn(),

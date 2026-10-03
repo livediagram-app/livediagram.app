@@ -1,12 +1,12 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, test, openJustDraw } from './fixtures';
+import { expect, expectNoPageErrors, test, openStartBlank } from './fixtures';
 
 // Scrollbars are in-theme everywhere (docs/specs/004-interface-design/scrollbars.md): no surface that
 // scrolls is left on the operating system's default, in either appearance.
 
 async function openEditor(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   await page.emulateMedia({ colorScheme: scheme });
-  await openJustDraw(page);
+  await openStartBlank(page);
 }
 
 // Every element on the page that scrolls, with the thumb colour it resolves

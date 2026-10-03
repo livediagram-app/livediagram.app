@@ -62,22 +62,10 @@ export type EditorDragDeps = {
   // Cmd-Z undoes the whole gesture.
   tick: (mapper: (els: Element[]) => Element[]) => void;
   commit: (mapper: (els: Element[]) => Element[]) => void;
-  // Returns the undo-marker token of the pushed step (lib/entry-history)
-  // so the gesture's debounced log entry can fill exactly that step.
-  markCheckpoint: () => number;
+  markCheckpoint: () => void;
   // Escape-cancel: restore the gesture's checkpoint and discard the
-  // step + its marker (no redo entry — a cancelled drag never happened).
+  // step (no redo entry, a cancelled drag never happened).
   cancelToCheckpoint: () => void;
-  // Debounced activity-log emitter (see useActivityLogDebounce). Called
-  // on every mutating tick of an edit gesture; the per-key 500ms window
-  // collapses the whole drag into ONE entry that diffs pre-gesture vs
-  // final state. A continuous move/resize never flushes mid-drag (each
-  // tick resets the timer), so the panel gets one "Moved a Square", not
-  // one row per frame. `fillToken` names the gesture's checkpoint step.
-  scheduleElementChangeLog: (
-    key: string,
-    opts?: { fillToken?: number; onWindowStart?: () => number },
-  ) => void;
   // A standalone icon shape was dragged + released over another (non-
   // icon) shape: fold it INTO that shape as an inline icon on the named
   // side, removing the standalone element (docs/specs/008-canvas/canvas-and-palette.md). Omitted when icon

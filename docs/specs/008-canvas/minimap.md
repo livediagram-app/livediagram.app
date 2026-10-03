@@ -9,16 +9,11 @@ lets you jump the viewport anywhere with a tap or drag.
   like the Palette), labelled **"Map"**: drag its header to move it and collapse
   it to a banner. It **docks into the four canvas corners** like the other panels
   ([Panel corner docking](../007-editor/panel-docking.md)) — snap-to-corner on drag, free-drop, and a
-  device-local persisted position; its default corner is **bottom-left**, where
-  it stacks with the Activity panel.
+  device-local persisted position; its default corner is **bottom-left**.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, and **on desktop** (hidden on
-  mobile, where the canvas is already edge-to-edge and the corner is the mobile
-  dock's). Also hidden entirely in the **minimal panel layout** ([Canvas and palette](canvas-and-palette.md)'s
-  compact dock mode): minimal mode collapses panels to dock buttons, and a
-  free-floating map contradicts that intent, so it doesn't render there at all. It **stacks** with the Activity panel in the bottom-left rather than
-  hiding behind it (the docking layout reflows them); the old "defer until
-  Activity is minimised" rule is gone.
+  mobile, where the canvas is already edge-to-edge). It stacks with any other panel docked bottom-left rather than hiding
+  behind it (the docking layout reflows them).
 - **Enable / disable + reset.** The map's preferences (**Enable Map**, **Dim
   Outside the View**, **Map Size**) live in the **Settings** dialog
   ([User preferences](../007-editor/user-preferences.md)), under Panels › Map.
@@ -36,7 +31,14 @@ lets you jump the viewport anywhere with a tap or drag.
   (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its
   real colours, silhouette, table grid, freehand stroke, icon glyph (the
   Technology marks pop in when the async catalogue lands), rotation, and
-  every arrow with its true curved / elbow path — not a grey wireframe. The
+  every arrow with its true curved / elbow path — not a grey wireframe. That
+  drawing is shown as **one image**, not as a copy of the board in the page: on
+  a large board a live copy doubled the page's elements and slowed every
+  gesture ([Canvas performance](canvas-performance.md)). **It draws no labels**:
+  element and arrow labels are left out of the picture. On a board of any size
+  they come out a pixel or two tall, too small to read, while laying them out
+  was half of the picture's cost (on a 1,000-element board, about 210 ms of the
+  browser's work at a slowed CPU, against 100 ms without). The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
   a glance as where you are. The window is coloured exactly like the canvas
@@ -79,7 +81,9 @@ letterboxing handled for free.
 
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
-  memoised on `elements` so panning only re-renders the viewport rectangle.
+  memoised on `elements` so panning only re-renders the viewport rectangle, and
+  redrawn when a gesture ends rather than on each frame of it, a remote edit at most
+  every 250 ms ([Canvas performance](canvas-performance.md)).
   The `<main>` size (`W`,`H` above) comes in as a prop, measured by `Canvas`,
   which owns `<main>`. The map must not observe `<main>` itself: it renders
   inside `<main>`, and a child's layout effect runs before its parent's ref
@@ -89,7 +93,7 @@ letterboxing handled for free.
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.
 - `Canvas` renders it gated on
-  `mapEnabled && !isMobile && elements.length >= 4 && (mapPosition !== null || activityMinimized)`.
+  `!chromeHidden && !isMobile && mapEnabled && elements.length >= 4` (useCanvasChromePanels).
 
 Boxed elements only for now (arrows are usually within their endpoints'
 boxes); extending the bounds to arrow geometry is a possible follow-up.

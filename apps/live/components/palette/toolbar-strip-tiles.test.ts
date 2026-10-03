@@ -51,19 +51,49 @@ describe('stripTilesFor', () => {
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
   });
 
-  it('brings a used tile to the front, pushing the last one behind More', () => {
-    const favouriteIds = tilesForCategory('shapes')
-      .slice(0, STRIP_TILE_LIMIT + 1)
-      .map((t) => t.id);
-    const used = favouriteIds[STRIP_TILE_LIMIT]!;
-    const strip = stripTilesFor('favourites', { favouriteIds, hasImage: true, recent: [used] });
-    expect(strip.tiles.map((t) => t.id)).toEqual([used, ...favouriteIds.slice(0, -2)]);
+  // docs/specs/007-editor/toolbar-layout.md: using a tile never reorders the strip.
+  it('keeps the category\u2019s own order, the first tiles on the strip and the rest behind More', () => {
+    const own = tilesForCategory('behaviour').map((t) => t.id);
+    const strip = stripTilesFor('behaviour', NONE);
+    expect(strip.hasMore).toBe(true);
+    expect(strip.tiles.map((t) => t.id)).toEqual(own.slice(0, strip.tiles.length));
   });
 
-  it('ignores a used tile that is not in the category', () => {
-    const shapes = stripTilesFor('shapes', NONE).tiles.map((t) => t.id);
-    const strip = stripTilesFor('shapes', { ...NONE, recent: ['tools:session-timer'] });
-    expect(strip.tiles.map((t) => t.id)).toEqual(shapes);
+  // "Fixed dividers": each category's groups, between the tiles shown.
+  it.each([
+    ['shapes', ['shapes:diamond', 'shapes:stadium']],
+    ['write', ['tools:text']],
+    ['draw', ['tools:highlighter', 'tools:polygon']],
+    ['build', ['tools:table']],
+    ['components', ['tools:entity']],
+    ['devices', ['devices:laptop']],
+    ['media', ['tools:image', 'media:embed-website']],
+    ['data', ['data:legend']],
+    ['behaviour', ['tools:mode-isometric']],
+  ])('divides %s into its groups', (category, after) => {
+    expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
+  });
+
+  it('gives a divided category one tile less when it overflows, to make room', () => {
+    const shapes = stripTilesFor('shapes', NONE);
+    expect(shapes.hasMore).toBe(true);
+    expect(shapes.tiles).toHaveLength(STRIP_TILE_LIMIT - 1);
+  });
+
+  it('drops the dividers before any tile when only the tiles fit', () => {
+    const count = tilesForCategory('devices').length;
+    const tight = stripTilesFor('devices', { ...NONE, limit: count });
+    expect(tight.tiles).toHaveLength(count);
+    expect(tight.hasMore).toBe(false);
+    expect(tight.dividersAfter.size).toBe(0);
+  });
+
+  it('gives no category more than two dividers', () => {
+    for (const c of PALETTE_CATEGORIES) {
+      expect(tilesForCategory(c.id).filter((t) => t.dividerAfter).length, c.id).toBeLessThanOrEqual(
+        2,
+      );
+    }
   });
 
   it('drops image tiles when uploads are unavailable', () => {

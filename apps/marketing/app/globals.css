@@ -14,6 +14,8 @@
  * these workspace components are the only place some of those classes
  * appear in the marketing app. */
 @source '../../../packages/ui/src';
+/* The shared template-browse art (PreviewFan) carries its own utility classes. */
+@source '../../../packages/template-previews/src/PreviewFan.tsx';
 
 @media (prefers-reduced-motion: reduce) {
   .hero-pop1,

@@ -4,7 +4,13 @@
 // error-body envelope, CORS preflight header set) have a single
 // canonical home that the next route can grep for.
 
-import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
+import {
+  BUILD_ID_HEADER,
+  DOCUMENT_CONVERSION_HEADER,
+  DOCUMENT_FORMAT_HEADER,
+  DOCUMENT_OPEN_HEADER,
+  DOCUMENT_TRASHED_ERROR,
+} from '@livediagram/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
@@ -24,13 +30,21 @@ export const CORS_HEADERS = {
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
   // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}`,
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}`,
   'Access-Control-Max-Age': '86400',
+  // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
+  // by an editor on another origin (local dev, a self-host with a separate api host).
+  'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}`,
 };
 
+// An answer is the caller's live state, so a browser asks again before reusing it unless the route
+// chooses a policy: Chromium keeps a 410 with no explicit expiry indefinitely, so a cached "deleted"
+// would outlive the restore (docs/specs/015-api/api.md, "Caching"). `no-cache`, not `no-store`: a
+// stored answer is drained by the cache even when its caller never reads the body.
 export function json(body: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
+  if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-cache');
   for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
   return new Response(JSON.stringify(body), { ...init, headers });
 }

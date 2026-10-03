@@ -37,20 +37,13 @@ import {
 import { useAfterApiWrite } from '@/hooks/persistence/useAfterApiWrite';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
+import { ARRIVED_ON_TIMELINE } from './entry-path';
 
-// Was the Timeline where this page load STARTED, or somewhere the user
-// navigated to afterwards? The landing-page change (docs/specs/013-workspace/timeline.md §8.1) is
-// only measurable if the two are told apart.
-//
-// Captured from the URL at module evaluation, which runs before any
-// client-side navigation can rewrite it. A "first mount wins" flag
-// would get this wrong for someone who hard-loads /explorer/recent and
-// clicks Timeline later — their first mount is a deliberate visit.
-const ENTRY_PATH = typeof window === 'undefined' ? '' : window.location.pathname;
-const ARRIVED_ON_TIMELINE = /^\/explorer(\/timeline)?\/?$/.test(ENTRY_PATH);
+// Was All activity where this page load STARTED, or somewhere the user
+// went afterwards (Home's See all activity)? See ./entry-path.ts.
 
 // `#event=<id>` on the Timeline URL. Read once at module scope for the
-// same reason ENTRY_PATH is: the hash is what the page was OPENED with,
+// same reason ENTRY_PATH (./entry-path.ts) is: the hash is what the page was OPENED with,
 // and a later in-app navigation shouldn't resurrect an old target.
 const ENTRY_HASH = typeof window === 'undefined' ? '' : window.location.hash;
 const FOCUS_EVENT_ID = /^#event=(.+)$/.exec(ENTRY_HASH)?.[1];

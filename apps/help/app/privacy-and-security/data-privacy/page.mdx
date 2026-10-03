@@ -17,7 +17,7 @@ Your documents are the whole point, so it helps to know exactly where they live 
 
 Documents are saved through a single Cloudflare Worker API that holds the database binding. The browser never talks to the database directly.
 
-- **Durable storage** lives in Cloudflare D1, the API's database. Each document, its tabs, folders, share links, and change history are rows there.
+- **Durable storage** lives in Cloudflare D1, the API's database. Each document, its tabs, folders, share links, and its Timeline events are rows there.
 - **Real-time state** (who is in the room, live cursors, in-flight edits) lives in a Cloudflare Durable Object, one room per document, while people are actively collaborating.
 - **Images** you add are stored in Cloudflare object storage and served back through the same API.
 
@@ -37,13 +37,11 @@ A document is owned by an identity. That identity is either a signed-in account 
   <AccessControl />
 </Figure>
 
-The [activity log](/help/activity-panel/what-it-is/) keeps a per-document record of editorial changes with author attribution, and older entries are swept automatically after 90 days.
-
 ## Staying in control
 
 - **Guest by default.** You can build and share documents without ever creating an account. See [working as a guest](/help/getting-started/guest-vs-account/).
 - **Share on your terms.** Add a [share password](/help/privacy-and-security/share-link-security/) or an expiry to any share link, and revoke links at any time.
-- **Delete what you own.** Deleting a document removes it and its tabs, share links, and history. Signed-in users can delete their whole account, which wipes their documents, folders, images, and stored preferences.
+- **Delete what you own.** Deleting a document removes it and its tabs, share links, and Timeline events. Signed-in users can delete their whole account, which wipes their documents, folders, images, and stored preferences.
 
 <Note>
   livediagram does not claim end-to-end encryption. Document content is protected by authentication

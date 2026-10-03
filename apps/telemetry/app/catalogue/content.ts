@@ -16,9 +16,29 @@ const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type 
 export const JUST_DRAW = chart(
   'UI',
   'Used',
-  'Just Draw',
-  'Straight to a blank canvas, skipping the wizard: the Just Draw shortcut into /new, or Just Draw in the template picker.',
+  'Start Blank',
+  'Straight to a blank canvas, skipping the wizard: the Start Blank shortcut into /new, or Start Blank in the template picker.',
   { types: ['JustDraw'] },
+);
+
+// Escape in the New Document wizard: back to where they came from, nothing made
+// (docs/specs/007-editor/new-document-route.md "Escape backs out").
+export const NEW_DOCUMENT_BACKED_OUT = chart(
+  'UI',
+  'Closed',
+  'New Document Backed Out',
+  'Escape or the X in the New Document wizard went back to the page that opened it, creating nothing.',
+  { types: ['NewDocument'] },
+);
+
+// The template step's expand toggle (docs/specs/008-canvas/canvas-and-palette.md "Templates section"):
+// whether people want a whole category at once over the carousel.
+export const TEMPLATE_SHELF_EXPANDED = chart(
+  'UI',
+  'Toggled',
+  'Template Shelf Expanded',
+  'The expand toggle in the New Document wizard flipped: every template in the open category at once (Expanded), or back to the carousel (Collapsed).',
+  { types: ['TemplateShelfExpanded', 'TemplateShelfCollapsed'] },
 );
 
 export const TEMPLATE_LINKS = chart(
@@ -227,7 +247,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Documents Created.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or offline (those three are part of Documents Created), how often the wizard was backed out of with Escape, and how often its template shelf was expanded.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
@@ -237,6 +257,8 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
+    NEW_DOCUMENT_BACKED_OUT,
+    TEMPLATE_SHELF_EXPANDED,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
@@ -455,6 +477,26 @@ export const ELEMENT_ACTIONS_USED = chart(
   'Used',
   'Element Actions Used',
   'Using an element in place: a reaction pad, Bring into Focus, playing a video.',
+  // Image search picks have their own chart below.
+  { typeIn: (type) => type !== 'ImageSearch' },
+);
+
+// Image search (docs/specs/009-elements/image-search.md): searches run in the
+// image picker, and the results attached to an image.
+export const IMAGE_SEARCHES = chart(
+  'Element',
+  'Searched',
+  'Image Searches',
+  "Searches run in the image picker's Search tab, for openly licensed pictures.",
+  { types: ['Image'] },
+);
+
+export const IMAGE_SEARCH_PICKS = chart(
+  'Element',
+  'Used',
+  'Image Search Picks',
+  'A searched picture attached to an image element.',
+  { types: ['ImageSearch'] },
 );
 
 export const KEYBOARD_SELECTIONS = chart(
@@ -511,6 +553,8 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENT_OPTIONS_TOGGLED,
     ELEMENTS_LOCKED,
     ELEMENT_ACTIONS_USED,
+    IMAGE_SEARCHES,
+    IMAGE_SEARCH_PICKS,
     KEYBOARD_SELECTIONS,
     INSERTED_BETWEEN,
     NEXT_NOTES_ADDED,
@@ -567,26 +611,19 @@ export const TABLES: MetricStack = {
   members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
 };
 
-// Undo, redo and revert.
+// Undo and redo. (Document·Reverted, the removed Activity panel's per-entry revert, is a
+// retired event: dropped before any chart, see retired-events.ts.)
 export const UNDOS = chart('Document', 'Undone', 'Undos', 'A change undone.', {
   rising: 'neutral',
 });
 
 export const REDOS = chart('Document', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
 
-export const REVERTS = chart(
-  'Document',
-  'Reverted',
-  'Reverts',
-  'A document rolled back to an earlier point from the Activity panel.',
-  { rising: 'neutral' },
-);
-
-export const UNDO_AND_REVERT: MetricStack = {
+export const UNDO_AND_REDO: MetricStack = {
   stack: true,
-  title: 'Undo & Revert',
-  blurb: 'Changes taken back: undone, redone, or rolled back from the Activity panel.',
-  members: [UNDOS, REDOS, REVERTS],
+  title: 'Undo & Redo',
+  blurb: 'Changes taken back with undo, or put back with redo.',
+  members: [UNDOS, REDOS],
   rising: 'neutral',
 };
 
@@ -603,13 +640,21 @@ export const TAB_IMPORTS = chart(
   'Tab',
   'Imported',
   'Tabs Imported',
-  'A tab imported from Excalidraw, Mermaid, Markdown or JSON.',
+  'A tab imported from draw.io, Excalidraw, Mermaid, Markdown or JSON.',
+);
+
+export const PASTES_FROM_EXCALIDRAW = chart(
+  'Element',
+  'Imported',
+  'Pasted from Excalidraw',
+  'Drawings copied in Excalidraw and pasted or dropped onto the canvas.',
 );
 
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
-  blurb: 'Diagrams leaving livediagram as files and text, and tabs coming in from other tools.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
+  blurb:
+    'Diagrams leaving livediagram as files and text, and tabs and drawings coming in from other tools.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
   seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };

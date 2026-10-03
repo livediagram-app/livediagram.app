@@ -47,16 +47,22 @@ export function SwatchOverridePopover({
     onCloseRef.current = onClose;
   });
 
-  // Left of the panel, level with the swatch, kept inside the viewport. Written
-  // straight to the node before paint: it is placement, not state.
+  // Beside the panel, level with the swatch, kept inside the viewport: to its
+  // right (the panel lives on the left), else to its left. Written straight to
+  // the node before paint: it is placement, not state.
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
     const box = node.getBoundingClientRect();
     const a = anchor.getBoundingClientRect();
     const panel = anchor.closest('[data-quick-style-panel]');
-    const edge = panel?.getBoundingClientRect().left ?? a.left;
-    node.style.left = `${Math.max(MARGIN, edge - GAP - box.width)}px`;
+    const side = panel?.getBoundingClientRect() ?? a;
+    const right = side.right + GAP;
+    node.style.left = `${
+      right + box.width <= window.innerWidth - MARGIN
+        ? right
+        : Math.max(MARGIN, side.left - GAP - box.width)
+    }px`;
     node.style.top = `${Math.min(Math.max(MARGIN, a.top), window.innerHeight - MARGIN - box.height)}px`;
     node.style.visibility = 'visible';
   }, [anchor]);

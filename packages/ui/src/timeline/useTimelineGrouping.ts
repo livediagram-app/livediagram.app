@@ -78,7 +78,7 @@ export function useTimelineGrouping(events: TimelineEvent[], now?: number): Time
   return useMemo(() => groupByDay(events, now), [events, now]);
 }
 
-function formatDay(key: string): { label: string; year: string } {
+export function formatDay(key: string): { label: string; year: string } {
   // Parsed as local midnight (no trailing Z), matching how dateKey
   // built it. `new Date('2026-08-05')` would be parsed as UTC and could
   // render the previous day west of Greenwich.

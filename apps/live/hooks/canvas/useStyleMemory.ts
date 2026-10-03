@@ -17,10 +17,14 @@ import {
   type StyleKindKey,
   type StyleMemory,
 } from '@/lib/style-memory';
+import { debugLog } from '@/lib/debug-log';
 
 export const STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250;
 
 export type StyleMemoryApi = {
+  // Which memory this is: the document and whether it is a whiteboard's. A consumer that memoises
+  // something dressed from memory keys it on this, so a document or tab-kind switch re-dresses it.
+  scope: string;
   // Record one style commit: the active tab's elements before and after it.
   recordEdit: (before: readonly Element[], after: readonly Element[]) => void;
   // Dress a user-drawn element from memory; identity when nothing applies.
@@ -31,9 +35,13 @@ export type StyleMemoryApi = {
 export function useStyleMemory({
   documentId,
   theme,
+  board = false,
 }: {
   documentId: string | null;
   theme: ThemeDefinition;
+  // The active tab is a whiteboard: it records and applies its own memory
+  // (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays").
+  board?: boolean;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
   const loadedFor = useRef<string | null>(null);
@@ -81,20 +89,21 @@ export function useStyleMemory({
   const commit = (next: StyleMemory, log: string, detail: unknown) => {
     if (next === memoryRef.current) return;
     memoryRef.current = next;
-    console.debug(`[style-memory] ${log}`, detail);
+    debugLog(`[style-memory] ${log}`, detail);
     schedule();
   };
 
   return {
+    scope: `${documentId ?? ''}:${board ? 'board' : 'diagram'}`,
     recordEdit: (before, after) => {
       if (!ensureLoaded()) return;
-      const next = recordStyleEdit(memoryRef.current, before, after, theme);
+      const next = recordStyleEdit(memoryRef.current, before, after, theme, board);
       commit(next, 'recorded', Object.keys(next));
     },
     styleNewElement: <T extends Element>(el: T): T => {
       if (!ensureLoaded()) return el;
-      const dressed = applyStyleMemory(el, memoryRef.current, theme);
-      if (dressed !== el) console.debug('[style-memory] applied', styleKindOf(el));
+      const dressed = applyStyleMemory(el, memoryRef.current, theme, board);
+      if (dressed !== el) debugLog('[style-memory] applied', styleKindOf(el, board));
       return dressed;
     },
     forget: (kinds) => {

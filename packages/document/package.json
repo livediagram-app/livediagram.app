@@ -10,11 +10,13 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@livediagram/icons": "workspace:*"
+    "@livediagram/icons": "workspace:*",
+    "perfect-freehand": "^1.2.3"
   },
   "scripts": {
     "lint": "eslint .",
     "test": "vitest run",
+    "stroke-points": "node --import ../../scripts/ts-source-hooks.mjs scripts/expand-stroke-points.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage"

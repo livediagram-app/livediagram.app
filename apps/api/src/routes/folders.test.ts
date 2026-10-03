@@ -56,6 +56,7 @@ beforeEach(() => {
   for (const fn of Object.values(timeline)) fn.mockReset();
   timeline.markTimelineEventsDeletedBySource.mockResolvedValue(undefined);
   timeline.recordFolderDeleted.mockResolvedValue(undefined);
+  db.deleteFolder.mockResolvedValue({ parentId: null });
 });
 
 describe('handleFolders auth', () => {
@@ -108,9 +109,23 @@ describe('handleFolders auth', () => {
 
   it('204 when the owner deletes their folder', async () => {
     db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'owner-1' });
+    db.deleteFolder.mockResolvedValue({ parentId: null });
     const res = await handleFolders(makeCtx('DELETE', '/api/folders/f1'));
     expect(res.status).toBe(204);
     expect(db.deleteFolder).toHaveBeenCalledWith({}, 'f1');
+  });
+
+  it('logs where a deleted folder’s contents moved', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'owner-1', teamId: null });
+    db.deleteFolder
+      .mockResolvedValueOnce({ parentId: 'p1' })
+      .mockResolvedValueOnce({ parentId: null });
+    await handleFolders(makeCtx('DELETE', '/api/folders/f1'));
+    await handleFolders(makeCtx('DELETE', '/api/folders/f1'));
+    expect(info).toHaveBeenCalledWith('folders: deleted scope=personal moved_up=parent');
+    expect(info).toHaveBeenCalledWith('folders: deleted scope=personal moved_up=root');
+    info.mockRestore();
   });
 
   // Deleting a folder used to leave its "Folder Created" card on the feed

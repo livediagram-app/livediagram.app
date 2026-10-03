@@ -8,10 +8,10 @@ import { DOCUMENT_DRAG_MIME } from './explorer-drag-mime';
 // element.
 //
 // The sidebar tree has two node types that do this — a real folder and the
-// synthetic Unsorted bucket — and they carried the same twenty lines twice.
-// The copy even said so ("Same drop wiring as FolderNode but the move callback
+// My documents row — and they carried the same twenty lines twice.
+// The copy even said so ("Same drop wiring as the folder node but the move callback
 // gets a null folderId"), which is the whole difference: `targetFolderId` is
-// the folder's id, or null for Unsorted, where a document lands when it has no
+// the folder's id, or null for the root, where a document lands when it has no
 // folder.
 //
 // Two details worth keeping in one place rather than remembering twice:

@@ -4,6 +4,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { cropBoxes } from '@/lib/photo-detect';
 import type { CropReader, ReadOptions, ReadText } from '@/lib/reading/types';
+import { debugLog } from '@/lib/debug-log';
 
 // Reading a box again after the author moved, resized or drew it (docs/specs/021-event-storming/event-storming.md
 // Phase 9). The crop is cut afresh from the FULL-resolution photo for the
@@ -48,7 +49,7 @@ export function usePhotoReread(deps: {
         if (!live.current.isCurrent(run)) return;
         const crops = await cropBoxes(file, boxes, imageSize);
         if (crops.length === 0 || !live.current.isCurrent(run)) return;
-        console.info(`[photo] reading ${crops.length} changed notes again`);
+        debugLog(`[photo] reading ${crops.length} changed notes again`);
         const answer = await live.current.reader()(crops, {
           ...live.current.readOptions(run),
           signal: controller.signal,

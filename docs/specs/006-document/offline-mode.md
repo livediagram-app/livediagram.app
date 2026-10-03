@@ -17,7 +17,7 @@ Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upser
 
 Offline Mode is **off by default**. You choose it when creating a document:
 
-- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) runs three steps: Template, Theme, then
+- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) runs two steps: Template, then
   **Location** (the Settings step in code). It carries the **Save location** chooser
   ([Save Locations](save-locations.md)), alongside the document name and where it is saved (a personal
   folder or a team library). **livediagram** (the default) = a normal cloud
@@ -75,7 +75,6 @@ _require the server_, which are hidden or gated (not broken) for an offline docu
 | Teams / shared library                                                    | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                               |
 | Comments                                                                  | Local-only (just you), stored in the document; no cross-user.                                                                                                                                                                                                                   |
 | AI assistance                                                             | Works online — it reads the current canvas, not the stored document ([AI Assistance](../007-editor/ai-assistance.md)); only a lost connection stops it.                                                                                                                         |
-| Activity / change log                                                     | Local-only, kept in the document record; no server history.                                                                                                                                                                                                                     |
 | Duplicate                                                                 | Makes **another offline document** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                    |
 | Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                    |
 | Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                        |
@@ -91,21 +90,62 @@ trade for staying fully offline. (Conversion re-homes images — see below.)
 Autosave still runs for an offline document ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
 
-## "Offline" badge + Explorer
+## "Local only" badge + Explorer
 
-The word **"Offline"** identifies these documents everywhere the status is shown:
-
-- **Editor header badge.** Today the status pill reads Private / Shared / Team
+- **Editor header badge.** The status pill reads Private / Shared / Team
   (the `SharedBadge` in `EditorHeader`). For an offline document it reads
-  **"Offline"** (a new state that supersedes "Private" for these documents), with
-  its own tone + icon, and a hover card restating _"Saved only in this browser."_
-- **Explorer.** Offline documents appear in **Recent** (and the other lists)
-  alongside cloud documents. The full-page Explorer marks each with an
-  **"Offline"** visibility badge; every surface (panel + full page) shows the
+  **"Local only"** (a state that supersedes "Private" for these documents),
+  matching the [Local only pill](#local-only-pill): the same words, the same
+  browser-window icon, the same amber tone and contrast, and the same sentence,
+  "Lives only in this browser. Clearing this browser's site data deletes it.",
+  shown in the badge's visibility legend on hover and focus and given to
+  assistive technology as the badge's description. It stays a status, not a
+  link: the legend explains it in place.
+- **Explorer.** Offline documents appear in Recent (and the other lists)
+  alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.
   The Explorer view merges the API-fetched cloud list with the local index of
   offline documents; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
+- **The reader's own.** An offline document counts as one of the reader's own
+  documents: Space `mine` and owner "You", like a document in My documents
+  ([Explorer structure: Local only documents](../013-workspace/explorer-structure.md#local-only-documents)).
+- **Sidebar.** The full-page Explorer's **This browser** row (the More group,
+  [Explorer structure](../013-workspace/explorer-structure.md)) opens
+  `/explorer/offline`, the list of every offline document, titled **This
+  browser**; the row shows while this browser holds at least one.
+- **Home.** An offline document's opens are counted in its own local record, never
+  sent anywhere, so Home's Jump back in ranks it among the reader's other
+  documents, with the **Local only** pill on its thumbnail
+  ([Explorer Home](../013-workspace/explorer-home.md#opens)).
+
+### Local only pill
+
+Every row and card of an offline document carries a **Local only** pill,
+wherever the document is listed: the list and card views (folders, Search results,
+This browser, Recent, Favourites), Home's Jump back in strip, the folder previews' tiles excepted (they
+are pictures, not rows), the search panel's results, the floating Explorer
+panel's rows and its Current Document card, and the Trash.
+
+- **Not colour alone.** The pill shows an icon (a browser window) and the words
+  "Local only", in an amber tone whose text meets 4.5:1 on its fill in light and
+  dark mode; the ring meets 3:1 against the row.
+- **What it means, on hover and focus.** Its hover card reads "Local only" over
+  "Lives only in this browser. Clearing this browser's site data deletes it."
+  The same sentence is the pill's accessible description (`aria-describedby`),
+  so a screen reader hears it without hovering.
+- **The guide is one click away.** The pill is a link to the Offline Mode help
+  article (new tab, the editor's help-link telemetry), with its own focus ring.
+  Where the row is itself a single control (a search result, the panel's
+  Current Document row), the pill is a plain label inside it, carrying the same
+  description: a link cannot sit inside a button. In a tree (the floating
+  Explorer panel), the pill is a link out of the tab order, since the tree owns
+  the one tab stop, and the row itself carries the description. The Trash row's
+  pill is a link like any other.
+- **It replaces the "Offline" visibility badge** in the Explorer's lists: an
+  offline document shows the pill beside its name at every width, and its
+  visibility column stays empty. Minimal chrome keeps the words: the pill is a
+  warning, not a teaching hint.
 
 ## Converting between Offline and Cloud
 
@@ -129,8 +169,14 @@ Share dialog gate).
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
 - **Everything on the record travels**, not just tabs: the slide deck
   ([Presentation mode](../012-collaboration/presentation-mode.md)), the created date, the folder (kept only when it is one of the
-  caller's own personal folders, else Unsorted) and the star ([Favourite documents](../013-workspace/favourites.md)). The
+  caller's own personal folders, else the root of My documents) and the star ([Favourite documents](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
+- **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
+  its placement ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)),
+  and the server refuses a folder deleted since, or not the caller's, by name rather than
+  filing it elsewhere. On `folder_not_found` or `folder_scope_mismatch` the sync creates the
+  document again at the root of My documents and logs `[offline-sync] placement refused reason=<code>, filed at root`;
+  any other failure fails the sync and keeps the local copy.
 - **A forked tab comes back as its own tab.** The create never writes into a tab
   another document holds: a seeded tab whose id is already taken outside this
   document is created under a fresh id, and the document's tab / element links and
@@ -154,13 +200,13 @@ confirmation:
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **Offline**. Referenced R2 images are downloaded and embedded
+  badge flips to **Local only**. Referenced R2 images are downloaded and embedded
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
 - **The deck, star and personal folder come along** for the same reason: the
   server row they live on is about to be deleted. A team document's folder is a
-  team folder, which has no place in the personal tree, so it lands in Unsorted.
+  team folder, which has no place in the personal tree, so it lands at the root of My documents.
 - **Shared tabs fork.** A tab also linked into other documents
   ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is not taken
   away from them: the server delete keeps it there whole, history included, and
@@ -297,11 +343,10 @@ Track adoption without content, reusing the closed vocabulary:
 - New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   Local Browser tile) + data-loss warning + contextual help link.
-- `EditorHeader` (`SharedBadge`) — the new **Offline** badge state.
-- Explorer (row + card components, `VisibilityBadge`): merge the local index,
-  show the **Offline** badge in the full-page Explorer plus a fixed offline
-  thumbnail everywhere, and skip server fetches for offline rows. (The in-editor
-  panel row shows the thumbnail but no text chip.)
+- `EditorHeader` (`SharedBadge`) — the **Local only** badge state.
+- Explorer (row + card components, `LocalOnlyPill`): merge the local index,
+  show the **Local only** pill wherever an offline document is listed plus a
+  fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Document" and "Take Offline" (with confirmation + image re-homing).
 - Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,

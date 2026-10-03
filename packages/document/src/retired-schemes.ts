@@ -2,10 +2,15 @@
 // being migrated away on read: a tab saved against it is rewritten into the
 // scheme that replaced it, and the next save persists the rewrite. These
 // colours are data about the past, frozen as they shipped; they never change.
-import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_ID, themeColourFields } from './themes';
+import {
+  DEFAULT_SCHEME_DARK,
+  DEFAULT_SCHEME_ID,
+  DEFAULT_SCHEME_LIGHT,
+  themeColourFields,
+} from './themes';
 import type { Element, Tab } from './index';
 
-export type RetiredScheme = 'charcoal' | 'previous-default-dark';
+export type RetiredScheme = 'charcoal' | 'previous-default-dark' | 'previous-default-light';
 
 // Charcoal, merged into Default as its dark half: the id and every colour it wrote.
 const CHARCOAL = {
@@ -21,6 +26,10 @@ const CHARCOAL = {
 // dark-mode reader's Default tabs stored as their backdrop.
 const PREVIOUS_DEFAULT_DARK = { backgroundColor: '#2b2b33', patternColor: '#636373' } as const;
 
+// Default's light half before the off-white canvas (docs/specs/007-editor/editor-modes.md "One
+// look"): white, with the same slate grid. An unset grid read as that slate.
+const PREVIOUS_DEFAULT_LIGHT = { backgroundColor: '#ffffff', patternColor: '#cbd5e1' } as const;
+
 type SchemeFields = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor'>;
 type MigratableTab = SchemeFields & { elements: Tab['elements'] };
 
@@ -31,10 +40,15 @@ const onPreviousDefaultDark = (tab: SchemeFields): boolean =>
   tab.backgroundColor === PREVIOUS_DEFAULT_DARK.backgroundColor &&
   tab.patternColor === PREVIOUS_DEFAULT_DARK.patternColor;
 
+const onPreviousDefaultLight = (tab: SchemeFields): boolean =>
+  tab.backgroundColor === PREVIOUS_DEFAULT_LIGHT.backgroundColor &&
+  (tab.patternColor ?? PREVIOUS_DEFAULT_LIGHT.patternColor) === PREVIOUS_DEFAULT_LIGHT.patternColor;
+
 /** Which retired scheme a stored tab is on, or null when it needs nothing. */
 export function retiredSchemeOf(tab: SchemeFields): RetiredScheme | null {
   if (tab.theme === CHARCOAL.id) return 'charcoal';
   if (onDefault(tab) && onPreviousDefaultDark(tab)) return 'previous-default-dark';
+  if (onDefault(tab) && onPreviousDefaultLight(tab)) return 'previous-default-light';
   return null;
 }
 
@@ -81,6 +95,13 @@ export function migrateRetiredScheme<T extends MigratableTab>(tab: T): T {
       ...next,
       backgroundColor: DEFAULT_SCHEME_DARK.backgroundColor,
       patternColor: DEFAULT_SCHEME_DARK.patternColor,
+    };
+  }
+  if (from === 'previous-default-light') {
+    next = {
+      ...next,
+      backgroundColor: DEFAULT_SCHEME_LIGHT.backgroundColor,
+      patternColor: DEFAULT_SCHEME_LIGHT.patternColor,
     };
   }
   console.info('[tab-migrate] retired-scheme', { from, stripped });

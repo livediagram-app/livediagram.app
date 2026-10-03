@@ -1,60 +1,68 @@
 # Highlighter
 
-A wide, semi-transparent freehand marker, held from the palette's tool dropdown like the Eraser. It is for calling attention to things during reviews and workshops (circling a region, underlining a label), not for sketching shapes, so it deliberately drops the Pencil's shape-recognition and close-to-fill behaviours.
+A wide, semi-transparent freehand marker, picked from the palette's **Draw** category like the two pens. It is for calling attention to things during reviews and workshops (circling a region, underlining a label), not for sketching shapes, so it deliberately drops the Pencil's shape-recognition and close-to-fill behaviours.
 
-It started as a **draw tile** in the palette's Draw category — pick the tile, draw one stroke, the tool puts itself down. That was a one-shot arm wearing a mode's clothes: nobody highlights one thing. You highlight a passage, then the label beside it, then the box below, and every pass meant going back to the palette. It is a **canvas tool** now (a held mode), which is what it always behaved like in the user's head.
+## History
+
+It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel and a Mode Button that handed it out). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour, the Mode Button and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick style panel](quick-style-panel.md), the way a whiteboard marker's do.
 
 ## Model
 
-A highlighter stroke **is a `FreehandElement`** with one new optional field:
+A highlighter stroke **is a `FreehandElement`** with one optional field:
 
 ```ts
 pen?: 'highlighter'; // absent = ordinary pencil sketch
 ```
 
-No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/document/src/validate.ts`) accepts the optional literal.
+No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/document/src/validate.ts`) accepts the optional literal. `penWidth?: number` (wire-validated 1..100) carries the stroke's width when it is not the default 14 px (Thin or Bold, an earlier Strength setting, imported highlighter ink).
 
 ## Visual treatment
 
 Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` used by share thumbnails and the MCP render) apply the same recipe when `pen === 'highlighter'`:
 
-- **Stroke width**: a wide round stroke (`penWidth ?? 14` px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths). `penWidth?: number` is the model's second optional pen field (wire-validated 1..100), written at draw time from the panel's Strength setting.
+- **Stroke width**: a wide round stroke (`penWidth ?? 14` px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths).
 - **Round caps + joins**, never dashed, never filled.
 - **Translucency**: `stroke-opacity: 0.45` plus `mix-blend-mode: multiply`, so text and shapes underneath stay legible and overlapping strokes darken like a real marker. This is part of the pen recipe, independent of the user-facing `opacity` field, which still composes on top.
-- **Colour**: created with the panel's current colour (default `#fde047`, marker yellow) regardless of theme; recolourable afterwards via the element context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used — highlighters are yellow until the user says otherwise.
+- **Colour**: created in the highlighter's current colour (default **marker yellow**, `#fde047`) regardless of theme; recolourable afterwards from the Quick style panel or the context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used: highlighters are yellow until the user says otherwise.
 
-## The tool
+## The tile
 
-- It lives in the palette's **canvas-tool dropdown**, in the **Edit** group (group 0) beside Select, Hand, Eraser and Format — `'highlighter'` on the editor's `CanvasTool` union, built in `canvas-tool-options.tsx`.
-- **It is the one tool in that dropdown that stays live on an empty canvas.** Everything from the Eraser down acts on existing content, so it disables with nothing to act on; the highlighter MAKES content, so an empty canvas is a fine place to start.
-- **It is held.** Entering the tool arms the freehand-marker gesture, **every committed stroke re-arms it**, and leaving the tool drops it (and only it — the marker's own intent, so putting the tool down never cancels a draw armed from the palette while holding it). A stray tap on the canvas no longer disarms anything.
-- **Strokes are not auto-selected after drawing.** The old one-shot selected the stroke it had just committed, which was helpful when the tool was over; on a held marker it means the next drag drags the thing you just drew instead of highlighting.
-- Each pass is its own undo, as it always was.
-- No single-letter shortcut ([Canvas and palette](canvas-and-palette.md): only the common flowchart vocabulary gets letters). It is reachable from the command palette as `tool:highlighter` like every other tool ([Command palette (⌘K)](../007-editor/command-palette.md)).
-- The gesture underneath is unchanged: `PendingDraw` still carries `{ type: 'freehand'; variant: 'highlighter' }`, so the mode is expressed by keeping that intent armed for as long as the tool is selected. Commit path is the same sampling + simplification as the pencil, then always `createFreehand(points, false)` + the pen fields — no recognition branch, no auto-close. Recognition is the Shape Pen's job ([Two pens instead of a pen and a mode](two-pens.md)); the highlighter is a third variant of the same gesture.
-- Cursor: a highlighter-nib glyph, distinct from the pencil nib.
-- **No mode banner.** The top banner belongs to a one-shot arm ("you picked a square, now drag one out", with a Cancel because the intent is transient). A held mode does not need telling you it is on every time you look up — and the banner sat across the top of the canvas, covering the toolbar you were trying to highlight next to. `TopCenterChrome` excludes the marker intent explicitly.
+- `tools:highlighter` in the **Draw** category, third, after **Freehand** and **Shape Pen** (the three pens together, then Polygon, then Arrow and Line). Caption **Highlighter**, blurb "A wide translucent marker stroke", the highlighter-nib glyph.
+- **One-shot, like Freehand.** Picking the tile arms the marker; the next drag lays one stroke, which is **selected** on release, and the tile puts itself down. The tile shows pressed while armed. Escape, the mode banner's Cancel or another tile disarms it.
+- The stroke lands in the highlighter's current **Colour** and **Width** (see Settings).
+- The **mode banner** reads **"Drag to highlight"**, the same banner every other one-shot arm wears.
+- A gesture too short to be a stroke disarms, as for the pencil.
+- No single-letter shortcut ([Canvas and palette](canvas-and-palette.md): only the common flowchart vocabulary gets letters). It is not a command-palette tool switch: like the pens, it is reached from the palette (and its search).
+- `PendingDraw` carries `{ type: 'freehand'; variant: 'highlighter' }`. Commit path is the same sampling + simplification as the pencil, then always `createFreehand(points, false)` + `pen: 'highlighter'` + the current colour (and `penWidth` when the width is not Medium): no recognition branch, no auto-close. Recognition is the Shape Pen's job ([Two pens instead of a pen and a mode](two-pens.md)); the highlighter is a third variant of the same gesture.
+- Cursor: a highlighter-nib glyph, distinct from the pencil nib. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the marker recipe in the current colour and width, so what you see while dragging is what commits.
 
-## The Highlighter Panel
+## Settings: the Quick style panel
 
-The marker's two settings live in a dockable **Highlighter Panel** (`components/panels/HighlighterPanel.tsx`), mounted only while the tool is held — the **sixth tool panel**, on the same terms as the Avatar, Laser ([Laser Panel](laser-panel.md)), Spotlight ([Spotlight Panel](spotlight-panel.md)), Eraser ([Eraser Panel](eraser-panel.md)) and Format ([Format Panel](format-panel.md)) ones, and a participant in panel docking ([Panel corner docking](../007-editor/panel-docking.md)) with its own `'highlighter'` panel id. Both settings apply to the NEXT strokes:
+The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a whiteboard marker's do ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"). Two rows:
 
-- **Colour** — five marker swatches: Yellow (default), Green, Pink, Blue, Orange.
-- **Strength** — three presets: Thin (8), Medium (14, default), Bold (22).
+- **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one.
+- **Highlighter width**: **Thin** (8 px), **Medium** (14 px, the default), **Bold** (22 px), each drawn as a preview of its band.
 
-Above them sits a **live preview**: a real stroke at the chosen colour and width, laid over bars standing in for a line of text. "Bold" is a number until you see how much of a sentence it covers.
+What the rows style, in the order the panel looks:
 
-The vocabulary is data in `apps/live/lib/highlighter-config.ts` (`HIGHLIGHTER_COLORS`, `HIGHLIGHTER_WIDTHS`, plus id↔px helpers), read by both the panel and the commit path — the same shape the other tool panels' configs take, rather than living inside the one component that happened to draw them first.
+1. **Selected highlights.** With one or more unlocked highlight strokes selected, the rows restyle them (`strokeColor`, `penWidth`; Medium clears `penWidth`), one undo step per choice. A choice is marked only when every selected highlight shares it. In a mixed selection the rows sit above the rows for everything else and touch only the highlights; the caption counts what is styled. A stroke whose colour or width matches no option (recoloured from the context menu, imported) marks none.
+2. **The armed tile, nothing selected.** Picking the tile clears the selection, so the panel shows the rows for the **next stroke**, captioned **Highlighter**: the highlighter's current colour and width, which every stroke then lands in. This is the only way to set them before drawing.
 
-Both settings are **session-local editor state** (`useShapeDrawing`), deliberately not a persisted preference: the marker resets to yellow / medium on a fresh load, like a real pen cup. Nothing here is stored on the document or sent to the api. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the same colour and width, so what you see while dragging is what commits.
+The current colour and width are **session-local editor state**, not a persisted preference: the highlighter resets to Yellow / Medium on a fresh load, like a real pen cup. Restyling a selected highlight does not change them; only choosing with the tile armed does. Nothing here is stored except on the strokes themselves.
 
-This replaced a pair of popovers hanging off the mode banner. That was the right home while the highlighter was an arm — the banner was the only thing on screen that knew the arm existed — and the wrong one the moment it became a mode, because a mode's settings belong wherever every other mode keeps theirs.
+**Width is a panel-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the panel holds both, as it holds a whiteboard marker's width. This is a deliberate exception to the panel's "the menu stays complete" rule, scoped to the highlighter's two rows.
 
-## Palette
+- Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)) has no highlighter: a whiteboard's pens are its markers, and its dock replaces the palette.
 
-- The `tools:highlighter` **draw tile is gone**. The Draw category now holds four tiles: Freehand, Shape Pen, Polygon, Arrow.
-- A **Highlighter Mode Button** joins the Selection Mode tiles in the Behaviour section (`tools:mode-highlighter`, [Selection Mode button](../009-elements/mode-button.md)): drop one on the canvas and whoever presses it is handed the marker. `'highlighter'` is a `SelectionMode` in `packages/document/src/selection-mode.ts` for exactly this, so a saved button can carry it.
-- The **default Favourites** list ([Palette Favourites](../010-palette/palette-favourites.md)) swapped the Highlighter's slot for `tools:table` — there is no tile to favourite any more, and Table kept the grid at twelve rather than leaving a ragged row. Anyone who had favourited the old id loses it silently on read, which is the existing behaviour for a retired tile.
+## Not a selection mode
+
+`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`packages/document/src/selection-mode.ts`), so there is no Highlighter Mode Button.
+
+A Mode Button saved while it was one still carries `mode: 'highlighter'`. The stored-element migration (`migrateLegacyModeButtons`, run by `migrateStoredElements` at every entry point) **drops the field**, so the button loads and reads as the default mode ([Selection Mode button](../009-elements/mode-button.md)) rather than failing validation and taking its tab with it.
+
+## Favourites
+
+The tile can be favourited like any other ([Palette Favourites](../010-palette/palette-favourites.md)). It is not in the default list: Table kept the slot it took when the tile was first retired.
 
 ## Everything else is inherited
 
@@ -62,4 +70,4 @@ Selection, move/resize (non-scaling stroke keeps the marker width), rotation, lo
 
 ## Telemetry
 
-Committing a stroke fires `track('Element', 'Added', 'Highlighter')` — the type slot is free-form, so no schema change. Picking the tool fires `Canvas·Used·Highlighter` through the shared tool setter (`useCanvasTool`), the same as every other mode, so a press on a Highlighter Mode Button reports as the mode it hands out rather than a separate event.
+Committing a stroke fires `track('Element', 'Added', 'Highlighter')`. Picking the tile fires the palette's own tile event like every Draw tile. There is no `Canvas·Used·Highlighter` any more: it is not a mode. A panel choice on selected highlights fires `Element·Changed·QuickStroke` (colour) or `Element·Changed·QuickStrokeWidth` (width), the panel's existing tokens; a choice for the next stroke is a setting, `UI·Changed·HighlighterColour` / `UI·Changed·HighlighterWidth`, charted as **Highlighter Settings** in the dashboard's Look & Feel stack.

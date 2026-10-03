@@ -10,6 +10,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
@@ -21,6 +22,7 @@ import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
+import type { ImageCredit } from './image-credit';
 import type {
   AgendaItem,
   ChairFacing,
@@ -150,7 +152,14 @@ export type ShapeElement = {
   font?: string;
   fillColor?: string;
   strokeColor?: string;
+  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   textColor?: string;
+  // A whiteboard stock colour for the label's text (docs/specs/023-draw-mode/draw-mode.md
+  // "Imported and pasted content"): drawn in the version tuned for the viewer's board when
+  // `textColor` is unset.
+  penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
   // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
@@ -168,6 +177,9 @@ export type ShapeElement = {
   // seam to change it. Unset keeps the default for the lane's orientation, so
   // an untouched lane is exactly as it was.
   headerSize?: number;
+  // A lane's title turned a quarter to read bottom to top in its side strip
+  // (docs/specs/009-elements/lane.md "Upright titles"). Absent reads across.
+  titleOrientation?: 'upright';
   // When set, theme transforms (recolour / switch / reset) leave this
   // shape's `fillColor` alone, so an intrinsic fill survives a theme
   // change the way a sticky note keeps its amber. Used by template
@@ -426,6 +438,9 @@ export type ShapeElement = {
 
 // --- Text ------------------------------------------------------------------
 
+// How a text box sizes itself (TextElement.sizing): 'fit' to its words, or 'wrap' at a set width.
+export type TextSizing = 'fit' | 'wrap';
+
 export type TextElement = {
   id: ElementId;
   type: 'text';
@@ -457,6 +472,9 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // A whiteboard stock colour for the text (docs/specs/023-draw-mode/draw-mode.md "Imported and
+  // pasted content"): drawn in the version tuned for the viewer's board when `textColor` is unset.
+  penTextColour?: PenColourName;
   // Quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) the text
   // colour was picked from in the quick style panel's Text colour row, so a
   // theme change re-derives it. Cleared the moment the colour is set any other way.
@@ -504,6 +522,15 @@ export type TextElement = {
   padding?: Padding;
   // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
+  // How the box sizes itself (docs/specs/007-editor/editor-modes.md "A text box's sizing"):
+  // 'fit', the width follows the words up to the wrap width and the height hugs the lines (clicked
+  // into place in Draw mode); 'wrap', the width is set and the height hugs the lines (dragged out
+  // or resized in Draw mode). Absent = a fixed box, its text wrapping inside it. Honoured in both
+  // editor modes and for everyone.
+  sizing?: TextSizing;
+  // Multiplier on the label size, set by a Shift resize of a whiteboard text box
+  // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
+  textScale?: number;
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -576,7 +603,7 @@ export type TableElement = {
   rowHeights?: (number | null)[];
   // Tables have no single label (cells carry the text). Declared as an
   // always-undefined optional so the generic "boxed element has a
-  // label" code paths (change log, export, search) compile without a
+  // label" code paths (export, search) compile without a
   // per-type guard, mirroring ImageElement.
   label?: string;
   locked?: boolean;
@@ -688,6 +715,9 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // A whiteboard stock colour for the note's text (docs/specs/023-draw-mode/draw-mode.md
+  // "Imported and pasted content"), drawn in its board's version when `textColor` is unset.
+  penTextColour?: PenColourName;
   // Fill for an element's HEADING area, where it has one distinct from its
   // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
   // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
@@ -771,16 +801,19 @@ export type ImageElement = {
   // `textColor` (white by default). Present = shown; the palette's Hero is an
   // image created with one, and any image can gain or lose it from the menu.
   heroCaption?: HeroCaption;
+  // Creator + licence credit of a picture picked from Image search
+  // (docs/specs/009-elements/image-search.md). Absent for uploads.
+  credit?: ImageCredit;
   // Optional alt text (accessibility + future export-to-markdown).
   // Aliases as the element's `label` so the surrounding "boxed
-  // element has a label" code paths (change log, Markdown export,
-  // search index) all see the alt text without needing an
+  // element has a label" code paths (Markdown export, search
+  // index) all see the alt text without needing an
   // ImageElement-specific branch.
   alt?: string;
   // Shared boxed-element fields. ImageElement doesn't render text
   // or borders inside the image (the bitmap fills the box), but the
   // shape / sticky / text variants do, and a wide swath of code
-  // (change log, format painter, Markdown / canvas export, Editor
+  // (format painter, Markdown / canvas export, Editor
   // panel state plumbing in Canvas.tsx) reads these fields off
   // every BoxedElement. Declaring them here as always-undefined
   // optionals keeps the TS union ergonomic without forcing every
@@ -853,10 +886,13 @@ export type FreehandElement = {
   y: number;
   width: number;
   height: number;
-  // Smoothed, normalised polyline. Each point is { nx, ny } in
-  // [0, 1] relative to the bounding box's top-left. Two values per
-  // sample (not flat-array form) so JSON shape is debuggable.
-  points: { nx: number; ny: number }[];
+  /**
+   * The stroke's points, normalised into its box, and a pen's pressure at each when it reported
+   * one, packed into one block: base64 of a version byte, a flags byte and a little-endian record
+   * per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.
+   * @format byte
+   */
+  packedPoints: string;
   // True when the path auto-closes (release-near-start). The
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
@@ -868,14 +904,21 @@ export type FreehandElement = {
   // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
+  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
+  // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
+  // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
+  streamline?: number;
+  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter
   // strokes (which want the smoothing).
   straightEdges?: boolean;
   // Shared boxed-element fields, see ImageElement above for the
-  // rationale: the union code paths (change log, format painter,
-  // export, Editor panel) all read these uniformly. Labels render
+  // rationale: the union code paths (format painter, export,
+  // Editor panel) all read these uniformly. Labels render
   // on top of the SVG path (BoxedElementView), fill / stroke /
   // border-width / border-style follow the Colours + Border
   // accordions, and the rest of the bag (lock, group, opacity,
@@ -927,6 +970,78 @@ export type FreehandElement = {
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
+  noteRich?: TextRun[];
+};
+
+// --- Paths -----------------------------------------------------------------
+
+// A path's node (docs/specs/023-draw-mode/path-tool.md "The path element"): corner (no handles, or
+// independent ones), mirrored (collinear, equal length) or aligned (collinear, own lengths).
+export type PathHandleMode = 'corner' | 'mirrored' | 'aligned';
+
+// A position normalised to the element's box, like a freehand point. May lie outside 0 to 1: a
+// handle can reach beyond the drawn curve the box wraps.
+export type PathPoint = { nx: number; ny: number };
+
+// An anchor point and its optional handles, stored as absolute normalised positions so a resize
+// scales the whole path, handles included.
+export type PathNode = PathPoint & {
+  mode: PathHandleMode;
+  handleIn?: PathPoint;
+  handleOut?: PathPoint;
+};
+
+// The Path tool's element (docs/specs/023-draw-mode/path-tool.md): an ordered list of nodes joined
+// by cubic Béziers, open or closed, editable point by point. The box wraps the drawn curve. Styled
+// like a shape: stroke, fill (drawn only when closed), border width and style. A path takes no
+// typed label; the label fields stay declared for the union code paths, as on a freehand.
+export type PathElement = {
+  id: ElementId;
+  type: 'path';
+  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
+  layerId?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  nodes: PathNode[];
+  closed: boolean;
+  fillColor?: string;
+  strokeColor?: string;
+  // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted
+  // content"): drawn in the version tuned for the viewer's board when `strokeColor` is unset.
+  penColour?: PenColourName;
+  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.
+  strokeSwatch?: QuickSwatchSlot;
+  fillSwatch?: QuickSwatchSlot;
+  strokeWidth?: BorderStroke;
+  strokeStyle?: BorderStyle;
+  label?: string;
+  textSize?: TextSize;
+  textAlignX?: TextAlignX;
+  textAlignY?: TextAlignY;
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
+  font?: string;
+  textColor?: string;
+  borderRadius?: BorderRadius;
+  padding?: Padding;
+  locked?: boolean;
+  aspectLocked?: boolean;
+  opacity?: number;
+  // Clockwise rotation in degrees about the element's centre. Absent or 0 means unrotated.
+  rotation?: number;
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements").
+  animation?: ElementAnimation;
+  animationSpeed?: AnimationSpeed;
+  animationRepeat?: boolean;
+  link?: ElementLink;
+  commentThread?: CommentThread;
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md).
+  action?: ElementAction;
+  note?: string;
   noteRich?: TextRun[];
 };
 

@@ -41,7 +41,6 @@ export const HELP_ARTICLES = {
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  highlighter: 'selection-modes/highlighter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
   aiTools: 'tools/ai/ai-tools',
@@ -50,8 +49,12 @@ export const HELP_ARTICLES = {
   exportingDiagrams: 'account-and-data/exporting-diagrams',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
+  googleDrive: 'account-and-data/google-drive',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
+  microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
+  drawioImport: 'explorer/drawio-import',
+  shapeLibraries: 'explorer/shape-libraries',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
@@ -69,7 +72,6 @@ export const HELP_ARTICLES = {
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  activityPanel: 'activity-panel/what-it-is',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
   sessionPolls: 'collaboration/session-tools/polls',
@@ -80,11 +82,11 @@ export const HELP_ARTICLES = {
   recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
-  unsorted: 'explorer/unsorted',
+  defaultFolders: 'explorer/folders/default-folders',
+  explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings
-  minimalPanels: 'palette/minimal-panels',
   toolbarLayout: 'palette/toolbar-layout',
   powerUserMode: 'user-interface/power-user-mode',
   welcomeTour: 'getting-started/welcome-tour',
@@ -93,6 +95,7 @@ export const HELP_ARTICLES = {
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
+  drawMode: 'canvas/draw-mode',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
 } as const;
@@ -166,10 +169,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
   },
-  highlighter: {
-    title: 'Learn about the Highlighter',
-    description: 'Tips for marking up the canvas with translucent strokes.',
-  },
   slideDeck: {
     title: 'Learn about the Slide Deck',
     description: 'Tips for building and presenting slides from your document.',
@@ -194,9 +193,25 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Trash',
     description: 'How long deleted documents wait, and how to restore one.',
   },
+  googleDrive: {
+    title: 'Learn about Google Drive sync',
+    description: 'What is copied to Drive, how often, and what travels back.',
+  },
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
+  },
+  microsoftWhiteboardImport: {
+    title: 'Learn about Microsoft Whiteboard import',
+    description: 'What a board export is and how each board becomes a document.',
+  },
+  shapeLibraries: {
+    title: 'Learn about shape libraries',
+    description: 'How libraries are made, placed from My shapes, and managed.',
+  },
+  drawioImport: {
+    title: 'Learn about draw.io import',
+    description: 'Which files it reads and how each diagram becomes a document.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',
@@ -243,10 +258,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
   },
-  activityPanel: {
-    title: 'Learn about the Activity panel',
-    description: 'Tips for reading, filtering and reverting the change log.',
-  },
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
@@ -268,8 +279,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
-    title: 'Learn about the Timeline',
-    description: 'Everything that has happened across your documents, teams and account.',
+    title: 'Learn about Home',
+    description: 'Jump back in, what others did while you were away, and your own Timeline.',
   },
   activity: {
     title: 'Learn about Activity',
@@ -280,16 +291,20 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Your most recently opened documents, personal and team, in one list.',
   },
   sharedWithYou: {
-    title: 'Learn about Shared with You',
+    title: 'Learn about Shared with me',
     description: 'Documents other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
     description: 'Tips for organising documents into a nestable tree of folders.',
   },
-  unsorted: {
-    title: 'Learn about the Unsorted folder',
-    description: 'Where documents live until you file them into a folder.',
+  defaultFolders: {
+    title: 'Learn about default folders',
+    description: 'Where new diagrams, whiteboards and boards land when you pick no place.',
+  },
+  explorerFilters: {
+    title: 'Learn about search and filters',
+    description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
   },
   dataElements: {
     title: 'Learn about data elements',
@@ -298,10 +313,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  minimalPanels: {
-    title: 'Learn about minimal panels',
-    description: 'The compact button bar that replaces the floating panels.',
   },
   toolbarLayout: {
     title: 'Learn about the toolbar layout',
@@ -330,6 +341,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
+  },
+  drawMode: {
+    title: 'Learn about Draw mode',
+    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   livePresence: {
     title: 'Learn about live presence',

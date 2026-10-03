@@ -1,241 +1,242 @@
-// Sticky-note workshop boards: the affinity map (brainstorm stickies
-// clustered into themes) and the user story map (an activity backbone
-// with story cards sliced into release bands). Both are freeform
-// facilitation surfaces built from stickies + light scaffolding, which
-// is why they share a file; the fill-the-boxes strategy canvases live
-// in template-builders-canvases.ts.
+// Sticky-note workshop boards: the affinity map (research notes clustered
+// into insights) and the user story map (a journey backbone with story cards
+// sliced into releases). Both are the OUTPUT of a real workshop, drawn the
+// way the practice draws them, in the stationery colours the practice uses:
+// yellow for the raw notes, a cooler colour for each level of synthesis above
+// them. The fill-the-boxes strategy canvases live in
+// template-builders-canvases.ts.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
-// Element[]. Sizing constants live inline so each template is
-// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
+// Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { BLUE, MUTED, PINK, YELLOW } from './template-workshop-stickies';
 
-// Affinity map: a research question up top, three dashed cluster frames
-// the team has already themed, and an unsorted pile still to file. The
-// clusters use the frame shape (transparent, labelled) with a dashed
-// stroke so they read as boundaries drawn around the notes rather than
-// solid containers; stickies inside carry a slight alternating tilt so
-// the board keeps its hand-placed workshop feel.
+// The user story map lives in its own module; re-exported so build-template
+// keeps importing both workshop boards from here.
+export { buildUserStoryMap } from './template-builders-story-map';
+
+// Affinity map: interview notes after the room has clustered them, in the
+// Contextual Design hierarchy. Yellow notes are verbatim observations tagged
+// with the participant who said them (P3); a blue note heads each group with
+// the insight in the user's voice ("I don't know where to start"); a pink
+// note names the theme two groups share. Each theme is a dashed frame drawn
+// round its groups. The blue headers carry the dot-vote tally from the vote
+// button up by the title, so the board shows which insight won. Two notes
+// still lean in an Unsorted pile at the side: the part of the wall nobody has
+// placed yet. Frames and labels are the "Board" scaffold; every note, disc
+// and the vote button ride "Stickies".
+type Group = { insight: string; votes: number; notes: string[] };
+type Theme = { title: string; groups: [Group, Group] };
+
+const AFFINITY_THEMES: [Theme, Theme] = [
+  {
+    title: 'Getting started feels like work',
+    groups: [
+      {
+        insight: '“I don’t know where to start”',
+        votes: 6,
+        notes: [
+          'Blank canvas froze me · P3',
+          'Wanted a sample to poke at · P7',
+          'Never saw the templates button · P11',
+        ],
+      },
+      {
+        insight: '“Setup takes too long”',
+        votes: 2,
+        notes: ['Invite flow asked too much · P2', 'Verified my email twice · P9'],
+      },
+    ],
+  },
+  {
+    title: 'I can’t tell if it’s worth paying for',
+    groups: [
+      {
+        insight: '“Pricing is a mystery”',
+        votes: 4,
+        notes: [
+          'Couldn’t find the free-tier limits · P4',
+          'No pricing link inside the app · P6',
+          'Scared of a surprise bill · P12',
+        ],
+      },
+      {
+        insight: '“I don’t trust it yet”',
+        votes: 1,
+        notes: ['Never heard of the brand · P1', 'No logos from teams like mine · P8'],
+      },
+    ],
+  },
+];
+const AFFINITY_UNSORTED = ['Slow to load on my phone · P5', 'Dark mode please! · P10'];
+
 export function buildAffinityMap(cx: number, cy: number): Element[] {
-  const frameW = 420;
-  const frameH = 520;
-  const frameGap = 48;
-  const stickyW = 340;
-  const stickyH = 118;
-  const stickyGap = 24;
-  const titleH = 50;
-  const titleGap = 40;
+  const colW = 260;
+  const colGap = 20;
+  const framePad = 20;
+  const themeGap = 40;
+  const pinkH = 68;
+  const blueH = 80;
+  const noteH = 84;
+  const noteGap = 12;
+  const rowGap = 16;
+  const pileW = 230;
+  const titleH = 52;
+  const subtitleH = 30;
+  const headGap = 28;
+  const maxNotes = Math.max(...AFFINITY_THEMES.flatMap((t) => t.groups.map((g) => g.notes.length)));
+  const themeW = colW * 2 + colGap;
+  const frameW = themeW + framePad * 2;
+  const frameH =
+    framePad + pinkH + rowGap + blueH + rowGap + maxNotes * (noteH + noteGap) - noteGap + framePad;
+  const totalW = frameW * 2 + themeGap + themeGap + pileW;
+  const x0 = cx - totalW / 2;
+  const y0 = cy - (titleH + subtitleH + headGap + frameH) / 2;
+  const top = y0 + titleH + subtitleH + headGap;
 
-  type Cluster = { label: string; notes: string[] };
-  const clusters: Cluster[] = [
+  const scaffold = { layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
+  const content = { layerId: TEMPLATE_CONTENT_LAYER_ID };
+  const voteW = 152;
+  const elements: Element[] = [
     {
-      label: 'Onboarding',
-      notes: [
-        'Empty canvas is intimidating',
-        'No sample diagrams to poke at',
-        'Too many steps before any value',
-      ],
+      ...createText(x0, y0),
+      width: totalW - voteW - 260,
+      height: titleH,
+      label: 'Affinity map · Why do trial users leave before day 7?',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'left',
+      ...content,
     },
     {
-      label: 'Pricing clarity',
-      notes: ['Free-tier limits are unclear', 'No pricing link inside the app'],
+      ...createText(x0, y0 + titleH),
+      width: totalW - voteW - 260,
+      height: subtitleH,
+      label:
+        '31 notes from 12 interviews. Cluster in silence, name each group in the user’s words, then vote.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
+      ...scaffold,
     },
     {
-      label: 'Trust',
-      notes: ['Unfamiliar brand', 'No testimonials on the landing page'],
+      ...createText(x0 + totalW - voteW - 244, y0),
+      width: 228,
+      height: 96,
+      label: 'Three dots each on the insights we should act on first.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'right',
+      textAlignY: 'middle',
+      ...scaffold,
+    },
+    {
+      ...createShape('session-button', x0 + totalW - voteW, y0),
+      width: voteW,
+      height: 96,
+      session: { tool: 'vote', dots: 3 },
+      ...content,
     },
   ];
 
-  // Unsorted pile to the right of the clusters: the work still to do.
-  const unsorted = ['Slow load on mobile', 'Invite flow is confusing'];
-  const pileW = 300;
-
-  const totalW = clusters.length * frameW + (clusters.length - 1) * frameGap + frameGap + pileW;
-  const x0 = cx - totalW / 2;
-  const y0 = cy - (titleH + titleGap + frameH) / 2;
-  const framesTop = y0 + titleH + titleGap;
-
-  const elements: Element[] = [];
-
-  elements.push({
-    ...createText(x0, y0),
-    width: totalW,
-    height: titleH,
-    label: 'Brainstorm · Why do sign-ups drop off?',
-    textSize: 'lg',
-    textBold: true,
-    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-  });
-
-  clusters.forEach((cluster, i) => {
-    const fx = x0 + i * (frameW + frameGap);
+  AFFINITY_THEMES.forEach((theme, ti) => {
+    const fx = x0 + ti * (frameW + themeGap);
     elements.push({
-      ...createShape('frame', fx, framesTop),
+      ...createShape('frame', fx, top),
       width: frameW,
       height: frameH,
-      label: cluster.label,
+      label: '',
       strokeStyle: 'dashed',
-      textSize: 'md',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+      strokeColor: '#e11d48',
+      ...scaffold,
     });
-    cluster.notes.forEach((note, j) => {
-      elements.push({
-        ...createSticky(fx + (frameW - stickyW) / 2, framesTop + 64 + j * (stickyH + stickyGap)),
-        width: stickyW,
-        height: stickyH,
-        label: note,
-        textSize: 'sm',
-        // Alternate a gentle tilt so the notes read as hand-placed.
-        rotation: j % 2 === 0 ? -2 : 2,
-        layerId: TEMPLATE_CONTENT_LAYER_ID,
-      });
-    });
-  });
-
-  // The unsorted pile leans harder than the clustered notes: it hasn't
-  // been tidied into a theme yet.
-  const pileX = x0 + totalW - pileW;
-  elements.push({
-    ...createText(pileX, framesTop),
-    width: pileW,
-    height: 40,
-    label: 'Unsorted',
-    textSize: 'md',
-    textAlignX: 'center',
-    textColor: '#64748b',
-    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-  });
-  unsorted.forEach((note, i) => {
+    const innerX = fx + framePad;
     elements.push({
-      ...createSticky(pileX + (pileW - stickyW + 40) / 2, framesTop + 64 + i * (stickyH + 36)),
-      width: stickyW - 40,
-      height: stickyH,
-      label: note,
-      textSize: 'sm',
-      rotation: i % 2 === 0 ? 4 : -5,
-      layerId: TEMPLATE_CONTENT_LAYER_ID,
-    });
-  });
-
-  return elements;
-}
-
-// User story map: the walking-skeleton backbone of user activities
-// across the top, with story stickies beneath each activity, sliced
-// into two release bands (MVP and Release 2) by a dashed cut line.
-// Worked example: an online shop, so every card's altitude is obvious
-// (activities are journeys, stories are shippable slices).
-export function buildUserStoryMap(cx: number, cy: number): Element[] {
-  const colW = 250;
-  const colGap = 40;
-  const railW = 128; // left rail carrying the release-band labels
-  const railGap = 32;
-  const activityH = 84;
-  const backboneGap = 40;
-  const stickyH = 100;
-  const stickyGap = 18;
-  const bandGap = 56; // vertical clearance between the two release bands
-  const bandPad = 20; // breathing room inside a band, above and below its stories
-
-  type Activity = { label: string; mvp: string[]; later: string[] };
-  const activities: Activity[] = [
-    {
-      label: 'Browse products',
-      mvp: ['Search the catalogue', 'Filter by category'],
-      later: ['Save favourites'],
-    },
-    {
-      label: 'Build a cart',
-      mvp: ['Add item to cart', 'Edit quantities'],
-      later: ['Share cart with a friend'],
-    },
-    {
-      label: 'Check out',
-      mvp: ['Pay by card', 'Guest checkout'],
-      later: ['Apple Pay + wallets'],
-    },
-    {
-      label: 'Track my order',
-      mvp: ['Order status page', 'Email confirmation'],
-      later: ['Live courier map'],
-    },
-  ];
-
-  const mvpRows = Math.max(...activities.map((a) => a.mvp.length));
-  const mvpBandH = mvpRows * stickyH + (mvpRows - 1) * stickyGap;
-  const gridW = activities.length * colW + (activities.length - 1) * colGap;
-  const totalW = railW + railGap + gridW;
-  const laterRows = Math.max(...activities.map((a) => a.later.length));
-  const laterBandH = laterRows * stickyH + (laterRows - 1) * stickyGap;
-  const totalH = activityH + backboneGap + mvpBandH + bandGap + laterBandH;
-
-  const x0 = cx - totalW / 2;
-  const y0 = cy - totalH / 2;
-  const gridX = x0 + railW + railGap;
-  const mvpTop = y0 + activityH + backboneGap;
-  const cutY = mvpTop + mvpBandH + bandGap / 2;
-  const laterTop = cutY + bandGap / 2;
-
-  const elements: Element[] = [];
-
-  // Backbone: one activity card per column. Soft preset so the spine
-  // reads a level above the story cards without fighting the theme.
-  activities.forEach((activity, i) => {
-    elements.push({
-      ...createShape('square', gridX + i * (colW + colGap), y0),
-      width: colW,
-      height: activityH,
-      label: activity.label,
+      ...createSticky(innerX, top + framePad),
+      width: themeW,
+      height: pinkH,
+      label: theme.title,
       textSize: 'md',
       textBold: true,
-      colorPreset: 'soft',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+      textAlignX: 'center',
+      textAlignY: 'middle',
+      ...PINK,
+      ...content,
+    });
+    const blueY = top + framePad + pinkH + rowGap;
+    theme.groups.forEach((group, gi) => {
+      const gx = innerX + gi * (colW + colGap);
+      elements.push({
+        ...createSticky(gx, blueY),
+        width: colW,
+        height: blueH,
+        label: group.insight,
+        textSize: 'sm',
+        textBold: true,
+        textAlignX: 'center',
+        textAlignY: 'middle',
+        ...BLUE,
+        ...content,
+      });
+      const disc = 32;
+      elements.push({
+        ...createShape('circle', gx + colW - disc + 8, blueY - 10),
+        width: disc,
+        height: disc,
+        label: String(group.votes),
+        textSize: 'sm',
+        textBold: true,
+        padding: 'none',
+        // The Inked preset: a dark disc with light text under every theme.
+        fillColor: '#0f172a',
+        strokeColor: '#334155',
+        textColor: '#f8fafc',
+        strokeWidth: 'medium',
+        colorPreset: 'inked',
+        ...content,
+      });
+      group.notes.forEach((text, ni) => {
+        elements.push({
+          ...createSticky(gx, blueY + blueH + rowGap + ni * (noteH + noteGap)),
+          width: colW,
+          height: noteH,
+          label: text,
+          textSize: 'sm',
+          // A gentle alternating tilt, so the wall reads as hand-placed.
+          rotation: (ni + gi) % 2 === 0 ? -1.5 : 1.5,
+          ...YELLOW,
+          ...content,
+        });
+      });
     });
   });
 
-  // Release bands: one LANE per slice (docs/specs/009-elements/lane.md), sitting behind the stories
-  // it holds.
-  //
-  // This used to be a dashed rule with two free-floating text labels off to
-  // the left — a band you had to infer from a line and a word that were not
-  // attached to each other or to anything else. A lane carries its own title
-  // in its gutter, so "MVP" moves with the band it names, and dragging the
-  // band takes its stories' backdrop with it.
-  const band = (top: number, height: number, label: string): Element => ({
-    ...createShape('lane', x0, top - bandPad),
-    width: totalW,
-    height: height + bandPad * 2,
-    label,
+  // The unsorted pile leans harder than the clustered notes: nobody has
+  // placed it yet.
+  const pileX = x0 + totalW - pileW;
+  elements.push({
+    ...createText(pileX, top),
+    width: pileW,
+    height: 36,
+    label: 'Unsorted',
     textSize: 'md',
-    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
+    textBold: true,
+    textColor: MUTED,
+    textAlignX: 'left',
+    ...scaffold,
   });
-  elements.push(band(mvpTop, mvpBandH, 'MVP'));
-  elements.push(band(laterTop, laterBandH, 'Release 2'));
-
-  // Story stickies under each activity, banded by release.
-  activities.forEach((activity, i) => {
-    const x = gridX + i * (colW + colGap);
-    activity.mvp.forEach((story, j) => {
-      elements.push({
-        ...createSticky(x, mvpTop + j * (stickyH + stickyGap)),
-        width: colW,
-        height: stickyH,
-        label: story,
-        textSize: 'sm',
-        layerId: TEMPLATE_CONTENT_LAYER_ID,
-      });
-    });
-    activity.later.forEach((story, j) => {
-      elements.push({
-        ...createSticky(x, laterTop + j * (stickyH + stickyGap)),
-        width: colW,
-        height: stickyH,
-        label: story,
-        textSize: 'sm',
-        layerId: TEMPLATE_CONTENT_LAYER_ID,
-      });
+  AFFINITY_UNSORTED.forEach((text, i) => {
+    elements.push({
+      ...createSticky(pileX + 6, top + 52 + i * (noteH + 36)),
+      width: pileW - 12,
+      height: noteH,
+      label: text,
+      textSize: 'sm',
+      rotation: i % 2 === 0 ? 4 : -5,
+      ...YELLOW,
+      ...content,
     });
   });
 

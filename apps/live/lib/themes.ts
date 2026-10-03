@@ -90,7 +90,9 @@ export function getTheme(
 // The backdrop a tab actually PAINTS, which is not always the backdrop it
 // stores. A tab on the Default scheme whose canvas is still the scheme's own
 // (nobody has hand-picked a colour) follows the viewer's appearance instead:
-// white grid in light chrome, blue-slate grid in dark. Nothing is written back —
+// the off-white canvas in light chrome, blue-slate in dark. It is the same in both editor modes
+// (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Draw pattern is laid over it by
+// resolveViewBackdrop. Nothing is written back —
 // the document keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.
 //

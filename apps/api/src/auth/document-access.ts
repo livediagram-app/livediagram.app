@@ -60,7 +60,7 @@ export type DocumentGrant = { role: ShareRole; tabScope: string | null; shareCod
 // header path is disabled there and only `callerId` + share codes count.
 //
 // The doors that can narrow what they return to one tab (the document
-// fetch, the log list, copy, thumbnails, images, the room) ask for the
+// fetch, copy, thumbnails, images, the room) ask for the
 // grant itself and apply its scope.
 export async function resolveDocumentGrant(
   env: Env,

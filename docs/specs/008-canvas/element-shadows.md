@@ -44,7 +44,7 @@ like Border does). Contents:
   the zero-blur offset "poster" shadow; the other three are elevation steps.
 - **Sliders** — Offset X (±24), Offset Y (±24), Blur (0..48), Opacity
   (0..100%). They follow the opacity-slider policy (debounced non-history
-  ticks, one undo step + one log entry per gesture). Dragging any slider when
+  ticks, one undo step per gesture). Dragging any slider when
   no shadow is set seeds the rest from `DEFAULT_SHADOW` (the Drop preset's
   values, which the sliders also display at rest) so the first drag produces
   a visible shadow, not a degenerate all-zero one.
@@ -75,4 +75,4 @@ equivalence), so exports match the canvas. Snapshots ([Document SVG snapshots](.
 - Themes never write shadows; presets are theme-independent.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): preset commits fire `track('Element', 'Changed',
 'Shadow')` via the shared preview/commit path; slider drags stay untracked
-  like the opacity slider (the debounced change-log entry covers audit).
+  like the opacity slider.

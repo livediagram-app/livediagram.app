@@ -86,10 +86,11 @@ type TechIconDef = {
   signpost beside CloudFront's globe; Workers is braces around a bolt), which
   `tech-icon-catalog.test.ts` enforces. Glyph markup never sets its own stroke width.
 
-### v1 coverage (curated common set, ~38)
+### Coverage (curated common set, ~40)
 
 - **AWS:** S3, EC2, Lambda, RDS, DynamoDB, API Gateway, CloudFront, Route 53,
-  VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM.
+  VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM, Lake Formation (data lakes) and MSK, the last two
+  added for diagrams imported from draw.io ([draw.io import](../020-import-export/drawio-import.md)).
 - **Azure:** Virtual Machines, Blob Storage, App Service, Functions, SQL
   Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key
   Vault, Monitor.

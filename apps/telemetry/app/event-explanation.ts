@@ -21,6 +21,9 @@ export function eventExplanation(category: string, action: string, type: string 
   );
 }
 
+const SIDEBAR_PREFIX = 'Sidebar.';
+const PANEL_PREFIX = 'ExplorerPanel.';
+
 function pattern(category: string, action: string, type: string): string | null {
   switch (`${category}|${action}`) {
     case 'Page|View':
@@ -54,6 +57,13 @@ function pattern(category: string, action: string, type: string): string | null 
       return `Someone started a fresh tab from the ${titleWords(type)} template.`;
     case 'Search|Selected':
       return `Someone picked ${withArticle(words(type))} result from the editor's search.`;
+    // The Explorer sidebar (docs/specs/013-workspace/explorer-structure.md): which row.
+    case 'UI|Selected':
+      if (type.startsWith(SIDEBAR_PREFIX))
+        return `Someone picked the ${words(type.slice(SIDEBAR_PREFIX.length))} row in the Explorer's sidebar.`;
+      return type.startsWith(PANEL_PREFIX)
+        ? `Someone picked the ${words(type.slice(PANEL_PREFIX.length))} row in the editor's Explorer panel.`
+        : null;
     case 'UI|Opened':
       return isArticleSlug(type)
         ? `Someone opened the "${articleTitle(type)}" help article from inside the editor, through a help link or a search result.`

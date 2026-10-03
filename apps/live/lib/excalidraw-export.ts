@@ -9,11 +9,15 @@
 // the container) so they stay attached when edited in Excalidraw.
 
 import {
+  DEFAULT_BACKGROUND_COLOR,
+  freehandStrokePoints,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
   endpointPosition,
   isBoxed,
+  pathAnchors,
+  samplePath,
   type ArrowElement,
   type ArrowheadShape,
   type BoxedElement,
@@ -123,9 +127,28 @@ export function tabToExcalidrawText(tab: Tab): string {
       strokeStyle: strokeStyleOut(borderStyle),
     };
 
+    // A path (docs/specs/023-draw-mode/path-tool.md "Export"): a line sampled along its curve.
+    if (el.type === 'path') {
+      const pts = samplePath(pathAnchors(el, { x: 0, y: 0 }), el.closed).map(
+        (p): [number, number] => [p.x, p.y],
+      );
+      out.push(
+        chassis(el, seq++, {
+          ...base,
+          type: 'line',
+          backgroundColor: el.closed ? fill : 'transparent',
+          points: pts,
+          lastCommittedPoint: null,
+        }),
+      );
+      continue;
+    }
+
     // Freehand strokes keep their real geometry as freedraw / line points.
     if (el.type === 'freehand') {
-      const pts: [number, number][] = el.points.map((p) => [p.nx * el.width, p.ny * el.height]);
+      const { count, nx, ny, pressures } = freehandStrokePoints(el);
+      const pts: [number, number][] = [];
+      for (let i = 0; i < count; i++) pts.push([nx[i]! * el.width, ny[i]! * el.height]);
       if (el.closed && pts.length > 0) pts.push([pts[0]![0], pts[0]![1]]);
       out.push(
         chassis(el, seq++, {
@@ -133,8 +156,9 @@ export function tabToExcalidrawText(tab: Tab): string {
           type: el.straightEdges ? 'line' : 'freedraw',
           backgroundColor: el.closed ? fill : 'transparent',
           points: pts,
-          pressures: [],
-          simulatePressure: true,
+          // A whiteboard pen stroke's real pressures travel; without them Excalidraw simulates.
+          pressures: pressures ? Array.from(pressures) : [],
+          simulatePressure: !pressures,
           lastCommittedPoint: null,
         }),
       );
@@ -294,7 +318,7 @@ export function tabToExcalidrawText(tab: Tab): string {
       elements: out,
       appState: {
         gridSize: null,
-        viewBackgroundColor: tab.backgroundColor ?? '#ffffff',
+        viewBackgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
       },
       files: {},
     },

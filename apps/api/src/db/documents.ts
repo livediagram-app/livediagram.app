@@ -10,6 +10,9 @@ import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements } from './collab-index';
 import { imageRefAddStatements } from './image-refs';
 import { documentRemovalStatements } from './document-removal';
+import { firstTabCountSql, isEmptyCount } from './tabs';
+import type { RecordedIntent } from '@livediagram/api-schema';
+import { readRecordedIntent, type RecordedIntentRow } from '../document-intent-row';
 
 type DocumentRow = {
   id: string;
@@ -28,9 +31,9 @@ type DocumentRow = {
   // row for this document, or NULL when no share links exist. Replaces
   // the legacy diagrams.share_code column dropped in migration 0008.
   share_code: string | null;
-};
+} & RecordedIntentRow;
 
-type SummaryRow = DocumentRow;
+type SummaryRow = DocumentRow & { first_tab_count: number | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
@@ -77,6 +80,7 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
     ownerColor: ownerParticipant?.color ?? null,
+    ...readRecordedIntent(row),
   };
 }
 
@@ -86,11 +90,13 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
 // minted for the document.
 const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+// `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
+const INTENT_COLS = 'opens_in, tab_kind, template_family';
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${firstTabCountSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -176,8 +182,10 @@ function rowToSummary(row: SummaryRow): DocumentSummary {
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentSummary['source']) ?? null,
+    ...readRecordedIntent(row),
     savedAt: row.saved_at,
     createdAt: row.created_at,
+    empty: isEmptyCount(row.first_tab_count),
   };
 }
 
@@ -213,7 +221,10 @@ export async function listDocumentsByTeam(env: Env, teamId: string): Promise<Doc
 // table, owner info comes via a participants join on read.
 export async function upsertDocumentMeta(
   env: Env,
-  d: Omit<DocumentDTO, 'tabs' | 'ownerName' | 'ownerColor'>,
+  // The recorded creation intent (docs/specs/013-workspace/default-folders.md "Recorded intent")
+  // rides the same shape: written by the INSERT, never by the update.
+  d: Omit<DocumentDTO, 'tabs' | 'ownerName' | 'ownerColor' | keyof RecordedIntent> &
+    Partial<RecordedIntent>,
 ): Promise<void> {
   // `shareCode` is intentionally absent from the INSERT — it now
   // lives only in share_links. The DTO field is read-only (derived
@@ -224,9 +235,14 @@ export async function upsertDocumentMeta(
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
   // setDocumentPresentation writes it.
+  // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
+  // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
+  // re-commit keeps its place, and moving is setDocumentFolder's job.
+  // `opens_in`, `tab_kind` and `template_family` are the recorded creation intent, written here once
+  // and never by the DO UPDATE, so nothing after the create re-derives or rewrites them.
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, source, presentation, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, opens_in, tab_kind, template_family)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -238,10 +254,14 @@ export async function upsertDocumentMeta(
       d.name,
       d.shareable ? 1 : 0,
       d.folderId,
+      d.teamId ?? null,
       d.source ?? null,
       d.presentation ?? null,
       d.savedAt,
       d.createdAt,
+      d.opensIn ?? null,
+      d.tabKind ?? null,
+      d.templateFamily ?? null,
     )
     .run();
 }
@@ -366,10 +386,10 @@ export async function markThumbRendered(env: Env, id: string, now: number): Prom
 // "Copy this document to my own files" — duplicates the source document
 // under a brand-new id owned by `newOwnerId`. Carries the document
 // meta (name with "Copy of " prefix unless the caller overrides) and
-// every tab's content; deliberately does NOT copy share_links,
-// change_log, or the shareable flag. The new document starts private
-// + audit-free so the visitor's copy reads as their own clean
-// workspace, not a clone of the host's collab history.
+// every tab's content; deliberately does NOT copy share_links or the
+// shareable flag. The new document starts private so the visitor's
+// copy reads as their own clean workspace, not a clone of the host's
+// collab setup.
 //
 // Caller is expected to have already authorised the copy (the index
 // handler checks ownership / share_code / shared_with). This helper
@@ -386,28 +406,36 @@ export async function copyDocument(
   const source = await getDocument(env, sourceId);
   if (!source) return null;
   const now = Date.now();
+  // The copy carries the source's recorded creation intent, read in the same statement, never
+  // re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent").
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at)
-     VALUES (?, ?, ?, 0, NULL, ?, ?)`,
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, ${INTENT_COLS})
+     SELECT ?, ?, ?, 0, NULL, ?, ?, ${INTENT_COLS} FROM documents WHERE id = ?`,
   )
-    .bind(newId, newOwnerId, newName, now, now)
+    .bind(newId, newOwnerId, newName, now, now, sourceId)
     .run();
   // Walk the source's tab rows via the link table and re-insert
   // each under the new document id with a freshly minted tab id.
   // Preserves order_index verbatim so the cloned document opens to
   // the same tab layout the visitor was looking at. Skipping
-  // share_links + change_log is by design — those don't survive
+  // share_links is by design — they don't survive
   // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-document/tab-document-many-to-many.md)
   // are deliberate: edits to the copy stay isolated from the source.
   const tabRows = await env.DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, t.data
+    `SELECT t.id, t.name, dt.order_index, t.data, t.element_count
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC`,
   )
     .bind(...(onlyTabId === null ? [sourceId] : [sourceId, onlyTabId]))
-    .all<{ id: string; name: string; order_index: number; data: string }>();
+    .all<{
+      id: string;
+      name: string;
+      order_index: number;
+      data: string;
+      element_count: number | null;
+    }>();
   // Mint every fresh tab id up front so a tab / element link on one tab
   // can be re-pointed at its sibling's copy (the Explorer duplicate does
   // the same walk through the shared remapTabLinks). Without it the copy's
@@ -421,12 +449,10 @@ export async function copyDocument(
     const freshTabId = tabIdMap.get(row.id)!;
     const data = remapTabDataLinks(row.data, tabIdMap);
     return [
-      env.DB.prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)`).bind(
-        freshTabId,
-        row.name,
-        data,
-        now,
-      ),
+      // Link remapping rewrites ids inside elements, never their number, so the count carries over.
+      env.DB.prepare(
+        `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, ?, ?, ?, ?)`,
+      ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,

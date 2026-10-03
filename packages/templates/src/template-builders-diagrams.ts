@@ -11,6 +11,7 @@ import {
   createArrow,
   createPinnedArrow,
   createShape,
+  createSticky,
   createText,
   type Anchor,
   type Element,
@@ -156,130 +157,238 @@ export function buildPyramid(cx: number, cy: number): Element[] {
   return [...bands.reverse(), ...labels];
 }
 
-// Flywheel: central hub circle + four reinforcing-stage sector
-// circles arranged at 12/3/6/9 o'clock, connected by a clockwise loop
-// of arrows. A small caption sits outside each sector with example
-// tactics. Reads as a momentum loop rather than a static four-up.
+// Flywheel: a worked growth loop for FreshBox (the meal-kit subscription the
+// strategy canvases share) that reads as MOMENTUM, not a static four-up.
+// Four stage wheels sit at 12 / 3 / 6 / 9 o'clock, each tinted its own hue
+// (`themeLockFill`) with a role glyph over its name, and each names a cause
+// that feeds the next: more subscribers → more weekly orders → better farm
+// deals → lower box prices → more subscribers. Thick curved arrows run
+// clockwise with a flowing-dash animation, and the hub's refresh glyph
+// spins, so the loop visibly turns the moment the template lands. Every
+// stage carries its current number outside the wheel (bold metric over a
+// muted how). Two corner stickies name what a flywheel is worked with: a
+// green PUSH that adds force and a rose FRICTION that slows a turn, which
+// is the conversation the diagram exists to start.
+type FlywheelStage = {
+  angleDeg: number;
+  label: string;
+  icon: string;
+  metric: string;
+  how: string;
+  fill: string;
+  ink: string;
+  // Anchors on THIS stage: `out` faces the next stage clockwise, `into`
+  // faces the previous one, so every arrow stays outside the hub.
+  out: Anchor;
+  into: Anchor;
+};
+
+const FLYWHEEL_STAGES: FlywheelStage[] = [
+  {
+    angleDeg: -90,
+    label: 'More subscribers',
+    icon: 'users',
+    metric: '2,400 active · ▲ 12% a month',
+    how: 'Referrals and word of mouth',
+    fill: '#dbeafe',
+    ink: '#1e3a8a',
+    out: 'e',
+    into: 'w',
+  },
+  {
+    angleDeg: 0,
+    label: 'More weekly orders',
+    icon: 'cart',
+    metric: '9,000 boxes a week',
+    how: 'Habit: the box just arrives',
+    fill: '#dcfce7',
+    ink: '#14532d',
+    out: 's',
+    into: 'n',
+  },
+  {
+    angleDeg: 90,
+    label: 'Better farm deals',
+    icon: 'percent',
+    metric: 'Ingredient cost ▼ 8%',
+    how: 'Volume contracts with six farms',
+    fill: '#fef3c7',
+    ink: '#78350f',
+    out: 'w',
+    into: 'e',
+  },
+  {
+    angleDeg: 180,
+    label: 'Lower box prices',
+    icon: 'tag',
+    metric: '£39 → £35 for 3 dinners',
+    how: 'Savings passed straight on',
+    fill: '#ede9fe',
+    ink: '#4c1d95',
+    out: 'n',
+    into: 's',
+  },
+];
+
 export function buildFlywheel(cx: number, cy: number): Element[] {
-  const elements: Element[] = [];
-  const hubSize = 200;
-  const sectorSize = 160;
-  const orbitRadius = 260;
-  const captionOffset = 110;
-  const captionW = 200;
-  const captionH = 50;
+  const hubSize = 220;
+  const stageSize = 216;
+  const orbit = 290;
+  const captionW = 240;
+  const captionGap = 20;
+  const metricH = 30;
+  const howH = 24;
+  const titleH = 48;
+  const subtitleH = 28;
+  const reach = orbit + stageSize / 2;
+  const halfW = reach + captionGap + captionW;
+  // The title block sits above the top caption and the bottom caption hangs
+  // below the wheel, so the wheel centre drops by half the difference to
+  // keep the whole composition centred on (cx, cy).
+  const above = reach + captionGap + metricH + howH + 24 + titleH + subtitleH;
+  const below = reach + captionGap + metricH + howH;
+  const wy = cy + (above - below) / 2;
+  const x0 = cx - halfW;
+  const y0 = wy - above;
 
-  const hub = {
-    ...createShape('circle', cx - hubSize / 2, cy - hubSize / 2),
-    width: hubSize,
-    height: hubSize,
-    label: 'Growth flywheel',
-    textSize: 'md' as const,
-    // The hub drives the whole loop → hero preset.
-    colorPreset: 'bold',
-  };
-  elements.push(hub);
-
-  type SectorSpec = {
-    angleDeg: number;
-    label: string;
-    caption: string;
-    // Anchors on THIS sector. `out` is where this sector's outgoing
-    // arrow leaves (toward the next sector clockwise). `into` is
-    // where this sector's incoming arrow arrives (from the previous
-    // sector). Picking the cardinal anchor that FACES the neighbour
-    // keeps the arrow off the hub and off the other sectors — e.g.
-    // Attract (top) leaves from its east face toward Engage (right),
-    // and Engage's incoming arrow arrives at its north face.
-    out: Anchor;
-    into: Anchor;
-  };
-  // Clockwise starting at the top. Each sector's `out` faces the
-  // NEXT sector clockwise; each `into` faces the PREVIOUS sector.
-  const sectors: SectorSpec[] = [
+  const elements: Element[] = [
     {
-      angleDeg: -90,
-      label: 'Attract',
-      caption: 'Ads, SEO, content',
-      out: 'e', // Attract.E -> Engage.N
-      into: 'w', // Refer.N -> Attract.W
+      ...createText(x0, y0),
+      width: halfW * 2,
+      height: titleH,
+      label: 'FreshBox growth flywheel',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'left',
     },
     {
-      angleDeg: 0,
-      label: 'Engage',
-      caption: 'Demos, onboarding, support',
-      out: 's', // Engage.S -> Delight.E
-      into: 'n', // Attract.E -> Engage.N
+      ...createText(x0, y0 + titleH),
+      width: halfW * 2,
+      height: subtitleH,
+      label:
+        'Each stage feeds the next. Add push where the wheel is slow, and remove the friction that stops a turn.',
+      textSize: 'sm',
+      textColor: MUTED,
+      textAlignX: 'left',
     },
     {
-      angleDeg: 90,
-      label: 'Delight',
-      caption: 'Wins, outcomes, wow moments',
-      out: 'w', // Delight.W -> Refer.S
-      into: 'e', // Engage.S -> Delight.E
-    },
-    {
-      angleDeg: 180,
-      label: 'Refer',
-      caption: 'Reviews, word of mouth, referrals',
-      out: 'n', // Refer.N -> Attract.W
-      into: 's', // Delight.W -> Refer.S
+      ...createShape('circle', cx - hubSize / 2, wy - hubSize / 2),
+      width: hubSize,
+      height: hubSize,
+      label: 'Momentum',
+      textSize: 'md',
+      textBold: true,
+      iconId: 'refresh-cw',
+      iconPosition: 'above',
+      iconAnimation: 'spin',
+      iconAnimationSpeed: 'slow',
+      // The hub drives the whole loop → hero preset.
+      colorPreset: 'bold',
     },
   ];
 
-  const sectorElements = sectors.map(({ angleDeg, label }) => {
-    const rad = (angleDeg * Math.PI) / 180;
-    const sx = cx + Math.cos(rad) * orbitRadius - sectorSize / 2;
-    const sy = cy + Math.sin(rad) * orbitRadius - sectorSize / 2;
+  const stageEls = FLYWHEEL_STAGES.map((s) => {
+    const rad = (s.angleDeg * Math.PI) / 180;
     return {
-      ...createShape('circle', sx, sy),
-      width: sectorSize,
-      height: sectorSize,
-      label,
+      ...createShape(
+        'circle',
+        cx + Math.cos(rad) * orbit - stageSize / 2,
+        wy + Math.sin(rad) * orbit - stageSize / 2,
+      ),
+      width: stageSize,
+      height: stageSize,
+      label: s.label,
       textSize: 'md' as const,
+      textBold: true,
+      iconId: s.icon,
+      iconPosition: 'above' as const,
+      fillColor: s.fill,
+      textColor: s.ink,
+      // Each stage keeps its hue under every theme so the loop reads as
+      // four distinct forces; the ink stays dark on the pale fill.
+      themeLockFill: true,
     };
   });
-  elements.push(...sectorElements);
+  elements.push(...stageEls);
 
-  // Captions sit OUTSIDE each sector, in line with the sector's
-  // outward direction from the hub. Positioned by the same angle as
-  // the sector, just further out.
-  sectors.forEach(({ angleDeg, caption }) => {
-    const rad = (angleDeg * Math.PI) / 180;
-    const dist = orbitRadius + sectorSize / 2 + captionOffset;
-    const cxC = cx + Math.cos(rad) * dist;
-    const cyC = cy + Math.sin(rad) * dist;
-    elements.push({
-      ...createText(cxC - captionW / 2, cyC - captionH / 2),
-      width: captionW,
-      height: captionH,
-      label: caption,
-      textSize: 'sm',
-    });
+  // Captions outside each wheel: centred above / below the vertical pair,
+  // pushed outward and aligned away from the wheel for the side pair.
+  FLYWHEEL_STAGES.forEach((s, i) => {
+    const el = stageEls[i]!;
+    let x: number;
+    let y: number;
+    let align: 'left' | 'center' | 'right';
+    if (s.angleDeg === -90) {
+      [x, y, align] = [cx - captionW / 2, el.y - captionGap - metricH - howH, 'center'];
+    } else if (s.angleDeg === 90) {
+      [x, y, align] = [cx - captionW / 2, el.y + stageSize + captionGap, 'center'];
+    } else if (s.angleDeg === 0) {
+      [x, y, align] = [el.x + stageSize + captionGap, wy - (metricH + howH) / 2, 'left'];
+    } else {
+      [x, y, align] = [el.x - captionGap - captionW, wy - (metricH + howH) / 2, 'right'];
+    }
+    elements.push(
+      {
+        ...createText(x, y),
+        width: captionW,
+        height: metricH,
+        label: s.metric,
+        textSize: 'sm',
+        textBold: true,
+        textAlignX: align,
+      },
+      {
+        ...createText(x, y + metricH),
+        width: captionW,
+        height: howH,
+        label: s.how,
+        textSize: 'sm',
+        textColor: MUTED,
+        textAlignX: align,
+      },
+    );
   });
 
-  // Clockwise arrows between adjacent sectors. The outgoing arrow
-  // leaves THIS sector's `out` anchor and lands on the NEXT sector's
-  // `into` anchor, so each arrow stays on the outside of the wheel
-  // rather than cutting through the hub.
-  //
-  // Style: curved so the connector arcs around the outside of the
-  // wheel (a straight line between adjacent sectors cuts close to
-  // the hub at this radius), and dashed so it reads as "ongoing
-  // momentum / repeat cycle" rather than a one-shot flow. A slow
-  // "dashes" flow animation runs by default so the momentum reads as
-  // motion the moment the template lands, not a static diagram.
-  sectors.forEach((sector, i) => {
-    const next = sectors[(i + 1) % sectors.length]!;
-    const nextEl = sectorElements[(i + 1) % sectors.length]!;
+  // Clockwise loop: curved so each connector arcs round the outside of the
+  // wheel, thick so it reads as the drive belt, and flowing so it turns.
+  FLYWHEEL_STAGES.forEach((s, i) => {
+    const next = (i + 1) % FLYWHEEL_STAGES.length;
     elements.push({
-      ...createPinnedArrow(sectorElements[i]!.id, sector.out, nextEl.id, next.into),
+      ...createPinnedArrow(stageEls[i]!.id, s.out, stageEls[next]!.id, FLYWHEEL_STAGES[next]!.into),
       arrowStyle: 'curved',
+      strokeWidth: 3,
       strokeStyle: 'dashed',
       flow: 'dashes',
-      flowSpeed: 'slow',
+      flowSpeed: 'normal',
     });
   });
+
+  // The two forces, in the empty corners between the arcs: push top-left
+  // (where the cheaper box wins the next subscriber), friction bottom-right
+  // (where orders are waiting on the farms).
+  const noteW = 230;
+  const noteH = 84;
+  const corner = reach + captionGap - noteW / 2;
+  elements.push(
+    {
+      ...createSticky(cx - corner - noteW / 2 - 40, wy - reach - 10),
+      width: noteW,
+      height: noteH,
+      label: 'Push · Refer a friend and you both get a box free',
+      textSize: 'sm',
+      fillColor: '#bbf7d0',
+      textColor: '#052e16',
+    },
+    {
+      ...createSticky(cx + corner - noteW / 2 + 40, wy + reach + 10 - noteH),
+      width: noteW,
+      height: noteH,
+      label: 'Friction · Sunday delivery slots sell out by Thursday',
+      textSize: 'sm',
+      fillColor: '#fecdd3',
+      textColor: '#4c0519',
+    },
+  );
 
   return elements;
 }

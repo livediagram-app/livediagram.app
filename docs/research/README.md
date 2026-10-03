@@ -33,3 +33,15 @@ How the event-storming photo import finds sticky notes in a wall photo and reads
 - ./vision/experiments/m-editor-model.md - when running the boundary model inside the editor's photo import
 - ./vision/experiments/n-recall.md - when recall fails on the night wall, the whiteboard or a shaded wall
 - ./vision/experiments/o-flat.md - when flat, textureless notes (screenshots, drawn walls) go missing
+
+## Pen input
+
+How a freehand stroke is smoothed live, so the line seen mid-stroke is the line that lands.
+
+- ./stroke-smoothing.md - when revisiting how the whiteboard pen smooths ink: techniques, measurements, the decision
+
+## Canvas performance
+
+Where a large board spends its time during pan, zoom, drag, marquee and pen strokes.
+
+- ./canvas-performance.md - when a large board feels slow: method, per-gesture breakdown, named hot spots

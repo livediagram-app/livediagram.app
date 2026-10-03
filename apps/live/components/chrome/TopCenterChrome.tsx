@@ -1,5 +1,5 @@
 import { lucidePencilLine } from '@livediagram/icons/lucide';
-import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
+import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
 import { participantKey } from '@/lib/identity';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
@@ -39,6 +39,9 @@ type TopCenterChromeProps = Pick<
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
+  // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
+  // the stack starts beneath it.
+  dockOnTop?: boolean;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -57,6 +60,7 @@ export function TopCenterChrome({
   canvasTool,
   formatSourceId,
   isPaintMode,
+  dockOnTop = false,
   tabTimer,
   tabVote,
   onPauseTimer,
@@ -71,7 +75,9 @@ export function TopCenterChrome({
   onStopFollowing,
 }: TopCenterChromeProps) {
   return (
-    <TopCenterStack belowToolbar={toolbarLayout === true && !readOnly}>
+    <TopCenterStack
+      below={dockOnTop ? 'dock' : toolbarLayout === true && !readOnly ? 'toolbar' : undefined}
+    >
       {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}
@@ -132,12 +138,10 @@ export function TopCenterChrome({
         ) : null}
 
         {/* The banner belongs to a one-shot ARM: "you picked a square, now
-            drag one out", with a Cancel because the intent is transient. The
-            highlighter is a held tool now (docs/specs/008-canvas/highlighter.md), so it is excluded here —
-            a mode does not need telling you it is on every time you look up,
-            and its colour + strength moved off this bar into the Highlighter
-            Panel, where every other tool keeps its settings. */}
-        {pendingDraw && !isMarkerIntent(pendingDraw) ? (
+            drag one out", with a Cancel because the intent is transient. A
+            held pen (a whiteboard pen, the Path tool) is excluded: a tool in
+            the hand does not need telling you it is on every time you look up. */}
+        {pendingDraw && !isHeldPenIntent(pendingDraw) ? (
           <ModeBanner
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync())}

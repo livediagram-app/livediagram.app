@@ -34,7 +34,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'What can I make with it?',
-    a: 'Flowcharts, mind maps, org charts, retrospectives, Lean Coffee and town hall Q&A boards, kanban boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, editable tables, pie, bar and line charts, UML class and state diagrams, UI wireframes for browser, laptop, phone and tablet screens, and a to-scale floor plan. Fifty starter templates and twenty-six themes get you going in seconds.',
+    a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, editable tables, pie, bar and line charts, UML class and state diagrams, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, a personal objectives planner, UI wireframes for browser, laptop, phone and tablet screens, and a to-scale floor plan. Sixty-two starter templates and twenty-six themes get you going in seconds.',
   },
   {
     q: 'Can AI help me build or tidy a diagram?',
@@ -74,7 +74,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Can I undo a mistake?',
-    a: 'Yes. Undo and redo cover your recent edits. For anything older, each tab keeps an activity log so you can revert a specific change, even after later edits.',
+    a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits, and Cmd-Shift-Z to bring one back. The undo and redo buttons also sit in the bottom-right corner of the canvas.',
   },
   {
     q: 'Does it work on my phone or tablet?',

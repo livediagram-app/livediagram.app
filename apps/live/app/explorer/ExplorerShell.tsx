@@ -1,10 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
+import { LensField } from './lens/LensField';
+import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -14,12 +17,15 @@ import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { writeUserPreferences } from '@/lib/user-preferences';
+import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
+import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
-import { ExplorerSidebar } from './ExplorerSidebar';
+import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
+import { isLocalOnly } from '@/lib/document-space';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -53,7 +59,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           builder share one source of truth, keyed by the same owner id
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
-        <ShellChrome>{children}</ShellChrome>
+        {/* The owner's shape libraries (docs/specs/013-workspace/shape-libraries.md): the Shape
+            libraries page and the draw.io import share them. */}
+        <ShapeLibraryProvider ownerId={state.ownerId}>
+          <ShellChrome>{children}</ShellChrome>
+        </ShapeLibraryProvider>
       </CustomThemeProvider>
     </ExplorerProvider>
   );
@@ -77,7 +87,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
     settingsFocus,
     setSettingsFocus,
     settingsCategory,
+    openSettingsOn,
     setSettingsCategory,
+    settingsSection,
+    setSettingsSection,
     moveTarget,
     setMoveTarget,
     movePersonalFolders,
@@ -93,6 +106,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
     ownerId,
     prefs,
     setPrefs,
+    lens,
+    lensResult,
+    selected,
   } = useExplorer();
   // Navigating to another section clears a crashed pane's notice.
   const pathname = usePathname();
@@ -117,17 +133,27 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* pr-0 so the account control (a full-height, left-bordered toolbar
           button) sits flush to the right edge instead of leaving a 16px gap
           after it; pl-4 keeps the brand padded on the left. */}
-      <header className="sticky top-0 z-[var(--z-chrome)] flex h-14 shrink-0 items-center justify-between gap-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
-        <div className="flex items-center gap-3">
+      {/* The search field (docs/specs/013-workspace/explorer-filters.md "The field") sits left of the
+          account; below `sm` it wraps onto its own full-width row, so the header grows rather than
+          squeezing the brand. */}
+      <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap dark:border-slate-700 dark:bg-slate-900/85">
+        <div className="flex h-14 items-center gap-3">
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <AuthControls
-          onOpenAccount={() => {
-            setSettingsCategory('account');
-            setSettingsOpen(true);
-          }}
-        />
+        <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0">
+          <LensField lens={lens} subjects={lensResult.subjects} />
+          {/* Counts what the lens left once typing settles; the team library counts its own. */}
+          <LensAnnouncer
+            input={lens.input}
+            shown={lensResult.shown}
+            total={lensResult.total}
+            muted={lens.view === null || selected.kind === 'team'}
+          />
+        </div>
+        <div className="flex h-14 items-stretch">
+          <AuthControls onOpenAccount={() => openSettingsOn('account')} />
+        </div>
       </header>
 
       <main
@@ -199,13 +225,14 @@ function ShellChrome({ children }: { children: ReactNode }) {
         <ChromeControls
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
+          powerUser={isPowerUserMode(prefs)}
         />
       </div>
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
           placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "Personal Space" plus each team as a space (for document moves);
+          "My documents" plus each team as a space (for document moves);
           `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
@@ -272,7 +299,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       />
       {searchOpen ? (
         <SearchPanel
-          documents={liveDocs.map((d) => ({ id: d.id, name: d.name }))}
+          documents={liveDocs.map((d) => ({ id: d.id, name: d.name, localOnly: isLocalOnly(d) }))}
           folders={folders.map((f) => ({ id: f.id, name: f.name }))}
           shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
           teams={teams.map((t) => ({ id: t.id, name: t.name }))}
@@ -322,13 +349,17 @@ function ShellChrome({ children }: { children: ReactNode }) {
             setPrefs(next);
             writeUserPreferences(next, ownerId);
           }}
+          ownerId={ownerId}
           onClose={() => {
             setSettingsOpen(false);
             setSettingsFocus(null);
             setSettingsCategory(null);
+            setSettingsSection(null);
+            dropSettingsLink();
           }}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
+          initialSectionId={settingsSection}
         />
       ) : null}
 

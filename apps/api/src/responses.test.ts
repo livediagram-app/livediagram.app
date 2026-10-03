@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
 import {
   aiError,
   badRequest,
@@ -34,6 +34,15 @@ describe('json', () => {
     const res = json({ hello: 'world' });
     expect(res.headers.get('Content-Type')).toBe('application/json');
     expect(await readJson(res)).toEqual({ hello: 'world' });
+  });
+
+  it('is never reused by a browser without asking, unless the route chooses a policy', () => {
+    expect(json({}).headers.get('Cache-Control')).toBe('no-cache');
+    expect(json({ error: 'document_trashed' }, { status: 410 }).headers.get('Cache-Control')).toBe(
+      'no-cache',
+    );
+    const chosen = json({}, { headers: { 'Cache-Control': 'public, max-age=300' } });
+    expect(chosen.headers.get('Cache-Control')).toBe('public, max-age=300');
   });
 
   it('defaults to status 200 when no init is supplied', () => {
@@ -191,6 +200,11 @@ describe('CORS_HEADERS', () => {
     // Missing, a cross-origin editor (dev on its own port, or a self-host
     // with the api elsewhere) had both conversions fail at the preflight.
     expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_CONVERSION_HEADER);
+  });
+
+  it('allows the open marker the editor sends on its first tab read', () => {
+    // Missing, a cross-origin editor would fail the preflight of every document it opens.
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_OPEN_HEADER);
   });
 
   it('allows the five HTTP methods the live editor uses', () => {

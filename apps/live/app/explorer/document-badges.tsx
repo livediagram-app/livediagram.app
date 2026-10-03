@@ -10,6 +10,15 @@ import { FolderOutlineIcon, StarIcon } from '@/components/primitives/explorer-ic
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { PaneDocument } from './views';
 import { HoverCard, Glyph } from '@livediagram/ui';
+import { isMinimalChrome } from '@/lib/power-user-mode';
+import { useOptionalExplorer } from './ExplorerContext';
+
+// Minimal chrome (power user mode, docs/specs/007-editor/power-user-mode.md):
+// a visibility badge shows only its icon; its name is on hover and focus.
+export function useIconOnlyBadges(): boolean {
+  const explorer = useOptionalExplorer();
+  return explorer ? isMinimalChrome(explorer.prefs) : false;
+}
 
 const badgeBase =
   // Labels sit in text-optical-line + text-optical-caps (optical-alignment.md), so the base carries no case.
@@ -72,34 +81,58 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
   );
 }
 
-// The visibility badge: Offline (saved only in this browser, docs/specs/006-document/offline-mode.md), Shared
-// (a shared-with-me row / a share-link owned row), Team, or Private. Each
-// carries a concise hover card explaining what the state means. Offline
-// wins first: an offline document is never shared or in a team.
-export function VisibilityBadge({ document: liveDoc }: { document: PaneDocument }) {
-  if (liveDoc.ownerId === OFFLINE_OWNER_ID) {
-    return (
-      <HoverCard title="Offline" description="Saved only in this browser. Not synced or backed up.">
-        <span
-          className={`${badgeBase} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
-        >
-          <Glyph size={9} units={9}>
-            <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
-            <path d="M1.4 1.4l6.2 6.2" />
-          </Glyph>
-          <span className="text-optical-line text-optical-caps">Offline</span>
+// The visibility badge: Shared (a shared-with-me row / a share-link owned
+// row), Team, or Private, each with a concise hover card explaining what the
+// state means. An offline document has none: its Local only pill says it
+// (docs/specs/006-document/offline-mode.md#local-only-pill).
+// Whether a row's document is one the Google Drive mirror copies
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
+// own, in My documents, saved in the cloud. Team documents, documents
+// shared with the user and offline documents are not mirrored.
+export function isMirrorable(liveDoc: PaneDocument): boolean {
+  return !liveDoc.team && !liveDoc.shared && liveDoc.ownerId !== OFFLINE_OWNER_ID;
+}
+
+export function VisibilityBadge({
+  document: liveDoc,
+  iconOnly = false,
+}: {
+  document: PaneDocument;
+  iconOnly?: boolean;
+}) {
+  // Icon only (optical-alignment.md): the badge becomes a circle of the full
+  // badge's own height. An empty strut on the same text line gives it exactly
+  // that height, and the icon is centred by ink; the word stays for assistive
+  // technology, the hover card for everyone else.
+  const word = (text: string) =>
+    iconOnly ? (
+      <>
+        <span aria-hidden className="text-optical-line w-0 overflow-hidden">
+          {'\u200b'}
         </span>
-      </HoverCard>
+        <span className="sr-only">{text}</span>
+      </>
+    ) : (
+      <span className="text-optical-line text-optical-caps">{text}</span>
     );
-  }
+  // Width = the badge's height: one text line plus its block padding. No
+  // optical-edges: that pulls a LEADING icon towards the edge beside a word, and
+  // a lone icon is centred by its ink instead.
+  const base = iconOnly
+    ? `${badgeBase.replace('optical-edges ', '').replace('gap-1 ', '').replace('px-2 ', '')} w-[calc(1lh+0.25rem)] justify-center`
+    : badgeBase;
+  // A document saved only in this browser carries the Local only pill beside its name
+  // instead (docs/specs/006-document/offline-mode.md#local-only-pill).
+  if (liveDoc.ownerId === OFFLINE_OWNER_ID) return null;
   if (liveDoc.shared || liveDoc.shareCode) {
     return (
       <HoverCard title="Shared" description="Anyone with the link can open it.">
         <span
-          className={`${badgeBase} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
+          tabIndex={iconOnly ? 0 : undefined}
+          className={`${base} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
         >
           <SharedDotIcon />
-          <span className="text-optical-line text-optical-caps">Shared</span>
+          {word('Shared')}
         </span>
       </HoverCard>
     );
@@ -111,7 +144,8 @@ export function VisibilityBadge({ document: liveDoc }: { document: PaneDocument 
         description="In a team library, so every member of the team can open it."
       >
         <span
-          className={`${badgeBase} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
+          tabIndex={iconOnly ? 0 : undefined}
+          className={`${base} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
         >
           <Glyph size={9} units={9} strokeLinejoin="miter">
             <circle cx="3.2" cy="3.2" r="1.4" />
@@ -119,7 +153,7 @@ export function VisibilityBadge({ document: liveDoc }: { document: PaneDocument 
             <circle cx="6.6" cy="3.6" r="1.1" />
             <path d="M6.3 5.7c.9.1 1.5.7 1.7 1.8" />
           </Glyph>
-          <span className="text-optical-line text-optical-caps">Team</span>
+          {word('Team')}
         </span>
       </HoverCard>
     );
@@ -127,13 +161,14 @@ export function VisibilityBadge({ document: liveDoc }: { document: PaneDocument 
   return (
     <HoverCard title="Private" description="Only visible to you.">
       <span
-        className={`${badgeBase} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
+        tabIndex={iconOnly ? 0 : undefined}
+        className={`${base} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
       >
         <Glyph size={9} units={9}>
           <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
           <path d="M3 4V2.9a1.5 1.5 0 0 1 3 0V4" />
         </Glyph>
-        <span className="text-optical-line text-optical-caps">Private</span>
+        {word('Private')}
       </span>
     </HoverCard>
   );

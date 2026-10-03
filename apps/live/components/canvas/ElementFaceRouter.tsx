@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
   DEFAULT_BUTTON_MODE,
@@ -27,6 +27,7 @@ import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
+import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
@@ -66,7 +67,6 @@ type ElementFaceRouterProps = Pick<
   | 'isEditing'
   | 'isSelected'
   | 'readOnly'
-  | 'zoom'
   | 'fontFamily'
   | 'activeMode'
   | 'collab'
@@ -110,14 +110,18 @@ type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
+  // An upright lane title's turned frame (upright-title.ts), or null.
+  labelFrame: CSSProperties | null;
+  // A pen stroke not yet selected: only its drawn line picks it.
+  lineHit: boolean;
 };
 
 export function ElementFaceRouter({
+  lineHit,
   element,
   isEditing,
   isSelected,
   readOnly,
-  zoom,
   fontFamily,
   activeMode,
   collab,
@@ -158,6 +162,7 @@ export function ElementFaceRouter({
   inlineIcon,
   marker,
   iconCaptionBand,
+  labelFrame,
 }: ElementFaceRouterProps) {
   // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
@@ -381,7 +386,6 @@ export function ElementFaceRouter({
               element={element}
               caption={element.heroCaption}
               editable={isSelected && !readOnly && !isLocked}
-              zoom={zoom}
               fontFamily={fontFamily}
               onSetLine={
                 onSetHeroCaptionLine
@@ -395,6 +399,7 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
+            hitPenWidth={lineHit ? (element.penWidth ?? 0) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
@@ -410,6 +415,16 @@ export function ElementFaceRouter({
               the drawn stroke. */}
           {isEditing || label.length > 0 ? labelNode : null}
         </>
+      ) : element.type === 'path' ? (
+        // A path (docs/specs/023-draw-mode/path-tool.md) draws its curve and takes no label.
+        <PathSvg
+          element={element}
+          hitPenWidth={
+            lineHit ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
+          }
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+        />
       ) : element.type === 'table' ? (
         <TableView
           element={element}
@@ -420,7 +435,6 @@ export function ElementFaceRouter({
           onLinkCell={onLinkCell}
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
-          zoom={zoom}
         />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
         /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and
@@ -436,7 +450,6 @@ export function ElementFaceRouter({
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           textColor={textColor}
           fontFamily={fontFamily}
-          zoom={zoom}
           editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
           onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
           onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
@@ -477,7 +490,6 @@ export function ElementFaceRouter({
             readOnly={isLocked || readOnly}
             onSetHeading={onSetPageHeading}
             fontFamily={fontFamily}
-            zoom={zoom}
           />
           {/* The body keeps its own padding, which reads as the gap under the
               rule; only the horizontal padding would double up, so the label's
@@ -489,6 +501,10 @@ export function ElementFaceRouter({
             {labelNode}
           </div>
         </div>
+      ) : labelFrame ? (
+        // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): the label and its
+        // editor turn together in the strip.
+        <div style={labelFrame}>{labelNode}</div>
       ) : iconCaptionBand ? (
         // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,

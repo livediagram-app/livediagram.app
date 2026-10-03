@@ -9,6 +9,7 @@ import {
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
   POWER_USER_OFFERED,
+  NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from './helpers';
 
@@ -200,6 +201,24 @@ export const POWER_USER_OFFER: MetricStack = {
   blurb: 'The one-time offer of power user mode: shown, then accepted or declined.',
   members: [POWER_USER_OFFERED, POWER_USER_OFFER_ACCEPTED, POWER_USER_OFFER_DECLINED],
   headline: POWER_USER_OFFER_ACCEPTED,
+};
+
+// The new version prompt (docs/specs/016-platform/new-version-prompt.md): offered, then reloaded.
+export const NEW_VERSION_RELOADED = chart(
+  'UI',
+  'Used',
+  'New Version Reloaded',
+  'Reload, pressed on the new version prompt.',
+  { types: ['NewVersionPrompt'] },
+);
+
+export const NEW_VERSION_PROMPT: MetricStack = {
+  stack: true,
+  title: 'New Version Prompt',
+  blurb:
+    'Editors left open across a deploy that changed the document format: offered a reload, then reloaded.',
+  members: [NEW_VERSION_OFFERED, NEW_VERSION_RELOADED],
+  headline: NEW_VERSION_RELOADED,
 };
 
 // Sign-in prompts, by where each one happens (docs/specs/014-identity/sign-in-encouragement.md). The same bottom

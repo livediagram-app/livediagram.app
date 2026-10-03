@@ -15,7 +15,12 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ALL_CTA_SOURCES, pascalToken } from '@livediagram/api-schema';
+import {
+  ALL_CTA_SOURCES,
+  PLACEMENT_DEFAULT_KEYS,
+  pascalToken,
+  placementDefaultTelemetryType,
+} from '@livediagram/api-schema';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -35,6 +40,18 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
   return [...block.matchAll(/'([A-Za-z0-9-]+)'/g)].map((m) => m[1]!);
 }
 
+// The Drive mirror's inbound change types and Open with outcomes.
+const DRIVE_INBOUND_TYPES = tokensAfter(
+  read('live/lib/drive/plan-inbound.ts'),
+  'export type InboundType',
+  ';',
+);
+const DRIVE_OPEN_WITH_TYPES = tokensAfter(
+  read('live/lib/drive/open-with.ts'),
+  'export function openWithTelemetryType',
+  '{',
+);
+
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
@@ -51,8 +68,30 @@ const APPEARANCE_LABELS = tokensAfter(
   '};',
 );
 
+// The Explorer sidebar row kinds: `Sidebar.<Row>` on the page and `ExplorerPanel.<Row>` in the
+// editor's panel, per SidebarTelemetryRow member.
+const SIDEBAR_ROW_KINDS = tokensAfter(
+  read('live/app/explorer/sidebar/sidebar-telemetry.ts'),
+  'export type SidebarTelemetryRow',
+  ';',
+);
+const SIDEBAR_ROWS = ['Sidebar', 'ExplorerPanel'].flatMap((prefix) =>
+  SIDEBAR_ROW_KINDS.map((row) => `${prefix}.${row}`),
+);
+
+// The Explorer filters' facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the
+// values of LENS_TELEMETRY_TYPES, whose keys are lower case.
+const LENS_FACETS = tokensAfter(
+  read('../packages/explorer-lens/src/dimensions.ts'),
+  'export const LENS_TELEMETRY_TYPES',
+  '}',
+).filter((token) => /^[A-Z]/.test(token));
+
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
 const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
+
+// One closed value per default folder key (placementDefaultTelemetryType).
+const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
 
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
@@ -74,6 +113,16 @@ const PHOTO_DETECTORS = (() => {
     ...tokens('const FAILURE').map((r) => `PhotoDetectClassical${r}`),
   ];
 })();
+
+// The image picker's search failures (apps/live image-search/telemetry.ts):
+// every `ImageSearch.<Reason>` token in its fixed tables.
+const IMAGE_SEARCH_WARNINGS = [
+  ...new Set(
+    [...read('live/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
+      (m) => m[1]!,
+    ),
+  ),
+];
 
 // The welcome tour's steps, in order, as tourStepTelemetryType makes them
 // (apps/live tour-steps.ts). The welcome card sends no step view.
@@ -176,6 +225,19 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
+  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
+    values: DEFAULT_FOLDER_TYPES,
+  },
+  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
+    values: DEFAULT_FOLDER_TYPES,
+  },
+  'apps/live/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
+  // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
+  // the inbound change types and the Open with outcomes, read from their unions.
+  'apps/live/lib/drive/browser-engine.ts Drive·Applied': { values: DRIVE_INBOUND_TYPES },
+  'apps/live/components/drive/DriveOpen.tsx Drive·Opened': { values: DRIVE_OPEN_WITH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
@@ -204,6 +266,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
+  },
+  'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
+    values: IMAGE_SEARCH_WARNINGS,
   },
   'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
@@ -240,6 +305,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
+  },
+  'apps/live/hooks/canvas/useWhiteboard.ts Draw·Selected': {
+    values: ['Main', 'Second', 'Third'],
+    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },
   'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],

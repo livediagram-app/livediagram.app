@@ -20,6 +20,7 @@ import {
   FavouritesTabIcon,
   IconsTabIcon,
   MediaTabIcon,
+  MyShapesTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   TechTabIcon,
@@ -68,6 +69,15 @@ export const PALETTE_CATEGORIES: {
     icon: <ShapesTabIcon />,
   },
   {
+    // My shapes (docs/specs/013-workspace/shape-libraries.md): the owner's imported shape libraries,
+    // after Shapes in the Common band; offered only when there is a shape to place.
+    id: 'my-shapes',
+    label: 'My shapes',
+    group: 0,
+    description: 'Shapes from your imported libraries, ready to place.',
+    icon: <MyShapesTabIcon />,
+  },
+  {
     id: 'write',
     label: 'Write',
     group: 0,
@@ -78,7 +88,7 @@ export const PALETTE_CATEGORIES: {
     id: 'draw',
     label: 'Draw',
     group: 0,
-    description: 'The gesture tools: pencil, shape pen, polygon, and arrows.',
+    description: 'The gesture tools: pencil, shape pen, highlighter, polygon, and arrows.',
     icon: <DrawTabIcon />,
   },
   {

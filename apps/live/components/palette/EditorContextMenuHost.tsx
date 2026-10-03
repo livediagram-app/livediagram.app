@@ -167,6 +167,8 @@ export function EditorContextMenuHost() {
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
+    setLaneUprightTitleSelected,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
@@ -243,6 +245,7 @@ export function EditorContextMenuHost() {
       onPreviewIconWeight={previewIconWeight}
       onSetTextAlign={commitTextAlign}
       onPreviewTextAlign={previewTextAlign}
+      onSetLaneUprightTitle={setLaneUprightTitleSelected}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
       // Event-storming note verbs (docs/specs/021-event-storming/event-storming.md). Front/back here are the
@@ -392,6 +395,7 @@ export function EditorContextMenuHost() {
       onSetArrowStyle={setArrowStyleSelected}
       onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
       onSetArrowRouteBehind={setArrowRouteBehindSelected}
+      onSetArrowExactStart={setArrowExactStartSelected}
       onSetArrowEnds={setArrowEndsSelected}
       onSetArrowheadSize={setArrowheadSizeSelected}
       onSetArrowheadShape={setArrowheadShapeSelected}

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { chatCompletions, chatCompletionsUrl, providerOf } from './ai-client';
 import { GOOGLE_BASE_URL } from './ai-provider';
 import type { Env } from './types';
@@ -9,6 +10,7 @@ import type { Env } from './types';
 
 const originalFetch = globalThis.fetch;
 afterEach(() => {
+  vi.useRealTimers();
   globalThis.fetch = originalFetch;
 });
 
@@ -17,7 +19,6 @@ const provider = {
   baseUrl: GOOGLE_BASE_URL,
   apiKey: 'secret-key',
   model: 'm',
-  visionModel: 'm',
   strictSchema: true,
 };
 
@@ -51,9 +52,11 @@ describe('chatCompletions', () => {
 });
 
 describe('providerOf', () => {
-  it('is the resolver, for a route that has only an Env', () => {
-    expect(providerOf({ GOOGLE_AI_STUDIO_API_KEY: 'k' } as Env)?.provider).toBe('google');
-    expect(providerOf({} as Env)).toBeNull();
+  it('is the resolver, for a route that has an Env and a feature', () => {
+    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' } as Env;
+    expect(providerOf(both, 'assistant')?.provider).toBe('openai');
+    expect(providerOf(both, 'reader')?.provider).toBe('google');
+    expect(providerOf({} as Env, 'reader')).toBeNull();
   });
 });
 
@@ -67,7 +70,10 @@ describe('one retry on a provider spike', () => {
         : new Response('{"ok":true}', { status: 200 });
     }) as typeof fetch;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const res = await chatCompletions(provider, {});
+    vi.useFakeTimers();
+    const pending = chatCompletions(provider, {});
+    await vi.runAllTimersAsync();
+    const res = await pending;
     expect(calls).toBe(2);
     expect(res.status).toBe(200);
   });
@@ -79,7 +85,10 @@ describe('one retry on a provider spike', () => {
       return new Response('busy', { status: 503 });
     }) as typeof fetch;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect((await chatCompletions(provider, {})).status).toBe(503);
+    vi.useFakeTimers();
+    const pending = chatCompletions(provider, {});
+    await vi.runAllTimersAsync();
+    expect((await pending).status).toBe(503);
     expect(calls).toBe(2);
   });
 
@@ -91,6 +100,29 @@ describe('one retry on a provider spike', () => {
     }) as typeof fetch;
     await chatCompletions(provider, {});
     expect(calls).toBe(1);
+  });
+
+  it.each([
+    ['an Error', new Error('socket hang up'), 'socket hang up'],
+    ['a bare value', 'dropped', 'dropped'],
+  ])('retries a network drop thrown as %s once, and says why', async (_kind, thrown, reason) => {
+    vi.useFakeTimers();
+    try {
+      let calls = 0;
+      globalThis.fetch = vi.fn(async () => {
+        calls += 1;
+        if (calls === 1) throw thrown;
+        return new Response('{"ok":true}', { status: 200 });
+      }) as typeof fetch;
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const pending = chatCompletions(provider, {});
+      await vi.runAllTimersAsync();
+      expect((await pending).status).toBe(200);
+      expect(calls).toBe(2);
+      expect(error.mock.calls[0]).toEqual(['[ai] provider call failed; retrying once:', reason]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -107,8 +139,11 @@ describe('the base URL is trimmed without a regex', () => {
   it('does not degrade on a pathological run of slashes', () => {
     // The regex this replaced backtracked polynomially here
     // (CodeQL js/polynomial-redos), and a base URL is operator configuration.
-    const started = performance.now();
-    expect(chatCompletionsUrl('https://x'.padEnd(50_000, '/'))).toBe('https://x/chat/completions');
-    expect(performance.now() - started).toBeLessThan(50);
+    let url = '';
+    const spent = cpuMsOf(() => {
+      url = chatCompletionsUrl('https://x'.padEnd(50_000, '/'));
+    });
+    expect(url).toBe('https://x/chat/completions');
+    expect(spent).toBeLessThan(50);
   });
 });

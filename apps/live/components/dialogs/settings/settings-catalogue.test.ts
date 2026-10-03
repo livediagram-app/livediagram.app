@@ -35,6 +35,28 @@ describe('settings catalogue', () => {
     }
   });
 
+  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
+    // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
+    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
+    // "Naming in the interface").
+    const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
+    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
+    const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
+    if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
+    expect(row.section).toBeUndefined();
+    expect(row.keywords).toContain('draw mode');
+    expect(row.keywords).toContain('whiteboard');
+    expect(row.helpArticle).toBe('drawMode');
+    expect(row.label).toBe('Dock Position');
+    expect(row.options.map((o) => [o.id, o.label])).toEqual([
+      ['top', 'Top'],
+      ['bottom', 'Bottom'],
+    ]);
+    expect(row.read({})).toBe('top');
+    expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
+    expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
+  });
+
   it('round-trips every toggle through read/write in both directions', () => {
     // The catalogue is the only place that knows how a setting maps onto
     // UserPreferences, so a row whose write does not land where its read
@@ -92,7 +114,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { minimalPanels: true, telemetryEnabled: false };
+    const before: UserPreferences = { panelLayout: 'toolbar', telemetryEnabled: false };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
@@ -146,6 +168,35 @@ describe('settings catalogue', () => {
     const ctx = { emailEnabled: true, signedIn: true };
     expect(visibleCategories(false, ctx).map((c) => c.id)).not.toContain('ai');
     expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
+  });
+
+  it('places API Tokens between Account and Privacy', () => {
+    const ids = SETTINGS_CATEGORIES.filter((c) => !c.parent).map((c) => c.id);
+    expect(ids.slice(-3)).toEqual(['account', 'tokens', 'privacy']);
+  });
+
+  it('offers API Tokens, and the AI link to it, only where sign-in exists', () => {
+    const ids = (authEnabled: boolean) =>
+      visibleCategories(true, { emailEnabled: false, signedIn: false, authEnabled }).map(
+        (c) => c.id,
+      );
+    const aiRows = (authEnabled: boolean) =>
+      visibleCategories(true, { emailEnabled: false, signedIn: true, authEnabled })
+        .find((c) => c.id === 'ai')!
+        .rows.map((r) => r.key);
+    // A guest on a deployment WITH sign-in still sees the category: its row
+    // says why it is empty and links to sign in.
+    expect(ids(true)).toContain('tokens');
+    expect(ids(false)).not.toContain('tokens');
+    expect(aiRows(true)).toContain('apiTokensLink');
+    expect(aiRows(false)).not.toContain('apiTokensLink');
+  });
+
+  it('points every link row at a category that exists', () => {
+    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
+    const links = ALL_ROWS.filter((r) => r.kind === 'link');
+    expect(links.length).toBeGreaterThan(0);
+    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
@@ -210,12 +261,33 @@ describe('settings catalogue', () => {
   });
 });
 
-// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+// Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
+  it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
+    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
+    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
+    expect(children).toEqual(['draw']);
+    const at = ids.indexOf('editor');
+    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  });
+
+  it('keeps every setting that acts in both modes on Editor itself', () => {
+    const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
+    expect(keys).toEqual([
+      'quickAddOnHover',
+      'alignmentGuides',
+      'autoRebindArrows',
+      'middleMousePan',
+      'powerUserMode',
+      'minimalChrome',
+      'powerUserPreset',
+    ]);
+  });
+
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'activity', 'map', 'collaborate', 'quickStyle']);
+    expect(children).toEqual(['layers', 'map', 'collaborate', 'quickStyle']);
     const at = ids.indexOf('panels');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
@@ -231,7 +303,6 @@ describe('settings sub-categories', () => {
     const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
     const switches: Record<string, [string, string]> = {
       layers: ['layersPanelEnabled', 'Enable Layers Panel'],
-      activity: ['activityPanelEnabled', 'Enable Activity Panel'],
       map: ['showMinimap', 'Enable Map'],
       collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
       quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
@@ -257,7 +328,6 @@ describe('settings sub-categories', () => {
       'layerHoverPreview',
     ]);
     expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
-    expect(rows('activity', { activityPanelEnabled: false })).toEqual(['activityPanelEnabled']);
     expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
     expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });

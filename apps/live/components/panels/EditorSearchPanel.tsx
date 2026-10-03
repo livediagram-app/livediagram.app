@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { isLocalOnly } from '@/lib/document-space';
 
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
@@ -58,7 +59,11 @@ export function EditorSearchPanel() {
 
   return (
     <SearchPanel
-      documents={documentList.map((d) => ({ id: d.id, name: d.name }))}
+      documents={documentList.map((d) => ({
+        id: d.id,
+        name: d.name,
+        localOnly: isLocalOnly(d),
+      }))}
       folders={folders.map((f) => ({ id: f.id, name: f.name }))}
       shared={sharedDocuments.map((s) => ({
         id: s.id,

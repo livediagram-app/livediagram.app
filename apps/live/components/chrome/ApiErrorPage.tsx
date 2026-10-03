@@ -13,6 +13,9 @@ type ApiErrorPageProps = {
   // create, etc.). Wired by the caller so the same card serves the
   // load-error and create-error paths.
   onRetry: () => void;
+  // The small label above the title. A failure that is not the connection's (a create refused for
+  // its placement) names itself instead.
+  eyebrow?: string;
   title?: string;
   message?: string;
   retryLabel?: string;
@@ -20,6 +23,7 @@ type ApiErrorPageProps = {
 
 export function ApiErrorPage({
   onRetry,
+  eyebrow = 'Connection error',
   title = 'Something went wrong',
   message = 'We couldn’t reach the server. Check your connection and try again.',
   retryLabel = 'Try again',
@@ -35,7 +39,7 @@ export function ApiErrorPage({
           </Glyph>
         </div>
         <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-          Connection error
+          {eyebrow}
         </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{message}</p>

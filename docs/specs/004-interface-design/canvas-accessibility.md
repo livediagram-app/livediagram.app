@@ -13,7 +13,7 @@ delete, undo, label edit via Space) that already work on a selection.
   `aria-label` ("Canvas") and a keyboard focus ring
   (`focus-visible` only, so pointer users see nothing new). It keeps its
   main-landmark role rather than `role="application"`: the floating
-  panels (Palette, Explorer, Map, mobile dock) render inside it, and an
+  panels (Palette or Toolbar strip, Explorer, Map) render inside it, and an
   application role would strip them of normal screen-reader navigation.
 - **While focus is on / inside the canvas, Tab selects the next element and
   Shift+Tab the previous**, in render (z) order. The selection scrolls into
@@ -32,9 +32,8 @@ delete, undo, label edit via Space) that already work on a selection.
 ## Names on elements
 
 - Boxed element wrappers get `role="img"` + `aria-label` derived from the
-  same naming helpers the change log uses (`kindLabel` / `describeOne`,
-  lifted from `lib/change-log.ts` into a shared `lib/element-names.ts` so
-  the two surfaces can't drift): `Square "Login"`, `Sticky note`, `Arrow
+  shared naming helpers in `lib/element-names.ts` (`kindLabel` /
+  `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
 
 ## Live announcements
@@ -43,7 +42,7 @@ delete, undo, label edit via Space) that already work on a selection.
   stack is unsuitable: it's visual, auto-dismissing, and gated behind the
   "Show notifications" preference).
 - Announced: selection changes (single: `Selected Square "Login"`; multi:
-  the change-log style summary; cleared: `Selection cleared`), keyboard
+  a short summary such as `Selected 3 elements`; cleared: `Selection cleared`), keyboard
   delete (`Deleted …`), and undo / redo.
 - Implementation: `hooks/canvas/useCanvasA11y.ts` (traversal + announcement
   state, composed in `useEditorState`) + a small

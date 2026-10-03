@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -32,14 +32,11 @@ test.describe('Optical alignment audit', () => {
     await darkVisitor(page);
     await page.goto('/new');
     await page.getByText('New Document', { exact: false }).first().waitFor();
+    await untilHydrated(page.getByRole('button', { name: /^next$/i }));
     await expectCentred(page, 'wizard, template step');
     await page.getByRole('button', { name: /^next$/i }).click();
-    await page
-      .getByText('All themes', { exact: false })
-      .or(page.getByText('Default').first())
-      .first()
-      .waitFor();
-    await expectCentred(page, 'wizard, theme step');
+    await page.getByText('Name your document', { exact: false }).first().waitFor();
+    await expectCentred(page, 'wizard, location step');
     expectNoPageErrors(pageErrors);
   });
 

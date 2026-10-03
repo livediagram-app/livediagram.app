@@ -22,6 +22,7 @@ function editor(over: Record<string, unknown> = {}) {
     selectedId: null,
     multiSelectedIds: new Set<string>(),
     activeTab: { id: 't1', elements: [] },
+    editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },
     canUndo: true,
     canRedo: false,
     zenMode: false,
@@ -65,5 +66,17 @@ describe('useEditorCommands', () => {
     result.current.runCommand('undo');
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  // docs/specs/007-editor/editor-modes.md: Draw mode has no format painter.
+  it('follows the editor mode, not the tab', () => {
+    ctx = editor({ editorMode: { mode: 'draw', setMode: vi.fn(), canSwitch: true } });
+    const draw = ids(renderHook(() => useEditorCommands()).result.current.commandItems);
+    expect(draw).not.toContain('tool:format');
+    // Format needs content to paint, so the diagram side has some.
+    const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    ctx = editor({ activeTab: { id: 't1', elements: [shape] } });
+    const diagram = ids(renderHook(() => useEditorCommands()).result.current.commandItems);
+    expect(diagram).toContain('tool:format');
   });
 });

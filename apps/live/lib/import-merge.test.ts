@@ -20,6 +20,16 @@ describe('mergeImportedTab', () => {
     expect(out.kind).toBe('event-storming');
   });
 
+  // docs/specs/007-editor/editor-modes.md: an exported tab that opens in Draw still does, and an
+  // exported whiteboard from before editor modes comes back as one.
+  it('carries the opening mode, and reads an old whiteboard export as opening in Draw', () => {
+    expect(mergeImportedTab(tab(), tab({ opensIn: 'draw' })).opensIn).toBe('draw');
+    expect(mergeImportedTab(tab({ opensIn: 'draw' }), tab()).opensIn).toBe('draw');
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const old = { ...tab(), kind: 'whiteboard' } as unknown as Tab;
+    expect(mergeImportedTab(tab(), old)).toMatchObject({ kind: 'diagram', opensIn: 'draw' });
+  });
+
   it('carries the imported LAYERS, so element layerIds still resolve', () => {
     const layers = [{ id: 'layer:es:board', name: 'Event Storming' }];
     expect(mergeImportedTab(tab(), tab({ layers })).layers).toEqual(layers);

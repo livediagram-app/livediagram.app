@@ -1,6 +1,7 @@
 import type { Folder } from '@/lib/api-client';
 import type { FolderPreviewContents } from '@/app/explorer/folder-preview-tiles';
 import type { PaneDocument } from '@/app/explorer/views';
+import type { DefaultFolderMenu } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // The props an Explorer pane view takes, shared by ListView and CardView.
 //
@@ -20,6 +21,8 @@ export type FolderActionBundle = {
   newSubfolder: () => void;
   move: () => void;
   delete: () => void;
+  // "Use as default for" (docs/specs/013-workspace/default-folders.md); absent until the defaults load.
+  defaults?: DefaultFolderMenu;
 };
 export type FolderActions = (f: Folder, anchor: HTMLElement | null) => FolderActionBundle;
 
@@ -31,29 +34,6 @@ export type ExplorerViewProps = {
   ownerId: string | null;
   // Adds the desktop Owner column (Recent: "You" vs the team name).
   showOwner?: boolean;
-  // True on the "All documents" (Personal Space) view: the synthetic Unsorted
-  // row renders at the very top so the root has the same "folder row per
-  // child" feel as any non-root folder. Always shown there now (even
-  // empty, badge hidden at zero) so Personal Space isn't bare before anything
-  // is filed; Generated renders next to it the same way (docs/specs/013-workspace/folders.md).
-  showUnsortedRow: boolean;
-  unsortedCount: number;
-  onOpenUnsorted: () => void;
-  // The Generated synthetic folder row, shown on the Personal Space (/all) list
-  // beside Unsorted (docs/specs/013-workspace/folders.md). Optional: defaults to hidden.
-  showGeneratedRow?: boolean;
-  generatedCount?: number;
-  onOpenGenerated?: () => void;
-  // The Offline synthetic folder row (docs/specs/006-document/offline-mode.md): documents saved only in this
-  // browser. Shown on the Personal Space (/all) list beside Generated.
-  showOfflineRow?: boolean;
-  offlineCount?: number;
-  onOpenOffline?: () => void;
-  // The "Dynamic" parent folder row on Personal Space (/all): opens the
-  // /explorer/dynamic view listing the three synthetic folders.
-  showDynamicRow?: boolean;
-  dynamicCount?: number;
-  onOpenDynamic?: () => void;
   onOpenFolder: (id: string) => void;
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;

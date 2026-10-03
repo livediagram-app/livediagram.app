@@ -19,6 +19,7 @@ import {
 import { useEffect } from 'react';
 import { clerkPublishableKey } from '@/lib/clerk-config';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { resolveProfilePicture } from '@/lib/account-avatar';
 import type { DeferredAuthState } from './deferred-auth';
 
 export function ClerkBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {
@@ -63,6 +64,7 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
             username: user.username ?? null,
             email: user.primaryEmailAddress?.emailAddress ?? null,
             createdAt: user.createdAt ?? null,
+            pictureUrl: resolveProfilePicture(user),
           }
         : null,
       getToken: async (opts) => (await getToken(opts)) ?? null,

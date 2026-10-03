@@ -3,10 +3,23 @@
 // stickies" shape the other boards share once it gained a mood check,
 // session tools, an actions checklist and shout-outs.
 //
-// Pure: takes a centre (cx, cy), returns a fresh Element[].
+// Pure: takes a centre (cx, cy), returns a fresh Element[]. Built from the
+// shared retro kit (template-retro-kit.ts) the other retro formats use too.
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
-import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import {
+  actionsColumn,
+  checklistHeight,
+  CONTENT,
+  RETRO,
+  RETRO_HUES,
+  retroColumn,
+  retroColumnHeight,
+  retroHeading,
+  retroNotesTop,
+  retroRail,
+  SCAFFOLD,
+} from './template-retro-kit';
 
 // A retro a team actually wants to run, laid out in the order it is run.
 // A left rail opens the session: a fist-of-five temperature check ("How did
@@ -19,26 +32,12 @@ import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './templat
 // notes, tools and checklist ride the "Stickies" content layer so they stay
 // usable when the board is locked. Shout-outs under the actions end it on
 // thanks rather than on a to-do list.
-type RetroColumn = {
-  label: string;
-  hint: string;
-  icon: string;
-  fill: string;
-  stroke: string;
-  headerColor: string;
-  sticky: { fill: string; text: string };
-  notes: [string, string, string];
-};
-
-const RETRO_COLUMNS: RetroColumn[] = [
+const RETRO_COLUMNS = [
   {
     label: 'Went well',
     hint: 'What should we keep doing?',
     icon: 'thumbs-up',
-    fill: '#dcfce7',
-    stroke: '#86efac',
-    headerColor: '#15803d',
-    sticky: { fill: '#bbf7d0', text: '#052e16' },
+    hue: RETRO_HUES.green,
     notes: [
       'Onboarding flow shipped on time',
       'Pairing cleared the review backlog',
@@ -49,10 +48,7 @@ const RETRO_COLUMNS: RetroColumn[] = [
     label: 'To improve',
     hint: 'What slowed us down?',
     icon: 'tool',
-    fill: '#ffe4e6',
-    stroke: '#fda4af',
-    headerColor: '#be123c',
-    sticky: { fill: '#fecdd3', text: '#4c0519' },
+    hue: RETRO_HUES.rose,
     notes: [
       'Flaky tests blocked two PRs',
       'Deploys still need a manual approval',
@@ -63,10 +59,7 @@ const RETRO_COLUMNS: RetroColumn[] = [
     label: 'Ideas',
     hint: 'What should we try next sprint?',
     icon: 'zap',
-    fill: '#ede9fe',
-    stroke: '#c4b5fd',
-    headerColor: '#6d28d9',
-    sticky: { fill: '#e9d5ff', text: '#3b0764' },
+    hue: RETRO_HUES.violet,
     notes: [
       'Try a no-meeting Wednesday',
       'Rotate a weekly flaky-test fixer',
@@ -84,171 +77,46 @@ const RETRO_ACTIONS = [
 ];
 
 export function buildRetrospective(cx: number, cy: number): Element[] {
-  const colW = 360;
-  const railW = 320;
-  const gap = 32;
-  const pad = 20;
-  const headerH = 48;
-  const hintH = 28;
-  const stickyH = 116;
-  const stickyGap = 16;
-  const iconSize = 40;
-  const titleH = 52;
-  const subtitleH = 30;
-  const headGap = 28;
-  const colH = pad + headerH + hintH + stickyGap + 3 * stickyH + 2 * stickyGap + pad;
+  const { colW, railW, gap, pad, titleH, subtitleH, headGap } = RETRO;
+  const colH = retroColumnHeight(3);
   const totalW = railW + (colW + gap) * 4;
   const x0 = cx - totalW / 2;
   const y0 = cy - (titleH + subtitleH + headGap + colH) / 2;
   const top = y0 + titleH + subtitleH + headGap;
 
-  const scaffold = { layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
-  const content = { layerId: TEMPLATE_CONTENT_LAYER_ID };
   const elements: Element[] = [
-    {
-      ...createText(x0, y0),
-      width: totalW,
-      height: titleH,
-      label: 'Sprint 14 retro',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'left',
-      ...content,
-    },
-    {
-      ...createText(x0, y0 + titleH),
-      width: totalW,
-      height: subtitleH,
-      label:
-        'Check the temperature, write for 5 minutes, dot-vote the top three, then turn them into actions.',
-      textSize: 'sm',
-      textColor: '#64748b',
-      textAlignX: 'left',
-      ...scaffold,
-    },
+    ...retroHeading(
+      x0,
+      y0,
+      totalW,
+      'Sprint 14 retro',
+      'Check the temperature, write for 5 minutes, dot-vote the top three, then turn them into actions.',
+    ),
+    // Opening rail: the room's mood first, then the two tools that run the
+    // writing and voting rounds.
+    ...retroRail(x0, top, colH, {
+      question: 'How did the sprint feel?',
+      minutes: 5,
+      dots: 3,
+      note: 'Everyone writes at once, then reads their notes out. Three dots each, spend them on what matters most.',
+    }),
   ];
 
-  // Opening rail: the room's mood first, then the two tools that run the
-  // writing and voting rounds.
-  const tempH = 300;
-  elements.push({
-    ...createShape('temperature', x0, top),
-    width: railW,
-    height: tempH,
-    label: 'How did the sprint feel?',
-    ...content,
-  });
-  const buttonW = (railW - 16) / 2;
-  const buttonY = top + tempH + 24;
-  elements.push(
-    {
-      ...createShape('session-button', x0, buttonY),
-      width: buttonW,
-      height: 96,
-      session: { tool: 'timer', minutes: 5 },
-      ...content,
-    },
-    {
-      ...createShape('session-button', x0 + buttonW + 16, buttonY),
-      width: buttonW,
-      height: 96,
-      session: { tool: 'vote', dots: 3 },
-      ...content,
-    },
-  );
-  elements.push({
-    ...createText(x0, buttonY + 96 + 20),
-    width: railW,
-    height: colH - (buttonY + 96 + 20 - top),
-    label:
-      'Everyone writes at once, then reads their notes out. Three dots each, spend them on what matters most.',
-    textSize: 'sm',
-    textColor: '#64748b',
-    textAlignX: 'left',
-    textAlignY: 'top',
-    ...scaffold,
-  });
-
-  const columnHeader = (x: number, label: string, hint: string, icon: string, color: string) => {
-    elements.push(
-      {
-        ...createText(x + pad, top + pad),
-        width: colW - pad * 2 - iconSize,
-        height: headerH,
-        label,
-        textSize: 'lg',
-        textAlignX: 'left',
-        textColor: color,
-        ...scaffold,
-      },
-      {
-        ...createShape('icon', x + colW - pad - iconSize, top + pad + (headerH - iconSize) / 2),
-        width: iconSize,
-        height: iconSize,
-        iconId: icon,
-        strokeColor: color,
-        ...scaffold,
-      },
-      {
-        ...createText(x + pad, top + pad + headerH),
-        width: colW - pad * 2,
-        height: hintH,
-        label: hint,
-        textSize: 'sm',
-        textColor: '#64748b',
-        textAlignX: 'left',
-        ...scaffold,
-      },
-    );
-  };
-
-  const notesTop = top + pad + headerH + hintH + stickyGap;
   RETRO_COLUMNS.forEach((col, i) => {
-    const x = x0 + railW + gap + i * (colW + gap);
-    elements.push({
-      ...createShape('square', x, top),
-      width: colW,
-      height: colH,
-      fillColor: col.fill,
-      strokeColor: col.stroke,
-      ...scaffold,
-    });
-    columnHeader(x, col.label, col.hint, col.icon, col.headerColor);
-    col.notes.forEach((note, j) => {
-      elements.push({
-        ...createSticky(x + pad, notesTop + j * (stickyH + stickyGap)),
-        width: colW - pad * 2,
-        height: stickyH,
-        label: note,
-        textSize: 'sm',
-        fillColor: col.sticky.fill,
-        textColor: col.sticky.text,
-        ...content,
-      });
-    });
+    elements.push(...retroColumn(x0 + railW + gap + i * (colW + gap), top, colH, col));
   });
 
   // The closing column: neutral paper and a checklist rather than stickies,
   // so it reads as the output of the board rather than a fourth opinion.
   const actionsX = x0 + railW + gap + 3 * (colW + gap);
-  elements.push({
-    ...createShape('square', actionsX, top),
-    width: colW,
-    height: colH,
-    fillColor: '#f8fafc',
-    strokeColor: '#94a3b8',
-    strokeWidth: 'thick',
-    ...scaffold,
-  });
-  columnHeader(actionsX, 'Action items', 'One owner and a day each', 'check-circle', '#0f172a');
-  const checklistH = RETRO_ACTIONS.length * 40 + 24;
-  elements.push({
-    ...createShape('checklist', actionsX + pad, notesTop),
-    width: colW - pad * 2,
-    height: checklistH,
-    checklistItems: RETRO_ACTIONS.map((text) => ({ text, done: false })),
-    ...content,
-  });
+  elements.push(
+    ...actionsColumn(actionsX, top, colH, {
+      hint: 'One owner and a day each',
+      items: RETRO_ACTIONS,
+    }),
+  );
+  const notesTop = retroNotesTop(top);
+  const checklistH = checklistHeight(RETRO_ACTIONS.length);
 
   // Shout-outs close the retro on a high: thanks for someone by name, with a
   // sticker the room can pile more onto.
@@ -261,7 +129,10 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
     textSize: 'md',
     textBold: true,
     textAlignX: 'left',
-    ...scaffold,
+    // Dark ink: it sits on the light Actions panel, so the theme's canvas
+    // ink (white on a dark canvas) would vanish.
+    textColor: '#0f172a',
+    ...SCAFFOLD,
   });
   const shoutH = top + colH - pad - (shoutTop + 44);
   elements.push({
@@ -272,7 +143,7 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
     textSize: 'sm',
     fillColor: '#fde68a',
     textColor: '#451a03',
-    ...content,
+    ...CONTENT,
   });
   const stickerSize = 64;
   elements.push({
@@ -284,7 +155,7 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
     width: stickerSize,
     height: stickerSize,
     stickerId: 'emoji-party-popper',
-    ...content,
+    ...CONTENT,
   });
 
   return elements;

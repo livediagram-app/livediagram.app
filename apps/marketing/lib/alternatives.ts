@@ -18,7 +18,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-07-14');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-09-27');
 
 type ComparisonRow = {
   label: string;
@@ -134,7 +134,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Collaboration without the onboarding',
         paragraphs: [
           'In Miro, collaborating starts with accounts: your teammates sign up, join a team, get assigned to boards. In livediagram, collaborating is a URL. Share a link and anyone who opens it is on the canvas with you, live cursors and all, without creating an account. Share links can carry a password or an expiry date when you need them locked down.',
-          'The collaboration tools go beyond cursors: leave comments on elements, assign action items to teammates directly on the canvas (with an Actions panel to track them and optional email notifications), and review the change log to see who did what. Editing is protected by a selection lock, so two people never fight over the same element.',
+          'The collaboration tools go beyond cursors: leave comments on elements, assign action items to teammates directly on the canvas (with an Actions panel to track them and optional email notifications). Editing is protected by a selection lock, so two people never fight over the same element.',
         ],
       },
       {
@@ -317,7 +317,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A workspace, not just a canvas',
         paragraphs: [
           'Excalidraw deliberately stays a single board; anything around it (organising files, sharing workflows) is on you. livediagram ships the surrounding workspace: an explorer with folders and thumbnail previews, teams with shared libraries any member can manage, and share links that can carry a password or an expiry date.',
-          'Collaboration is more than co-drawing, too: comments attach to elements, action items can be assigned to teammates and tracked in an Actions panel, and a change log records what happened while you were away.',
+          'Collaboration is more than co-drawing, too: comments attach to elements, action items can be assigned to teammates and tracked in an Actions panel, and the Timeline shows what happened to a document while you were away.',
         ],
       },
       {
@@ -390,6 +390,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Templates and themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
+      'Bring your diagrams with you: .drawio files import page by page, with a report of anything that changed.',
       'Charts, icons, freehand sketching, comments and a present mode, all built in.',
       'Free, MIT-licensed, and self-hostable on your own Cloudflare account.',
     ],
@@ -398,7 +399,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Real-time by default',
         paragraphs: [
           'draw.io is at heart a single-player editor: powerful, but built around a file that one person edits and saves. Working together usually means passing the file through Google Drive or a Confluence page. livediagram is multiplayer from the ground up: share a link and everyone is on the same canvas at once, with live cursors, presence, and a selection lock so nobody overwrites anyone else mid-edit.',
-          'The collaboration layer goes further than co-editing: comments attach to elements, action items can be assigned to a teammate (with an Actions panel and optional email notification), and a change log keeps the history of who changed what.',
+          'The collaboration layer goes further than co-editing: comments attach to elements, action items can be assigned to a teammate (with an Actions panel and optional email notification), and the Timeline keeps each document’s history: who created, renamed, shared or commented on it.',
         ],
       },
       {
@@ -429,7 +430,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my .drawio files?',
-        a: 'No, there is no .drawio/.xml importer. Mermaid flowcharts do round-trip: if you can express the diagram as Mermaid text (or have an AI assistant do it), livediagram imports it as a fully editable, themed diagram.',
+        a: 'Yes. Import a .drawio or .xml file, or a PNG or SVG exported from draw.io with the diagram included, and each page becomes a tab: shapes, text, colours, connections, swimlanes, class boxes, tables and layers come across. Vendor stencils map to matching technology icons where there is a clear match; anything without a match comes in as a labelled box, and the import tells you exactly what changed on the way in.',
       },
       {
         q: 'Does livediagram have AWS, UML, or network shape libraries?',

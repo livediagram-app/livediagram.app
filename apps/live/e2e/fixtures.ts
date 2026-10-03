@@ -1,4 +1,11 @@
-import { test as base, expect, type Page } from '@playwright/test';
+import {
+  test as base,
+  expect,
+  type BrowserContext,
+  type Locator,
+  type Page,
+} from '@playwright/test';
+import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
@@ -35,7 +42,27 @@ function isIgnored(text: string): boolean {
   return IGNORED_ERROR_PATTERNS.some((re) => re.test(text));
 }
 
+// The editor's debug flag (docs/specs/003-system-architecture/console-logging.md): the suite drives
+// the production build, which writes its trace lines only with it set, and specs wait for some of
+// them (`[drive-mirror] pass-end`). Set before any page of the context loads.
+export async function enableDebugLogs(context: BrowserContext): Promise<void> {
+  await context.addInitScript(
+    ([key]) => {
+      try {
+        localStorage.setItem(key as string, '*');
+      } catch {
+        // A page with no storage (about:blank, a sandboxed frame) has no trace lines to show.
+      }
+    },
+    [DEBUG_STORAGE_KEY] as const,
+  );
+}
+
 export const test = base.extend<{ pageErrors: string[] }>({
+  context: async ({ context }, use) => {
+    await enableDebugLogs(context);
+    await use(context);
+  },
   pageErrors: async ({ page }, use) => {
     const errors: string[] = [];
     page.on('pageerror', (err) => {
@@ -59,6 +86,17 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
+// The wizard is a static export: its buttons are in the HTML before React attaches their handlers, and
+// a click in that gap does nothing, more often the busier the machine. React tags every element it
+// has hydrated with a `__reactProps$` key; wait for it on the element about to be used.
+export async function untilHydrated(locator: Locator): Promise<void> {
+  await expect
+    .poll(() =>
+      locator.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps$'))),
+    )
+    .toBe(true);
+}
+
 // Complete the /new template wizard into a blank document and land on
 // the editor canvas. Shared by the create-flow tests; resilient to the
 // wizard's step count by clicking whatever advances it.
@@ -76,9 +114,11 @@ export async function startTemplateDocument(
   await page.getByText('New Document', { exact: false }).waitFor();
   // Category tiles are aria-labelled "Browse <name> templates"; the
   // template tiles carry their title + description as the accessible name.
-  await page.getByRole('button', { name: category }).first().click();
+  const categoryTile = page.getByRole('button', { name: category }).first();
+  await untilHydrated(categoryTile);
+  await categoryTile.click();
+  // Picking a template moves straight on to the Location step.
   await page.getByRole('button', { name: template }).first().click();
-  await page.getByRole('button', { name: /^next$/i }).click();
   await page
     .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
     .first()
@@ -154,31 +194,23 @@ export async function dismissQuickTour(page: Page): Promise<void> {
   await decline.waitFor({ state: 'detached' });
 }
 
-// Opens /new and takes "Just Draw" to the editor. Retried, because on a cold server the first click can
-// land before hydration; but only clicks while the wizard is still up: a click that already worked leaves
-// /new, and hunting for the button again would fail every retry while the editor loads under load.
-export async function openJustDraw(page: Page): Promise<void> {
-  await page.goto('/new');
-  const canvas = page.locator('[data-canvas-a11y-root]');
-  await expect(async () => {
-    if (new URL(page.url()).pathname.replace(/\/$/, '') === '/new') {
-      await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
-    }
-    await canvas.waitFor({ timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+// A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
+// links to (docs/specs/007-editor/new-document-route.md).
+export async function openStartBlank(page: Page): Promise<void> {
+  await page.goto('/new?blank=1');
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
 
 export async function startBlankDocument(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Document', { exact: false }).waitFor();
-  // Step 1: pick the Blank template. Single-click advances to the theme
-  // step (docs/specs/006-document/offline-mode.md), so no explicit Next is needed here.
-  await page.getByText('Blank diagram', { exact: false }).click();
-  // Step 2 (theme) -> step 3 (settings). ANCHORED name: a bare /next/i
-  // also matches the Next.js DevTools button on dev servers.
-  await page.getByRole('button', { name: /^next$/i }).click();
-  // Step 3 (settings): the footer's primary action finishes the wizard.
+  // Step 1: pick the Blank template. Single-click advances to the Location
+  // step (docs/specs/007-editor/new-document-route.md), so no explicit Next is needed here.
+  const blank = page.getByText('Blank Canvas', { exact: false }).first();
+  await untilHydrated(blank);
+  await blank.click();
+  // Step 2 (Location): the footer's primary action finishes the wizard.
   // Anchored finish verbs: an unanchored /create/i also matched the
   // settings step's "New Folder ... Create here" tile (the CI breakage
   // this comment is the tombstone for).
@@ -227,4 +259,53 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   await page.reload();
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
+}
+
+// A guest as production makes one: minted and signed by the api worker
+// (docs/specs/014-identity/auth-and-guest-access.md). The e2e stack signs guest ids, so a hand-made
+// unsigned id would be upgraded (and its data moved) the moment the app opens.
+const guestSigs = new Map<string, string>();
+
+export async function mintSignedGuest(
+  request: import('@playwright/test').APIRequestContext,
+): Promise<string> {
+  const res = await request.post(`${process.env.NEXT_PUBLIC_API_BASE ?? '/api'}/guest-id`, {
+    data: {},
+  });
+  expect(res.ok()).toBe(true);
+  const { ownerId, ownerSig } = (await res.json()) as { ownerId: string; ownerSig: string | null };
+  if (ownerSig) guestSigs.set(ownerId, ownerSig);
+  return ownerId;
+}
+
+export function guestSigFor(owner: string): string | null {
+  return guestSigs.get(owner) ?? null;
+}
+
+export function ownerHeaders(
+  owner: string,
+  extra: Record<string, string> = {},
+): Record<string, string> {
+  const sig = guestSigs.get(owner);
+  return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+}
+
+// A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a
+// smaller, then overshooting, box until it settles, so one measurement mid-animation, or two from
+// different frames, misplaces its edges.
+export async function settledBox(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  let last = '';
+  let box: { x: number; y: number; width: number; height: number } | null = null;
+  await expect
+    .poll(async () => {
+      box = await locator.boundingBox();
+      const now = JSON.stringify(box);
+      const still = box !== null && now === last;
+      last = now;
+      return still;
+    })
+    .toBe(true);
+  return box!;
 }

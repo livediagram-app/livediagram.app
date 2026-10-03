@@ -53,8 +53,7 @@ export function PaletteTabBar({
   // is never blank.
   defaultOpenId?: string;
   // When set, the chosen category is remembered in localStorage under this
-  // key so it survives the palette being closed + reopened (the mobile /
-  // minimal dock unmounts the popover) and page reloads. A stale id
+  // key so it survives the palette being unmounted and page reloads. A stale id
   // (category removed) falls back to the default.
   storageKey?: string;
   // Hide the whole header band — both the canvas-tool picker and the

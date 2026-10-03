@@ -1,9 +1,10 @@
 import { memo, useRef, useState } from 'react';
-import { ICON_STROKE_PX_SMALL } from '@livediagram/icons';
-import { Tooltip, Glyph } from '@livediagram/ui';
+import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
-  BORDER_RADIUS_PX,
+  DEFAULT_BOX_RADIUS_PX,
+  MIND_NODE_RADIUS_PX,
+  cornerRadiusPx,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
@@ -16,23 +17,29 @@ import {
   ownColours,
   isOpenAction,
   isSelfDrawingShape,
+  isUprightTitle,
+  uprightTitleStrip,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
+import { uprightTitleFrame } from '@/components/canvas/upright-title';
 import { EntityView } from '@/components/canvas/EntityView';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
+import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
+import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
-import { describeVariant } from '@/components/canvas/element-variant';
+import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
@@ -64,13 +71,12 @@ function BoxedElementViewImpl({
   element,
   isSelected,
   isMultiSelected = false,
-  multiSelectActive = false,
+  onPlainClick,
   isEditing,
   editCursorAtEnd = false,
   isPaintMode,
   showHandles,
   showAnchors,
-  zoom,
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
@@ -202,13 +208,14 @@ function BoxedElementViewImpl({
       isEditing,
       remotelyLocked,
       isAnnotation,
-      multiSelectActive,
       isMultiSelected,
       isSelected,
+      isPaintMode,
       vote,
       votableInVote,
       onCastVote,
       onShiftSelect,
+      onPlainClick,
       onBeginDrag,
       onBeginEdit,
       onEditLink,
@@ -218,15 +225,22 @@ function BoxedElementViewImpl({
       onContextSelect,
     });
 
+  // A label being typed wears the text cursor and rises; a path in its edit mode does neither.
+  const editLook = editingLook(element, isEditing);
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
     : isPaintMode
       ? 'cursor-copy'
-      : isEditing
+      : editLook.textCursor
         ? 'cursor-text'
         : isLocked
           ? 'cursor-default'
           : 'cursor-move';
+  // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
+  // the box itself takes no presses, so the empty corners and the gaps between
+  // its answers behave as bare canvas. The face re-enables the disc, which is
+  // the one place that selects and drags it.
+  const bodyPassesThrough = element.type === 'shape' && element.shape === 'quiz';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -238,7 +252,22 @@ function BoxedElementViewImpl({
   // the theme default stroke. Shared by the ProgressView / RailView / RatingView
   // branches below so they all read the same accent.
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
-  const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
+  // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
+  const ringed = isSelected && !(element.type === 'path' && isEditing);
+  const variant = describeVariant(element, ringed, isMultiSelected, remoteBorderColor, surface);
+  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
+  // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
+  // once selected, the box drags either as any element.
+  const lineHit =
+    ((element.type === 'freehand' &&
+      element.penWidth !== undefined &&
+      element.pen !== 'highlighter') ||
+      element.type === 'path') &&
+    !isSelected &&
+    !isMultiSelected;
+  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
+  const onWhiteboard = useCanvasPicksByOutline();
+  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
@@ -287,20 +316,33 @@ function BoxedElementViewImpl({
   const iconCaptionBand =
     element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
 
+  // An upright lane title turns in its strip; inside the turned frame it reads along the strip,
+  // centred across it (docs/specs/009-elements/lane.md "Upright titles").
+  const uprightStrip =
+    element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
+      ? uprightTitleStrip(element, element.width, element.height)
+      : null;
+  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
+
+  // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
+  const textHug = useTextHug(element, isEditing, fontFamily);
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
     element,
     label,
     textSize,
-    alignX,
-    iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
-    PADDING_PX[element.padding ?? defaultPadding(element)],
+    uprightStrip ? uprightStrip.alongAlign : alignX,
+    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    // A one-line strip has no room for a roomy padding across it.
+    uprightStrip
+      ? Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
+      : PADDING_PX[element.padding ?? defaultPadding(element)],
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
     onCancelEdit,
     editCursorAtEnd,
-    zoom,
     fontFamily,
     onSetTextAlign,
     // Inline (flex-child) editor whenever the label shares its box with a
@@ -310,6 +352,7 @@ function BoxedElementViewImpl({
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
     labelAnimClass,
+    textHug.label,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -358,14 +401,14 @@ function BoxedElementViewImpl({
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
-      } ${variant.className} ${cursor}`}
+      } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
-        width: element.width,
-        height: element.height,
+        width: textHug.box?.width ?? element.width,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what
@@ -377,7 +420,7 @@ function BoxedElementViewImpl({
         ...variant.style,
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
-        // Handles + anchors are children, so they rotate with the box.
+        // The handles' frame in the grips layer turns by the same angle.
         //
         // The angle is ALSO published as --lvd-enter-rot, which the pop-in
         // entry keyframe multiplies into its scale. A keyframe that touches
@@ -398,8 +441,11 @@ function BoxedElementViewImpl({
         // it — users resize containers against their visible content.
         // While EDITING the label, though, raise it so the text the user
         // is typing isn't hidden behind elements painted above it. (The
-        // selection handles get lifted separately via SelectionHandles.)
-        ...(isEditing ? { zIndex: 10 } : {}),
+        // selection handles live in the grips layer, SelectionChromeLayer.)
+        ...(editLook.raise ? { zIndex: 10 } : {}),
+        // Only the drawn line picks a pen stroke not yet selected (its hit
+        // line, in FreehandSvg); the rest of its box lets pointers through.
+        ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -433,14 +479,13 @@ function BoxedElementViewImpl({
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-          radiusPx={
-            element.borderRadius !== undefined
-              ? BORDER_RADIUS_PX[element.borderRadius]
-              : // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
-                element.shape === 'mind-node'
-                ? 12
-                : 8
-          }
+          radiusPx={cornerRadiusPx(
+            element.borderRadius,
+            element.width,
+            element.height,
+            // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
+            element.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+          )}
         />
       ) : null}
       {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
@@ -462,9 +507,9 @@ function BoxedElementViewImpl({
           stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
           headerFill={element.headerFill}
           headerSize={element.headerSize}
+          titleOrientation={element.titleOrientation}
           width={element.width}
           height={element.height}
-          zoom={zoom}
           onCommitSize={onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined}
           onSnapSeam={onSnapSeam}
           elementId={element.id}
@@ -491,18 +536,17 @@ function BoxedElementViewImpl({
       {element.type === 'shape' && element.shape === 'browser' ? (
         <BrowserChrome
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-          zoom={zoom}
         />
       ) : null}
 
       {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
       <ElementFaceRouter
+        lineHit={lineHit}
         element={element}
         isEditing={isEditing}
         isSelected={isSelected}
         readOnly={readOnly}
-        zoom={zoom}
         fontFamily={fontFamily}
         activeMode={activeMode}
         collab={collab}
@@ -543,7 +587,15 @@ function BoxedElementViewImpl({
         inlineIcon={inlineIcon}
         marker={marker}
         iconCaptionBand={iconCaptionBand}
+        labelFrame={labelFrame}
       />
+
+      {shapeHit ? (
+        <ShapeHitOutline
+          element={element}
+          borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
+        />
+      ) : null}
 
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will
@@ -563,11 +615,9 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
-      {isLocked ? <LockBadge zoom={zoom} /> : null}
+      {isLocked ? <LockBadge /> : null}
 
-      {remoteSelectors.length > 0 ? (
-        <RemoteSelectorsStrip zoom={zoom} selectors={remoteSelectors} />
-      ) : null}
+      {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
@@ -576,7 +626,6 @@ function BoxedElementViewImpl({
       hasOpenAction ||
       (element.note && onOpenNote && !isAnnotation) ? (
         <BadgeStrip
-          zoom={zoom}
           linked={linked}
           linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}
           commentCount={commentCount}
@@ -620,49 +669,22 @@ function BoxedElementViewImpl({
         votableInVote={votableInVote}
         voteReviewActive={voteReviewActive}
         isVoteFocus={isVoteFocus}
-        zoom={zoom}
         onRetractVote={onRetractVote}
         onCastVote={onCastVote}
       />
 
-      {/* Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): a dashed accent frame just outside
-          the paper, in the alignment guides' own language, saying "this one
-          came from the photo and has not been accepted yet". Drawn rather
-          than tinted, because a workshop note's FILL is its meaning. */}
-      {photoDraft ? (
-        <span
-          aria-hidden
-          data-photo-draft=""
-          className="pointer-events-none absolute rounded-[3px] border-2 border-dashed border-brand-500 dark:border-brand-300"
-          style={{ inset: -6 / zoom, borderWidth: Math.max(1, 2 / zoom) }}
-        />
-      ) : null}
-      {/* …and the counterpart on a note the photo matched: it is already here,
-          so nothing is being added for it. */}
-      {photoMatched ? (
-        <Tooltip label={photoMatchedLabel(photoReadAs)}>
-          <span
-            data-photo-matched=""
-            role="img"
-            aria-label={photoMatchedLabel(photoReadAs)}
-            className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
-            style={{ width: 18 / zoom, height: 18 / zoom }}
-          >
-            {/* Sized in canvas px so it reads 12px on screen at any zoom; Glyph's stroke is on-screen px. */}
-            <Glyph size={12 / zoom} units={24} weight={ICON_STROKE_PX_SMALL}>
-              <path d="M5 13l4 4L19 7" />
-            </Glyph>
-          </span>
-        </Tooltip>
-      ) : null}
+      {/* The photo import's marks (photo-badges.tsx). */}
+      {photoDraft ? <PhotoDraftRing /> : null}
+      {photoMatched ? <PhotoMatchedBadge readAs={photoReadAs} /> : null}
 
-      {/* Selection chrome (resize / edge-grip handles) rides in its own
-          layer ABOVE the elements — see SelectionChromeLayer for the
+      {/* Selection chrome (resize / edge-grip handles), portalled into the
+          grips layer above every element — see SelectionChromeLayer for the
           stacking rationale. */}
       <SelectionChromeLayer
         elementId={element.id}
-        zoom={zoom}
+        box={element}
         rotation={rotation}
+        shiftX={insertShiftX}
         showHandles={showHandles}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
@@ -688,8 +710,3 @@ function BoxedElementViewImpl({
 // changed), every other prop is a primitive or an id-bearing
 // callback that the parent keeps stable.
 export const BoxedElementView = memo(BoxedElementViewImpl);
-
-// The badge on a note a wall photo matched: already on the board.
-function photoMatchedLabel(readAs: string | undefined): string {
-  return readAs ? `Already here, read as ${readAs}` : 'Already here';
-}

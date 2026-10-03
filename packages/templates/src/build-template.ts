@@ -12,20 +12,20 @@ import {
   buildLaptopWireframe,
   buildMobileWireframe,
 } from './template-builders-wireframes';
-import { buildSlideDeck, buildStoryboard } from './template-builders-slides';
+import { buildSlideDeck } from './template-builders-slides';
+import { buildStoryboard } from './template-builders-storyboard';
 import {
   buildKanban,
   buildPrioritizationMatrix,
   buildRetrospective,
   buildSwot,
 } from './template-builders-boards';
-import {
-  buildCloudArchitecture,
-  buildErDiagram,
-  buildSequenceDiagram,
-  buildSystemArchitecture,
-} from './template-builders-technical';
-import { buildStateMachine, buildUmlClass } from './template-builders-uml';
+import { buildSystemArchitecture } from './template-builders-technical';
+import { buildCloudArchitecture } from './template-builders-cloud';
+import { buildErDiagram } from './template-builders-er';
+import { buildSequenceDiagram } from './template-builders-sequence';
+import { buildUmlClass } from './template-builders-uml';
+import { buildStateMachine } from './template-builders-state-machine';
 import { buildFloorPlan } from './template-builders-floorplan';
 import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
@@ -45,11 +45,9 @@ import {
   buildPyramid,
   buildVenn,
 } from './template-builders-diagrams';
-import {
-  buildMilestoneTimeline,
-  buildMilestoneTimelineVertical,
-  buildTimeline,
-} from './template-builders-timelines';
+import { buildTimeline } from './template-builders-timelines';
+import { buildMilestoneTimeline } from './template-builders-milestones';
+import { buildMilestoneTimelineVertical } from './template-builders-milestones-vertical';
 import {
   buildApprovalWorkflow,
   buildBlank,
@@ -59,6 +57,20 @@ import {
 import { buildDataFlow } from './template-builders-dataflow';
 import { buildFlowchart, buildOrgChart } from './template-builders-trees';
 import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
+import {
+  buildStartStopContinue,
+  buildMadSadGlad,
+  buildFourLs,
+  buildSailboat,
+} from './template-builders-retro-formats';
+import { buildIncidentPostmortem } from './template-builders-postmortem';
+import { buildRiskMatrix } from './template-builders-risk';
+import { buildOpportunitySolutionTree } from './template-builders-opportunity-tree';
+import { buildStakeholderMap } from './template-builders-stakeholders';
+import { buildCrazyEights } from './template-builders-crazy-eights';
+import { buildUserPersona } from './template-builders-persona';
+import { buildMeetingAgenda } from './template-builders-meeting';
+import { buildObjectivesPlanner } from './template-builders-objectives';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -128,6 +140,30 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildSequenceDiagram(cx, cy);
     case 'prioritization-matrix':
       return buildPrioritizationMatrix(cx, cy);
+    case 'start-stop-continue':
+      return buildStartStopContinue(cx, cy);
+    case 'mad-sad-glad':
+      return buildMadSadGlad(cx, cy);
+    case 'four-ls':
+      return buildFourLs(cx, cy);
+    case 'sailboat':
+      return buildSailboat(cx, cy);
+    case 'incident-postmortem':
+      return buildIncidentPostmortem(cx, cy);
+    case 'risk-matrix':
+      return buildRiskMatrix(cx, cy);
+    case 'opportunity-solution-tree':
+      return buildOpportunitySolutionTree(cx, cy);
+    case 'stakeholder-map':
+      return buildStakeholderMap(cx, cy);
+    case 'crazy-eights':
+      return buildCrazyEights(cx, cy);
+    case 'user-persona':
+      return buildUserPersona(cx, cy);
+    case 'meeting-agenda':
+      return buildMeetingAgenda(cx, cy);
+    case 'objectives-planner':
+      return buildObjectivesPlanner(cx, cy);
     case 'roadmap':
       return buildRoadmap(cx, cy);
     case 'raci-matrix':
@@ -164,9 +200,13 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildFloorPlan(cx, cy);
     case 'event-storming':
       return buildEventStorming(cx, cy);
+    // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
+    // kind, which templateCanvasOverrides sets, not any seeded element.
+    case 'whiteboard':
+      return [];
   }
 }
 
-// The "Blank diagram" template is truly blank — no seeded element. The user
+// The "Blank Canvas" template is truly blank — no seeded element. The user
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.

@@ -96,6 +96,12 @@ export const TELEMETRY_CATEGORIES = [
   // only signal we get for a feed nobody could load. Never a document
   // name, team name, or comment text.
   'Timeline',
+  // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
+  // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
+  // What happened summary expanded); 'Selected' with 'JumpBackIn' | 'Timeline' | 'WhatHappened'
+  // (which part of Home a document was opened from); 'Loaded' with 'More' (a further Timeline
+  // page) | 'Retry' (a failed read retried). Never a document name or a person.
+  'Home',
   // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' on a row click (which kind of row sends
@@ -121,6 +127,32 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted document is the
   // question; never a document or team name.
   'Trash',
+  // Draw mode (docs/specs/023-draw-mode/draw-mode.md), named 'Whiteboard' until its stored
+  // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
+  // 'Template' | 'NewTab' | 'Import'), a pen 'Selected' ('Main' | 'Second' | 'Third'),
+  // a pen, the eraser mode and the background 'Changed' ('PenColour' | 'PenWidth' |
+  // 'PenReset', 'CursorDot' | 'CursorCrosshair', 'EraserStroke' | 'EraserPartial', 'BackgroundPlain' | 'BackgroundDots' |
+  // 'BackgroundGrid', 'SnapColours') and shape recognition 'Toggled' ('RecognitionOn' |
+  // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
+  // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
+  'Draw',
+  // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw', fired before the mode applies.
+  'Editor',
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
+  // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
+  // 'Broker' | 'Browser'), 'Changed'·'NeedsReconnect' (Google stopped
+  // accepting the grant), 'Created'·'FirstMirror' (every document mirrored once),
+  // 'Applied' typed by the inbound change ('Rename' | 'Move' | 'Trash' |
+  // 'Restore' | 'Purge' | 'UnknownFolder'), and 'Opened' typed by the Open
+  // with outcome ('Opened' | 'ImportOffered' | 'Error'). Never a file or
+  // document name, never an id.
+  'Drive',
+  // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
+  // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |
+  // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
+  // Never a value, a word, a team or an id.
+  'Explorer',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -195,6 +227,9 @@ export const TELEMETRY_ACTIONS = [
   // Trash (docs/specs/013-workspace/trash.md): a deleted document was brought
   // back from the Trash.
   'Restored',
+  // Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): a change made in Google
+  // Drive was applied to livediagram. Only ever paired with the 'Drive' category.
+  'Applied',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',

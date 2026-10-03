@@ -10,7 +10,6 @@ import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
-import { usePaletteRecent } from './palette-recent-context';
 import { tilesInSection } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 
@@ -34,9 +33,10 @@ export type PaletteTileActions = {
   ) => void;
   addText: () => void;
   beginFreehand: () => void;
+  beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
-  addArrow: () => void;
+  addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
   // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add sticky note" passes nothing.
@@ -75,12 +75,15 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.addText;
     case 'freehand':
       return actions.beginFreehand;
+    case 'highlighter':
+      return actions.beginHighlighter;
     case 'shape-pen':
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
     case 'arrow':
-      return actions.addArrow;
+      // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
+      return () => actions.addArrow(a.ends);
     case 'sticky':
       // Wrapped so the button's MouseEvent can't land in the optional fill
       // parameter; the tile's own fill + kind (if any) ride instead.
@@ -133,6 +136,8 @@ export function tileActive(
     // payload — each tile lights only for its own arm (docs/specs/008-canvas/two-pens.md).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
+    case 'highlighter':
+      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     // The Media tab has a tile per service and they all arm one `video`
@@ -173,19 +178,6 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the hover card, and the
 // shortcut letter always showing in the corner rather than only while the
 // modifier is held, the way a tool bar reads.
-// A tile's click handler, which in the Toolbar layout also records the use,
-// so the strip can bring the tile to its front (docs/specs/007-editor/toolbar-layout.md). Everywhere else it
-// is exactly tileHandler.
-export function useTileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
-  const recent = usePaletteRecent();
-  const handler = tileHandler(def, actions);
-  if (!recent) return handler;
-  return () => {
-    recent.onUse(def.id);
-    handler();
-  };
-}
-
 export function PaletteTile({
   def,
   actions,
@@ -198,8 +190,7 @@ export function PaletteTile({
   compact?: boolean;
 }) {
   const a = def.action;
-  const onClick = useTileHandler(def, actions);
-  const recent = usePaletteRecent();
+  const onClick = tileHandler(def, actions);
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
@@ -209,15 +200,6 @@ export function PaletteTile({
       caption={def.caption}
       description={def.description}
       onClick={onClick}
-      // A drag that lands on the canvas is a use too; one dropped nowhere is
-      // not.
-      onDragEnd={
-        recent
-          ? (e) => {
-              if (e.dataTransfer.dropEffect !== 'none') recent.onUse(def.id);
-            }
-          : undefined
-      }
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
         a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined

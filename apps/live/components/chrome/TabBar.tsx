@@ -13,6 +13,8 @@ import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
+import { EditorModeSwitchSlot } from '@/components/chrome/editor-mode/EditorModeSwitchSlot';
+import type { EditorModeState } from '@/hooks/editor/useEditorMode';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
@@ -24,6 +26,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 });
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
+import type { OpensInChoice } from './OpensInMenuSection';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change
 // theme / background, and tidy the layout. (Add-element actions used to live
@@ -67,6 +70,9 @@ type TabBarProps = {
   canvasActions?: CanvasMenuActions;
   // Minimal chrome's role icon (docs/specs/007-editor/power-user-mode.md), first in the bar.
   roleIcon?: ReactNode;
+  // Power user mode turns the Appearance control into a quick switch
+  // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
+  powerUser?: boolean;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
@@ -104,6 +110,9 @@ type TabBarProps = {
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
+  // The tab menu's Opens in choice for a tab (docs/specs/007-editor/editor-modes.md), absent
+  // where it is not offered (an event-storming board, a visitor who cannot edit).
+  opensInFor?: (tab: Tab) => OpensInChoice | undefined;
   // Move `sourceId` next to `targetId`. `placeBefore` (default true) picks
   // which side of the target it lands on — the tab bar sets it from the
   // pointer position so the drop matches the insertion caret. Omitting it
@@ -136,6 +145,8 @@ type TabBarProps = {
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
   voteSelfId?: string;
   selfRole: 'edit' | 'view';
+  // The editor's resolved editor mode on the active tab (useEditorMode), shown by the mode switch.
+  editorMode: EditorModeState;
   // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
   // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
   // Optional: a surface with no room behind it leaves the avatars as plain
@@ -182,6 +193,7 @@ export function TabBar({
   otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
+  opensInFor,
   onReorder,
   readOnly = false,
   isOutOfScope,
@@ -190,6 +202,7 @@ export function TabBar({
   selfId,
   voteSelfId,
   selfRole,
+  editorMode,
   followingId,
   onOpenCollaborators,
   onOpenSettings,
@@ -198,6 +211,7 @@ export function TabBar({
   onCloseCanvasMenu,
   canvasActions,
   roleIcon,
+  powerUser = false,
 }: TabBarProps) {
   const minimalChrome = useMinimalChrome();
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -233,6 +247,7 @@ export function TabBar({
     canDelete: tabs.length > 1,
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
+    opensIn: opensInFor?.(tab),
     selfId,
     voteSelfId,
     otherDocuments,
@@ -333,6 +348,7 @@ export function TabBar({
         className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
+        <EditorModeSwitchSlot editorMode={editorMode} powerUser={powerUser} />
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
@@ -395,6 +411,7 @@ export function TabBar({
           // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
           labelled={!minimalChrome}
           github={false}
+          powerUser={powerUser}
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (

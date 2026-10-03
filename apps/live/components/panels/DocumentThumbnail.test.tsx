@@ -18,8 +18,11 @@ beforeAll(() => {
   // Everything is in view at once.
   globalThis.IntersectionObserver = class {
     private cb: IntersectionObserverCallback;
-    constructor(cb: IntersectionObserverCallback) {
+    // The real signature, options included, so a caller passing them is calling what it calls.
+    readonly options: IntersectionObserverInit | undefined;
+    constructor(cb: IntersectionObserverCallback, options?: IntersectionObserverInit) {
       this.cb = cb;
+      this.options = options;
     }
     observe() {
       this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
@@ -58,6 +61,25 @@ describe('DocumentThumbnail', () => {
     rerender(thumb(2));
     expect(img()).toBeNull();
     await act(async () => pending[1]!({ url: 'blob:two', backgroundColor: null }));
+    expect(img()?.getAttribute('src')).toBe('blob:two');
+  });
+
+  it('shows an empty document as undrawn at once, and never asks for its snapshot', () => {
+    const { container } = render(
+      <DocumentThumbnail ownerId="me" documentId="d1" version={1} empty />,
+    );
+    expect(pending).toHaveLength(0);
+    expect(loader()).toBeNull();
+    expect(container.textContent).not.toBe('');
+  });
+
+  it('asks once a document that was empty has something drawn', async () => {
+    const { rerender } = render(
+      <DocumentThumbnail ownerId="me" documentId="d1" version={1} empty />,
+    );
+    rerender(<DocumentThumbnail ownerId="me" documentId="d1" version={2} />);
+    expect(pending).toHaveLength(1);
+    await act(async () => pending[0]!({ url: 'blob:two', backgroundColor: null }));
     expect(img()?.getAttribute('src')).toBe('blob:two');
   });
 

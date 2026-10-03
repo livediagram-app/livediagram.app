@@ -14,6 +14,52 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Editor|Changed|ModeDiagram':
+    'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
+  'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
+  'Draw|Created|Template':
+    'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
+  'Draw|Created|NewTab':
+    'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
+  'Draw|Selected|Main':
+    "Someone picked up a whiteboard's main pen, which draws in the board's own ink colour: dark on the light board, light on the dark one.",
+  'Draw|Selected|Path':
+    "Someone picked up a whiteboard's Path tool, a vector pen: each click places a point and a drag pulls out a curve.",
+  'Draw|Selected|ShapeSearch':
+    "Someone picked a shape they searched for in a whiteboard's Shapes flyout, which finds any of the palette's shapes by name.",
+  'Draw|Selected|Second':
+    "Someone picked up a whiteboard's second pen (blue unless they changed it).",
+  'Draw|Selected|Third': "Someone picked up a whiteboard's third pen (red unless they changed it).",
+  'Draw|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
+  'Draw|Changed|PenWidth': "Someone changed the width of one of a whiteboard's pens.",
+  'Draw|Changed|CursorDot': "Someone chose the dot as a whiteboard's pen cursor.",
+  'Draw|Changed|CursorCrosshair':
+    "Someone chose the crosshair with a nib as a whiteboard's pen cursor.",
+  'Draw|Changed|PenReset':
+    "Someone reset one of a whiteboard's pens to its starting colour and width.",
+  'Draw|Changed|EraserStroke': "Someone set a whiteboard's eraser to remove whole strokes.",
+  'Draw|Changed|EraserPartial':
+    "Someone set a whiteboard's eraser to rub out only the part of a stroke under it.",
+  'Draw|Changed|ShapePinned':
+    'Someone pinned a shape to their whiteboard dock, so it stays there beside the shapes they use most.',
+  'Draw|Changed|ShapeUnpinned': 'Someone unpinned a shape from their whiteboard dock.',
+  'Draw|Changed|BackgroundPlain': 'Someone gave a whiteboard a plain background.',
+  'Draw|Changed|BackgroundDots': 'Someone gave a whiteboard a dotted background.',
+  'Draw|Changed|BackgroundGrid': 'Someone gave a whiteboard a grid background.',
+  'Draw|Changed|SnapColours':
+    "Someone snapped a whiteboard's custom colours to its stock colours, so they adapt to light and dark boards.",
+  'Draw|Toggled|RecognitionOn':
+    'Someone turned on shape recognition on a whiteboard, so a roughly drawn shape becomes a clean one.',
+  'Draw|Toggled|RecognitionOff':
+    'Someone turned off shape recognition on a whiteboard, so strokes stay as drawn.',
+  'Draw|Toggled|RecogniseOnceKey':
+    'Someone pressed Alt (Option) while drawing on a whiteboard to turn that one stroke into a clean shape at once.',
+  'Draw|Toggled|RecogniseOnceChip':
+    "Someone tapped a whiteboard's Make shape chip while drawing to turn that one stroke into a clean shape at once.",
+  'Draw|Toggled|BreakShapeKey':
+    'Someone pressed Alt (Option) while drawing on a whiteboard to turn a recognised shape back into the ink they drew.',
+  'Draw|Toggled|BreakShapeChip':
+    "Someone tapped a whiteboard's Keep drawing chip while drawing to turn a recognised shape back into the ink they drew.",
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
@@ -64,7 +110,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|FormatPainter':
     "Someone picked up the Format tool, ready to copy one element's style onto others by tapping them.",
   'Canvas|Used|Highlighter':
-    'Someone picked up the Highlighter, a see-through marker pen for annotating the canvas.',
+    'Someone picked up the Highlighter mode, a see-through marker pen for annotating the canvas. No longer recorded: the Highlighter is a Draw tile now, counted when a stroke is added.',
   'Canvas|Used|InsertBetween':
     'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':
@@ -110,7 +156,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Removed|ShareLink':
     "Someone revoked a share link from a document's Share dialog, so it stops working.",
   'Document|Renamed|': 'A document was renamed.',
-  'Document|Reverted|': "Someone reverted a single change from a tab's activity log.",
+  'Document|Reverted|':
+    "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
   'Document|Shared|Edit': 'Someone generated an edit-role share link for a document.',
   'Document|Shared|ExpiryWeek':
     'Someone set a share link to expire after a week, when creating it.',
@@ -139,6 +186,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone applied a one-click arrow style, setting its line pattern, thickness, and flow together.',
   'Element|Changed|ArrowRouteBehind':
     'Someone toggled whether a selected arrow routes behind the boxes it passes.',
+  'Element|Changed|ArrowExactStart':
+    'Someone set an arrow to start exactly at the anchor it is connected to, or back to fanning out.',
+  'Element|Changed|LaneUprightTitle':
+    'Someone turned a lane title upright in its side strip, or back to reading across.',
   'Element|Changed|ArrowStyle':
     "Someone changed a selected arrow's shape, such as straight, curved, or elbowed.",
   'Element|Changed|ArrowThickness': "Someone changed a selected arrow's line thickness.",
@@ -202,6 +253,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Nudge':
     'Someone nudged a selected element with the arrow keys. Counted once per burst of presses, not once per key press.',
   'Element|Changed|Padding': "Someone changed a selected element's internal padding.",
+  'Element|Changed|PathEdit':
+    'Someone reshaped a path in its edit mode: moved, added, removed or smoothed a point, or bent a curve. Counted once per change.',
+  'Element|Changed|PathJoin':
+    'Someone closed an open path in its edit mode by joining its two ends.',
   'Element|Changed|Picker':
     'Someone rolled a Picker element, landing on a participant or option from its list, shared with everyone in the room.',
   'Element|Changed|Portal':
@@ -217,6 +272,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Clear styles in the quick style panel, returning the selected shapes, arrows and text to the theme default and forgetting that style for the next ones drawn.',
   'Element|Changed|QuickIconAlign':
     'Someone moved the icon before, above, or after the label of the selected shapes from the quick style panel.',
+  'Element|Changed|QuickCorners':
+    'Someone changed the corners of the selected rectangles on a whiteboard from the quick style panel.',
   'Element|Changed|QuickStroke':
     'Someone picked a line colour for the selected shapes or arrows from the quick style panel beside the selection.',
   'Element|Changed|QuickStrokeStyle':
@@ -309,6 +366,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone asked everyone else in the room to jump to this element's spot on the canvas.",
   'Element|Used|ReactionPad':
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
+  'Element|Searched|Image':
+    "Someone searched for openly licensed pictures in the image picker's Search tab.",
+  'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
   'Email|Sent|DocumentJoined':
@@ -325,6 +385,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "An email (a welcome message, an invite, a notification) couldn't be sent, because the email provider couldn't be reached at all.",
   'Error|Client|RealtimeResync':
     'The editor noticed it had missed updates during a live session and refetched the document to catch back up. This is the editor recovering on its own, not a crash.',
+  'Error|Client|StaleChunkReload':
+    'A tab still running an earlier build of the editor asked for a piece of code the last deploy removed, and loaded the page in full instead of crashing. The editor recovering on its own after a deploy, not a crash.',
   'Error|Client|Uncaught':
     'A part of the editor or help centre crashed with an error nothing in the code caught. No longer recorded in this bare form; a crash like this now also records which page it happened on and what kind of error it was.',
   'Error|Client|UnhandledRejection':
@@ -343,8 +405,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Folder|Created|Tab':
     'A new tab folder was created inside a document, by typing a name the document had not used before.',
   'Folder|Created|Team': 'A new folder was created in the document explorer.',
-  'Folder|Deleted|': 'A folder was deleted (contained documents move to Unsorted).',
-  'Folder|Deleted|Team': 'A folder was deleted (contained documents move to Unsorted).',
+  'Folder|Deleted|': 'A folder was deleted (contained documents move to the top level).',
+  'Folder|Deleted|Team': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
   'Folder|Moved|Team': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed|': 'A folder was renamed.',
@@ -354,6 +416,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
+  'Home|Loaded|More': "More of Home's Timeline column loaded as someone scrolled towards its end.",
+  'Home|Loaded|Retry':
+    'Someone pressed "Try again" after Home, or a further page of it, failed to load.',
+  'Home|Opened|Group':
+    "Someone expanded a summary of several people's work on one document in Home's What happened, to see every action.",
+  'Home|Opened|Landing':
+    'Someone arrived at the Explorer with Home as the very section that loaded.',
+  'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'Home|Selected|JumpBackIn':
+    "Someone opened a document from Home's Jump back in, the strip of the documents they return to most.",
+  'Home|Selected|Timeline':
+    "Someone opened a document from Home's Timeline column, the documents they created, updated or opened.",
+  'Home|Selected|WhatHappened':
+    "Someone opened a document from Home's What happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -387,9 +463,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Page|View|/document':
     "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
+  'Page|View|/explorer/home': "Someone opened the Explorer's Home, its landing section.",
   'Page|View|/explorer/activity': "Someone navigated to the Explorer's Activity section.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline section.",
+  'Page|View|/explorer/timeline':
+    "Someone navigated to the Explorer's All activity section, the Timeline feed.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -421,6 +499,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|FlowchartRight': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
+  'Tab|Changed|OpensInDiagram':
+    'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
+  'Tab|Changed|OpensInDraw':
+    'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -440,11 +522,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
+  'Tab|Imported|Drawio':
+    'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
+  'Element|Imported|Excalidraw':
+    'Someone pasted or dropped a drawing copied from Excalidraw onto the canvas.',
   'Tab|Imported|ExcalidrawPng':
     'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
   'Tab|Imported|ExcalidrawSvg':
     'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
+  'Tab|Imported|MicrosoftWhiteboard':
+    'Someone imported a Microsoft Whiteboard board as a new whiteboard tab (once per board).',
   'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
@@ -494,10 +582,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Loaded|Retry':
     'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
   'Timeline|Opened|Landing':
-    'Someone arrived at the Explorer with the Timeline as the very section that loaded, rather than switching to it from elsewhere.',
+    'Someone arrived at the Explorer with All activity, the Timeline feed, as the very section that loaded.',
   'Timeline|Opened|Menu':
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
-  'Timeline|Opened|Nav': 'Someone switched to the Timeline from another section of the Explorer.',
+  'Timeline|Opened|Nav':
+    "Someone went to All activity, the Timeline feed, from elsewhere in the Explorer, usually Home's See all activity link.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -508,10 +597,25 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Selected|Others':
     "Someone switched the Timeline's filter to show only other people's activity, hiding their own.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
+  'Explorer|Selected|Text':
+    'Someone typed words into the Explorer search to narrow a list of documents.',
+  'Explorer|Selected|OpensIn':
+    'Someone filtered an Explorer list by the editor mode documents open in (Diagram or Draw).',
+  'Explorer|Selected|Kind':
+    'Someone filtered an Explorer list by tab kind (Event Storming boards).',
+  'Explorer|Selected|Template':
+    'Someone filtered an Explorer list by the template family documents were made from (Retrospective, Kanban).',
+  'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the documents an AI made.',
+  'Explorer|Selected|Edited':
+    'Someone filtered an Explorer list by when documents were last edited.',
+  'Explorer|Selected|People':
+    'Someone filtered an Explorer list by who owns the documents (Me or Others).',
+  'Explorer|Selected|Space':
+    'Someone filtered an aggregate Explorer list by where documents live (My documents, Shared with me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
-    "Someone created a new personal API token by hand, from Settings or the Explorer's API Tokens page.",
+    'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite': 'Someone added a tile to their Favourites in the shape palette.',
   'UI|Added|Slide':
@@ -532,6 +636,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled which style properties the format painter copies (fill, border, text, effects, or size), in the Format panel.',
   'UI|Changed|FormatMode':
     'Someone changed whether the format painter keeps applying after each use or turns off after one copy, in the Format panel.',
+  'UI|Changed|HighlighterColour':
+    "Someone changed the Highlighter's colour for their next stroke, in the Quick style panel.",
+  'UI|Changed|HighlighterWidth':
+    "Someone changed the Highlighter's width for their next stroke, in the Quick style panel.",
   'UI|Changed|LaserColour': "Someone changed the laser pointer's colour, in the Laser panel.",
   'UI|Changed|LaserEffect': "Someone changed the laser pointer's trail effect, in the Laser panel.",
   'UI|Changed|LaserTrail':
@@ -549,11 +657,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|PanelLayoutFloating':
     "Someone switched the editor's panel layout to Floating, in Settings > Editor.",
   'UI|Changed|PanelLayoutMinimal':
-    "Someone switched the editor's panel layout to Minimal, in Settings > Editor.",
+    "Someone switched the editor's panel layout to Minimal, in Settings > Editor. No longer recorded: the Minimal layout was removed.",
   'UI|Changed|PanelLayoutToolbar':
     "Someone switched the editor's panel layout to Toolbar, in Settings > Editor.",
   'UI|Changed|PanelOpacity':
     'Someone adjusted how see-through the floating panels are, on the Panel Opacity slider in Settings > Editor.',
+  'UI|Changed|UiScale':
+    'Someone made the panels, the toolbar and the bottom-right buttons bigger or smaller together, on the UI Scale slider in Settings > Appearance.',
+  'UI|Changed|UiScalePanels':
+    'Someone made just the panels bigger or smaller, on the Panel Scale slider under UI Scale in Settings > Appearance.',
+  'UI|Changed|UiScaleToolbar':
+    'Someone made just the toolbar bigger or smaller, on the Toolbar Scale slider under UI Scale in Settings > Appearance.',
+  'UI|Changed|UiScaleCornerButtons':
+    'Someone made just the bottom-right buttons (undo, layers, theme, zoom) bigger or smaller, on the Corner Buttons Scale slider under UI Scale in Settings > Appearance.',
   'UI|Changed|QuickSwatchCustom':
     "Someone replaced one of the quick style panel's theme colours with a colour of their own, by right-clicking the swatch.",
   'UI|Changed|QuickSwatchReset':
@@ -568,6 +684,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|SpotlightSize': "Someone changed the Spotlight's size, in the Spotlight panel.",
   'UI|Changed|ToolbarCategory':
     "Someone switched category in the Toolbar layout's palette strip across the top of the canvas.",
+  'UI|Changed|WhiteboardDockPositionBottom':
+    'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
+  'UI|Changed|WhiteboardDockPositionTop':
+    'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
+  'UI|Closed|NewDocument':
+    'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
@@ -594,7 +716,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
-  'UI|Opened|Activity': 'Someone expanded the Activity panel.',
+  'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
   'UI|Opened|BehaviourGroup':
     "Someone opened a category inside the palette's Behaviours tab (session tools like polls, votes, and record-keeping elements).",
@@ -621,6 +743,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
+  'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
   'UI|Opened|SignInReasons':
@@ -643,6 +766,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
   'UI|Declined|PowerUserOffer':
     'Someone said no thanks to the power user mode offer, or closed it.',
+  'UI|Opened|NewVersionPrompt':
+    'An open editor learned the server now serves a newer document format and offered "A new version of livediagram is ready".',
+  'UI|Used|NewVersionPrompt':
+    'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
   'UI|Opened|activity':
@@ -666,7 +793,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|recent':
     "Someone opened the help article about the Explorer's Recent section, from a help link or a search result.",
   'UI|Opened|what-it-is':
-    "Someone opened the help article explaining the editor's Activity panel (the change-log panel, not the Explorer section), from a help link or a search result.",
+    "Someone opened the help article explaining the editor's since-removed Activity panel (the change-log panel, not the Explorer section), from a help link or a search result.",
   'UI|Opened|your-first-diagram':
     'Someone opened the help article about building their first diagram, from the empty-canvas banner or a search result.',
   'UI|Removed|PaletteFavourite':
@@ -687,9 +814,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|Tour':
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
   'UI|Toggled|ActivityRevertPreviewOff':
-    'Someone turned off the hover preview that shows what a change would look like before reverting it, in Settings > Panels.',
+    'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
-    'Someone turned on the hover preview that shows what a change would look like before reverting it, in Settings > Panels.',
+    'Someone turned on the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|AlignmentGuidesOff':
     'Someone turned off the alignment guides that appear while dragging elements, in Settings > Editor.',
   'UI|Toggled|AlignmentGuidesOn':
@@ -727,9 +854,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|MiddleMousePanOn':
     'Someone turned on panning the canvas by holding the middle mouse button, in Settings > Controls.',
   'UI|Toggled|MinimalPanelsOff':
-    'Someone switched the panel layout back to Floating, from the quick toggle rather than the Settings dialog.',
+    'Someone switched the panel layout back to Floating, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimalPanelsOn':
-    'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog.',
+    'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimapOff': 'Someone turned off the minimap, in Settings > Editor.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|NotificationsOff':
@@ -740,6 +867,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
   'UI|Toggled|NotifyActionAssignedOn':
     'Someone turned on the email that arrives when a teammate assigns them an action, in Settings > Notifications.',
+  'UI|Toggled|ShowProfilePictureOff':
+    'Someone stopped showing their profile picture to collaborators, in Settings > Account.',
+  'UI|Toggled|ShowProfilePictureOn':
+    'Someone started showing their profile picture to collaborators again, in Settings > Account.',
   'UI|Toggled|NotifyMentionsOff':
     'Someone turned off the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyMentionsOn':
@@ -781,6 +912,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|SlideShown':
     'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
+  'UI|Toggled|TemplateShelfCollapsed':
+    'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
+  'UI|Toggled|TemplateShelfExpanded':
+    'Someone expanded the New Document template shelf to show every template in the category, with the other categories as a carousel.',
   'UI|Toggled|TelemetryOff':
     'Someone opted out of sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TelemetryOn':
@@ -813,6 +948,14 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
+  'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
+  'Draw|Selected':
+    'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
+  'Draw|Changed':
+    "Someone changed a whiteboard pen's colour or width, the eraser mode, the board background or its pinned shapes.",
+  'Draw|Toggled':
+    'Someone switched shape recognition on a whiteboard on or off, or flipped the stroke they were drawing between ink and a shape.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':
@@ -852,7 +995,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Document|Removed':
     "Someone removed something from a document's sharing, such as revoking a share link.",
   'Document|Renamed': 'A document was renamed.',
-  'Document|Reverted': "Someone reverted a single change from a tab's activity log.",
+  'Document|Reverted':
+    "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
   'Document|Shared':
     "Someone created or changed a document's share link: its role, how long it lasts, or its password.",
   'Document|Undone': 'Someone hit Undo on a document edit.',
@@ -862,6 +1006,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted': 'An element was removed from the canvas.',
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
+  'Element|Imported': 'Someone pasted or dropped a drawing from another tool onto the canvas.',
   'Element|Grouped': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked':
     'Someone linked an element to something: another element, a web address, a document or a tab.',
@@ -878,6 +1023,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'A group was disbanded back into individual elements (before groups were removed).',
   'Element|Unlinked': 'Someone cleared the link off an element.',
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
+  'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
   'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
   'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
@@ -893,7 +1039,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Facilitator|Ended': 'The facilitator role in a live session ended.',
   'Facilitator|Started': 'Someone became the facilitator of a live session.',
   'Folder|Created': 'A new folder was created in the document explorer.',
-  'Folder|Deleted': 'A folder was deleted (contained documents move to Unsorted).',
+  'Folder|Deleted': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed': 'A folder was renamed.',
   'Help|Helpful':
@@ -972,6 +1118,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
   'Theme|Created': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted': 'Someone deleted a custom theme they had created.',
+  'Home|Loaded': "More of Home's Timeline column loaded, or Home was read again after failing.",
+  'Home|Opened': "Someone opened the Explorer's Home, or expanded a summary within it.",
+  'Home|Selected': "Someone opened a document from one part of the Explorer's Home.",
   'Timeline|Changed': "Someone switched how the Explorer's Timeline displays its history.",
   'Timeline|Loaded':
     'The Timeline loaded more of its history, either the next page or a retry after a failed read.',
@@ -979,7 +1128,25 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
+  'Drive|Linked':
+    'Someone connected Google Drive, so My documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
+  'Drive|Unlinked':
+    'Someone disconnected Google Drive. livediagram stops updating it, and the files stay in their Drive.',
+  'Drive|Changed':
+    "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
+  'Drive|Created':
+    'A newly connected mirror finished copying every document in My documents into Google Drive for the first time.',
+  'Drive|Applied':
+    'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
+  'Drive|Opened':
+    'Someone opened a livediagram file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
+  'Folder|Changed':
+    'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
+  'Folder|Cleared':
+    'Someone cleared a default folder, so new documents of that kind land in My documents again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
+  'Explorer|Selected':
+    'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',
@@ -1015,7 +1182,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
 export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AcceptTeamInvite: 'accepting a team invite',
   AddTab: 'adding a tab to a document, from an AI tool connected over MCP',
-  AppendChangeLog: "recording an entry in a document's change history",
+  AppendChangeLog: "recording an entry in a document's since-removed change history",
   CopyDocument: 'duplicating a document',
   CreateCustomTheme: 'saving a new custom theme',
   CreateDocument: 'creating a new document',
@@ -1023,8 +1190,8 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
-  DeleteChangeLog: "clearing a document's change history",
-  DeleteChangeLogEntry: "removing one entry from a document's change history",
+  DeleteChangeLog: "clearing a document's since-removed change history",
+  DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
   DeleteComment: 'deleting a comment',
   DeleteCustomTheme: 'deleting a saved custom theme',
   DeleteDocument: 'deleting a document',
@@ -1042,7 +1209,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   JoinTeamByInviteLink: 'joining a team through its invite link',
   LinkTab: 'linking a tab into another document',
   List: "listing a visitor's documents",
-  ListChangeLog: "listing a document's change history",
+  ListChangeLog: "listing a document's since-removed change history",
   ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
   ListImages: 'listing the images saved to an account',

@@ -13,7 +13,11 @@ export {
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
+export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
+export { SnapCarousel } from './SnapCarousel';
+export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { CanvasLoader } from './CanvasLoader';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
@@ -26,7 +30,12 @@ export { useClickOutside } from './useClickOutside';
 export { useEscape } from './useEscape';
 export { useFocusTrap } from './useFocusTrap';
 export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
-export { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL } from './brand-classes';
+export {
+  ACTIVE_SEGMENT,
+  SEGMENT_TRACK,
+  SOLID_BRAND_DARK,
+  SOLID_BRAND_DARK_CONTROL,
+} from './brand-classes';
 export * from './timeline';
 export * from './icons';
 export {

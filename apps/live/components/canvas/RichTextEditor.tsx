@@ -27,6 +27,7 @@ import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { listStyleOfText } from '@/components/rich-text/block-type';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 export function RichTextEditor({
   element,
@@ -38,17 +39,19 @@ export function RichTextEditor({
   alignX,
   alignY,
   padding,
+  textScale,
+  onLiveText,
   fontFamily,
   multiline,
   uppercase,
   cursorAtEnd,
-  zoom,
   textClassName = '',
   onCommit,
   onCancel,
   onSetAlign,
   inline = false,
 }: RichTextEditorProps) {
+  const zoom = useCanvasZoom();
   const {
     editorRef,
     toolbarWrapRef,
@@ -72,6 +75,8 @@ export function RichTextEditor({
     initialLabel,
     initialRuns,
     textSize,
+    textScale,
+    onLiveText,
     fitBox,
     multiline,
     uppercase,

@@ -90,8 +90,7 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // regardless; this lets the user force it on independent of the OS.
   useReduceMotion(userPreferences.reduceMotion === true);
   // Apply the "Panel opacity" preference (docs/specs/007-editor/user-preferences.md) to the floating panels
-  // via the --lvd-panel-opacity custom property. Floating panels only; the
-  // minimal dock never reads the var.
+  // via the --lvd-panel-opacity custom property.
   usePanelOpacity(userPreferences.panelOpacity);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults to
@@ -130,4 +129,9 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     autoRebindArrowsRef,
     alignmentGuidesRef,
   };
+}
+
+/** The preferences cached on this device, live: re-renders on a same-tab write or another tab's. */
+export function useCachedPreferences(): UserPreferences {
+  return useSyncExternalStore(subscribeCachedPreferences, getCachedPreferences, getNoPreferences);
 }

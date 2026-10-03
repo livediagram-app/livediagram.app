@@ -104,9 +104,45 @@ document renders lazily.
   document's background colour. A snapshot already cached when the
   thumbnail mounts paints at once, with no loader. The box never changes
   size.
-- Degrades gracefully: no R2 binding, no access, or an empty document →
-  404 → the row shows the still, dashed sketch, captioned "Nothing drawn
-  yet" where there is room. The no-snapshot 404 (past the access gate)
+- **An empty document is never asked for.** Every document list carries
+  `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
+  first tab has no elements, or it has no tab. Such a row shows the still,
+  dashed sketch at once, captioned "Nothing drawn yet" where there is room,
+  and makes no request, so an Explorer of new or blank documents fires no
+  404s. The list knows without reading any tab body: each tab row keeps its
+  element count (`tabs.element_count`), and a list reads the first tab's
+  count (a tab-scoped share reads its own tab's). Every tab write binds the
+  count in the same statement, from the tab the api already holds parsed;
+  a copy carries its source's. A count not known (`null`) reads as not
+  empty, so the row asks as before. The editor's own row follows its saves:
+  after an autosave it says `empty` from the first tab when that tab is
+  loaded, and keeps what the list said when it is not.
+- **The count is filled lazily, never by a bulk backfill.** The migration
+  only adds the column. A tab stored before it starts unknown and gets its
+  count from its next write, or from the thumbnail route: having parsed the
+  body to render it, the route stamps a still-unknown count (in the
+  request's `waitUntil`, best effort, never overwriting a known count). An
+  old empty document is therefore asked for at most once. A deploy without
+  the R2 binding renders no snapshot, so there its counts fill from writes only.
+- **Why no trigger and no backfill** (measured with SQLite, D1's engine,
+  sync off to isolate the work itself):
+
+  | Tab body | Save, no count | Save, bound count | Save, trigger re-parse |
+  | -------- | -------------- | ----------------- | ---------------------- |
+  | 10 KB    | 0.005 ms       | 0.005 ms          | 0.015 ms               |
+  | 500 KB   | 0.09 ms        | 0.05-0.10 ms      | 0.9-3.1 ms             |
+  | 2 MB     | 0.8-0.9 ms     | 0.6-0.7 ms        | 7.9-8.1 ms             |
+
+  A trigger re-parses the body and rewrites the row a second time, about
+  ten times the cost of a 2 MB autosave, on the hot path (one save about
+  every 600 ms per active editor). A one-statement backfill parses at about
+  480 MB/s locally (250 tabs of 2 MB in 1.0 s), so a full 10 GB D1
+  database needs over 20 s even before D1's replicated writes, against
+  D1's 30 s query limit and its guidance that a statement touching
+  hundreds of MB exceeds execution limits. Adding the column alone takes
+  under 5 ms on the same 500 MB table.- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
+  shows the still, dashed sketch, captioned "Nothing drawn yet" where there
+  is room. The no-snapshot 404 (past the access gate)
   carries the same `private, max-age=86400` as the image, because it is
   version-keyed too; an access-denied 404 carries no cache header.
 
@@ -143,8 +179,8 @@ choice is document-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 The thumbnail shows on **every** Explorer surface that lists a document:
-the full-page `/explorer` rows (Recent / Personal Space / folders / Unsorted /
-Generated), the team library page, the "Shared with me" list, and the
+the full-page `/explorer` rows (Recent / My documents / folders / Search results /
+This browser), the team library page, the "Shared with me" list, and the
 floating in-editor Explorer panel. A single shared `DocumentThumbnail`
 component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the document's) plus, for a shared row,
@@ -154,7 +190,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / Personal Space / folders / Unsorted / Generated)
+The browse views (Recent / My documents / folders / Search results / This browser)
 have a **List ↔ Card** toggle at the far right of the header (device-
 local preference, `livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { armPlainClick, isOnlySelected, plainClickOutcome } from '@/lib/selection-click';
+import { debugLog } from '@/lib/debug-log';
 
 // The element / arrow selection-routing callbacks, lifted out of
 // Canvas: stable wrappers for the memo'd children (BoxedElementView /
@@ -6,8 +8,11 @@ import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent 
 // closure and defeat the memo.
 export function useCanvasSelectHandlers({
   inertIds,
+  isPaintMode,
+  selectedId,
   multiSelectedIds,
   onSelect,
+  onDeselect,
   onShiftSelect,
   onElementContextMenu,
   onMultiContextMenu,
@@ -15,8 +20,12 @@ export function useCanvasSelectHandlers({
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): right-click and
   // arrow-click route nowhere for them.
   inertIds: Set<string>;
+  // The format painter is armed: every press paints, so none settles a click.
+  isPaintMode: boolean;
+  selectedId: string | null;
   multiSelectedIds: Set<string>;
   onSelect: (id: string) => void;
+  onDeselect: () => void;
   onShiftSelect: (id: string) => void;
   onElementContextMenu?: (id: string, screenX: number, screenY: number) => void;
   onMultiContextMenu?: (screenX: number, screenY: number) => void;
@@ -44,32 +53,49 @@ export function useCanvasSelectHandlers({
     [onSelect, onElementContextMenu, onMultiContextMenu, multiSelectedIds, inertIds],
   );
 
-  // Stable wrapper for the arrow click flow. Same rationale as
-  // handleElementContextSelect: a per-arrow inline arrow at the
-  // call site would defeat ArrowView's memo on every render of the
-  // Canvas. Mirrors BoxedElementView's shift-modifier semantics so
-  // an arrow can join a marquee multi-selection via plain click
-  // (when one is active) or Shift-click. Reading the latest
-  // `multiSelectedIds` through a ref keeps this callback stable
-  // even as the selection set changes.
-  const multiSelectedIdsRef = useRef(multiSelectedIds);
+  // The latest selection through a ref, so the click callbacks below stay
+  // stable as the selection changes and a release reads the selection it ends.
+  const selectionRef = useRef({ selectedId, multiSelectedIds });
   useEffect(() => {
-    multiSelectedIdsRef.current = multiSelectedIds;
-  }, [multiSelectedIds]);
+    selectionRef.current = { selectedId, multiSelectedIds };
+  }, [selectedId, multiSelectedIds]);
 
-  const handleArrowSelect = useCallback(
-    (id: string, e: ReactPointerEvent) => {
+  // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection", "Marquee
+  // box-select"): a plain click deselects the only selected element and selects
+  // anything else alone, a multi-selection member included.
+  const handleElementClick = useCallback(
+    (id: string) => {
       if (inertIds.has(id)) return;
-      const set = multiSelectedIdsRef.current;
-      const isMember = set.has(id);
-      if (e.shiftKey || (set.size > 0 && !isMember)) {
+      const outcome = plainClickOutcome(selectionRef.current, id);
+      debugLog('[select-click]', id, outcome);
+      if (outcome === 'deselect') onDeselect();
+      else onSelect(id);
+    },
+    [onSelect, onDeselect, inertIds],
+  );
+
+  // Stable wrapper for the arrow press flow. Same rationale as
+  // handleElementContextSelect: a per-arrow inline arrow at the call site
+  // would defeat ArrowView's memo on every render of the Canvas. Shift-click
+  // toggles membership; a plain press selects the arrow alone, except on the
+  // only selected arrow, where the release settles the click (a press that
+  // bends the line keeps it selected). `paired` is the second press of a
+  // double-click, which always selects, as its editor opens.
+  const handleArrowSelect = useCallback(
+    (id: string, e: ReactPointerEvent, paired = false) => {
+      if (inertIds.has(id)) return;
+      if (e.shiftKey) {
         onShiftSelect(id);
+        return;
+      }
+      if (!paired && !isPaintMode && isOnlySelected(selectionRef.current, id)) {
+        armPlainClick(e, () => handleElementClick(id));
         return;
       }
       onSelect(id);
     },
-    [onSelect, onShiftSelect, inertIds],
+    [onSelect, onShiftSelect, inertIds, isPaintMode, handleElementClick],
   );
 
-  return { handleElementContextSelect, handleArrowSelect };
+  return { handleElementContextSelect, handleArrowSelect, handleElementClick };
 }

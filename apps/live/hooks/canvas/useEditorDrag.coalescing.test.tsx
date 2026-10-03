@@ -2,6 +2,12 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element, StickyElement, Tab } from '@livediagram/document';
+import {
+  applyOverlay,
+  localPreview,
+  resetDragPreviewForTests,
+  subscribeDragPreview,
+} from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
@@ -28,11 +34,16 @@ const NOTE = (id: string, x: number): Element =>
 
 function harness() {
   let elements: Element[] = [NOTE('drag', 0)];
+  // The drag's per-frame writes go to its preview (docs/specs/008-canvas/drag-preview.md): count those.
   let ticks = 0;
+  const unsubscribe = subscribeDragPreview(() => {
+    if (localPreview()) ticks += 1;
+  });
   const deps = {
     get activeTab() {
       return { id: 't', name: 'Tab', elements } as Tab;
     },
+
     zoomRef: { current: 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),
@@ -47,10 +58,10 @@ function harness() {
     setFormatSourceId: vi.fn(),
     connectSourceId: null,
     connectArrowTo: vi.fn(),
-    // Every positional write of a drag goes through `tick`, so counting them
-    // counts the work the coalescing is meant to collapse.
+    // A drag writes the document once, on release; its per-frame writes are counted above, on the
+    // preview.
+
     tick: (m: (els: Element[]) => Element[]) => {
-      ticks += 1;
       elements = m(elements);
     },
     commit: (m: (els: Element[]) => Element[]) => {
@@ -58,20 +69,25 @@ function harness() {
     },
     markCheckpoint: () => 1,
     cancelToCheckpoint: vi.fn(),
-    scheduleElementChangeLog: vi.fn(),
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
     insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
 
+  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  const shown = () => {
+    const o = localPreview();
+    return o ? applyOverlay(elements, o) : elements;
+  };
   const view = renderHook(() => useEditorDrag(deps));
   return {
     ...view,
+    unsubscribe,
     get ticks() {
       return ticks;
     },
-    xOf: (id: string) => (elements.find((el) => el.id === id) as StickyElement | undefined)?.x,
+    xOf: (id: string) => (shown().find((el) => el.id === id) as StickyElement | undefined)?.x,
   };
 }
 
@@ -113,6 +129,7 @@ function move(x: number) {
 }
 
 afterEach(() => {
+  resetDragPreviewForTests();
   vi.unstubAllGlobals();
   cleanup();
 });

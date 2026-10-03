@@ -19,6 +19,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { beginMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
+import { debugLog } from '@/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -43,7 +44,6 @@ export function useMindGrowth(opts: {
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
-  emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   scrollIntoView: (
     x: number,
     y: number,
@@ -59,7 +59,6 @@ export function useMindGrowth(opts: {
     commitTabs,
     setSelectedId,
     setEditingId,
-    emitChange,
     scrollIntoView,
   } = opts;
 
@@ -128,7 +127,6 @@ export function useMindGrowth(opts: {
       ...added,
     ];
     patchActive(grown);
-    emitChange(activeId, before, grown(before));
     setSelectedId(node.id);
     setEditingId(node.id);
     // Keys typed before the new editor has focus are held for it.
@@ -136,7 +134,7 @@ export function useMindGrowth(opts: {
     scrollIntoView(node.x, node.y, node.width, node.height, {
       sideMargin: MIND_REVEAL_SIDE_MARGIN,
     });
-    console.debug(
+    debugLog(
       `[mind-grow] ${kind} from=${id} node=${node.id} moves=${plan.moves.length} style=${plan.styleFrom ? 'level' : 'default'}`,
     );
     track('Element', 'Added', 'MindNode');
@@ -167,7 +165,6 @@ export function useMindGrowth(opts: {
       return plan ? applyMindMoves(next, plan.moves, plan.reanchored) : next;
     };
     patchActive(remove);
-    emitChange(activeId, before, remove(before));
     setEditingId(null);
     setSelectedId(el.mindParentId);
     track('Element', 'Deleted', 'MindNode');

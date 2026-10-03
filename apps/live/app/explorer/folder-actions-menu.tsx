@@ -25,6 +25,8 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
+import { UseAsDefaultMenu } from '@/components/placement/UseAsDefaultMenu';
+import type { DefaultFolderMenu } from '@/hooks/persistence/useDefaultFolderMenus';
 
 export function FolderActionsMenu({
   folder,
@@ -36,6 +38,7 @@ export function FolderActionsMenu({
   onMove,
   onDelete,
   onRemoveFromTimeline,
+  defaults,
 }: {
   folder: { id: string; name: string };
   anchor: HTMLElement | null;
@@ -51,13 +54,17 @@ export function FolderActionsMenu({
   // Timeline only (docs/specs/013-workspace/timeline.md §2.9): take THIS card off the reader's feed.
   // Says nothing about the folder, so it sits apart from Delete.
   onRemoveFromTimeline?: () => void;
+  // "Use as default for" (docs/specs/013-workspace/default-folders.md): the reader's default
+  // folders, checked for this folder (or for My documents). Absent until the defaults load, and
+  // on a folder the reader may not file into.
+  defaults?: DefaultFolderMenu;
 }) {
   // Run a verb, then close: every row does this, so it's one wrapper.
   const then = (fn: () => void) => () => {
     fn();
     onClose();
   };
-  const verbs = [onRename, onNewSubfolder, onMove, onRemoveFromTimeline].some(Boolean);
+  const verbs = [onRename, onNewSubfolder, onMove, defaults, onRemoveFromTimeline].some(Boolean);
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       <MenuHeader title={folder.name} />
@@ -96,6 +103,7 @@ export function FolderActionsMenu({
           onClick={then(onMove)}
         />
       ) : null}
+      {defaults ? <UseAsDefaultMenu menu={defaults} /> : null}
       {onRemoveFromTimeline ? (
         <MenuActionRow
           plain

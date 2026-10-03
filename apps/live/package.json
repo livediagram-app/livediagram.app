@@ -7,14 +7,19 @@
     "dev": "node ../../scripts/next-dev.mjs --port 3002",
     "dev:webpack": "node ../../scripts/next-dev.mjs --port 3002 --webpack",
     "build": "next build && node scripts/asset-size-gate.mjs out",
+    "build:clerk-stub": "node scripts/build-clerk-stub.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --project=chromium",
+    "perf:canvas": "E2E_PERF=1 playwright test --project=perf --reporter=line",
+    "test:e2e:clerk-stub": "E2E_CLERK_STUB=1 playwright test --project=clerk-stub",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo coverage",
     "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs",
-    "icons:brand": "node scripts/brand-icons/render.mjs"
+    "icons:brand": "node scripts/brand-icons/render.mjs",
+    "test:e2e:drive": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive",
+    "test:e2e:drive-shots": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive-shots"
   },
   "dependencies": {
     "@clerk/react": "^6.17.0",
@@ -22,6 +27,7 @@
     "@jsquash/webp": "1.5.0",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/document": "workspace:*",
+    "@livediagram/explorer-lens": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/sticky-model": "workspace:*",
@@ -40,6 +46,7 @@
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/fake-google": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",

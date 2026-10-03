@@ -5,7 +5,7 @@ import { TeamSpace } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'Team Spaces',
   description:
-    'The Team Spaces section of the Explorer lists the teams you belong to and their shared folders, alongside your pending invites.',
+    'Each team you belong to is a top-level space in the Explorer sidebar, beside My documents, with its shared folders beneath it and your pending invites close by.',
   path: '/help/explorer/team-spaces/',
 });
 
@@ -16,11 +16,11 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The **Team Spaces** section of the Explorer sits between your own [Personal Space](/help/explorer/personal-space/) tree and the Library. It lists every team you belong to, lets you expand a team into its shared folders, and keeps your pending invites one click away. For the full picture of how teams, roles, and invites work, see the [Teams guide](/help/collaboration/teams/).
+Each team you belong to is a space of its own in the Explorer sidebar: a top-level folder under **Spaces**, right after your own [My documents](/help/explorer/personal-space/). Expand a team to walk its shared folders, and keep your pending invites one click away. For the full picture of how teams, roles, and invites work, see the [Teams guide](/help/collaboration/teams/).
 
 ## Your teams
 
-Each team you are a member of appears as a row, with a badge showing the member count once a team has more than one person. Click a team to open its page; expand it to walk its shared folder tree without leaving the sidebar, and click a folder to jump straight to it on the team page. Team-shared documents live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-documents/), separate from your personal library.
+Each team you are a member of appears as a row, with a badge showing the member count once a team has more than one person. Click a team to open its page; expand it to walk its shared folder tree without leaving the sidebar, and click a folder to jump straight to it on the team page. Team-shared documents live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-documents/), separate from My documents.
 
 <Figure caption="A team space shows its members, the shared folders everyone can manage, and any pending invite.">
   <TeamSpace />
@@ -28,15 +28,14 @@ Each team you are a member of appears as a row, with a badge showing the member 
 
 ## Invites
 
-An **Invites** row shows how many invitations are waiting for you, with the badge always present (even at zero) so you get a stable "is anything waiting?" answer at a glance. Open it to accept or decline.
+While an invitation is waiting for you, an **Invites** row appears under your teams, with a badge counting them. Open it to accept or decline. Invites also reach you on **Home** and by email.
+
+## New team
+
+**New team**, the last row of Spaces, creates a team: give it a name (and an organisation, if you like), then invite people by email. They show up here as soon as they accept.
 
 ## Signed-in only
 
-Teams need an account, so this section is only available when you are signed in. Guests see a **Sign in to use teams** prompt in its place. On deployments configured without authentication, the Team Spaces section does not appear at all, since teams cannot exist without it.
-
-<Tip>
-  Create a team from the plus beside the **Teams** heading, then invite people by email. They show
-  up here as soon as they accept.
-</Tip>
+Teams need an account, so team rows and New team appear only when you are signed in. Guests see a **Sign in to access Teams** card in their place. On deployments configured without authentication, neither appears, since teams cannot exist without it.
 
 </ArticleLayout>

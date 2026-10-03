@@ -53,6 +53,8 @@ describe('landingFunnel', () => {
       'Home.Header',
       'Home.HeaderDraw',
       'Home.HeroDraw',
+      'Home.HeroBrainstorm',
+      'Home.HeroCanvas',
       'Home.GalleryDraw',
       'Home.Closing',
     ]);
@@ -106,7 +108,9 @@ describe('ctaSourceLabel', () => {
   });
 
   it('uses the button’s own wording where a surface differs', () => {
-    expect(ctaSourceLabel('Home.Hero')).toBe('Hero: Choose Template');
+    expect(ctaSourceLabel('Home.Hero')).toBe('Hero: Diagram');
+    expect(ctaSourceLabel('Home.HeroDraw')).toBe('Hero: Drawing');
+    expect(ctaSourceLabel('Home.HeroBrainstorm')).toBe('Hero: Brainstorm');
     expect(ctaSourceLabel('Feature.Hero')).toBe('Hero: Start Drawing');
     expect(ctaSourceLabel('Help.Header')).toBe('Header: Start Drawing');
   });

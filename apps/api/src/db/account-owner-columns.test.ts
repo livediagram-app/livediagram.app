@@ -35,8 +35,14 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   },
   { table: 'shared_with', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
+  { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Shape libraries (docs/specs/013-workspace/shape-libraries.md): guests have them too.
+  { table: 'shape_libraries', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
+  { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
@@ -63,6 +69,9 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'email_lifecycle', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'auth_accounts', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'team_members', column: 'user_id', migrate: { kind: 'account-only' } },
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
+  { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
+  { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
@@ -122,12 +131,38 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     role: 'view',
     last_seen: T0,
   });
+  for (const documentId of [`d-${id}`, peerDocument]) {
+    insert(sql, 'document_opens', {
+      owner_id: id,
+      document_id: documentId,
+      open_days: 1,
+      first_opened_at: T0,
+      last_opened_at: T0,
+      last_open_day: '2023-11-14',
+      frecency_key: T0,
+    });
+  }
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
+  insert(sql, 'placement_defaults', {
+    owner_id: id,
+    default_key: 'mode:draw',
+    folder_id: `f-${id}`,
+    updated_at: T0,
+  });
   insert(sql, 'custom_themes', {
     id: `t-${id}`,
     owner_id: id,
     name: 'Mine',
     definition: '{}',
+    created_at: T0,
+    updated_at: T0,
+  });
+  insert(sql, 'shape_libraries', {
+    id: `l-${id}`,
+    owner_id: id,
+    name: 'Team icons',
+    source: 'drawio',
+    items: '[]',
     created_at: T0,
     updated_at: T0,
   });
@@ -177,6 +212,15 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   });
   insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
   insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
+  insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
+  insert(sql, 'drive_items', {
+    owner_id: id,
+    item_kind: 'document',
+    ld_id: `d-`,
+    drive_file_id: `file-`,
+    name: 'x.livediagram',
+    ld_name: 'x',
+  });
   insert(sql, 'teams', { id: 'team-1', name: 'Team', created_at: T0, updated_at: T0 });
   for (const [n, userId] of [id, peer].entries()) {
     insert(sql, 'team_members', {
@@ -333,6 +377,29 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
 
     const people = sql.prepare('SELECT id, name, color FROM participants').all();
     expect(people.map((p) => ({ ...p }))).toEqual([{ id: ACCOUNT, name: 'Ada', color: '#123456' }]);
+  });
+
+  it('renames a guest library whose name the account already uses', async () => {
+    const { env, sql } = arrange();
+    insert(sql, 'shape_libraries', {
+      id: 'l-account',
+      owner_id: ACCOUNT,
+      name: 'team ICONS',
+      source: 'drawio',
+      items: '[]',
+      created_at: T0 - 5,
+      updated_at: T0 - 5,
+    });
+
+    await migrateOwnerId(env, GUEST, ACCOUNT);
+
+    const libraries = sql
+      .prepare('SELECT id, owner_id, name FROM shape_libraries ORDER BY id')
+      .all();
+    expect(libraries.map((l) => ({ ...l }))).toEqual([
+      { id: `l-${GUEST}`, owner_id: ACCOUNT, name: 'Team icons (2)' },
+      { id: 'l-account', owner_id: ACCOUNT, name: 'team ICONS' },
+    ]);
   });
 
   it('is a no-op on a second run', async () => {

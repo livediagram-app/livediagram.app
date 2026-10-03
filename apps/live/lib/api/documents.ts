@@ -2,6 +2,7 @@
 // copy-into-my-files flow, and the "Shared with you" list.
 import {
   DOCUMENT_CONVERSION_HEADER,
+  type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
 } from '@livediagram/api-schema';
@@ -43,8 +44,17 @@ export type DocumentListItem = Pick<
 > & {
   // Provenance (docs/specs/013-workspace/folders.md). Present on real list rows from the API; optional
   // so synthetic rows (shared / team placeholders) can omit it. Absent or
-  // null means user-made (not in the Generated folder).
+  // null means user-made (no Made by AI badge).
   source?: DocumentSummary['source'];
+  // Nothing drawn (docs/specs/006-document/document-snapshots.md): the row asks for no thumbnail. Absent on a
+  // synthetic row, which asks as before.
+  empty?: DocumentSummary['empty'];
+  // The creation intent recorded on the document (docs/specs/013-workspace/default-folders.md
+  // "Recorded intent"), which the Explorer filters read. Absent on a row that cannot say (an
+  // offline record, a synthetic shared row): it reads as unknown.
+  opensIn?: DocumentSummary['opensIn'];
+  tabKind?: DocumentSummary['tabKind'];
+  templateFamily?: DocumentSummary['templateFamily'];
 };
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict
@@ -131,15 +141,25 @@ export async function apiSaveDocumentMeta(
 // per-tab fetch lands on a populated row.
 export async function apiCreateDocument(
   ownerId: string,
-  // `folderId` / `createdAt` / `presentation` are for an Offline Mode sync
-  // (docs/specs/006-document/offline-mode.md), which must carry what the offline record held: the server
-  // copy is all that is left once the local one is deleted.
+  // `teamId` / `folderId` are the placement, filed by the create itself and refused by name when
+  // invalid (docs/specs/013-workspace/folders.md "Placement on create"). `createdAt` /
+  // `presentation` are for an Offline Mode sync (docs/specs/006-document/offline-mode.md), which must
+  // carry what the offline record held: the server copy is all that is left once the local one is
+  // deleted. `createdAt` / `savedAt` also date an imported board as the board
+  // (docs/specs/015-api/api.md "Document dates").
   d: {
     id: string;
     name: string;
     tabs?: Tab[];
+    teamId?: string | null;
+    // A folder; `null` = the root of the space, chosen on purpose; `undefined` = no choice.
     folderId?: string | null;
+    // What the new document opens as (docs/specs/013-workspace/default-folders.md): with no place
+    // chosen, the server files it in the person's default folder for it. Left out by a create that
+    // keeps a place the document already has (duplicate, an Offline Mode sync, a Drive mirror copy).
+    intent?: CreationIntent;
     createdAt?: number;
+    savedAt?: number;
     presentation?: string | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
@@ -156,8 +176,13 @@ export async function apiCreateDocument(
       id: d.id,
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
-      ...(d.folderId ? { folderId: d.folderId } : {}),
+      ...(d.teamId ? { teamId: d.teamId } : {}),
+      // `null` is the space's root chosen on purpose; absent is no choice, where a default folder
+      // may answer (docs/specs/013-workspace/folders.md "Placement on create").
+      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
+      ...(d.intent ? { intent: d.intent } : {}),
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
+      ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
     }),
   });

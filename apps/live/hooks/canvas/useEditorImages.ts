@@ -23,7 +23,7 @@
 //   moved.
 //
 // All mutations route through the page's `commit` so they snapshot
-// history + emit the activity log exactly like the rest of element
+// history exactly like the rest of element
 // CRUD; this hook only relocates the code, it doesn't change that
 // contract.
 
@@ -33,13 +33,9 @@ import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/ap
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
+import type { PickedImage } from '@/lib/upload-image';
 
-type ImageDescriptor = {
-  id: string;
-  width: number;
-  height: number;
-  originalName?: string;
-};
+type ImageDescriptor = PickedImage;
 
 type EditorImagesDeps = {
   // Whether edits are currently disallowed (read-only role, or a
@@ -58,8 +54,8 @@ type EditorImagesDeps = {
   // Viewport centre in canvas coordinates — where freshly placed
   // images land.
   getViewportCenter: () => { x: number; y: number };
-  // The history-aware element mutator. Snapshots history + emits the
-  // activity log, same path the rest of element CRUD uses.
+  // The history-aware element mutator. Snapshots history, same path the
+  // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // Selects an element by id (or clears with null). Newly placed
   // images select themselves so the user can immediately resize.
@@ -154,20 +150,25 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // user originally placed them; naturalWidth/Height drive the
   // aspect-lock default + the "Reset to natural size" context-menu
   // action.
+  // A search pick carries a credit (docs/specs/009-elements/image-search.md); any
+  // other pick drops the old one so it never describes a picture that's gone.
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
     commit((els) =>
-      els.map((el) =>
-        el.id === elementId && isBoxed(el) && el.type === 'image'
-          ? {
-              ...el,
-              imageId: image.id,
-              naturalWidth: image.width,
-              naturalHeight: image.height,
-              alt: el.alt ?? image.originalName,
-            }
-          : el,
-      ),
+      els.map((el) => {
+        if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
+        const { credit: _old, ...rest } = el;
+        void _old;
+        return {
+          ...rest,
+          imageId: image.id,
+          naturalWidth: image.width,
+          naturalHeight: image.height,
+          alt: el.alt ?? image.originalName,
+          ...(image.credit ? { credit: image.credit } : {}),
+        };
+      }),
     );
+    if (image.credit) track('Element', 'Used', 'ImageSearch');
     setImagePickerOpenFor(null);
   };
 
@@ -180,9 +181,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
-        const { naturalWidth: _w, naturalHeight: _h, ...rest } = el;
+        const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
         void _w;
         void _h;
+        void _c;
         return { ...rest, imageId: null };
       }),
     );

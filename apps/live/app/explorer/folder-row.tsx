@@ -7,6 +7,7 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { FolderActionsMenu } from './folder-actions-menu';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import type { FolderActionBundle } from './explorer-view-props';
+import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
 
 // The Explorer's folder row (docs/specs/013-workspace/folders.md), lifted out of views.tsx: the list
 // row (icon, inline rename, child-count badge, relative time, ellipsis /
@@ -52,6 +53,7 @@ export function FolderRow({
         </span>
       )}
       {childCount > 0 ? <CountBadge count={childCount} className="ml-1" /> : null}
+      {renaming ? null : <DefaultFolderMarker folderId={folder.id} />}
     </>
   );
   return (
@@ -99,5 +101,6 @@ export function menuHandlers(actions: FolderActionBundle) {
     onNewSubfolder: actions.newSubfolder,
     onMove: actions.move,
     onDelete: actions.delete,
+    defaults: actions.defaults,
   };
 }

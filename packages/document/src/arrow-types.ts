@@ -10,6 +10,7 @@
 import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
+import type { PenColourName } from './pen-colours';
 import type { BorderStyle } from './border-style';
 import type { QuickSwatchSlot } from './quick-swatches';
 
@@ -83,6 +84,9 @@ export type ArrowElement = {
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.
   strokeColor?: string;
+  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
+  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
+  penColour?: PenColourName;
   // The quick-swatch slot the stroke was picked from (docs/specs/008-canvas/quick-style-panel.md), so a
   // theme change re-derives it rather than resetting it to the theme stroke.
   strokeSwatch?: QuickSwatchSlot;
@@ -128,6 +132,14 @@ export type ArrowElement = {
   // boxes between. Absent = ON: this is the default reading for an arrow, and
   // `false` is the explicit opt-out for the cases where crossing is wanted.
   routeBehind?: boolean;
+  // Start exactly at the anchor it is pinned to (docs/specs/008-canvas/arrow-anchors.md
+  // "Converging-fan rendering"): its start is left out of the fan that spreads arrows sharing an
+  // anchor. Absent = fanned, the default.
+  exactStart?: boolean;
+  // End exactly at the anchor it is pinned to, out of that anchor's fan (docs/specs/008-canvas/arrow-anchors.md
+  // "Exact ends"). Imports set it where the source draws ends meeting on one trunk; re-pinning the end
+  // by hand clears it. Absent = fanned.
+  exactEnd?: boolean;
   // Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes or a travelling dot
   // along the path to show flow direction. Undefined = static.
   flow?: ArrowFlow;
@@ -180,6 +192,9 @@ export type ArrowElement = {
   // with the arrow because it's parameterised against the line, not
   // stored as absolute coords.
   labelOffset?: { t: number; offset: number };
+  // The label's own wrap width in px, replacing the direction caps (docs/specs/008-canvas/arrow-labels.md
+  // "Width and wrapping"). Imports set it so a caption keeps its source lines.
+  labelMaxWidth?: number;
   // Optional label-text formatting, mirroring the boxed-element fields so
   // an arrow's label can be sized / styled / coloured / fonted from the
   // Selected Element panel's Text accordion. All optional: absent → the
@@ -194,6 +209,9 @@ export type ArrowElement = {
   // Label colour, independent of `strokeColor` (the line). Falls back to
   // the stroke colour when unset so the label matches the line by default.
   textColor?: string;
+  // A whiteboard stock colour for the label (docs/specs/023-draw-mode/draw-mode.md "Imported and
+  // pasted content"), drawn in its board's version when `textColor` is unset.
+  penTextColour?: PenColourName;
   // A plate behind the label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent = none, which is how
   // the label has always drawn: straight onto the canvas. A caption crossing
   // its own line, another arrow, or a busy backdrop is the case this exists

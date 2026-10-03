@@ -273,9 +273,9 @@ describe('type predicates', () => {
     // freehand: structurally a boxed element + a normalised polyline.
     // The runtime guard must match the type-union membership; a recent
     // bug left it false here and crashed elementBounds on commit.
-    expect(isBoxed({ ...shape('e'), type: 'freehand', points: [], closed: false } as Element)).toBe(
-      true,
-    );
+    expect(
+      isBoxed({ ...shape('e'), type: 'freehand', packedPoints: 'AQA=', closed: false } as Element),
+    ).toBe(true);
     expect(isBoxed(arrow)).toBe(false);
   });
 
@@ -287,7 +287,7 @@ describe('type predicates', () => {
       supportsColours({
         ...shape('c'),
         type: 'freehand',
-        points: [],
+        packedPoints: 'AQA=',
         closed: false,
       } as Element),
     ).toBe(true);
@@ -302,7 +302,7 @@ describe('type predicates', () => {
     expect(supportsColours({ ...shape('e'), type: 'image', imageId: null } as Element)).toBe(false);
   });
 
-  it('supportsBorder is true for shape and freehand only', () => {
+  it('supportsBorder is true for shape, freehand and path only', () => {
     // Border-stroke + border-pattern apply to shapes and the pen
     // tool's freehand element (both render through the same
     // strokeWidth / strokeStyle fields). Everything else (text,
@@ -313,9 +313,12 @@ describe('type predicates', () => {
       supportsBorder({
         ...shape('b'),
         type: 'freehand',
-        points: [],
+        packedPoints: 'AQA=',
         closed: false,
       } as Element),
+    ).toBe(true);
+    expect(
+      supportsBorder({ ...shape('p'), type: 'path', nodes: [], closed: false } as Element),
     ).toBe(true);
     expect(supportsBorder({ ...shape('c'), type: 'sticky' } as Element)).toBe(false);
     expect(supportsBorder({ ...shape('d'), type: 'text' } as Element)).toBe(false);

@@ -565,6 +565,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "exactEnd": {
+        "type": "boolean"
+      },
+      "exactStart": {
+        "type": "boolean"
+      },
       "flow": {
         "$ref": "#/components/schemas/ArrowFlow"
       },
@@ -588,6 +594,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "labelFill": {
         "type": "string"
+      },
+      "labelMaxWidth": {
+        "type": "number"
       },
       "labelOffset": {
         "additionalProperties": false,
@@ -616,6 +625,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "opacity": {
         "type": "number"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "routeBehind": {
         "type": "boolean"
@@ -797,6 +812,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/FreehandElement"
       },
       {
+        "$ref": "#/components/schemas/PathElement"
+      },
+      {
         "$ref": "#/components/schemas/TableElement"
       },
       {
@@ -816,6 +834,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aiEnabled": {
         "type": "boolean"
       },
+      "driveMode": {
+        "$ref": "#/components/schemas/DriveMode"
+      },
       "emailEnabled": {
         "type": "boolean"
       }
@@ -831,75 +852,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "e",
       "s",
       "w"
-    ],
-    "type": "string"
-  },
-  "ChangeLogEntry": {
-    "additionalProperties": false,
-    "properties": {
-      "afterState": {
-        "additionalProperties": {},
-        "type": "object"
-      },
-      "beforeState": {
-        "additionalProperties": {},
-        "type": "object"
-      },
-      "createdAt": {
-        "type": "number"
-      },
-      "elementIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/ChangeLogKind"
-      },
-      "participantColor": {
-        "type": "string"
-      },
-      "participantId": {
-        "type": "string"
-      },
-      "participantName": {
-        "type": "string"
-      },
-      "summary": {
-        "type": "string"
-      },
-      "tabId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "id",
-      "tabId",
-      "participantId",
-      "participantName",
-      "participantColor",
-      "kind",
-      "summary",
-      "elementIds",
-      "beforeState",
-      "afterState",
-      "createdAt"
-    ],
-    "type": "object"
-  },
-  "ChangeLogKind": {
-    "enum": [
-      "add",
-      "edit",
-      "delete",
-      "revert"
     ],
     "type": "string"
   },
@@ -1050,6 +1002,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "resolved"
     ],
     "type": "object"
+  },
+  "CreationTabKind": {
+    "enum": [
+      "diagram",
+      "event-storming"
+    ],
+    "type": "string"
   },
   "CustomTheme": {
     "additionalProperties": false,
@@ -2133,6 +2092,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "opensIn": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/EditorMode"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "ownerColor": {
         "type": [
           "string",
@@ -2176,6 +2145,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "tabKind": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CreationTabKind"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "tabs": {
         "items": {
           "$ref": "#/components/schemas/TabSummary"
@@ -2187,23 +2166,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
+      },
+      "templateFamily": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/TemplateFamily"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [
-      "id",
-      "ownerId",
-      "name",
-      "tabs",
-      "shareable",
-      "shareCode",
+      "createdAt",
       "folderId",
-      "teamId",
-      "source",
+      "id",
+      "name",
+      "opensIn",
+      "ownerColor",
+      "ownerId",
+      "ownerName",
       "presentation",
       "savedAt",
-      "createdAt",
-      "ownerName",
-      "ownerColor"
+      "shareCode",
+      "shareable",
+      "source",
+      "tabKind",
+      "tabs",
+      "teamId",
+      "templateFamily"
     ],
     "type": "object"
   },
@@ -2220,6 +2212,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
+      "empty": {
+        "type": "boolean"
+      },
       "folderId": {
         "type": [
           "string",
@@ -2231,6 +2226,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "opensIn": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/EditorMode"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "ownerId": {
         "type": "string"
@@ -2257,7 +2262,213 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "tabKind": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CreationTabKind"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "templateFamily": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/TemplateFamily"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "createdAt",
+      "empty",
+      "folderId",
+      "id",
+      "name",
+      "opensIn",
+      "ownerId",
+      "savedAt",
+      "shareCode",
+      "shareable",
+      "source",
+      "tabKind",
+      "teamId",
+      "templateFamily"
+    ],
+    "type": "object"
+  },
+  "DriveAccessToken": {
+    "additionalProperties": false,
+    "properties": {
+      "accessToken": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "accessToken",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnection": {
+    "additionalProperties": false,
+    "properties": {
+      "connectedAt": {
+        "type": "number"
+      },
+      "hasRefreshToken": {
+        "type": "boolean"
+      },
+      "pageToken": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pageTokenSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "rootFolderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "$ref": "#/components/schemas/DriveConnectionStatus"
+      }
+    },
+    "required": [
+      "status",
+      "hasRefreshToken",
+      "rootFolderId",
+      "pageToken",
+      "pageTokenSavedAt",
+      "connectedAt"
+    ],
+    "type": "object"
+  },
+  "DriveConnectionStatus": {
+    "enum": [
+      "connected",
+      "needs_reconnect"
+    ],
+    "type": "string"
+  },
+  "DriveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "driveFileId": {
+        "type": "string"
+      },
+      "headRevisionId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kind": {
+        "$ref": "#/components/schemas/DriveItemKind"
+      },
+      "ldId": {
+        "type": "string"
+      },
+      "ldName": {
+        "type": "string"
+      },
+      "md5": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "mirroredSavedAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "notice": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DriveNotice"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "noticeParentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "parentId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "trashed": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "kind",
+      "ldId",
+      "driveFileId",
+      "name",
+      "ldName",
+      "parentId",
+      "trashed",
+      "md5",
+      "headRevisionId",
+      "mirroredSavedAt",
+      "notice",
+      "noticeParentId"
+    ],
+    "type": "object"
+  },
+  "DriveItemKind": {
+    "enum": [
+      "document",
+      "folder"
+    ],
+    "type": "string"
+  },
+  "DriveLease": {
+    "additionalProperties": false,
+    "properties": {
+      "acquired": {
+        "type": "boolean"
+      },
+      "expiresAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "holder": {
         "type": [
           "string",
           "null"
@@ -2265,18 +2476,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "id",
-      "ownerId",
-      "name",
-      "shareable",
-      "shareCode",
-      "folderId",
-      "teamId",
-      "source",
-      "savedAt",
-      "createdAt"
+      "acquired",
+      "holder",
+      "expiresAt"
     ],
     "type": "object"
+  },
+  "DriveMode": {
+    "enum": [
+      "off",
+      "browser",
+      "broker"
+    ],
+    "type": "string"
+  },
+  "DriveNotice": {
+    "const": "unseen_folder",
+    "type": "string"
+  },
+  "EditorMode": {
+    "enum": [
+      "diagram",
+      "draw"
+    ],
+    "type": "string"
   },
   "Element": {
     "anyOf": [
@@ -2717,6 +2940,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opacity": {
         "type": "number"
       },
+      "packedPoints": {
+        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
+        "format": "byte",
+        "type": "string"
+      },
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
@@ -2724,33 +2952,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "highlighter",
         "type": "string"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "penWidth": {
         "type": "number"
-      },
-      "points": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "nx": {
-              "type": "number"
-            },
-            "ny": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "nx",
-            "ny"
-          ],
-          "type": "object"
-        },
-        "type": "array"
       },
       "rotation": {
         "type": "number"
       },
       "straightEdges": {
         "type": "boolean"
+      },
+      "streamline": {
+        "type": "number"
       },
       "strokeColor": {
         "type": "string"
@@ -2806,7 +3021,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "y",
       "width",
       "height",
-      "points",
+      "packedPoints",
       "closed"
     ],
     "type": "object"
@@ -2826,6 +3041,529 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "subtitle"
     ],
     "type": "object"
+  },
+  "HomeAction": {
+    "additionalProperties": false,
+    "description": "One thing somebody did.",
+    "properties": {
+      "detail": {
+        "description": "The comment's words, the action's name, or the team's name; null for an edit.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "The event's id.",
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "number"
+      },
+      "personId": {
+        "type": "string"
+      },
+      "verb": {
+        "$ref": "#/components/schemas/HomeVerb"
+      }
+    },
+    "required": [
+      "id",
+      "verb",
+      "personId",
+      "occurredAt",
+      "detail"
+    ],
+    "type": "object"
+  },
+  "HomeGroup": {
+    "additionalProperties": false,
+    "description": "One document's actions on one of the reader's days.",
+    "properties": {
+      "actions": {
+        "description": "Every action, newest first.",
+        "items": {
+          "$ref": "#/components/schemas/HomeAction"
+        },
+        "type": "array"
+      },
+      "day": {
+        "description": "YYYY-MM-DD in the reader's time zone.",
+        "type": "string"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "empty": {
+        "description": "Nothing drawn: ask for no thumbnail.",
+        "type": "boolean"
+      },
+      "folderId": {
+        "description": "Null for `shared`, and for a document at its space's root.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "`<documentId>:<day>`.",
+        "type": "string"
+      },
+      "latestAt": {
+        "type": "number"
+      },
+      "name": {
+        "description": "The document's current name.",
+        "type": "string"
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "people": {
+        "description": "Distinct people, newest action first.",
+        "items": {
+          "$ref": "#/components/schemas/HomePerson"
+        },
+        "type": "array"
+      },
+      "savedAt": {
+        "description": "The thumbnail's version.",
+        "type": "number"
+      },
+      "shareCode": {
+        "description": "The live share code that opens it; set for `shared` only.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "summary": {
+        "description": "More than one person acted: one entry with a summary sentence.",
+        "type": "boolean"
+      },
+      "tabId": {
+        "description": "The one tab a tab-scoped share opens; null = every tab.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "description": "Null for `shared`: the owner's filing is theirs.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "total": {
+        "type": "number"
+      },
+      "verbs": {
+        "description": "Distinct verbs with their counts, in `HOME_VERBS` order.",
+        "items": {
+          "$ref": "#/components/schemas/HomeVerbCount"
+        },
+        "type": "array"
+      },
+      "via": {
+        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "actions",
+      "day",
+      "documentId",
+      "empty",
+      "folderId",
+      "folderName",
+      "id",
+      "latestAt",
+      "name",
+      "ownerName",
+      "people",
+      "savedAt",
+      "shareCode",
+      "summary",
+      "tabId",
+      "teamId",
+      "teamName",
+      "total",
+      "verbs",
+      "via"
+    ],
+    "type": "object"
+  },
+  "HomeJumpBackInItem": {
+    "additionalProperties": false,
+    "description": "One document of Jump back in.",
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "empty": {
+        "description": "Nothing drawn: ask for no thumbnail.",
+        "type": "boolean"
+      },
+      "folderId": {
+        "description": "Null for `shared`, and for a document at its space's root.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "frecencyKey": {
+        "description": "The rank: the instant the decayed score falls to one (see ./frecency.ts). Sent so the view can place this browser's own local documents among these.",
+        "type": "number"
+      },
+      "lastOpenedAt": {
+        "type": "number"
+      },
+      "name": {
+        "description": "The document's current name.",
+        "type": "string"
+      },
+      "openDays": {
+        "description": "UTC days on which the person opened it.",
+        "type": "number"
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "savedAt": {
+        "description": "The thumbnail's version.",
+        "type": "number"
+      },
+      "shareCode": {
+        "description": "The live share code that opens it; set for `shared` only.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "description": "The one tab a tab-scoped share opens; null = every tab.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "description": "Null for `shared`: the owner's filing is theirs.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "empty",
+      "folderId",
+      "folderName",
+      "frecencyKey",
+      "lastOpenedAt",
+      "name",
+      "openDays",
+      "ownerName",
+      "savedAt",
+      "shareCode",
+      "tabId",
+      "teamId",
+      "teamName",
+      "via"
+    ],
+    "type": "object"
+  },
+  "HomePerson": {
+    "additionalProperties": false,
+    "description": "Somebody who acted.",
+    "properties": {
+      "color": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color",
+      "pictureUrl"
+    ],
+    "type": "object"
+  },
+  "HomeResponse": {
+    "additionalProperties": false,
+    "description": "`GET /api/home`.",
+    "properties": {
+      "jumpBackIn": {
+        "items": {
+          "$ref": "#/components/schemas/HomeJumpBackInItem"
+        },
+        "type": "array"
+      },
+      "lastSeenAt": {
+        "description": "The Timeline's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "timeline": {
+        "$ref": "#/components/schemas/HomeTimelinePage"
+      },
+      "whatHappened": {
+        "items": {
+          "$ref": "#/components/schemas/HomeGroup"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "jumpBackIn",
+      "timeline",
+      "whatHappened",
+      "lastSeenAt"
+    ],
+    "type": "object"
+  },
+  "HomeTimelineEntry": {
+    "additionalProperties": false,
+    "description": "One of the person's own events. Raw: the one-per-day fold is the view's, where the local day is known across loaded pages.",
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "empty": {
+        "description": "Nothing drawn: ask for no thumbnail.",
+        "type": "boolean"
+      },
+      "folderId": {
+        "description": "Null for `shared`, and for a document at its space's root.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "The event's id; with `occurredAt`, the keyset position.",
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/HomeTimelineKind"
+      },
+      "name": {
+        "description": "The document's current name.",
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "number"
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "savedAt": {
+        "description": "The thumbnail's version.",
+        "type": "number"
+      },
+      "shareCode": {
+        "description": "The live share code that opens it; set for `shared` only.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "description": "The one tab a tab-scoped share opens; null = every tab.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "description": "Null for `shared`: the owner's filing is theirs.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "empty",
+      "folderId",
+      "folderName",
+      "id",
+      "kind",
+      "name",
+      "occurredAt",
+      "ownerName",
+      "savedAt",
+      "shareCode",
+      "tabId",
+      "teamId",
+      "teamName",
+      "via"
+    ],
+    "type": "object"
+  },
+  "HomeTimelineKind": {
+    "enum": [
+      "created",
+      "updated",
+      "opened"
+    ],
+    "type": "string"
+  },
+  "HomeTimelinePage": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/HomeTimelineEntry"
+        },
+        "type": "array"
+      },
+      "nextCursor": {
+        "description": "`<occurredAt>:<id>` of the last item when another page exists, else null.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "items",
+      "nextCursor"
+    ],
+    "type": "object"
+  },
+  "HomeVerb": {
+    "enum": [
+      "commented",
+      "replied",
+      "resolved",
+      "edited",
+      "assigned_you",
+      "assigned",
+      "completed",
+      "shared"
+    ],
+    "type": "string"
+  },
+  "HomeVerbCount": {
+    "additionalProperties": false,
+    "properties": {
+      "count": {
+        "type": "number"
+      },
+      "verb": {
+        "$ref": "#/components/schemas/HomeVerb"
+      }
+    },
+    "required": [
+      "verb",
+      "count"
+    ],
+    "type": "object"
+  },
+  "HuedPenColourName": {
+    "description": "The seven hued stock colours, each tuned per board.",
+    "enum": [
+      "blue",
+      "red",
+      "orange",
+      "green",
+      "teal",
+      "violet",
+      "pink"
+    ],
+    "type": "string"
   },
   "IconAnimation": {
     "enum": [
@@ -2873,6 +3611,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ImageCredit": {
+    "additionalProperties": false,
+    "properties": {
+      "licenseUrl": {
+        "type": "string"
+      },
+      "sourceUrl": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text",
+      "sourceUrl"
+    ],
+    "type": "object"
+  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -2899,6 +3656,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
       },
       "fillColor": {
         "type": "string"
@@ -3376,13 +4136,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [
       "id",
       "name",
       "color",
-      "createdAt"
+      "createdAt",
+      "pictureUrl"
     ],
     "type": "object"
   },
@@ -3405,6 +4172,210 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "at"
     ],
     "type": "object"
+  },
+  "PathElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "borderRadius": {
+        "$ref": "#/components/schemas/BorderRadius"
+      },
+      "closed": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "font": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/components/schemas/PathNode"
+        },
+        "type": "array"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "strokeStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
+      "strokeWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "path",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "nodes",
+      "closed"
+    ],
+    "type": "object"
+  },
+  "PathHandleMode": {
+    "enum": [
+      "corner",
+      "mirrored",
+      "aligned"
+    ],
+    "type": "string"
+  },
+  "PathNode": {
+    "additionalProperties": false,
+    "properties": {
+      "handleIn": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "handleOut": {
+        "$ref": "#/components/schemas/PathPoint"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/PathHandleMode"
+      },
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "mode",
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PathPoint": {
+    "additionalProperties": false,
+    "properties": {
+      "nx": {
+        "type": "number"
+      },
+      "ny": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "nx",
+      "ny"
+    ],
+    "type": "object"
+  },
+  "PenColourName": {
+    "anyOf": [
+      {
+        "const": "ink",
+        "type": "string"
+      },
+      {
+        "$ref": "#/components/schemas/HuedPenColourName"
+      }
+    ]
   },
   "PickerSource": {
     "enum": [
@@ -3606,6 +4577,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "RunSize": {
     "enum": [
+      "xs",
       "sm",
       "md",
       "lg"
@@ -3621,8 +4593,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "avatar",
       "eraser",
       "format",
-      "isometric",
-      "highlighter"
+      "isometric"
     ],
     "type": "string"
   },
@@ -3887,6 +4858,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pageTitle": {
         "type": "string"
       },
+      "penColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"
@@ -4073,6 +5050,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "themeLockFill": {
         "type": "boolean"
       },
+      "titleOrientation": {
+        "const": "upright",
+        "type": "string"
+      },
       "type": {
         "const": "shape",
         "type": "string"
@@ -4165,6 +5146,82 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ShapeLibrary": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/ShapeLibraryItem"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "ownerId": {
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/components/schemas/ShapeLibrarySource"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "ownerId",
+      "name",
+      "source",
+      "items",
+      "createdAt",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "ShapeLibraryItem": {
+    "additionalProperties": false,
+    "description": "One reusable shape: its elements placed from its top-left corner at (0, 0).",
+    "properties": {
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "width",
+      "height",
+      "elements"
+    ],
+    "type": "object"
+  },
+  "ShapeLibrarySource": {
+    "const": "drawio",
+    "description": "Where a library came from; one value today.",
+    "type": "string"
+  },
   "ShapeMarker": {
     "enum": [
       "green-circle",
@@ -4252,6 +5309,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SharedWithItem": {
     "additionalProperties": false,
     "properties": {
+      "empty": {
+        "type": "boolean"
+      },
       "id": {
         "type": "string"
       },
@@ -4294,7 +5354,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shareCode",
       "tabId",
       "ownerName",
-      "ownerColor"
+      "ownerColor",
+      "empty"
     ],
     "type": "object"
   },
@@ -4386,6 +5447,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "padding": {
         "$ref": "#/components/schemas/Padding"
+      },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
       },
       "richText": {
         "items": {
@@ -4503,6 +5567,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "opensIn": {
+        "$ref": "#/components/schemas/EditorMode"
       },
       "patternColor": {
         "type": "string"
@@ -5011,6 +6078,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "role": {
         "$ref": "#/components/schemas/TeamRole"
       },
@@ -5038,6 +6111,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "role",
       "status",
       "name",
+      "pictureUrl",
       "createdAt",
       "updatedAt"
     ],
@@ -5108,6 +6182,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Unhelpful",
       "Returned",
       "Restored",
+      "Applied",
       "Sent",
       "Api",
       "Client",
@@ -5141,10 +6216,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Email",
       "Error",
       "Timeline",
+      "Home",
       "Activity",
       "Page",
       "Cta",
-      "Trash"
+      "Trash",
+      "Draw",
+      "Editor",
+      "Drive",
+      "Explorer"
     ],
     "type": "string"
   },
@@ -5318,6 +6398,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TemplateFamily": {
+    "enum": [
+      "retrospective",
+      "kanban"
+    ],
+    "type": "string"
+  },
   "TextAlignX": {
     "enum": [
       "left",
@@ -5397,6 +6484,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "penTextColour": {
+        "$ref": "#/components/schemas/PenColourName"
+      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
@@ -5405,6 +6495,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rotation": {
         "type": "number"
+      },
+      "sizing": {
+        "$ref": "#/components/schemas/TextSizing"
       },
       "strokeColor": {
         "type": "string"
@@ -5423,6 +6516,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textItalic": {
         "type": "boolean"
+      },
+      "textScale": {
+        "type": "number"
       },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"
@@ -5502,6 +6598,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "sm",
       "md",
       "lg"
+    ],
+    "type": "string"
+  },
+  "TextSizing": {
+    "enum": [
+      "fit",
+      "wrap"
     ],
     "type": "string"
   },

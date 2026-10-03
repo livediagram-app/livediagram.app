@@ -64,6 +64,20 @@ describe('newComments', () => {
     ];
     expect(newComments(next, prev).map((c) => c.id)).toEqual(['c2']);
   });
+
+  it('says which new comments reply to a thread and which start one', () => {
+    // docs/specs/013-workspace/explorer-home.md "What happened": replied, not commented.
+    const prev = [shape('a', { commentThread: { comments: [comment('c1', 'old')] } })];
+    const next = [
+      shape('a', { commentThread: { comments: [comment('c1', 'old'), comment('c2', 're')] } }),
+      shape('b', { commentThread: { comments: [comment('c3', 'new'), comment('c4', 're')] } }),
+    ];
+    expect(newComments(next, prev).map((c) => [c.id, c.reply])).toEqual([
+      ['c2', true],
+      ['c3', false],
+      ['c4', true],
+    ]);
+  });
 });
 
 describe('actions', () => {

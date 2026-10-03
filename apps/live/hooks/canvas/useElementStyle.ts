@@ -13,8 +13,8 @@
 //
 // Colour + opacity setters bypass `commit` on purpose: they fire on
 // every drag tick of a colour / slider control, so they write via
-// `commitTabs` (no per-tick history snapshot or activity-log emit)
-// and debounce a single log entry through `scheduleElementChangeLog`.
+// `tickTabs` (no per-tick history snapshot) and take one undo step per
+// burst through `checkpointBurst`.
 // Keeping that policy in one file makes it auditable.
 
 import {
@@ -62,19 +62,12 @@ type EditorElementStyleDeps = {
   // Front / Send to Back (docs/specs/006-document/layers.md): they restack `tab.layers` as well
   // as the elements array, which element-level `commit` can't reach.
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
-  // Non-history tab mutator + one-shot checkpoint for the high-
+  // Non-history tab mutator + per-burst checkpoint for the high-
   // frequency colour / opacity setters: one undoable step per picker
-  // gesture (a commit per onChange tick flooded the 3-deep undo stack
-  // in a single drag). The checkpoint returns its undo-marker token so
-  // the debounced log entry fills the gesture's own step.
+  // gesture (a commit per onChange tick flooded the undo stack in a
+  // single drag). Keyed by field name.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  markCheckpoint: () => number;
-  // Debounced activity-log emit for the bypassed colour / opacity
-  // edits, keyed by field name.
-  scheduleElementChangeLog: (
-    key: string,
-    opts?: { fillToken?: number; onWindowStart?: () => number },
-  ) => void;
+  checkpointBurst: (key: string) => void;
 };
 
 export function useElementStyle(deps: EditorElementStyleDeps) {
@@ -88,8 +81,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commit,
     commitActiveTab,
     tickTabs,
-    markCheckpoint,
-    scheduleElementChangeLog,
+    checkpointBurst,
   } = deps;
 
   const {
@@ -101,6 +93,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowheadShapeSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     applyArrowPresetSelected,
     resetArrowStyleSelected,
     setArrowFlowSelected,
@@ -163,8 +156,13 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     resetShapeStyleSelected,
   } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, selectedId });
 
-  const { setTextSizeSelected, setFontSelected, setTextAlignSelected, toggleTextStyleSelected } =
-    useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit });
+  const {
+    setTextSizeSelected,
+    setFontSelected,
+    setTextAlignSelected,
+    setLaneUprightTitleSelected,
+    toggleTextStyleSelected,
+  } = useTextStyleSetters({ currentSelectionIds, selectionPrimary, commit, activeTab });
 
   // The debounced colour / opacity policy + Reset-to-theme — see
   // useColorStyleSetters (the fifth setter sibling).
@@ -186,8 +184,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     editsBlocked,
     commit,
     tickTabs,
-    markCheckpoint,
-    scheduleElementChangeLog,
+    checkpointBurst,
   });
 
   const toggleLockSelected = () => {
@@ -351,6 +348,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     sendSelectedToBack,
     setTextSizeSelected,
     setTextAlignSelected,
+    setLaneUprightTitleSelected,
     setFontSelected,
     toggleTextStyleSelected,
     setFillColorSelected,
@@ -374,6 +372,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
+    setArrowExactStartSelected,
     setShapeKindSelected,
     resetAspectRatioSelected,
     setSizeSelected,

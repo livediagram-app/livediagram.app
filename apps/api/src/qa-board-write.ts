@@ -17,7 +17,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { getTabData, swapTabData } from './db';
-import { MAX_TAB_BYTES } from './limits';
+import { TabTooLargeError } from './limits';
 import type { Env } from './types';
 
 // Only an autosave or a linked tab's room can beat us to the row now, so a
@@ -60,10 +60,15 @@ export async function writeQaAction(env: Env, req: QaWriteRequest): Promise<QaWr
         el === board ? { ...board, qaNotes: nextNotes, qaRev: nextRev } : el,
       ),
     });
-    if (nextData.length > MAX_TAB_BYTES) return { ok: false, status: 413 };
-    if (await swapTabData(env, documentId, tabId, raw, nextData)) {
-      return { ok: true, changed: true, notes: nextNotes, rev: nextRev };
+    // Bytes, as D1 counts them, not UTF-16 units (docs/specs/015-api/api.md "Tab size").
+    let swapped: boolean;
+    try {
+      swapped = await swapTabData(env, documentId, tabId, raw, nextData, data.elements.length);
+    } catch (error) {
+      if (error instanceof TabTooLargeError) return { ok: false, status: 413 };
+      throw error;
     }
+    if (swapped) return { ok: true, changed: true, notes: nextNotes, rev: nextRev };
   }
   return { ok: false, status: 409 };
 }

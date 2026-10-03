@@ -6,14 +6,17 @@ import { LockIcon, SOLID_BRAND_DARK } from '@livediagram/ui';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@/lib/double-press';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
+import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
 import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
 } from '@/components/chrome/floating-controls';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // --- Lock badge ------------------------------------------------------------
 
-export function LockBadge({ zoom = 1 }: { zoom?: number }) {
+export function LockBadge() {
+  const zoom = useCanvasZoom();
   // Scales with the canvas and hides at overview zooms, like the other
   // on-element adornments (element-badges.tsx). The resize handles below
   // KEEP their counter-scaling: interaction grips need a constant hit size.
@@ -118,6 +121,7 @@ export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: Re
       {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
+          data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();
             if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${pos}`, e);
@@ -173,6 +177,9 @@ export function UnionResizeHandles({
       {HANDLE_POSITIONS.map((pos) => (
         <div
           key={pos}
+          // Marks a resize grip, so a whiteboard's Shift + press resizes here
+          // rather than dragging a selection box (useCanvasSurfaceGestures).
+          data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();
             onBeginDrag(primaryId, `resize-${pos}`, e);
@@ -195,60 +202,81 @@ export function UnionResizeHandles({
 
 // --- Selection chrome layer -------------------------------------------------
 
-// The per-element selection chrome (corner resize handles + edge
-// midpoint grips), composed into the z-30 layer BoxedElementView
-// mounts above its content. On plain selection the element wrapper is
-// not a stacking context, so this z-index resolves at the
-// canvas-elements level: the handles paint above neighbouring elements
-// WITHOUT lifting the element's own content (lifting it would re-hide
-// a container's contents — the whole point of not raising z on
-// select). pointer-events-none keeps the body draggable; every handle
+// The per-element selection chrome (corner resize handles + edge midpoint grips), portalled into
+// the canvas's grips layer (SelectionGripsLayer) so it paints above every element, whatever
+// stacking context the element forms, WITHOUT lifting the element's own content (lifting it would
+// re-hide a container's contents). The frame stands on the element's resting box, turned and
+// shifted as the element is. pointer-events-none keeps the body beneath draggable; every handle
 // re-enables pointer events on itself.
 export function SelectionChromeLayer({
   elementId,
-  zoom,
+  box,
   rotation,
+  shiftX,
   showHandles,
   showAnchors,
   onBeginDrag,
 }: {
   elementId: string;
-  zoom: number;
+  // The element's box in canvas coordinates.
+  box: { x: number; y: number; width: number; height: number };
   rotation: number;
+  // The insert-between preview's shift (canvas px), when the element is standing aside.
+  shiftX?: number;
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
 }) {
+  const zoom = useCanvasZoom();
   if (!showHandles && !showAnchors) return null;
+  const transform = [
+    shiftX ? `translateX(${shiftX}px)` : '',
+    rotation % 360 !== 0 ? `rotate(${rotation}deg)` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
-    <div className="pointer-events-none absolute inset-0" style={{ zIndex: 30 }}>
-      {/* Annotations resize too (aspect-locked by default so the marker
+    <BoxGripsPortal>
+      <div
+        data-grips-for={elementId}
+        className="pointer-events-none absolute"
+        style={{
+          left: box.x,
+          top: box.y,
+          width: box.width,
+          height: box.height,
+          transform: transform || undefined,
+          transformOrigin: 'center',
+        }}
+      >
+        {/* Annotations resize too (aspect-locked by default so the marker
           stays round); they just keep rotation off — a tilted note marker
           reads as a mistake. Corner handles show even when rotated — the
           resize math projects the drag into the element's local frame
           (useEditorDrag). */}
-      {showHandles ? (
-        <ResizeHandles
-          elementId={elementId}
-          zoom={zoom}
-          rotation={rotation}
-          onBeginDrag={onBeginDrag}
-        />
-      ) : null}
+        {showHandles ? (
+          <ResizeHandles
+            elementId={elementId}
+            zoom={zoom}
+            rotation={rotation}
+            onBeginDrag={onBeginDrag}
+          />
+        ) : null}
 
-      {showAnchors
-        ? (['n', 'e', 's', 'w'] as const).map((a) => (
-            <EdgeResizeHandle
-              key={a}
-              anchor={a}
-              elementId={elementId}
-              zoom={zoom}
-              rotation={rotation}
-              onBeginDrag={onBeginDrag}
-            />
-          ))
-        : null}
-    </div>
+        {showAnchors
+          ? (['n', 'e', 's', 'w'] as const).map((a) => (
+              <EdgeResizeHandle
+                key={a}
+                anchor={a}
+                elementId={elementId}
+                zoom={zoom}
+                rotation={rotation}
+                onBeginDrag={onBeginDrag}
+              />
+            ))
+          : null}
+      </div>
+    </BoxGripsPortal>
   );
 }
 
@@ -282,6 +310,7 @@ export function EdgeResizeHandle({
     <div
       role="button"
       aria-label={`Resize ${vertical ? 'height' : 'width'}`}
+      data-canvas-handle=""
       onPointerDown={(e) => {
         e.stopPropagation();
         if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${anchor}`, e);

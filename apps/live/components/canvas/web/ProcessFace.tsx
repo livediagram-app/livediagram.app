@@ -2,6 +2,7 @@ import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livediagram/docum
 import { capBandBaselineY } from '@livediagram/icons';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Process steps (docs/specs/009-elements/web-components-and-no-groups.md): numbered accent circles spread across the width,
 // joined by arrows, with a caption under each edited in place. The numbers
@@ -12,10 +13,10 @@ export function ProcessFace({
   accent,
   textColor,
   fontFamily,
-  zoom,
   editable,
   onSetRows,
 }: WebFaceProps) {
+  const zoom = useCanvasZoom();
   const steps = element.processSteps ?? [];
   const l = processLayout(element.width, element.height, steps.length);
   const edit = (i: number, v: string) =>

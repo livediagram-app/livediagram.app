@@ -41,7 +41,15 @@ a wrong obstacle **erases a line that should be visible**:
   could have.
 - **`text` and `annotation` never cut.** They have no fill to hide behind, so
   a gap under a transparent label reads as a bug, not as depth.
-- **Arrows and freehand never cut**: not boxes.
+- **Arrows and freehand never cut**: not boxes. A freehand stroke is a boxed
+  element in the model, so it is excluded by name; ink hides nothing.
+- **A shape with no fill never cuts** (`fillColor: transparent`, as every
+  whiteboard shape starts): there is nothing to hide behind, and a line
+  broken under an outline reads as a fault.
+- **An open path never cuts.** A path paints its fill only when closed, so an
+  open curve (a Path tool line, or an imported multi-point line) is ink like
+  freehand. A closed path follows the shape rule: it cuts unless its fill is
+  `transparent`.
 - **The arrow's own endpoint elements never cut.** The line has to reach their
   edges, and the arrowhead sits on one.
 - **A box containing an endpoint never cuts** — and containment is tested

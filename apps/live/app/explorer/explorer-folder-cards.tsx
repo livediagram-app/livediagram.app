@@ -1,8 +1,7 @@
 'use client';
 
 // The Explorer card grid's folder cards (docs/specs/006-document/document-snapshots.md), split out of
-// CardView: the real FolderCard (rename / menu / child count) and the
-// synthetic Unsorted / Generated card. The card shell + preview classes
+// CardView: the FolderCard (rename / menu / child count). The card shell + preview classes
 // every card shares live in @livediagram/ui, where the Timeline's cards
 // use them too (docs/specs/013-workspace/timeline.md §2).
 
@@ -17,6 +16,7 @@ import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import type { Folder } from '@/lib/api-client';
 import type { FolderActionBundle } from './explorer-view-props';
 import { menuHandlers } from './folder-row';
+import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
 
 // The plain folder mark that fills a folder card's preview box when
 // there's nothing inside to preview (docs/specs/013-workspace/folder-content-previews.md). Exported so FolderPreview
@@ -76,10 +76,11 @@ export function FolderCard({
           <button
             type="button"
             onClick={onOpen}
-            className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
+            className="flex min-w-0 flex-1 items-center gap-1.5 text-left text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
           >
-            {folder.name}
-            {childCount > 0 ? <CountBadge count={childCount} className="ml-1.5" /> : null}
+            <span className="truncate">{folder.name}</span>
+            {childCount > 0 ? <CountBadge count={childCount} className="shrink-0" /> : null}
+            <DefaultFolderMarker folderId={folder.id} />
           </button>
         )}
         {renaming ? null : (
@@ -99,33 +100,5 @@ export function FolderCard({
         />
       ) : null}
     </div>
-  );
-}
-
-// Unsorted / Generated: a folder-shaped card with no actions (it's a
-// synthetic view, not a real folders row).
-export function SyntheticFolderCard({
-  icon,
-  label,
-  count,
-  onOpen,
-}: {
-  icon: ReactNode;
-  label: string;
-  count: number;
-  onOpen: () => void;
-}) {
-  return (
-    <button type="button" onClick={onOpen} className={`${cardShell} text-left`}>
-      <span className={`${previewArea} text-brand-400 dark:text-brand-300`}>
-        <span className="[&_svg]:h-9 [&_svg]:w-9">{icon}</span>
-      </span>
-      <span className="flex items-center gap-1.5 p-2.5">
-        <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
-          {label}
-        </span>
-        {count > 0 ? <CountBadge count={count} /> : null}
-      </span>
-    </button>
   );
 }

@@ -31,6 +31,7 @@ export { buildStacks, bucketFor, stackLabel, type TimelineStack } from './stacki
 export { collapseSameDayCreate } from './sameDayCreate';
 export {
   dateKey,
+  formatDay,
   groupByDay,
   timeLabel,
   useTimelineGrouping,

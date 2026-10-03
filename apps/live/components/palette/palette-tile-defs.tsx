@@ -25,6 +25,7 @@ import {
   QaBoardIcon,
   PickerIcon,
   SelectIcon,
+  ShapePenIcon,
   SpotlightIcon,
   SessionPollIcon,
   SessionVoteIcon,
@@ -41,7 +42,6 @@ import {
   lucideImage,
   lucideMoveRight,
   lucidePanelTop,
-  lucidePenTool,
   lucideSquare,
   lucideStickyNote,
   lucideTable,
@@ -129,14 +129,16 @@ type PaletteTileAction =
     }
   | { type: 'text' }
   | { type: 'freehand' }
-  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md) and the click-to-place
-  // vertex tool (docs/specs/008-canvas/polygon-tool.md) — separate action types so each tile maps
-  // to its own arm-handler and pressed state.
+  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
+  // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
+  // are separate action types, so each tile maps to its own arm-handler and pressed state.
+  | { type: 'highlighter' }
   | { type: 'shape-pen' }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
-  | { type: 'arrow' }
+  // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
+  | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
   // `fill` + `esKind` ride the sticky action for the Event Storming tiles
@@ -227,6 +229,10 @@ export type PaletteTileDef = {
   // Tile only renders when the editor supplies onAddImage (image uploads
   // available) — the Image / Avatar / Hero / Header tiles.
   needsImage?: boolean;
+  // Ends a group of related tiles in its category: a fixed divider follows it on the Toolbar
+  // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
+  // dividers"). Never more than two per category.
+  dividerAfter?: true;
   action: PaletteTileAction;
 };
 
@@ -267,6 +273,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'Diamond. Decision node.',
     shortcut: 'D',
     filled: true,
+    dividerAfter: true,
     action: { type: 'shape', kind: 'diamond' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -335,6 +342,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add stadium',
     description: 'Stadium shape. Flowchart Start / End.',
     filled: true,
+    dividerAfter: true,
     action: { type: 'shape', kind: 'stadium' },
     icon: (
       <Glyph size={18} units={18}>
@@ -456,6 +464,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add text',
     description: 'Text element. Double-click to edit.',
     shortcut: 'T',
+    dividerAfter: true,
     action: { type: 'text' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -499,11 +508,20 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
     shortcut: '6',
     action: { type: 'shape-pen' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucidePenTool} />
-      </Glyph>
-    ),
+    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
+  },
+  // The marker (docs/specs/008-canvas/highlighter.md): the third pen, one stroke per pick like the
+  // other two. No shortcut: only the common flowchart vocabulary gets letters.
+  {
+    id: 'tools:highlighter',
+    blurb: 'A wide translucent marker stroke',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Highlighter',
+    description: 'A wide translucent yellow marker. Drag to call attention to a region.',
+    dividerAfter: true,
+    action: { type: 'highlighter' },
+    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:polygon',
@@ -512,6 +530,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'draw',
     label: 'Polygon',
     description: 'Click to place points. Click the start to close, double-click to finish a line.',
+    dividerAfter: true,
     action: { type: 'polygon' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={18}>
@@ -530,12 +549,29 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'tools',
     toolGroup: 'draw',
     label: 'Add arrow',
-    description: 'Plain connector. Add pointers in the Pointer accordion.',
+    description:
+      'A connector with a pointer at its end. Change its pointers in the Pointer accordion.',
     shortcut: 'A',
     action: { type: 'arrow' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideMoveRight} />
+      </Glyph>
+    ),
+  },
+  // The Line: the arrow tool without its heads (docs/specs/008-canvas/canvas-and-palette.md
+  // "Arrows and lines"), the same element, connector and gesture.
+  {
+    id: 'tools:line',
+    blurb: 'A plain line, no pointers',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Line',
+    description: 'A line you place by hand, with no pointers. Add them in the Pointer accordion.',
+    action: { type: 'arrow', ends: 'none' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M5 19 19 5" />
       </Glyph>
     ),
   },
@@ -564,6 +600,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'build',
     label: 'Add table',
     description: 'Editable grid. Double-click a cell to type.',
+    dividerAfter: true,
     action: { type: 'table' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -705,23 +742,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
   },
   {
-    id: 'tools:mode-highlighter',
-    tileGroup: 'mode',
-    blurb: 'Hand out the marker',
-    caption: 'Highlighter',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Highlighter mode button',
-    description:
-      'A button that switches whoever presses it into Highlighter mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'highlighter' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
-  },
-  {
     id: 'tools:mode-isometric',
     tileGroup: 'mode',
     blurb: 'Tilt the canvas into 3D',
@@ -732,6 +752,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'A button that switches whoever presses it into Isometric mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
+    dividerAfter: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'isometric' },
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
@@ -1192,6 +1213,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '9',
     noTint: true,
     needsImage: true,
+    dividerAfter: true,
     action: { type: 'image' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -1272,6 +1294,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add website embed',
     description:
       'Embeds any website on the canvas. Double-click it to set the address; it loads when you press play. Some sites refuse to be framed and will come up blank.',
+    dividerAfter: true,
     action: { type: 'video', provider: 'website' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -1305,6 +1328,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add entity',
     description:
       'A UML class or ER entity: a title bar over a list of name / type fields. Edit the fields from its right-click menu.',
+    dividerAfter: true,
     action: { type: 'shape', kind: 'entity' },
     icon: (
       <Glyph size={18} units={24}>
@@ -1469,6 +1493,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'A key: a colour-coded dot and a label per row. Edit the colours and words from the Legend menu.',
     filled: true,
+    dividerAfter: true,
     action: { type: 'shape', kind: 'legend' },
     icon: (
       <Glyph size={18} units={24} strokeLinejoin="miter">
@@ -1685,6 +1710,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add laptop',
     description: 'Laptop. Screen plus keyboard base.',
     filled: true,
+    dividerAfter: true,
     action: { type: 'shape', kind: 'laptop' },
     icon: (
       <Glyph size={18} units={18} strokeLinecap="butt">
@@ -1770,6 +1796,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: note.blurb,
     description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
     noTint: true,
+    // The notation, then the Hotspot: a problem marker rather than a part of the model.
+    ...(note.kind === 'aggregate' ? { dividerAfter: true as const } : {}),
     action: { type: 'sticky', fill: note.fill, esKind: note.kind },
     // The glyph mirrors the note's stationery silhouette (docs/specs/021-event-storming/event-storming.md): a
     // standard square, a WIDE rect for the prose kinds, a small square for

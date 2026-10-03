@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useDeferredValue, useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
   endpointPosition,
@@ -9,6 +9,7 @@ import {
   arrowLabelPass,
   svgArrow,
   svgBoxed,
+  svgShadowDefs,
   type Element,
   type Point,
 } from '@livediagram/document';
@@ -19,6 +20,7 @@ import { MovablePanel, type MovablePanelDockProps } from '@/components/primitive
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
+import { useSettledElements } from '@/hooks/canvas/useSettledElements';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
@@ -87,6 +89,16 @@ const PAD_FRACTION = 0.12;
 const PAD_MIN = 48;
 // What the catalogue resolvers find before the catalogue chunk lands.
 const NO_ART = () => undefined;
+// An element as the Map draws it: its label left out (docs/specs/008-canvas/minimap.md "What it shows").
+function withoutLabel(el: Element): Element {
+  if (!('label' in el) && !('richText' in el)) return el;
+  const {
+    label: _label,
+    richText: _richText,
+    ...rest
+  } = el as Element & { label?: unknown; richText?: unknown };
+  return rest as Element;
+}
 // The map's on-screen size in px (the w-64 panel — matching the Palette — and
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
 // fills the panel edge-to-edge rather than letterboxing into white bars under
@@ -103,7 +115,7 @@ const MAP_RATIO: Record<MapSize, number> = {
 };
 
 export function Minimap({
-  elements,
+  elements: liveElements,
   tabFont,
   viewportOffset,
   viewportZoom,
@@ -120,6 +132,10 @@ export function Minimap({
   size,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md),
+  // and deferred: the change that settles them (a drag's release) commits first, and the Map's picture,
+  // rebuilt and re-parsed for the whole board, follows as its own render.
+  const elements = useDeferredValue(useSettledElements(liveElements));
   const draggingRef = useRef(false);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas
@@ -134,21 +150,25 @@ export function Minimap({
   // exports / live image use — real colours, silhouettes, tables, freehand,
   // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
   // only when elements, the tab font or the icon catalogues change —
-  // panning/zooming re-renders just the viewport overlay below. The markup is our own renderer's output (user text is
-  // xmlEscaped inside it), so injecting it is safe.
-  const { markup, bounds } = useMemo(() => {
+  // panning/zooming re-renders just the viewport overlay below. It is shown as ONE image of that markup
+  // (docs/specs/008-canvas/minimap.md "What it shows"), not injected as live elements: on a large
+  // board a live copy doubled the page and slowed every gesture
+  // (docs/specs/008-canvas/canvas-performance.md "The Map is one image"). It draws no labels: at the
+  // Map's size they are a pixel or two tall, and laying them out was half the picture's cost.
+  const { picture, bounds } = useMemo(() => {
+    const drawn = elements.map(withoutLabel);
     const corners: Point[] = [];
     const parts: string[] = [];
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
     const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
-    const labels = arrowLabelPass(elements, {
+    const labels = arrowLabelPass(drawn, {
       fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
     });
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
-    for (const el of framesFirst(elements)) {
+    for (const el of framesFirst(drawn)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
       parts.push(
@@ -161,14 +181,29 @@ export function Minimap({
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
-    for (const el of elements) {
+    for (const el of drawn) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, elements, surface, tabFont, labels, 'lvd-minimap-ko-'));
-      corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
+      parts.push(svgArrow(el, drawn, surface, tabFont, labels, 'lvd-minimap-ko-'));
+      corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
     }
+    const content = boundsOfPoints(corners);
+    if (!content) return { picture: null, bounds: null };
+    // The picture covers the padded content box, so strokes and shadows past the corners still show.
+    const px = content.width * PAD_FRACTION + PAD_MIN;
+    const py = content.height * PAD_FRACTION + PAD_MIN;
+    const box = {
+      x: content.x - px,
+      y: content.y - py,
+      width: content.width + 2 * px,
+      height: content.height + 2 * py,
+    };
+    const doc =
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box.x} ${box.y} ${box.width} ${box.height}" width="${box.width}" height="${box.height}">` +
+      `${svgShadowDefs(elements)}${parts.join('')}</svg>`;
     return {
-      markup: parts.join(''),
-      bounds: boundsOfPoints(corners),
+      // Our own renderer's output (user text is xmlEscaped inside it), shown as an image.
+      picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
+      bounds: content,
     };
   }, [elements, tabFont, iconsLoaded, surface]);
 
@@ -272,8 +307,17 @@ export function Minimap({
           }}
           onWheel={onWheel}
         >
-          {/* The tab's real rendering (see the markup build above). */}
-          <g dangerouslySetInnerHTML={{ __html: markup }} />
+          {/* The tab's real rendering, as one image (see the picture build above). */}
+          {picture ? (
+            <image
+              href={picture.href}
+              x={picture.x}
+              y={picture.y}
+              width={picture.width}
+              height={picture.height}
+              preserveAspectRatio="none"
+            />
+          ) : null}
           {hasView ? (
             <>
               {/* Dim everything outside the current view (even-odd: outer box

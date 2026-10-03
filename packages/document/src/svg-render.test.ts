@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ImageElement, ShapeElement, Tab } from './index';
+import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
+import { freehandPenStroke, penStrokePath } from './pen-stroke';
+import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
 import { arrowLabelFontStack } from './svg-render-arrows';
 import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
+import { encodeStrokePoints } from './stroke-points';
+import { DEFAULT_BACKGROUND_COLOR as PAPER } from './canvas-colors';
 
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -101,9 +105,21 @@ describe('renderElementsToSvg', () => {
       expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${INK}"/>`));
     });
 
-    it('renders a hollow triangle as a white-filled stroked polygon', () => {
+    it('renders a hollow triangle as a paper-filled stroked polygon', () => {
       const svg = render({ arrowheadShape: 'triangle-hollow' });
-      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
+      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${PAPER}" stroke="${INK}"`));
+    });
+
+    it('fills a hollow head with the tab paper, so it reads hollow on a dark canvas', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('a'),
+          shape('b', { x: 200 }),
+          pinnedArrow('r', 'a', 'b', { arrowheadShape: 'triangle-hollow', strokeColor: '#cbd5e1' }),
+        ]),
+        { background: '#0d121a' },
+      );
+      expect(svg).toMatch(/<polygon points="[^"]+" fill="#0d121a" stroke="#cbd5e1"/);
     });
 
     it('renders the open-V (line) head as an unfilled polyline', () => {
@@ -116,7 +132,7 @@ describe('renderElementsToSvg', () => {
         new RegExp(`<circle[^/]+ fill="${INK}"/>`),
       );
       expect(render({ arrowheadShape: 'circle-hollow' })).toMatch(
-        new RegExp(`<circle[^/]+ fill="#ffffff" stroke="${INK}"`),
+        new RegExp(`<circle[^/]+ fill="${PAPER}" stroke="${INK}"`),
       );
     });
 
@@ -125,7 +141,7 @@ describe('renderElementsToSvg', () => {
       const filledHead = filled.match(new RegExp(`<polygon points="([^"]+)" fill="${INK}"/>`));
       expect(filledHead?.[1]?.split(' ')).toHaveLength(4);
       const hollow = render({ arrowheadShape: 'diamond-hollow' });
-      expect(hollow).toMatch(new RegExp(`<polygon points="[^"]+" fill="#ffffff" stroke="${INK}"`));
+      expect(hollow).toMatch(new RegExp(`<polygon points="[^"]+" fill="${PAPER}" stroke="${INK}"`));
     });
 
     it('scales the head with the arrowheadSize preset', () => {
@@ -310,6 +326,31 @@ describe('renderElementsToSvg', () => {
   });
 
   describe('freehand + silhouettes + rotation', () => {
+    it('exports a whiteboard pen stroke as the canvas draws it: the filled pressure outline', () => {
+      // docs/specs/023-draw-mode/draw-mode.md "Pens": the same function as FreehandSvg.
+      const el = {
+        id: 'pen',
+        type: 'freehand',
+        x: 10,
+        y: 10,
+        width: 100,
+        height: 50,
+        closed: false,
+        packedPoints: encodeStrokePoints([
+          { nx: 0, ny: 0 },
+          { nx: 0.5, ny: 1 },
+          { nx: 1, ny: 0.5 },
+        ]),
+        penWidth: 2.5,
+        pressures: [0.2, 0.8, 0.5],
+        streamline: 0.2,
+        strokeColor: '#e5484d',
+      } as FreehandElement;
+      const svg = renderElementsToSvg(tab([el]));
+      const d = penStrokePath(freehandPenStroke(el, { x: 10, y: 10 }), r2);
+      expect(svg).toContain(`<path d="${d}" fill="#e5484d" stroke="none"/>`);
+    });
+
     it('renders a freehand sketch as the canvas smooth curve, not a box', () => {
       const el = {
         id: 'fh',
@@ -319,10 +360,10 @@ describe('renderElementsToSvg', () => {
         width: 100,
         height: 100,
         closed: false,
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0 },
           { nx: 1, ny: 0.5 },
-        ],
+        ]),
         strokeColor: '#333333',
       } as Tab['elements'][number];
       const svg = renderElementsToSvg(tab([el]));
@@ -346,14 +387,17 @@ describe('renderElementsToSvg', () => {
       const polygon = {
         ...base,
         straightEdges: true,
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0 },
           { nx: 1, ny: 0 },
           { nx: 1, ny: 1 },
-        ],
+        ]),
       } as Tab['elements'][number];
       expect(renderElementsToSvg(tab([polygon]))).toContain('d="M 0 0 L 100 0 L 100 100 Z"');
-      const dot = { ...base, points: [{ nx: 0.5, ny: 0.5 }] } as Tab['elements'][number];
+      const dot = {
+        ...base,
+        packedPoints: encodeStrokePoints([{ nx: 0.5, ny: 0.5 }]),
+      } as Tab['elements'][number];
       expect(renderElementsToSvg(tab([dot]))).not.toContain('<path');
     });
 
@@ -406,10 +450,10 @@ describe('renderElementsToSvg', () => {
         height: 10,
         closed: false,
         pen: 'highlighter',
-        points: [
+        packedPoints: encodeStrokePoints([
           { nx: 0, ny: 0.5 },
           { nx: 1, ny: 0.5 },
-        ],
+        ]),
         strokeColor: '#fde047',
       } as Tab['elements'][number];
       const svg = renderElementsToSvg(tab([el]));
@@ -423,8 +467,9 @@ describe('renderElementsToSvg', () => {
 
     it('renders a hexagon silhouette instead of a rectangle', () => {
       const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
-      // The table's 0..100 hexagon, mapped onto the 100 x 80 box.
-      expect(svg).toContain('polygon points="25,0 75,0 100,40 75,80 25,80 0,40"');
+      // The table's 0..100 hexagon, mapped onto the 100 x 80 box inset by
+      // half the medium stroke, so the outline stays inside the box.
+      expect(svg).toContain('polygon points="25.5,1 74.5,1 99,40 74.5,79 25.5,79 1,40"');
     });
 
     it('renders a frame see-through by default, but paints a picked fill like the canvas', () => {
@@ -486,6 +531,20 @@ describe('renderElementsToSvg', () => {
       // More than one positioned line-tspan (x + dy) means it wrapped.
       const lineStarts = svg.match(/<tspan x="[0-9.]+" dy="/g) ?? [];
       expect(lineStarts.length).toBeGreaterThan(0);
+    });
+
+    it('draws an extra-small run at 10 px, as the canvas does', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('xs', {
+            width: 200,
+            height: 80,
+            label: 'Title note',
+            richText: [{ text: 'Title ' }, { text: 'note', size: 'xs' }],
+          }),
+        ]),
+      );
+      expect(svg).toMatch(/font-size="10"[^>]*>\s?note</);
     });
 
     it('stacks a wrapped bottom caption upward into the box', () => {
@@ -806,6 +865,15 @@ describe('chrome the canvas draws on a box', () => {
     expect(painted).toContain('fill="#fecdd3"');
   });
 
+  it('turns an upright lane title into its one-line strip', () => {
+    const svg = renderElementsToSvg(
+      tab([laneAt({ label: 'Approvals', titleOrientation: 'upright', x: 0, y: 0 })]),
+    );
+    // The strip is one line thick, and the title turns a quarter about the strip's bottom-left.
+    expect(svg).toContain('width="64"');
+    expect(svg).toMatch(/<g transform="rotate\(-90 0 200\)">[^]*Approvals/);
+  });
+
   it('gives a browser frame its window chrome', () => {
     const svg = renderElementsToSvg(
       tab([shape('br', { shape: 'browser', width: 300, height: 200 })]),
@@ -825,8 +893,9 @@ describe('chrome the canvas draws on a box', () => {
     const svg = renderElementsToSvg(
       tab([shape('s', { strokeWidth: 'thick', strokeStyle: 'dashed', borderRadius: 'lg' })]),
     );
-    // 4px stroke inset by 2, radius 24 less 2, the canvas's dashed pattern.
-    expect(svg).toMatch(/<rect[^>]*rx="22"[^>]*stroke-width="4" stroke-dasharray="6 5"/);
+    // 4px stroke inset by 2; Large's 24 px capped at a quarter of the 80 px side
+    // (docs/specs/008-canvas/corner-radius.md), 20 less 2; the canvas's dashed pattern.
+    expect(svg).toMatch(/<rect[^>]*rx="18"[^>]*stroke-width="4" stroke-dasharray="6 5"/);
   });
 });
 

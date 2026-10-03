@@ -10,10 +10,21 @@ deletion still feels permanent, the delete confirmations stay, and nothing nags
 about where the document went. Someone who deleted the wrong thing can go and
 fetch it back.
 
-Every delete confirmation says so once, quietly, and nothing else does: "It
-can be restored from Settings › Trash for 30 days." (for a team document, "Any
-teammate can restore it …"). There is no undo toast and no "moved to Trash"
-message.
+### Deleting
+
+Every document delete asks one short question, the same everywhere (the
+Explorer, the editor, the Explorer panel's popover, the team library;
+`apps/live/lib/delete-confirmation.ts`):
+
+- Title **Confirm**; first line **Delete "<name>"?**
+- A second line only for what applies, in this order: "It is deleted for the
+  whole team." (a team document), "Its share links stop working." (only when
+  the document has share links; for the document open in the editor this is
+  asked of the server, and left out when it cannot say), and the shared-tabs
+  sentence ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
+- The **Delete** button is not red: nothing is lost for 30 days.
+- The Trash is not mentioned: it is a backstop, found in Settings. There is no
+  undo toast and no "moved to Trash" message.
 
 Every delete of a whole document goes to the Trash: the Explorer, the editor,
 the team library, the public API with a token, and the MCP server. So does a
@@ -65,8 +76,9 @@ deleted a moment ago shows 30 and one due within the day shows 1. A document
 past its 30 days but not yet swept reads "Removed at the next clean-up".
 
 The Trash is reached two ways, never from the account menu: the **Trash** row
-at the end of the Explorer sidebar's **Library** section (beside Image Gallery
-and Themes, the other things that hold your stuff rather than being it), and
+last in the Explorer sidebar's **More** group, after **Library** (Image gallery,
+Themes and Shape libraries, the other things that hold your stuff rather than
+being it; [Explorer structure](explorer-structure.md)), and
 **Settings › Account**'s **Trash** row, for everyone, guests and deployments
 without accounts included, because Settings is the one menu every deployment
 has. It was Settings-only at first, to stay out of the way of everyday work,
@@ -82,7 +94,8 @@ confirmation; nothing empties more than one group at once.
 
 Restoring returns the document exactly as it was: its tabs, its deck, its share
 links, its stars, its history and its place. It goes back to the folder it was
-in, or to Unsorted when that folder has since been deleted; a team document goes
+in, or to that folder's parent when the folder has since been deleted (the delete moved it up,
+[Folders: Deleting a folder](folders.md#deleting-a-folder)); a team document goes
 back to its team library the same way. The document keeps its id, so every link
 to it works again.
 
@@ -95,7 +108,7 @@ lands in the owner's personal Trash.
 
 A trashed document is gone from everywhere a live one shows up:
 
-- every document list: the Explorer (all sections, Recent, Unsorted, folders),
+- every document list: the Explorer (all sections, Recent, Search results, folders),
   the team library, **Shared with you**, **Favourites**, search, the
   **Timeline**, and the **Activity** page;
 - the tab picker that links a tab into another document.

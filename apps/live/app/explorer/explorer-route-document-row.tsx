@@ -8,12 +8,23 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge } from './document-badges';
+import {
+  FavouriteMarker,
+  FolderChip,
+  VisibilityBadge,
+  isMirrorable,
+  useIconOnlyBadges,
+} from './document-badges';
+import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
+import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
+import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
+import { isLocalOnly } from '@/lib/document-space';
 
 // One document row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
-// by FolderRow + the unsorted list there. The badge + actions menu come
+// beside the FolderRows there. The badge + actions menu come
 // from document-row-shared so the card view (CardView) can't drift. The
 // team library (TeamSharedDocuments) renders this same row.
 export function DocumentRow(props: DocumentEntryProps) {
@@ -29,6 +40,7 @@ export function DocumentRow(props: DocumentEntryProps) {
     showVisibility = true,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
+  const iconOnlyBadges = useIconOnlyBadges();
   const href = hrefForDocument(liveDoc);
 
   const titleNode = renaming ? (
@@ -64,6 +76,7 @@ export function DocumentRow(props: DocumentEntryProps) {
           ownerId={ownerId}
           documentId={liveDoc.id}
           version={liveDoc.savedAt}
+          empty={liveDoc.empty}
           shareCode={liveDoc.shared?.shareCode}
           offline={liveDoc.ownerId === OFFLINE_OWNER_ID}
         />
@@ -71,7 +84,11 @@ export function DocumentRow(props: DocumentEntryProps) {
             vertical line you can scan rather than at ragged name-end
             positions (docs/specs/013-workspace/favourites.md). */}
         {favourite ? <FavouriteMarker /> : null}
+        <DriveNoticeMarker documentId={liveDoc.id} />
         {titleNode}
+        {/* Beside the name at every width: the visibility column hides on a phone. */}
+        {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
+        {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">
             <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} />
@@ -83,10 +100,21 @@ export function DocumentRow(props: DocumentEntryProps) {
           {ownerLabelFor(liveDoc)}
         </span>
       ) : null}
-      <span className="hidden sm:block">
-        {showVisibility ? <VisibilityBadge document={liveDoc} /> : null}
+      {/* Flex, so the badge centres on the row like the time beside it. */}
+      <span className="hidden sm:flex sm:items-center">
+        {showVisibility ? <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} /> : null}
       </span>
-      <RelativeTimeChip at={liveDoc.savedAt} />
+      {/* The sync mark at the column's right edge, so the marks line up. */}
+      <span className="flex min-w-0 items-center justify-between gap-1.5">
+        <span className="flex min-w-0 items-center">
+          <RelativeTimeChip at={liveDoc.savedAt} />
+        </span>
+        <DocumentSyncMark
+          documentId={liveDoc.id}
+          savedAt={liveDoc.savedAt}
+          mirrorable={isMirrorable(liveDoc)}
+        />
+      </span>
       {renaming ? (
         <span />
       ) : (

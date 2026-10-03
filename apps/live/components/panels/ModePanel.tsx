@@ -12,21 +12,15 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 // column has to read as one edge rather than five panels that each drifted a
 // little.
 //
-// All five wrote that out by hand: the same twelve props in the same order,
+// All five wrote that out by hand: the same props in the same order,
 // differing only in `title`. This is the second half of the job
 // MovablePanelPlacementProps started; that type stopped nine panels
-// re-declaring the placement props, and these five went on re-declaring the
-// three that live outside it (`stackBelowY`, `forceDockMode`, `onMobileClose`)
-// and re-typing the forwarding block underneath.
+// re-declaring the placement props, and these five went on re-declaring
+// `stackBelowY` and re-typing the forwarding block underneath.
 
-/**
- * Everything a mode panel forwards to its MovablePanel. The three beyond
- * MovablePanelPlacementProps are the ones each panel used to re-declare.
- */
+/** Everything a mode panel forwards to its MovablePanel. */
 export type ModePanelProps = MovablePanelPlacementProps & {
   stackBelowY?: number;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
 };
 
 /** Extras a mode panel may put in its header: a settings gear, a help link. */
@@ -44,10 +38,6 @@ export function ModePanel({
   onReset,
   dock,
   stackBelowY,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
   headerActions,
   helpArticle,
 }: ModePanelProps & ModePanelExtras & { title: string; children: ReactNode }) {
@@ -64,10 +54,6 @@ export function ModePanel({
       headerActions={headerActions}
       helpArticle={helpArticle}
       stackBelowY={stackBelowY}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
       {...dock}
       collapsible
     >

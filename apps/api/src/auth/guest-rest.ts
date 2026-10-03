@@ -1,7 +1,7 @@
 // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4).
 //
 // The guest `X-Owner-Id` header is a bearer value that leaks to collaborators
-// (presence frames, the change-log), and the REST path trusted it with no
+// (presence frames, comment authors), and the REST path trusted it with no
 // proof — so a harvested id (a guest UUID, OR a signed-up user's Clerk `sub`
 // presented via the header fallback) could be used to act as that owner. The
 // fix: on owner-scoped routes, a presented `X-Owner-Id` must carry a valid
@@ -37,6 +37,7 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   'folders',
   'images',
   'custom-themes',
+  'shape-libraries',
   'participants',
   'preferences',
   'shared',
@@ -47,6 +48,10 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   // keyed on the resolved owner, and the owner's starred documents.
   'activity',
   'favourites',
+  // Explorer Home: the person's opens, own history and others' actions, keyed on the owner.
+  'home',
   // The Trash lists deleted documents' names and restores / purges them.
   'trash',
+  // A person's default folders (docs/specs/013-workspace/default-folders.md).
+  'placement-defaults',
 ]);

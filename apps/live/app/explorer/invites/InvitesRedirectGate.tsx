@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from '../ExplorerContext';
 import { ExplorerPane } from '../ExplorerPane';
@@ -15,7 +15,8 @@ import { ExplorerPane } from '../ExplorerPane';
 // deploys have no teams, so we leave the pane be there.
 export function InvitesRedirectGate() {
   const { authLoaded, clerkUserId } = useExplorer();
-  const router = useRouter();
+  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
+  const router = useAppNavigation();
   const signedOut = authLoaded && !clerkUserId && clerkEnabled;
 
   useEffect(() => {

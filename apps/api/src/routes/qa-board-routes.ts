@@ -65,7 +65,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   if (!allowed) return forbidden();
 
   // Server-derived identity: the voter id from the authenticated owner, the
-  // author from their participant row (never from the request, docs/specs/012-collaboration/activity-and-audit.md).
+  // author from their participant row (never from the request).
   const voterId = await qaVoterId(owner, elementId);
   const author =
     action.type === 'add' && !action.anonymous

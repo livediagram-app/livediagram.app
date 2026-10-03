@@ -19,7 +19,7 @@ import { track } from '@/lib/telemetry';
 // debouncing at ~800ms means one user dragging a slider end-to-end produces
 // one event instead of dozens, while still capturing "did they actually
 // change the canvas appearance" as a discrete signal. Matches the
-// activity-log debounce in spirit (`scheduleTabMetaLog`).
+// burst checkpoint in spirit (useBurstCheckpoint).
 export const CANVAS_TELEMETRY_DEBOUNCE_MS = 800;
 
 type Pending = { timer: ReturnType<typeof setTimeout>; type: string };

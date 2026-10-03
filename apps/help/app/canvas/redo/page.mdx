@@ -1,0 +1,41 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { RedoStep } from '@/components/illustrations/undo-redo';
+
+export const metadata = helpMetadata({
+  title: 'Redo',
+  description:
+    'Re-apply something you just undid with a keyboard shortcut or the redo button. Step back and forth through your recent changes.',
+  path: '/help/canvas/redo/',
+});
+
+<ArticleLayout
+  title="Redo"
+  description="Re-apply something you just undid with a keyboard shortcut or the redo button."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("redo")}
+>
+
+## Putting a change back
+
+Redo re-applies something you just undid. You can:
+
+- Press **Cmd+Shift+Z** on a Mac.
+- Press **Ctrl+Y** or **Ctrl+Shift+Z** on Windows and Linux.
+- Click the redo button in the controls at the bottom-right of the canvas, beside undo.
+
+<Figure caption="Redo re-applies the change you just undid.">
+  <RedoStep />
+</Figure>
+
+## Stepping back and forth
+
+Like undo, redo is personal to you and applies to your current session. Keep undoing and redoing to move back and forth through your recent changes until the canvas looks the way you want.
+
+<Tip>If you undo a few steps too many, redo is the quickest way to return to where you were.</Tip>
+
+To go the other direction, see [Undo](/help/canvas/undo/).
+
+</ArticleLayout>

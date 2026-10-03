@@ -1,17 +1,17 @@
 # Code block
 
-A monospace, syntax-highlighted code snippet element for the palette's Tools section. The audience is technical (Technology icons, architecture/sequence/class/state templates, the MCP server, Mermaid import) and today people fake snippets with text elements.
+A monospace, syntax-highlighted code snippet element in the palette's **Components** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)). The audience is technical (Technology icons, architecture/sequence/class/state templates, the MCP server, Mermaid import); without it, people fake snippets with text elements.
 
 ## Model: a data shape, not a new element kind
 
-`ShapeKind` gains **`code-block`** (the [Timeline rail](timeline-rail.md)/53 "data shape" route), with two optional fields on `ShapeElement`:
+`ShapeKind` includes **`code-block`** (the [Timeline rail](timeline-rail.md) "data shape" route), with two optional fields on `ShapeElement`:
 
 ```ts
 code?: string; // the snippet, capped at 4000 chars in validate.ts
 codeLanguage?: CodeLanguage; // closed set below, defaults to 'plain'
 ```
 
-`CodeLanguage = 'plain' | 'ts' | 'js' | 'python' | 'json' | 'bash' | 'sql' | 'html' | 'css' | 'yaml'` (exported from `packages/document`). Everything else is inherited from the shape path: palette tap-to-drop AND draw-to-size, selection, resize, rotation, lock, groups, layers, duplicate, copy/paste, history, realtime sync, eraser. `code-block` joins the self-drawing set (`isSelfDrawingShape`) so it has no centred label editing.
+`CodeLanguage = 'plain' | 'ts' | 'js' | 'python' | 'json' | 'bash' | 'sql' | 'html' | 'css' | 'yaml'` (exported from `packages/document`). Everything else is inherited from the shape path: palette tap-to-drop AND draw-to-size, selection, resize, rotation, lock, layers, duplicate, copy/paste, history, realtime sync, eraser. `code-block` joins the self-drawing set (`isSelfDrawingShape`) so it has no centred label editing.
 
 ## Visual treatment
 
@@ -19,11 +19,11 @@ A code block keeps a **fixed identity** regardless of theme, the way sticky note
 
 ### Colour schemes
 
-The card paints from a **scheme**, not from the element's colours: `codeTheme` (a `CodeThemeId` from `packages/document/src/code-themes.ts`), absent meaning `midnight`, the single dark card the element shipped with. Eight ship: Midnight, Graphite, Ocean, Forest, Plum, Contrast, then the two light ones, Paper and Parchment. Each entry holds every colour of a card, surface / border / text / muted plus the four token colours, so the canvas view, the headless render and the preset tiles cannot drift.
+The card paints from a **scheme**, not from the element's colours: `codeTheme` (a `CodeThemeId` from `packages/document/src/code-themes.ts`), absent meaning `midnight` (`DEFAULT_CODE_THEME`), the dark card. Eight ship: Midnight, Graphite, Ocean, Forest, Plum, Contrast, then the two light ones, Paper and Parchment. Each entry holds every colour of a card, surface / border / text / muted plus the four token colours, so the canvas view, the headless render and the preset tiles cannot drift.
 
-`supportsColours` returns **false** for a code block, so the Colours and Border categories don't appear on one: the card ignored fill and stroke from the day it shipped, and every swatch in that category was inert while still writing to the element, autosaving, logging a change and broadcasting an op. The Style band opens for a code block carrying a **Presets** grid of the schemes instead, on the same hover-preview / click-commit flow as every other preset ([Style presets](../010-palette/style-presets.md)).
+`supportsColours` returns **false** for a code block, so the Colours and Border categories don't appear on one: the card ignores fill and stroke, so every swatch there would be inert while still writing to the element, autosaving, logging a change and broadcasting an op. The Style band opens for a code block carrying a **Presets** grid of the schemes instead, on the same hover-preview / click-commit flow as every other preset ([Style presets](../010-palette/style-presets.md)).
 
-One fixed look was right about where the colours come from and wrong about how many there are: a block on a light, warm canvas was a hole in it, and a fill swatch would have "fixed" that by letting you paint the card pink and leave the syntax colours unreadable on it. A closed set of complete schemes is the only version of the choice that can't produce an unreadable card.
+A single fixed look is right about where the colours come from and wrong about how many there are: a block on a light, warm board would be a hole in it, and a fill swatch would "fix" that by letting you paint the card pink and leave the syntax colours unreadable on it. A closed set of complete schemes is the only version of the choice that can't produce an unreadable card.
 
 Scheme ids are stored on elements, so they are permanent: a `name` may be reworded, an `id` never. An unknown id still renders (the resolver falls back to the default) but fails validation, so it can't be written.
 
@@ -50,16 +50,16 @@ shared thumbnail shows the same amount of code the canvas does.
 
 ## Editing
 
-- **Double-click** opens an **Edit code dialog** (own component file): a monospace textarea (Tab inserts two spaces, never moves focus) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
-- The element context menu gains a **Code** section (in `ElementDataSections.tsx`, per the data-shape pattern): an "Edit code" row opening the same dialog, and a language picker.
+- **Double-click** opens an **Edit code dialog** (`apps/live/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces, never moves focus) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
+- The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): an "Edit code" row opening the same dialog, and a language picker.
 
 ## Headless render (share thumbnails, MCP, exports)
 
-`svg-render` gains a `code-block` branch: the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting — the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
+`svg-render` has a `code-block` branch (`svgCodeBlockShape`): the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting — the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
 
 ## Plumbing checklist (per the data-shape route)
 
-`SHAPE_KINDS` + bounded field validation in `validate.ts`, colour defaults in `colors.ts`, kind label ("Code block"), palette tile `tools:code-block` (Tools section, favouritable, no letter shortcut), quick-connect excluded, the OpenAPI regen (`pnpm --filter @livediagram/api gen:openapi`), the MCP schema prose if it hand-lists kinds, the AI-generate prompt vocabulary (excluded for now — the AI shouldn't emit code blocks unprompted), and the telemetry dashboard's TOOLS label set.
+`SHAPE_KINDS` + bounded field validation in `validate.ts`, colour defaults in `colors.ts`, kind label ("Code Block", title-cased by `elementKindLabel`), palette tile `tools:code-block` (Components category, favouritable, no letter shortcut), quick-connect excluded, the OpenAPI regen (`pnpm --filter @livediagram/api gen:openapi`), the MCP schema prose (built from `SHAPE_KINDS`, so no hand list), the AI-generate prompt vocabulary (excluded: the AI shouldn't emit code blocks unprompted), and the telemetry dashboard's TOOLS label set.
 
 ## Telemetry
 

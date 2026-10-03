@@ -15,13 +15,7 @@ import { DocumentRow } from './explorer-route-document-row';
 import { FolderRow } from './folder-row';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
-import { CountBadge } from '@/components/primitives/CountBadge';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
-import {
-  SYNTHETIC_FOLDERS,
-  visibleSyntheticFolders,
-  type SyntheticFolderKind,
-} from './synthetic-folders';
 import { HoverCard } from '@livediagram/ui';
 
 // The pane header lives in its own file now; re-exported so callers keep
@@ -57,6 +51,7 @@ export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
     shareCode: s.shareCode,
     ownerId: '',
     shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
+    empty: s.empty,
   };
 }
 
@@ -65,24 +60,27 @@ export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
 // with no folder row behind them; `folder` is a real owned folder and
 // `team` a team the signed-in user belongs to (docs/specs/013-workspace/teams.md).
 export type SelectedNode =
-  // The landing view (docs/specs/013-workspace/timeline.md): a day-grouped feed of everything that
-  // happened, rather than a list of files.
+  // The landing view (docs/specs/013-workspace/explorer-home.md): Jump back in, What happened and
+  // the person's own Timeline.
+  | { kind: 'home' }
+  // All activity (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
+  // happened, reached from Home's See all activity.
   | { kind: 'timeline' }
   // What is outstanding for the reader across every document (docs/specs/013-workspace/activity-page.md):
   // open actions assigned to / by them, unresolved threads they're in.
   | { kind: 'activity' }
   | { kind: 'recent' }
   | { kind: 'all' }
-  | { kind: 'unsorted' }
+  // Every document the reader can open, narrowed by the lens (docs/specs/013-workspace/explorer-filters.md#views).
+  | { kind: 'search' }
   // Documents this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
-  | { kind: 'generated' }
   | { kind: 'offline' }
-  | { kind: 'dynamic' }
   | { kind: 'shared' }
   | { kind: 'gallery' }
   | { kind: 'themes' }
-  | { kind: 'tokens' }
+  // Shape libraries (docs/specs/013-workspace/shape-libraries.md).
+  | { kind: 'shape-libraries' }
   // The Trash (docs/specs/013-workspace/trash.md): a route with no sidebar row,
   // reached from Settings.
   | { kind: 'trash' }
@@ -137,9 +135,6 @@ export function ListView(props: ExplorerViewProps) {
         <span aria-hidden></span>
       </div>
       <ul className="lvd-cascade divide-y divide-slate-100 dark:divide-slate-700/60">
-        {visibleSyntheticFolders(props).map((e) => (
-          <SyntheticFolderRow key={e.kind} kind={e.kind} count={e.count} onOpen={e.onOpen} />
-        ))}
         {folders.map((f) => (
           <FolderRow
             key={f.id}
@@ -181,50 +176,6 @@ export function ListView(props: ExplorerViewProps) {
   );
 }
 
-// A synthetic ("dynamic") folder row in the list view — looks like a real
-// folder row (glyph + name + count) but has no rename/move/delete actions
-// because it isn't backed by a folders table entry: it's a live view
-// (Unsorted = no parent; Generated = AI-made). Shared by both so they
-// can't drift.
-function SyntheticFolderRow({
-  kind,
-  count,
-  onOpen,
-}: {
-  kind: SyntheticFolderKind;
-  count: number;
-  onOpen: () => void;
-}) {
-  const { Icon, label } = SYNTHETIC_FOLDERS[kind];
-  return (
-    <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700">
-      <button
-        type="button"
-        onDoubleClick={onOpen}
-        onClick={onOpen}
-        className="flex min-w-0 items-center gap-2 text-left"
-      >
-        <span className="shrink-0 text-slate-400">
-          <Icon />
-        </span>
-        <span className="truncate text-sm font-medium text-slate-900 group-hover:text-brand-700 dark:text-slate-100 dark:group-hover:text-brand-300">
-          {label}
-        </span>
-        {count > 0 ? <CountBadge count={count} className="ml-1" /> : null}
-      </button>
-      <span className="hidden sm:block" />
-      {/* A folder has no visibility/owner of its own — leave the cell
-          blank rather than a bare dash that reads as a mystery value. */}
-      <span aria-hidden />
-      <span aria-hidden />
-    </li>
-  );
-}
-
-export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
-  return <SyntheticFolderRow kind="unsorted" count={count} onOpen={onOpen} />;
-}
-
 export function SharedList({
   shared,
   ownerId,
@@ -262,6 +213,7 @@ export function SharedList({
                 ownerId={ownerId}
                 documentId={s.id}
                 version={s.savedAt}
+                empty={s.empty}
                 shareCode={s.shareCode}
               />
               <span className="truncate">{s.name}</span>

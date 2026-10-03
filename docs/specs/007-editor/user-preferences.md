@@ -144,35 +144,36 @@ type UserPreferences = {
   // space, so it can hide them. Undefined / true === shown.
   aiSuggestedPrompts?: boolean;
 
-  // When true, the floating Explorer / Palette / AI panels
-  // are replaced by a compact dock of buttons that open each panel
-  // as a popover on click — the "minimal panel layout". Defaults to
-  // false (floating panels) on desktop. The dock layout is ALWAYS
-  // active on mobile regardless of this flag, because the floating
-  // panels don't fit a phone viewport; the preference only changes
-  // desktop behaviour. See docs/specs/008-canvas/canvas-and-palette.md. Legacy since docs/specs/007-editor/toolbar-layout.md: still written
-  // (as `panelLayout !== 'floating'`) so older readers keep working, but
-  // `panelLayout` is the source of truth when set.
-  minimalPanels?: boolean;
-
-  // The desktop panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the default),
-  // 'minimal' (the dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as one strip
-  // across the top of the canvas, no Explorer panel). Missing → derived
-  // from `minimalPanels`. Mobile is always docked whatever this says.
-  panelLayout?: 'floating' | 'minimal' | 'toolbar';
+  // The panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the desktop
+  // default, corner panels, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the
+  // Palette as one strip across the top of the canvas, no Explorer panel).
+  // Missing → Floating on desktop. A phone always uses Toolbar whatever
+  // this says. A stored value outside the union (a legacy 'minimal')
+  // resolves like a missing one, and the retired `minimalPanels` flag
+  // some stored blobs still carry is ignored.
+  panelLayout?: 'floating' | 'toolbar';
 
   // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
   // them; they snap back to fully opaque while hovered or focused so they
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its floating and its
-  // popover branch (so the Minimal layout's and a phone's panels, and the
-  // Layers / Activity / Collaborate popovers, follow it too), the Map, the
-  // Quick style panel in every layout and the Toolbar layout's strip.
-  // Buttons are not panels: the minimal dock's button bar, the bottom-right
-  // cluster buttons and the zoom controls stay opaque.
+  // popover branch (so the Explorer, Layers and Collaborate
+  // popovers follow it too), the Map, the Quick style panel in every
+  // layout and the Toolbar layout's strip. Buttons are not panels: the
+  // bottom-right cluster buttons and the zoom controls stay opaque.
   // Defaults to 1 (fully opaque).
   panelOpacity?: number;
+
+  // UI scale (docs/specs/007-editor/ui-scale.md): the factor (0.8..1.2, 0.05
+  // steps) the panels, the toolbar and the bottom-right corner buttons are
+  // drawn at, via CSS `zoom` on each surface. `uiScale` is the master; each
+  // part's key overrides it for that part, and setting the master clears
+  // them. Desktop only: a phone always draws at 1. Defaults to 1.
+  uiScale?: number;
+  uiScalePanels?: number;
+  uiScaleToolbar?: number;
+  uiScaleCornerButtons?: number;
 
   // Panel switches (the Panels sub-categories, see "Settings dialog"
   // below). Each defaults ON via `!== false`, so an existing user's editor
@@ -186,11 +187,6 @@ type UserPreferences = {
   // order, visibility, lock and opacity still shape the canvas, and new
   // elements still land on the active layer.
   layersPanelEnabled?: boolean;
-  // `activityPanelEnabled` false: no Activity panel and no Tab Activity
-  // button. Undo and Redo stay, as the cluster strip's only two buttons
-  // (shown in every layout, since the panel that otherwise carries them
-  // in Floating is gone). The change log is still recorded.
-  activityPanelEnabled?: boolean;
   // `collaboratePanelEnabled` false: no Collaborate panel and no
   // Collaborate cluster button, even while the tab has comment threads or
   // actions (the only time either shows when on). Comments and actions
@@ -228,6 +224,9 @@ type UserPreferences = {
   // When false, suppress the "someone first opened one of my shared
   // documents" email. Defaults to true (notify).
   notifyDocumentJoin?: boolean;
+  // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
+  // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT (on).
+  showProfilePicture?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
@@ -256,6 +255,25 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
+  // The whiteboard dock (../023-draw-mode/draw-mode.md "Shape slots"): up to
+  // seven pinned shape keys (unset is the default pins, an empty list an
+  // emptied side), and per shape key [times picked, last picked ms] for the
+  // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
+  // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
+  whiteboardPinnedShapes?: string[];
+  whiteboardShapePicks?: Record<string, [number, number]>;
+  // The whiteboard markers' Your colours (../023-draw-mode/draw-mode.md "The
+  // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
+  // takes one out. Junk is dropped on read (lib/pen-colour-memory).
+  whiteboardYourColours?: string[];
+  // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
+  // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
+  // top (lib/whiteboard-dock-prefs).
+  whiteboardDockPosition?: 'top' | 'bottom';
+  // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
+  // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
+  // anything else, is Grid (lib/whiteboard-dock-prefs).
+  drawPattern?: 'blank' | 'grid' | 'graph';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -303,14 +321,15 @@ Missing key === undefined === default behaviour. Concretely:
 - `aiAssistanceEnabled` undefined → AI panel hidden (the default).
   Setting it to `true` shows the panel; the toggle only appears in
   Settings when the api worker advertises AI capability.
-- `minimalPanels` undefined → floating panels on desktop (the
-  default). Setting it to `true` switches desktop to the dock /
-  popover layout. Mobile ignores the flag — it is always docked. In
-  this layout the Collaborate panel (the cheat sheet of threads +
-  actions) joins the dock as its own **Collaborate** button — shown
-  only while the active tab has at least one comment thread or action,
-  the same gate as the floating panel ([Assigned actions](../012-collaboration/assigned-actions.md) §5) — and opens as a
-  popover like the other panels.
+- `panelLayout` undefined (or a legacy `'minimal'`) → Floating on desktop
+  (the default), Toolbar on a phone. `'toolbar'` switches desktop to the
+  [Toolbar layout](toolbar-layout.md); a phone is always Toolbar. Emits `UI`/`Changed`/
+  `PanelLayoutFloating` or `PanelLayoutToolbar`.
+- `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
+  default). Only `'bottom'` moves it to the bottom.
+- `drawPattern` undefined → Grid (`graph`) behind every tab the person works
+  on in Draw mode. The dock's Background row writes it; it emits the same
+  Background events as before and changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -318,15 +337,27 @@ Missing key === undefined === default behaviour. Concretely:
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
   `--lvd-panel-opacity` custom property, in every layout: floating,
-  popover (Minimal, a phone, the cluster popovers), the Map, Quick style
-  and the Toolbar strip. Button bars and buttons stay opaque. Emits
+  popover (the Explorer and cluster popovers), the Map, Quick style
+  and the Toolbar strip. Buttons stay opaque. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
-- `layersPanelEnabled` / `activityPanelEnabled` / `collaboratePanelEnabled` /
+- `uiScale` undefined / 1 → the chrome at its design size (the default).
+  Any other value in 0.8..1.2 draws the panels, the toolbar and the
+  bottom-right corner buttons at that factor on desktop; a phone always draws
+  at 1. `uiScalePanels` / `uiScaleToolbar` / `uiScaleCornerButtons` undefined
+  → that part follows `uiScale`; a value overrides it for that part. Junk
+  reads as 1, out-of-range values clamp ([UI scale](ui-scale.md)). Emits
+  `UI`/`Changed`/`UiScale` (or `UiScalePanels`, `UiScaleToolbar`,
+  `UiScaleCornerButtons`) on release.
+- `layersPanelEnabled` / `collaboratePanelEnabled` /
   `quickStylePanelEnabled` undefined / true → the panel is on (the
   default). `false` removes it and the chrome that reaches it, leaving the
   feature working (see the data model). Emits `UI`/`Toggled`/
-  `LayersPanel{On,Off}`, `ActivityPanel{On,Off}`, `CollaboratePanel{On,Off}`
+  `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
+- **Retired keys.** `activityPanelEnabled` and the Activity panel's revert
+  hover preview went with the Activity panel (removed 2026-10-03). A value
+  still stored under either is ignored on read and dropped on the next
+  write; Undo and Redo always show in the bottom-right cluster.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -387,8 +418,7 @@ that is the only control.
   preference had a row in the dialog, those were five second homes for
   settings that already had one. A handful of preferences DO keep a second,
   in-context control where that control is the thing itself rather than a
-  settings menu: the Appearance cycle button in the footer, the Explorer's
-  its API Tokens page, and each of those rows says
+  settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
 - There are no per-tool preferences left: the one there was
   (`recogniseShapes`, flipped from the pencil's banner) became two palette
@@ -420,7 +450,12 @@ and the dialog stays as the one complete, browsable index of them.
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
-  Shortcuts dialog and the footer's keyboard button. Visible in every role: view-role visitors can still
+  Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
+  of a category (the Google Drive connect flow returns to Account > Cloud Sync): the section
+  scrolls into view and its heading takes focus. The Explorer and the editor both take
+  `?settings=<category>&section=<section>` in their URL: it opens Settings there on load, and
+  stays in the URL while Settings is open (removed when it closes), so a page left for
+  another site and reached again with Back reopens it. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   **Shaped like the iOS Settings app**, in both of that app's forms, because
@@ -479,24 +514,52 @@ and the dialog stays as the one complete, browsable index of them.
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
   middle-mouse pan, then a **Power User** section: power user mode, and
-  Minimal chrome while the mode is on), **Appearance** (theme), **Keyboard**
+  Minimal chrome while the mode is on; with the sub-category **Draw**: dock
+  position, Top or Bottom), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel layout, panel opacity; with the
-  sub-categories **Layers**, **Activity**, **Map**, **Collaborate** and
+  sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
-  suggested prompts, API tokens), **Account** (identity, delete account, see
-  [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **Privacy** (telemetry). Editor leads because it is what most
-  people came to change; Account and Privacy sit at the end, where the
-  account-shaped things belong. Preferences whose
+  suggested prompts, and a **Manage API Tokens** link row that opens the API
+  Tokens category), **Documents** (a **Where New Documents Go** section: one row per
+  [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; not a
+  preference, it reads and writes `/api/placement-defaults`), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
+  deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
+  [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **API Tokens** (create, view and
+  revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
+  only when sign-in is enabled on the deployment), **Privacy** (telemetry).
+  Editor leads because it is what most
+  people came to change; Account, API Tokens and Privacy sit at the end, where the
+  account-shaped things belong.
+
+  **A link row** (`kind: 'link'`) opens another category of the same dialog
+  in place, the way the power user preset readout goes to a row: it names the
+  category it opens and never navigates the page.
+
+  **Every signed-out message links to sign in.** Wherever a Settings row says
+  something needs an account (the guest identity card, Delete Account, the
+  email stand-in card, the API Tokens manager), the message ends with a
+  **Sign In** link to `/sign-in/` that returns to the current page. On a
+  deployment without sign-in (`clerkEnabled` false) there is nowhere to sign
+  in, so the link is absent. Preferences whose
   day-to-day home used to be a panel's own gear popover live here now, and
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec): Panels holds Layers, Activity, Map, Collaborate and Quick Style,
+  spec). **Editor** holds one per editor mode whose settings apply only to
+  that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
+  since only Draw mode has a dock. A setting that applies in both modes
+  stays on Editor itself; quick-add on hover, alignment guides, auto-attach
+  arrows, middle-mouse pan and power user mode all act in both. There is no
+  **Diagram** sub-category while no setting applies only to Diagram mode: a
+  category with no rows is never shown, and one is added beside Draw the day
+  a Diagram-only setting lands.
+
+  Panels holds Layers, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
-  switch** ("Enable Layers Panel", "Enable Activity Panel", "Enable Map",
+  switch** ("Enable Layers Panel", "Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on, the way power
@@ -516,17 +579,18 @@ and the dialog stays as the one complete, browsable index of them.
   and that pane ends with its sub-categories as rows in the root list's
   grouped card, each pushing its own pane, the way iOS Settings nests a
   screen. Back from a sub-category returns to its parent's pane (the back
-  control reads "Panels"), and back from there to the root list. On the
+  control reads "Panels", or "Editor"), and back from there to the root list. On the
   phone's root list the sub-categories show beneath the parent only for a
   search hit. (A disclosure chevron on the phone was tried and dropped: its
   right-pointing arrow read as the row's own "go" arrow, so the
   sub-categories behind it went unfound.) A
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
-  mark in the editor (Lucide layers for Layers, the Activity panel's clock,
-  the Collaborate button's glyph; the Map and Quick Style, which have no
-  toolbar button, take Lucide map and Lucide palette). Search matches a
+  mark in the editor (Lucide layers for Layers, the Collaborate button's
+  glyph; the Map and Quick Style, which have no
+  toolbar button, take Lucide map and Lucide palette; Draw takes the
+  marker the editor mode switch shows for Draw mode). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers").
+  it by path ("in Panels › Layers", "in Editor › Draw").
 
   Within a category, rows carry an optional **`section`** so a category
   holding several clusters (Editor's Power User rows) gets a sub-heading per
@@ -540,7 +604,7 @@ and the dialog stays as the one complete, browsable index of them.
   A setting renders as a **one-line row** (label + control), with its
   long-form explanation as a **grey footnote below the row**. Labels are
   **Title Case**. Row kinds: `toggle`, `choice` (a segmented control, e.g.
-  the theme and the minimap size), `slider` (panel opacity, committing on
+  the theme and the minimap size), `slider` (panel opacity, UI scale, committing on
   release so one drag is not one PUT per pixel), `appearance` (the one row
   backed by the device-local store, not `UserPreferences`), and `tokens` (a
   read-only listing of the account's API tokens plus a link to the Explorer's
@@ -558,7 +622,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
   (`settings-choice-illustrations.tsx`): **Panel Layout** (Floating /
-  Minimal / Toolbar, [Toolbar layout](toolbar-layout.md)) and **Theme** (Light / Dark / System, the
+  Toolbar, [Toolbar layout](toolbar-layout.md)) and **Theme** (Light / Dark / System, the
   last drawn half light and half dark). Theme's pictures are drawn in their
   own fixed colours and are never dimmed, since their colour is the point: a
   dimmed light editor reads grey on a dark dialog. A test holds every
@@ -576,8 +640,7 @@ and the dialog stays as the one complete, browsable index of them.
   On a phone-sized viewport it stays visible but can't be picked, and a note
   under the row says why. Panel Layout's Floating is desktop only: a phone
   shows Toolbar instead ([Toolbar layout](toolbar-layout.md)), which is therefore the phone default,
-  and the row rings Toolbar there (`read(prefs, { mobile })`). Minimal and
-  Toolbar both work on a phone.
+  and the row rings Toolbar there (`read(prefs, { mobile })`).
 
   A whole row can be desktop only too (`desktopOnly` on the row, holding the
   note to show). On a phone-sized viewport the row stays visible, greyed,
@@ -638,9 +701,9 @@ and the dialog stays as the one complete, browsable index of them.
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two
   palette tiles, so no preference is set from a tool's own chrome any
-  more. The Highlighter Panel's Colour + Strength ([Highlighter](../008-canvas/highlighter.md)) are the
-  closest thing, and those are session-local editor state setting the
-  next stroke's style rather than a persisted preference.
+  more. The Highlighter's Colour and Width ([Highlighter](../008-canvas/highlighter.md)) are set from
+  the Quick style panel while its tile is armed, and are session-local editor state setting the next
+  stroke rather than a persisted preference.
 
 ## Read / write helpers
 

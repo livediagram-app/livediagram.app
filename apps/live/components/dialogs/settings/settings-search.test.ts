@@ -44,9 +44,9 @@ describe('settings search', () => {
 
   it('narrows on a second term rather than widening', () => {
     const one = keysFor('preview');
-    const two = keysFor('preview revert');
+    const two = keysFor('preview hover');
     expect(two.length).toBeLessThan(one.length);
-    expect(two).toContain('activityRevertHoverPreview');
+    expect(two).toContain('layerHoverPreview');
   });
 
   it('is case-insensitive', () => {

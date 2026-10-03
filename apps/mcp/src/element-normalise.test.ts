@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { entityHeight, isValidTab } from '@livediagram/document';
-import { lanesToFront, normaliseElement, normaliseElements } from './element-normalise';
+import {
+  lanesToFront,
+  mergeElementUpdate,
+  normaliseElement,
+  normaliseElements,
+} from './element-normalise';
 
 // docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.
 
@@ -129,5 +134,54 @@ describe('content kinds', () => {
   it('leaves anything that is not an element list for validation to reject', () => {
     expect(normaliseElements('nope')).toBe('nope');
     expect(normaliseElements([null, 3])).toEqual([null, 3]);
+  });
+});
+
+describe('freehand strokes (docs/specs/006-document/stroke-points.md)', () => {
+  const former = {
+    id: 'f',
+    type: 'freehand',
+    ...box,
+    closed: false,
+    points: [
+      { nx: 0, ny: 0 },
+      { nx: 1, ny: 1 },
+    ],
+  };
+
+  it('packs a stroke a model wrote in the former { nx, ny } shape, so the tab validates', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const [f] = normaliseElements([former]) as { packedPoints?: string; points?: unknown }[];
+    expect(typeof f!.packedPoints).toBe('string');
+    expect(f!.points).toBeUndefined();
+    expect(valid([f])).toBe(true);
+  });
+
+  it('leaves a packed stroke exactly as it was read', () => {
+    const packed = { id: 'f', type: 'freehand', ...box, closed: false, packedPoints: 'AQAAAAAA' };
+    expect(normaliseElement(packed)).toEqual(packed);
+  });
+});
+
+describe('mergeElementUpdate', () => {
+  const packed = { id: 'f', type: 'freehand', ...box, closed: false, packedPoints: 'AQAAAAAA' };
+
+  it('lays the model\u2019s fields over the element\u2019s', () => {
+    expect(mergeElementUpdate(packed, { x: 40 })).toEqual({ ...packed, x: 40 });
+    expect(mergeElementUpdate(undefined, { id: 'n' })).toEqual({ id: 'n' });
+    expect(mergeElementUpdate(packed, undefined)).toEqual(packed);
+  });
+
+  it('lets new former-shape points replace the packed ones, which then pack', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const points = [
+      { nx: 0, ny: 1 },
+      { nx: 1, ny: 0 },
+    ];
+    const merged = mergeElementUpdate(packed, { points });
+    expect(merged).not.toHaveProperty('packedPoints');
+    const [f] = normaliseElements([merged]) as { packedPoints: string }[];
+    expect(f!.packedPoints).not.toBe(packed.packedPoints);
+    expect(valid([f])).toBe(true);
   });
 });

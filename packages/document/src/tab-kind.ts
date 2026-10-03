@@ -7,6 +7,8 @@
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
 
+// Whiteboarding is an editor mode, not a kind (docs/specs/007-editor/editor-modes.md): a stored
+// 'whiteboard' is migrated on read into a general tab that opens in Draw (./legacy-whiteboard-tab).
 export type TabKind = 'diagram' | 'event-storming';
 
 export const DEFAULT_TAB_KIND: TabKind = 'diagram';
@@ -17,7 +19,12 @@ export const DEFAULT_TAB_KIND: TabKind = 'diagram';
 // offline copy. So absence MUST keep reading as the default, whatever new
 // tabs store.
 export function tabKindOf(tab: { kind?: string } | undefined): TabKind {
-  return tab?.kind === 'event-storming' ? 'event-storming' : DEFAULT_TAB_KIND;
+  switch (tab?.kind) {
+    case 'event-storming':
+      return tab.kind;
+    default:
+      return DEFAULT_TAB_KIND;
+  }
 }
 
 // Write the resolved kind onto a tab, so a saved tab says what it is rather

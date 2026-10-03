@@ -11,6 +11,7 @@ import type {
   ImportImageRequest,
   ImportImageSession,
 } from './types';
+import { debugLog } from '@/lib/debug-log';
 
 export async function attachImportImages(
   elements: Element[],
@@ -33,7 +34,7 @@ export async function attachImportImages(
   await Promise.all(
     [...firstByKey.values()].map(async (r) => {
       if (!r.source) {
-        console.info('[import-images]', 'missing-bytes', { key: r.key });
+        debugLog('[import-images]', 'missing-bytes', { key: r.key });
         outcomes.set(r.key, { ok: false, failure: 'missing-bytes' });
         return;
       }
@@ -55,7 +56,7 @@ export async function attachImportImages(
     }
   }
 
-  console.info('[import-images] report', report);
+  debugLog('[import-images] report', report);
   const patched = elements.map((el) => {
     const outcome = el.type === 'image' ? patches.get(el.id) : undefined;
     return outcome

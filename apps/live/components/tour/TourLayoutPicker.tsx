@@ -12,7 +12,7 @@ import { track } from '@/lib/telemetry';
 // telemetry token all come from the row, so the two surfaces can't disagree.
 const ROW = choiceRow('panelLayout');
 
-// The welcome card's panel-layout choice (docs/specs/007-editor/editor-tour.md): the Settings row's three
+// The welcome card's panel-layout choice (docs/specs/007-editor/editor-tour.md): the Settings row's
 // layout drawings, one button each, the one in force ringed. Picking applies
 // at once, so the editor behind the card changes as you click and the tour
 // that follows points at the chrome you chose.
@@ -21,9 +21,9 @@ export function TourLayoutPicker() {
   const mobile = useIsMobileViewport();
   const prefs = ctx.userPreferences ?? {};
   const drawings = CHOICE_ILLUSTRATIONS.panelLayout.states;
-  // A phone only offers what it can use: Floating is desktop only, so it
-  // isn't shown there, and a stored Floating rings Toolbar, which is what
-  // the phone shows instead (docs/specs/007-editor/toolbar-layout.md).
+  // A phone only offers what it can use: Floating is desktop only, which
+  // leaves Toolbar alone there, so a phone has no choice to show
+  // (docs/specs/007-editor/toolbar-layout.md).
   const options = mobile ? ROW.options.filter((o) => !o.desktopOnly) : ROW.options;
   const value = ROW.read(prefs, { mobile });
 
@@ -35,6 +35,8 @@ export function TourLayoutPicker() {
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
   };
 
+  if (options.length < 2) return null;
+
   return (
     // Boxed like the welcome art above it, so the choice reads as its own
     // panel rather than more of the card's copy.
@@ -42,8 +44,8 @@ export function TourLayoutPicker() {
       <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
         Choose Your Layout
       </span>
-      {/* Each option takes a third of the row, so two on a phone stay the
-          same size as three on desktop, centred. */}
+      {/* Each option takes at most a third of the row, the size the drawings
+          are drawn for, so two options stay that size, centred. */}
       <div role="radiogroup" aria-label="Panel layout" className="flex justify-center gap-1.5">
         {options.map((option) => {
           const drawing = drawings.find((d) => d.id === option.id);

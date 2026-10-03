@@ -1,6 +1,6 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
 // cross-document link, and delete.
-import type { TabResponse, TabSummary } from '@livediagram/api-schema';
+import { DOCUMENT_OPEN_HEADER, type TabResponse, type TabSummary } from '@livediagram/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
 import { dedupeInFlight } from '../dedupe';
 import {
@@ -11,6 +11,7 @@ import {
   offlineSaveDocumentMeta,
   offlineSaveTab,
 } from '../offline/offline-store';
+import { offlineRecordOpen } from '../offline/offline-opens';
 import {
   API_BASE,
   apiDelete,
@@ -28,16 +29,29 @@ import {
 // Full tab payload, including elements + per-tab metadata. Pulled
 // lazily when the user opens a tab; the document-summary fetch only
 // carries TabSummary rows.
+//
+// `open` declares this read an open of the document, for the reader's
+// Home (docs/specs/013-workspace/explorer-home.md "Opens"): only the
+// editor's first-tab read sets it, never a resync, a duplicate, Take
+// Offline, the Drive mirror or an embed.
 async function _apiLoadTab(
   ownerId: string,
   documentId: string,
   tabId: string,
   shareCode: string | null,
+  opts: { open?: boolean } = {},
 ): Promise<Tab | null> {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB.
-  if (await isOfflineId(documentId)) return offlineLoadTab(documentId, tabId);
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB,
+  // and this browser counts its opens, since the server never sees it (offline-opens.ts).
+  if (await isOfflineId(documentId)) {
+    if (opts.open) void offlineRecordOpen(documentId, Date.now());
+    return offlineLoadTab(documentId, tabId);
+  }
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, {
-    headers: await apiHeaders(ownerId, { share: shareCode }),
+    headers: await apiHeaders(ownerId, {
+      share: shareCode,
+      ...(opts.open ? { extra: { [DOCUMENT_OPEN_HEADER]: '1' } } : {}),
+    }),
   });
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
   if (!body) return null;
@@ -58,9 +72,12 @@ async function _apiLoadTab(
   }
   return clientTab;
 }
-export const apiLoadTab = dedupeInFlight(
+export const apiLoadTab = dedupeInFlight<Parameters<typeof _apiLoadTab>, Tab | null>(
   _apiLoadTab,
-  (ownerId, documentId, tabId, shareCode) => `${ownerId}␟${documentId}␟${tabId}␟${shareCode ?? ''}`,
+  // The open marker is part of the key: an unmarked load already in flight must not swallow the
+  // editor's marked one, or the open would never be recorded.
+  (ownerId, documentId, tabId, shareCode, opts) =>
+    `${ownerId}␟${documentId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}`,
 );
 
 // Upsert a single tab. The active edit path — autosave hits this

@@ -1,3 +1,4 @@
+import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { ShapeKind } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -5,7 +6,6 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import type { DockAnchor } from '@/lib/canvas-chrome';
 
 export type CanvasTool =
   | 'pan'
@@ -17,8 +17,6 @@ export type CanvasTool =
   | 'eraser'
   | 'format'
   | 'isometric'
-  // The marker (docs/specs/008-canvas/highlighter.md): a persistent drawing mode, not a one-shot arm.
-  | 'highlighter'
   // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
   // Picking the tool does NOT start presenting; Start is a deliberate second
   // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
@@ -41,12 +39,6 @@ export type CommandPaletteProps = {
   onToggleZen?: () => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
-  // Desktop panel-layout toggle (normal floating panels <-> minimal compact
-  // dock), rendered in the palette header left of the reset button. Omit to
-  // hide it (e.g. view-role). The Settings dialog carries the same switch as
-  // the always-available way back out of minimal mode.
-  minimalPanels?: boolean;
-  onToggleMinimalPanels?: () => void;
   // User preferences + a write-through setter, for the Palette settings
   // popover (gear in the header, left of reset). Holds the canvas-behaviour
   // toggles (auto-attach arrows, alignment guides) that used to live in the
@@ -79,6 +71,9 @@ export type CommandPaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
+  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
+  // middle of the view.
+  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
   // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
   onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
@@ -115,7 +110,8 @@ export type CommandPaletteProps = {
   // Drops a horizontal arrow at the viewport centre with no pointers
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
-  onAddArrow: () => void;
+  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
+  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
   // Pencil tool: enters one-shot freehand draw mode. Unlike the
   // other add-element callbacks, this never drops at the viewport
   // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil
@@ -123,6 +119,7 @@ export type CommandPaletteProps = {
   onBeginFreehand: () => void;
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
+  onBeginHighlighter: () => void;
   onBeginShapePen: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
@@ -137,19 +134,9 @@ export type CommandPaletteProps = {
   // wires this up so the Comments + AI panels can stack below the
   // palette as it changes height.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
-  // Mobile-only top override (the palette banner sits below the
-  // Explorer banner so signed-out users can switch documents without
-  // leaving the canvas). See MovablePanel for semantics.
-  mobileTopOverridePx?: number;
-  // Mobile dock control — forwarded to the inner MovablePanel.
-  mobileOpenOverride?: boolean;
-  onMobileClose?: () => void;
-  // Fired when a draw-to-place tool (shape / text / sticky / arrow /
-  // freehand) is armed FROM the palette in dock mode, so the parent can
-  // reopen the palette once the draw finishes.
-  onDrawArmed?: () => void;
-  mobileDockAnchor?: DockAnchor;
-  forceDockMode?: boolean;
+  // Fired after a tile is used, so a surface that hangs the palette in a
+  // popover (the Toolbar strip's More) can put it away.
+  onTileUsed?: () => void;
   // Active tab theme's element colours, so the palette tiles preview the
   // theme: shape / device / annotation tiles render filled in the theme's
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the

@@ -1,8 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
   apiListDocuments,
   apiListSharedWith,
@@ -21,6 +23,7 @@ import {
 import { trackDailyReturn } from '@/lib/daily-return';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
 import { useTokens } from '@/hooks/persistence/useTokens';
@@ -28,12 +31,20 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
+import { useExplorerLens } from './lens/useExplorerLens';
+import { carriedHref, lensViewOf } from './lens/lens-views';
+import { debugLog } from '@/lib/debug-log';
 import { useTimelineUnread } from './useTimelineUnread';
 import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
+import { useSidebarExpansion } from './sidebar/useSidebarExpansion';
+import { useHydrated } from '@/hooks/ui/useHydrated';
+import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
+import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
+import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // All Explorer state + handlers, lifted out of the old single-page
 // component when the sections became routes (docs/specs/013-workspace/folders.md): the layout's
@@ -46,8 +57,12 @@ import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
 // owner id resolves to the Clerk userId when signed in, otherwise to
 // the `livediagram:v2:self-id` localStorage UUID.
+// The preferences a hydrating render sees: none.
+const NO_PREFERENCES: UserPreferences = {};
+
 export function useExplorerState() {
-  const router = useRouter();
+  // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
+  const router = useAppNavigation();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // What the tree highlights + the right pane shows, derived from the
@@ -58,13 +73,20 @@ export function useExplorerState() {
   );
 
   const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
+  usePublishPicture(clerkUserId);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
   // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md) — two useState copies would drift
-  // the moment one of them wrote. Seeded from the localStorage cache for
-  // an instant first paint; the authoritative D1 copy merges in on mount.
-  const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
+  // the moment one of them wrote. Seeded from the localStorage cache; the
+  // authoritative D1 copy merges in on mount. Exposed only once hydrated: a
+  // build without sign-in prerenders this shell, and the render that
+  // hydrates it must match that HTML (the sidebar's Minimal chrome, the
+  // appearance control's power-user wording), so it sees no preferences.
+  const [storedPrefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
+  const hydrated = useHydrated();
+  const prefs = hydrated ? storedPrefs : NO_PREFERENCES;
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -119,12 +141,22 @@ export function useExplorerState() {
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled });
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here so
-  // the sidebar badge, the header New-token popover, and the list pane share
-  // one source.
+  // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every document
+  // view, kept in step with `q` in the address bar.
+  const lens = useExplorerLens({
+    selected,
+    teams,
+    search: searchParams?.toString() ?? '',
+    router,
+  });
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
+  // the timeline's token-card menus, which offer Revoke for a token that is
+  // still live. Managing them is the Settings API Tokens category.
   const tokens = useTokens(ownerId, { enabled: teamsEnabled });
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Which list read failed last, so a view says Failed rather than Empty.
+  const [failedReads, setFailedReads] = useState({ documents: false, shared: false });
   // Folder id mid-rename so the tree / list row swaps to an input
   // until the user commits or escapes.
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
@@ -142,31 +174,40 @@ export function useExplorerState() {
   // Category to open on, for the `?settings=` deep link. Distinct from
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  // Section of it, for `&section=<id>` (the Drive connect flow returns to Cloud Sync).
+  const [settingsSection, setSettingsSection] = useState<string | null>(null);
+  // Open Settings on a category in place: the account menu, and any link
+  // that names one (a timeline token card, lib/open-settings.ts).
+  // `sectionId` scrolls to and focuses one section of it (settingsSectionId).
+  const openSettingsOn = useCallback((categoryId: string, sectionId?: string) => {
+    setSettingsFocus(null);
+    setSettingsCategory(categoryId);
+    setSettingsSection(sectionId ?? null);
+    setSettingsOpen(true);
+  }, []);
+  useOpenSettingsRequests(openSettingsOn);
   // `?settings=<category>` deep link. The Settings dialog replaced the
   // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
-  // it means. Opened during render, once per link; the param is then stripped,
-  // so a refresh or a back does not keep reopening the dialog.
-  const settingsLink = searchParams?.get('settings') ?? null;
+  // it means. Opened during render, once per link. The params stay while
+  // Settings is open, so a page left for Google and reached again with Back
+  // reopens it (docs/specs/007-editor/user-preferences.md), and go when it closes.
+  // Read once hydrated: the page is prerendered without a query string, so opening Settings in the
+  // render that hydrates it would not match the HTML it hydrates.
+  const settingsLink = hydrated ? (searchParams?.get('settings') ?? null) : null;
+  const sectionLink = hydrated ? (searchParams?.get('section') ?? null) : null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);
     if (settingsLink) {
       setSettingsCategory(settingsLink);
+      setSettingsSection(sectionLink);
       setSettingsOpen(true);
     }
   }
-  useEffect(() => {
-    if (!settingsLink) return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete('settings');
-    window.history.replaceState({}, '', url.toString());
-  }, [settingsLink]);
-  // Which folder branches (and which teams) are open in the sidebar.
-  // Local state only; a fresh visit starts everything collapsed. Team
-  // ids live in the same set so a team's folder subtree expands the
-  // same way a personal folder does (one expand model, docs/specs/013-workspace/team-shared-documents.md).
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
+  // Which sidebar rows are open: folders, teams, My documents and Library
+  // (docs/specs/013-workspace/explorer-structure.md#expansion).
+  const { expanded, expand, toggleExpand } = useSidebarExpansion(selected);
   // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
   // search panel's Folders group, the move modal's team destinations,
   // the Recent list's team rows, and the sidebar's team subtrees.
@@ -195,12 +236,20 @@ export function useExplorerState() {
   // Navigate to a section's route and close the mobile drawer (a
   // no-op on desktop where it's never open). Used by every sidebar
   // row so picking a section on a phone returns you to the content.
+  // The lens rides along only from one aggregate view to another (explorer-filters.md "URL and carry-over").
   const go = useCallback(
     (node: SelectedNode) => {
-      router.push(explorerPathFor(node));
+      const to = lensViewOf(node.kind);
+      const href = carriedHref(explorerPathFor(node), lens.input, lens.view, to);
+      if (lens.input.trim() !== '') {
+        debugLog(
+          `[explorer-lens] carried from=${lens.view ?? 'none'} to=${to ?? 'none'} kept=${href.includes('q=')}`,
+        );
+      }
+      router.push(href);
       setMobileNavOpen(false);
     },
-    [router],
+    [router, lens.input, lens.view],
   );
   const confirm = useConfirm();
   const toast = useToast();
@@ -214,13 +263,17 @@ export function useExplorerState() {
         apiListSharedWith(ownerId).catch(() => null),
         refreshFolders(),
       ]).then(([list, sharedList]) => {
-        // A failed load must not masquerade as an empty account: set only what
-        // actually came back (a failed list keeps its prior value) and tell the
-        // user, rather than flashing the "you have no documents" empty state.
+        // A failed load must not masquerade as an empty account: set only what actually came
+        // back (a failed list keeps its prior value), and the views that read a failed list
+        // show Failed rather than "you have no documents" (explorer-filters.md "States").
         if (list !== null) setDocuments(list);
         if (sharedList !== null) setShared(sharedList);
-        if (list === null || sharedList === null) {
-          toast.error('Could not load your documents. Check your connection and try again.');
+        setFailedReads({ documents: list === null, shared: sharedList === null });
+        if (list === null) console.warn('[explorer] list read failed list=documents');
+        if (sharedList === null) console.warn('[explorer] list read failed list=shared');
+        // Only the shared read failed: the other views still list their rows, so say what is missing.
+        if (list !== null && sharedList === null) {
+          toast.error('Couldn’t load the documents shared with you. Try again in a moment.');
         }
         setLoading(false);
       }),
@@ -249,6 +302,12 @@ export function useExplorerState() {
   useEffect(() => {
     if (loadOwner) void load(loadOwner);
   }, [loadOwner, load]);
+  // A change made in Google Drive reaches this page without a reload
+  // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow"). Quietly:
+  // no skeleton, the lists just settle.
+  useAfterDriveChange(() => {
+    if (loadOwner) void load(loadOwner);
+  }, !!loadOwner);
 
   // ---- Derived tree shape ---------------------------------------
   // Index folders by parentId so the recursive renderer can walk
@@ -290,7 +349,8 @@ export function useExplorerState() {
     const created = await hookCreateFolder({ parentId });
     if (created) {
       setRenamingFolderId(created.id);
-      if (parentId) setExpanded((prev) => new Set(prev).add(parentId));
+      // Reveal the new row so its rename field shows: its parent, or My documents for a root folder.
+      expand(parentId ?? MY_DOCUMENTS_EXPAND_KEY);
     }
   };
 
@@ -318,6 +378,7 @@ export function useExplorerState() {
     confirm,
     toast,
     deleteFolderFromHook: deleteFolder,
+    folders,
     // Stay on the library after a duplicate; just refresh the list
     // so the copy's row appears.
     afterDuplicate: async () => {
@@ -400,10 +461,9 @@ export function useExplorerState() {
 
   const {
     documentsByFolder,
-    unsortedDocuments,
-    generatedDocuments,
     offlineDocuments,
     paneContent,
+    lensResult,
     recentCount,
     paneTitle,
     paneCrumbs,
@@ -419,6 +479,9 @@ export function useExplorerState() {
     go,
     recentExcludedIds: prefs.recentExcludedIds ?? [],
     favouriteIds,
+    lens: lens.parsed.lens,
+    viewerId: ownerId ?? '',
+    now: lens.now,
   });
 
   // Merge the authoritative D1 preferences in once the owner is known.
@@ -449,18 +512,17 @@ export function useExplorerState() {
     [ownerId],
   );
 
-  const toggleExpand = (id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  // Default folders (docs/specs/013-workspace/default-folders.md): the menus' checks and verbs.
+  const defaultFolders = useDefaultFolderMenus(ownerId, {
+    personal: folders,
+    team: teamFolders,
+    teams,
+  });
 
   // Folder-row context-menu actions, shared between the tree and
   // the list view so both surfaces offer the same set.
   const folderActions = (f: Folder, anchor: HTMLElement | null) => ({
+    defaults: defaultFolders.forFolder(f),
     rename: () => setRenamingFolderId(f.id),
     newSubfolder: () => void createFolder(f.id),
     move: () => openMovePickerForFolder(f.id, anchor),
@@ -494,17 +556,23 @@ export function useExplorerState() {
     teams,
     teamFolders,
     teamDocuments,
+    // My documents' own menu: "Use as default for" only.
+    rootDefaults: defaultFolders.forRoot,
     invites,
     tokens,
     loading,
+    // Re-read the owner's lists (after an import made documents).
+    refreshPersonal: refresh,
     folderById,
     childrenByParent,
     rootFolders,
     documentsByFolder,
-    unsortedDocuments,
-    generatedDocuments,
     offlineDocuments,
     paneContent,
+    // The lens and what it did to the current view (docs/specs/013-workspace/explorer-filters.md).
+    lens,
+    lensResult,
+    failedReads,
     recentCount,
     // Unread Timeline events (docs/specs/013-workspace/timeline.md §2.5), for the sidebar badge.
     timelineUnread,
@@ -533,6 +601,9 @@ export function useExplorerState() {
     setSettingsFocus,
     settingsCategory,
     setSettingsCategory,
+    settingsSection,
+    setSettingsSection,
+    openSettingsOn,
     // Folder + document actions
     folderActions,
     createFolder,

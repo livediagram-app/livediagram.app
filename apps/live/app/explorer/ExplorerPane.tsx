@@ -3,50 +3,46 @@
 import dynamic from 'next/dynamic';
 import { useState, useCallback } from 'react';
 import { useExplorer } from './ExplorerContext';
-import { NewTokenButton } from '@/components/panels/NewTokenButton';
-import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
-import { DynamicFolderInfo } from './DynamicFolderInfo';
-import { TimelineControls, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { ViewInfo } from './ViewInfo';
+import { PaneLensBar } from './lens/PaneLensBar';
+import { FilteredEmpty, LoadFailed } from './lens/LensStates';
+import { narrowRows } from './lens/pane-lens';
+import { TimelineControls } from '@livediagram/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
+import { useExplorerImport } from './useExplorerImport';
+import { explorerPathFor } from './routes';
+import { VIEW_TITLES } from './view-titles';
 
 // The browse sections that render a folders + documents grid the List/Card
-// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes, tokens,
+// toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
 // profile, team, invites, shared) have their own fixed layout.
-const BROWSE_KINDS = new Set([
-  'recent',
-  'all',
-  'folder',
-  'unsorted',
-  'favourites',
-  'generated',
-  'offline',
-  'dynamic',
-]);
+const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'search', 'favourites', 'offline']);
 
 // Each Explorer section deep-links its matching help-centre article from a
 // Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's hover card copy comes
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
+  // The Home article covers Home and All activity (docs/specs/013-workspace/explorer-home.md).
+  home: 'timeline',
   timeline: 'timeline',
   activity: 'activity',
   recent: 'recentDocuments',
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
   themes: 'customThemes',
-  tokens: 'apiTokens',
   trash: 'trash',
-  unsorted: 'unsorted',
   offline: 'offlineMode',
   folder: 'folders',
   all: 'folders',
+  search: 'explorerFilters',
 };
 
 // Lazy-load the heavier panes — each is only mounted on its own
@@ -55,15 +51,15 @@ const GalleryPane = dynamic(
   () => import('@/components/panels/GalleryPane').then((m) => m.GalleryPane),
   { ssr: false },
 );
-const TokensPane = dynamic(
-  () => import('@/components/panels/TokensPane').then((m) => m.TokensPane),
-  { ssr: false },
-);
 const TrashSection = dynamic(() => import('./TrashSection').then((m) => m.TrashSection), {
   ssr: false,
 });
 const ThemesPane = dynamic(
   () => import('@/components/panels/ThemesPane').then((m) => m.ThemesPane),
+  { ssr: false },
+);
+const ShapeLibrariesPane = dynamic(
+  () => import('@/components/panels/ShapeLibrariesPane').then((m) => m.ShapeLibrariesPane),
   { ssr: false },
 );
 const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) => m.TeamPane), {
@@ -80,6 +76,12 @@ const TeamInvitesPane = dynamic(
 // unaffected by a feature they don't use.
 const TimelinePane = dynamic(
   () => import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
+  { ssr: false },
+);
+// Home is the landing route (docs/specs/013-workspace/explorer-home.md), lazy like every pane so
+// the shared explorer chunk stays the same size for the other sections.
+const HomePane = dynamic(
+  () => import('@/components/panels/home/HomePane').then((m) => m.HomePane),
   { ssr: false },
 );
 const ActivityPane = dynamic(
@@ -103,16 +105,16 @@ export function ExplorerPane() {
     go,
     loading,
     ownerId,
+    refreshPersonal,
     clerkUserId,
     clerkDisplayName,
-    tokens,
     activity,
     paneTitle,
     paneCrumbs,
     paneContent,
-    unsortedDocuments,
-    generatedDocuments,
-    offlineDocuments,
+    lens,
+    lensResult,
+    failedReads,
     childrenByParent,
     documentsByFolder,
     setMobileNavOpen,
@@ -136,8 +138,8 @@ export function ExplorerPane() {
     movePersonalFolders,
     moveTeamDests,
     moveDocumentTo,
+    timelineUnread,
   } = useExplorer();
-  const { signInHref } = useAuthHrefs();
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
   // name). When that happens, drop the title/breadcrumb above it — there
@@ -145,37 +147,37 @@ export function ExplorerPane() {
   // real team's title is never suppressed by a stale 404 from the last one.
   const [notFoundIn, setNotFoundIn] = useState<typeof selected | null>(null);
   const teamNotFound = notFoundIn === selected;
-  // Where each Recent row lives (docs/specs/013-workspace/recent-folder-chip.md). Recent is the only pane that
-  // spans folders — every other one IS a folder, so a chip there would just
-  // repeat the pane's own title.
+  // Where each row lives (docs/specs/013-workspace/recent-folder-chip.md), on the views that list
+  // more than one place: Recent, Favourites and Search results, and a scoped view whose lens
+  // reaches into its subfolders (explorer-filters.md "Views"). Elsewhere every row sits in the
+  // view's own folder, where the chip would only repeat its title.
   //
   // Rows shared WITH you carry no folderId at all (they live in the sharer's
   // library, not yours), so they get no chip rather than a misleading one.
   const folderChipFor = useCallback(
     (d: PaneDocument): { label: string; onOpen: () => void } | null => {
-      // Recent AND Favourites both aggregate across folders, so both need
-      // to say where a row actually lives (docs/specs/013-workspace/recent-folder-chip.md, docs/specs/013-workspace/favourites.md). Every other
-      // pane IS a folder, where the chip would just repeat its title.
-      const aggregates = selected.kind === 'recent' || selected.kind === 'favourites';
-      if (!aggregates || d.shared) return null;
-      // A team document's folder belongs to the team's library, so the chip
-      // jumps into that team rather than your personal tree.
+      if (d.shared) return null;
+      const aggregates =
+        selected.kind === 'recent' || selected.kind === 'favourites' || selected.kind === 'search';
+      const reaching = lensResult.active && (selected.kind === 'all' || selected.kind === 'folder');
+      if (!aggregates && !reaching) return null;
+      // A row in the folder the reader is in needs no chip.
+      const here = selected.kind === 'folder' ? selected.id : null;
+      if (reaching && d.folderId === here) return null;
+      // A team document's folder belongs to the team's library, which `folderById` (your
+      // personal folders) doesn't index: the chip names the TEAM and opens its library.
       if (d.team) {
-        // Team folders live in the team's own tree, which `folderById`
-        // (your personal folders) doesn't index — so the chip names the
-        // TEAM and opens its library, which is the location that matters
-        // for a team row anyway.
         return { label: d.team.name, onOpen: () => go({ kind: 'team', id: d.team!.id }) };
       }
       if (!d.folderId) {
-        // No folder is still a location: the synthetic Unsorted view.
-        return { label: 'Unsorted', onOpen: () => go({ kind: 'unsorted' }) };
+        // The root is a location too: My documents.
+        return { label: VIEW_TITLES.all, onOpen: () => go({ kind: 'all' }) };
       }
       const folder = folderById.get(d.folderId);
       if (!folder) return null;
       return { label: folder.name, onOpen: () => go({ kind: 'folder', id: folder.id }) };
     },
-    [selected.kind, folderById, go],
+    [selected, folderById, go, lensResult.active],
   );
 
   const hideTeamTitle = selected.kind === 'team' && teamNotFound;
@@ -192,80 +194,103 @@ export function ExplorerPane() {
   // Which document's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
+  const newDocument =
+    // Home and All activity get one too. Neither is a container you add to, but Home is the
+    // first screen of the app (docs/specs/013-workspace/explorer-home.md), where starting a
+    // document must never be a dead end; it navigates to /new and files nothing here.
+    //
+    // Activity does NOT: a new document puts nothing on an inbox of
+    // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
+    selected.kind === 'activity' ||
+    selected.kind === 'shared' ||
+    selected.kind === 'gallery' ||
+    selected.kind === 'themes' ||
+    selected.kind === 'shape-libraries' ||
+    selected.kind === 'trash' ||
+    selected.kind === 'team' ||
+    selected.kind === 'invites' ||
+    // This browser is a read-through view, not a place you hand-author into
+    // (offline documents are created from the /new wizard's Settings toggle).
+    selected.kind === 'offline'
+      ? undefined
+      : () =>
+          window.location.assign(
+            selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new',
+          );
+  // Imports sit beside New document: imported boards land where new documents do.
+  const imports = useExplorerImport({
+    ownerId,
+    folderId: selected.kind === 'folder' ? selected.id : null,
+    onDocumentsCreated: () => {
+      if (ownerId) void refreshPersonal(ownerId);
+    },
+  });
+
   return (
     <>
+      {imports.dialogs}
       <PaneHeader
         title={hideTeamTitle ? '' : paneTitle}
         crumbs={hideTeamTitle ? [] : paneCrumbs}
         onOpenNav={() => setMobileNavOpen(true)}
         helpArticle={sectionHelp}
         headerActions={
-          selected.kind === 'timeline' ? (
-            <TimelineControls controls={timeline.controls} />
-          ) : selected.kind === 'tokens' && clerkUserId ? (
-            <NewTokenButton tokens={tokens} />
+          selected.kind === 'timeline' || newDocument ? (
+            <>
+              {selected.kind === 'timeline' ? (
+                <TimelineControls controls={timeline.controls} />
+              ) : null}
+              {newDocument && selected.kind !== 'home' ? imports.toolbar : null}
+            </>
           ) : undefined
         }
         viewMode={isBrowse ? viewMode : undefined}
         onSetViewMode={isBrowse ? setViewMode : undefined}
-        onCreateDocument={
-          // Timeline gets one too. A feed is a record of what happened rather
-          // than a container you add to, so this started out omitted and left
-          // to the empty state's CTA — but the empty state is exactly what a
-          // returning user never sees, and Timeline is now the Explorer
-          // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new document" a
-          // dead end on the first screen of the app.
-          //
-          // Activity does NOT: a new document puts nothing on an inbox of
-          // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
-          selected.kind === 'activity' ||
-          selected.kind === 'shared' ||
-          selected.kind === 'gallery' ||
-          selected.kind === 'themes' ||
-          selected.kind === 'tokens' ||
-          selected.kind === 'trash' ||
-          selected.kind === 'team' ||
-          selected.kind === 'invites' ||
-          // Generated / Offline are read-through dynamic views, not places
-          // you hand-author into (offline documents are created from the /new
-          // wizard's Settings toggle).
-          selected.kind === 'generated' ||
-          selected.kind === 'offline' ||
-          selected.kind === 'dynamic'
-            ? undefined
-            : () =>
-                window.location.assign(
-                  selected.kind === 'folder' ? `/new?folder=${selected.id}` : '/new',
-                )
-        }
+        onCreateDocument={newDocument}
         onCreateFolder={
+          selected.kind === 'home' ||
           selected.kind === 'timeline' ||
           selected.kind === 'activity' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
-          selected.kind === 'tokens' ||
+          selected.kind === 'shape-libraries' ||
           selected.kind === 'trash' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
-          selected.kind === 'generated' ||
-          selected.kind === 'offline' ||
-          selected.kind === 'dynamic'
+          selected.kind === 'search' ||
+          selected.kind === 'offline'
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
         folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
       />
 
-      {/* Dynamic (synthetic) folders explain themselves under the breadcrumb. */}
-      <DynamicFolderInfo selected={selected} />
+      {/* A view the app gathers explains itself under the breadcrumb. */}
+      <ViewInfo selected={selected} />
+      {/* The lens's chips and live region (explorer-filters.md "The chip row"). */}
+      {lens.view !== null ? (
+        <PaneLensBar
+          showIssues={!(lensResult.active && lensResult.shown === 0 && !lensResult.empty)}
+        />
+      ) : null}
 
       {/* Timeline runs ahead of the `loading` gate on purpose: that flag
           tracks the DOCUMENT lists, which this section doesn't read, and
           waiting on them would show document skeletons on the landing
           page before the feed's own skeleton. */}
-      {selected.kind === 'timeline' ? (
+      {selected.kind === 'home' ? (
+        // Ahead of the `loading` gate, like the Timeline: Home reads its own data.
+        ownerId ? (
+          <HomePane
+            ownerId={ownerId}
+            onSeen={timelineUnread.clear}
+            allActivityHref={explorerPathFor({ kind: 'timeline' })}
+            onSeeAll={() => go({ kind: 'timeline' })}
+          />
+        ) : null
+      ) : selected.kind === 'timeline' ? (
         ownerId ? (
           <TimelinePane
             feed={timeline}
@@ -297,13 +322,21 @@ export function ExplorerPane() {
             clerkUserId={clerkUserId ?? null}
             clerkDisplayName={clerkDisplayName}
             onTeamsChanged={() => void refreshTeams()}
-            onLeftTeam={() => go({ kind: 'timeline' })}
+            onLeftTeam={() => go({ kind: 'home' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
             // The shared-documents move picker offers every space (docs/specs/013-workspace/team-shared-documents.md):
             // the personal tree + each team, with `moveDocumentTo` routing a
             // cross-scope pick from the document's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
             onMoveDocumentTo={moveDocumentTo}
+            // The team library reads its own rows, so it narrows them itself.
+            lens={{
+              active: lensResult.active,
+              input: lens.input,
+              issues: lens.parsed.issues,
+              narrow: (rows) => narrowRows(rows, lens.parsed.lens, ownerId, lens.now),
+              clear: () => lens.setInput(''),
+            }}
           />
         ) : null
       ) : selected.kind === 'gallery' ? (
@@ -312,40 +345,23 @@ export function ExplorerPane() {
         ) : null
       ) : selected.kind === 'themes' ? (
         <ThemesPane />
+      ) : selected.kind === 'shape-libraries' ? (
+        <ShapeLibrariesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
-      ) : selected.kind === 'tokens' ? (
-        // Signed-in only (docs/specs/015-api/public-api-and-tokens.md). Reached via the sidebar only when signed
-        // in, but a guest could deep-link /explorer/tokens — show a sign-in
-        // prompt rather than a TokensPane that would just 403.
-        clerkUserId ? (
-          <TokensPane tokens={tokens.list} error={tokens.error} onRevoke={tokens.revoke} />
-        ) : (
-          <div className="rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-              Sign in to use API tokens
-            </p>
-            <p className="mt-1 text-xs text-slate-400">
-              API tokens are an account feature for calling the API from your own scripts.
-            </p>
-            <a
-              href={signInHref}
-              className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
-            >
-              Sign in
-            </a>
-          </div>
-        )
-      ) : selected.kind === 'shared' ? (
-        <SharedList shared={shared} ownerId={ownerId} onDismiss={dismissShared} />
-      ) : paneContent.folders.length === 0 &&
-        paneContent.documents.length === 0 &&
-        !paneContent.showUnsortedRow &&
-        // All + Dynamic always lead with synthetic rows, so they're never
-        // "empty" even with zero folders and documents.
-        selected.kind !== 'all' &&
-        selected.kind !== 'dynamic' ? (
+      ) : (selected.kind === 'shared' ? failedReads.shared : failedReads.documents) ? (
+        // A failed read never reads as an empty account (explorer-filters.md "States").
+        <LoadFailed onRetry={() => (ownerId ? void refreshPersonal(ownerId) : undefined)} />
+      ) : lensResult.empty ? (
         <EmptyPane selected={selected} />
+      ) : lensResult.active && lensResult.shown === 0 ? (
+        <FilteredEmpty issues={lens.parsed.issues} onClear={() => lens.setInput('')} />
+      ) : selected.kind === 'shared' ? (
+        <SharedList
+          shared={shared.filter((s) => paneContent.documents.some((d) => d.id === s.id))}
+          ownerId={ownerId}
+          onDismiss={dismissShared}
+        />
       ) : (
         (() => {
           // List and Card take the SAME props (docs/specs/006-document/document-snapshots.md), so build them
@@ -356,22 +372,6 @@ export function ExplorerPane() {
               folders={paneContent.folders}
               documents={paneContent.documents}
               ownerId={ownerId}
-              // The three synthetic folders live inside the Dynamic parent
-              // view; Personal Space (/all) leads with the single Dynamic row.
-              showUnsortedRow={selected.kind === 'dynamic'}
-              unsortedCount={unsortedDocuments.length}
-              onOpenUnsorted={() => go({ kind: 'unsorted' })}
-              showGeneratedRow={selected.kind === 'dynamic'}
-              generatedCount={generatedDocuments.length}
-              onOpenGenerated={() => go({ kind: 'generated' })}
-              showOfflineRow={selected.kind === 'dynamic'}
-              offlineCount={offlineDocuments.length}
-              onOpenOffline={() => go({ kind: 'offline' })}
-              showDynamicRow={selected.kind === 'all'}
-              dynamicCount={
-                unsortedDocuments.length + generatedDocuments.length + offlineDocuments.length
-              }
-              onOpenDynamic={() => go({ kind: 'dynamic' })}
               onOpenFolder={(id) => go({ kind: 'folder', id })}
               onCommitRenameFolder={commitRenameFolder}
               onCancelRenameFolder={() => setRenamingFolderId(null)}
@@ -404,9 +404,9 @@ export function ExplorerPane() {
                 folders: childrenByParent.get(id) ?? [],
                 documents: documentsByFolder.get(id) ?? [],
               })}
-              // Owner column (desktop): Recent mixes personal + team rows
-              // (docs/specs/013-workspace/team-shared-documents.md), so it's the one list where ownership varies.
-              showOwner={selected.kind === 'recent'}
+              // Owner column (desktop): the views that mix personal, team and shared rows
+              // (docs/specs/013-workspace/team-shared-documents.md) are the ones where ownership varies.
+              showOwner={selected.kind === 'recent' || selected.kind === 'search'}
             />
           );
         })()
