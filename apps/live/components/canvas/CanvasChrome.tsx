@@ -304,7 +304,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
   // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
-  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
+  // The Toolbar layout's only: the Floating layout shows Draw's tools in the Palette panel.
+  const dockShown =
+    toolbarActive && whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
@@ -511,13 +513,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock
-          model={props.whiteboardDock}
-          ink={props.whiteboardInk ?? '#1c1917'}
-          // The Floating layout's mode switch moves here with the Palette's place; the Toolbar
-          // layout keeps it beside the menu button (docs/specs/007-editor/editor-modes.md).
-          modeSwitch={!toolbarActive}
-        />
+        <WhiteboardDock model={props.whiteboardDock} ink={props.whiteboardInk ?? '#1c1917'} />
       ) : null}
 
       {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they

@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, settledBox, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  settledBox,
+  test,
+  chooseToolbarLayout,
+} from './fixtures';
 
 // Where the whiteboard dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
 // the top by default, the bottom by choice in Settings, Editor, Whiteboard; flyouts open on the
@@ -8,6 +15,8 @@ import { dismissQuickTour, expect, expectNoPageErrors, settledBox, test } from '
 const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 
 async function openWhiteboard(page: Page, viewport = { width: 1600, height: 900 }) {
+  // The dock is the Toolbar layout's (docs/specs/023-draw-mode/draw-mode.md).
+  await chooseToolbarLayout(page);
   await page.setViewportSize(viewport);
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/new?template=whiteboard');

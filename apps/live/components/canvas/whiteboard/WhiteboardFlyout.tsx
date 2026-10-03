@@ -2,8 +2,40 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
+import { Portal } from '@/components/primitives/Portal';
 
 const VIEWPORT_MARGIN_PX = 12;
+// The gap between the Palette panel's content and a flyout opened beside it: the panel's own
+// padding (10px) plus the 12px the editor's floating surfaces keep between them.
+const BESIDE_GAP_PX = 22;
+
+// A flyout beside the Palette panel (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
+// shows"): on the side of the panel with more room, its top level with the opener's, kept inside
+// the viewport. Pure, from measured rects and the flyout's layout size.
+export function besidePanel(
+  panel: { left: number; right: number },
+  opener: { top: number },
+  flyout: { offsetWidth: number; offsetHeight: number },
+  viewport: { width: number; height: number } = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  },
+): { left: number; top: number } {
+  const roomLeft = panel.left;
+  const roomRight = viewport.width - panel.right;
+  const left =
+    roomLeft >= roomRight
+      ? Math.max(VIEWPORT_MARGIN_PX, panel.left - BESIDE_GAP_PX - flyout.offsetWidth)
+      : Math.min(
+          viewport.width - VIEWPORT_MARGIN_PX - flyout.offsetWidth,
+          panel.right + BESIDE_GAP_PX,
+        );
+  const top = Math.max(
+    VIEWPORT_MARGIN_PX,
+    Math.min(opener.top, viewport.height - VIEWPORT_MARGIN_PX - flyout.offsetHeight),
+  );
+  return { left, top };
+}
 
 // A dock button's settings, opened on the board side of the dock (below a dock at the top, above
 // one at the bottom) so the dock itself never moves (docs/specs/023-draw-mode/draw-mode.md "What a
@@ -21,6 +53,7 @@ export function WhiteboardFlyout({
   restoreFocus = false,
   hideTitle = false,
   below = false,
+  besideOf,
   children,
 }: {
   id: string;
@@ -42,9 +75,23 @@ export function WhiteboardFlyout({
   hideTitle?: boolean;
   // Opens below the dock (a dock at the top) rather than above it.
   below?: boolean;
+  // The Floating layout's Palette panel: open BESIDE the panel, level with this opener (its
+  // data-dock-item), on the side with room, portalled out of the panel's scroll clip.
+  besideOf?: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // Where a beside-the-panel flyout sits, in viewport px; null until measured (it stays hidden
+  // for that one frame rather than flashing at the corner).
+  const [beside, setBeside] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!besideOf || !node) return;
+    const wrapEl = document.querySelector<HTMLElement>('[data-whiteboard-dock]');
+    const opener = wrapEl?.querySelector<HTMLElement>(`[data-dock-item="${besideOf}"]`);
+    if (!wrapEl || !opener) return;
+    setBeside(besidePanel(wrapEl.getBoundingClientRect(), opener.getBoundingClientRect(), node));
+  }, [besideOf]);
   // Nudge, in px, that keeps the flyout inside the viewport when its opener
   // sits near an edge (a phone, a scrolled dock). Measured before paint.
   const [nudge, setNudge] = useState(0);
@@ -102,14 +149,14 @@ export function WhiteboardFlyout({
     };
   }, [id, takeFocus]);
 
-  return (
+  const card = (
     <div
       ref={ref}
       id={id}
       role="group"
       aria-label={label}
       data-floating-panel=""
-      data-side={below ? 'below' : 'above'}
+      data-side={besideOf ? 'beside' : below ? 'below' : 'above'}
       onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.stopPropagation();
@@ -119,13 +166,26 @@ export function WhiteboardFlyout({
       onPointerEnter={(e) => (e.pointerType !== 'touch' ? onPointerEnter?.() : undefined)}
       onPointerLeave={(e) => (e.pointerType !== 'touch' ? onPointerLeave?.() : undefined)}
       // `translate`, not `transform`: the pop-in animation owns `transform`.
-      style={{ left, translate: `calc(-50% + ${nudge}px) 0` }}
-      className={`pointer-events-auto absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'} w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
+      style={
+        besideOf
+          ? {
+              left: beside?.left ?? 0,
+              top: beside?.top ?? 0,
+              visibility: beside ? undefined : 'hidden',
+            }
+          : { left, translate: `calc(-50% + ${nudge}px) 0` }
+      }
+      className={`pointer-events-auto ${
+        besideOf
+          ? 'fixed z-[var(--z-popover)]'
+          : `absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'}`
+      } w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
     >
       {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
       {children}
     </div>
   );
+  return besideOf ? <Portal>{card}</Portal> : card;
 }
 
 // A row of choices in a flyout. `selected` drives aria-pressed and the ring.

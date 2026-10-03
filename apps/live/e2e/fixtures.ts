@@ -42,6 +42,23 @@ function isIgnored(text: string): boolean {
   return IGNORED_ERROR_PATTERNS.some((re) => re.test(text));
 }
 
+// The Toolbar layout (docs/specs/007-editor/toolbar-layout.md), for a spec about Draw mode's
+// floating dock, which only that layout shows (the Floating layout puts Draw's tools in the
+// Palette panel, docs/specs/023-draw-mode/draw-mode.md). Only when no layout is stored yet, so a
+// reload keeps the preferences the spec changed.
+export async function chooseToolbarLayout(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const key = 'livediagram:user-preferences:v1';
+    try {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+      if (prefs.panelLayout) return;
+      localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
+    } catch {
+      // No storage, no layout to choose.
+    }
+  });
+}
+
 // The editor's debug flag (docs/specs/003-system-architecture/console-logging.md): the suite drives
 // the production build, which writes its trace lines only with it set, and specs wait for some of
 // them (`[drive-mirror] pass-end`). Set before any page of the context loads.

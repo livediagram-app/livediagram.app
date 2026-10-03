@@ -56,12 +56,33 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## What a whiteboard shows
 
-A whiteboard trades the editor's full chrome for one **floating dock**,
-centred across the **top** of the canvas by default (see
-[Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
+A whiteboard trades the palette for Draw's own tools, in the place the
+palette holds in the layout in force:
 
-- **Hidden in Draw mode:** the palette (floating and the Toolbar
-  layout's strip), the format painter, the Highlighter tile with the palette (a whiteboard's pens are its markers), the Theme &
+- **Floating layout: the Palette panel.** The same floating **Palette**
+  panel stays, where it was, with its title row (the editor mode switch,
+  help, minimise) and its drag, docking and collapse. Its body swaps the
+  palette's pickers and catalogue for Draw's three groups, stacked: the
+  **drawing tools**, the **shapes** and **settings**. The panel draws **no
+  separators**: each run the dock divides with a separator starts a **row of
+  its own** (Select; the three markers; Text and the Path tool; the Eraser;
+  the pinned shapes; Shapes; the cog). A group's flyout (a pen's settings, the
+  eraser, Shapes, a shape slot's menu, Settings) opens **beside the panel**,
+  on the side with room, level with its button, so the panel never moves.
+  The dock position setting does not apply.
+- **Toolbar layout: the dock.** One **floating dock**, centred across the
+  **top** of the canvas by default (see
+  [Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
+  It is the strip's twin: the **same height** as the Diagram strip (its
+  buttons the strip's tile size) and drawn at the **toolbar UI scale**
+  ([UI scale](../007-editor/ui-scale.md)), so switching modes never changes
+  the size of the bar at the top.
+
+The groups, their buttons, flyouts, keys and behaviour below are the same
+in both; "the dock" below means either form unless it says otherwise.
+
+- **Hidden in Draw mode:** the palette's catalogue (the floating
+  Palette shows Draw's groups instead) and the Toolbar layout's strip, the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
@@ -174,6 +195,9 @@ centred across the **top** of the canvas by default (see
   send back, duplicate, comment).
 
 ## Where the dock sits
+
+The Toolbar layout's dock only; the Floating layout's Draw tools live in
+the Palette panel, wherever the user put it.
 
 - **Top by default**, centred across the top of the canvas, where the
   Toolbar layout's strip sits in Diagram mode

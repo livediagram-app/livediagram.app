@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
 import { WhiteboardDock } from './WhiteboardDock';
+import { besidePanel } from './WhiteboardFlyout';
 
 const itemsOf = (group: string) =>
   [
@@ -390,5 +391,74 @@ describe('WhiteboardDock position log', () => {
     view.rerender(<WhiteboardDock model={model('pen', { position: 'bottom' })} ink="#1c1917" />);
     expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'bottom');
     debug.mockRestore();
+  });
+});
+
+// docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows": the Floating layout's form.
+describe('WhiteboardDock in the Palette panel', () => {
+  const renderPanel = () =>
+    render(<WhiteboardDock variant="panel" model={model()} ink="#1c1917" />);
+
+  it('lays the same three groups out as the panel body, with no dock placement', () => {
+    renderPanel();
+    expect(screen.getAllByRole('toolbar').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Drawing tools',
+      'Shapes',
+      'Settings',
+    ]);
+    const body = document.querySelector<HTMLElement>('[data-whiteboard-dock]')!;
+    expect(body.dataset.dockVariant).toBe('panel');
+    expect(body.dataset.dockPosition).toBeUndefined();
+    expect(body.className).not.toContain('absolute');
+    // Sections wrap to the panel's width rather than sitting in pills of their own.
+    expect(screen.getByRole('toolbar', { name: 'Drawing tools' }).className).toContain('flex-wrap');
+  });
+
+  it('starts a row where the dock draws a separator, and draws no separators', () => {
+    renderPanel();
+    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
+    // Select | markers | Text, Path | Eraser: three breaks, four rows.
+    expect(drawing.querySelectorAll('[data-dock-row-break]')).toHaveLength(3);
+    expect(document.querySelectorAll('.bg-slate-200.w-px')).toHaveLength(0);
+    // The pinned side still ends at a marker the slot drag can read.
+    expect(document.querySelector('[data-pinned-separator]')).not.toBeNull();
+  });
+
+  it('opens a flyout beside the panel, out of its scroll clip', () => {
+    renderPanel();
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const flyout = document.getElementById('whiteboard-flyout-settings')!;
+    expect(flyout.dataset.side).toBe('beside');
+    expect(flyout.className).toContain('fixed');
+    // Portalled to the body, not inside the panel.
+    expect(document.querySelector('[data-whiteboard-dock]')!.contains(flyout)).toBe(false);
+  });
+});
+
+describe('besidePanel', () => {
+  const viewport = { width: 1280, height: 800 };
+  const flyout = { offsetWidth: 280, offsetHeight: 200 };
+
+  it('opens on the side with more room, level with the opener', () => {
+    // A panel at the right: the flyout opens to its left.
+    expect(besidePanel({ left: 1000, right: 1260 }, { top: 120 }, flyout, viewport)).toEqual({
+      left: 1000 - 22 - 280,
+      top: 120,
+    });
+    // A panel at the left: to its right.
+    expect(besidePanel({ left: 20, right: 280 }, { top: 120 }, flyout, viewport)).toEqual({
+      left: 280 + 22,
+      top: 120,
+    });
+  });
+
+  it('keeps the flyout inside the viewport', () => {
+    expect(besidePanel({ left: 1000, right: 1260 }, { top: 700 }, flyout, viewport).top).toBe(
+      800 - 12 - 200,
+    );
+    expect(besidePanel({ left: 100, right: 1200 }, { top: 0 }, flyout, viewport)).toEqual({
+      left: 12,
+      top: 12,
+    });
   });
 });

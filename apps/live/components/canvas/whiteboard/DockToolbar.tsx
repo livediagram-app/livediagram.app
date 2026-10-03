@@ -1,8 +1,9 @@
 'use client';
 
 // One group of the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
-// its own pill and its own toolbar for assistive technology, one Tab stop, the arrow keys walking
-// its buttons (the WAI-ARIA toolbar pattern). Buttons are fixed-size, so nothing moves under the
+// its own pill (a section of the Palette panel in the Floating layout) and its own toolbar for
+// assistive technology, one Tab stop, the arrow keys walking its buttons (the WAI-ARIA toolbar
+// pattern). Buttons are fixed-size, so nothing moves under the
 // pointer when a tool is picked.
 
 import {
@@ -17,6 +18,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
+import { useDockVariant } from './dock-variant';
 
 type Roving = { focusKey: string; setFocusKey: (key: string) => void };
 const RovingContext = createContext<Roving>({ focusKey: '', setFocusKey: () => {} });
@@ -35,6 +37,7 @@ export function DockToolbar({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [focusKey, setFocusKey] = useState('');
+  const variant = useDockVariant();
 
   // The Tab stop is the last focused button; while there is none (first render, or that button
   // went: a slot re-ranked, a mode switched), it is the group's first button.
@@ -71,7 +74,13 @@ export function DockToolbar({
         aria-orientation="horizontal"
         data-dock-group={group}
         onKeyDown={onKeyDown}
-        className="pointer-events-auto relative flex shrink-0 animate-pop-in items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className={
+          variant === 'panel'
+            ? // A section of the Palette panel: no pill of its own, one row per run the dock divides.
+              'pointer-events-auto relative flex flex-wrap items-center gap-x-0.5 gap-y-1'
+            : // A pill of the dock, the Toolbar layout strip's twin (its card and padding).
+              'pointer-events-auto relative flex shrink-0 animate-pop-in items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40'
+        }
       >
         {children}
       </div>
@@ -138,7 +147,8 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
               ? (e) => (e.pointerType !== 'touch' ? o.onHoverLeave!() : undefined)
               : undefined
           }
-          className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-600 transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white ${
+          // The Toolbar layout strip's tile size (36px), so the dock is the strip's height.
+          className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-600 transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white ${
             o.pressed
               ? 'bg-brand-50 text-brand-700 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
               : ''
@@ -162,6 +172,17 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
 );
 
 export function DockDivider(props: Record<`data-${string}`, string>) {
+  // The Palette panel has no separators: what the dock divides starts a new row there. A
+  // zero-width marker keeps the divider's place (the shape-slot drag reads the pinned side's end
+  // off it), then a full-width break wraps the row.
+  if (useDockVariant() === 'panel') {
+    return (
+      <>
+        <span {...props} aria-hidden className="h-6 w-0 shrink-0" />
+        <span aria-hidden data-dock-row-break="" className="basis-full" />
+      </>
+    );
+  }
   return (
     <span
       {...props}

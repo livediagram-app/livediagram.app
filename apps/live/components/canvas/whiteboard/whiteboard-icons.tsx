@@ -10,7 +10,8 @@ import {
   lucideType,
 } from '@livediagram/icons/lucide';
 
-export const DOCK_ICON_PX = 20;
+// The Toolbar layout strip's tile glyph size, so the dock reads as the strip's twin.
+export const DOCK_ICON_PX = 18;
 
 // A marker seen from the side: the body in the dock's ink, the nib and the
 // band below in the pen's own colour, the band as thick as the pen draws.

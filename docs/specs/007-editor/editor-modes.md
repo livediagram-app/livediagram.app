@@ -43,17 +43,16 @@ where it is and changes only how the next mark is made.
     puts the button ([Toolbar layout](toolbar-layout.md)).
   - **Floating layout:** in the **Palette** panel's title row, beside its help
     and minimise buttons, **labelled** (the mode's name beside its icon,
-    the header has the room). In Draw mode it leads the dock (labelled, in
-    a pill of its own outside the groups' scroller), since the dock takes
-    the palette's place.
-  - The Toolbar layout's menu button stays up in Draw mode, so there the
-    switch never moves.
+    the header has the room). The Palette stays in Draw mode, showing Draw's
+    tools ([Draw mode](../023-draw-mode/draw-mode.md#what-a-whiteboard-shows)).
+  - Both stay up in Draw mode, so the switch never moves when the mode
+    changes.
   - Not in the tab bar or the Explorer.
 - **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
   current mode's icon and a chevron, with its name in the Floating layout, on the faint tint the
   editor's menu-like controls use. A press opens a menu **below** it, hanging
-  from the edge with room (left beside the menu button and in the dock,
-  right in the Palette header), with one compact row per mode at the palette dropdowns' size: its
+  from the edge with room (left beside the menu button, right in the
+  Palette header), with one compact row per mode at the palette dropdowns' size: its
   icon and name, a check on the current mode and **Shift+D** on the row the
   key leads to. Choosing a row switches and closes the menu; Escape or a
   press outside closes it.

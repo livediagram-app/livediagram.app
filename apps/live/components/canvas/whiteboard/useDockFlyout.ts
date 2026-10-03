@@ -30,10 +30,16 @@ export type DockFlyout = {
 // brushing past) never snaps it shut.
 const HOVER_CLOSE_MS = 250;
 
+// The opener's centre in the dock wrapper's own px: a dock drawn at the toolbar UI scale
+// (docs/specs/007-editor/ui-scale.md) is zoomed, so screen px are divided back by its zoom, read
+// off the wrapper itself (its screen width over its layout width).
 function measure(opener: HTMLElement): number {
-  const wrap = opener.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
+  const wrapEl = opener.closest<HTMLElement>('[data-whiteboard-dock]');
+  if (!wrapEl) return 0;
+  const wrap = wrapEl.getBoundingClientRect();
   const btn = opener.getBoundingClientRect();
-  return wrap ? btn.left + btn.width / 2 - wrap.left : 0;
+  const zoom = wrapEl.offsetWidth > 0 ? wrap.width / wrapEl.offsetWidth : 1;
+  return (btn.left + btn.width / 2 - wrap.left) / (zoom || 1);
 }
 
 export function useDockFlyout() {

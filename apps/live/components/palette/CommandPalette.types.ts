@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { ShapeKind } from '@livediagram/document';
@@ -25,6 +26,9 @@ export type CanvasTool =
   | 'slide-deck';
 
 export type CommandPaletteProps = {
+  // Draw mode's tools (WhiteboardDock, variant 'panel'): shown in place of the pickers and the
+  // catalogue, in the same panel (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  drawTools?: ReactNode;
   position: { x: number; y: number } | null;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;

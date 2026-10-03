@@ -3,8 +3,8 @@ import { ModeMenuChip } from './ModeMenuChip';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
 // (ModeMenuChip). Toolbar layout: icon-only, beside the menu button (which stays up in Draw mode).
-// Floating layout: labelled, in the Palette's header in Diagram mode and leading the dock in Draw
-// mode, which takes the palette's place. It reads the editor's own resolved mode
+// Floating layout: labelled, in the Palette panel's title row, which stays up in Draw mode too
+// (the panel then shows Draw's tools). It reads the editor's own resolved mode
 // (EditorModeProvider), so wherever it is placed it shows the mode the canvas is in.
 //
 // Renders nothing where no switch is offered: outside an editor, for a visitor who cannot edit,
@@ -40,10 +40,4 @@ export function EditorModeSwitch({
       />
     </div>
   );
-}
-
-// Whether a switch shows here, for a host that sets a divider or a group around it.
-export function useEditorModeSwitchShown(): boolean {
-  const editorMode = useEditorModeState();
-  return !!editorMode?.canEdit && editorMode.canSwitch;
 }
