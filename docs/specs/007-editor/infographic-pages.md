@@ -27,8 +27,9 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
   and **Layouts**, then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
   (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
-  the **Pattern** tiles; **Layouts** holds the layout tiles. The cog opens it on Page; the layout
-  invite opens it on Layouts.
+  the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
+  layout invite opens it on Layouts. The two tabs, and Portrait / Landscape, are the shared
+  segmented control, its highlight sliding between the choices.
 - **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
   at once; leaving the section puts the page back; a press commits.
 - **On a phone** (the mobile viewport) the panel is a **bottom sheet** (up to 60% of the screen,
@@ -107,7 +108,7 @@ page with no valid `id` or `orientation` is skipped (as today).
 
 ## Layouts
 
-A **layout** is placed onto one page from its panel's **Layouts** section, a grid of previews.
+A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
 - **Twenty-one layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
