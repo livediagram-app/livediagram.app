@@ -1134,6 +1134,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
   'Drive|Opened':
     'Someone opened a livediagram file from Google Drive with Open with. The type is what happened: it opened, a copy was offered, or it could not be read.',
+  'Folder|Changed':
+    'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
+  'Folder|Cleared':
+    'Someone cleared a default folder, so new documents of that kind land in My documents again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
