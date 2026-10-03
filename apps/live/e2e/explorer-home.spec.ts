@@ -1,6 +1,14 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, mintSignedGuest, test } from './fixtures';
-import { asGuest, seedBusyHome, seedHomeDocument } from './home-seed';
+import {
+  asGuest,
+  box,
+  editLink,
+  person,
+  seedBusyHome,
+  seedHomeDocument,
+  visitorSaves,
+} from './home-seed';
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md), end to end against the real build and
 // api worker, as a guest, in dark mode: the Explorer lands on Home; Jump back in, What happened and
@@ -208,5 +216,25 @@ test('a failed read says so, and Try again reads again', async ({ page, pageErro
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(failed).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Recent' })).toBeVisible();
+  expectNoPageErrors(pageErrors);
+});
+
+test('what others did since the last look is marked New', async ({ page, baseURL, pageErrors }) => {
+  const origin = new URL(baseURL!).origin;
+  const owner = await mintSignedGuest(page.request);
+  const doc = await seedHomeDocument(page.request, owner, origin, 'Launch plan');
+  const code = await editLink(page.request, owner, origin, doc.id);
+  await asGuest(page, owner);
+
+  // The first look sets the mark; nothing is new to someone who never looked.
+  await page.goto('/explorer/home');
+  await expect(page.getByText('Nothing from others in the last 14 days.')).toBeVisible();
+
+  const lee = await person(page.request, 'Lee', '#14b8a6');
+  await visitorSaves(page.request, lee, code, doc, [box('a', 'Launch day', 40, 40)]);
+  await page.reload();
+  const entry = page.getByRole('link', { name: /^Lee edited Launch plan/ });
+  await expect(entry).toBeVisible();
+  await expect(entry.getByText('New', { exact: true })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });

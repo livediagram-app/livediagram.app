@@ -22,11 +22,31 @@ import { homeDocumentHref } from '@/app/explorer/home/home-model';
 import { AvatarStack, HomeAvatar } from './HomeAvatar';
 import { ChevronGlyph, VerbGlyph } from './home-icons';
 import { FOCUS_RING, MUTED, ROW } from './home-styles';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
+
+/** Newer than the person's last look: the Timeline card's New pill, words not colour. */
+function NewPill() {
+  return (
+    <span
+      className={`mr-1.5 inline-flex items-center rounded bg-brand-600 px-1.5 py-px align-[1px] text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+    >
+      <span className="text-optical-line text-optical-caps">New</span>
+    </span>
+  );
+}
 
 const openFromFeed = () => track('Home', 'Selected', 'WhatHappened');
 
 /** One person's action: who, what, which document, where it lives, when. */
-export function ActionEntry({ group, action }: { group: HomeGroup; action: HomeAction }) {
+export function ActionEntry({
+  group,
+  action,
+  isNew,
+}: {
+  group: HomeGroup;
+  action: HomeAction;
+  isNew: boolean;
+}) {
   const person = group.people.find((p) => p.id === action.personId);
   const detail = actionDetail(action);
   return (
@@ -51,6 +71,7 @@ export function ActionEntry({ group, action }: { group: HomeGroup; action: HomeA
             <span className={`mt-0.5 block truncate text-xs ${MUTED}`}>{detail}</span>
           ) : null}
           <span className={`mt-0.5 block text-xs ${MUTED}`}>
+            {isNew ? <NewPill /> : null}
             {locationLabel(group)} ·{' '}
             <time dateTime={new Date(action.occurredAt).toISOString()} className="tabular-nums">
               {clockTime(action.occurredAt)}
@@ -63,7 +84,7 @@ export function ActionEntry({ group, action }: { group: HomeGroup; action: HomeA
 }
 
 /** Several people's actions on one document in one day: a summary that expands. */
-export function SummaryEntry({ group }: { group: HomeGroup }) {
+export function SummaryEntry({ group, isNew }: { group: HomeGroup; isNew: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const listId = useId();
   const sentence = summarySentence(group);
@@ -92,6 +113,7 @@ export function SummaryEntry({ group }: { group: HomeGroup }) {
             </strong>
           </span>
           <span className={`mt-0.5 block text-xs ${MUTED}`}>
+            {isNew ? <NewPill /> : null}
             {locationLabel(group)} · {updatesLabel(group.total)} ·{' '}
             <time dateTime={new Date(group.latestAt).toISOString()} className="tabular-nums">
               {clockTime(group.latestAt)}

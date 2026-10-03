@@ -159,6 +159,25 @@ describe('useHome', () => {
     expect(result.current.jumpBackIn.map((d) => d.documentId)).toEqual(['mine']);
   });
 
+  it('keeps the first read’s mark, so a retry never clears what is new', async () => {
+    apiReadHome
+      .mockResolvedValueOnce(home({ lastSeenAt: 500 }))
+      .mockResolvedValueOnce(home({ lastSeenAt: 900 }));
+    const { result } = renderHook(() => useHome('owner', vi.fn()));
+    await waitFor(() => expect(result.current.lastSeenAt).toBe(500));
+    act(() => result.current.retry());
+    await waitFor(() => expect(apiReadHome).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(result.current.lastSeenAt).toBe(500);
+  });
+
+  it('has no mark for someone who never looked', async () => {
+    apiReadHome.mockResolvedValue(home({ lastSeenAt: null }));
+    const { result } = renderHook(() => useHome('owner', vi.fn()));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(result.current.lastSeenAt).toBeUndefined();
+  });
+
   it('waits for an owner', () => {
     const { result } = renderHook(() => useHome(null, vi.fn()));
     expect(result.current.status).toBe('loading');

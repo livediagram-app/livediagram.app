@@ -83,8 +83,8 @@ strip in code (it is `jumpBackIn`), "notification" for an action.
 
 ### `useHome(ownerId, enabled)`
 
-State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn, whatHappened, timeline: { items, nextCursor, paging:
-'idle' | 'loading' | 'error' } }`.
+State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn, whatHappened, timeline, hasMore, paging: 'idle' |
+'loading' | 'error', lastSeenAt }`.
 
 1. When `enabled` and `ownerId`: `status = 'loading'`; `Promise.all([apiReadHome(owner, { tz }), offlineListOpens()])`
    with `tz = Intl.DateTimeFormat().resolvedOptions().timeZone` (`D82`). A request id guards a stale response (owner
@@ -100,6 +100,14 @@ State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn, whatHappened, timel
 6. Once per `HomePane` mount: `Home·Opened·Landing` when the page load started on `/explorer` or `/explorer/home`
    (`ARRIVED_ON_HOME`, `entry-path.ts`, captured at module evaluation in the eager Explorer chunk), else
    `Home·Opened·Nav`.
+
+### New
+
+`useHome` keeps `lastSeenAt` from the first successful read of the mount (`undefined` when the api says `null`) and
+never replaces it. `isNewEvent(at, lastSeenAt)` (`@livediagram/ui`, the Timeline's rule: none without a mark) marks an
+`ActionEntry` by its action's `occurredAt` and a `SummaryEntry` by its `latestAt`. The pill is the Timeline card's:
+`bg-brand-600` (`SOLID_BRAND_DARK` in dark), white 9 px semibold caps, "New", first in the entry's meta line, inside
+the link or button so it is part of the accessible name.
 
 ### Merge (`mergeJumpBackIn(server, local, max = HOME_JUMP_BACK_IN_MAX)`)
 
@@ -258,9 +266,9 @@ Component props:
 - `HomePane({ ownerId, onSeen, allActivityHref, onSeeAll })`: owns `useHome`; `onSeen` is the unread badge's
   `clear`.
 - `JumpBackIn({ ownerId, items, loading })`.
-- `WhatHappened({ groups, loading, allActivityHref, onSeeAll })`: the link keeps its href (new tab, copy link); a plain
+- `WhatHappened({ groups, loading, lastSeenAt, allActivityHref, onSeeAll })`: the link keeps its href (new tab, copy link); a plain
   click navigates in the app.
-- `ActionEntry({ group, action })`, `SummaryEntry({ group })`.
+- `ActionEntry({ group, action, isNew })`, `SummaryEntry({ group, isNew })`.
 - `HomeTimeline({ ownerId, entries, loading, hasMore, paging, onLoadMore, onRetryMore, labelledBy })`.
 - `HomeSwitch({ column, onChange })`; `homeTabId(column)`, `HOME_PANEL_ID`.
 - Today and Yesterday are taken at mount (`useNow(false)`): a page left open past midnight keeps its headings.
@@ -389,24 +397,24 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 
 ## Testing
 
-| Rule                                                              | Test                                                                                    |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Frecency maths in the shared package                              | `packages/api-schema/src/frecency.test.ts`                                              |
-| The api returns the key                                           | `apps/api/src/routes/home.test.ts`                                                      |
-| Local opens: first, same day, next day, trashed, absent, failure  | `apps/live/lib/offline/offline-opens.test.ts`                                           |
-| A marked local load records; an unmarked one does not             | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
-| Merge order, cap, ties, local flag, hrefs                         | `apps/live/app/explorer/home/home-model.test.ts`                                        |
-| Fold strength, day keys, order; rows, sides, day labels; fade     | `apps/live/app/explorer/home/home-model.test.ts`                                        |
-| Sentences, people, verbs, updates, location, entry labels         | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
-| Read, error, retry, paging, dedupe, stale owner, unread clear     | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
-| A clear outlives an unread count still in flight                  | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Strip: names, pill, fade, telemetry                               | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
-| Entries: one-person links, summary disclosure, telemetry, See all | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
-| Timeline: sides, markers, labels, paging slot states              | `apps/live/components/panels/home/HomeTimeline.test.tsx`                                |
-| Switch keys and ARIA; columns on wide                             | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Routes, titles, crumbs, the landing 302                           | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
-| Telemetry charted and explained                                   | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
-| Real browser: guest and signed in, desktop and phone, dark        | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
+| Rule                                                                     | Test                                                                                    |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Frecency maths in the shared package                                     | `packages/api-schema/src/frecency.test.ts`                                              |
+| The api returns the key                                                  | `apps/api/src/routes/home.test.ts`                                                      |
+| Local opens: first, same day, next day, trashed, absent, failure         | `apps/live/lib/offline/offline-opens.test.ts`                                           |
+| A marked local load records; an unmarked one does not                    | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
+| Merge order, cap, ties, local flag, hrefs                                | `apps/live/app/explorer/home/home-model.test.ts`                                        |
+| Fold strength, day keys, order; rows, sides, day labels; fade            | `apps/live/app/explorer/home/home-model.test.ts`                                        |
+| Sentences, people, verbs, updates, location, entry labels                | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
+| Read, error, retry, paging, dedupe, stale owner, unread clear, mark kept | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
+| A clear outlives an unread count still in flight                         | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
+| Strip: names, pill, fade, telemetry                                      | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
+| Entries: one-person links, summary disclosure, telemetry, See all        | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| Timeline: sides, markers, labels, paging slot states                     | `apps/live/components/panels/home/HomeTimeline.test.tsx`                                |
+| Switch keys and ARIA; columns on wide                                    | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
+| Routes, titles, crumbs, the landing 302                                  | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
+| Telemetry charted and explained                                          | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
+| Real browser: guest and signed in, desktop and phone, dark               | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
 
 ## Constants and configuration
 

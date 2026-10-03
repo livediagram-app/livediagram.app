@@ -27,6 +27,8 @@ export type HomeData = {
   timeline: HomeTimelineEntry[];
   hasMore: boolean;
   paging: HomePaging;
+  /** The unread mark before this visit's first read; undefined when the person never looked. */
+  lastSeenAt: number | undefined;
   retry: () => void;
   loadMore: () => void;
   retryMore: () => void;
@@ -60,6 +62,8 @@ export function useHome(ownerId: string | null, onSeen: () => void): HomeData {
   const [loaded, setLoaded] = useState<Loaded>(EMPTY);
   const [paging, setPaging] = useState<HomePaging>('idle');
   const [attempt, setAttempt] = useState(0);
+  // From the first successful read only: that read moved the mark, so a later one reports nothing new.
+  const [lastSeenAt, setLastSeenAt] = useState<{ at: number | undefined } | null>(null);
   const requestId = useRef(0);
   const pagingRef = useRef(false);
   const onSeenRef = useLatest(onSeen);
@@ -83,6 +87,7 @@ export function useHome(ownerId: string | null, onSeen: () => void): HomeData {
         });
         setPaging('idle');
         setStatus('ready');
+        setLastSeenAt((held) => held ?? { at: home.lastSeenAt ?? undefined });
         onSeenRef.current();
       },
     );
@@ -144,6 +149,7 @@ export function useHome(ownerId: string | null, onSeen: () => void): HomeData {
     timeline: loaded.timeline,
     hasMore: loaded.cursor !== null,
     paging,
+    lastSeenAt: lastSeenAt?.at,
     retry,
     loadMore,
     retryMore,

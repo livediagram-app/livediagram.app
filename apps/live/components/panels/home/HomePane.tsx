@@ -66,6 +66,7 @@ export function HomePane({
       <WhatHappened
         groups={home.whatHappened}
         loading={loading}
+        lastSeenAt={home.lastSeenAt}
         allActivityHref={allActivityHref}
         onSeeAll={onSeeAll}
       />

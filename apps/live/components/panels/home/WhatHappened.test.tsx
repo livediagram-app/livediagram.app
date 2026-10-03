@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // What happened (docs/specs/013-workspace/explorer-home.md): one person's actions are links that
 // open the document; several people collapse into a summary that expands; See all activity leads
@@ -13,15 +13,10 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 import { WhatHappened } from './WhatHappened';
 import { fixtureAction, fixtureGroup, fixturePerson } from './home-test-utils';
 
-const today = (h: number, m = 0) => {
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return d.getTime();
-};
-const todayKey = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+// A fixed afternoon, so every action is earlier today and Today is that day.
+const NOW = new Date(2026, 7, 30, 15, 0).getTime();
+const today = (h: number, m = 0) => new Date(2026, 7, 30, h, m).getTime();
+const todayKey = () => '2026-08-30';
 
 const solo = fixtureGroup({
   id: 'd2:day',
@@ -48,10 +43,11 @@ const busy = fixtureGroup({
   ],
 });
 
-function renderIt(groups = [busy, solo], onSeeAll = vi.fn()) {
+function renderIt(groups = [busy, solo], onSeeAll = vi.fn(), lastSeenAt?: number) {
   render(
     <WhatHappened
       groups={groups}
+      lastSeenAt={lastSeenAt}
       loading={false}
       allActivityHref="/explorer/timeline"
       onSeeAll={onSeeAll}
@@ -60,7 +56,12 @@ function renderIt(groups = [busy, solo], onSeeAll = vi.fn()) {
   return onSeeAll;
 }
 
-beforeEach(() => track.mockReset());
+beforeEach(() => {
+  track.mockReset();
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(NOW);
+});
+afterEach(() => vi.useRealTimers());
 
 describe('WhatHappened', () => {
   it('shows one person’s actions as links naming who, what, which document and where', () => {
@@ -98,6 +99,20 @@ describe('WhatHappened', () => {
     fireEvent.click(summary);
     expect(summary.getAttribute('aria-expanded')).toBe('false');
     expect(track).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks what is newer than the last look as New, in words', () => {
+    renderIt([busy, solo], vi.fn(), today(10, 30));
+    expect(screen.getByRole('button', { name: /in Payments architecture\s*New/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Sam commented on Onboarding.*New/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Sam edited Onboarding/ }).textContent).not.toContain(
+      'New',
+    );
+  });
+
+  it('marks nothing for someone who never looked', () => {
+    renderIt();
+    expect(screen.queryByText('New')).toBeNull();
   });
 
   it('heads entries by day', () => {

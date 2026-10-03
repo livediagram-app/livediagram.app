@@ -6,6 +6,7 @@
 // never moves when the entries land.
 
 import { useMemo } from 'react';
+import { isNewEvent } from '@livediagram/ui';
 import type { HomeGroup } from '@livediagram/api-schema';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useNow } from '@/hooks/ui/useNow';
@@ -17,11 +18,14 @@ import { FOCUS_RING, MUTED, SUB_HEADING } from './home-styles';
 export function WhatHappened({
   groups,
   loading,
+  lastSeenAt,
   allActivityHref,
   onSeeAll,
 }: {
   groups: HomeGroup[];
   loading: boolean;
+  /** The unread mark before this visit: newer entries are New. */
+  lastSeenAt: number | undefined;
   /** The All activity page, for the link's href (new tab, copy link). */
   allActivityHref: string;
   /** In-app navigation to All activity. */
@@ -61,9 +65,20 @@ export function WhatHappened({
               <ul className="flex flex-col gap-1">
                 {day.groups.flatMap((group) =>
                   group.summary
-                    ? [<SummaryEntry key={group.id} group={group} />]
+                    ? [
+                        <SummaryEntry
+                          key={group.id}
+                          group={group}
+                          isNew={isNewEvent(group.latestAt, lastSeenAt, now)}
+                        />,
+                      ]
                     : group.actions.map((action) => (
-                        <ActionEntry key={action.id} group={group} action={action} />
+                        <ActionEntry
+                          key={action.id}
+                          group={group}
+                          action={action}
+                          isNew={isNewEvent(action.occurredAt, lastSeenAt, now)}
+                        />
                       )),
                 )}
               </ul>

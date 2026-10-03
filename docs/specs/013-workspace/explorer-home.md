@@ -134,6 +134,12 @@ Viewing Home counts as having looked: it moves the Timeline's unread mark exactl
 ([Timeline](timeline.md) §2.5), once per visit, and says where the mark stood before, so what is new to the person
 can be marked.
 
+- In What happened, an entry newer than that mark carries a **New** pill, as the Timeline's cards do: the word,
+  never colour alone. A summary is new when its latest action is.
+- A person who has never looked sees none: marking a whole history new would be noise.
+- The mark is the one the first read of the visit reports; a retry or a further page does not move what is marked.
+- The sidebar's Home badge clears when Home has been read.
+
 ## Opens
 
 An **open** is the editor loading a document for a person to look at.
