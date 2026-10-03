@@ -19,8 +19,8 @@ a drag's cost to what it moves, whatever the size of the board
   its drawing through a gesture, [Minimap](minimap.md)), the selection chrome (already hidden while
   the selection moves). Alignment guides and snapping read the document, which is the board
   without the dragged elements' movement, as they do today.
-- **On release the preview becomes the document in one change**: one undo step, one activity entry,
-  one autosave, one set of element ops to the room, as a drag makes today.
+- **On release the preview becomes the document in one change**: one undo step, one autosave,
+  one set of element ops to the room, as a drag makes today.
 - **A cancelled gesture leaves the document untouched**: Escape, the browser cancelling the
   pointer, or the canvas going away drops the preview, and nothing is written.
 

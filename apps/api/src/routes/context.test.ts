@@ -97,8 +97,7 @@ describe('requireOwnedDocument', () => {
   // `GET /api/teams/<id>` (`members[].userId`), so the hybrid X-Owner-Id path
   // must not prove ownership of one — otherwise a removed member who kept the
   // id reaches the owner-only surfaces this guard fronts: the share password
-  // in the clear, minting an edit-role link, clearing the password, wiping a
-  // tab's audit trail.
+  // in the clear, minting an edit-role link, clearing the password.
   it('403s a TEAM document when the owner id arrives only as the guest header', async () => {
     db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
     // resolveOwner() returns the header value; verifiedUserId stays null.

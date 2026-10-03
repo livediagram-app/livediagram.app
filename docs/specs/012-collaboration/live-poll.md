@@ -166,7 +166,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
      backdrop left to click, so Skip and Escape are the whole of it.
 
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
-   Collaborate / Layers / Activity: draggable, resettable, and dockable
+   Collaborate / Layers: draggable, resettable, and dockable
    into a corner stack, homed **top-right directly under the Palette**
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the

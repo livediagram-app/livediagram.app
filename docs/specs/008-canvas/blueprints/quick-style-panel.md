@@ -211,7 +211,7 @@ One pure transform per section, a no-op on a non-supporting element:
   `theme.elementStroke ?? undefined`; `strokeSwatch`, `strokeWidth`, `strokeStyle`, `flow`,
   `flowSpeed` removed. Text: `textColor` to `theme.elementText ?? undefined`; `textSwatch` removed.
 
-`useQuickStyle` runs each as one `commit` over the targets (one undo step, one activity entry),
+`useQuickStyle` runs each as one `commit` over the targets (one undo step),
 records the memory from the same before / after, and tracks the section's token. Clear styles also
 calls `forget` with the kind keys of every target it changed.
 

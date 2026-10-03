@@ -6,8 +6,8 @@
 // packages/document BoxedElement.
 //
 // Unlike comments (which bypass history on purpose), note edits run
-// through the page's `commit` so they snapshot history + emit the
-// activity log like any other element field.
+// through the page's `commit` so they snapshot history like any other
+// element field.
 
 import { useState } from 'react';
 import { isBoxed, type Element, type TextRun } from '@livediagram/document';

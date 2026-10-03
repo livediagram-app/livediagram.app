@@ -65,7 +65,7 @@ centred across the **top** of the canvas by default (see
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
-  collaboration, comments, layers, activity and zoom controls stay, because
+  collaboration, comments, layers, undo / redo and zoom controls stay, because
   they are about the document, not about drawing.
 - **The quick style panel stays** ([Quick style panel](../008-canvas/quick-style-panel.md)):
   it is how a shape, line or text box gets another colour or width once

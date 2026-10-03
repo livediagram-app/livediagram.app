@@ -537,8 +537,7 @@ cascade). x is untouched.
 parked between lanes. The first time it is opened by someone who can edit it
 (not a view-only visitor, not a locked tab), every workshop note that is not on
 a lane moves to its nearest lane: y only, x untouched, nothing pushed, and a
-locked note stays where it is. It is ONE undoable step, named in the activity
-log, and a toast says how many notes moved. The board then carries
+locked note stays where it is. It is ONE undoable step, and a toast says how many notes moved. The board then carries
 `esLanesSettled: true` and is never settled again, so a note free-placed
 afterwards stays free. Undo puts the notes back but keeps the mark (it is
 grafted across undo like the session tools' state): an author who undoes the

@@ -2,7 +2,7 @@
 // `r` swept from `a` to `b`, in canvas coords. Stroke mode removes the strokes
 // whose INK the brush crosses, and the shapes whose drawn outline or visible fill
 // it touches (shape-hit.ts, the same outline selecting picks by); Partial cuts strokes. Everything else is the
-// gesture's business (checkpoint, cascade, activity entry): these are pure.
+// gesture's business (checkpoint, cascade): these are pure.
 import {
   eraseStrokePart,
   pathTouchesBrush,

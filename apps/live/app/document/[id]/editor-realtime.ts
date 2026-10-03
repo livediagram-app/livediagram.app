@@ -74,9 +74,9 @@ export function useEditorRealtime() {
   // save / op-broadcast gates so view-only visitors can't push edits.
   const [sessionRole, setSessionRole] = useState<ShareRole>('edit');
   // Visitors are admitted via a share code in the URL (?s=<code>).
-  // Owners arrive via ?d=<id> with no share code. The log endpoints
+  // Owners arrive via ?d=<id> with no share code. Write endpoints
   // accept the code as a fallback authorisation so edit visitors can
-  // persist their own entries; null means "owner — owner check
+  // persist their changes; null means "owner — owner check
   // suffices". Tracked separately from `documentShareCode` (which is
   // the document's primary code surfaced for sharing) because a
   // document can have many active codes.

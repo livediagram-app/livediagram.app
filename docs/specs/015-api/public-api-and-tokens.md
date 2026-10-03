@@ -471,7 +471,7 @@ hardening landed first:
    even though §4 already neutralises a leaked id, because people WILL probe
    for it):
    - Redact `participantId` in the change-log read for non-owners (the static
-     harvest), the same way comment authors and the document `ownerId` already
+     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the document `ownerId` already
      are.
    - Give each realtime session a **room-scoped ephemeral presence id**
      (random per connection) for the broadcast presence / cursor frames,

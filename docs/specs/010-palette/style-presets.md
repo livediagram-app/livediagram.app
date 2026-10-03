@@ -153,9 +153,9 @@ multi-selection the preset applies to every selected arrow at once.
   `resetArrowStyleSelected`). Hand-editing a
   colour or resetting clears the `colorPreset` binding there.
 - Hover preview is owned by `apps/live/hooks/canvas/useStylePreview.ts`: preview +
-  revert go through `tickTabs` (present-only, no history / no log); the click
+  revert go through `tickTabs` (present-only, no history); the click
   commit restores the originals into the present, then commits, so the undo
-  snapshot and activity diff are taken from the true pre-hover state. The
+  snapshot is taken from the true pre-hover state. The
   context menu wires the tiles' click → commit and pointer enter/leave →
   preview/revert (mouse pointers only).
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): applying / resetting a preset fires

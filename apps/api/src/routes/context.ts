@@ -238,7 +238,7 @@ export async function missingDocument(ctx: RouteContext, documentId: string): Pr
 // distinguished from a missing one until ownership is proven, but once
 // the row exists a non-owner gets 403 — matching every owner-only branch
 // documents.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
-// /share/:code, /log/tab).
+// /share/:code).
 export async function requireOwnedDocument(
   ctx: RouteContext,
   documentId: string,

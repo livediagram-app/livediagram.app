@@ -33,7 +33,7 @@ const R2_DELETE_CHUNK = 1000;
 // D1 wipe + bulk-delete from R2 + then drop the rows.
 //
 // Returns `{ documents, folders, images }` change counts for the
-// audit log. Idempotent: re-running with the same owner id is a
+// caller's log line. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
   env: Env,

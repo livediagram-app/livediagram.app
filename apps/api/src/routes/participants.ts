@@ -12,7 +12,7 @@ import { MAX_PARTICIPANT_NAME_LEN, MAX_COLOR_LEN } from '../limits';
 // the WS room and embedded in comment authors, so anyone in a
 // shared session can already learn the id; the endpoint just
 // exposes display name + colour, which the same shared session
-// surfaces in every cursor / activity entry anyway. The published
+// surfaces in every cursor and comment anyway. The published
 // profile picture is the exception: it goes only to a signed-in
 // caller (docs/specs/014-identity/profile-picture.md §5), so an anonymous
 // share-link visitor reads null.

@@ -147,9 +147,9 @@ on all of them, and the rules are the same ones for the same reasons.
   commits.
 - The first hover snapshots the tab. Every hover lays out from that snapshot, so
   sweeping down the rows shows each style cleanly rather than stacking them.
-- Preview and revert go through `tickTabs`: present-only, no undo snapshot, no
-  activity entry, and autosave skips the tick (`previewingRef`), so nothing
-  ephemeral is ever persisted or logged.
+- Preview and revert go through `tickTabs`: present-only, no undo snapshot, and
+  autosave skips the tick (`previewingRef`), so nothing ephemeral is ever
+  persisted.
 - The click ends the preview first and commits second, in one React batch, so
   undo returns to the layout the author actually had rather than to the preview.
 - **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a

@@ -90,7 +90,7 @@ letterboxing handled for free.
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.
 - `Canvas` renders it gated on
-  `mapEnabled && !isMobile && elements.length >= 4 && (mapPosition !== null || activityMinimized)`.
+  `!chromeHidden && !isMobile && mapEnabled && elements.length >= 4` (useCanvasChromePanels).
 
 Boxed elements only for now (arrows are usually within their endpoints'
 boxes); extending the bounds to arrow geometry is a possible follow-up.

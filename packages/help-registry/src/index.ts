@@ -735,7 +735,7 @@ export const articles: Article[] = [
   {
     slug: 'missing-changes',
     title: 'My Changes Are Missing',
-    description: 'How autosave works and how to recover with history.',
+    description: 'How autosave works and how to recover with undo.',
     keywords:
       'lost work autosave recover restore disappeared gone save history new version reload update',
     category: 'Troubleshooting',
