@@ -29,7 +29,8 @@ export function useStripTileLimit(
   }: {
     fallback: number;
     // The card the strip sits beside on a phone (the menu button and mode
-    // switch), whose width the strip gives up.
+    // switch). When it is there, the strip's room runs from its own left edge
+    // to the right gutter.
     leadingRef?: RefObject<HTMLElement | null>;
     isMobile: boolean;
     // The UI scale (docs/specs/007-editor/ui-scale.md). Everything here is
@@ -57,12 +58,20 @@ export function useStripTileLimit(
       if (tileWidth <= 0 || cardWidth <= 0) return;
       const gap = parseFloat(getComputedStyle(tile.parentElement!).columnGap) || 0;
       const pitch = tileWidth + gap;
-      const chrome = cardWidth - rail.getBoundingClientRect().width;
+      // The rail's share of the card is its width plus its (negative) side
+      // margins, which give its pressed rings room inside the clip.
+      const railStyle = getComputedStyle(rail);
+      const railShare =
+        rail.getBoundingClientRect().width +
+        (parseFloat(railStyle.marginLeft) || 0) +
+        (parseFloat(railStyle.marginRight) || 0);
+      const chrome = cardWidth - railShare;
       const vw = window.innerWidth;
       let available = vw - PHONE_GUTTERS_PX;
       if (isMobile) {
-        const leading = leadingRef?.current;
-        if (leading) available -= leading.getBoundingClientRect().width + MENU_GAP_PX;
+        // Beside the menu card: from where the strip starts to the right gutter.
+        if (leadingRef?.current)
+          available = vw - PHONE_GUTTERS_PX / 2 - card.getBoundingClientRect().left;
       } else {
         const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
         const clear = menu ? menu.getBoundingClientRect().right + MENU_GAP_PX : 0;

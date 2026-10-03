@@ -143,10 +143,13 @@ layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md
   one row. There is no room for a corner card above a strip that needs the
   whole top row.
 - **The category picker is icon-only**, like the selection mode.
-- **The tile count follows the width** (`phoneStripTileLimit`): whatever fits
-  between 12px gutters once the menu card (and its gap), the two pickers, More and the
-  card's padding are paid for, at least two. Two on a 360px phone, three on a 390px one, four
-  from about 410px. More holds the rest.
+- **The tiles swipe.** The strip holds the whole current category and fills the row to the
+  right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
+  category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
+  a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
+  More stays for the category's full body (search, the icon catalogues). It shows when the
+  category holds more than fits in view (`phoneStripTileLimit` before the first measurement):
+  two tiles on a 360px phone, three on a 390px one, four from about 410px.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
@@ -240,9 +243,10 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   in every layout, its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items are a touch tighter** (`PHONE_COMPACT_ITEMS`): below `sm`, each
-  square button and trigger in the menu card, the strip and the bottom-right cluster gives up
-  4px (36px to 32px, the cluster's 44px to 40px), so the menu card and the strip share the top
-  row. Their menus keep their size.
+  square button in the menu card, the strip and the bottom-right cluster gives up 4px (36px to
+  32px, the cluster's 44px to 40px), each picker 4px of side padding, and the strip's dividers
+  their margins down to 1px, so more tiles show beside the menu card. The row keeps its 12px
+  gutters and 8px gap. Their menus keep their size.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried
   and taken back out: it hid the current category and cost a click to

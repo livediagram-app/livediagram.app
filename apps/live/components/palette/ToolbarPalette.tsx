@@ -94,8 +94,22 @@ function StripRow({
   );
 }
 
+// Centred alone (desktop), the card is whole-pixel wide with the canvas's
+// parity (see SnapWidth). Beside the menu card (a phone) it is left-aligned
+// and may shrink to the row, its rail scrolling, so it is not snapped there.
+function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode }) {
+  if (swipe) return <div className="flex min-w-0">{children}</div>;
+  return <SnapWidth matchParentParity>{children}</SnapWidth>;
+}
+
 function Divider() {
-  return <span aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
+  // Hairline margins on a phone, where every pixel of the strip is a tile's.
+  return (
+    <span
+      aria-hidden
+      className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 max-sm:mx-px dark:bg-slate-700"
+    />
+  );
 }
 
 export function ToolbarPalette(props: Props) {
@@ -143,11 +157,24 @@ export function ToolbarPalette(props: Props) {
       ? phoneStripTileLimit(viewportWidth)
       : desktopStripTileLimit(viewportWidth / scale),
   });
-  const { tiles, hasMore, dividersAfter } = stripTilesFor(category?.id ?? defaultId, {
+  // On a phone the strip holds the WHOLE category and swipes sideways
+  // (docs/specs/007-editor/toolbar-layout.md "On a phone"); the fitted count
+  // still decides whether More is needed for what is out of view.
+  const swipe = leading != null;
+  const tileLimit = swipe ? Infinity : stripLimit;
+  const fitted = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,
     limit: stripLimit,
   });
+  const { tiles, dividersAfter } = swipe
+    ? stripTilesFor(category?.id ?? defaultId, {
+        favouriteIds,
+        hasImage: tileActions.hasImage,
+        limit: tileLimit,
+      })
+    : fitted;
+  const { hasMore } = fitted;
 
   // The category being switched AWAY from, while its tiles animate out
   // (ToolbarStripRail). Rebuilt from data rather than kept as stale nodes, and
@@ -175,7 +202,7 @@ export function ToolbarPalette(props: Props) {
     ? stripTilesFor(leavingId, {
         favouriteIds,
         hasImage: tileActions.hasImage,
-        limit: stripLimit,
+        limit: tileLimit,
       })
     : null;
 
@@ -292,13 +319,20 @@ export function ToolbarPalette(props: Props) {
     >
       <PaletteGroupProvider>
         <PaletteTintProvider tint={themeTint}>
-          {/* Whole-pixel wide, and the same parity as the canvas, so centring
-              it can't leave the strip on a half pixel (see SnapWidth). */}
+          {/* Whole-pixel wide where centred (see CardWidth). */}
           <StripRow leading={leading} leadingRef={leadingRef}>
-            <SnapWidth matchParentParity>
+            <CardWidth swipe={swipe}>
               {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
-              <div ref={cardRef} data-tour-id="palette" className={CARD_CLASS}>
+              <div
+                ref={cardRef}
+                data-tour-id="palette"
+                // Beside the menu card only the rail gives way (and scrolls): the
+                // selection mode, the category picker and More keep their size.
+                className={
+                  swipe ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0` : CARD_CLASS
+                }
+              >
                 {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
                 {/* ...and lead with the board's own control instead, as the floating palette's
@@ -358,6 +392,7 @@ export function ToolbarPalette(props: Props) {
                   </>
                 )}
                 <ToolbarStripRail
+                  scrollable={swipe}
                   railKey={category?.id ?? defaultId}
                   items={[
                     ...tiles.map((def) => {
@@ -417,7 +452,7 @@ export function ToolbarPalette(props: Props) {
                   </>
                 ) : null}
               </div>
-            </SnapWidth>
+            </CardWidth>
           </StripRow>
           {moreOpen && category ? (
             // The category's full Palette body, the exact node the floating
