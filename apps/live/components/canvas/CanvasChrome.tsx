@@ -39,7 +39,7 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
-import { PHONE_COMPACT_ITEMS } from '@/components/chrome/phone-compact';
+import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
@@ -562,7 +562,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_COMPACT_ITEMS}`}
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>

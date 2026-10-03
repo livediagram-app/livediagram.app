@@ -242,11 +242,10 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
   in every layout, its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
-- **A phone's toolbar items are a touch tighter** (`PHONE_COMPACT_ITEMS`): below `sm`, each
-  square button in the menu card, the strip and the bottom-right cluster gives up 4px (36px to
-  32px, the cluster's 44px to 40px), each picker 4px of side padding, and the strip's dividers
-  their margins down to 1px, so more tiles show beside the menu card. The row keeps its 12px
-  gutters and 8px gap. Their menus keep their size.
+- **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
+  cluster's 44px, each with a 44px-tall tap area ([Touch targets](../004-interface-design/touch-targets.md)).
+  Only the pickers give up 4px of side padding, and the strip's dividers their margins down to
+  1px, so more tiles show beside the menu card. The row keeps its 12px gutters and 8px gap.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried
   and taken back out: it hid the current category and cost a click to

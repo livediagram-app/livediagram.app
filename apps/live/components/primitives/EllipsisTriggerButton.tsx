@@ -8,13 +8,14 @@ export function EllipsisGlyph({ size = 14 }: { size?: number }) {
   return <EllipsisIcon size={size} />;
 }
 
+// Each a 44px tap area on a touch screen (`touch-target`), whatever its drawn size.
 const SIZE_CLASS = {
   // The panel's dense rows (Explorer tree, slide deck, panel header).
-  sm: 'h-5 w-5',
+  sm: 'h-5 w-5 relative touch-target',
   // The Explorer page's sidebar tree and the panel's document rows.
-  md: 'h-6 w-6',
+  md: 'h-6 w-6 relative touch-target',
   // The Explorer page's list rows and cards.
-  lg: 'h-7 w-7',
+  lg: 'h-7 w-7 relative touch-target',
 } as const;
 
 // The row / card ⋯ menu trigger, one button for every Explorer surface
