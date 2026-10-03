@@ -1,13 +1,13 @@
-// Test fixtures for Home's components: one document, a person, an action, a group, an entry.
+// Test fixtures for Home's components: one document, a person, an action, a group, a Jump back in
+// document.
 import type {
   HomeAction,
   HomeDocument,
   HomeGroup,
   HomePerson,
-  HomeTimelineEntry,
-  HomeTimelineKind,
   HomeVerb,
 } from '@livediagram/api-schema';
+import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 
 export const fixtureDoc: HomeDocument = {
   documentId: 'd1',
@@ -58,10 +58,18 @@ export function fixtureGroup(
   };
 }
 
-export const fixtureEntry = (
-  id: string,
+export const fixtureJumpItem = (
   documentId: string,
-  kind: HomeTimelineKind,
-  occurredAt: number,
-  name = `Doc ${documentId}`,
-): HomeTimelineEntry => ({ ...fixtureDoc, id, documentId, kind, occurredAt, name });
+  over: Partial<JumpBackInItem> = {},
+): JumpBackInItem => ({
+  documentId,
+  name: `Doc ${documentId}`,
+  href: `/document/${documentId}`,
+  savedAt: 1,
+  empty: true,
+  shareCode: null,
+  useDays: 1,
+  lastUsedAt: 1,
+  localOnly: false,
+  ...over,
+});

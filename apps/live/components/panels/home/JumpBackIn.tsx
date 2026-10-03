@@ -1,114 +1,92 @@
 'use client';
 
-// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): the documents the person
-// returns to most, as one sideways-scrolling strip of small snapshot thumbnails. Its trailing edge
-// fades while more lies to the right; the fade is an overlay, so nothing moves when it comes or
-// goes. A document stored only in this browser wears the Local only pill on its thumbnail.
+// Jump back in (docs/specs/013-workspace/explorer-home.md "Jump back in"): the person's Within reach
+// set of documents. On a desktop or tablet a 4 by 2 grid, most used on top and recent below, with
+// See more in the heading row; on a phone the alternating strip that ends in its See more tile. The
+// two halves carry no titles: the documents are one list named Jump back in (Calm by default).
 
-import { useEffect, useRef, useState } from 'react';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
-import { LocalOnlyPill, LOCAL_ONLY_LABEL } from '@/components/primitives/LocalOnlyPill';
+import { useMediaQuery } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
-import { Tooltip } from '@livediagram/ui';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
-import { stripFade, type JumpBackInItem } from '@/app/explorer/home/home-model';
-import { StripSkeleton } from './HomeSkeletons';
-import { FOCUS_RING, SUB_HEADING } from './home-styles';
+import type { JumpBackInSet } from '@/app/explorer/home/home-model';
+import { HomeSection } from './HomeSection';
+import { GridSkeleton, StripSkeleton } from './HomeSkeletons';
+import { JumpBackInStrip } from './JumpBackInStrip';
+import { JumpBackInTile } from './JumpBackInTile';
+import { GRID, GRID_MIN_HEIGHT, GRID_THUMB, MUTED } from './home-styles';
 
-const THUMB =
-  'h-20 w-32 rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800';
+/** The grid from the spec's `md:` up: desktop and tablet. */
+export const HOME_WIDE_QUERY = '(min-width: 768px)';
+
+const HEADING_ID = 'home-jump-back-in';
 
 export function JumpBackIn({
   ownerId,
-  items,
+  set,
   loading,
+  recentHref,
+  onSeeMore,
 }: {
   ownerId: string;
-  items: JumpBackInItem[];
+  set: JumpBackInSet;
   loading: boolean;
+  /** The Recent page, for See more's href (new tab, copy link). */
+  recentHref: string;
+  /** In-app navigation to the Recent page. */
+  onSeeMore: () => void;
 }) {
+  const wide = useMediaQuery(HOME_WIDE_QUERY);
+  const empty = set.mostUsed.length === 0 && set.recent.length === 0;
   return (
-    <div>
-      <h3 id="home-jump-back-in" className={`mb-2 ${SUB_HEADING}`}>
-        {HOME_COPY.jumpBackIn}
-      </h3>
-      {loading ? (
-        <StripSkeleton />
-      ) : items.length === 0 ? (
-        <p className="flex h-28 items-center text-sm text-slate-500 dark:text-slate-400">
-          {HOME_COPY.jumpBackInEmpty}
-        </p>
+    <HomeSection
+      id="jump-back-in"
+      title={HOME_COPY.jumpBackIn}
+      busy={loading}
+      link={
+        wide
+          ? {
+              href: recentHref,
+              label: HOME_COPY.seeMore,
+              onNavigate: onSeeMore,
+              onActivate: () => track('Home', 'Selected', 'JumpBackIn.SeeMore'),
+            }
+          : undefined
+      }
+    >
+      {!wide ? (
+        loading ? (
+          <StripSkeleton />
+        ) : (
+          <JumpBackInStrip
+            ownerId={ownerId}
+            set={set}
+            recentHref={recentHref}
+            onSeeMore={onSeeMore}
+            labelledBy={HEADING_ID}
+          />
+        )
+      ) : loading ? (
+        <GridSkeleton />
+      ) : empty ? (
+        <p className={`${GRID_MIN_HEIGHT} text-sm ${MUTED}`}>{HOME_COPY.jumpBackInEmpty}</p>
       ) : (
-        <Strip ownerId={ownerId} items={items} />
+        <ul aria-labelledby={HEADING_ID} className={GRID}>
+          {set.mostUsed.map((item) => (
+            <li key={item.documentId} className="min-w-0">
+              <JumpBackInTile ownerId={ownerId} item={item} group="mostUsed" thumbClassName={GRID_THUMB} />
+            </li>
+          ))}
+          {set.recent.map((item, i) => (
+            // The recent open the second row, whatever the length of the first.
+            <li
+              key={item.documentId}
+              className={`min-w-0 ${i === 0 && set.mostUsed.length > 0 ? 'col-start-1' : ''}`}
+            >
+              <JumpBackInTile ownerId={ownerId} item={item} group="recent" thumbClassName={GRID_THUMB} />
+            </li>
+          ))}
+        </ul>
       )}
-    </div>
-  );
-}
-
-function Strip({ ownerId, items }: { ownerId: string; items: JumpBackInItem[] }) {
-  const ref = useRef<HTMLUListElement>(null);
-  const [fade, setFade] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const update = () => setFade(stripFade(el));
-    update();
-    el.addEventListener('scroll', update, { passive: true });
-    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
-    resize?.observe(el);
-    return () => {
-      el.removeEventListener('scroll', update);
-      resize?.disconnect();
-    };
-  }, [items]);
-
-  return (
-    <div className="relative">
-      <ul
-        ref={ref}
-        aria-labelledby="home-jump-back-in"
-        className="scrollbar-slim -mx-1 flex h-28 snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1"
-      >
-        {items.map((item) => (
-          <li key={item.documentId} className="w-32 shrink-0 snap-start">
-            <Tooltip label={item.name}>
-              <a
-                href={item.href}
-                aria-label={item.localOnly ? `${item.name}, ${LOCAL_ONLY_LABEL}` : item.name}
-                onClick={() => track('Home', 'Selected', 'JumpBackIn')}
-                className={`group block rounded-md ${FOCUS_RING}`}
-              >
-                <span className="relative block">
-                  <DocumentThumbnail
-                    ownerId={ownerId}
-                    documentId={item.documentId}
-                    version={item.savedAt}
-                    shareCode={item.shareCode}
-                    offline={item.localOnly}
-                    empty={item.empty}
-                    className={`${THUMB} transition group-hover:border-slate-300 dark:group-hover:border-slate-500`}
-                  />
-                  {item.localOnly ? (
-                    <span className="absolute bottom-1 left-1">
-                      <LocalOnlyPill asLabel />
-                    </span>
-                  ) : null}
-                </span>
-                <span className="mt-1 block w-32 truncate text-xs text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                  {item.name}
-                </span>
-              </a>
-            </Tooltip>
-          </li>
-        ))}
-      </ul>
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-slate-50 to-transparent motion-safe:transition-opacity dark:from-slate-900 ${
-          fade ? 'opacity-100' : 'opacity-0'
-        }`}
-      />
-    </div>
+    </HomeSection>
   );
 }

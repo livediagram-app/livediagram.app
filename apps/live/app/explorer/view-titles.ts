@@ -29,3 +29,12 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
 export function viewDocumentTitle(kind: NamedKind): string {
   return `${VIEW_TITLES[kind]} | livediagram`;
 }
+
+// The views reached from Home, without a sidebar row of their own: All activity (See all activity)
+// and Recent (See more). Their breadcrumb leads back to Home
+// (docs/specs/013-workspace/explorer-structure.md#page-titles-follow-the-rows).
+const UNDER_HOME: ReadonlySet<SelectedNode['kind']> = new Set(['timeline', 'recent']);
+
+export function leadsBackHome(kind: SelectedNode['kind']): boolean {
+  return UNDER_HOME.has(kind);
+}

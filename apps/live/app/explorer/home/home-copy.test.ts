@@ -7,12 +7,11 @@ import {
   peopleList,
   personName,
   summarySentence,
-  timelineEntryLabel,
   updatesLabel,
   verbList,
 } from './home-copy';
 
-// Every word Home says (docs/specs/013-workspace/explorer-home.md "What happened", "Timeline").
+// Every word Home says (docs/specs/013-workspace/explorer-home.md "What happened").
 
 const person = (name: string | null): HomePerson => ({
   id: name ?? 'x',
@@ -151,11 +150,3 @@ describe('locationLabel', () => {
   });
 });
 
-describe('timelineEntryLabel', () => {
-  it('names the document, what happened and when', () => {
-    const at = new Date(2026, 7, 30, 14, 5).getTime();
-    expect(
-      timelineEntryLabel({ name: doc.name, kind: 'created', occurredAt: at }, () => '14:05'),
-    ).toBe('Payments architecture, created at 14:05');
-  });
-});

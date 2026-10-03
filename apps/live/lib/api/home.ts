@@ -8,7 +8,7 @@
 // Opens are not sent from here: the editor declares them on its first tab read
 // (apiLoadTab's `open`).
 
-import type { HomeResponse, HomeTimelinePage } from '@livediagram/api-schema';
+import type { HomeResponse } from '@livediagram/api-schema';
 import { API_BASE, apiFetch, apiHeaders } from './core';
 
 async function read<T>(ownerId: string, path: string, isShape: (body: unknown) => boolean) {
@@ -31,35 +31,19 @@ async function read<T>(ownerId: string, path: string, isShape: (body: unknown) =
   return body as T;
 }
 
-function isTimelinePage(body: unknown): boolean {
-  return (
-    typeof body === 'object' && body !== null && Array.isArray((body as HomeTimelinePage).items)
-  );
-}
-
 function isHome(body: unknown): boolean {
   if (typeof body !== 'object' || body === null) return false;
   const home = body as HomeResponse;
   return (
     Array.isArray(home.jumpBackIn) &&
     Array.isArray(home.whatHappened) &&
-    isTimelinePage(home.timeline) &&
     (home.lastSeenAt === null || typeof home.lastSeenAt === 'number')
   );
 }
 
-/** The whole first screen: Jump back in, the Timeline's first page and What happened, grouped
- *  by day in `tz` (the reader's IANA time zone). */
+/** The whole first screen: Jump back in and What happened, grouped by day in `tz` (the reader's
+ *  IANA time zone). */
 export function apiReadHome(ownerId: string, opts: { tz: string }): Promise<HomeResponse | null> {
   const params = new URLSearchParams({ tz: opts.tz });
   return read<HomeResponse>(ownerId, `/home?${params.toString()}`, isHome);
-}
-
-/** The Timeline's next page, from the previous page's `nextCursor`. */
-export function apiReadHomeTimeline(
-  ownerId: string,
-  opts: { cursor: string },
-): Promise<HomeTimelinePage | null> {
-  const params = new URLSearchParams({ cursor: opts.cursor });
-  return read<HomeTimelinePage>(ownerId, `/home/timeline?${params.toString()}`, isTimelinePage);
 }

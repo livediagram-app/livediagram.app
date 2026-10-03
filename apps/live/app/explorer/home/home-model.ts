@@ -1,19 +1,21 @@
 // Home's pure view model (docs/specs/013-workspace/explorer-home.md; blueprint
-// docs/specs/013-workspace/blueprints/explorer-home-view.md): what the strip lists, how the
-// Timeline folds and alternates, which day heads which entries, and when the strip fades.
+// docs/specs/013-workspace/blueprints/explorer-home-view.md): Jump back in's Within reach set and
+// its phone order, which day heads which What happened entries, and when the strip fades.
 
 import {
-  HOME_JUMP_BACK_IN_MAX,
+  HOME_WITHIN_REACH_PER_ROW,
+  useWindowStart,
+  utcDay,
+  withinReach,
   type HomeDocument,
   type HomeGroup,
   type HomeJumpBackInItem,
-  type HomeTimelineEntry,
-  type HomeTimelineKind,
+  type WithinReach,
 } from '@livediagram/api-schema';
 import { dateKey, formatDay } from '@livediagram/ui';
 import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
 
-/** One thumbnail of Jump back in: a server document or one stored only in this browser. */
+/** One document of Jump back in: a server document or one stored only in this browser. */
 export type JumpBackInItem = {
   documentId: string;
   name: string;
@@ -22,16 +24,18 @@ export type JumpBackInItem = {
   empty: boolean;
   /** Authorises a shared document's thumbnail. */
   shareCode: string | null;
-  frecencyKey: number;
+  /** Use days in the window: the most-used measure. */
+  useDays: number;
+  /** The later of the last open and the last edit: the recent measure. */
+  lastUsedAt: number;
   /** Stored only in this browser: carries the Local only pill. */
   localOnly: boolean;
 };
 
-export type TimelineSide = 'start' | 'end';
+/** Which half of the set an item came from; never shown, only tracked. */
+export type JumpBackInGroup = 'mostUsed' | 'recent';
 
-export type TimelineRow =
-  | { type: 'day'; key: string; label: string }
-  | { type: 'entry'; entry: HomeTimelineEntry; side: TimelineSide };
+export type JumpBackInSet = WithinReach<JumpBackInItem>;
 
 /** Where activating a document goes: a shared one through its link, the rest on their path. */
 export function homeDocumentHref(doc: Pick<HomeDocument, 'documentId' | 'via' | 'shareCode'>) {
@@ -41,13 +45,15 @@ export function homeDocumentHref(doc: Pick<HomeDocument, 'documentId' | 'via' | 
     : path;
 }
 
-/** The strip: the server's ranked documents and this browser's opened local ones, as one list
- *  by frecency key (ties by id), the strongest `max`. */
-export function mergeJumpBackIn(
+/** Jump back in: the server's set and this browser's opened local documents, allocated as one
+ *  Within reach set. Sorted by id first: the stable order the merge property needs. */
+export function jumpBackInSet(
   server: readonly HomeJumpBackInItem[],
   local: readonly LocalOpenDocument[],
-  max = HOME_JUMP_BACK_IN_MAX,
-): JumpBackInItem[] {
+  now: number,
+  n = HOME_WITHIN_REACH_PER_ROW,
+): JumpBackInSet {
+  const from = utcDay(useWindowStart(now));
   const items: JumpBackInItem[] = [
     ...server.map((d) => ({
       documentId: d.documentId,
@@ -56,7 +62,8 @@ export function mergeJumpBackIn(
       savedAt: d.savedAt,
       empty: d.empty,
       shareCode: d.via === 'shared' ? d.shareCode : null,
-      frecencyKey: d.frecencyKey,
+      useDays: d.useDays,
+      lastUsedAt: d.lastUsedAt,
       localOnly: false,
     })),
     ...local.map(({ document, opens }) => ({
@@ -66,42 +73,29 @@ export function mergeJumpBackIn(
       savedAt: document.savedAt,
       empty: document.empty,
       shareCode: null,
-      frecencyKey: opens.frecencyKey,
+      useDays: opens.days.filter((d) => d >= from).length,
+      // Only the person edits a document stored here, so its save is their last edit.
+      lastUsedAt: Math.max(opens.lastOpenedAt, document.savedAt),
       localOnly: true,
     })),
   ];
-  return items
-    .sort(
-      (a, b) =>
-        b.frecencyKey - a.frecencyKey ||
-        (a.documentId < b.documentId ? -1 : a.documentId > b.documentId ? 1 : 0),
-    )
-    .slice(0, max);
+  items.sort((a, b) => (a.documentId < b.documentId ? -1 : a.documentId > b.documentId ? 1 : 0));
+  return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
 }
 
-const STRENGTH: Record<HomeTimelineKind, number> = { created: 3, updated: 2, opened: 1 };
-
-function newestFirst(a: HomeTimelineEntry, b: HomeTimelineEntry): number {
-  return b.occurredAt - a.occurredAt || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
-}
-
-/** One entry per document per day (`dayOf`): the strongest kind, at that event's time; of equal
- *  strength, the newest. Newest first. */
-export function foldTimeline(
-  items: readonly HomeTimelineEntry[],
-  dayOf: (at: number) => string,
-): HomeTimelineEntry[] {
-  const kept = new Map<string, HomeTimelineEntry>();
-  for (const item of items) {
-    const key = `${item.documentId}:${dayOf(item.occurredAt)}`;
-    const held = kept.get(key);
-    const stronger =
-      !held ||
-      STRENGTH[item.kind] > STRENGTH[held.kind] ||
-      (STRENGTH[item.kind] === STRENGTH[held.kind] && newestFirst(item, held) < 0);
-    if (stronger) kept.set(key, item);
+/** The phone's strip: most used, recent, alternating; the rest of the longer group after. */
+export function phoneOrder(
+  set: JumpBackInSet,
+): { item: JumpBackInItem; group: JumpBackInGroup }[] {
+  const out: { item: JumpBackInItem; group: JumpBackInGroup }[] = [];
+  const length = Math.max(set.mostUsed.length, set.recent.length);
+  for (let i = 0; i < length; i += 1) {
+    const used = set.mostUsed[i];
+    const recent = set.recent[i];
+    if (used) out.push({ item: used, group: 'mostUsed' });
+    if (recent) out.push({ item: recent, group: 'recent' });
   }
-  return [...kept.values()].sort(newestFirst);
+  return out;
 }
 
 function previousDay(now: number): string {
@@ -116,21 +110,6 @@ export function dayHeading(day: string, now: number): string {
   if (day === previousDay(now)) return 'Yesterday';
   const { label, year } = formatDay(day);
   return year && year !== String(new Date(now).getFullYear()) ? `${label} ${year}` : label;
-}
-
-/** The Timeline column: a day row before each local day, entries alternating sides throughout. */
-export function timelineRows(entries: readonly HomeTimelineEntry[], now: number): TimelineRow[] {
-  const rows: TimelineRow[] = [];
-  let lastDay: string | null = null;
-  entries.forEach((entry, index) => {
-    const day = dateKey(entry.occurredAt);
-    if (day !== lastDay) {
-      rows.push({ type: 'day', key: day, label: dayHeading(day, now) });
-      lastDay = day;
-    }
-    rows.push({ type: 'entry', entry, side: index % 2 === 0 ? 'start' : 'end' });
-  });
-  return rows;
 }
 
 /** What happened under its day headings, in the order the api sent the groups. */

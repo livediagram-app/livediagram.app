@@ -2,23 +2,17 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  HomeJumpBackInItem,
-  HomeResponse,
-  HomeTimelineEntry,
-  HomeTimelinePage,
-} from '@livediagram/api-schema';
+import type { HomeJumpBackInItem, HomeResponse } from '@livediagram/api-schema';
 
 // Home's data (docs/specs/013-workspace/blueprints/explorer-home-view.md "useHome"): one read draws
-// the page, a failure is not an empty Home, pages append, and the read clears the unread badge.
+// the page, a failure is not an empty Home, and the read clears the unread badge.
 
-const { apiReadHome, apiReadHomeTimeline, offlineListOpens, track } = vi.hoisted(() => ({
+const { apiReadHome, offlineListOpens, track } = vi.hoisted(() => ({
   apiReadHome: vi.fn(),
-  apiReadHomeTimeline: vi.fn(),
   offlineListOpens: vi.fn(),
   track: vi.fn(),
 }));
-vi.mock('@/lib/api-client', () => ({ apiReadHome, apiReadHomeTimeline }));
+vi.mock('@/lib/api-client', () => ({ apiReadHome }));
 vi.mock('@/lib/offline/offline-opens', () => ({ offlineListOpens }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 
@@ -37,18 +31,10 @@ const place = {
   savedAt: 1,
   empty: false,
 };
-const jump = (documentId: string, frecencyKey: number) =>
-  ({ ...place, documentId, lastOpenedAt: 1, openDays: 1, frecencyKey }) as HomeJumpBackInItem;
-const entry = (id: string, occurredAt: number): HomeTimelineEntry => ({
-  ...place,
-  id,
-  documentId: `d-${id}`,
-  kind: 'opened',
-  occurredAt,
-});
+const jump = (documentId: string, useDays: number) =>
+  ({ ...place, documentId, useDays, lastUsedAt: 10 }) as HomeJumpBackInItem;
 const home = (over: Partial<HomeResponse> = {}): HomeResponse => ({
-  jumpBackIn: [jump('s1', 10)],
-  timeline: { items: [entry('e2', 2000)], nextCursor: '2000:e2' },
+  jumpBackIn: [jump('s1', 1)],
   whatHappened: [],
   lastSeenAt: null,
   ...over,
@@ -56,7 +42,6 @@ const home = (over: Partial<HomeResponse> = {}): HomeResponse => ({
 
 beforeEach(() => {
   apiReadHome.mockReset();
-  apiReadHomeTimeline.mockReset();
   offlineListOpens.mockReset().mockResolvedValue([]);
   track.mockReset();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -69,7 +54,7 @@ describe('useHome', () => {
     offlineListOpens.mockResolvedValue([
       {
         document: { id: 'l1', name: 'Local', savedAt: 3, empty: false },
-        opens: { frecencyKey: 20 },
+        opens: { days: [new Date().toISOString().slice(0, 10)], lastOpenedAt: 20 },
       },
     ]);
     const onSeen = vi.fn();
@@ -79,11 +64,11 @@ describe('useHome', () => {
     expect(apiReadHome).toHaveBeenCalledWith('owner', {
       tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
-    expect(result.current.jumpBackIn.map((d) => [d.documentId, d.localOnly])).toEqual([
+    // One use day each; the local one is the more recent.
+    expect(result.current.jumpBackIn.mostUsed.map((d) => [d.documentId, d.localOnly])).toEqual([
       ['l1', true],
       ['s1', false],
     ]);
-    expect(result.current.hasMore).toBe(true);
     expect(onSeen).toHaveBeenCalledTimes(1);
   });
 
@@ -103,46 +88,8 @@ describe('useHome', () => {
     offlineListOpens.mockRejectedValue(new Error('no IndexedDB'));
     const { result } = renderHook(() => useHome('owner', vi.fn()));
     await waitFor(() => expect(result.current.status).toBe('ready'));
-    expect(result.current.jumpBackIn.map((d) => d.documentId)).toEqual(['s1']);
+    expect(result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['s1']);
     expect(console.warn).toHaveBeenCalledWith('[home] local-opens-unavailable', expect.any(Error));
-  });
-
-  it('appends the next page once, without repeating an event', async () => {
-    apiReadHome.mockResolvedValue(home());
-    let resolvePage: (p: HomeTimelinePage) => void = () => {};
-    apiReadHomeTimeline.mockReturnValue(new Promise((r) => (resolvePage = r)));
-    const { result } = renderHook(() => useHome('owner', vi.fn()));
-    await waitFor(() => expect(result.current.status).toBe('ready'));
-    act(() => {
-      result.current.loadMore();
-      result.current.loadMore();
-    });
-    expect(apiReadHomeTimeline).toHaveBeenCalledTimes(1);
-    expect(apiReadHomeTimeline).toHaveBeenCalledWith('owner', { cursor: '2000:e2' });
-    expect(result.current.paging).toBe('loading');
-    await act(async () =>
-      resolvePage({ items: [entry('e2', 2000), entry('e1', 1000)], nextCursor: null }),
-    );
-    expect(result.current.timeline.map((e) => e.id)).toEqual(['e2', 'e1']);
-    expect(result.current.hasMore).toBe(false);
-    expect(result.current.paging).toBe('idle');
-    expect(track).toHaveBeenCalledWith('Home', 'Loaded', 'More');
-  });
-
-  it('offers a retry when a further page fails', async () => {
-    apiReadHome.mockResolvedValue(home());
-    apiReadHomeTimeline.mockResolvedValueOnce(null).mockResolvedValueOnce({
-      items: [entry('e1', 1000)],
-      nextCursor: null,
-    });
-    const { result } = renderHook(() => useHome('owner', vi.fn()));
-    await waitFor(() => expect(result.current.status).toBe('ready'));
-    await act(async () => result.current.loadMore());
-    expect(result.current.paging).toBe('error');
-    expect(console.warn).toHaveBeenCalledWith('[home] page failed');
-    await act(async () => result.current.retryMore());
-    expect(track).toHaveBeenCalledWith('Home', 'Loaded', 'Retry');
-    expect(result.current.timeline.map((e) => e.id)).toEqual(['e2', 'e1']);
   });
 
   it('drops a stale answer when the owner changes mid-read', async () => {
@@ -156,7 +103,7 @@ describe('useHome', () => {
     rerender({ owner: 'user_1' });
     await waitFor(() => expect(result.current.status).toBe('ready'));
     await act(async () => first(home({ jumpBackIn: [jump('stale', 1)] })));
-    expect(result.current.jumpBackIn.map((d) => d.documentId)).toEqual(['mine']);
+    expect(result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['mine']);
   });
 
   it('keeps the first read’s mark, so a retry never clears what is new', async () => {

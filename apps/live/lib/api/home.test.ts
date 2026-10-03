@@ -1,13 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HomeResponse, HomeTimelinePage } from '@livediagram/api-schema';
-import { apiReadHome, apiReadHomeTimeline } from './home';
+import type { HomeResponse } from '@livediagram/api-schema';
+import { apiReadHome } from './home';
 
 // Explorer Home's reads (docs/specs/013-workspace/blueprints/explorer-home.md "Client"): null
 // means "we could not ask", never an empty Home.
 
 const EMPTY: HomeResponse = {
   jumpBackIn: [],
-  timeline: { items: [], nextCursor: null },
   whatHappened: [],
   lastSeenAt: null,
 };
@@ -52,24 +51,11 @@ describe('apiReadHome', () => {
     stub(async () => Response.json({ ...EMPTY, lastSeenAt: 'yesterday' }));
     expect(await apiReadHome('owner', { tz: 'UTC' })).toBeNull();
 
+    stub(async () => Response.json({ ...EMPTY, jumpBackIn: undefined }));
+    expect(await apiReadHome('owner', { tz: 'UTC' })).toBeNull();
+
     stub(async () => new Response('<html>', { status: 200 }));
     expect(await apiReadHome('owner', { tz: 'UTC' })).toBeNull();
     expect(warn).toHaveBeenCalledWith('[home] read failed status=unparseable');
-  });
-});
-
-describe('apiReadHomeTimeline', () => {
-  it('pages from a cursor', async () => {
-    const page: HomeTimelinePage = { items: [], nextCursor: null };
-    const fetch = stub(async () => Response.json(page));
-    expect(await apiReadHomeTimeline('owner', { cursor: '17:e1' })).toEqual(page);
-    const url = new URL(String(fetch.mock.calls[0]![0]), 'https://x.test');
-    expect(url.pathname).toBe('/api/home/timeline');
-    expect(url.searchParams.get('cursor')).toBe('17:e1');
-  });
-
-  it('answers null when the page could not be read', async () => {
-    stub(async () => new Response(null, { status: 500 }));
-    expect(await apiReadHomeTimeline('owner', { cursor: '17:e1' })).toBeNull();
   });
 });
