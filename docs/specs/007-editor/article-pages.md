@@ -261,6 +261,24 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 - **Never printed**: exports leave the markers out and the text untinted.
 - A tint is never taken from a paste.
 
+## Leaving Illustrate
+
+Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
+Illustrate (the mode switch or Shift+D; not Opens in) is asked first, in a dialog **Turn Articles
+Into Pages?**:
+
+- **Turn Into Pages** (the default button): every article page becomes a **Page** element
+  ([The Page element](../009-elements/page-element.md)) covering its sheet, holding the writing
+  that was laid out on that page as rich text: headings as headings, list items led by their
+  marker and indented, a divider as a rule, bold, italic, underline, strikethrough, links and
+  colours kept; the article's title and subtitle become the first Page's masthead. Zones' elements
+  stay where they are, on top; margin-note markers become ordinary annotations. The pages stay, as
+  infographic pages; the writing goes. One edit (undo brings the articles back), then the switch.
+- **Keep as Articles**: the switch, the articles left as they are for Illustrate.
+- **Cancel**: no switch.
+
+A visitor, a locked tab, or a tab with no articles switches straight away.
+
 ## Article style
 
 Set from the page panel's **Style** tab (an article page's panel has **Page** and **Style**; it

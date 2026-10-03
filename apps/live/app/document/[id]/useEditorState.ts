@@ -51,6 +51,7 @@ import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1053,7 +1054,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // tool and rule gate keys on it, never on what the tab is.
   const rawEditorMode = useEditorMode(activeTab, { canEdit });
   // An editor's switch also moves the tab's Opens in, so the two never disagree.
-  const editorMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
+  const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
+  // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
+  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(switchedMode, {
+    tab: activeTab,
+    canEdit,
+    commitTabs,
+  });
   const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
@@ -3000,6 +3007,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
+    leaveIllustrate,
     illustratePages: illustrateView,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,

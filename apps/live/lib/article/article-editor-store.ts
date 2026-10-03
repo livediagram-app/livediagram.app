@@ -38,6 +38,9 @@ export type ArticleEditorHandle = {
     x: number;
     y: number;
   } | null;
+  // Each of the article's pages' block ids, in order, as laid out now (a block starting on a page
+  // is that page's).
+  blocksByPage: () => string[][];
   // A margin note put on the selected text (a `note` mark naming marker `id`), the writing so far
   // taken as written: its blocks, and where the text's first line is. Null with nothing selected.
   markNote: (

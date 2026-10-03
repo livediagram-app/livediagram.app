@@ -7,6 +7,7 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
+import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -57,6 +58,7 @@ export function EditorTabDialogs() {
     rescopeShareLink,
     setDocumentSharePassword,
     setShareDialogOpen,
+    leaveIllustrate,
   } = useEditorContext();
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
@@ -71,6 +73,7 @@ export function EditorTabDialogs() {
 
   return (
     <>
+      <LeaveIllustrateDialog leave={leaveIllustrate} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour

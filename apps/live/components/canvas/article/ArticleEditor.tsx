@@ -513,6 +513,20 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           return null;
         }
       },
+      blocksByPage: () => {
+        const { frame, root, z } = scaleAndFrame();
+        const out: string[][] = latest.current.pages.map(() => []);
+        let pos = 0;
+        view.state.doc.forEach((node) => {
+          const r = (view.nodeDOM(pos) as HTMLElement | null)?.getClientRects()[0];
+          const index = r
+            ? Math.min(out.length - 1, columnAt(frame, (r.left - root.left) / z))
+            : out.length - 1;
+          out[Math.max(0, index)]?.push(node.attrs.id as string);
+          pos += node.nodeSize;
+        });
+        return out;
+      },
       markNote: (id, kind) => {
         const { from, to, empty } = view.state.selection;
         if (empty) return null;

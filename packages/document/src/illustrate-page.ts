@@ -347,7 +347,7 @@ export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
     const page = illustratePageAt(before, point);
     const moved = page && after.get(page.id);
     if (!page || !moved) return null;
-    // A document page's content keeps its place from the page's top-left corner, where its
+    // An article page's content keeps its place from the page's top-left corner, where its
     // writing starts and its zones are measured from (docs/specs/007-editor/article-pages.md
     // "Zones"); an infographic page's is re-centred on the page's centre, so a page that turned
     // keeps its content about its middle.
