@@ -14,7 +14,7 @@ where it is and changes only how the next mark is made.
 | **editor mode**  | How a general tab is **worked on** right now: `diagram`, `draw` or `design` (`EditorMode`).                            |
 | **Diagram mode** | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                |
 | **Draw mode**    | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)). |
-| **Design mode**  | Mock-ups: Diagram mode's canvas with the palette narrowed to components, devices, logos, icons and media.              |
+| **Design mode**  | Mock-ups: Diagram mode's canvas with the palette narrowed to components, devices, icons, stickers and media.           |
 | **mode switch**  | The control beside the page switcher that changes the editor mode.                                                     |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
@@ -203,8 +203,8 @@ offered in every mode, as it is the person's own pick.
 | Devices        | no      | yes    |
 | Event Storming | board   | no     |
 | Icons          | yes     | yes    |
-| Stickers       | yes     | no     |
-| Tech (logos)   | yes     | yes    |
+| Stickers       | yes     | yes    |
+| Tech           | yes     | no     |
 | Media          | yes     | yes    |
 | Data           | yes     | no     |
 | Behaviours     | yes     | no     |

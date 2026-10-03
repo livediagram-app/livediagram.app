@@ -133,6 +133,8 @@ describe('ToolbarPalette', () => {
     expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="data"]')).toBeNull();
     expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
   });
 
   it("opens the category's full body under More, and closes it when a tile is used", () => {

@@ -24,7 +24,7 @@ describe('paletteCategoryOffered', () => {
       'components',
       'devices',
       'icons',
-      'technology',
+      'stickers',
       'media',
     ]);
   });

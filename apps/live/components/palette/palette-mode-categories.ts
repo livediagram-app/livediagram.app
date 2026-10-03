@@ -9,8 +9,8 @@ import type { EditorMode } from '@livediagram/document';
 // The categories that build a mock-up rather than a diagram.
 const DESIGN_ONLY: readonly string[] = ['components', 'devices'];
 
-// Design mode's whole set: layout and type, the mock-up kit, and the logos, glyphs and pictures a
-// design is dressed with. Charts, behaviours, stickers, pens and the workshop notation are out.
+// Design mode's whole set: layout and type, the mock-up kit, and the glyphs, stickers and pictures
+// a design is dressed with. Charts, behaviours, tech icons, pens and the workshop notation are out.
 const DESIGN_CATEGORIES: readonly string[] = [
   'favourites',
   'shapes',
@@ -20,7 +20,7 @@ const DESIGN_CATEGORIES: readonly string[] = [
   'components',
   'devices',
   'icons',
-  'technology',
+  'stickers',
   'media',
 ];
 
