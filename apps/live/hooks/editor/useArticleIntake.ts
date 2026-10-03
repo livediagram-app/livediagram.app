@@ -33,7 +33,11 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
-import { articleHandleOf, takeZoneReleased } from '@/lib/article/article-editor-store';
+import {
+  articleHandleOf,
+  forgetZonesReleased,
+  takeZoneReleased,
+} from '@/lib/article/article-editor-store';
 import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
 import { debugLog } from '@/lib/debug-log';
@@ -105,6 +109,7 @@ export function useArticleIntake({
       );
       if (gone.length) goneZones.set(flow, gone);
     }
+    forgetZonesReleased();
     // Elements just added, and of them the ones loose on an article page.
     const before = new Set(was.elements.map((e) => e.id));
     const added = activeTab.elements.filter((e) => !before.has(e.id)).map((e) => e.id);

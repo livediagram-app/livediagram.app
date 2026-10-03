@@ -42,7 +42,6 @@
     "@tensorflow/tfjs-layers": "4.22.0",
     "next": "^16.3.7",
     "prosemirror-commands": "^1.7.2",
-    "prosemirror-dropcursor": "^1.8.4",
     "prosemirror-gapcursor": "^1.4.1",
     "prosemirror-inputrules": "^1.5.1",
     "prosemirror-keymap": "^1.2.3",

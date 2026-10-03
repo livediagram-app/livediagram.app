@@ -19,6 +19,9 @@ export type ArticleEditorHandle = {
   insert: (nodes: PMNode[]) => void;
   // Writes what is typed to the tab now, ahead of the idle commit.
   flush: () => void;
+  // The writing as typed, taken as written for an edit the host makes itself (no commit of its
+  // own, so the host's edit is one undo step).
+  takeBlocks: () => import('@livediagram/document').ArticleBlock[];
   // The editor's own history, as ⌘Z and ⇧⌘Z in the writing.
   undo: () => void;
   redo: () => void;
@@ -206,4 +209,10 @@ export function markZoneReleased(zoneId: string): void {
 /** Whether a zone that left the writing was let go of (and forgets it: asked once, by the intake). */
 export function takeZoneReleased(zoneId: string): boolean {
   return released.delete(zoneId);
+}
+
+/** Forgets every zone marked let go of: called once the intake has settled the edit that let them
+ *  go, so a mark whose zone never left (a collaborator removed it first) does not linger. */
+export function forgetZonesReleased(): void {
+  released.clear();
 }

@@ -200,6 +200,9 @@ export function ZoneResizeGrips({
     const el = zoneEl();
     const target = e.currentTarget;
     target.setPointerCapture(e.pointerId);
+    // The writing's own sizes, put back as the drag ends: the edit (if any) redraws the zone from
+    // its stored size, and one clamped back to what it was must not keep the dragged one.
+    const was = { width: el?.style.width ?? '', height: el?.style.height ?? '' };
     let width = rect.width;
     let height = rect.height;
     const move = (ev: PointerEvent) => {
@@ -210,18 +213,39 @@ export function ZoneResizeGrips({
         if (axes.y) el.style.height = `${height}px`;
       }
     };
-    const up = () => {
+    const end = (keep: boolean) => {
       target.removeEventListener('pointermove', move);
       target.removeEventListener('pointerup', up);
-      target.removeEventListener('pointercancel', up);
-      onResize({
-        ...(axes.x ? { width: Math.round(width) } : {}),
-        ...(axes.y ? { height: Math.round(height) } : {}),
-      });
+      target.removeEventListener('pointercancel', cancel);
+      window.removeEventListener('keydown', key, true);
+      if (el) {
+        el.style.width = was.width;
+        el.style.height = was.height;
+      }
+      const size = {
+        ...(axes.x && Math.round(width) !== Math.round(rect.width)
+          ? { width: Math.round(width) }
+          : {}),
+        ...(axes.y && Math.round(height) !== Math.round(rect.height)
+          ? { height: Math.round(height) }
+          : {}),
+      };
+      // A press that never moved is no edit (no undo step).
+      if (keep && (size.width !== undefined || size.height !== undefined)) onResize(size);
+    };
+    const up = () => end(true);
+    const cancel = () => end(false);
+    // Escape puts the zone back as it was.
+    const key = (ev: KeyboardEvent) => {
+      if (ev.key !== 'Escape') return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      end(false);
     };
     target.addEventListener('pointermove', move);
     target.addEventListener('pointerup', up);
-    target.addEventListener('pointercancel', up);
+    target.addEventListener('pointercancel', cancel);
+    window.addEventListener('keydown', key, true);
   };
   const steady = `translate(-50%, -50%) scale(${1 / zoom})`;
   return (

@@ -4,7 +4,14 @@
 // laid out now) and switches; Keep switches with the articles left as they are, for Illustrate;
 // Cancel stays. A visitor, a locked tab or a tab with no articles switches straight away.
 import { useCallback, useState } from 'react';
-import { articlesOf, withArticlesAsPages, type EditorMode, type Tab } from '@livediagram/document';
+import {
+  articlesOf,
+  withArticleFlow,
+  withArticlesAsPages,
+  type ArticleBlock,
+  type EditorMode,
+  type Tab,
+} from '@livediagram/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -46,15 +53,31 @@ export function useLeaveIllustrate<
   const convert = () => {
     if (!pending || !tab) return;
     const splits = new Map<string, string[][]>();
+    const typed = new Map<string, ArticleBlock[]>();
     for (const flow of Object.keys(articlesOf(tab))) {
       const handle = articleHandleOf(flow);
       if (!handle) continue;
-      // What is being typed lands first, then is what the pages take.
-      handle.flush();
+      // What is being typed goes into the pages too, in the same edit (one undo step).
+      typed.set(flow, handle.takeBlocks());
       splits.set(flow, handle.blocksByPage());
     }
     track('Tab', 'Changed', 'ArticlesToPages');
-    commitTabs((ts) => ts.map((t) => (t.id === tab.id ? withArticlesAsPages(t, splits) : t)));
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== tab.id) return t;
+        let next = t;
+        for (const [flow, blocks] of typed) {
+          const doc = articlesOf(next)[flow];
+          if (doc)
+            next = withArticleFlow(
+              next,
+              flow,
+              doc.style ? { blocks, style: doc.style } : { blocks },
+            );
+        }
+        return withArticlesAsPages(next, splits);
+      }),
+    );
     debugLog('[article] articles turned into pages', { tabId: tab.id, articles: splits.size });
     rawSet(pending);
     setPending(null);

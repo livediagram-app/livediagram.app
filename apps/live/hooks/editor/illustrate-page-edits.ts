@@ -55,6 +55,8 @@ export type IllustratePageEdits = {
   // The first page's kind chosen while it is the only page and empty (its own choice cards).
   choosePageKind: (pageId: string, kind: PageKind) => void;
   duplicatePage?: (pageId: string) => void;
+  // Whether a page's copy fits under the page limit (an article's copy is all its pages).
+  canDuplicate: (pageId: string) => boolean;
   // Absent while there is only one unit (one page, or one document).
   removePage?: (pageId: string) => void;
   // Whether the page's unit can move left / right (not at the row's end).
@@ -271,7 +273,7 @@ export function illustratePageEdits({
         return out;
       });
       if (created) onCreated(created);
-      debugLog('[illustrate-page] document duplicated', { tabId, flow: target.flow });
+      debugLog('[illustrate-page] article duplicated', { tabId, flow: target.flow });
       return;
     }
     const id = nextIllustratePageId(current);
@@ -354,6 +356,11 @@ export function illustratePageEdits({
     addPage: room ? addPage : undefined,
     choosePageKind,
     duplicatePage: room ? duplicatePage : undefined,
+    canDuplicate: (pageId: string) => {
+      const flow = page(pageId)?.flow;
+      const size = flow ? current.filter((p) => p.flow === flow).length : 1;
+      return current.length + size <= MAX_ILLUSTRATE_PAGES;
+    },
     removePage: units.length > 1 ? removePage : undefined,
     applyLayout,
     contentCount,

@@ -581,6 +581,15 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         view.focus();
       },
       flush,
+      takeBlocks: () => {
+        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
+        committed.current = { ...committed.current, blocks };
+        if (idle.current !== null) {
+          window.clearTimeout(idle.current);
+          idle.current = null;
+        }
+        return blocks;
+      },
       undo: () => {
         flush();
         markUndoing();

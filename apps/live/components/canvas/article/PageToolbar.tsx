@@ -31,7 +31,7 @@ import {
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
 import { Portal } from '@/components/primitives/Portal';
-import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
+import { canvasGestureNow, subscribeCanvasGesture, useCanvasGesture } from '@/lib/canvas-gesture';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,
@@ -184,6 +184,9 @@ export function PageToolbar({
     const { active: a, onNote: note } = noteNow.current;
     if (a?.selection.hasText) note?.(a.handle.flow, 'comment');
   }, [commentRequest]);
+  // A menu hangs where it opened: the view panning or zooming away from it closes it.
+  const gesture = useCanvasGesture();
+  if ((gesture === 'pan' || gesture === 'zoom') && open) setOpen(null);
   // A menu goes with the article.
   if (!active && open) setOpen(null);
 

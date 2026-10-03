@@ -380,7 +380,9 @@ function PageActions({
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
       <ActionButton
         label={`Duplicate ${noun}`}
-        onClick={duplicatePage ? () => duplicatePage(page.id) : undefined}
+        onClick={
+          duplicatePage && edit.canDuplicate(page.id) ? () => duplicatePage(page.id) : undefined
+        }
       >
         <DuplicateIcon className="h-4 w-4" />
       </ActionButton>

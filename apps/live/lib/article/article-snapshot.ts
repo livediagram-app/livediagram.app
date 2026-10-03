@@ -61,6 +61,8 @@ export function snapshotWriting(
   for (const el of Array.from(elements)) {
     // Collaborators' carets are someone else's live presence, never part of the writing.
     if (el.closest('.article-page-break, .article-zone, .article-peer-caret')) continue;
+    // A margin note's tint is review furniture, never printed (its words are, as written).
+    if (el.classList.contains('article-note')) continue;
     const cs = getComputedStyle(el);
     const rects = Array.from(el.getClientRects());
     if (!transparent(cs.backgroundColor)) {
