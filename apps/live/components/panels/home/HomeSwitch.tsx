@@ -5,6 +5,7 @@
 // move and select (wrapping), Home and End go to the first and last.
 
 import { useRef, type KeyboardEvent } from 'react';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK } from '@livediagram/ui';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { FOCUS_RING } from './home-styles';
 
@@ -59,7 +60,7 @@ export function HomeSwitch({
       role="tablist"
       aria-label={HOME_COPY.switchLabel}
       onKeyDown={onKeyDown}
-      className="grid grid-cols-2 gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+      className={`grid grid-cols-2 gap-0.5 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
     >
       {COLUMNS.map((c) => {
         const on = c === column;
@@ -78,7 +79,7 @@ export function HomeSwitch({
             onClick={() => onChange(c)}
             className={`h-9 rounded-md text-sm font-semibold transition ${FOCUS_RING} ${
               on
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                ? ACTIVE_SEGMENT
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100'
             }`}
           >

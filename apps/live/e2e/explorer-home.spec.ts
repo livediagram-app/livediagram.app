@@ -179,8 +179,48 @@ test('a phone switches between Recent and Timeline, Recent first', async ({
   await expect(timelineTab).toBeFocused();
   await expect(page.getByRole('tabpanel').getByRole('list', { name: 'Timeline' })).toBeVisible();
   await expect(page.getByRole('tabpanel').getByText('Jump back in')).toHaveCount(0);
+
+  // The selection reads at a glance: the selected segment's fill against its track is a state
+  // indicator, held to WCAG 2.2 SC 1.4.11 (3:1), in both appearances.
+  for (const scheme of ['dark', 'light'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.evaluate(
+      (s) => document.documentElement.classList.toggle('dark', s === 'dark'),
+      scheme,
+    );
+    await page.waitForTimeout(300);
+    expect(
+      await segmentContrast(page),
+      `${scheme} selected segment against its track`,
+    ).toBeGreaterThanOrEqual(3);
+  }
   expectNoPageErrors(pageErrors);
 });
+
+// The luminance contrast between the selected tab's fill and the tablist's track.
+async function segmentContrast(page: Page): Promise<number> {
+  return page.getByRole('tablist').evaluate((list) => {
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+    const rgb = (c: string): [number, number, number] => {
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = c;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      return [r!, g!, b!];
+    };
+    const lum = ([r, g, b]: [number, number, number]) => {
+      const f = (v: number) => {
+        const x = v / 255;
+        return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const selected = list.querySelector('[aria-selected="true"]')!;
+    const a = lum(rgb(getComputedStyle(selected).backgroundColor));
+    const b = lum(rgb(getComputedStyle(list).backgroundColor));
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+}
 
 test('more of the Timeline loads as the reader scrolls to its end', async ({
   page,
