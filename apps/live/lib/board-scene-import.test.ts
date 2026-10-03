@@ -223,7 +223,7 @@ describe('importDocuments', () => {
 
   it("sends the creation intent of each document's first tab (docs/specs/013-workspace/default-folders.md)", async () => {
     const made: NewBoardDocument[] = [];
-    const board = { ...tab('Board'), kind: 'whiteboard' as const };
+    const board = { ...tab('Board'), opensIn: 'draw' as const };
     await importDocuments([source('Sketch', [board]), source('Plan', [tab('Overview')])], {
       ownerId: 'o',
       offline: false,

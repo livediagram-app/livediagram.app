@@ -62,7 +62,7 @@ order:
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
   document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
   - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode,
-    including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-whiteboard/whiteboard.md));
+    including a stored legacy `kind: 'whiteboard'` tab ([Draw mode](../023-draw-mode/draw-mode.md));
     `diagram` otherwise, including a document with no tab and an event-storming board.
   - `tabKind`: `event-storming` when the first tab is an
     [event-storming board](../021-event-storming/event-storming.md), read the way the document model
