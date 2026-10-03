@@ -1,7 +1,8 @@
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
 // of the editor mode a general tab opens in. A tab edit like any other (one undo step, synced to
 // everyone). It also switches the chooser's own mode on that tab (useEditorMode), so the choice
-// visibly lands; nobody else's current mode changes.
+// visibly lands; nobody else's current mode changes. The other way round, an editor's own switch
+// moves the tab's Opens in with it (useSwitchSetsOpensIn), so the menu always matches the tab.
 import {
   editorModeSwitchable,
   opensInOf,
@@ -10,6 +11,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import type { OpensInChoice } from '@/components/chrome/OpensInMenuSection';
+import { useCallback } from 'react';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -59,4 +61,30 @@ export function useTabOpensIn(deps: {
       : undefined;
 
   return { setOpensIn, choiceFor };
+}
+
+/**
+ * The editor mode with its switch also setting the tab's Opens in (docs/specs/007-editor/editor-modes.md
+ * "Where the mode lives"): for an editor on a general, unlocked tab, a switch writes the tab's opening
+ * mode too, as a consequence of the switch (a tick: no undo step of its own), synced like any tab
+ * change. A visitor's switch, a locked tab and an event-storming board leave it be.
+ */
+export function useSwitchSetsOpensIn<M extends { setMode: (mode: EditorMode) => void }>(
+  editorMode: M,
+  deps: { tab: Tab | undefined; canEdit: boolean; tickTabs: (map: (ts: Tab[]) => Tab[]) => void },
+): M {
+  const { tab, canEdit, tickTabs } = deps;
+  const rawSet = editorMode.setMode;
+  const setMode = useCallback(
+    (mode: EditorMode) => {
+      rawSet(mode);
+      if (!tab || !canEdit || tab.locked === true || !editorModeSwitchable(tab)) return;
+      if (opensInOf(tab) === mode) return;
+      const id = tab.id;
+      tickTabs((ts) => ts.map((t) => (t.id === id ? setTabOpensIn(t, mode) : t)));
+      debugLog('[editor-mode] opens-in follows switch', { tabId: id, mode });
+    },
+    [rawSet, tab, canEdit, tickTabs],
+  );
+  return { ...editorMode, setMode };
 }

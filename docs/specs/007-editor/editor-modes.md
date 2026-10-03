@@ -90,7 +90,11 @@ where it is and changes only how the next mark is made.
   Start entry and whiteboard imports set it to `draw`.
 - **A switch is remembered** for that person and tab, in this browser, and
   wins over the tab's opening mode from then on.
-- **Switching never changes the opening mode.**
+- **An editor's switch moves the opening mode with it**, so a tab's **Opens in** always matches
+  the mode its editors last worked in: on a general, unlocked tab, a switch by someone who may edit
+  also sets `Tab.opensIn` (a consequence of the switch, with no undo step of its own), synced to
+  everyone. Nobody else's current mode changes (each person's mode on the tab is pinned once it
+  opens). A visitor's switch, a locked tab and an event-storming board leave it be.
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
   is in, a new article or a tab added from the tab bar (or Quick Start)
   opens in Diagram. Only the template chosen for it changes that: the

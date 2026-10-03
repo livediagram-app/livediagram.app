@@ -50,7 +50,7 @@ import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1051,7 +1051,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is.
-  const editorMode = useEditorMode(activeTab, { canEdit });
+  const rawEditorMode = useEditorMode(activeTab, { canEdit });
+  // An editor's switch also moves the tab's Opens in, so the two never disagree.
+  const editorMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
   const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
@@ -1569,7 +1571,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canEdit: !isReadOnly,
     commitTabs,
     activeId,
-    switchMode: editorMode.setMode,
+    switchMode: rawEditorMode.setMode,
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
