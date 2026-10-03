@@ -1,4 +1,6 @@
-# Domain language: mode, kind and template
+# Domain language
+
+## Mode, kind and template
 
 Three words describe how a document and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
@@ -9,7 +11,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 | **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                         |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation         |
 
-## Mode
+### Mode
 
 - An **editor mode** is how a person works on a general tab right now: Diagram or Draw.
   (the Editor modes spec in 007-editor).
@@ -18,7 +20,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
   new concept.
 - Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
 
-## Kind
+### Kind
 
 - A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
   general diagram tab, with their own notation, rules and data.
@@ -26,7 +28,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A new kind is added only when no mode can serve the use.
 - "Board type" means a kind. It never names a template or a mode.
 
-## Template
+### Template
 
 - A **template** is what a document was made from. It shapes the starting content of a general diagram tab and
   then has no further hold on it.
@@ -35,8 +37,26 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - A template or a template family is never a kind or a type: a retrospective is a general diagram tab made from a
   retrospective template.
 
-## Using the three together
+### Using the three together
 
 - **Default folders** are keyed in the order kind, template family, then mode ([Default folders](../013-workspace/default-folders.md)).
 - **Explorer filters** offer them as separate chips: Opens in (mode), Kind and Template ([Explorer filters](../013-workspace/explorer-filters.md)).
 - Code, copy and specs use these words only in these meanings.
+
+## Agents
+
+The words for a program working on documents for a person ([Agents](../024-agents/README.md)).
+
+| Term               | Means                                                                                     | Never called                            |
+| ------------------ | ----------------------------------------------------------------------------------------- | --------------------------------------- |
+| **agent**          | A program acting for a person through an API token: an MCP client, a CLI caller, a script | bot, AI user, assistant                 |
+| **agent name**     | The name of the token the agent holds ("Claude"), shown as "Claude for Webber"            | client name, label                      |
+| **changeset**      | One agent write to one tab: atomic, sequenced by the room, attributed, revertable         | batch, commit, patch                    |
+| **edit operation** | One step in a changeset (`set`, `add`, `connect`, ...), compiled into element ops         | op (that is a room op), action, command |
+| **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                        | mode, format                            |
+| **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix     | handle (that is a mention), alias       |
+| **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)               | query, filter (that is the Explorer's)  |
+| **lint finding**   | One problem the diagram lint reports (`box-overlap`), with the refs involved              | warning, issue                          |
+
+- An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
+- A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).

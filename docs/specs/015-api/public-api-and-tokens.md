@@ -158,7 +158,9 @@ the app has — **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` column (migration 0039) that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
-([MCP server §4.11](mcp-server.md)). Read-only tokens are minted through the MCP
+([MCP server §4.11](mcp-server.md)), except the comment verbs a view-role
+visitor may use ([§3.6a](#36a-a-tokens-view-of-itself)), allowed by name at
+that same choke point. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
@@ -280,6 +282,19 @@ one expire frees a slot.
 user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
 must delete the owner's `api_tokens` rows in the same cascade as their documents
 / folders / themes, so no credential outlives the account.
+
+### 3.6a A token's view of itself
+
+A token may read and revoke **itself**, which escalates nothing, so the [CLI](cli.md) can show who it is and sign
+out cleanly:
+
+- `GET /api/tokens/current`: the account id and display name, the token's name, `readOnly` and `expiresAt`.
+- `DELETE /api/tokens/current`: revokes the presenting token (204).
+
+Every other `/api/tokens` route stays session-only.
+
+**Comments under a read-only token.** A read-only token may add, reply to, resolve and reopen comments, as a
+view-role share visitor may, and write nothing else ([Agent presence](../024-agents/agent-presence.md#read-only-tokens)).
 
 ### 3.7 Self-hosting
 
