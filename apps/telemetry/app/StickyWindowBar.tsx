@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import type { TelemetryWindowKey } from '@livediagram/api-schema';
-import { Tooltip, Glyph } from '@livediagram/ui';
+import { Tooltip, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
 import { WINDOW_META } from './windows';
 
 // Three dots — the "more / switch view" affordance in the sticky bar.
@@ -44,7 +44,15 @@ export function StickyWindowBar({
   onSelectView: (key: string) => void;
 }) {
   const [stuck, setStuck] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  // A menu button (docs/specs/004-interface-design/menus.md); keys and focus come from the hooks.
+  const {
+    open: menuOpen,
+    close: closeMenu,
+    toggle,
+    trigger,
+    setTrigger,
+    onTriggerKeyDown,
+  } = useMenuButton();
 
   useEffect(() => {
     const el = watchRef.current;
@@ -60,7 +68,7 @@ export function StickyWindowBar({
         // Done here rather than in an effect keyed on `stuck`: this callback
         // is where the transition actually happens, so there is no second
         // render pass just to observe our own state change.
-        if (!next) setMenuOpen(false);
+        if (!next) closeMenu();
       },
       // Negative top margin ≈ the sticky SiteHeader height, so the bar
       // appears as the panel slips under the header rather than off-screen.
@@ -68,7 +76,7 @@ export function StickyWindowBar({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [watchRef]);
+  }, [watchRef, closeMenu]);
 
   const activeView = views.find((v) => v.key === view);
   const viewPickerLabel = activeView ? `Switch view, now ${activeView.label}` : 'Switch view';
@@ -109,7 +117,9 @@ export function StickyWindowBar({
           <Tooltip label={viewPickerLabel}>
             <button
               type="button"
-              onClick={() => setMenuOpen((o) => !o)}
+              ref={setTrigger}
+              onClick={toggle}
+              onKeyDown={onTriggerKeyDown}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               aria-label={viewPickerLabel}
@@ -136,23 +146,22 @@ export function StickyWindowBar({
                 type="button"
                 aria-hidden
                 tabIndex={-1}
-                onClick={() => setMenuOpen(false)}
+                onClick={closeMenu}
                 className="fixed inset-0 z-10 cursor-default"
               />
-              <div
-                role="menu"
-                className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1 shadow-xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10"
-              >
+              <ViewMenu trigger={trigger} onClose={closeMenu}>
                 {views.map((v) => {
                   const isCurrent = v.key === view;
                   return (
                     <button
                       key={v.key}
                       type="button"
-                      role="menuitem"
+                      role="menuitemradio"
+                      aria-checked={isCurrent}
+                      tabIndex={-1}
                       onClick={() => {
                         onSelectView(v.key);
-                        setMenuOpen(false);
+                        closeMenu();
                       }}
                       className={
                         'flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition ' +
@@ -173,11 +182,32 @@ export function StickyWindowBar({
                     </button>
                   );
                 })}
-              </div>
+              </ViewMenu>
             </>
           ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ViewMenu({
+  trigger,
+  onClose,
+  children,
+}: {
+  trigger: HTMLElement | null;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const { attach, surfaceProps } = useMenu({ onClose, trigger });
+  return (
+    <div
+      ref={attach}
+      {...surfaceProps}
+      className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1 shadow-xl outline-none ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10"
+    >
+      {children}
     </div>
   );
 }

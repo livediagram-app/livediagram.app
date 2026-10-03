@@ -1,108 +1,139 @@
 'use client';
 
 import { CountBadge } from './CountBadge';
+import { useId, type CSSProperties, type PointerEventHandler, type ReactNode } from 'react';
 import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type PointerEventHandler,
-  type ReactNode,
-  useCallback,
-} from 'react';
-import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
+  ChevronDownIcon,
+  HoverCard,
+  MENU_LABEL_ATTR,
+  MenuTreeContext,
+  useControlMenu,
+  useMenu,
+  useMenuKind,
+  type MenuInitialFocus,
+  type MenuKind,
+  type MenuTree,
+} from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
-import { useReposition } from '@/hooks/canvas/useReposition';
+import { useMenuItemProps } from './menu-item-props';
+import {
+  PLACEMENT_TRANSFORM,
+  usePortalMenuPlacement,
+  type PortalMenuPlacement,
+} from './usePortalMenuPlacement';
 
-type Placement = 'above' | 'below';
-
-type PortalMenuProps = {
+type PortalMenuBase = {
   anchor: HTMLElement | null;
-  placement?: Placement;
+  placement?: PortalMenuPlacement;
   onClose: () => void;
   children: ReactNode;
 };
 
-// Right-align the menu's right edge with the anchor's right edge and place
-// it above or below, with a small gap.
-const PLACEMENT_TRANSFORM: Record<Placement, string> = {
-  above: 'translate(-100%, calc(-100% - 4px))',
-  below: 'translate(-100%, 4px)',
+// A command menu (the default) or, when it holds a control, a control menu
+// (docs/specs/004-interface-design/menus.md). A control menu names itself.
+type PortalMenuProps = PortalMenuBase & {
+  surface?: MenuKind;
+  // Required in practice for a control menu; a command menu is named by its header or anchor.
+  label?: string;
+  initialFocus?: MenuInitialFocus;
 };
 
 /**
- * Floating context menu rendered through `createPortal` to `document.body`.
+ * Floating menu rendered through `createPortal` to `document.body`.
  * Anchored to an arbitrary element via its bounding rect; auto-clamps to the
  * viewport edges; closes when the user clicks outside the menu.
  *
- * Used by the tab bar (above the ellipsis button) and the editor header
- * (below the document-title ellipsis button).
+ * The anchor is its trigger: it names the menu (unless a MenuHeader does),
+ * points at it with aria-controls, and takes focus back when it closes.
  */
-export function PortalMenu({ anchor, placement = 'below', onClose, children }: PortalMenuProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
-  const [adjust, setAdjust] = useState({ x: 0, y: 0 });
+export function PortalMenu(props: PortalMenuProps) {
+  if (props.surface !== 'control') return <CommandPortalMenu {...props} />;
+  const { label, ...rest } = props;
+  return <ControlPortalMenu {...rest} label={label ?? 'Menu'} />;
+}
 
-  const reposition = useCallback(() => {
-    if (!anchor) return;
-    const r = anchor.getBoundingClientRect();
-    setPos({
-      left: r.right,
-      top: placement === 'below' ? r.bottom : r.top,
-    });
-  }, [anchor, placement]);
-  useReposition(reposition);
+function CommandPortalMenu({
+  anchor,
+  placement = 'below',
+  onClose,
+  children,
+  label,
+  initialFocus,
+}: PortalMenuBase & { label?: string; initialFocus?: MenuInitialFocus }) {
+  const { attach, element, tree, surfaceProps } = useMenu({
+    onClose,
+    trigger: anchor,
+    label,
+    initialFocus,
+  });
+  const at = usePortalMenuPlacement(anchor, placement, element, onClose);
+  return (
+    <PortalMenuFrame
+      at={at}
+      placement={placement}
+      attach={attach}
+      tree={tree}
+      surfaceProps={surfaceProps}
+    >
+      {children}
+    </PortalMenuFrame>
+  );
+}
 
-  useLayoutEffect(() => {
-    const node = ref.current;
-    if (!node || !pos) return;
-    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles.
-    const rect = node.getBoundingClientRect();
-    setAdjust((prev) => {
-      const next = clampToViewport(rect, prev);
-      return next.x === prev.x && next.y === prev.y ? prev : next;
-    });
-  }, [pos]);
+function ControlPortalMenu({
+  anchor,
+  placement = 'below',
+  onClose,
+  children,
+  label,
+}: PortalMenuBase & { label: string }) {
+  const { attach, element, tree, surfaceProps } = useControlMenu({
+    onClose,
+    trigger: anchor,
+    label,
+  });
+  const at = usePortalMenuPlacement(anchor, placement, element, onClose);
+  return (
+    <PortalMenuFrame
+      at={at}
+      placement={placement}
+      attach={attach}
+      tree={tree}
+      surfaceProps={surfaceProps}
+    >
+      {children}
+    </PortalMenuFrame>
+  );
+}
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!ref.current) return;
-      // A MenuFlyoutSection portals its panel outside this menu but marks it
-      // data-menu-flyout, so clicks inside the flyout count as inside the menu.
-      if (e.target instanceof Element && e.target.closest('[data-menu-flyout]')) return;
-      // Clicks anywhere INSIDE the anchor (including its inner svg / text
-      // nodes) are the trigger's own toggle to handle — closing here too
-      // made the toggle reopen the menu it had just closed.
-      if (
-        e.target instanceof Node &&
-        !ref.current.contains(e.target) &&
-        !(anchor?.contains(e.target) ?? false)
-      ) {
-        onClose();
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [onClose, anchor]);
-
-  if (!pos) return null;
-
+function PortalMenuFrame({
+  at,
+  placement,
+  attach,
+  tree,
+  surfaceProps,
+  children,
+}: {
+  at: { left: number; top: number } | null;
+  placement: PortalMenuPlacement;
+  attach: (el: HTMLElement | null) => void;
+  tree: MenuTree;
+  surfaceProps: object;
+  children: ReactNode;
+}) {
+  if (!at) return null;
   return (
     <Portal>
-      <div
-        ref={ref}
-        role="menu"
-        className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
-        style={{
-          left: pos.left + adjust.x,
-          top: pos.top + adjust.y,
-          transform: PLACEMENT_TRANSFORM[placement],
-        }}
-      >
-        {children}
-      </div>
+      <MenuTreeContext.Provider value={tree}>
+        <div
+          ref={attach}
+          {...surfaceProps}
+          className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
+          style={{ left: at.left, top: at.top, transform: PLACEMENT_TRANSFORM[placement] }}
+        >
+          {children}
+        </div>
+      </MenuTreeContext.Provider>
     </Portal>
   );
 }
@@ -136,12 +167,18 @@ export function MenuAccordionSection({
   preserveFocus?: boolean;
   flush?: boolean;
 }) {
+  // In a command menu the header is an item that discloses a group of items it labels; collapsed,
+  // the group is inert in either kind of menu, so neither Tab nor the arrows reach hidden rows.
+  const { inCommandMenu, itemProps } = useMenuItemProps();
+  const headerId = useId();
   return (
     <div
       className={flush ? '' : 'border-t border-slate-100 first:border-t-0 dark:border-slate-800'}
     >
       <button
         type="button"
+        id={headerId}
+        {...itemProps}
         onClick={onToggle}
         onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
         aria-expanded={open}
@@ -158,6 +195,9 @@ export function MenuAccordionSection({
         />
       </button>
       <div
+        role={inCommandMenu ? 'group' : undefined}
+        aria-labelledby={inCommandMenu ? headerId : undefined}
+        inert={!open}
         className={`grid transition-all duration-short ease-out ${
           open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
@@ -208,10 +248,13 @@ export function MenuActionRow({
   // menu differently each time.
   disabled?: boolean;
 }) {
+  const { itemProps } = useMenuItemProps({ disabled });
   if (disabled) {
+    // A command menu keeps it as a focusable, announced item that does nothing (D50).
     return (
       <span
         aria-disabled
+        {...itemProps}
         className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-slate-600"
       >
         <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
@@ -223,6 +266,7 @@ export function MenuActionRow({
     return (
       <button
         type="button"
+        {...itemProps}
         onClick={onClick}
         onPointerEnter={onPointerEnter}
         onPointerLeave={onPointerLeave}
@@ -246,6 +290,7 @@ export function MenuActionRow({
   return (
     <button
       type="button"
+      {...itemProps}
       onClick={onClick}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
@@ -265,10 +310,23 @@ export function MenuActionRow({
 // its visibility badge. A ⋯ menu opens away from its trigger (below a
 // card, beside a row), and on a grid of near-identical cards the reader
 // needs the menu itself to say which one they opened.
+//
+// In a command menu it names the menu (aria-labelledby, docs/specs/004-interface-design/menus.md)
+// and is hidden as content, so it is read once, as the menu's name, and never focused.
 export function MenuHeader({ title, aside }: { title: string; aside?: ReactNode }) {
+  const inCommandMenu = useMenuKind() === 'command';
+  const id = useId();
   return (
-    <div className="mb-1 flex items-center gap-2 border-b border-slate-100 px-3 pb-2 pt-1.5 dark:border-slate-800">
-      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
+    <div
+      aria-hidden={inCommandMenu || undefined}
+      className="mb-1 flex items-center gap-2 border-b border-slate-100 px-3 pb-2 pt-1.5 dark:border-slate-800"
+    >
+      {/* The title alone names the menu; the aside (a visibility badge) is decoration here. */}
+      <span
+        id={id}
+        {...(inCommandMenu ? { [MENU_LABEL_ATTR]: '' } : null)}
+        className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200"
+      >
         {title}
       </span>
       {aside ? <span className="shrink-0">{aside}</span> : null}
@@ -283,8 +341,10 @@ export function MenuHeader({ title, aside }: { title: string; aside?: ReactNode 
 // grouping reads at a glance. Pair with `flush` sections + parent-supplied
 // gating so an absent band leaves no dangling rule.
 export function MenuGroupSeparator() {
+  // A command menu announces its separators between groups of items.
+  const inCommandMenu = useMenuKind() === 'command';
   return (
-    <div className="my-1.5 px-2" role="separator" aria-hidden>
+    <div className="my-1.5 px-2" role="separator" aria-hidden={inCommandMenu ? undefined : true}>
       <div className="h-px bg-slate-200/90 dark:bg-slate-700/80" />
     </div>
   );
@@ -296,9 +356,11 @@ export function MenuGroupSeparator() {
 // styling can't drift across the context menu, style presets, and tab menu.
 // The caller supplies its own surrounding padding wrapper.
 export function MenuActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+  const { itemProps } = useMenuItemProps();
   return (
     <button
       type="button"
+      {...itemProps}
       onClick={onClick}
       className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
     >
@@ -336,6 +398,9 @@ export function MenuToolButton({
   active,
   danger,
 }: MenuToolButtonProps) {
+  // In a command menu: a menu item (checkable when it shows an on state), disabled by
+  // aria-disabled so the roving keys still reach it (D50).
+  const { inCommandMenu, itemProps } = useMenuItemProps({ disabled, checked: active });
   const tone = disabled
     ? 'cursor-not-allowed text-slate-300 dark:text-slate-400'
     : active
@@ -347,10 +412,11 @@ export function MenuToolButton({
     <HoverCard title={label} description={description}>
       <button
         type="button"
-        onClick={onClick}
-        disabled={disabled}
+        {...itemProps}
+        onClick={inCommandMenu && disabled ? undefined : onClick}
+        disabled={inCommandMenu ? undefined : disabled}
         aria-label={label}
-        aria-pressed={active}
+        aria-pressed={inCommandMenu ? undefined : active}
         // h-8 w-8 + forced 16px icons to match the canvas element toolbar
         // (SelectionPopover); the `[&_svg]` override beats each glyph's
         // intrinsic width/height attribute.
@@ -376,7 +442,7 @@ export function MenuTile({
   onClick,
   danger = false,
   disabled = false,
-  active = false,
+  active,
   preserveFocus = false,
   onPointerEnter,
   onPointerLeave,
@@ -401,16 +467,20 @@ export function MenuTile({
   onPointerEnter?: PointerEventHandler<HTMLButtonElement>;
   onPointerLeave?: PointerEventHandler<HTMLButtonElement>;
 }) {
+  // In a command menu: a menu item, checkable when the tile shows an on state (`active`), and
+  // disabled by aria-disabled so the roving keys still reach it (D50).
+  const { inCommandMenu, itemProps } = useMenuItemProps({ disabled, checked: active });
   return (
     <button
       type="button"
-      onClick={onClick}
+      {...itemProps}
+      onClick={inCommandMenu && disabled ? undefined : onClick}
       onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      disabled={disabled}
-      aria-pressed={active}
-      className={`flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition disabled:cursor-not-allowed disabled:opacity-40 ${
+      disabled={inCommandMenu ? undefined : disabled}
+      aria-pressed={inCommandMenu ? undefined : active}
+      className={`flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:opacity-40 ${
         danger
           ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
           : active

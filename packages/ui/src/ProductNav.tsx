@@ -12,9 +12,10 @@
 // because the destinations live in different apps stitched under one host by
 // the router, so client-side nav wouldn't cross them.
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useClickOutside } from './useClickOutside';
-import { useEscape } from './useEscape';
+import { useMenu } from './menu/useMenu';
+import { useMenuButton } from './menu/useMenuButton';
 import { ChevronDownIcon } from './icons';
 import { Glyph } from '@livediagram/ui';
 
@@ -91,14 +92,15 @@ export function ProductNav({
   showOnMobile?: boolean;
 }) {
   const active = ITEMS.find((i) => i.key === current) ?? ITEMS[0]!;
-  // Explicit open state for tap-to-toggle (touch). Desktop hover/focus still
-  // opens via CSS regardless of this; this just adds a click path and the
-  // outside-tap / Escape close that a pure-CSS menu can't do.
-  const [open, setOpen] = useState(false);
+  // Explicit open state: a click, Enter, Space or an arrow key opens it with focus inside and the
+  // menu keyboard (docs/specs/004-interface-design/menus.md). Desktop hover still shows it through
+  // CSS without taking focus; focusing the trigger alone no longer opens it (D56).
+  const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
+    useMenuButton();
   const ref = useRef<HTMLDivElement>(null);
+  const { attach, surfaceProps } = useMenu({ open, onClose: close, trigger, initialFocus });
 
-  useClickOutside(ref, () => setOpen(false), open);
-  useEscape(() => setOpen(false), { enabled: open });
+  useClickOutside(ref, close, open);
 
   // ml-* gives the menu breathing room from the logo it always sits beside,
   // in every header that renders it (marketing / telemetry / editor / explorer
@@ -109,11 +111,13 @@ export function ProductNav({
       className={`group relative ml-1.5 sm:ml-3 ${showOnMobile ? 'block' : 'hidden sm:block'}`}
     >
       <button
+        ref={setTrigger}
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Switch section, currently ${active.label}`}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
+        onKeyDown={onTriggerKeyDown}
         className="optical-edges flex h-[34px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
         {/* Hamburger affordance so the label reads as an openable menu, not a
@@ -130,7 +134,7 @@ export function ProductNav({
         <span className="text-optical-centre max-sm:hidden">{active.label}</span>
         <ChevronDownIcon
           size={12}
-          className={`h-3 w-3 opacity-60 transition-transform duration-micro group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${
+          className={`h-3 w-3 opacity-60 transition-transform duration-micro group-hover:[transform:rotate(180deg)] ${
             open ? '[transform:rotate(180deg)]' : ''
           }`}
         />
@@ -140,13 +144,14 @@ export function ProductNav({
           to the card without crossing a gap that would close the menu. The
           `open` state mirrors the CSS hover/focus visibility for touch taps. */}
       <div
-        className={`absolute left-0 top-full z-50 pt-2 transition-all duration-micro group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 ${
+        className={`absolute left-0 top-full z-50 pt-2 transition-all duration-micro group-hover:visible group-hover:opacity-100 ${
           open ? 'visible opacity-100' : 'invisible opacity-0'
         }`}
       >
         <div
-          role="menu"
-          className="w-60 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+          ref={attach}
+          {...surfaceProps}
+          className="w-60 outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           {ITEMS.map((item) => {
             const isCurrent = item.key === current;
@@ -155,8 +160,9 @@ export function ProductNav({
                 key={item.key}
                 href={item.href}
                 role="menuitem"
+                tabIndex={-1}
                 aria-current={isCurrent ? 'page' : undefined}
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className={`group/navitem flex items-start gap-2.5 rounded-lg px-3 py-2 transition ${
                   isCurrent
                     ? 'bg-brand-50 dark:bg-brand-500/15'

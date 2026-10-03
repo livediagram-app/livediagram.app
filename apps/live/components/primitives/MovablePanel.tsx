@@ -128,7 +128,7 @@ export function MovablePanel({
     // from under the highlight. A popover's own portalled menus and confirms
     // (a layer's row menu, Delete's confirm) are inside too, or choosing
     // from one would close the popover under it.
-    '[data-dock-button],[data-tour-popover],[role="menu"],[role="dialog"]',
+    '[data-dock-button],[data-tour-popover],[data-menu-surface],[role="dialog"]',
   );
 
   // When stackBelowY is provided and we're still at the default

@@ -78,7 +78,7 @@ export function TableCellMenu({
         : 'text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700'
     }`;
   return createPortal(
-    <ContextMenu position={position} onClose={onClose} flush>
+    <ContextMenu position={position} label="Cell menu" onClose={onClose} flush>
       <p className="px-3 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
         {single ? 'Selected Cell' : `${cells.length} Cells`}
       </p>

@@ -56,9 +56,14 @@ describe('LockedElementMenu', () => {
     expect(screen.getByText(/keep their work/i)).toBeTruthy();
   });
 
-  it('closes on Escape', () => {
+  // A command menu with no trigger (docs/specs/004-interface-design/menus.md): focus moves to
+  // the first row on open, and Escape there closes it.
+  it('takes focus to its first row and closes on Escape', () => {
     const { onClose } = mount();
-    fireEvent.keyDown(window, { key: 'Escape' });
+    const first = screen.getAllByRole('menuitem')[0]!;
+    expect(document.activeElement).toBe(first);
+    expect(screen.getByRole('menu', { name: 'In use' })).toBeTruthy();
+    fireEvent.keyDown(first, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledOnce();
   });
 

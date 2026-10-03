@@ -13,6 +13,8 @@ export type MenuButton = {
   initialFocus: MenuInitialFocus;
   /** The trigger element, for the menu to anchor to and return focus to. */
   trigger: HTMLElement | null;
+  /** Callback ref for a trigger that does not spread `triggerProps`. */
+  setTrigger: (el: HTMLElement | null) => void;
   openMenu: (focus?: MenuInitialFocus) => void;
   close: () => void;
   toggle: () => void;
@@ -56,6 +58,7 @@ export function useMenuButton(): MenuButton {
     open,
     initialFocus: state.initialFocus,
     trigger,
+    setTrigger,
     openMenu,
     close,
     toggle,

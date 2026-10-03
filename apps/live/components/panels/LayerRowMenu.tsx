@@ -1,7 +1,7 @@
 'use client';
 
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { isLayerLocked, layerOpacityOf, type Layer } from '@livediagram/document';
 import { EyeIcon, LockIcon } from '@/components/panels/layers-panel-icons';
 import { ClearIcon } from '@/components/chrome/tab-bar-icons';
@@ -22,7 +22,7 @@ import {
   LayerUpIcon,
   MENU_ICON_PX,
 } from '@/components/palette/context-menu-icons';
-import { lucideGlyph, useClickOutside, useEscape } from '@livediagram/ui';
+import { lucideGlyph, MenuTreeContext, useClickOutside, useControlMenu } from '@livediagram/ui';
 import { lucideFileText, lucideMerge } from '@livediagram/icons/lucide';
 
 // Right-click menu for a Layers-panel row (docs/specs/006-document/layers.md), styled like the tab
@@ -73,7 +73,20 @@ export function LayerRowMenu({
   onMergeUp: () => void;
   onMergeDown: () => void;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+  // A control menu (it holds the opacity slider; docs/specs/004-interface-design/menus.md). The
+  // ConfirmPopover claims Escape while it is open, so Escape here only ever closes the menu.
+  const { attach, tree, surfaceProps } = useControlMenu({
+    onClose,
+    label: `${layer.name} layer menu`,
+  });
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      ref.current = el;
+      attach(el);
+    },
+    [attach],
+  );
   // The toolbar Delete's wrapper — the ConfirmPopover anchors to it,
   // mirroring the tab menu.
   const deleteRef = useRef<HTMLDivElement>(null);
@@ -85,10 +98,6 @@ export function LayerRowMenu({
   );
 
   useClickOutside(ref, onClose, true, '[data-confirm-popover]');
-  useEscape(() => {
-    if (confirm) setConfirm(null);
-    else onClose();
-  });
 
   const sectionProps = (key: string) => ({
     open: openSection === key,
@@ -99,125 +108,135 @@ export function LayerRowMenu({
 
   return (
     <Portal>
-      <div
-        ref={ref}
-        role="menu"
-        aria-label={`${layer.name} layer actions`}
-        onContextMenu={(e) => e.preventDefault()}
-        className="lvd-menu-stagger animate-fade-in fixed z-[var(--z-modal)] flex w-56 flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-        style={{
-          // Up-left from the panel's edge at the clicked row, so the menu
-          // sits beside the panel instead of covering it. `max` keeps a
-          // tall menu from poking off the top of the viewport.
-          left: anchor.panelLeft - 8,
-          top: Math.max(8, anchor.rowBottom),
-          transform: 'translate(-100%, -100%)',
-        }}
-      >
-        <MenuToolbar>
-          <MenuToolButton
-            icon={<PencilIcon />}
-            label="Rename"
-            description="Rename this layer."
-            onClick={() => {
-              onClose();
-              onRename();
-            }}
-          />
-          <div ref={deleteRef} className="ml-auto">
+      <MenuTreeContext.Provider value={tree}>
+        <div
+          ref={setRef}
+          {...surfaceProps}
+          onContextMenu={(e) => e.preventDefault()}
+          className="lvd-menu-stagger animate-fade-in fixed z-[var(--z-modal)] flex w-56 outline-none flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+          style={{
+            // Up-left from the panel's edge at the clicked row, so the menu
+            // sits beside the panel instead of covering it. `max` keeps a
+            // tall menu from poking off the top of the viewport.
+            left: anchor.panelLeft - 8,
+            top: Math.max(8, anchor.rowBottom),
+            transform: 'translate(-100%, -100%)',
+          }}
+        >
+          <MenuToolbar>
             <MenuToolButton
-              icon={<TrashIcon />}
-              label="Delete"
-              description={
-                canDelete
-                  ? 'Delete this layer and everything on it.'
-                  : 'The last layer can’t be deleted.'
-              }
+              icon={<PencilIcon />}
+              label="Rename"
+              description="Rename this layer."
               onClick={() => {
-                if (elementCount === 0) {
-                  onClose();
-                  onDelete();
-                  return;
+                onClose();
+                onRename();
+              }}
+            />
+            <div ref={deleteRef} className="ml-auto">
+              <MenuToolButton
+                icon={<TrashIcon />}
+                label="Delete"
+                description={
+                  canDelete
+                    ? 'Delete this layer and everything on it.'
+                    : 'The last layer can’t be deleted.'
                 }
-                if (deleteRef.current) setConfirm({ kind: 'delete', anchor: deleteRef.current });
-              }}
-              danger
-              disabled={!canDelete}
-            />
-          </div>
-        </MenuToolbar>
-        <MenuGroupSeparator />
-        {/* flush: the MenuGroupSeparator above already draws the rule, so
+                onClick={() => {
+                  if (elementCount === 0) {
+                    onClose();
+                    onDelete();
+                    return;
+                  }
+                  if (deleteRef.current) setConfirm({ kind: 'delete', anchor: deleteRef.current });
+                }}
+                danger
+                disabled={!canDelete}
+              />
+            </div>
+          </MenuToolbar>
+          <MenuGroupSeparator />
+          {/* flush: the MenuGroupSeparator above already draws the rule, so
             the first section skips its own border-t (no double line). */}
-        <MenuAccordionSection title="Layer" icon={<LayersGlyph />} flush {...sectionProps('layer')}>
-          <OpacityRow value={layerOpacityOf(layer)} onChange={onSetOpacity} />
-          <MenuTileGrid cols={3}>
-            <MenuTile
-              icon={<LayerUpIcon />}
-              label="Bring to Top"
-              disabled={isTop}
-              onClick={onBringToTop}
-            />
-            <MenuTile
-              icon={<LayerDownIcon />}
-              label="Send to Back"
-              disabled={isBottom}
-              onClick={onSendToBottom}
-            />
-            <MenuTile
-              icon={<EyeIcon />}
-              label="Hide Others"
-              disabled={isTop && isBottom}
-              onClick={() => {
-                onHideOthers();
-                onClose();
-              }}
-            />
-          </MenuTileGrid>
-        </MenuAccordionSection>
-        <MenuAccordionSection title="Content" icon={<ContentGlyph />} {...sectionProps('content')}>
-          <MenuTileGrid cols={2}>
-            <MenuTile
-              icon={<LockIcon size={14} />}
-              label={locked ? 'Unlock' : 'Lock'}
-              active={locked}
-              onClick={onToggleLock}
-            />
-            <MenuTile
-              icon={<ClearIcon />}
-              label="Clear"
-              danger
-              disabled={elementCount === 0}
-              onClick={() => {
-                const anchorEl = ref.current;
-                if (anchorEl) setConfirm({ kind: 'clear', anchor: anchorEl });
-              }}
-            />
-          </MenuTileGrid>
-        </MenuAccordionSection>
-        <MenuAccordionSection title="Merge" icon={<MergeGlyph />} {...sectionProps('merge')}>
-          <MenuTileGrid cols={2}>
-            <MenuTile
-              icon={<LayerUpIcon />}
-              label="With Layer Above"
-              disabled={isTop}
-              onClick={() => {
-                onClose();
-                onMergeUp();
-              }}
-            />
-            <MenuTile
-              icon={<LayerDownIcon />}
-              label="With Layer Below"
-              disabled={isBottom}
-              onClick={() => {
-                onClose();
-                onMergeDown();
-              }}
-            />
-          </MenuTileGrid>
-        </MenuAccordionSection>
-      </div>
+          <MenuAccordionSection
+            title="Layer"
+            icon={<LayersGlyph />}
+            flush
+            {...sectionProps('layer')}
+          >
+            <OpacityRow value={layerOpacityOf(layer)} onChange={onSetOpacity} />
+            <MenuTileGrid cols={3}>
+              <MenuTile
+                icon={<LayerUpIcon />}
+                label="Bring to Top"
+                disabled={isTop}
+                onClick={onBringToTop}
+              />
+              <MenuTile
+                icon={<LayerDownIcon />}
+                label="Send to Back"
+                disabled={isBottom}
+                onClick={onSendToBottom}
+              />
+              <MenuTile
+                icon={<EyeIcon />}
+                label="Hide Others"
+                disabled={isTop && isBottom}
+                onClick={() => {
+                  onHideOthers();
+                  onClose();
+                }}
+              />
+            </MenuTileGrid>
+          </MenuAccordionSection>
+          <MenuAccordionSection
+            title="Content"
+            icon={<ContentGlyph />}
+            {...sectionProps('content')}
+          >
+            <MenuTileGrid cols={2}>
+              <MenuTile
+                icon={<LockIcon size={14} />}
+                label={locked ? 'Unlock' : 'Lock'}
+                active={locked}
+                onClick={onToggleLock}
+              />
+              <MenuTile
+                icon={<ClearIcon />}
+                label="Clear"
+                danger
+                disabled={elementCount === 0}
+                onClick={() => {
+                  const anchorEl = ref.current;
+                  if (anchorEl) setConfirm({ kind: 'clear', anchor: anchorEl });
+                }}
+              />
+            </MenuTileGrid>
+          </MenuAccordionSection>
+          <MenuAccordionSection title="Merge" icon={<MergeGlyph />} {...sectionProps('merge')}>
+            <MenuTileGrid cols={2}>
+              <MenuTile
+                icon={<LayerUpIcon />}
+                label="With Layer Above"
+                disabled={isTop}
+                onClick={() => {
+                  onClose();
+                  onMergeUp();
+                }}
+              />
+              <MenuTile
+                icon={<LayerDownIcon />}
+                label="With Layer Below"
+                disabled={isBottom}
+                onClick={() => {
+                  onClose();
+                  onMergeDown();
+                }}
+              />
+            </MenuTileGrid>
+          </MenuAccordionSection>
+        </div>
+      </MenuTreeContext.Provider>
       {confirm ? (
         <ConfirmPopover
           anchor={confirm.anchor}

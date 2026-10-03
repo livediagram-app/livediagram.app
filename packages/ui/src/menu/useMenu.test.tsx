@@ -167,6 +167,16 @@ describe('useMenu', () => {
     expect(focused()).toBe('After');
   });
 
+  it('closes when focus moves outside, and stays open through a blur to nowhere', () => {
+    render(<Harness />);
+    open();
+    fireEvent.focusOut(document.activeElement!, { relatedTarget: null });
+    expect(screen.getByRole('menu')).toBeTruthy();
+    const after = screen.getByRole('button', { name: 'After' });
+    fireEvent.focusOut(document.activeElement!, { relatedTarget: after });
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
   it('stops the keys it handles from reaching listeners outside the menu', () => {
     const outside = vi.fn();
     document.addEventListener('keydown', outside);

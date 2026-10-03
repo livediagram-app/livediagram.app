@@ -236,11 +236,20 @@ export function useMenu({
       cancelSpaceUp = false;
       e.preventDefault();
     };
+    // M11: focus moving somewhere outside the menu (and outside its submenus) closes it. A blur to
+    // nowhere is a press (Safari does not focus a pressed button) and leaves it open.
+    const onFocusOut = (e: FocusEvent) => {
+      const next = e.relatedTarget;
+      if (!(next instanceof Element) || ownsFocus(element, next)) return;
+      latest.current.onClose();
+    };
     element.addEventListener('keydown', onKeyDown);
     element.addEventListener('keyup', onKeyUp);
+    element.addEventListener('focusout', onFocusOut);
     return () => {
       element.removeEventListener('keydown', onKeyDown);
       element.removeEventListener('keyup', onKeyUp);
+      element.removeEventListener('focusout', onFocusOut);
     };
   }, [element, open, inSubmenu, closeTree]);
 

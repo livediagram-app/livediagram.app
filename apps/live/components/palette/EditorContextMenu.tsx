@@ -152,7 +152,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       onClose();
     };
     return (
-      <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
+      <ContextMenu
+        position={position}
+        label="Element menu"
+        onClose={onClose}
+        flush
+        anchorBottom={anchorBottom}
+      >
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +

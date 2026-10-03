@@ -1,10 +1,12 @@
 import { EDITOR_MODE_CATALOGUE, type EditorMode } from '@livediagram/document';
+import type { ReactNode } from 'react';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 import { EDITOR_MODE_ICON } from './editor-mode/editor-mode-copy';
 import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
-// of the editor mode a general tab opens in, for everyone. Every mode of the catalogue is a radio
+// of the editor mode a general tab opens in, for everyone. Every mode of the catalogue is a one-of-a-set
 // choice, so a further mode joins here without a change to this file. Choosing one also switches
 // the chooser's own mode, so the already-checked choice still passes through (it switches back). The host leaves `choice` out where it is not offered (an event-storming
 // board, a visitor who cannot edit).
@@ -42,12 +44,10 @@ export function OpensInMenuSection({
             const Icon = EDITOR_MODE_ICON[id];
             const checked = id === choice.mode;
             return (
-              <button
+              <OpensInChoiceRow
                 key={id}
-                type="button"
-                role="menuitemradio"
-                aria-checked={checked}
-                aria-disabled={choice.disabled || undefined}
+                checked={checked}
+                disabled={choice.disabled}
                 onClick={() => {
                   if (choice.disabled) return;
                   choice.onChange(id);
@@ -73,11 +73,41 @@ export function OpensInMenuSection({
                     checked ? 'bg-brand-600 dark:bg-brand-400' : 'bg-transparent'
                   }`}
                 />
-              </button>
+              </OpensInChoiceRow>
             );
           },
         )}
       </div>
     </MenuAccordionSection>
+  );
+}
+
+// One mode: inside the Tab control menu a toggle button (aria-pressed, D55), as every one-of-a-set
+// tile there is; inside a command menu it would be a menuitemradio.
+function OpensInChoiceRow({
+  checked,
+  disabled,
+  onClick,
+  className,
+  children,
+}: {
+  checked: boolean;
+  disabled: boolean;
+  onClick: () => void;
+  className: string;
+  children: ReactNode;
+}) {
+  const { inCommandMenu, itemProps } = useMenuItemProps({ checked, radio: true, disabled });
+  return (
+    <button
+      type="button"
+      {...itemProps}
+      aria-pressed={inCommandMenu ? undefined : checked}
+      aria-disabled={disabled || undefined}
+      onClick={onClick}
+      className={className}
+    >
+      {children}
+    </button>
   );
 }

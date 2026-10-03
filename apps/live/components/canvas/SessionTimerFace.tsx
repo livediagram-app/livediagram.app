@@ -88,7 +88,7 @@ export function SessionTimerFace({
       }}
     >
       {onSetMinutes ? (
-        <ElementEllipsisMenu label="Timer options">
+        <ElementEllipsisMenu label="Timer options" kind="control">
           {(close) => (
             <>
               {/* The Studio's own timer UI, not a second design of it

@@ -87,7 +87,7 @@ export function QaBoardFace({
 
   const menu =
     actions.clear || onOpenSettings ? (
-      <ElementEllipsisMenu label="Q&A board options" color={textColor} align="left">
+      <ElementEllipsisMenu kind="command" label="Q&A board options" color={textColor} align="left">
         {(close) => (
           <>
             {discussing && actions.discuss ? (

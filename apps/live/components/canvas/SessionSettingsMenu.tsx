@@ -40,7 +40,7 @@ export function SessionSettingsMenu({
         ? 'Stopwatch options'
         : 'Poll options';
   return (
-    <ElementEllipsisMenu label={label}>
+    <ElementEllipsisMenu label={label} kind="control">
       {(close) => (
         <>
           <SessionElementSettings config={config} onChange={onChange} onClose={close} />
