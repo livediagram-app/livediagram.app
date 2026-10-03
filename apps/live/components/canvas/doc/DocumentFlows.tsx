@@ -93,7 +93,12 @@ export function DocumentFlows({
                 zoom={zoom}
                 ink={inkOf(lead, surface)}
                 themeAccent={view.themeAccent}
-                margin={docMarginPx(doc.style)}
+                styleOverride={
+                  docs.stylePreview?.flow === flow ? docs.stylePreview.style : undefined
+                }
+                margin={docMarginPx(
+                  docs.stylePreview?.flow === flow ? docs.stylePreview.style : doc.style,
+                )}
                 onCommit={docs.onCommit}
                 onLayout={docs.onLayout}
                 onUndo={docs.undo}

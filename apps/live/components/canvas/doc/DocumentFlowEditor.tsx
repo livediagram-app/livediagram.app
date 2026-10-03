@@ -74,6 +74,8 @@ export type DocumentFlowEditorProps = {
   ink: DocInk;
   themeAccent: string;
   margin: number;
+  // A style shown in place of the document's own while a Style tab choice is hovered.
+  styleOverride?: DocFlow['style'];
   // The writing's blocks, written to the tab (one undo step, one sync).
   onCommit: (flow: string, blocks: DocBlock[]) => void;
   onLayout: (layout: FlowLayout) => void;
@@ -217,7 +219,7 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
       attributes: () => {
         const p = latest.current;
         const frame = flowFrame(p.pages, p.margin);
-        const { vars, rules } = docStyleVars(p.doc.style, p.themeAccent, p.ink);
+        const { vars, rules } = docStyleVars(p.styleOverride ?? p.doc.style, p.themeAccent, p.ink);
         const style: CSSProperties = {
           ...vars,
           left: `${frame.x}px`,
@@ -477,6 +479,7 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
     props.margin,
     props.editable,
     props.interactive,
+    props.styleOverride,
   ]);
 
   // A request to put the caret in this document (a new document: its title).

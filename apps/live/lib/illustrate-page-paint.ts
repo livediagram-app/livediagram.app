@@ -108,25 +108,48 @@ function patternLayers(pattern: PagePattern): { image: string; size: string } {
  * classes, white or slate in dark chrome) and the pattern over it, inked faintly in the page's ink.
  * `color` is that ink, so the pattern reads on any fill.
  */
-export function pageSheetStyle(background: PageBackground | undefined): CSSProperties {
+export function pageSheetStyle(
+  background: PageBackground | undefined,
+  // A document page's ruling (docs/specs/007-editor/document-pages.md "Document style"): its Lines
+  // drawn at its body line pitch inside its margins, on the writing's baselines.
+  ruling?: { pitch: number; inset: number },
+): CSSProperties {
   const fill = background?.fill;
   const style: CSSProperties = {};
   const images: string[] = [];
   const sizes: string[] = [];
+  const clips: string[] = [];
   if (background?.pattern) {
     const layer = patternLayers(background.pattern);
     images.push(layer.image);
-    sizes.push(layer.size);
+    if (ruling && background.pattern === 'lines') {
+      sizes.push(`100% ${ruling.pitch}px`);
+      clips.push('content-box');
+      style.padding = ruling.inset;
+      style.backgroundOrigin = 'content-box';
+    } else {
+      sizes.push(layer.size);
+      clips.push('border-box');
+    }
   }
   if (fill?.kind === 'gradient') {
     images.push(fillCss(fill));
     sizes.push('100% 100%');
+    clips.push('border-box');
   } else if (fill?.kind === 'solid') {
     style.backgroundColor = fill.color;
   }
   if (images.length) {
+    // The colour paints under the last layer's clip: a clear last layer keeps it to the border.
+    if (clips[clips.length - 1] === 'content-box') {
+      images.push('linear-gradient(transparent, transparent)');
+      sizes.push('100% 100%');
+      clips.push('border-box');
+    }
     style.backgroundImage = images.join(', ');
     style.backgroundSize = sizes.join(', ');
+    style.backgroundClip = clips.join(', ');
+    style.backgroundRepeat = 'repeat';
   }
   if (fill) style.color = pagePatternInk(background);
   return style;

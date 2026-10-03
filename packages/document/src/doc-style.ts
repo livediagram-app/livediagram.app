@@ -2,6 +2,10 @@
 // (docs/specs/007-editor/document-pages.md "Document style", "Type"): every field's default, and
 // the looks a document can start from. Pure; the editor turns the result into CSS variables and
 // the exports read the same numbers.
+import { docsOf } from './doc-flow';
+import { withDocFlow } from './doc-pages';
+import { illustratePagesOf, withIllustratePages } from './illustrate-page';
+import type { Tab } from './index';
 import type {
   DocLineSpacing,
   DocLookId,
@@ -172,4 +176,45 @@ export function docMarginPx(style: DocStyle | undefined): number {
 export function docBodyLinePx(style: DocStyle | undefined): number {
   const r = resolveDocStyle(style);
   return DOC_TEXT_SIZE_PX[r.textSize] * DOC_LINE_HEIGHT[r.lineSpacing];
+}
+
+/**
+ * A document's style changed (docs/specs/007-editor/document-pages.md "Document style"): a look
+ * sets every field it has (keeping the accent, margins and page numbers); one field changed is
+ * that field alone, and the document no longer names a look. Choosing Notebook rules the document's
+ * pages (their Lines pattern); leaving it takes the lines away again. One tab edit.
+ */
+export function withDocStyleChanged<
+  T extends Pick<Tab, 'elements'> & { pages?: unknown; docs?: unknown },
+>(tab: T, flow: string, change: { look: DocLookId } | { patch: Partial<DocStyle> }): T {
+  const doc = docsOf(tab)[flow];
+  if (!doc) return tab;
+  const was = doc.style;
+  let style: DocStyle;
+  if ('look' in change) style = withDocLook(was, change.look);
+  else {
+    const { look: _look, ...rest } = { ...was, ...change.patch };
+    void _look;
+    style = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)) as DocStyle;
+  }
+  let next: T = withDocFlow(
+    tab,
+    flow,
+    Object.keys(style).length ? { blocks: doc.blocks, style } : { blocks: doc.blocks },
+  );
+  const ruledBefore = was?.look === 'notebook';
+  const ruledNow = 'look' in change && DOC_LOOKS[change.look].ruled;
+  if (ruledNow !== ruledBefore && 'look' in change) {
+    const pages = illustratePagesOf(next).map((p) => {
+      if (p.flow !== flow) return p;
+      const background = { ...p.background };
+      if (ruledNow) background.pattern = 'lines';
+      else if (background.pattern === 'lines') delete background.pattern;
+      const { background: _b, ...own } = p;
+      void _b;
+      return background.fill || background.pattern ? { ...own, background } : own;
+    });
+    next = withIllustratePages(next, pages) as T;
+  }
+  return next;
 }

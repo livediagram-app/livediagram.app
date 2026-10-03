@@ -16,6 +16,10 @@ import {
   withZoneWrap,
   type DocZoneAlign,
   type DocZoneWrap,
+  type DocLookId,
+  type DocStyle,
+  DOC_LOOKS,
+  withDocStyleChanged,
   withDocumentPageCount,
   withZonesSettled,
   type DocBlock,
@@ -46,7 +50,14 @@ export type DocumentPagesView = {
   insertObject: (flow: string, what: DocInsert) => void;
   // A zone's wrap, place across the text, or removal (the zone bar).
   zoneAction: (flow: string, zoneId: string, action: ZoneAction) => void;
+  // A document's style changed (the Style tab): a look, or one field.
+  setStyle: (flow: string, change: DocStyleChange) => void;
+  // A style shown on a document while a Style tab choice is hovered.
+  stylePreview: { flow: string; style: DocStyle } | null;
+  setStylePreview: (preview: { flow: string; style: DocStyle } | null) => void;
 };
+
+export type DocStyleChange = { look: DocLookId } | { patch: Partial<DocStyle> };
 
 export type DocInsert = 'image' | 'table' | 'chart' | 'drawing';
 export type ZoneAction = { wrap: DocZoneWrap } | { align: DocZoneAlign } | { remove: true };
@@ -200,6 +211,25 @@ export function useDocumentPages(deps: {
     [tabId],
   );
 
+  const [stylePreview, setStylePreview] = useState<DocumentPagesView['stylePreview']>(null);
+  const setStyle = useCallback(
+    (flow: string, change: DocStyleChange) => {
+      const d = latest.current;
+      if (!d.canEdit || d.activeTab.locked === true) return;
+      track(
+        'Tab',
+        'Changed',
+        'look' in change ? `DocumentLook${DOC_LOOKS[change.look].label}` : 'DocumentStyle',
+      );
+      setStylePreview(null);
+      d.commitTabs((ts) =>
+        ts.map((t) => (t.id === tabId ? withDocStyleChanged(t, flow, change) : t)),
+      );
+      debugLog('[doc] style changed', { tabId, flow, change });
+    },
+    [tabId],
+  );
+
   const undo = useCallback(() => latest.current.undo(), []);
   const redo = useCallback(() => latest.current.redo(), []);
   const onWritingPress = useCallback(() => latest.current.clearSelection(), []);
@@ -217,5 +247,8 @@ export function useDocumentPages(deps: {
     onWritingPress,
     insertObject,
     zoneAction,
+    setStyle,
+    stylePreview,
+    setStylePreview,
   };
 }

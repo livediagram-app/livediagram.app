@@ -3,8 +3,13 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import {
+  docBodyLinePx,
+  docMarginPx,
   ILLUSTRATE_PAGE_GAP,
+  pageIsDark,
   pageLabel,
+  resolveDocStyle,
+  resolveFontStack,
   type LaidOutPage,
   type PageKind,
 } from '@livediagram/document';
@@ -20,6 +25,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab, type PagePreview } from './IllustratePagePanel';
 import { AddPagePopover } from './AddPagePopover';
+import { DocumentStyleSection } from './doc/DocumentStyleSection';
 import { useStylePanelRequest } from '@/lib/doc/doc-editor-store';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
@@ -56,6 +62,31 @@ export function IllustratePages({
   bare?: boolean;
 }) {
   const { pages, focusPage } = view;
+  const docs = view.documents ?? null;
+  // A document page's style (a hover in its Style tab previews one).
+  const docStyleOf = (page: LaidOutPage) =>
+    page.flow
+      ? docs?.stylePreview?.flow === page.flow
+        ? docs.stylePreview.style
+        : docs?.docs[page.flow]?.style
+      : undefined;
+  // A document page's Lines pattern ruled on its writing's baselines, inside its margins.
+  const rulingOf = (page: LaidOutPage) =>
+    page.flow && docs?.docs[page.flow]
+      ? { pitch: docBodyLinePx(docStyleOf(page)), inset: docMarginPx(docStyleOf(page)) }
+      : undefined;
+  // A document page's number, in its bottom margin, once its document has more than one page.
+  const pageNumberOf = (page: LaidOutPage) => {
+    if (!page.flow || !docs?.docs[page.flow]) return null;
+    const style = resolveDocStyle(docStyleOf(page));
+    const own = pages.filter((p) => p.flow === page.flow);
+    if (!style.pageNumbers || own.length < 2) return null;
+    return {
+      n: own.findIndex((p) => p.id === page.id) + 1,
+      bottom: docMarginPx(docStyleOf(page)) / 2 - 8,
+      font: resolveFontStack(style.bodyFont),
+    };
+  };
   const edit = bare ? undefined : view.edit;
   // The open panel's page and the tab it opened on. Its cog is looked up live (cogs), so a cog
   // remounted by zen or a role change is the one the panel hangs from.
@@ -131,7 +162,7 @@ export function IllustratePages({
               width: page.rect.width,
               height: page.rect.height,
               boxShadow: '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...pageSheetStyle(background),
+              ...pageSheetStyle(background, rulingOf(page)),
             }}
           >
             <div
@@ -182,6 +213,20 @@ export function IllustratePages({
                 />
               </div>
             ) : null}
+            {pageNumberOf(page) ? (
+              <span
+                aria-hidden
+                data-page-number=""
+                className="pointer-events-none absolute inset-x-0 text-center text-[12px] tabular-nums"
+                style={{
+                  bottom: pageNumberOf(page)!.bottom,
+                  color: pageIsDark(page) ? 'rgb(255 255 255 / 0.55)' : 'rgb(71 85 105 / 0.8)',
+                  fontFamily: pageNumberOf(page)!.font,
+                }}
+              >
+                {pageNumberOf(page)!.n}
+              </span>
+            ) : null}
           </div>
         );
       })}
@@ -217,6 +262,18 @@ export function IllustratePages({
             view.setLayoutPreview(layout ? { pageId: open.id, layout } : null)
           }
           onClose={close}
+          documentStyle={
+            open.flow && docs?.docs[open.flow] ? (
+              <DocumentStyleSection
+                style={docs.docs[open.flow]!.style}
+                themeAccent={view.themeAccent}
+                onChange={(change) => docs.setStyle(open.flow!, change)}
+                onPreview={(style) =>
+                  docs.setStylePreview(style ? { flow: open.flow!, style } : null)
+                }
+              />
+            ) : null
+          }
         />
       ) : null}
     </>
