@@ -105,11 +105,12 @@ const INFOGRAPHIC: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    // The page is the canvas here, so no Page element.
-    { id: 'write', tiles: tilesExcept('write', 'tools:page') },
-    // Mind maps are a diagram's, not a visual page's.
-    { id: 'build', tiles: tilesExcept('build', 'tools:mind-node') },
-    { id: 'components' },
+    // The page is the canvas here, so no Page element; and no Annotation, a diagram's marker.
+    { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
+    // Mind maps, lanes and frames organise a diagram, not a visual page.
+    { id: 'build', tiles: tilesExcept('build', 'tools:mind-node', 'tools:lane', 'tools:frame') },
+    // The web blocks, without the data-model Entity.
+    { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
     { id: 'devices' },
     { id: 'icons' },
     { id: 'stickers' },

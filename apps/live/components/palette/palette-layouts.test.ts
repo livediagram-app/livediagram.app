@@ -79,19 +79,25 @@ describe('palette layouts', () => {
   it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
     expect(tileIds('diagram', 'write')).toContain('tools:page');
     expect(tileIds('infographic', 'write')).not.toContain('tools:page');
-    expect(tileIds('infographic', 'write')).toEqual(
-      tilesForCategory('write')
-        .map((t) => t.id)
-        .filter((id) => id !== 'tools:page'),
-    );
+    expect(tileIds('infographic', 'write')).toEqual(['tools:text', 'tools:sticky']);
   });
 
-  it('leaves mind nodes out of Infographic', () => {
-    expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
+  it('leaves mind nodes, lanes, frames, annotations and entities out of Infographic', () => {
     const everywhere = paletteCategoriesFor('infographic').flatMap((c) =>
       (c.tiles ?? []).map((t) => t.id),
     );
-    expect(everywhere).not.toContain('tools:mind-node');
+    for (const id of [
+      'tools:mind-node',
+      'tools:lane',
+      'tools:frame',
+      'tools:annotation',
+      'tools:entity',
+    ]) {
+      expect(everywhere, id).not.toContain(id);
+    }
+    expect(tileIds('infographic', 'build')).toEqual(['tools:table', 'tools:timeline']);
+    expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
+    expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });
 
   it("leaves Media's embeds out of Diagram, keeping its own two", () => {
