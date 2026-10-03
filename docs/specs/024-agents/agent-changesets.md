@@ -3,7 +3,7 @@
 **Status: specified, not built.** Closes livediagram-app/livediagram.app#343.
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's
-room, shown live to everyone with the tab open, attributed to "<agent name> for <person>", and revertable as one
+room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one
 unit. The whole-tab `PUT` stays the editor's own autosave path and nothing else's.
 
 ## Why
@@ -24,7 +24,7 @@ persistence boundary"). That write never reached the room, so:
 | `id`         | `cs_` and 10 base32 characters, minted by the api                                                               |
 | `documentId` | The document                                                                                                    |
 | `tabId`      | The one tab it writes; a changeset never spans tabs                                                             |
-| `agent`      | The token id, the **agent name** (the token's name) and the owner id; absent when a signed-in session writes    |
+| `agent`      | The token id and the owner id; absent when a signed-in session writes                                           |
 | `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history |
 | `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (graph, Mermaid, template or elements)   |
 | `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target             |
@@ -70,7 +70,7 @@ editor that was offline when it landed.
 
 ## What the room does
 
-- Sequences the `changeset` op in one log slot, whatever its size, carrying `id`, `rev`, the agent name, the owner's
+- Sequences the `changeset` op in one log slot, whatever its size, carrying `id`, `rev`, the owner's
   name and colour, the summary and the element ops.
 - When the element ops exceed `CHANGESET_RELAY_MAX_BYTES`, the op carries no element ops and editors re-fetch the
   tab in place, as a resync does ([Resync without reloading the page](../012-collaboration/resync-without-reload.md)).
@@ -116,10 +116,10 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 ## In the editor
 
 - The element ops apply as a peer's would and fold into the save baseline, so the next autosave carries them.
-- Each element the changeset touched shows an outline in the agent's colour for `CHANGESET_REVEAL_MS`; with reduced
+- Each element the changeset touched shows an outline in the owner's colour for `CHANGESET_REVEAL_MS`; with reduced
   motion it appears and disappears without animation.
-- A toast names the agent and the change: "Claude for Webber changed 3 elements · Show · Undo". **Show** brings the
-  touched elements into view; **Undo** reverts. Changesets from one agent within `CHANGESET_TOAST_COALESCE_MS`
+- A toast names the person and the change: "Webber changed 3 elements · Show · Undo". **Show** brings the
+  touched elements into view; **Undo** reverts. Changesets from one token within `CHANGESET_TOAST_COALESCE_MS`
   share a toast.
 
 ## The MCP server

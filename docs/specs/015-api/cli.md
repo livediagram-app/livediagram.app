@@ -39,7 +39,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `changeset ls\|show\|revert <doc> [<changeset>]`                       | Recent changesets and their revert                                        |
 | `comment ls\|add\|reply\|resolve\|reopen <doc> ...`                    | Threads ([Agent presence](../024-agents/agent-presence.md#comments))      |
 | `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`     | The agent's presence                                                      |
-| `wait <doc> --for mention\|comment\|change [--timeout <s>]`            | Blocks until it happens, prints it, exits                                 |
+| `wait <doc> --for comment\|change [--timeout <s>]`                     | Blocks until it happens, prints it, exits                                 |
 | `watch <doc>`                                                          | Streams changes, one line each, until interrupted                         |
 | `graph lint\|render <file>`                                            | Lint or preview a graph or Mermaid file locally, before writing anything  |
 | `pull <doc> [--to <dir>]` / `push <file>`                              | Sync one document to a file and back                                      |
@@ -102,7 +102,7 @@ In order of precedence:
 - `auth login` runs OAuth 2.1 with PKCE through the MCP worker's authorisation server
   ([MCP server](mcp-server.md) §3) with a loopback redirect, and stores the minted `lvd_` token. `--device` uses the
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
-  do not run the MCP worker. The token is named "livediagram CLI", which is the agent name its work shows.
+  do not run the MCP worker. The token is named "livediagram CLI"; its work shows as its owner's.
 - Credentials go in the OS keychain when available, else `~/.config/livediagram/credentials.json` at mode 0600.
 - `auth status` prints the host, account, token name, read-only flag and expiry, never the secret, and warns inside
   14 days of expiry. `auth logout` revokes the token and forgets it.

@@ -9,7 +9,7 @@ changes and discusses a document, alone or beside people editing it live. The fr
 `docs/research/agent-cli/`.
 
 - ./agent-changesets.md - when an agent writes a tab: the changeset path through the api and room, conflicts, revert
-- ./agent-presence.md - when showing an agent to people: attribution, presence, comments and mentions
+- ./agent-presence.md - when showing an agent to people: attribution as its owner, presence, comments
 - ./document-views.md - when an agent reads a tab as text: refs, the outline and the other views, budgets
 - ./edit-operations.md - when an agent edits elements: the operation vocabulary, selectors, placement, errors
 - ./diagram-lint.md - when checking a diagram without looking at it: the findings, their codes and output
