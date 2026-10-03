@@ -395,6 +395,7 @@ export function PageToolbar({
           label="Colour"
           anchor="colour"
           menu
+          popup="dialog"
           expanded={open === 'colour'}
           onPress={() => toggleOpen('colour')}
         >
@@ -472,7 +473,7 @@ export function PageToolbar({
         </Button>
       </div>
       {open === 'style' ? (
-        <ToolbarPopover anchor="style" onClose={close} label="Text style" width={210}>
+        <ToolbarPopover anchor="style" menu onClose={close} label="Text style" width={210}>
           <StylePanel
             selection={selection}
             onStyle={(style) => choose(() => run(setBlockStyle(style), 'block'))}
@@ -480,7 +481,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'list' ? (
-        <ToolbarPopover anchor="list" onClose={close} label="Lists" width={230}>
+        <ToolbarPopover anchor="list" menu onClose={close} label="Lists" width={230}>
           <ListPanel
             selection={selection}
             onList={(list) => choose(() => run(toggleList(list), 'block'))}
@@ -489,7 +490,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'align' ? (
-        <ToolbarPopover anchor="align" onClose={close} label="Alignment" width={210}>
+        <ToolbarPopover anchor="align" menu onClose={close} label="Alignment" width={210}>
           <AlignPanel
             selection={selection}
             onAlign={(align) => choose(() => run(setAlign(align)))}
@@ -527,7 +528,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'insert' ? (
-        <ToolbarPopover anchor="insert" onClose={close} label="Insert" width={200}>
+        <ToolbarPopover anchor="insert" menu onClose={close} label="Insert" width={200}>
           <InsertPanel
             onObject={(what) => choose(() => onInsert?.(handle.flow, what))}
             onBlock={(what) => choose(() => insertBlock(what))}
@@ -535,7 +536,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'more' ? (
-        <ToolbarPopover anchor="more" onClose={close} label="More formatting" width={220}>
+        <ToolbarPopover anchor="more" menu onClose={close} label="More formatting" width={220}>
           <MorePanel selection={selection} onAction={(a) => choose(() => more(a))} />
         </ToolbarPopover>
       ) : null}
@@ -554,12 +555,15 @@ function Button({
   menu,
   expanded,
   disabled,
+  popup = 'menu',
   onPress,
   anchor,
   children,
 }: {
   label: string;
   disabled?: boolean;
+  // What its menu opens: a menu, or a small dialog (the colours).
+  popup?: 'menu' | 'dialog';
   keys?: string;
   pressed?: boolean;
   // Opens a menu (a small chevron says so), open while `expanded`.
@@ -578,7 +582,7 @@ function Button({
         type="button"
         aria-label={name}
         aria-pressed={menu ? undefined : pressed}
-        aria-haspopup={menu ? 'menu' : undefined}
+        aria-haspopup={menu ? popup : undefined}
         aria-expanded={menu ? (expanded ?? false) : undefined}
         disabled={disabled}
         onClick={onPress}

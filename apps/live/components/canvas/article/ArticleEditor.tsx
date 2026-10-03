@@ -69,7 +69,7 @@ import { setBlockStyle, toggleList } from '@/lib/article/article-commands';
 import { caretOf } from '@/lib/article/article-caret';
 import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
-import { SlashMenu } from './SlashMenu';
+import { SLASH_MENU_ID, SlashMenu, slashOptionId } from './SlashMenu';
 import { useArticleLinkHover } from './useArticleLinkHover';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
@@ -172,9 +172,13 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   } | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
   const slashItems = slash ? filterSlashItems(slash.query) : [];
-  const slashLive = useRef({ items: slashItems, index: slashIndex });
+  const slashLive = useRef({ items: slashItems, index: slashIndex, open: false });
   useLayoutEffect(() => {
-    slashLive.current = { items: slashItems, index: slashIndex };
+    const open = !!slash && slashItems.length > 0;
+    const was = slashLive.current;
+    slashLive.current = { items: slashItems, index: slashIndex, open };
+    // The writing points at the open menu and its highlighted option (aria-activedescendant).
+    if (was.open !== open || was.index !== slashIndex) viewRef.current?.setProps({});
   });
   const pickSlash = (item: SlashItem) => {
     const view = viewRef.current;
@@ -416,6 +420,15 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           'aria-multiline': 'true',
           'aria-label': 'Article text',
           spellcheck: 'true',
+          ...(slashLive.current.open
+            ? {
+                'aria-controls': SLASH_MENU_ID,
+                'aria-expanded': 'true',
+                'aria-activedescendant': slashOptionId(
+                  Math.min(slashLive.current.index, slashLive.current.items.length - 1),
+                ),
+              }
+            : {}),
           ...(p.editable ? {} : { 'data-readonly': '', 'aria-readonly': 'true' }),
           ...(p.interactive ? {} : { 'data-inert': '' }),
         };

@@ -1,10 +1,11 @@
 'use client';
 
-// The zone bar (docs/specs/007-editor/article-pages.md "Zones"): under a zone's bottom edge while the
-// zone, or elements all in it, are selected, or under a floating object on an article page. How it
-// sits (In line, Wrap left, Wrap right, or Float in front of the text), where an inline one sits across the text, and Delete (the zone and its elements), led by a
-// grip that drags the zone to a new place in the writing. Drawn in
-// canvas space at one screen size, so it rides the zone through a pan or a zoom.
+// The zone bar (docs/specs/007-editor/article-pages.md "Zones"): under a zone's bottom edge while
+// the zone, or elements all in it, are selected, or under a floating object on an article page.
+// Led by a grip that drags the zone to a new place in the writing; then how it sits (In line, Wrap
+// left, Wrap right, or Float in front of the text), where an inline one sits across the text, and
+// Delete (the zone and its elements). Drawn in canvas space at one screen size, so it rides the
+// zone through a pan or a zoom. A drawing's grips (ZoneResizeGrips) size it by pointer or keys.
 import type { ReactNode } from 'react';
 import {
   lucideBringToFront,
@@ -20,6 +21,9 @@ import { lucideGlyph, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { ArticleZoneAlign, ArticleZoneWrap, PageRect } from '@livediagram/document';
 
 const I = (g: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(g, 16);
+// A grip's keyboard step, canvas px, and its focus ring.
+const GRIP_KEY_STEP = 8;
+const GRIP_FOCUS = 'rounded-full focus-visible:outline-2 focus-visible:outline-brand-600';
 const Inline = I(lucideRows2);
 const WrapLeft = I(lucidePanelLeft);
 const WrapRight = I(lucidePanelRight);
@@ -247,6 +251,20 @@ export function ZoneResizeGrips({
     target.addEventListener('pointercancel', cancel);
     window.addEventListener('keydown', key, true);
   };
+  // From the keyboard: the arrows grow or shrink by a step (Shift: ten), one edit each.
+  const keyed = (e: React.KeyboardEvent, axes: { x: boolean; y: boolean }) => {
+    const step = e.shiftKey ? GRIP_KEY_STEP * 10 : GRIP_KEY_STEP;
+    const dx = e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0;
+    const dy = e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0;
+    if ((axes.x && dx) || (axes.y && dy)) {
+      e.preventDefault();
+      e.stopPropagation();
+      onResize({
+        ...(axes.x && dx ? { width: Math.round(rect.width + dx) } : {}),
+        ...(axes.y && dy ? { height: Math.round(rect.height + dy) } : {}),
+      });
+    }
+  };
   const steady = `translate(-50%, -50%) scale(${1 / zoom})`;
   return (
     <>
@@ -254,7 +272,10 @@ export function ZoneResizeGrips({
         role="separator"
         aria-orientation="horizontal"
         aria-label="Drawing height"
-        className="pointer-events-auto absolute flex cursor-ns-resize items-center justify-center"
+        aria-valuenow={Math.round(rect.height)}
+        tabIndex={0}
+        onKeyDown={(e) => keyed(e, { x: false, y: true })}
+        className={`pointer-events-auto absolute flex cursor-ns-resize items-center justify-center ${GRIP_FOCUS}`}
         style={{
           left: rect.x + rect.width / 2,
           top: rect.y + rect.height,
@@ -270,7 +291,10 @@ export function ZoneResizeGrips({
         role="separator"
         aria-orientation="vertical"
         aria-label="Drawing width"
-        className="pointer-events-auto absolute flex cursor-ew-resize items-center justify-center"
+        aria-valuenow={Math.round(rect.width)}
+        tabIndex={0}
+        onKeyDown={(e) => keyed(e, { x: true, y: false })}
+        className={`pointer-events-auto absolute flex cursor-ew-resize items-center justify-center ${GRIP_FOCUS}`}
         style={{
           left: rect.x + rect.width,
           top: rect.y + rect.height / 2,
@@ -285,7 +309,9 @@ export function ZoneResizeGrips({
       <div
         role="separator"
         aria-label="Drawing size"
-        className="pointer-events-auto absolute flex cursor-nwse-resize items-center justify-center"
+        tabIndex={0}
+        onKeyDown={(e) => keyed(e, { x: true, y: true })}
+        className={`pointer-events-auto absolute flex cursor-nwse-resize items-center justify-center ${GRIP_FOCUS}`}
         style={{
           left: rect.x + rect.width,
           top: rect.y + rect.height,

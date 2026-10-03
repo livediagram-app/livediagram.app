@@ -8,6 +8,11 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import type { SlashItem } from '@/lib/article/article-slash-items';
 
+// The menu and its options by id, for the writing to point at (aria-controls,
+// aria-activedescendant) while the caret stays in it.
+export const SLASH_MENU_ID = 'article-slash-menu';
+export const slashOptionId = (i: number) => `article-slash-option-${i}`;
+
 const WIDTH = 260;
 const MAX_HEIGHT = 320;
 
@@ -40,11 +45,18 @@ export function SlashMenu({
       ?.querySelector(`[data-slash-index="${index}"]`)
       ?.scrollIntoView({ block: 'nearest' });
   }, [index]);
-  let lastGroup = '';
+  // The entries by group, each group a labelled set of options (their headings are its name).
+  const groups: { name: string; entries: { item: SlashItem; i: number }[] }[] = [];
+  items.forEach((item, i) => {
+    const last = groups[groups.length - 1];
+    if (last && last.name === item.group) last.entries.push({ item, i });
+    else groups.push({ name: item.group, entries: [{ item, i }] });
+  });
   return (
     <Portal>
       <div
         ref={list}
+        id={SLASH_MENU_ID}
         role="listbox"
         aria-label="Insert a block"
         data-article-keep-active=""
@@ -61,17 +73,18 @@ export function SlashMenu({
         {items.length === 0 ? (
           <p className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">No blocks match</p>
         ) : (
-          items.map((item, i) => {
-            const header = item.group !== lastGroup ? item.group : null;
-            lastGroup = item.group;
-            return (
-              <div key={item.id}>
-                {header ? (
-                  <p className="px-2.5 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
-                    {header}
-                  </p>
-                ) : null}
+          groups.map((group) => (
+            <div key={group.name} role="group" aria-label={group.name}>
+              <p
+                aria-hidden
+                className="px-2.5 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400"
+              >
+                {group.name}
+              </p>
+              {group.entries.map(({ item, i }) => (
                 <button
+                  key={item.id}
+                  id={slashOptionId(i)}
                   type="button"
                   role="option"
                   aria-selected={i === index}
@@ -89,9 +102,9 @@ export function SlashMenu({
                     {item.hint}
                   </span>
                 </button>
-              </div>
-            );
-          })
+              ))}
+            </div>
+          ))
         )}
       </div>
     </Portal>

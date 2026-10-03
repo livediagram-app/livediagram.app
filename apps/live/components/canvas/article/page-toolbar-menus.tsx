@@ -16,9 +16,13 @@ export function ToolbarPopover({
   children,
   label,
   width,
+  menu = false,
 }: {
   // The toolbar button (its data-anchor) the popover hangs under.
   anchor: string;
+  // Holding a menu (its own role="menu"): the popover is only its frame. Else a small dialog (the
+  // colours, the link field).
+  menu?: boolean;
   onClose: () => void;
   children: ReactNode;
   label: string;
@@ -42,8 +46,8 @@ export function ToolbarPopover({
     <Portal>
       <div
         ref={box}
-        role="dialog"
-        aria-label={label}
+        role={menu ? 'presentation' : 'dialog'}
+        aria-label={menu ? undefined : label}
         data-article-keep-active=""
         onMouseDown={(e) => {
           // A press in the popover keeps the writing's caret (the link field excepted).
