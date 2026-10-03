@@ -101,7 +101,12 @@ export function InfographicPagePanel({
   }, [onClose]);
   // The previews are the panel's: closing it puts the page back.
   useEffect(() => () => onPreview(null), [onPreview]);
-  useEffect(() => () => onLayoutPreview(null), [onLayoutPreview]);
+  // Only on close: the callback is a fresh closure each render, so it is read through a ref.
+  const clearLayoutPreview = useRef(onLayoutPreview);
+  useEffect(() => {
+    clearLayoutPreview.current = onLayoutPreview;
+  });
+  useEffect(() => () => clearLayoutPreview.current(null), []);
 
   const preview = (patch: Partial<PageBackground> | null) =>
     onPreview(patch ? { pageId: page.id, patch } : null);

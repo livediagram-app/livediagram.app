@@ -14,4 +14,8 @@ describe('pagesClipPath', () => {
       "path('M-397 -561.5H397V561.5H-397ZM493 -397H1616V397H493Z')",
     );
   });
+
+  it('hides everything when no page shows through (a lone page under a layout preview)', () => {
+    expect(pagesClipPath([])).toBe('polygon(0 0, 0 0, 0 0)');
+  });
 });

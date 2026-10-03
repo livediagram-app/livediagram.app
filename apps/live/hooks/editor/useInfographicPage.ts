@@ -16,6 +16,7 @@ import { debugLog } from '@/lib/debug-log';
 import { getTheme } from '@/lib/themes';
 import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
 import { infographicPageEdits, type InfographicPageEdits } from './infographic-page-edits';
+import type { PageLayoutId } from '@livediagram/templates';
 
 export type { InfographicPageEdits };
 
@@ -27,6 +28,10 @@ export type InfographicPagesView = {
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
+  // A layout previewed on a page while its tile is hovered: the page's own content is hidden
+  // under it (the clip leaves the page out) so the preview never mixes with it.
+  layoutPreview: { pageId: string; layout: PageLayoutId } | null;
+  setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: InfographicPageEdits;
 };
@@ -84,6 +89,7 @@ export function useInfographicPage(deps: {
     return () => cancelAnimationFrame(raf);
   }, [on, tabLoaded, tabId]);
 
+  const [layoutPreview, setLayoutPreview] = useState<InfographicPagesView['layoutPreview']>(null);
   // A page just added or duplicated: framed once it lands in the row (a frame later, as its
   // sheet mounts).
   const [goTo, setGoTo] = useState<string | null>(null);
@@ -106,14 +112,10 @@ export function useInfographicPage(deps: {
   const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
   const themeBackgrounds = themeBackgroundPresets(getTheme(activeTab.theme));
   const tabFont = activeTab.font;
-  if (!canEdit || activeTab.locked === true) {
-    return { pages, focusPage, themeBackgrounds, tabFont };
-  }
+  const shared = { pages, focusPage, themeBackgrounds, tabFont, layoutPreview, setLayoutPreview };
+  if (!canEdit || activeTab.locked === true) return shared;
   return {
-    pages,
-    focusPage,
-    themeBackgrounds,
-    tabFont,
+    ...shared,
     edit: infographicPageEdits({
       tabId,
       current,

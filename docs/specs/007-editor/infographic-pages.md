@@ -143,8 +143,8 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
   Page). It shows its words on a wide screen when the title bar has room, else just its icon (and
   its tooltip); when the page is too small on screen even for that, it hides, as the label does.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
-  that layout as it would land, drawn over the whole sheet in the page's background, covering what
-  is there. It is a picture only: nothing is placed and nothing enters the history; leaving the
+  that layout as it would land, drawn over the whole sheet in the page's background, and the
+  page's own content is hidden meanwhile (left out of the page clip), so the two never mix. It is a picture only: nothing is placed and nothing enters the history; leaving the
   tiles (or closing the panel) takes it away. While Replace is being asked, that layout stays
   previewed.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and

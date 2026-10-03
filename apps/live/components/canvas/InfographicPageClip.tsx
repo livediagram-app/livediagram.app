@@ -14,6 +14,8 @@ import { PageSurfacesProvider } from './CanvasSurfaceContext';
 
 /** The pages as one CSS clip path, in canvas coordinates (the world's origin). */
 export function pagesClipPath(pages: readonly LaidOutPage[]): string {
+  // No page to show through: a clip that hides everything (an empty path would clip nothing).
+  if (pages.length === 0) return 'polygon(0 0, 0 0, 0 0)';
   const rects = pages.map(
     ({ rect: r }) => `M${r.x} ${r.y}H${r.x + r.width}V${r.y + r.height}H${r.x}Z`,
   );
@@ -23,11 +25,14 @@ export function pagesClipPath(pages: readonly LaidOutPage[]): string {
 export function InfographicPageClip({
   pages,
   elements,
+  hiddenPageId = null,
   children,
 }: {
   // Absent outside Infographic mode, where nothing is clipped.
   pages: readonly LaidOutPage[] | null;
   elements: Element[];
+  // A page whose content is hidden (left out of the clip): one under a layout preview.
+  hiddenPageId?: string | null;
   children: ReactNode;
 }) {
   if (!pages) return <>{children}</>;
@@ -36,7 +41,7 @@ export function InfographicPageClip({
       <div
         data-page-clip=""
         className="absolute inset-0 transition-[clip-path] duration-200 ease-out motion-reduce:transition-none"
-        style={{ clipPath: pagesClipPath(pages) }}
+        style={{ clipPath: pagesClipPath(pages.filter((p) => p.id !== hiddenPageId)) }}
       >
         {children}
       </div>
