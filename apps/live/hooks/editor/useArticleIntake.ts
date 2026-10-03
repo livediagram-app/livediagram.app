@@ -2,18 +2,24 @@
 // "Zones"), settled right after each of their edits, into the same undo step (tick):
 // - elements just added onto an article page outside every zone go into a new zone of the writing,
 //   at the block boundary nearest them (a palette tile, a paste, a drop, Insert);
+// - an object dragged off its zone and dropped on its own article's pages moves its zone there in
+//   the writing (to the block boundary nearest the drop), rather than leaving it;
 // - a zone that left the writing takes its elements with it;
 // - zones are fitted to their elements (an object zone hugs its object; a drawing zone grows to
 //   keep its elements inside).
 // Only after a local edit: a collaborator's client settles their own, and an undo restores a whole
-// step that was already settled.
+// step that was already settled. A drag, resize or reshape lands frame by frame without counting as
+// an edit, so the end of this person's element gesture counts as one, measured from its start.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import {
   articleMarginPx,
   articlesOf,
   illustratePagesOf,
   layOutIllustratePages,
-  looseOnDocuments,
+  looseOnArticles,
+  objectsDraggedOut,
+  zoneCanvasRect,
+  type Element,
   withElementsIntoZone,
   withZoneLanded,
   withZoneContentsRemoved,
@@ -25,6 +31,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -57,14 +64,28 @@ export function useArticleIntake({
     seq: 0,
   });
 
+  const gesture = useCanvasGesture();
+  const gestureEdit = useRef(false);
   useLayoutEffect(() => {
+    // Mid-gesture: hold what was seen at its start, to settle against when it ends.
+    if (gesture !== 'idle' && ELEMENT_GESTURES.has(gesture)) {
+      gestureEdit.current = true;
+      return;
+    }
     const was = seen.current;
     const seq = localEditSeq.current ?? 0;
+    const local = seq !== was.seq || gestureEdit.current;
+    gestureEdit.current = false;
     seen.current = { tabId, elements: activeTab.elements, articles: activeTab.articles, seq };
     if (was.tabId !== tabId || !on || !editable || !pages) return;
-    if (seq === was.seq) return;
+    if (!local) return;
     if (was.elements === activeTab.elements && was.articles === activeTab.articles) return;
 
+    // Objects dragged off their zones onto their own article: the writing moves their zones there.
+    const relocations = objectsDraggedOut(
+      { ...activeTab, elements: was.elements, articles: was.articles },
+      activeTab,
+    ).map((d) => ({ ...d, res: articleHandleOf(d.flow)?.moveZone(d.zoneId, d.at) ?? null }));
     const docsBefore = articlesOf({ articles: was.articles });
     const docsNow = articlesOf(activeTab);
     // Zones that left the writing in this edit.
@@ -80,7 +101,7 @@ export function useArticleIntake({
     const before = new Set(was.elements.map((e) => e.id));
     const added = activeTab.elements.filter((e) => !before.has(e.id)).map((e) => e.id);
     const loose = added.length
-      ? looseOnDocuments(activeTab.elements, added, pages, docsNow)
+      ? looseOnArticles(activeTab.elements, added, pages, docsNow)
       : new Map();
     // Each loose group starts a zone in its article's writing (the editor places it), measured now.
     const intakes: {
@@ -109,6 +130,33 @@ export function useArticleIntake({
       const out = ts.map((t) => {
         if (t.id !== tabId || t.locked === true) return t;
         let next = t;
+        for (const r of relocations) {
+          // Moved in the writing: the object goes to its zone's new place. Not moved (dropped by
+          // its own place in the writing): back into its zone.
+          const landed = r.res ? withZoneLanded(next, r.flow, r.res) : null;
+          if (landed) next = landed.tab;
+          const zone = articlesOf(next)[r.flow]?.blocks.find(
+            (b): b is ArticleZoneBlock => b.id === r.zoneId && b.type === 'zone',
+          );
+          const own = layOutIllustratePages(illustratePagesOf(next)).filter(
+            (p) => p.flow === r.flow,
+          );
+          const rect = landed?.rect ?? (zone ? zoneCanvasRect(own, zone) : null);
+          if (!rect) continue;
+          next = {
+            ...next,
+            elements: next.elements.map((el) =>
+              el.id === r.elementId ? ({ ...el, x: rect.x, y: rect.y } as Element) : el,
+            ),
+          };
+          if (r.res) track('Element', 'Changed', 'ArticleZoneMoved');
+          debugLog('[article] object dropped in the writing', {
+            tabId,
+            flow: r.flow,
+            zoneId: r.zoneId,
+            moved: !!r.res,
+          });
+        }
         for (const [flow, gone] of goneZones) next = withZoneContentsRemoved(next, flow, gone);
         for (const { flow, ids, plan, res } of intakes) {
           const landed = withZoneLanded(next, flow, res);
@@ -134,5 +182,5 @@ export function useArticleIntake({
       return out.every((t, i) => t === ts[i]) ? ts : out;
     });
     // The writing's editors are told of the new blocks through the tab, like any change.
-  }, [activeTab, tabId, on, editable, pages, localEditSeq, tickTabs]);
+  }, [activeTab, tabId, on, editable, pages, localEditSeq, tickTabs, gesture]);
 }

@@ -153,7 +153,7 @@ export function withElementsIntoZone(
 
 /** Of `ids` (just added), the ones on an article page and inside no zone of its article, grouped
  *  by article. An arrow pinned at both ends to elements already in a zone is left alone. */
-export function looseOnDocuments(
+export function looseOnArticles(
   elements: readonly Element[],
   ids: readonly string[],
   pages: readonly LaidOutPage[],
@@ -453,4 +453,46 @@ export function withZoneSize<T extends DocsTab>(
   if (height === zone.height && width === zone.width) return tab;
   const blocks = doc.blocks.map((b) => (b.id === zoneId ? { ...zone, width, height } : b));
   return withArticleFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
+
+/** An object dragged off its zone and dropped on its own article's pages: where it was dropped. */
+export type ObjectDraggedOut = { flow: string; zoneId: string; elementId: string; at: Point };
+type Point = { x: number; y: number };
+
+/**
+ * The objects an edit dragged out of their object zones and dropped on the same article's pages
+ * (docs/specs/007-editor/article-pages.md "Zones"): each object zone of `before` whose object, still
+ * on the tab, now has its centre off the zone and on one of the article's pages. The writing then
+ * moves the zone to where the object was dropped, rather than the object leaving it.
+ */
+export function objectsDraggedOut(before: DocsTab, now: DocsTab): ObjectDraggedOut[] {
+  const out: ObjectDraggedOut[] = [];
+  const docsBefore = articlesOf(before);
+  const docsNow = articlesOf(now);
+  const pagesBefore = layOutIllustratePages(illustratePagesOf(before));
+  const pagesNow = layOutIllustratePages(illustratePagesOf(now));
+  const elsBefore = before.elements as Element[];
+  const elsNow = now.elements as Element[];
+  for (const [flow, doc] of Object.entries(docsBefore)) {
+    const stillThere = new Set((docsNow[flow]?.blocks ?? []).map((b) => b.id));
+    const ownBefore = pagesBefore.filter((p) => p.flow === flow);
+    const ownNow = pagesNow.filter((p) => p.flow === flow);
+    for (const z of doc.blocks) {
+      if (z.type !== 'zone' || z.zone !== 'object' || !stillThere.has(z.id)) continue;
+      const was = zoneCanvasRect(ownBefore, z);
+      if (!was) continue;
+      const objId = elsBefore.find(
+        (el) => isBoxed(el) && zoneMemberIds(elsBefore, was).has(el.id),
+      )?.id;
+      const obj = objId ? elsNow.find((el) => el.id === objId) : undefined;
+      if (!obj || !isBoxed(obj)) continue;
+      const at = zoneAnchorOf(obj, elsNow);
+      const inside = (r: { x: number; y: number; width: number; height: number }) =>
+        at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height;
+      if (inside(was)) continue;
+      if (!ownNow.some((p) => inside(p.rect))) continue;
+      out.push({ flow, zoneId: z.id, elementId: obj.id, at });
+    }
+  }
+  return out;
 }

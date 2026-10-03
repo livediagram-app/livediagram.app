@@ -199,8 +199,12 @@ laid out with it, holding ordinary canvas elements that move with it.
   text beside it.
 - **Elements belong to a zone** while their centre (an arrow: the midpoint of its ends) is inside
   it, and **move with it** whenever the writing moves it (typing above it, a page break, a new
-  style, a page turned). An element dragged so its centre leaves the zone is no longer in it: it
-  stays where it is dropped, fixed to the page in front of the text (a **loose element**). An
+  style, a page turned). **An object dragged** (an image, a chart, any object zone's element)
+  shows the drop caret once its centre leaves its zone over its own article's pages, and on release
+  its zone moves to that block boundary, the object with it; dropped by its own place, it settles
+  back. Any other element dragged so its centre leaves its zone is no longer in it: it stays where
+  it is dropped, fixed to the page in front of the text (a **loose element**), as is an object
+  dropped off its article's pages. An
   element dragged into a drawing zone joins it; one whose centre stays inside but pokes out grows
   the zone.
 - **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements

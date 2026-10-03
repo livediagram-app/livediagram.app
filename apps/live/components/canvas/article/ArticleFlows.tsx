@@ -30,6 +30,7 @@ import { PageToolbar } from './PageToolbar';
 import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
 import { ZoneBar, ZoneResizeGrips } from './ZoneBar';
 import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
+import { useObjectDropCaret } from './useObjectDropCaret';
 
 const ArticleEditor = lazy(() => import('./ArticleEditor'));
 
@@ -83,6 +84,12 @@ export function ArticleFlows({
     zoom,
     pagesOf: (flow) => byFlow.get(flow),
     onMove: (flow, zoneId, near) => articles?.moveZone(flow, zoneId, near),
+  });
+  const objectCaret = useObjectDropCaret({
+    target,
+    selectedIds,
+    zoom,
+    pagesOf: (flow) => byFlow.get(flow),
   });
   if (!articles || byFlow.size === 0) return null;
   return (
@@ -195,6 +202,7 @@ export function ArticleFlows({
         />
       ) : null}
       {zoneDrag.drag ? <ZoneDragMarks drag={zoneDrag.drag} zoom={zoom} /> : null}
+      {objectCaret ? <DropCaretMark caret={objectCaret} zoom={zoom} /> : null}
     </>
   );
 }
