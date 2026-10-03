@@ -438,7 +438,11 @@ const ROMAN: [number, string][] = [
 ];
 const roman = (n: number): string => {
   let out = '';
-  for (const [v, s] of ROMAN) while (n >= v) ((out += s), (n -= v));
+  for (const [v, s] of ROMAN)
+    while (n >= v) {
+      out += s;
+      n -= v;
+    }
   return out;
 };
 const alpha = (n: number): string => {

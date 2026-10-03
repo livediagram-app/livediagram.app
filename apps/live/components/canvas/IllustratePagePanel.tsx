@@ -198,6 +198,8 @@ export function IllustratePagePanel({
         role="dialog"
         aria-label={label}
         data-page-panel
+        // The page's own panel: working in it keeps an article's toolbar on its page.
+        data-article-keep-active=""
         tabIndex={-1}
         onClose={() => onClose(false)}
         zClassName="z-[var(--z-overlay)]"

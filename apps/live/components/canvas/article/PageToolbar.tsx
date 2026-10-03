@@ -281,7 +281,7 @@ export function PageToolbar({
         data-article-keep-active=""
         onMouseDown={(e) => e.preventDefault()}
         onPointerDown={(e) => e.stopPropagation()}
-        className={`fixed left-0 top-0 z-[var(--z-overlay)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`}
+        className={`fixed left-0 top-0 z-[var(--z-toolbar)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`}
         style={{ visibility: 'hidden' }}
       >
         <button
@@ -397,7 +397,7 @@ export function PageToolbar({
           <CommentIcon />
         </Button>
         <Button
-          label="Assign action"
+          label="Assign Action"
           disabled={!selection.hasText || !onNote}
           onPress={() => onNote?.('action')}
         >

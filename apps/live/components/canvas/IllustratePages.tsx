@@ -217,6 +217,8 @@ export function IllustratePages({
             </div>
             {edit ? (
               <div
+                // The page's own controls: a press on them keeps an article's toolbar.
+                data-article-keep-active=""
                 className="absolute right-0 flex items-center gap-1"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >

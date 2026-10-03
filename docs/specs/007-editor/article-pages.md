@@ -158,7 +158,8 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   the page's top. Held at one screen size at any zoom. It never takes focus from the writing.
 - **When**: for someone who may edit, on the page of the article being worked on, from the moment
   its writing takes the caret until a press lands off that article's pages (a press on its paper,
-  on its toolbar, menus or zone bar, or on an element on it keeps it); else on the article page
+  on its toolbar, menus or zone bar, its label row and cog, its page panel, or an element on it
+  keeps it); else on the article page
   under the pointer (a moment's grace after the pointer leaves, so it can cross to the card). A
   control used while hovering acts on the article's own selection and puts the caret back in it.
 - **Look**: the Toolbar layout's card exactly (`toolbar-surface.ts`): the same surface, 36 px
@@ -176,8 +177,9 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   - **Alignment** (a menu: left, centre, right, justify);
   - **More formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
-  - **Insert** (a menu: Image, Table, Chart, Drawing, Divider, Page break, Quote, Code, Callout).
-  - **Comment** (⌘⌥M) and **Assign action**, with text selected (see "Comments and actions").
+  - **Insert** (a menu: Image, Table, Chart, Divider, Page break, Quote, Code, Callout; a drawing
+    starts from a shape dropped on the page).
+  - **Comment** (⌘⌥M) and **Assign Action**, with text selected (see "Comments and actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar along the bottom of the screen, above the keyboard, scrolling

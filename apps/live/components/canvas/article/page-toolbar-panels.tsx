@@ -343,7 +343,6 @@ export function InsertPanel({
       <Row label="Image" onPick={() => onObject('image')} />
       <Row label="Table" onPick={() => onObject('table')} />
       <Row label="Chart" onPick={() => onObject('chart')} />
-      <Row label="Drawing" onPick={() => onObject('drawing')} />
       <Rule />
       <Row label="Divider" icon={<PanelIcons.divider />} onPick={() => onBlock('divider')} />
       <Row label="Page break" icon={<PanelIcons.pageBreak />} onPick={() => onBlock('pageBreak')} />
