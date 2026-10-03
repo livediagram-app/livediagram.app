@@ -4,7 +4,8 @@
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's
 room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one
-unit. The whole-tab `PUT` stays the editor's own autosave path and nothing else's.
+unit. The whole-tab `PUT` stays the editor's own autosave path and nothing else's (see
+[Whole-tab saves and tab renames](#whole-tab-saves-and-tab-renames)).
 
 ## Why
 
@@ -28,13 +29,19 @@ persistence boundary"). That write never reached the room, so:
 | `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history |
 | `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (graph, Mermaid, template or elements)   |
 | `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target             |
+| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`     |
 | `rev`        | The tab revision the changeset produced                                                                         |
 | `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply     |
 | `inverse`    | The element ops that undo it, computed from the before-images                                                   |
 
 - **Atomic.** Every operation lands or none does. A rejected changeset writes nothing and says why.
 - **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the document lacks).
-- **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` stays as it is.
+  A `replace`'s name names the tab it creates; on an existing tab it is ignored.
+- **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
+  graph, Mermaid or template tabs with the same engine.
+- **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
+  answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
+  edit.
 
 ## The tab revision
 
@@ -53,15 +60,17 @@ says what it has seen.
    out what they touched ([Edit operations](edit-operations.md)), and validates the result with `isValidTab`.
 5. **Write** the tab with compare-and-swap on `rev`. A lost race repeats steps 2 to 5 once, then answers `409`.
 6. **Record** the changeset in `agent_changesets` (D1) with its element ops and inverse.
-7. **Relay** it to the room as one sequenced `changeset` op. A relay failure is logged and never fails the write:
-   D1 already holds it, and step 8 keeps it there.
+7. **Relay** it to the submitting document's room as one sequenced `changeset` op. A relay failure is logged and
+   never fails the write: D1 already holds it, and step 8 keeps it there. A tab linked into other documents is not
+   relayed to their rooms; step 8 keeps it there too.
 8. **Merge on save.** An editor's tab `PUT` carries `X-Changeset-Seen: <rev>`, the highest changeset revision it has
    applied. The api re-applies every recorded changeset after that revision to the incoming tab before writing,
    element by element:
    - an element the changeset **added** and the save lacks is added back;
    - an element the changeset **changed or removed** takes the changeset's version only when the save still holds
      the element exactly as the changeset found it (its before-image fingerprint). A save holding anything else
-     changed it after, so the person's version stands.
+     changed it after, so the person's version stands. Taking the changeset's version keeps the save's live fields;
+   - a **reorder** is re-applied only when the save still holds those elements in the order the changeset found.
      A save without the header (a bundle older than this spec) is treated as having seen nothing newer than
      `CHANGESET_MERGE_WINDOW` ago.
 
@@ -74,12 +83,23 @@ editor that was offline when it landed.
   name and colour, the summary and the element ops.
 - When the element ops exceed `CHANGESET_RELAY_MAX_BYTES`, the op carries no element ops and editors re-fetch the
   tab in place, as a resync does ([Resync without reloading the page](../012-collaboration/resync-without-reload.md)).
-- Answers the api's internal `GET /selections?tab=<tabId>`: the elements each connected person has selected.
+- Answers the api's internal `GET /selections?tab=<tabId>`: every element each connected person has selected (the
+  whole multi-selection), whatever their role, and which of those sessions are the agent owner's own (recognised by
+  the [person tag](agent-presence.md)).
 
 ## Rooms for personal documents
 
 An editor connects to its document's room for every server-stored document it has open, personal ones included.
-A document in Offline Mode or This browser has no room and no agent can reach it.
+A document in Offline Mode or This browser has no room and no agent can reach it. On a personal document that is
+neither shared nor in a team the editor sends only its selection and its tab focus; cursors, laser, viewport and
+drag previews stay for documents with an audience.
+
+## Whole-tab saves and tab renames
+
+- A tab `PUT` presented with an API token is refused `405 use_changesets`, its message naming the changeset route.
+  The CLI and the MCP server never do whole-tab saves.
+- A tab is renamed with `PUT /api/documents/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
+  relayed to the room as `document-meta`. The CLI's and the MCP's tab renames use it.
 
 ## Conflicts
 
@@ -93,13 +113,20 @@ The api compares the changeset's base with the stored tab:
 | A targeted element changed or vanished, or a selector resolves differently         | `409 changeset_conflict`, nothing applied, each element as read and as now |
 | `strict: true` and `rev` changed                                                   | `412 stale_tab`, nothing applied                                           |
 
-Elements an operation only shifts to make room are not fingerprinted: a shift commutes with a person's move.
+Elements an operation only shifts to make room are not fingerprinted: a shift commutes with a person's move. When
+`rev` changed, a target the base has no fingerprint for (a base carrying only a revision, or a selector now
+matching another element) resolves differently. The api never holds what the agent read, so a conflict names each
+element by the fingerprint read and the element now; the CLI prints the as-read side from its own cache.
 
 ## Held elements
 
-An element a person has selected in an open editor is **held**. A changeset whose operations target a held element
-is refused with `409 elements_held`, naming each held element and who holds it; nothing is applied. The agent
-resubmits without those operations, or after the person lets go. The CLI's `--wait-held <seconds>` retries for it.
+An element a person has selected in an open editor is **held**: every element of their selection, whatever their
+role. An agent changeset whose operations target a held element is refused with `409 elements_held`, naming each
+held element and who holds it; nothing is applied. The agent resubmits without those operations, or after the
+person lets go. The CLI's `--wait-held <seconds>` retries for it.
+
+- The agent's owner never holds against their own agent: their selection is what the `selected` selector reads.
+- People outrank agents, not each other: a changeset without a token (a person's revert) is never held.
 
 The room's answer is the source; when the room cannot be reached, nothing counts as held and the api logs it.
 
@@ -112,21 +139,36 @@ The room's answer is the source; when the room cannot be reached, nothing counts
   ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md), locked decision 1).
 - A changeset can be reverted while its record exists: `CHANGESET_RETENTION_DAYS` after it landed.
 - Anyone with edit access to the tab may revert.
+- Reverting a changeset that created a tab empties the tab and keeps it. Reverting one twice keeps every element
+  (each changed since) and writes nothing.
+- The history is `GET /api/documents/:id/changesets`, one changeset's `GET`, and the CLI's `changeset ls` and
+  `changeset show`; the editor has no history surface.
 
 ## In the editor
 
 - The element ops apply as a peer's would and fold into the save baseline, so the next autosave carries them.
 - Each element the changeset touched shows an outline in the owner's colour for `CHANGESET_REVEAL_MS`; with reduced
   motion it appears and disappears without animation.
-- A toast names the person and the change: "Webber changed 3 elements · Show · Undo". **Show** brings the
+- A toast names the person and the change: "Webber changed 3 elements: add payment service · Show · Undo" (the
+  summary of the latest changeset in it, when it has one; adds and removals count as changed). **Show** brings the
   touched elements into view; **Undo** reverts. Changesets from one token within `CHANGESET_TOAST_COALESCE_MS`
-  share a toast.
+  share a toast, and Undo on it reverts each, newest first. After Undo it reads "Undone", or "Undone, 2 kept
+  because they changed since".
+- The toast stays until dismissed; a newer burst from the same token replaces it. It is an information toast, so
+  the "Show notifications" preference silences it; the outline still shows.
 
 ## The MCP server
 
 `update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../015-api/mcp-server.md)).
 `update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap no longer
-erases anything.
+erases anything:
+
+- It takes an optional `rev`, the revision `read_document` returned; the fingerprints come from the tool's own read
+  at call time. A person's change between `read_document` and the call is overwritten only on the fields the ops
+  set.
+- `remove` is the edit operation `rm`: arrows pinned to the element go with it and are listed.
+- Landing event-storming notes on lanes and coercing shapes are the engine's, for every front door.
+- `rename_document` with a tab renames through the tab name route.
 
 ## Limits
 
@@ -139,6 +181,9 @@ erases anything.
 | `CHANGESET_REVEAL_MS`         | 2000       | Long enough to notice, short enough not to clutter                       |
 | `CHANGESET_TOAST_COALESCE_MS` | 10000      | One toast per burst of work                                              |
 
+A changeset's element ops, inverse and result lines are stored beside its record, one D1 row each, so only the tab
+cap bounds a changeset.
+
 Changesets count against the token's write rate limit ([Public API and API tokens](../015-api/public-api-and-tokens.md) §3.5).
 
 ## Observability and telemetry
@@ -147,4 +192,5 @@ Changesets count against the token's write rate limit ([Public API and API token
   `[changeset] merged-on-save`, `[changeset] superseded-on-save`, `[changeset] reverted`, each with the document,
   tab, changeset id and counts, never content.
 - Telemetry: category `Agent`, actions `Applied`, `Conflicted`, `Held`, `Reverted`, type the front door (`Mcp`,
-  `Cli`, `Api`) ([Telemetry](../017-telemetry/telemetry.md)).
+  `Cli`, `Api`, or `Editor` for the toast's Undo) ([Telemetry](../017-telemetry/telemetry.md)). The toast's Show
+  tracks `Agent` / `Opened` / `Toast`.

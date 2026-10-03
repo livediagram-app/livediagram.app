@@ -199,10 +199,10 @@ Fetch one document's full content **and render it** — this is the "visualise"
 capability. Input: `documentId`, optional `tabId` (defaults to the first tab).
 Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId?view=outline`. Returns the
 tab's [outline view](../024-agents/document-views.md), about a tenth of the element JSON, with
-the refs the edit tools take (`format: "json"` returns the elements instead), **plus an inline
-PNG** of the tab as MCP image content ([§5](#5-visualise--inline-image-render)),
-plus the deep-link `url`. So "show me my auth-flow diagram" → `find_documents` →
-`read_document` renders it inline.
+the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
+`url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
+([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my auth-flow diagram" → `find_documents` →
+`read_document` with `image: true` renders it inline.
 
 ### 4.3 `create_document`
 
@@ -244,7 +244,9 @@ canvas overrides; the model then personalises labels via `update_document`'s
    user's [default folder](../013-workspace/default-folders.md) for that intent,
    when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
-   and accepts `source`).
+   and accepts `source`). A tab given as `graph`, `mermaid` or `template` travels
+   as such and is compiled by the api ([API app](api.md)), so the MCP and the
+   [CLI](cli.md) build documents alike.
 5. **Returns** the new `id`, tab count + ids, the folder ("My documents" for the root,
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
@@ -493,9 +495,8 @@ CRUD completeness — the verbs a user will reach for the moment they ask their
 assistant to "rename that" or "delete the old one":
 
 - **`rename_document`** — `{ documentId, name, tabId? }`. Renames the document
-  (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given (no
-  tab-name-only route, so it reads the tab and writes it back with the new
-  name). Non-destructive.
+  (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given
+  (`PUT /api/documents/<id>/tabs/<tabId>/name`, no whole-tab save). Non-destructive.
 - **`delete_document`** — `{ documentId, tabId? }`. Moves the document to the
   [Trash](../013-workspace/trash.md) (`DELETE /api/documents/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
@@ -692,7 +693,7 @@ returns on success. A successful result carries that object twice: as
 prose, and serialised as the first text block, for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_document`, `create_document`, `add_tab`,
-`update_document`) add the inline PNG after it ([§5](#5-visualise--inline-image-render)).
+`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema.
 
@@ -747,7 +748,7 @@ The output literals that named the container changed with it: `renamed`, `delete
 
 ## 5. Visualise — inline image render
 
-`read_document`, `create_document`, and `update_document` all return an **inline
+`create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
 PNG** so the diagram shows in the chat. This needs headless rendering inside a
 Worker (no DOM, no React).
 

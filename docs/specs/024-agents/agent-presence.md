@@ -16,7 +16,18 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 
 - An agent at work appears in the tab's presence stack as its owner, with an optional status line ("adding payment
   service"). When the owner also has the tab open, the stack shows them once and the status line beside them.
-- **Every changeset** refreshes the agent's presence on that tab for `AGENT_PRESENCE_TTL_MS`.
+- The status line shows in the avatar's hover card, its row in the Collaborators modal and its accessible name, never
+  as text in the tab pill. An agent's avatar carries the owner's name and colour, never a profile picture.
+- The owner sees their own agent's status on their own avatar when both are on the tab, and as an avatar in their
+  name on any other tab.
+- Two tokens of one owner on one tab show as one avatar, with the status set last.
+- A personal document's stack, otherwise hidden, shows while its owner's agent is present.
+- The Collaborators modal lists an agent under its tab with its status line, offers no Follow, and leaves it out of
+  the people count.
+- The room recognises the owner's own sessions by a per-document tag derived from the owner id, held inside the room
+  and never sent to a socket, so no owner id reaches the room.
+- **Every changeset** applied or reverted with a token refreshes that token's presence on that tab for
+  `AGENT_PRESENCE_TTL_MS`. A dry run or a refused changeset refreshes nothing.
 - An agent may set presence explicitly: `PUT /api/documents/:id/tabs/:tabId/presence` with `status` (up to 80
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.
@@ -28,16 +39,20 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - An agent comments through the comment endpoints; the comment's author is the token's owner.
 - The comment endpoints gain **reply**, **resolve** and **reopen** (today only add and delete exist), each relayed to
   the room as an `el-delta` like add. Agents and people use the same endpoints.
+- An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
+  may edit keeps the room and its save.
 - `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
-  label, so an agent can read the conversation without reading the tab.
+  label, so an agent can read the conversation without reading the tab. It is not capped: it reads one tab at a
+  time.
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.
 
 ## Token roles
 
-What an agent may do follows its token's [role](../013-workspace/share-roles.md#api-tokens): a **view** token reads
-and writes nothing, comments and presence included; a **comment** token may comment and set presence but submits
-no changesets; an **edit** token may do all three.
+What an agent may do follows its token's [role](../013-workspace/share-roles.md#api-tokens), through the same gates
+as a share link: reading needs read access; comments and presence need the comment gate; changesets need the edit
+gate. A token that passes the comment gate but not the edit gate may comment and set presence and submits no
+changesets; a token that passes neither reads and writes nothing, comments and presence included.
 
 ## Limits
 
@@ -49,4 +64,4 @@ no changesets; an **edit** token may do all three.
 ## Observability
 
 Logs `[agent-presence] set`, `[agent-presence] cleared`, `[agent-presence] expired` with the document, tab and token
-id. Telemetry: category `Agent`, action `Present`, type the front door.
+id. Telemetry: category `Agent`, action `Present`, type the front door, counted once when a `PUT` creates an entry.
