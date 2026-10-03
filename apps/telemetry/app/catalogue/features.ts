@@ -290,8 +290,8 @@ export const INFOGRAPHIC_PAGE_BUILDING = chart(
   'Tab',
   'Changed',
   'Infographic Pages Built',
-  'A layout put onto an infographic page, a page duplicated with its content, or a page moved.',
-  { types: ['PageLayout', 'PageDuplicated', 'PageMoved'] },
+  'A layout put onto an infographic page, a page duplicated or moved, or a tab laid out into pages.',
+  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
 );
 
 export const WHITEBOARDS: MetricStack = {

@@ -1582,6 +1582,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     },
+    toastInfo: toast.info,
   });
 
   // A locked tab refuses every element mutation. Commit /

@@ -516,6 +516,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageRenamed': 'Someone renamed an infographic page.',
   'Tab|Changed|PageDuplicated': 'Someone duplicated an infographic page with its content.',
   'Tab|Changed|PageMoved': 'Someone moved an infographic page left or right in its row.',
+  'Tab|Changed|PagesLaidOut':
+    "A tab's content was laid out into infographic pages as it entered Infographic mode.",
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an infographic page.',
   'Tab|Changed|OpensInInfographic':
     'Someone set a tab to open in Infographic mode for everyone, from the tab menu.',

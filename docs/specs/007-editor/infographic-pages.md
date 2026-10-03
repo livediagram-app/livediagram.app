@@ -205,6 +205,23 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 `PageMoved`, `PageLayout`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`.
 Never a colour, name or layout content.
 
+## Into pages
+
+- A tab that enters Infographic mode (a switch, or opening in it) with **no pages stored** and
+  content that does **not fit inside its first page** is laid out into pages, once, by an editor
+  (a viewer or a locked tab is left alone):
+  - The content splits into **clusters**: elements joined by a pinned arrow, and elements within
+    120 px of each other (edge to edge), belong together.
+  - Clusters go in **reading order**: rows top to bottom (a cluster joins a row while its top is
+    above the row's first cluster's bottom), each row left to right.
+  - Each cluster gets an **A4 page**, landscape when it is more than 1.1 times wider than tall,
+    portrait otherwise; its content is centred on the page and, where it does not fit the margin
+    box, scaled down as one (text with it).
+  - At most 20 pages: clusters past the twentieth share the last page.
+- It is **one edit**: one undo puts the tab back. A toast says so: "Laid out into n pages. Undo
+  puts it back." (or "Laid out onto a page." for one). Telemetry: `Tab · Changed · PagesLaidOut`.
+- The modes share their elements, so the Diagram view shows the new arrangement too.
+
 ## Slides
 
 - In Infographic mode the Slide Deck panel adds slides **a page at a time**: a page picker (each

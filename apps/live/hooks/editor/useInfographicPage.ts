@@ -7,12 +7,14 @@ import {
   infographicPageFitBox,
   infographicPagesOf,
   layOutInfographicPages,
+  withContentPaginated,
   type EditorMode,
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
 import { computeFitBelow } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
+import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
 import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
 import { infographicPageEdits, type InfographicPageEdits } from './infographic-page-edits';
@@ -59,6 +61,7 @@ export function useInfographicPage(deps: {
   setViewportZoom: (zoom: number) => void;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   clearSelection: () => void;
+  toastInfo: (message: string) => void;
 }): InfographicPagesView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
@@ -83,8 +86,26 @@ export function useInfographicPage(deps: {
   const centre = useEffectEvent(() =>
     frame(layOutInfographicPages(infographicPagesOf(activeTab))[0]),
   );
+  // Entering the mode with content off the first page and no pages yet lays the content out into
+  // pages (withContentPaginated, docs/specs/007-editor/infographic-pages.md "Into pages"): one
+  // edit, so one undo puts it back, said in a toast. Then the view frames the first page.
+  const paginate = useEffectEvent(() => {
+    if (!canEdit || activeTab.locked === true) return;
+    const laid = withContentPaginated(activeTab);
+    if (!laid) return;
+    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentPaginated(t) ?? t) : t)));
+    const n = laid.pages.length;
+    deps.toastInfo(
+      n === 1
+        ? 'Laid out onto a page. Undo puts it back.'
+        : `Laid out into ${n} pages. Undo puts it back.`,
+    );
+    track('Tab', 'Changed', 'PagesLaidOut');
+    debugLog('[infographic-page] content laid out into pages', { tabId, pages: n });
+  });
   useEffect(() => {
     if (!on || !tabLoaded) return;
+    paginate();
     const raf = requestAnimationFrame(() => centre());
     return () => cancelAnimationFrame(raf);
   }, [on, tabLoaded, tabId]);

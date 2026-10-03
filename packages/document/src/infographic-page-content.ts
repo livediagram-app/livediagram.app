@@ -278,6 +278,8 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
   ids: ReadonlySet<string>,
   pageId: string,
+  // Centre the content on the page even when it already fits (laying content out into pages).
+  { centre = false }: { centre?: boolean } = {},
 ): T {
   const page = layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === pageId);
   if (!page || ids.size === 0) return tab;
@@ -312,13 +314,13 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
   const ox = (minX + maxX) / 2;
   const oy = (minY + maxY) / 2;
   const scaled = s < 1;
-  const toX = scaled ? cx : ox;
-  const toY = scaled ? cy : oy;
+  const toX = scaled || centre ? cx : ox;
+  const toY = scaled || centre ? cy : oy;
   const halfW = ((maxX - minX) * s) / 2;
   const halfH = ((maxY - minY) * s) / 2;
   const nudgeX = clampInto(toX, halfW, page.rect.x + m, page.rect.x + page.rect.width - m) - toX;
   const nudgeY = clampInto(toY, halfH, page.rect.y + m, page.rect.y + page.rect.height - m) - toY;
-  if (!scaled && nudgeX === 0 && nudgeY === 0) return tab;
+  if (!scaled && nudgeX === 0 && nudgeY === 0 && toX === ox && toY === oy) return tab;
   const mapX = (x: number) => toX + nudgeX + (x - ox) * s;
   const mapY = (y: number) => toY + nudgeY + (y - oy) * s;
   const r = (n: number) => Math.round(n * 100) / 100;
