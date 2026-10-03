@@ -11,6 +11,7 @@ const box = (id: string, cx: number) =>
 function harness(tab: Tab) {
   let tabs = [tab];
   const onCreated = vi.fn();
+  const onLayoutPlaced = vi.fn();
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     tabs = map(tabs);
   });
@@ -18,10 +19,12 @@ function harness(tab: Tab) {
     infographicPageEdits({
       tabId: tab.id,
       current: infographicPagesOf(tabs[0]!),
+      elements: tabs[0]!.elements,
       commitTabs,
       onCreated,
+      onLayoutPlaced,
     });
-  return { edits, tab: () => tabs[0]!, commitTabs, onCreated };
+  return { edits, tab: () => tabs[0]!, commitTabs, onCreated, onLayoutPlaced };
 }
 
 const twoPages = (): Tab =>
@@ -87,5 +90,16 @@ describe('infographic page edits', () => {
     expect(infographicPagesOf(h.tab())[1]!.background?.pattern).toBe('dots');
     h.edits().setBackground('page-2', { fill: undefined, pattern: undefined });
     expect(infographicPagesOf(h.tab())[1]!.background).toBeUndefined();
+  });
+
+  it('replaces a page with a layout inside its margins, leaving other pages alone', () => {
+    const h = harness(twoPages());
+    expect(h.edits().contentCount('page-1')).toBe(1);
+    h.edits().applyLayout('page-1', 'key-stats');
+    const els = h.tab().elements;
+    expect(els.some((e) => e.id === 'a')).toBe(false);
+    expect(els.some((e) => e.id === 'b')).toBe(true);
+    expect(h.edits().contentCount('page-1')).toBe(els.length - 1);
+    expect(h.onLayoutPlaced).toHaveBeenCalled();
   });
 });

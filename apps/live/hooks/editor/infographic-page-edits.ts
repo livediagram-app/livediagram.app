@@ -3,7 +3,10 @@
 // undo step, synced to everyone) that moves the content of every page it shifts along with it
 // (withInfographicPages), re-reading the tab at commit time so two quick edits compose.
 import {
+  elementIdsOnPage,
   infographicPagesOf,
+  layOutInfographicPages,
+  pageMargin,
   MAX_INFOGRAPHIC_PAGES,
   nextInfographicPageId,
   PAGE_NAME_MAX,
@@ -16,6 +19,7 @@ import {
   type PageSizeId,
   type Tab,
 } from '@livediagram/document';
+import { pageLayoutById, type PageLayoutId } from '@livediagram/templates';
 import { withBackgroundPatch } from '@/lib/infographic-page-paint';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -34,6 +38,11 @@ export type InfographicPageEdits = {
   duplicatePage?: (pageId: string) => void;
   // Absent while there is only one page.
   removePage?: (pageId: string) => void;
+  // Puts a layout onto the page in place of everything on it (the panel asks first when there is
+  // anything to replace).
+  applyLayout: (pageId: string, layout: PageLayoutId) => void;
+  // How many elements are on the page.
+  contentCount: (pageId: string) => number;
 };
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -41,11 +50,17 @@ type TabChange = (tab: Tab) => Tab | null;
 export function infographicPageEdits({
   tabId,
   current,
+  elements,
   commitTabs,
   onCreated,
+  onLayoutPlaced,
 }: {
   tabId: string;
   current: readonly InfographicPage[];
+  // The tab's elements now, to count a page's content.
+  elements: Tab['elements'];
+  // After a layout lands: the selection is cleared, so none of the replaced elements stays selected.
+  onLayoutPlaced: () => void;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   // A new page (added or duplicated) by its id, so the view can go to it.
   onCreated: (pageId: string) => void;
@@ -153,6 +168,28 @@ export function infographicPageEdits({
     debugLog('[infographic-page] page removed', { tabId, pageId });
   };
 
+  // Laid out in the page's content box (the page less its margins), one tab edit.
+  const applyLayout = (pageId: string, layoutId: PageLayoutId) => {
+    track('Tab', 'Changed', 'PageLayout');
+    commitTab((t) => {
+      const page = layOutInfographicPages(infographicPagesOf(t)).find((p) => p.id === pageId);
+      if (!page) return null;
+      const m = pageMargin(page);
+      const { x, y, width, height } = page.rect;
+      const placed = pageLayoutById(layoutId).build({
+        x: x + m,
+        y: y + m,
+        width: width - 2 * m,
+        height: height - 2 * m,
+      });
+      return withPageContentReplaced(t, pageId, placed);
+    });
+    onLayoutPlaced();
+    debugLog('[infographic-page] layout placed', { tabId, pageId, layout: layoutId });
+  };
+  const laidOut = layOutInfographicPages(current);
+  const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
+
   const room = current.length < MAX_INFOGRAPHIC_PAGES;
   return {
     setOrientation,
@@ -163,5 +200,7 @@ export function infographicPageEdits({
     addPage: room ? addPage : undefined,
     duplicatePage: room ? duplicatePage : undefined,
     removePage: current.length > 1 ? removePage : undefined,
+    applyLayout,
+    contentCount,
   };
 }

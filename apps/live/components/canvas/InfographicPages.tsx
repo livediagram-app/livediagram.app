@@ -1,14 +1,20 @@
 'use client';
 
-import { useCallback, useState, type CSSProperties } from 'react';
-import { lucideSettings } from '@livediagram/icons/lucide';
+import { useCallback, useRef, useState, type CSSProperties } from 'react';
+import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { INFOGRAPHIC_PAGE_GAP, pageLabel } from '@livediagram/document';
 import { lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
 import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
-import { InfographicPagePanel, PAGE_EASE_MS, type PagePreview } from './InfographicPagePanel';
+import {
+  InfographicPagePanel,
+  PAGE_EASE_MS,
+  type PagePanelTab,
+  type PagePreview,
+} from './InfographicPagePanel';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
+const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
 const COG_ROOM = 36;
@@ -30,7 +36,12 @@ const steady = (zoom: number, origin: string): CSSProperties => ({
 export function InfographicPages({ view, zoom }: { view: InfographicPagesView; zoom: number }) {
   const { pages, edit, focusPage } = view;
   // The open panel's page and the cog it hangs from.
-  const [opened, setOpened] = useState<{ id: string; cog: HTMLButtonElement } | null>(null);
+  const [opened, setOpened] = useState<{
+    id: string;
+    cog: HTMLButtonElement;
+    tab: PagePanelTab;
+  } | null>(null);
+  const cogs = useRef(new Map<string, HTMLButtonElement>());
   const [preview, setPreview] = useState<PagePreview>(null);
   const last = pages[pages.length - 1]!;
   const openId = opened?.id ?? null;
@@ -43,7 +54,12 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
     [opened],
   );
   const toggle = (id: string, cog: HTMLButtonElement) =>
-    setOpened((o) => (o?.id === id ? null : { id, cog }));
+    setOpened((o) => (o?.id === id ? null : { id, cog, tab: 'page' }));
+  // The empty page's own invitation opens its panel on Layouts.
+  const openLayouts = (id: string) => {
+    const cog = cogs.current.get(id);
+    if (cog) setOpened({ id, cog, tab: 'layouts' });
+  };
   return (
     <>
       {pages.map((page) => {
@@ -102,8 +118,15 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
                   name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
                   open={openId === page.id}
                   onToggle={(cog) => toggle(page.id, cog)}
+                  cogRef={(el) => {
+                    if (el) cogs.current.set(page.id, el);
+                    else cogs.current.delete(page.id);
+                  }}
                 />
               </div>
+            ) : null}
+            {edit && edit.contentCount(page.id) === 0 && openId !== page.id ? (
+              <EmptyPageInvite zoom={zoom} onOpen={() => openLayouts(page.id)} />
             ) : null}
           </div>
         );
@@ -121,6 +144,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           page={open}
           count={pages.length}
           anchor={opened.cog}
+          initialTab={opened.tab}
           edit={edit}
           onPreview={setPreview}
           onClose={close}
@@ -158,10 +182,12 @@ function PageCog({
   name,
   open,
   onToggle,
+  cogRef,
 }: {
   name: string;
   open: boolean;
   onToggle: (cog: HTMLButtonElement) => void;
+  cogRef: (el: HTMLButtonElement | null) => void;
 }) {
   return (
     <div
@@ -172,6 +198,7 @@ function PageCog({
     >
       <Tooltip label={name}>
         <button
+          ref={cogRef}
           type="button"
           aria-label={name}
           aria-haspopup="dialog"
@@ -185,6 +212,27 @@ function PageCog({
           <CogIcon />
         </button>
       </Tooltip>
+    </div>
+  );
+}
+
+// On an empty page, centred: an invitation to start from a layout, held at one screen size.
+function EmptyPageInvite({ zoom, onOpen }: { zoom: number; onOpen: () => void }) {
+  return (
+    <div
+      className="pointer-events-auto absolute left-1/2 top-1/2"
+      style={{ transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-900/10 backdrop-blur transition hover:bg-white hover:text-slate-900 hover:shadow-md focus-visible:outline-2 focus-visible:outline-brand-600 dark:bg-slate-800/90 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-800 dark:hover:text-white"
+      >
+        <LayoutIcon />
+        Start from a layout
+      </button>
     </div>
   );
 }

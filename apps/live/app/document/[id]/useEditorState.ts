@@ -1563,7 +1563,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     switchMode: editorMode.setMode,
   });
-  // Infographic mode's A4 page: its orientation toggle, and the view centred on it.
+  // Infographic mode's pages: their edits, and the view centred on them.
   const infographicPages = useInfographicPage({
     activeTab,
     mode: editorMode.mode,
@@ -1573,6 +1573,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasMainRef,
     setViewportZoom,
     setViewportOffset,
+    clearSelection: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    },
   });
 
   // A locked tab refuses every element mutation. Commit /

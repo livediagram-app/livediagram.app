@@ -47,6 +47,7 @@ export function useInfographicPage(deps: {
   canvasMainRef: RefObject<HTMLElement | null>;
   setViewportZoom: (zoom: number) => void;
   setViewportOffset: (offset: { x: number; y: number }) => void;
+  clearSelection: () => void;
 }): InfographicPagesView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
@@ -104,8 +105,10 @@ export function useInfographicPage(deps: {
     edit: infographicPageEdits({
       tabId,
       current,
+      elements: activeTab.elements,
       commitTabs,
       onCreated: setGoTo,
+      onLayoutPlaced: deps.clearSelection,
     }),
   };
 }

@@ -2,8 +2,8 @@
 
 // A page's panel (docs/specs/007-editor/infographic-pages.md "page panel"): opened from the cog
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
-// Its name, size, orientation and background, then the page's actions. Every hover over a
-// background previews on the page itself. It closes on an outside press, Escape, or the canvas
+// Its name, then two tabs: Page (size, orientation, background; every hover over a background
+// previews on the page itself) and Layouts; then the page's actions. It closes on an outside press, Escape, or the canvas
 // panning or zooming under it (it would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PAGE_NAME_MAX, type LaidOutPage, type PageBackground } from '@livediagram/document';
@@ -19,6 +19,7 @@ import {
 import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { InfographicPageEdits } from '@/hooks/editor/useInfographicPage';
+import { LayoutsSection } from './infographic-page-layouts-section';
 import {
   BackgroundSection,
   OrientationSection,
@@ -31,11 +32,13 @@ const GAP = 6;
 export const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
+export type PagePanelTab = 'page' | 'layouts';
 
 export function InfographicPagePanel({
   page,
   count,
   anchor,
+  initialTab,
   edit,
   onPreview,
   onClose,
@@ -43,11 +46,13 @@ export function InfographicPagePanel({
   page: LaidOutPage;
   count: number;
   anchor: HTMLElement;
+  initialTab: PagePanelTab;
   edit: InfographicPageEdits;
   onPreview: (preview: PagePreview) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
+  const [tab, setTab] = useState<PagePanelTab>(initialTab);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   const place = useCallback(() => {
@@ -116,19 +121,64 @@ export function InfographicPagePanel({
           placeholder={count > 1 ? placeLabel : 'Untitled page'}
           onRename={(name) => edit.rename(page.id, name)}
         />
-        <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
-        <OrientationSection page={page} onOrientation={(o) => edit.setOrientation(page.id, o)} />
-        <BackgroundSection
-          page={page}
-          onBackground={(patch) => {
-            edit.setBackground(page.id, patch);
-            onPreview(null);
-          }}
-          onPreview={preview}
-        />
+        <PanelTabs tab={tab} onTab={setTab} />
+        {tab === 'page' ? (
+          <>
+            <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
+            <OrientationSection
+              page={page}
+              onOrientation={(o) => edit.setOrientation(page.id, o)}
+            />
+            <BackgroundSection
+              page={page}
+              onBackground={(patch) => {
+                edit.setBackground(page.id, patch);
+                onPreview(null);
+              }}
+              onPreview={preview}
+            />
+          </>
+        ) : (
+          <LayoutsSection
+            page={page}
+            contentCount={edit.contentCount(page.id)}
+            onApply={(layout) => {
+              edit.applyLayout(page.id, layout);
+              onClose(false);
+            }}
+          />
+        )}
         <PageActions page={page} count={count} edit={edit} onClose={() => onClose(false)} />
       </div>
     </Portal>
+  );
+}
+
+// Page (its size and paint) or Layouts (what to start it with).
+function PanelTabs({ tab, onTab }: { tab: PagePanelTab; onTab: (t: PagePanelTab) => void }) {
+  const tabs: [PagePanelTab, string][] = [
+    ['page', 'Page'],
+    ['layouts', 'Layouts'],
+  ];
+  return (
+    <div role="tablist" aria-label="Page panel" className="flex gap-1 px-3 pt-2">
+      {tabs.map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={tab === id}
+          onClick={() => onTab(id)}
+          className={`flex-1 rounded-md py-1 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
+            tab === id
+              ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
+              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 
