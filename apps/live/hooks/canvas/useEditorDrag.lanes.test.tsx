@@ -14,6 +14,7 @@ import {
 } from '@livediagram/document';
 import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
 import { setInsertionSlot } from '@/lib/insertion-preview';
+import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -101,11 +102,16 @@ function harness(
     },
   } as unknown as EditorDragDeps;
 
+  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  const shown = () => {
+    const o = localPreview();
+    return o ? applyOverlay(elements, o) : elements;
+  };
   const view = renderHook(() => useEditorDrag(deps));
   return {
     ...view,
-    xOf: (id: string) => (elements.find((el) => el.id === id) as StickyElement | undefined)?.x,
-    yOf: (id: string) => (elements.find((el) => el.id === id) as StickyElement | undefined)?.y,
+    xOf: (id: string) => (shown().find((el) => el.id === id) as StickyElement | undefined)?.x,
+    yOf: (id: string) => (shown().find((el) => el.id === id) as StickyElement | undefined)?.y,
   };
 }
 
@@ -168,6 +174,7 @@ beforeEach(() => {
   vi.stubGlobal('cancelAnimationFrame', () => {});
 });
 afterEach(() => {
+  resetDragPreviewForTests();
   cleanup();
   vi.unstubAllGlobals();
   setLanePreview(null);

@@ -90,9 +90,11 @@ export function useArrowLabelLayouts(
       [...renders]
         .filter(([other]) => other !== id)
         .flatMap(([, r]) => (r.layout ? [r.layout.knockout ?? labelPlate(r.layout)] : []));
-    return (arrow: ArrowElement, text: string): ArrowLabelLayout | null =>
+    // `over`: the elements as a drag preview draws them (docs/specs/008-canvas/drag-preview.md), for a
+    // previewed arrow's label.
+    return (arrow: ArrowElement, text: string, over?: Element[]): ArrowLabelLayout | null =>
       layoutArrowLabel(arrow, text, {
-        elements,
+        elements: over ?? elements,
         claimed: claimed(arrow.id),
         options: {
           ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,

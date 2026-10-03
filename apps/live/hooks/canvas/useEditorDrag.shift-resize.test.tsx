@@ -19,6 +19,7 @@ import {
   type TabKind,
 } from '@livediagram/document';
 import type { DragMode } from '@/lib/canvas';
+import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
@@ -113,9 +114,14 @@ function harness(element: Element, kind: TabKind = 'diagram') {
     isPinchingRef: { current: false },
     insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
+  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  const shown = () => {
+    const o = localPreview();
+    return o ? applyOverlay(elements, o) : elements;
+  };
   const view = renderHook(() => useEditorDrag(deps));
   const current = () => {
-    const el = elements.find((e) => e.id === element.id);
+    const el = shown().find((e) => e.id === element.id);
     if (!el || !isBoxed(el)) throw new Error('element lost');
     return el;
   };
@@ -145,6 +151,7 @@ function release() {
 }
 
 afterEach(() => {
+  resetDragPreviewForTests();
   vi.unstubAllGlobals();
   cleanup();
 });

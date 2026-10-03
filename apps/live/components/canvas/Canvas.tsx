@@ -42,6 +42,7 @@ import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
+import { usePreviewedElements } from '@/hooks/canvas/usePreviewedElements';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
@@ -230,12 +231,13 @@ export function Canvas(props: CanvasProps) {
 
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
-  // it's unit-tested. Memoised because it walks the elements and Canvas
-  // re-renders on every drag tick.
+  // it's unit-tested. Memoised because it walks the elements. It reads the elements as a drag in
+  // progress shows them (docs/specs/008-canvas/drag-preview.md), so the union handles follow a resize.
+  const selectionElements = usePreviewedElements(elements, props.activeTabId ?? '');
   const canvasSelection = useMemo(
     () =>
       deriveCanvasSelection({
-        elements,
+        elements: selectionElements,
         selectedId,
         multiSelectedIds,
         editingId,
@@ -247,7 +249,7 @@ export function Canvas(props: CanvasProps) {
         labelRectOf: arrowLabels.labelRectOf,
       }),
     [
-      elements,
+      selectionElements,
       selectedId,
       multiSelectedIds,
       editingId,
