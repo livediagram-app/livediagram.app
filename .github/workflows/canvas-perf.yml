@@ -23,8 +23,8 @@ jobs:
   probe:
     name: Reference board
     runs-on: ubuntu-latest
-    # Five runs of each gesture take about half an hour on a hosted runner; room for the build and report.
-    timeout-minutes: 90
+    # Five runs of each gesture take about an hour on a hosted runner; room for the build and report.
+    timeout-minutes: 120
     # The e2e image: Chromium and its libraries, the locked Playwright version (checked below).
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble

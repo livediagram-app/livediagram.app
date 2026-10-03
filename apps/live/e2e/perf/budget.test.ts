@@ -61,6 +61,12 @@ describe('budgetTable', () => {
     expect(row!.pass).toBe(false);
   });
 
+  it('reads a run with no task of 50 ms or more as under 50 ms, as the browser reports none', () => {
+    const [row] = evaluateBudget([m({ gesture: 'hover', longestTaskMs: 0 })]);
+    expect(row!.measured).toBe('< 50 ms');
+    expect(row!.pass).toBe(true);
+  });
+
   it('renders one row per measurement with its verdict', () => {
     const table = budgetTable(
       evaluateBudget([

@@ -65,7 +65,15 @@ export function evaluateBudget(measurements: readonly Measurement[]): BudgetRow[
       ...m,
       rule: limits.map((l) => `${l.label} ≤ ${l.max} ms`).join(', '),
       // Rounded up, so a value over its ceiling never reads as equal to it.
-      measured: values.map((v) => `${Math.ceil(v)} ms`).join(', '),
+      // A task length of 0 means the page reported no task of 50 ms or more (the browser reports
+      // none shorter), so it reads as under 50 ms.
+      measured: values
+        .map((v, i) =>
+          limits[i]!.metric === 'longestTaskMs' && v === 0
+            ? `< ${LONG_TASK_MS} ms`
+            : `${Math.ceil(v)} ms`,
+        )
+        .join(', '),
       pass: limits.every((l, i) => values[i]! <= l.max),
     };
   });

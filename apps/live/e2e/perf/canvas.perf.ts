@@ -439,8 +439,8 @@ async function measureZoom(
 }
 
 test('canvas performance budget', async ({ browser, baseURL, page }) => {
-  // Five runs of each gesture: a hosted runner takes about half an hour; a fast desktop about 10 minutes.
-  test.setTimeout(55 * 60_000);
+  // Five runs of each gesture: a fast desktop takes about 15 minutes, a hosted runner about an hour.
+  test.setTimeout(100 * 60_000);
   mkdirSync(`${OUT}/traces`, { recursive: true });
   const benchMs = await benchmark(browser);
   const calibration: Calibration = calibratedThrottle(benchMs);

@@ -204,7 +204,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   (`traces/<tab>-<zoom>-<gesture>.json.gz`) and not counted.
 - The idle row runs `REPEATS` traced 2 s windows; its work is the sum of the renderer main
   thread's `RunTask` durations (`trace-tasks.ts`; compositor and raster threads are not counted),
-  the median of the five. Measured values are shown rounded up.
+  the median of the five. Measured values are shown rounded up; a longest task of 0 (no
+  long-task entry: the browser reports none under 50 ms) is shown as `< 50 ms`.
 - Before anything else it calibrates (`calibrate.ts`): `benchmarkInPage` (a fixed DOM, layout, JS
   and JSON workload, its median of seven runs) on five fresh blank pages, unthrottled; the fastest
   is the machine's speed (D70). `calibratedThrottle(benchMs)` gives
