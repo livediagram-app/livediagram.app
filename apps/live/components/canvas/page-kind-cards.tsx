@@ -8,7 +8,7 @@ import type { Ref } from 'react';
 
 export type PageKindChoice = { kind: PageKind; name: string; line: string };
 
-export const PAGE_KINDS: { kind: PageKind; name: string; line: string }[] = [
+export const PAGE_KINDS: readonly PageKindChoice[] = [
   {
     kind: 'infographic',
     name: 'Infographic',

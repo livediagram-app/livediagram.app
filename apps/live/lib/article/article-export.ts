@@ -19,6 +19,15 @@ import type { ArticleDrawOp } from './article-snapshot';
 
 export type PageWriting = { ops: ArticleDrawOp[]; fonts: string[] };
 
+/** The faces an article page's writing is set in (its style's, and code's): what an export embeds,
+ *  known without measuring the writing. */
+export function pageWritingFonts(tab: Tab, page: LaidOutPage): string[] {
+  const doc = page.flow ? articlesOf(tab)[page.flow] : undefined;
+  if (!doc) return [];
+  const style = resolveArticleStyle(doc.style);
+  return [style.headingFont, style.bodyFont, 'roboto-mono'];
+}
+
 export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
   if (!page.flow) return null;
   const doc = articlesOf(tab)[page.flow];
@@ -45,7 +54,7 @@ export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
       anchor: 'middle',
     });
   }
-  return { ops, fonts: [style.headingFont, style.bodyFont, 'roboto-mono'] };
+  return { ops, fonts: pageWritingFonts(tab, page) };
 }
 
 /** An article page's writing as soft bars, one per line of text: a thumbnail's or the Map's. */

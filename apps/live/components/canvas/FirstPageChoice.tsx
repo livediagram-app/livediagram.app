@@ -18,14 +18,17 @@ export function FirstPageChoice({
     <div className="absolute inset-0 flex items-center justify-center">
       <div
         role="group"
-        aria-label="What is this page for?"
+        aria-labelledby="first-page-choice-title"
         data-first-page-choice=""
         className="pointer-events-auto w-[340px] animate-fade-in rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
         style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >
-        <p className="px-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <p
+          id="first-page-choice-title"
+          className="px-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100"
+        >
           What Is This Page For?
         </p>
         <p className="mb-2.5 mt-0.5 px-0.5 text-xs text-slate-500 dark:text-slate-400">

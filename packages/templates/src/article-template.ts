@@ -7,23 +7,22 @@ import type { ArticleBlock, ArticleFlow, IllustratePage, Tab } from '@livediagra
 const PAGE_ID = 'page-1';
 const FLOW_ID = 'art-brief';
 
-let n = 0;
-const id = () => `b-brief-${++n}`;
-const p = (text: string, style?: 'title' | 'subtitle' | 'h1' | 'h2' | 'quote'): ArticleBlock => ({
-  id: id(),
-  type: 'paragraph',
-  ...(style ? { style } : {}),
-  runs: [{ text }],
-});
-const li = (list: 'bullet' | 'numbered' | 'todo', text: string): ArticleBlock => ({
-  id: id(),
-  type: 'list',
-  list,
-  runs: [{ text }],
-});
-
 function briefBlocks(): ArticleBlock[] {
-  n = 0;
+  // Block ids in order, fresh for each build.
+  let n = 0;
+  const id = () => `b-brief-${++n}`;
+  const p = (text: string, style?: 'title' | 'subtitle' | 'h1' | 'h2' | 'quote'): ArticleBlock => ({
+    id: id(),
+    type: 'paragraph',
+    ...(style ? { style } : {}),
+    runs: [{ text }],
+  });
+  const li = (list: 'bullet' | 'numbered' | 'todo', text: string): ArticleBlock => ({
+    id: id(),
+    type: 'list',
+    list,
+    runs: [{ text }],
+  });
   return [
     p('Project brief', 'title'),
     p('What we are doing, why, and how we will know it worked', 'subtitle'),

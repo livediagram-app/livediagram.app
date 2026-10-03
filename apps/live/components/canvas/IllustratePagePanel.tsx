@@ -151,7 +151,7 @@ export function IllustratePagePanel({
       />
       <PanelTabs
         tab={tab}
-        document={!!page.flow}
+        article={!!page.flow}
         onTab={(next) => {
           // Leaving Layouts takes its preview (a pending Replace's too) off the page.
           if (next !== 'layouts') onLayoutPreview(null);
@@ -236,15 +236,15 @@ export function IllustratePagePanel({
 // its highlight sliding between the two.
 function PanelTabs({
   tab,
-  document,
+  article,
   onTab,
 }: {
   tab: PagePanelTab;
   // An article page's tabs after Page are Style and Text; an infographic page's is Layouts.
-  document: boolean;
+  article: boolean;
   onTab: (t: PagePanelTab) => void;
 }) {
-  const tabs: [PagePanelTab, string][] = document
+  const tabs: [PagePanelTab, string][] = article
     ? [
         ['page', 'Page'],
         ['style', 'Style'],
@@ -364,7 +364,7 @@ function ActionButton({
 
 // Duplicate, move left, move right, delete: one row of icon buttons, each disabled where it has
 // nothing to do (the row's ends, the page limit, the last page). On an article page each acts on
-// the whole document, and says so.
+// the whole article, and says so.
 function PageActions({
   page,
   edit,

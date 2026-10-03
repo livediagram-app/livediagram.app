@@ -95,13 +95,17 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
-import { pageRulingOf, pageWriting, type PageWriting } from './article/article-export';
+import {
+  pageRulingOf,
+  pageWriting,
+  pageWritingFonts,
+  type PageWriting,
+} from './article/article-export';
 import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
 
-// The font ids an export declares, with an article page's writing's faces added.
 // A page export's drawing-zone clips (docs/specs/007-editor/article-pages.md "Zones"): what pokes
 // past a drawing zone's edge is cut off in an export as on the canvas.
-function exportZoneClips(tab: Tab, page: unknown): Map<string, PageRect> {
+function exportZoneClips(tab: Tab, page: LaidOutPage | undefined): Map<string, PageRect> {
   if (!page) return new Map();
   return drawingZoneClips(
     layOutIllustratePages(illustratePagesOf(tab)),
@@ -123,7 +127,8 @@ function svgZoneClipped(id: string, svg: string, clips: Map<string, PageRect>): 
 // review furniture, like a comment badge, never part of what the page prints.
 const isArticleNoteMarker = (el: Element) => el.type === 'annotation' && !!el.articleNote;
 
-function withWritingFonts(ids: string[], writing: PageWriting | null): string[] {
+// The font ids an export declares, with an article page's writing's faces added.
+function withWritingFonts(ids: string[], writing: Pick<PageWriting, 'fonts'> | null): string[] {
   return writing ? [...new Set([...ids, ...writing.fonts])] : ids;
 }
 
@@ -581,7 +586,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 // Permanent Marker installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  const writing = opts.page ? pageWriting(tab, opts.page) : null;
+  // The writing's faces only: the writing itself is measured once, by renderTabToSvg.
+  const writing = opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null;
   const fontCss =
     opts.fontCss ??
     (await embeddedFontFaceCss(withWritingFonts(exportFontIds(els, tab.font), writing)));

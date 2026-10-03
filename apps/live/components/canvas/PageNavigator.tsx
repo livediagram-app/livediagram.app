@@ -41,7 +41,7 @@ export function PageNavigator({
   };
   return (
     <div
-      role="navigation"
+      role="group"
       aria-label={`Page ${index + 1} of ${count}`}
       data-page-navigator=""
       className="absolute left-1/2 top-full"

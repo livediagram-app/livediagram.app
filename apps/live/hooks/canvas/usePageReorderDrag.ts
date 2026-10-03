@@ -4,9 +4,9 @@
 // slot follows the pointer (where the dragged page's centre would land among the others), drawn
 // as a marker in the gap, and the release moves the page there with its content. Escape cancels.
 // An article page drags its whole article: the row is moved in units (a page, or an article), so
-// no slot falls inside a document.
+// no slot falls inside an article.
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
-import { pageUnits, type LaidOutPage, type PageRect } from '@livediagram/document';
+import { pageUnits, unionRects, type LaidOutPage, type PageRect } from '@livediagram/document';
 
 // Screen px a press must travel before it is a drag rather than a click.
 const DRAG_THRESHOLD = 6;
@@ -21,12 +21,7 @@ export function laidOutUnits(
 ): { pageIds: string[]; rect: PageRect }[] {
   const byId = new Map(pages.map((p) => [p.id, p.rect]));
   return pageUnits(pages).map(({ pageIds }) => {
-    const rects = pageIds.map((id) => byId.get(id)!);
-    const x = Math.min(...rects.map((r) => r.x));
-    const y = Math.min(...rects.map((r) => r.y));
-    const right = Math.max(...rects.map((r) => r.x + r.width));
-    const bottom = Math.max(...rects.map((r) => r.y + r.height));
-    return { pageIds, rect: { x, y, width: right - x, height: bottom - y } };
+    return { pageIds, rect: unionRects(pageIds.map((id) => byId.get(id)!))! };
   });
 }
 

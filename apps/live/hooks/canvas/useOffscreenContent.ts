@@ -1,5 +1,5 @@
 import { useMemo, type Ref } from 'react';
-import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/document';
+import { isBoxed, unionBoxedBounds, unionRects, type Element } from '@livediagram/document';
 import { isContentOffScreen } from '@/lib/viewport';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 
@@ -24,13 +24,7 @@ export function useOffscreenContent(
   const bbox = useMemo(() => {
     const boxedIds = new Set(elements.filter(isBoxed).map((el) => el.id));
     const own = boxedIds.size === 0 ? null : unionBoxedBounds(elements, boxedIds);
-    const boxes = [...(own ? [own] : []), ...(pages ?? []).map((p) => p.rect)];
-    if (boxes.length === 0) return null;
-    const x = Math.min(...boxes.map((b) => b.x));
-    const y = Math.min(...boxes.map((b) => b.y));
-    const right = Math.max(...boxes.map((b) => b.x + b.width));
-    const bottom = Math.max(...boxes.map((b) => b.y + b.height));
-    return { x, y, width: right - x, height: bottom - y };
+    return unionRects([...(own ? [own] : []), ...(pages ?? []).map((p) => p.rect)]);
   }, [elements, pages]);
   if (!size || !bbox) return false;
   return isContentOffScreen(size, bbox, viewportOffset, viewportZoom);

@@ -92,8 +92,8 @@ export function IllustratePages({
   const pageNumberOf = (page: LaidOutPage) => {
     if (!page.flow || !articles?.flows[page.flow]) return null;
     const style = resolveArticleStyle(articleStyleOf(page));
-    const own = pages.filter((p) => p.flow === page.flow);
     if (!style.pageNumbers) return null;
+    const own = pages.filter((p) => p.flow === page.flow);
     return {
       n: own.findIndex((p) => p.id === page.id) + 1,
       bottom: articleMarginPx(articleStyleOf(page)) / 2 - 8,
@@ -149,6 +149,7 @@ export function IllustratePages({
       {pages.map((page) => {
         const background = previewedBackground(page, pages, preview);
         const label = pageLabel(page, page.index, pages.length);
+        const number = pageNumberOf(page);
         // The label fits the page's on-screen width, less the cog's room; too narrow, it hides.
         // The title bar's room on screen: the page's width at this zoom. The cog takes its corner;
         // an empty page's layout button sits beside it, with its words while there is room for
@@ -259,18 +260,18 @@ export function IllustratePages({
                 onChoose={(kind) => edit.choosePageKind(page.id, kind)}
               />
             ) : null}
-            {pageNumberOf(page) ? (
+            {number ? (
               <span
                 aria-hidden
                 data-page-number=""
                 className="pointer-events-none absolute inset-x-0 text-center text-[12px] tabular-nums"
                 style={{
-                  bottom: pageNumberOf(page)!.bottom,
+                  bottom: number.bottom,
                   color: pageIsDark(page) ? 'rgb(255 255 255 / 0.55)' : 'rgb(71 85 105 / 0.8)',
-                  fontFamily: pageNumberOf(page)!.font,
+                  fontFamily: number.font,
                 }}
               >
-                {pageNumberOf(page)!.n}
+                {number.n}
               </span>
             ) : null}
           </div>

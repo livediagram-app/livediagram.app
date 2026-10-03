@@ -11,7 +11,7 @@ import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // Sized as a fraction of the circle so it stays centred at any zoom (the
 // wrapper handles the scaling). Always the same glyph — annotations are
 // not per-marker icon-pickable, on purpose, so they read uniformly.
-export function AnnotationGlyph({ stroke, action }: { stroke: string; action?: boolean }) {
+export function AnnotationGlyph({ stroke }: { stroke: string }) {
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
       <svg
@@ -25,19 +25,9 @@ export function AnnotationGlyph({ stroke, action }: { stroke: string; action?: b
         strokeLinejoin="round"
         aria-hidden
       >
-        {action ? (
-          // An article's action marker: a tick in a circle.
-          <>
-            <circle cx="12" cy="12" r="9" />
-            <path d="m8 12.5 2.8 2.8L16.5 9.5" />
-          </>
-        ) : (
-          <>
-            <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
-            <path d="M6.5 9.75h11" />
-            <path d="M6.5 12.5h7" />
-          </>
-        )}
+        <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
+        <path d="M6.5 9.75h11" />
+        <path d="M6.5 12.5h7" />
       </svg>
     </div>
   );
