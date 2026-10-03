@@ -307,7 +307,7 @@ D17 to D25, D27, D28, D105 to D120, D123 and D124 in [DEFAULTS.md](DEFAULTS.md).
 ## Surfaces (live)
 
 Derived from [Default folders → Surfaces](../default-folders.md#surfaces). Defaults applied where that
-section is silent are `D105` to `D120`, `D123` and `D124`.
+section is silent are `D105` to `D120` and `D123` to `D125`.
 
 | File                                                                                                                                    | Role                                                                                                                                                      |
 | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -334,6 +334,7 @@ section is silent are `D105` to `D120`, `D123` and `D124`.
 | `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My documents                                                                                            |
 | `apps/live/components/panels/TeamSharedDocuments.tsx`                                                                                   | Team library folder menus carry `defaults`                                                                                                                |
 | `apps/live/components/palette/useWizardPlacement.ts`                                                                                    | The wizard's placement: picked, context, default, what is sent                                                                                            |
+| `apps/live/components/placement/placement-view.ts`, `usePlacementView.ts`                                                               | The browser opens where its selection is: `placementViewFor`, followed until the reader moves (`D125`)                                                    |
 | `apps/live/components/palette/WizardDefaultFolder.tsx`                                                                                  | The slot under the browser: the reason line with Change default, or Always save                                                                           |
 | `apps/live/components/palette/template-picker-settings.tsx`, `TemplatePicker.tsx`, `TemplatePickerHeader.tsx`                           | `placementFooter` under the browser; the picker's placement from `useWizardPlacement`; its header in its own file                                         |
 | `apps/live/app/new/page.tsx`, `useWizardDefaults.ts`                                                                                    | No context = no `initialPlacement`; `useWizardDefaults` resolves per template; `applyAlwaysSave` before the create                                        |
@@ -408,6 +409,9 @@ templateFamily: f }` (`D112`).
   `skipToDefaults` sends only `picked` or `context`.
 - `resolved` is re-read on every render, so a template change, a load, or a Change default
   re-resolves; `picked` survives. A Change default clears `picked`.
+- **Shown where it is:** the picker hands `selected` to the shared browser, which opens at
+  `placementViewFor(parsePlacement(selected))` (below), so the pre-selected default folder's card is the checked
+  radio; a `/new?folder=` context takes the same path.
 - Logs `pre-selected key=<key>` once per resolved key and `default-skipped key=<key>
 reason=folder_unknown` per skipped key.
 - **Always save:** `alwaysSaveKey = defaultKeysFor(intent)[0]`. Offered when the location is
@@ -416,6 +420,25 @@ reason=folder_unknown` per skipped key.
   unticked whenever the offer's selection or key changes. On Create, when ticked, the page awaits
   `setPlacementDefault` (or `clearPlacementDefault` at the root) with surface `wizard` before
   `apiCreateDocument`; its result never stops the create.
+
+**Browser view** (`usePlacementView`, `placementViewFor`; spec [Save locations](../../006-document/save-locations.md), "It opens where its selection is"):
+
+- `PlacementView = { space: string | null; stack: PickerFolder[] }`: `space` null is the overview,
+  `'personal-space'` or a team id a space; `stack` the folders opened, root inward.
+- `PlacementSpaces = { showPersonal, teams, folders, teamFolders }`; `PERSONAL_SPACE` is
+  `'personal-space'`; `hasSpaceOverview(spaces)` is `showPersonal || teams.length > 1`, and
+  `spaceRootView(spaces)` the overview where there is one, else the surface's one space at its root.
+- `placementViewFor({ teamId, folderId }, spaces)` (a parsed placement): a folder selection whose
+  folder is in its offered space's list opens that space with `stack` = the folder's ancestors
+  (root inward, the folder itself excluded), so the level shown lists the folder (`D125`).
+  Anything else (a space's root, a folder not in the lists yet, a space not offered) is
+  `spaceRootView`.
+- `usePlacementView(placement, derived)` holds `pinned: { view, at } | null`. It shows the pinned
+  view while its `at` equals the placement, else `derived`, recomputed per render: a late
+  default, a Change default, or a list that arrives later is followed.
+- Every reader move (select, drill, back, enter a space, create a folder or team) pins the view it
+  leads to, with `at` set to the placement it leaves selected: the view never jumps under the reader.
+  A placement changed from outside the browser (`at` no longer matching) unpins it.
 
 **Folder delete (client):** the confirmation is `folderDeleteConfirmation({ name, parentName,
 scope, defaultKeys })`; the optimistic update moves the folder's subfolders and documents to its
@@ -488,6 +511,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Store not ready when a menu opens                       | No submenu                                                                           |
 | Set or clear refused (`folder_not_found`, network, 429) | Rolled back, `write failed` warning, the check flips back                            |
 | The wizard's default folder not in its lists yet        | Skipped (`default-skipped reason=folder_unknown`), the root shown, no placement sent |
+| A selected folder not in the browser's lists yet        | The overview; the folder's level once the list arrives, unless the reader has moved  |
 | Always save write fails                                 | Logged; the create goes ahead with the explicit placement                            |
 | Reader owner changes (sign-in)                          | The store reloads for the new owner                                                  |
 | Dangling default, name unknown                          | "A deleted folder (deleted), using …"                                                |
@@ -517,6 +541,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                       |
 | Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
 | Wizard selection, what is sent, Always save offer            | `apps/live/components/palette/useWizardPlacement.test.tsx`, `TemplatePicker.test.tsx`            |
+| The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`             |
 | Lists ready or failed                                        | `apps/live/hooks/persistence/usePlacementOptions.test.tsx`                                       |
 | A folder deleted here never restored by its stale create     | `apps/live/lib/drive/plan-inbound.test.ts`, `engine.outbound.test.ts`                            |
 | Settings row states                                          | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                     |

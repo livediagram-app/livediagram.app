@@ -113,3 +113,4 @@ One row per default applied where a spec is silent or qualitative.
 | D122 | folder-delete      | How the confirmation names a top-level folder's destination              | "My documents", or "the team's root" for a team folder                                                           |
 | D123 | default-folders    | Where the wizard's reason line sits                                      | Under the browser, in the slot Always save uses: they never show together, so neither shifts the browser         |
 | D124 | default-folders    | How the Settings rows name the entries                                   | Title case, as every Settings label ("Kanban Boards"); the menus keep the list's own words                       |
+| D125 | default-folders    | Which level opens for a selected folder that holds subfolders            | The level that lists it, as for a leaf, so the checked card always names the folder                              |

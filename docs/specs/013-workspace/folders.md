@@ -51,7 +51,8 @@ In scope:
   blur when a name has been typed (mobile keyboards give the
   single-line field no Enter key, so tapping away is the only submit
   gesture there); blurring it empty, or pressing Escape, cancels. The dialog opens with the subject's current placement
-  pre-selected ("always something selected"); the "Move here" button
+  pre-selected ("always something selected"), at the level that lists it when it is a folder
+  ([Save locations](../006-document/save-locations.md), "It opens where its selection is"); the "Move here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the floating Explorer panel, and the team library —

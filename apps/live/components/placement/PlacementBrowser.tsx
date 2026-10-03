@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
 import {
   FolderPlaceIcon,
@@ -12,6 +11,13 @@ import {
   TeamPlaceIcon,
   type PlacementLayout,
 } from './PlacementCard';
+import {
+  PERSONAL_SPACE,
+  hasSpaceOverview,
+  placementViewFor,
+  type PlacementView,
+} from './placement-view';
+import { usePlacementView } from './usePlacementView';
 
 // The standardised folder-placement browser (docs/specs/006-document/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
 // a two-level tile-grid browse. Pick a SPACE first (My documents, or one of your
@@ -67,8 +73,9 @@ export function parsePlacement(placement: string): {
 }
 
 // The space -> folder browser. `space` is view state: null shows the space
-// overview (only reachable when more than one space exists), 'personal-space' the
-// personal tree, a team id that team's tree. Within a space, `stack` is the
+// overview, 'personal-space' the personal tree, a team id that team's tree. It
+// opens where its selection is (usePlacementView): a selected folder opens the
+// level that lists it, a space's root the overview. Within a space, `stack` is the
 // folder drill-down: each level lists a "save at this level" card (Unsorted /
 // Team Library / the open folder itself) plus the folders directly inside
 // it — subfolders only appear inside their parent, mirroring the Explorer
@@ -127,29 +134,41 @@ export function PlacementBrowser({
   // with choosing the space, deliberately, and the overview is where a
   // "create a team" option belongs for someone who has none yet. Only a
   // team-scoped surface (one team, no personal space) skips it and opens
-  // straight inside that team, since there is nothing to choose.
-  // `undefined` = "not chosen yet", DERIVED per render rather than captured
-  // at mount: teams load asynchronously, so a user who reaches the browser
-  // before the fetch resolves must still see them on the overview once they
-  // land (a mount-time useState would pin the list as it was).
-  const hasOverview = showPersonal || spaceCount > 1;
-  const [chosenSpace, setChosenSpace] = useState<string | null | undefined>(undefined);
-  const defaultSpace = showPersonal ? 'personal-space' : (teams[0]?.id ?? 'personal-space');
-  const space = chosenSpace === undefined ? (hasOverview ? null : defaultSpace) : chosenSpace;
-  // Folder drill-down inside the current space (ids from root inward).
-  const [stack, setStack] = useState<PickerFolder[]>([]);
-  const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : 'personal-space';
+  // straight inside that team, since there is nothing to choose. The view
+  // is DERIVED per render until the reader moves: teams and folders load
+  // asynchronously, so a reader who arrives before them still sees them,
+  // and a selected folder is opened to once its list lands.
+  const spaces = { showPersonal, teams, folders, teamFolders };
+  const hasOverview = hasSpaceOverview(spaces);
+  const { view, move } = usePlacementView(
+    placement,
+    placementViewFor(parsePlacement(placement), spaces),
+  );
+  const { space, stack } = view;
+  const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : PERSONAL_SPACE;
+
+  // Every reader move pins the view it leads to, with the placement it
+  // leaves selected, so the view never jumps under the reader.
+  const go = (next: PlacementView, select?: string) => {
+    move(next, select ?? placement);
+    if (select !== undefined) onPlacement(select);
+  };
+  const setStack = (next: PickerFolder[], select?: string) => go({ space, stack: next }, select);
+  // Choose a card on the level shown, staying on it.
+  const choose = (value: string) => setStack(stack, value);
 
   // Entering a space also selects its root when the current choice lives
   // elsewhere, so the level never renders with nothing highlighted (the
   // "always something selected" rule; see selectionChain below for the
   // within-space half of it).
   const enterSpace = (next: string | null) => {
-    setChosenSpace(next);
-    setStack([]);
-    if (next === 'personal-space' && placementSpace !== 'personal-space') onPlacement('unsorted');
-    else if (next && next !== 'personal-space' && placementSpace !== next)
-      onPlacement(`team:${next}`);
+    const select =
+      next === PERSONAL_SPACE && placementSpace !== PERSONAL_SPACE
+        ? 'unsorted'
+        : next && next !== PERSONAL_SPACE && placementSpace !== next
+          ? `team:${next}`
+          : undefined;
+    go({ space: next, stack: [] }, select);
   };
 
   // The bar above the rows is at EVERY level (see BackBar): a back button
@@ -204,7 +223,7 @@ export function PlacementBrowser({
     );
   }
 
-  const isPersonalSpace = space === 'personal-space';
+  const isPersonalSpace = space === PERSONAL_SPACE;
   const teamId = isPersonalSpace ? null : (space as string);
   const team = teamId ? teams.find((t) => t.id === teamId) : undefined;
   const spaceFolders = isPersonalSpace ? folders : (teamFolders[teamId!] ?? []);
@@ -285,7 +304,7 @@ export function PlacementBrowser({
             icon={<FolderPlaceIcon />}
             count={children.length}
             selected={placement === valueFor(openFolder.id)}
-            onSelect={() => onPlacement(valueFor(openFolder.id))}
+            onSelect={() => choose(valueFor(openFolder.id))}
             onCommit={() => onCommitPlacement?.(valueFor(openFolder.id))}
             layout={layout}
             enterIndex={0}
@@ -297,7 +316,7 @@ export function PlacementBrowser({
             icon={isPersonalSpace ? <PersonalSpaceIcon /> : <TeamPlaceIcon />}
             count={children.length}
             selected={placement === rootValue}
-            onSelect={() => onPlacement(rootValue)}
+            onSelect={() => choose(rootValue)}
             onCommit={() => onCommitPlacement?.(rootValue)}
             layout={layout}
             enterIndex={0}
@@ -317,10 +336,9 @@ export function PlacementBrowser({
               icon={<FolderStackIcon />}
               count={countChildren(spaceFolders, f.id)}
               selected={selectionChain.has(f.id)}
-              onSelect={() => {
-                if (!selectionChain.has(f.id)) onPlacement(valueFor(f.id));
-                setStack([...stack, f]);
-              }}
+              onSelect={() =>
+                setStack([...stack, f], selectionChain.has(f.id) ? undefined : valueFor(f.id))
+              }
               layout={layout}
               enterIndex={i + 1}
             />
@@ -333,7 +351,7 @@ export function PlacementBrowser({
               sub={openFolder ? 'Subfolder' : 'Folder'}
               icon={<FolderPlaceIcon />}
               selected={placement === valueFor(f.id)}
-              onSelect={() => onPlacement(valueFor(f.id))}
+              onSelect={() => choose(valueFor(f.id))}
               onCommit={() => onCommitPlacement?.(valueFor(f.id))}
               layout={layout}
               enterIndex={i + 1}
@@ -353,10 +371,8 @@ export function PlacementBrowser({
               // and open its parent if that isn't the level on screen, so
               // the new row is the one highlighted rather than hidden
               // inside a folder the reader hasn't opened.
-              onPlacement(valueFor(created.id));
-              if (newFolderParent && newFolderParent.id !== openFolder?.id) {
-                setStack(pathTo(newFolderParent));
-              }
+              const opensParent = newFolderParent && newFolderParent.id !== openFolder?.id;
+              setStack(opensParent ? pathTo(newFolderParent) : stack, valueFor(created.id));
               return true;
             }}
           />
