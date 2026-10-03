@@ -170,7 +170,7 @@ test.describe('explorer sidebar', () => {
   test('opens as a drawer on a phone and closes on a pick', async ({ page, pageErrors }) => {
     await darkVisitor(page, crypto.randomUUID());
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/explorer/timeline');
+    await page.goto('/explorer/home');
     await page.getByRole('button', { name: 'Browse sections' }).click();
     const drawerNav = page.getByRole('navigation', { name: 'Explorer' }).last();
     await expect(drawerNav.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
