@@ -118,6 +118,18 @@ first gesture read without the profiler start, see below):
 The budget is still out of reach on both boards; the next measures are in "Not tried" and the
 spec's "Later".
 
+## The hosted runner
+
+- A still board read 40-49 ms of work on the nightly runner, 1 ms locally: two URL-less script
+  evaluations at the trace window's edges (Playwright's own, about 20 ms each at the runner's
+  speed). The probe no longer counts them; re-read from that run's traces, the idle median is
+  0.1-1.3 ms. One window held a 456 ms major GC; the five-run median absorbs it.
+- A drag reads about twice as slow on the runner as locally. Its longest tasks (350-400 ms) hold
+  almost no traced work (at most 40 ms of hit testing and compositor commit): the main thread is
+  waiting, most likely on software compositing in a container without a GPU, which the CPU
+  calibration does not model. The same empty-task shape showed locally at fit before the Map became
+  an image, so part of it is the board's own paint cost.
+
 ## Not tried
 
 - `contain` / `content-visibility` on element wrappers, level of detail at low zoom, a raster
