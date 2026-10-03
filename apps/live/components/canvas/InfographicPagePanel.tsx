@@ -8,6 +8,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PAGE_NAME_MAX, type LaidOutPage, type PageBackground } from '@livediagram/document';
 import {
+  ACTIVE_SEGMENT,
+  SEGMENT_TRACK,
   ChevronLeftIcon,
   ChevronRightIcon,
   DuplicateIcon,
@@ -17,6 +19,7 @@ import {
   useEscape,
 } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
+import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -192,30 +195,42 @@ export function InfographicPagePanel({
   );
 }
 
-// Page (its size and paint) or Layouts (what to start it with).
+// Page (its size and paint) or Layouts (what to start it with): the shared segmented control,
+// its highlight sliding between the two.
 function PanelTabs({ tab, onTab }: { tab: PagePanelTab; onTab: (t: PagePanelTab) => void }) {
   const tabs: [PagePanelTab, string][] = [
     ['page', 'Page'],
     ['layouts', 'Layouts'],
   ];
   return (
-    <div role="tablist" aria-label="Page panel" className="flex gap-1 px-3 pt-2">
-      {tabs.map(([id, label]) => (
-        <button
-          key={id}
-          type="button"
-          role="tab"
-          aria-selected={tab === id}
-          onClick={() => onTab(id)}
-          className={`flex-1 rounded-md py-1 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
-            tab === id
-              ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
-          }`}
-        >
-          {label}
-        </button>
-      ))}
+    <div className="px-3 pt-2">
+      <div
+        role="tablist"
+        aria-label="Page panel"
+        className={`relative grid grid-cols-2 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
+      >
+        <SegmentSlider
+          count={tabs.length}
+          index={tabs.findIndex(([id]) => id === tab)}
+          className={ACTIVE_SEGMENT}
+        />
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => onTab(id)}
+            className={`relative z-10 rounded-md py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
+              tab === id
+                ? 'text-white'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

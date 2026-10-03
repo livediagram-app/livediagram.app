@@ -17,7 +17,8 @@ import {
   type PagePattern,
   type PageSizeId,
 } from '@livediagram/document';
-import { CheckIcon, Glyph, Tooltip } from '@livediagram/ui';
+import { ACTIVE_SEGMENT, CheckIcon, Glyph, SEGMENT_TRACK, Tooltip } from '@livediagram/ui';
+import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import {
   fillCss,
   gradientFill,
@@ -125,8 +126,13 @@ export function OrientationSection({
       <div
         role="radiogroup"
         aria-label="Orientation"
-        className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+        className={`relative grid grid-cols-2 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
       >
+        <SegmentSlider
+          count={2}
+          index={page.orientation === 'portrait' ? 0 : 1}
+          className={ACTIVE_SEGMENT}
+        />
         {(['portrait', 'landscape'] as const).map((o) => {
           const on = page.orientation === o;
           return (
@@ -136,9 +142,9 @@ export function OrientationSection({
               role="radio"
               aria-checked={on}
               onClick={() => onOrientation(o)}
-              className={`flex items-center justify-center gap-1.5 rounded-md py-1 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
+              className={`relative z-10 flex items-center justify-center gap-1.5 rounded-md py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
                 on
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                  ? 'text-white'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
               }`}
             >
