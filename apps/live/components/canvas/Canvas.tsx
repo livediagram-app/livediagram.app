@@ -43,6 +43,7 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { usePreviewedElements } from '@/hooks/canvas/usePreviewedElements';
+import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
@@ -236,6 +237,7 @@ export function Canvas(props: CanvasProps) {
   // it's unit-tested. Memoised because it walks the elements. It reads the elements as a drag in
   // progress shows them (docs/specs/008-canvas/drag-preview.md), so the union handles follow a resize.
   const selectionElements = usePreviewedElements(elements, props.activeTabId ?? '');
+  const canvasGesture = useCanvasGesture();
   const canvasSelection = useMemo(
     () =>
       deriveCanvasSelection({
@@ -699,6 +701,7 @@ export function Canvas(props: CanvasProps) {
         data-path-cursor={pathTool.cursor ? '' : undefined}
         // Fades in as the editor arrives (globals.css, "Editor fade-in").
         data-canvas-world=""
+        data-zooming={canvasGesture === 'zoom' ? '' : undefined}
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
