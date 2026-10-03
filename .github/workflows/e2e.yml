@@ -22,7 +22,9 @@ jobs:
   smoke:
     name: Chromium smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Two builds (guest and Clerk-stubbed) and both suites take 13 to 16 minutes: 20 still stops a hung
+    # run well before GitHub's six hours (docs/specs/003-system-architecture/e2e-smoke.md).
+    timeout-minutes: 20
     # Playwright's own image carries Chromium and every system library it needs, so no run downloads
     # or apt-installs them. Its tag is the locked @playwright/test version; the first step checks it.
     container:
