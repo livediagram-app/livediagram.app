@@ -33,10 +33,11 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.
 
-## Read-only tokens
+## Token roles
 
-A read-only token writes nothing, comments included: the dispatch gate refuses every write it presents
-([Public API and API tokens](../015-api/public-api-and-tokens.md) §3.4). It may not set presence either.
+What an agent may do follows its token's [role](../013-workspace/share-roles.md#api-tokens): a **view** token reads
+and writes nothing, comments and presence included; a **comment** token may comment and set presence but submits
+no changesets; an **edit** token may do all three.
 
 ## Limits
 

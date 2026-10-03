@@ -71,6 +71,7 @@ The editor is real:
 ## Next
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): agent writes become changesets that reach people live and survive their saves (closing the data loss in livediagram-app/livediagram.app#343), then views, edit operations and the lint, then the [CLI](../015-api/cli.md).
+- **Three share roles** ([Share roles](../013-workspace/share-roles.md)): view, comment and edit for share links and API tokens, replacing view/edit and the read-only flag.
 
 ## Later
 

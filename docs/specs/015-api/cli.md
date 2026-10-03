@@ -104,7 +104,7 @@ In order of precedence:
   device authorisation grant for machines without a browser. `--with-token` reads a token from stdin, for hosts that
   do not run the MCP worker. The token is named "livediagram CLI"; its work shows as its owner's.
 - Credentials go in the OS keychain when available, else `~/.config/livediagram/credentials.json` at mode 0600.
-- `auth status` prints the host, account, token name, read-only flag and expiry, never the secret, and warns inside
+- `auth status` prints the host, account, token name, its role and expiry, never the secret, and warns inside
   14 days of expiry. `auth logout` revokes the token and forgets it.
 - A host without sign-in has no tokens, so the CLI cannot act there and says so in one line, as the MCP is absent
   there ([Public API and API tokens](public-api-and-tokens.md) §3.7).
