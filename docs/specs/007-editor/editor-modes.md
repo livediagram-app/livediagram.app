@@ -184,8 +184,9 @@ element in the same colour.
 
 ## Naming in the interface
 
-- The mode is **Draw** on the switch and **Draw mode** in prose: the Settings
-  section (Dock Position), the help article (**Draw mode**, at a new address,
+- The mode is **Draw** on the switch and in Settings, where it names the
+  **Editor › Draw** sub-category (Dock Position) as the switch names it, and
+  **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
 - The template and Quick Start card stays **Whiteboard**: it names the
   activity a person comes for, and creates a tab that opens in Draw mode.

@@ -179,8 +179,10 @@ centred across the **top** of the canvas by default (see
   Toolbar layout's strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
-- **Bottom by choice**: Settings, **Editor**, a **Draw mode** section with
-  one row, **Dock Position** (**Top** / **Bottom**). The bottom is closer to
+- **Bottom by choice**: Settings, **Editor › Draw** (the sub-category for
+  settings that apply only in Draw mode,
+  [User preferences](../007-editor/user-preferences.md)), the row **Dock
+  Position** (**Top** / **Bottom**). The bottom is closer to
   hand when drawing on a tablet and leaves the top of the board free. Only
   Draw mode has a dock, so nothing in Diagram mode moves with it.
 - **Stored per user** in the synced preferences

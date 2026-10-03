@@ -514,9 +514,9 @@ and the dialog stays as the one complete, browsable index of them.
 
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows,
-  middle-mouse pan, then a **Draw mode** section: dock position, Top or
-  Bottom, then a **Power User** section: power user mode, and
-  Minimal chrome while the mode is on), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
+  middle-mouse pan, then a **Power User** section: power user mode, and
+  Minimal chrome while the mode is on; with the sub-category **Draw**: dock
+  position, Top or Bottom), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel layout, panel opacity; with the
   sub-categories **Layers**, **Activity**, **Map**, **Collaborate** and
@@ -549,7 +549,16 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec): Panels holds Layers, Activity, Map, Collaborate and Quick Style,
+  spec). **Editor** holds one per editor mode whose settings apply only to
+  that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
+  since only Draw mode has a dock. A setting that applies in both modes
+  stays on Editor itself; quick-add on hover, alignment guides, auto-attach
+  arrows, middle-mouse pan and power user mode all act in both. There is no
+  **Diagram** sub-category while no setting applies only to Diagram mode: a
+  category with no rows is never shown, and one is added beside Draw the day
+  a Diagram-only setting lands.
+
+  Panels holds Layers, Activity, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
   switch** ("Enable Layers Panel", "Enable Activity Panel", "Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
@@ -571,7 +580,7 @@ and the dialog stays as the one complete, browsable index of them.
   and that pane ends with its sub-categories as rows in the root list's
   grouped card, each pushing its own pane, the way iOS Settings nests a
   screen. Back from a sub-category returns to its parent's pane (the back
-  control reads "Panels"), and back from there to the root list. On the
+  control reads "Panels", or "Editor"), and back from there to the root list. On the
   phone's root list the sub-categories show beneath the parent only for a
   search hit. (A disclosure chevron on the phone was tried and dropped: its
   right-pointing arrow read as the row's own "go" arrow, so the
@@ -579,9 +588,10 @@ and the dialog stays as the one complete, browsable index of them.
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
   mark in the editor (Lucide layers for Layers, the Activity panel's clock,
   the Collaborate button's glyph; the Map and Quick Style, which have no
-  toolbar button, take Lucide map and Lucide palette). Search matches a
+  toolbar button, take Lucide map and Lucide palette; Draw takes the
+  marker the editor mode switch shows for Draw mode). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers").
+  it by path ("in Panels › Layers", "in Editor › Draw").
 
   Within a category, rows carry an optional **`section`** so a category
   holding several clusters (Editor's Power User rows) gets a sub-heading per
